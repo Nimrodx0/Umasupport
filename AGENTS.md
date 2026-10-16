@@ -31,4 +31,4 @@
 23. `poc/src/event_gap_audit.js` はSSR・SRイベントのソース間タイトル差分をカード単位で抽出するが、差分をゲーム内実イベントの確定的な未収録と呼ばない。2026-10-16時点でCruiseのみ11件／11枚。U-toolsはカードID別連続・ランダムイベントの検証候補だが、サイト上での公開はスクレイピング・再利用許可を意味しない。
 
 
-24. U-toolsの技術・利用条件の評価は `docs/utools-source-evaluation.md`。GitHub Actionsからの自動GETは403（Cloudflare challenge）となった。保護回避や大量の自動収集を行わず、公式のデータ提供手段と第三者アプリ利用許可を確認するまでは本番接続しない。
+24. U-toolsの技術・利用条件の評価は `docs/utools-source-evaluation.md`。GitHub Actionsからの自動GETは30302で403（Cloudflare challenge）、30164で200かつCORS `*` と混在した。保護回避や大量の自動収集を行わず、公式のデータ提供手段と第三者アプリ利用許可を確認するまでは本番接続しない。
