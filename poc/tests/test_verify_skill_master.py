@@ -74,6 +74,19 @@ class MasterAuditTests(unittest.TestCase):
         self.assertFalse(r["passed"])
         self.assertEqual(r["statusCounts"]["master_extra_group_members"],1)
 
+    def test_negative_rate_sibling_is_not_an_upgrade(self):
+        self.con.execute("INSERT INTO skill_data VALUES (700003,70000,-1,1)");self.con.commit()
+        r=self.audit()
+        self.assertTrue(r["passed"])
+        self.assertEqual(r["ignoredNegativeRateMasterExtras"],1)
+        self.assertEqual(r["independentAgreedChains"],2)
+
+    def test_source_member_with_negative_rate_is_not_trusted(self):
+        self.con.execute("UPDATE skill_data SET group_rate=-1 WHERE id=700002");self.con.commit()
+        r=self.audit()
+        self.assertFalse(r["passed"])
+        self.assertEqual(r["statusCounts"]["master_rank_unknown_or_negative"],1)
+
     def test_group_identity_and_rarity_are_checked(self):
         self.con.execute("UPDATE skill_data SET group_id=70003 WHERE id=700012");self.con.commit()
         r=self.audit()

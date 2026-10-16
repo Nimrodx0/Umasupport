@@ -1,0 +1,76 @@
+name: Historical Skill Master Cross-check
+on:
+  pull_request:
+    paths: [.github/workflows/historical-skill-master-audit.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-master-overlap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned public inputs one time
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/uma-master-audit"
+          curl --fail --show-error --silent --location --retry 1 --max-time 180 \
+            --output "$RUNNER_TEMP/uma-master-audit/skill_data.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt"
+          curl --fail --show-error --silent --location --retry 1 --max-time 240 \
+            --output "$RUNNER_TEMP/uma-master-audit/master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          python3 - <<'PY'
+          import json, os, pathlib, sqlite3
+          folder = pathlib.Path(os.environ["RUNNER_TEMP"]) / "uma-master-audit"
+          data = json.loads((folder / "skill_data.txt").read_text(encoding="utf-8"))
+          assert isinstance(data, list) and len(data)>1000
+          with sqlite3.connect((folder / "master.mdb").resolve().as_uri() + "?mode=ro", uri=True) as db:
+              count = db.execute("SELECT COUNT(*) FROM skill_data").fetchone()[0]
+          assert count > 1000
+          print("Input sanity: UmaSim =",len(data),"historical master =",count)
+          PY
+      - name: Compare every source group and summarize version skew
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/verify_skill_master.py \
+            --umasim "$RUNNER_TEMP/uma-master-audit/skill_data.txt" \
+            --master "$RUNNER_TEMP/uma-master-audit/master.mdb" \
+            --source-revision "mee1080/umasim@cf9366f6 (2026-10-13)" \
+            --master-revision "SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135 (2025-10-10)" \
+            > "$RUNNER_TEMP/uma-master-audit/report.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          data=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-master-audit/report.json").read_text())
+          for field in ("totalRareInUmaSim","sourceStructuralCandidates","independentAgreedChains",
+                        "independentNoLowerSnapshot","statusCounts"):
+              assert field in data
+          print("HISTORICAL (2025/2026 VERSION SKEW), NOT PHASE 1 COMPLETION")
+          for k in ("totalRareInUmaSim","sourceStructuralCandidates","independentAgreedChains",
+                    "independentNoLowerSnapshot","ignoredNegativeRateMasterExtras","statusCounts","sourceSha256","masterSha256","passed"):
+              print(k,":",data[k])
+          unresolved=data.get("rejectedOrUnconfirmed",[])
+          print("Group-level exceptions (IDs only):")
+          for row in unresolved:
+              if row["status"] == "master_extra_group_members":
+                  print(" extra group =",row["group"],"currentGoldIDs =",row["goldIds"],
+                        "historicalExtraIDs =",row["extraIds"])
+          import sqlite3
+          master_file=(pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-master-audit/master.mdb")
+          with sqlite3.connect(master_file.resolve().as_uri()+"?mode=ro",uri=True) as db:
+              for row in unresolved:
+                  if row["status"]!="master_extra_group_members":
+                      continue
+                  for extra_id in row["extraIds"]:
+                      rate,rarity=db.execute(
+                          "SELECT group_rate,rarity FROM skill_data WHERE id=?",(extra_id,)).fetchone()
+                      print("historical extra member group/id/rate/rarity =",
+                            row["group"],extra_id,rate,rarity)
+          print("Missing groups =",sum(x["status"]=="master_missing" for x in unresolved))
+          assert data["totalRareInUmaSim"]>=300
+          PY

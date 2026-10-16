@@ -83,3 +83,11 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 - §poc/tools/verify_skill_master.py§ を新設。UmaSimと別のゲームマスターSQLiteを全群突合し、数値ID・group・group_rate・レアリティの矛盾、白なしの食い違いを拒否する。
 - §poc/tests/test_verify_skill_master.py§ とCIに架空SQLiteによる境界・異常系テストを追加。実ゲームマスターはCIに同梱・取得しない。
 - 取得元版を明示した実マスターの全件照合は**まだ未実施**。Phase 1のデータゲートを通過したとは扱わない。[検証計画](verification-plan.md)参照。
+
+## 2026-10-17：過去の実マスターデータによる限定照合
+
+2025-10-10公開終了版と2026-10-13 UmaSimのID・グループ・昇格順を、一時的に照合するGitHub Actions限定ワークフローを追加。版差を未照合として切り分け、実データをリポジトリに保存せず、[専用記録](historical-master-audit.md)に実測を記す。工程の全件完了は別。
+
+**履歴照合の実測（[Actions #38937045493](https://github.com/Nimrodx0/Umasupport/actions/runs/38937045493)）：** 現行金325中、旧版と昇格順を含めて一致251、旧版欠損53、同グループに旧版余剰18、白なし3。直接のレアリティ・グループ・昇格順矛盾0。旧版との版差があるためPhase 1の独立全件照合ゲートは未通過。[詳細](historical-master-audit.md)。
+
+**追加調査による訂正：** 旧版マスターに余分なIDがある18組の全IDで `group_rate=-1` を実測（[Actions #38937531528](https://github.com/Nimrodx0/Umasupport/actions/runs/38937531528)）。初回251組という数字は、この非昇格IDを誤ってグループ衝突と扱ったため過少計上。照合器に負値除外と回帰テストを追加し、[修正後のActions #38937864644](https://github.com/Nimrodx0/Umasupport/actions/runs/38937864644) で、旧マスター一致269組、旧版欠損53組、白なし3組、非昇格負値ID18件を実測。
