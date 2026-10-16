@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/independent-card-coverage-audit.yml
+      - poc/tools/audit_card_coverage.cjs
+      - poc/tests/card_coverage.test.cjs
   workflow_dispatch:
 permissions:
   contents: read
