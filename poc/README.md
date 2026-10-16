@@ -102,3 +102,5 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 詳しくは [公開イベントDB手順](../docs/checker-public-catalog.md)。CLI：node poc/tools/build_checker_catalog.cjs（読み取り専用、SSR・SRの元ファイルから実カード名厳密照合とイベント候補件数）。ローカル入力：--local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json。エイリアスは --aliases、レビュー済みイベントは --review と --output のセットで独立JSONへ出力。
 
 poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。現時点で承認済みの実イベントは0件。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。
+
+表記差24件の明示対応は `config/checker-name-aliases.json`。`tools/build_checker_catalog.cjs` は標準でこれを使い、417枚を照合します。`--no-aliases` で厳密一致393枚だけを検証、`--aliases` でローカル対応表を指定できます。欠損SSR5枚のGameWith個別記事の詳細掲載状態は `config/gamewith-ssr-review-status.json`、新規カードやイベント0件の検出は `src/checker_gap_tracker.cjs`。
