@@ -68,7 +68,7 @@ function inventory({source,model,aliases={}}){
      if(sourceKeys.has(sourceKey))fail('イベントキー重複: '+card.id);
      sourceKeys.add(sourceKey);
      const sourceDigest='sha256:'+sha(JSON.stringify({title:normalizedTitle,choices:validated}));
-     events.push({sourceKey,sourceDigest,optionCount:validated.length});
+     events.push({sourceKey,sourceDigest,sourceIndex:events.length,optionCount:validated.length});
      optionCount+=validated.length;
    }
    if(events.length===0)emptyCards++;
