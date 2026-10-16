@@ -41,4 +41,4 @@
 - 直接取得の技術検証は `poc/tests/runtime.test.cjs`、金白の全件監査は `poc/tools/audit_skill_groups.cjs`、イベント候補は `poc/tools/build_checker_catalog.cjs`。オンライン実行は原則手動。
 - リポジトリのPRには該当Issue、差分、再現手順と三軸ゲートのPass／Fail／未実施を記載し、未通過であれば残件を引き継ぐ。
 
-**次の優先作業**：Phase 1の金白全件独立照合とPages／スマホ検証を完了し、Phase 2でイベント候補の全件性・分岐・報酬・公開条件を照合する。[ロードマップ](docs/roadmap.md)参照。
+**次の優先作業**：[近時点の独立金白照合](docs/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。数値IDの独立検証、Pages／スマホ実機、Phase 1のカード・性能・表示順の全件監査は未完。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](docs/roadmap.md)参照。

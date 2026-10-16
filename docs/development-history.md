@@ -91,3 +91,10 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 **履歴照合の実測（[Actions #38937045493](https://github.com/Nimrodx0/Umasupport/actions/runs/38937045493)）：** 現行金325中、旧版と昇格順を含めて一致251、旧版欠損53、同グループに旧版余剰18、白なし3。直接のレアリティ・グループ・昇格順矛盾0。旧版との版差があるためPhase 1の独立全件照合ゲートは未通過。[詳細](historical-master-audit.md)。
 
 **追加調査による訂正：** 旧版マスターに余分なIDがある18組の全IDで `group_rate=-1` を実測（[Actions #38937531528](https://github.com/Nimrodx0/Umasupport/actions/runs/38937531528)）。初回251組という数字は、この非昇格IDを誤ってグループ衝突と扱ったため過少計上。照合器に負値除外と回帰テストを追加し、[修正後のActions #38937864644](https://github.com/Nimrodx0/Umasupport/actions/runs/38937864644) で、旧マスター一致269組、旧版欠損53組、白なし3組、非昇格負値ID18件を実測。
+
+
+## 2026-10-17：2026年9月版の独立スキルJSONで金白全件照合（PR #30）
+
+- 2026-10-13 UmaSimと2026-09-30抽出の別系統スキルJSONを固定版・SHA-256で突き合わせる読み取り専用監査器を追加。人工JSON回帰もCIに実装。公開元データをPublicリポジトリに保存しない。
+- [実測 #38944822566](https://github.com/Nimrodx0/Umasupport/actions/runs/38944822566)：金325、金白322候補のうち**321組（2段階290、3段階31）**でID・昇格順・**双方向704参照一致**。白なし3組は別資料でも白なし。唯一の欠損はグループ20480の金204801・白204802。
+- 欠損組の「抜山蓋世→規格外」は2026-10-13更新[GameWith](https://gamewith.jp/uma-musume/article/show/582564)が名称関係を裏付ける。ただし数値IDの第三者確認ではない。[検証結果](independent-skill-json-audit.md)。**Phase 1全体は未完**。

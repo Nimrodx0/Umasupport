@@ -1,0 +1,112 @@
+name: Independent Sep-2026 Skill JSON Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/skill-json-schema-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  skill-json-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned independent data once
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/uma-json-probe"
+          curl --fail --show-error --silent --location --retry 1 --max-time 120 \
+            --output "$RUNNER_TEMP/uma-json-probe/skills.json" \
+            "https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/skills.json"
+          echo "11bf7aa86d611047f5052b48059cf77d6aa9b4a7ad8e25ba2f7f901dcd267e62  $RUNNER_TEMP/uma-json-probe/skills.json" | sha256sum --check
+      - name: Inspect structured fields only (no third-party content in logs)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,collections
+          src=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/skills.json').read_text())
+          print("ROOT_TYPE",type(src).__name__)
+          if isinstance(src,dict):
+            print("ROOT_KEYS",list(src)[:30])
+            children=[(k,v) for k,v in src.items() if isinstance(v,(list,dict))]
+            for key,obj in children[:8]:
+              print("CHILD",key,"TYPE",type(obj).__name__,"LEN",len(obj))
+              sample=next(iter(obj.values()),None) if isinstance(obj,dict) else next(iter(obj),None)
+              print("CHILD_SAMPLE_TYPE",type(sample).__name__)
+              if isinstance(sample,dict):print("CHILD_SAMPLE_KEYS",list(sample)[:40])
+          elif isinstance(src,list):
+            print("ROOT_LEN",len(src))
+            sample=src[0] if src else None
+            print("SAMPLE_TYPE",type(sample).__name__)
+            if isinstance(sample,dict):
+              print("SAMPLE_KEYS",list(sample)[:50])
+              print("KEY_TYPES",{k:type(v).__name__ for k,v in sample.items()})
+          PY
+
+      - name: Probe overlap and explicit hierarchy references
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --location --retry 1 --max-time 120 \
+            --output "$RUNNER_TEMP/uma-json-probe/skill_data.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt"
+          echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $RUNNER_TEMP/uma-json-probe/skill_data.txt" | sha256sum --check
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections,json,os
+          base=Path(os.environ['RUNNER_TEMP'])/'uma-json-probe'
+          src=json.loads((base/'skill_data.txt').read_text())
+          ext=json.loads((base/'skills.json').read_text())
+          groups=collections.defaultdict(lambda: {'rare':[],'normal':[]})
+          byid={str(v['id']):v for v in ext}
+          for item in src:
+            if item['rarity'] in ('rare','normal'):groups[item['group']][item['rarity']].append(item)
+          print('external_records',len(ext),'umasim_records',len(src))
+          print('external_rarities',dict(collections.Counter(v.get('rarity') for v in ext)))
+          print('non_null_links', {k:sum(v.get(k) is not None for v in ext) for k in ['lowerSkillId','upperSkillId']})
+          print('source_rare',sum(len(x['rare']) for x in groups.values()))
+          print('matched_rare_by_id',sum(str(i['id']) in byid for i in src if i['rarity']=='rare'))
+          print('matched_normal_by_id',sum(str(i['id']) in byid for i in src if i['rarity']=='normal'))
+          print('gold_rows_sample_types',[(v.get('rarity'),v.get('groupRate'),type(v.get('lowerSkillId')).__name__,type(v.get('upperSkillId')).__name__) for v in ext if v.get('rarity')==2][:4])
+          observed=collections.Counter()
+          for g in groups.values():
+            if len(g['rare'])!=1 or not g['normal']:continue
+            rows=[byid.get(str(i['id'])) for i in g['rare']+g['normal']]
+            if any(i is None for i in rows):
+              observed['missing_members']+=1;continue
+            observed['all_members_present']+=1
+            if all(x.get('groupId')==y['group'] for x,y in zip(rows,g['rare']+g['normal'])):observed['all_group_match']+=1
+            if max(x.get('groupRate',0) for x in rows[1:])<rows[0].get('groupRate',0):observed['gold_has_max_groupRate']+=1
+            if min(x.get('groupRate',0) for x in rows[1:])>rows[0].get('groupRate',0):observed['gold_has_min_groupRate']+=1
+          print('group_observations',dict(observed))
+          PY
+
+      - name: Compare all UmaSim rare groups with independent skill export
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_independent_skill_json.py \
+            --umasim "$RUNNER_TEMP/uma-json-probe/skill_data.txt" \
+            --independent "$RUNNER_TEMP/uma-json-probe/skills.json" \
+            --umasim-revision "mee1080/umasim@cf9366f6a487bd8f197b53d8a11981207beb9f6c" \
+            --independent-revision "Tsuyuchan-jp/umamusume-data@0cacbb1aaf9dca10283d5b9ea20b205b9d204535 (2026-09-30)" \
+            > "$RUNNER_TEMP/uma-json-probe/audit.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          report=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/audit.json').read_text())
+          print('INDEPENDENT JSON FULL GROUP AUDIT')
+          for key in ('sourceRare','sourceStructuralChains','matchingChains','matchingNoLowerSnapshot','statusCounts','pointerEvidence','allConfirmedInIndependentSnapshot'):
+              print(key,':',json.dumps(report[key],ensure_ascii=False,sort_keys=True))
+          print('Unconfirmed IDs only:')
+          print(json.dumps(report['unconfirmed'],ensure_ascii=False,sort_keys=True))
+          src=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/skill_data.txt').read_text())
+          by_id={str(s['id']):s.get('name') for s in src}
+          missing=[sid for row in report['unconfirmed'] for sid in row.get('missingIds',[])]
+          print('Missing skill names (only for further research):',[(sid,by_id.get(sid)) for sid in missing])
+          PY

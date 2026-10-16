@@ -14,14 +14,14 @@
 | 現行アーキテクチャとデータ境界 | [設計](docs/architecture.md)、[実行時取得](docs/runtime-data-loading.md) |
 | 決定事項と変更理由 | [意思決定ログ](docs/decisions.md) |
 | 実装・検証履歴 | [開発履歴](docs/development-history.md) |
-| データの収録と不確実性 | [ソース](docs/data-sources.md)、[金白監査](docs/skill-hierarchy-coverage.md)、[イベントソース調査](docs/event-source-selection.md) |
+| データの収録と不確実性 | [ソース](docs/data-sources.md)、[金白監査](docs/skill-hierarchy-coverage.md)、[独立照合](docs/independent-skill-json-audit.md)、[イベントソース調査](docs/event-source-selection.md) |
 | 開発環境・テスト | [PoCの手順](poc/README.md)、[開発AI向け入口](AGENTS.md) |
 
 ## 現在の到達点（2026-10-17）
 
 - **公開・基盤：** GitHub Pagesで実ブラウザ通常起動を確認。CI成功。UmaSim `support_card.txt` の起動時直接取得、構造検証、IndexedDBキャッシュ、元データ取得先だけを遮断した場合の復旧・再取得を2026-10-16に確認済み。アプリ本体の完全オフライン起動とは別。
 - **通常ヒント：** UmaSimの実ソース結合検証でサポカ563件・通常ヒント4,015件。採用元に登録された件数であり、現行ゲームの全カード数を保証しない。
-- **金白スキル：** `skill_data.txt` 2,139件中金325を分類し、322組に構造的対応候補、3組はソース上白なし。内部統合スキル辞書836件。実ソースNode統合検証は成功したが、322組の独立裏付けと新機能のPages・スマホ操作は未完。
+- **金白スキル：** `skill_data.txt` 2,139件中金325を分類し、322組に構造的対応候補、3組はソース上白なし。内部統合スキル辞書836件。実ソースNode統合検証は成功したが、322組の2026年9月版の別系統データで321組の双方向ID・昇格順を照合し、残り1組は攻略資料で名称関係を確認。全数値IDの同時点独立照合とPages・スマホ操作は未完。
 - **イベント：** UmaUmaCheckerのSSR・SR417枚に名前対応（393厳密＋24明示エイリアス）。イベント候補2,099件、うち5枚はイベント記録0件。**公開DBの実ゲームイベントは0件**。分岐・報酬・利用条件をレビューしてから追加する。
 - **UI：** 比較用のPoCは使用可能。名前付き複数デッキ、所持一括登録、イベント一括操作などの完成要件は未達。
 
