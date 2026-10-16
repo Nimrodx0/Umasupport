@@ -13,13 +13,13 @@ const urls={
  checker:'https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json'
 };
 function options(argv){
- const result={local:null,aliases:null,review:null,output:null};
+ const result={local:null,aliases:null,review:null,output:null,candidates:null};
  for(let i=0;i<argv.length;i++){
    const flag=argv[i];
    if(flag==='--local'){
      if(result.local||!argv[i+1]||!argv[i+2])throw Error('--localは2ファイル指定');
      result.local=[argv[++i],argv[++i]];
-   }else if(['--aliases','--review','--output'].includes(flag)){
+   }else if(['--aliases','--review','--output','--candidates'].includes(flag)){
      const key=flag.slice(2);
      if(result[key]||!argv[i+1])throw Error(flag+'のファイル指定が必要');
      result[key]=argv[++i];
@@ -42,6 +42,11 @@ async function run(){
  const source=JSON.parse(checkerText.replace(/^\uFEFF/,''));
  const aliases=flags.aliases?JSON.parse(await fs.readFile(flags.aliases,'utf8')):{};
  const candidate=pipeline.inventory({source,model,aliases});
+ if(flags.candidates){
+   const dest=path.resolve(flags.candidates);
+   await fs.mkdir(path.dirname(dest),{recursive:true});
+   await fs.writeFile(dest,JSON.stringify(candidate,null,2)+'\n','utf8');
+ }
  const report={
    ...candidate.stats,unmatchedModelIds:candidate.unmatchedModelIds,
    incompleteCardIds:candidate.cards.filter(c=>c.events.length===0).map(c=>c.cardId),
