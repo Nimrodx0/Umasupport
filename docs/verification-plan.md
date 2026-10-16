@@ -147,3 +147,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ## 13. 実Pagesの通信復帰・キャッシュ破損・ストレージ拒否の回帰（2026-10-17）
 
 [詳細](pages-browser-acceptance-20261017.md#追加検証通信復旧とキャッシュ異常2026-10-17pr-32)／[GitHub Actions成功](https://github.com/Nimrodx0/Umasupport/actions/runs/38950280170)。Linux Chromiumで実公開ページに対して、新スキルJSONの無効更新拒否・キャッシュの破損隔離・初回キャッシュなしエラー・遮断解除後の両ソースオンライン再GETを確認。IndexedDB無効は既取得の実データを使ったブラウザ内モックであり、端末の権限制限と同一と断定しない。**Android・Windows実機、他ブラウザ、完全オフライン資産、承認済み実イベントは依然未検証**。
+
+## 14. Phase 1ヒント性能の0〜4凸別ソース監査（2026-10-17）
+
+[専用記録](hint-performance-audit.md)。UmaSim固定版（2026-10-13）の全563枚×5段階=2,815レコードから基本/固有の`hintLevel`・`hintFrequency`を読み取り、列位置を[提供元コード](https://github.com/mee1080/umasim/blob/cf9366f6a487bd8f197b53d8a11981207beb9f6c/core/src/commonMain/kotlin/io/github/mee1080/umasim/data/SupportCardLoader.kt)で確認。0凸→4凸でヒントLv補正が変わる271枚、ヒント発生率補正が変わる390枚。[Actions #38952732567](https://github.com/Nimrodx0/Umasupport/actions/runs/38952732567)成功。A=数値検証・段階切替の人工DOM回帰に合格、B=UmaSim内の該当フィールドのみ全件検証（ゲーム内独立照合・特殊固有は未実施）、C=新UIの実Pages/ユーザー端末確認は別途未実施。Phase 1全体は未完。

@@ -15,7 +15,11 @@ function supportFixture(){
   for(let stage=0;stage<=4;stage++){
    const f=Array(62).fill('');
    f[0]=id;f[1]='[架空'+id+']サポカ'+n;f[3]='3';f[4]=String(stage);
-   f[6]='スピード';f[59]=n===0?'右回り○':'';
+   f[6]='スピード';
+   for(let k=7;k<=58;k++)f[k]='0';
+   f[23]=String(stage>=2?2:0);f[24]=String(10+stage*5);
+   f[49]='1';f[50]='5';
+   f[59]=n===0?'右回り○':'';
    lines.push(f.join('\t'));
   }
  }
@@ -83,6 +87,17 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  let perf=await page.locator('.modal-body').innerText();
+  assert.match(perf,/ヒント関連性能（4凸）/);
+  assert.match(perf,/基礎 Lv.4/);
+  assert.match(perf,/基本 30% \/ 固有 5%/);
+  await page.locator('select[data-stage]').selectOption('0');
+  perf=await page.locator('.modal-body').innerText();
+  assert.match(perf,/ヒント関連性能（0凸）/);
+  assert.match(perf,/基礎 Lv.2/);
+  assert.match(perf,/基本 10% \/ 固有 5%/);
+  await page.locator('button[data-action="close"]').click();
   const row=page.locator('tr[data-skill="hint:右回り○"]');
   await row.waitFor();assert.match(await row.innerText(),/右回り○/);
   // Goal-only white skill: keep gold/white relationships in the model, not as noisy table text.
