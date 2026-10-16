@@ -1,0 +1,49 @@
+name: Independent Sep-2026 Skill JSON Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/skill-json-schema-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  skill-json-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned independent data once
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/uma-json-probe"
+          curl --fail --show-error --silent --location --retry 1 --max-time 120 \
+            --output "$RUNNER_TEMP/uma-json-probe/skills.json" \
+            "https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/skills.json"
+          echo "11bf7aa86d611047f5052b48059cf77d6aa9b4a7ad8e25ba2f7f901dcd267e62  $RUNNER_TEMP/uma-json-probe/skills.json" | sha256sum --check
+      - name: Inspect structured fields only (no third-party content in logs)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,collections
+          src=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/skills.json').read_text())
+          print("ROOT_TYPE",type(src).__name__)
+          if isinstance(src,dict):
+            print("ROOT_KEYS",list(src)[:30])
+            children=[(k,v) for k,v in src.items() if isinstance(v,(list,dict))]
+            for key,obj in children[:8]:
+              print("CHILD",key,"TYPE",type(obj).__name__,"LEN",len(obj))
+              sample=next(iter(obj.values()),None) if isinstance(obj,dict) else next(iter(obj),None)
+              print("CHILD_SAMPLE_TYPE",type(sample).__name__)
+              if isinstance(sample,dict):print("CHILD_SAMPLE_KEYS",list(sample)[:40])
+          elif isinstance(src,list):
+            print("ROOT_LEN",len(src))
+            sample=src[0] if src else None
+            print("SAMPLE_TYPE",type(sample).__name__)
+            if isinstance(sample,dict):
+              print("SAMPLE_KEYS",list(sample)[:50])
+              print("KEY_TYPES",{k:type(v).__name__ for k,v in sample.items()})
+          PY
