@@ -44,10 +44,10 @@ test('per-stage hint bonus is parsed at published source column offsets',()=>{
  assert.equal(card.hintsByStage['4'].length,2);
 });
 test('invalid hint bonus is rejected before overwriting valid offline cache',async()=>{
- const lines=valid.split('\\n'),f=lines[0].split('\\t');f[49]='unexpected';lines[0]=f.join('\\t');
- assert.throws(()=>loader.parseSupportCards(lines.join('\\n')),/ヒント性能値/);
+ const lines=valid.split('\n'),f=lines[0].split('\t');f[49]='unexpected';lines[0]=f.join('\t');
+ assert.throws(()=>loader.parseSupportCards(lines.join('\n')),/ヒント性能値/);
  const baseline={text:valid,fetchedAt:'yesterday',sourceUrl:loader.SOURCE_URL};
  const saved=JSON.stringify(baseline),store={get:async()=>baseline,put:async()=>{throw Error('must not overwrite')}};
- const got=await loader.load({fetchImpl:async()=>({ok:true,text:async()=>lines.join('\\n')}),store});
+ const got=await loader.load({fetchImpl:async()=>({ok:true,text:async()=>lines.join('\n')}),store});
  assert.equal(got.mode,'cached');assert.equal(JSON.stringify(baseline),saved);
 });
