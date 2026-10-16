@@ -22,3 +22,6 @@
 18. イベントモデルを変更する場合は `docs/event-schema.md` と `poc/src/event_schema.js` の検証処理を参照する。第三者イベントはまだ公開版未収録。GameWith等の由来データを権利確認前に同梱しない。入力カタログの件数をゲーム内の網羅率と混同しない。
 19. `docs/event-source-audit.md` は実ソースの照合結果。45枚のカードID・名称一致は確認したがイベントの到達条件やスキルID対応は未検証。`poc/src/event_source_audit.js` は読み取り専用監査、`poc/src/event_review_compiler.js` は各イベントの `chainVerified:true` と `rewardSemanticsVerified:true`、承認済みのスキル対応を要求。未レビューイベントの公開版自動導入は禁止。
 20. 2026-10-16 IndexedDB保存・データ取得先遮断時復旧・再取得の実ブラウザ検証は3項目成功。アプリ本体の完全オフライン起動は未検証。
+
+21. 大規模イベントソースの全件測定は `docs/event-source-selection.md` にある（2026-10-16に466カード見出し、1,403イベント、UmaSimとの名前＋レアリティ一致442/563）。この値をゲーム内ID一致やイベント網羅率と称さない。調査には `poc/tools/audit_cruise_source.cjs` を使う。サポカ実イベントの自動統合は未許可。
+

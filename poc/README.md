@@ -78,3 +78,10 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 `src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。公開版の `events: []` は変えていない。
 
 [照合記録](../docs/event-source-audit.md)。
+
+## 大規模イベントJSONの全件測定
+
+`node poc/tools/audit_cruise_source.cjs`：元の公開JSONとUmaSimを直接GETし、カード名＋レアリティの一意一致数、イベント見出し、選択肢・効果行、異常構造を測定する。第三者データを保存・コミットしない。
+
+ローカル検証では `node poc/tools/audit_cruise_source.cjs --local path/to/UmaMusumeLibrary.json path/to/support_card.txt`。単体テストは `poc/tests/cruise_source_audit.test.cjs`。GitHub Actionsの「Event Source Coverage Audit」は手動実行専用で、頻繁に公開元へGETしない。実カードのイベント報酬を公開版に追加する機能ではない。
+

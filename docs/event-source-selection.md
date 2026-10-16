@@ -10,7 +10,7 @@
 
 | 候補 | この時点で確認したこと | 未確認事項と留意点 |
 |---|---|---|
-| [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) | `UmaMusumeLibrary.json` 約5,805,134バイト。2026-10-15のコミットまで更新が続く。READMEはサポカ追加・選択肢修正を頻繁に記録し、GameWith由来と説明 | **最優先の網羅率評価対象**。大きなJSONをまだ全件解析しておらず、カード実ID・サポカ件数・イベント条件の網羅性は未確認。明示ライセンス表示がなく、GameWith由来情報の扱いも要確認 |
+| [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) | `UmaMusumeLibrary.json` 5,805,134バイトを2026-10-16に全件解析。466カード見出し、イベント1,403レコード、選択肢・効果2,852行。UmaSim 563枚に対する名称＋レアリティ一致は442枚（78.5%） | **大規模なイベント選択肢・効果の最有力候補。ただしイベント／カードIDと構造化された連続条件がなく、Rの一致は53/146。ゲーム内の網羅率とは異なる。**明示ライセンス表示がなく、GameWith由来情報の扱いも要確認 |
 | [Umamusume Wiki サポカイベントモジュール](https://umamusu.wiki/Module:Game/Supports/Data/Events) / [イベント構造](https://umamusu.wiki/Module:Game/TrainingEvents/Data) | ゲームマスターの `single_mode_story_data` などからサポカとのイベント対応を取得。イベントID、ストーリーID、連続イベントの `chainNum`・`chainMax` などを利用 | 原データの入手・更新・利用条件、選択肢の報酬が同様に取得できるかは未検証。イベント順・IDの相互検証候補 |
 | [UmaTools](https://github.com/daftuyda/UmaTools) | 公開 `support_card.json` に選択肢・報酬テキストを持つ**1,082行のイベント候補レコード**。GameTora / GameWithデータを参照し、更新スクリプトがある | 1,082はイベント行数でカード枚数ではない。元ファイルではゲーム内カードIDが明示されておらず、名前と他データの結び付けが必要。GPLv3のコードライセンスをデータの再利用許可と同一視しない |
 | [umamusume-data](https://github.com/Tsuyuchan-jp/umamusume-data) | 45カードID／126イベント、45枚はUmaSimのカードIDと名称一致 | 全563枚を網羅する目的には不十分。前工程で検証器を作成済み |
@@ -29,8 +29,28 @@
 6. 有力ソースが不足する場合、**イベント／選択肢／報酬は網羅的ソース＋ゲームマスター由来のID・連続段階**など複数ソースを補完的に使う設計を検討する。1つの不完全なJSONに最適化しない。
 7. このゲートが通ってから、既存の `event_schema.js` と `event_review_compiler.js` へ実データをつなぎ、少数カードで検証して全件へ展開する。
 
-## 2026-10-16時点の結論
+## 2026-10-16：最優先候補の全件測定結果
 
-**採用する主データ元はまだ決まっていない。** まず `umaumacruise_customjson` の大規模JSONを実際に集計し、カード単位の収録率と選択肢報酬の表現可能性を確かめる。ウマ娘Wikiのマスター由来連続情報を検証用の第二候補とする。
+GitHub Actions上で公開元の大きなJSONを直接取得し、第三者イベント本文を再配布せずに統計情報だけを抽出した。
 
-以降は、データソース評価をIssue #2の**最優先**とし、個別カードのレビュー・公開版イベント集計の導入を保留する。既存のイベントスキーマ・人工データテストは維持する。
+- 供給元：`po-po-po-pong/umaumacruise_customjson` の `UmaMusumeLibrary.json`
+- ソースのSHA-256：`7dfc3367d8fc24fc4e9ccb1f215a47645e7fadd1e90802d8d5771c494e22929d`
+- 比較元のUmaSimサポカファイルSHA-256：`153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424`
+- 全サポカ見出し466件：SSR 311、SR 101、R 54
+- UmaSimの563枚との**名称NFKC／空白正規化＋レアリティ一致**：442枚／563枚（78.5%）。内訳：SSR 291/316（92.1%）、SR 98/101（97.0%）、R 53/146（36.3%）。
+- SSR＋SR：389/417（93.3%）。一致しないUmaSimカードは121枚（SSR 25、SR 3、R 93）。ソース側にだけ見つかる名称は24件（SSR 20、SR 3、R 1）。
+- **ゲーム内カードIDによる厳密な照合ではない。** 元JSONにカードIDを含むフィールドがないため、名称の一致からID確定を宣言しない。未知・異表記の24件を推測で名寄せしない。
+- `Support` 内のEvent配列から1,403イベント見出しを抽出。名前が照合できたカードに属するイベント1,334件、照合できない名称のイベント69件。
+- イベントに付いた選択肢／効果の行2,852件。選択肢数の分布：2件のイベント1,351、3件46、4件3、**選択肢0件が3イベント**。効果は文字列形式で、独立した正式スキルIDや報酬条件の構造化フィールドはない。
+- 効果文に「ヒント／スキル」の語を含む行1,299、成功・失敗・確率等の語を含む行101、連続・次イベント等の語を含む行75。**単純な文字列検索の診断値であり、獲得スキル・結果分岐の構造化件数ではない。** 打ち切りの機械可読フィールドは確認できなかった。
+- 明示的なカードID・イベントID・親イベント依存関係のフィールドは、このソースの確認した `Support` 構造には存在しない。
+
+### 選定判断
+
+**1ファイルで全サポカの全イベントを提供するソースとしては未採用。** ただしSSR／SRの選択肢と効果の幅広い候補としては有力。Rカード、ゲーム内ID、連続順、成功／失敗、打ち切りを補完する第二ソースの調査が必要。
+
+[Umamusume Wikiのマスター由来モジュール](https://umamusu.wiki/Module:Game/Supports/Data/Events) は `single_mode_story_data` の `support_card_id` とイベントIDを関連付け、[TrainingEvents/Data](https://umamusu.wiki/Module:Game/TrainingEvents/Data) は `show_progress_1/2` から `chainNum`・`chainMax` を得る。**実データ本体の入手・権利条件・選択肢効果との結合は未検証**であり、候補となる補完方式という位置付け。
+
+再現可能な監査コード：`poc/src/cruise_source_audit.js`、`poc/tools/audit_cruise_source.cjs`。単体テストは `poc/tests/cruise_source_audit.test.cjs`。GitHub Actionsの **Event Source Coverage Audit** を手動実行できる。自動定期取得は設けない。
+
+今後の優先順は、①ゲームマスター由来のカード・イベントID／連続段階の取得可能性、②R・SSR・SRの未収録カードのイベント有無の確認、③第三者データの利用条件、④実装用の正規化スキーマ採用。まだ公開版に実イベントを入れない。

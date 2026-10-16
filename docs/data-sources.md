@@ -56,4 +56,8 @@
 
 ## 2026-10-16 供給元選定の優先順位を変更
 
-45枚の部分データに合わせた実イベント導入より先に、全カード向けのデータ元を探索して定量比較する。最優先候補は [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) の継続更新中の大規模JSONだが、ファイル全件の収録率は**未測定**。Umamusume Wikiのマスター由来イベントID／連続段階を補完・検証用に検討する。詳細は [供給元の候補比較・選定条件](event-source-selection.md)。
+45枚の部分データに合わせた実イベント導入より先に、全カード向けのデータ元を探索して定量比較する。最優先候補は [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) の継続更新中の大規模JSON。**2026-10-16に全件を測定し、カード見出し466件／イベント1,403件／UmaSimとの名前＋レアリティ一致442/563件**を確認。ゲーム内IDでの照合やイベントの真の網羅率は未検証。Umamusume Wikiのマスター由来イベントID／連続段階を補完・検証用に検討する。詳細は [供給元の候補比較・選定条件](event-source-selection.md)。
+
+## 大規模イベントソース全件監査（2026-10-16）
+
+`umaumacruise_customjson` はSSR311／SR101／R54カード、イベント1,403件、選択肢・効果2,852行。UmaSimとはSSR291/316、SR98/101、R53/146が名称＋レアリティ一致（計442/563）。SSR／SRで高い一致率がある一方、Rの93枚は元JSON側に名称一致がない。元ソースにカードID・イベントID・到達条件を明示するフィールドは見つからなかった。データの取得・利用条件は引き続き未確認。詳細：[供給元選定の全件測定](event-source-selection.md)。
