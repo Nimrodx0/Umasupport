@@ -73,9 +73,25 @@ function aggregate(deck,data){
 }
 function coverage(skillId,bySkill,data){
   const direct=bySkill[skillId];
-  if(direct){return {kind:'direct',conditional:direct.conditionalOnly,count:direct.count};}
-  const upper = data.skills.filter(s=>s.lowerId===skillId).map(s=>bySkill[s.id]).filter(Boolean);
-  if(upper.length){return {kind:'indirect',conditional:upper.every(x=>x.conditionalOnly),count:0};}
+  if(direct)return {kind:'direct',conditional:direct.conditionalOnly,count:direct.count};
+  // The reviewed/source-group hierarchy may be more than one rank:
+  // rare -> normal ◎ -> normal ○. Traverse upwards without creating direct providers.
+  const parents=new Map();
+  for(const skill of data.skills||[]){
+    if(!skill.lowerId)continue;
+    const found=parents.get(skill.lowerId)||[];
+    found.push(skill.id);parents.set(skill.lowerId,found);
+  }
+  const visited=new Set([skillId]),queue=[skillId],upper=[];
+  while(queue.length){
+    for(const id of parents.get(queue.shift())||[]){
+      if(visited.has(id))continue;
+      visited.add(id);
+      if(bySkill[id])upper.push(bySkill[id]);
+      queue.push(id);
+    }
+  }
+  if(upper.length)return {kind:'indirect',conditional:upper.every(v=>v.conditionalOnly),count:0};
   return {kind:'missing',conditional:false,count:0};
 }
 function goalStatus(goal,main,inherit,data){
@@ -99,25 +115,29 @@ function combinedRows(main,inherit,goals,data){
 // フィルター後の行集合にも適用でき、片方がない場合は擬似的な獲得行を生成しない。
 function hierarchyRows(rows,data){
   const byId=new Map(rows.map(row=>[row.skill.id,row]));
-  const used=new Set();
-  const groups=[];
-  for(const row of rows){
-    const lowerId=row.skill.tier==='gold'?row.skill.lowerId:null;
-    const lower=lowerId&&byId.get(lowerId);
-    if(lower&&!used.has(row.skill.id)&&!used.has(lowerId)&&lowerId!==row.skill.id){
-      groups.push({name:row.skill.name,items:[
-        {...row,groupRole:'parent'},
-        {...lower,groupRole:'child',parentSkillId:row.skill.id}
-      ]});
-      used.add(row.skill.id);
-      used.add(lowerId);
-    }
+  const children=new Set(rows.map(row=>row.skill.lowerId).filter(id=>id&&byId.has(id)));
+  const used=new Set(),groups=[];
+  function append(row,items,depth,parentSkillId){
+    if(!row||used.has(row.skill.id))return;
+    used.add(row.skill.id);
+    const child=row.skill.lowerId&&byId.get(row.skill.lowerId);
+    const hasChild=!!child&&!used.has(child.skill.id);
+    items.push({...row,groupRole:depth>0?'child':hasChild?'parent':'solo',
+      ...(depth>0?{parentSkillId,hierarchyDepth:depth}:{hierarchyDepth:0})});
+    if(hasChild)append(child,items,depth+1,row.skill.id);
   }
   for(const row of rows){
-    if(!used.has(row.skill.id))groups.push({name:row.skill.name,items:[{...row,groupRole:'solo'}]});
+    if(children.has(row.skill.id))continue;
+    const items=[];append(row,items,0,null);
+    if(items.length)groups.push({name:row.skill.name,items});
+  }
+  // Defensive fallback if invalid external data ever forms a cycle.
+  for(const row of rows)if(!used.has(row.skill.id)){
+    const items=[];append(row,items,0,null);
+    if(items.length)groups.push({name:row.skill.name,items});
   }
   groups.sort((a,b)=>a.name.localeCompare(b.name,'ja'));
-  return groups.flatMap(group=>group.items);
+  return groups.flatMap(g=>g.items);
 }
 function clearDescendants(card,choices,eventId){
   const next={...choices},queue=[eventId],visited=new Set();

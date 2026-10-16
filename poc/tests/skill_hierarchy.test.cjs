@@ -63,12 +63,11 @@ test('when no normal hint exists, a separately addressable white skill is staged
  events.attach(m,catalog(numeric('203561','一所懸命')),{skillText:text()});
  assert.equal(m.skills.length,2);
 });
-test('only explicitly reviewed pairs link; same group by itself is insufficient',()=>{
+test('one rare and one normal in one stable group can be paired by source data',()=>{
  const m=model();
  events.attach(m,catalog(numeric('999991','未承認の金')),{skillText:text()});
- assert.equal(m.skillById['skill:999991'].lowerId,null);
- assert.equal(m.skillById['skill:999992'],undefined);
- assert.equal(m.meta.reviewedHierarchyPairs,0);
+ assert.equal(m.skillById['skill:999991'].lowerId,'skill:999992');
+ assert.equal(m.meta.reviewedHierarchyPairs,1);
 });
 test('approved links fail closed on unexpected source name, rarity, group or ambiguous names',()=>{
  const edits=[
