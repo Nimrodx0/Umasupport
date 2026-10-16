@@ -38,7 +38,7 @@
 ## 実装した診断・変換ツール
 
 - `poc/src/event_source_audit.js` の `audit({supports,eventsDocument,model})`：カードIDと名称のダブルチェック、イベントのカードID抽出、選択形式の最低限の妥当性、スキル名一致候補、カード別イベント記録数、隔離理由を返す。**モデルを書き換えず、ゲームイベントを有効化しない。**
-- `poc/src/event_review_compiler.js` の `buildReviewedCatalog(...)`：開発者が `chainVerified:true` を明示し、依存関係・打ち切り選択肢・元スキルIDと内部スキルIDの対応を全件指定したイベント**だけ**をイベントv1へ変換し、`event_schema.js` で整合性を検査する。レビューされていない実イベントは出力されない。
+- `poc/src/event_review_compiler.js` の `buildReviewedCatalog(...)`：開発者が `chainVerified:true` と `rewardSemanticsVerified:true` を別々に明示し、依存関係・打ち切り・獲得条件（無条件または結果依存）・元スキルIDと内部スキルIDの対応を全件確認したイベント**だけ**をイベントv1へ変換し、`event_schema.js` で整合性を検査する。レビューされていない実イベントは出力されない。
 - `poc/tools/audit_events.cjs`：提供元3ファイルを**取得元に直接GETして読み取りだけ**行い、統計とID単位の隔離理由を標準出力へ表示。ゲーム由来JSONの再配布・GitHubへの保存を行わない。開発者用ツールでありアプリ画面の手動更新ボタンではない。
 
 リポジトリのルートから、開発者向けに次のコマンドで再監査できる。

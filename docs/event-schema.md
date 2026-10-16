@@ -70,4 +70,4 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 
 ## 外部イベントソースとの接続
 
-[実ソース照合記録](event-source-audit.md) にID一致・例外・スキル未照合をまとめた。`poc/src/event_review_compiler.js` は、個別イベントの到達・打ち切りと数値スキルID対応がすべて明示レビュー済みの場合に限ってスキーマv1を出力する。元JSONの `defaultChoiceId` を育成で選択済みのルートとみなしてはいけない。
+[実ソース照合記録](event-source-audit.md) にID一致・例外・スキル未照合をまとめた。`poc/src/event_review_compiler.js` は、個別イベントの到達・打ち切り・報酬条件を `chainVerified:true` と `rewardSemanticsVerified:true` でそれぞれ確認し、数値スキルID対応も明示したの場合に限ってスキーマv1を出力する。元JSONの `defaultChoiceId` を育成で選択済みのルートとみなしてはいけない。
