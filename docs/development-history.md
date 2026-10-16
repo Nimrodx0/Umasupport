@@ -102,3 +102,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-17：公開Pagesの実データChromium検証（PR #31）
 
 [Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)で、配信コードのSHA-256一致を確認したLinux Chromium/140からGitHub Pagesを起動。外部UmaSim2ソースを実ブラウザで取得し、カード563/通常ヒント4,015/辞書836/金325/連鎖322/白なし3/未解決0、カード編成・目標直接カバー・表示切替、両IndexedDB保存と遮断後の再読込を確認。390pxの表示幅で継承側のカード選択と目標モーダルも操作（**Android実機ではない**）。[受け入れ記録](pages-browser-acceptance-20261017.md)。実イベント0件、実機OS差・オンライン復帰後再GET、Phase 1の完全化は未達。
+
+## 2026-10-17：公開Pagesの異常系とオンライン復帰（PR #32）
+
+[明示実行Actions #38950280170](https://github.com/Nimrodx0/Umasupport/actions/runs/38950280170)で、前回のLinux Chromium実Pages受け入れテストへ、破損オンラインスキル辞書の安全な拒否、スキル／サポカの個別キャッシュ破損、初回完全障害、IndexedDB拒否時のオンライン起動、遮断解除後のPublisher実再取得を追加して合格。[詳細](pages-browser-acceptance-20261017.md)。**実装修正は発生せず、継続的に再現可能な検証が増えた**。Android・Windows実機の試験やPhase 1の性能・表示順・全カード網羅は未完。

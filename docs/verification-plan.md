@@ -143,3 +143,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ## 12. 実公開Pages/Linux ChromiumでのPhase 1受け入れ結果（2026-10-17）
 
 [実測・環境・ケースと除外](pages-browser-acceptance-20261017.md)参照。[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)成功。実公開ファイル5点のチェックアウトとのSHA-256一致、UmaSimサポカ563、通常ヒント4,015、統合辞書836、金325・連鎖322・白なし3・構造未解決0。Linux HeadlessChrome/140で実カード編成・目標、二つのIndexedDB、取得元だけ遮断した復旧、390px幅の操作を確認。**実スマホ・Windows Edge/Chrome・Safari等は未確認**。間接カバーは実スキル辞書と仮想金提供を結合する機構検証であり、承認済み実イベント0件の制約は残る。Phase 1全体は未通過。
+
+## 13. 実Pagesの通信復帰・キャッシュ破損・ストレージ拒否の回帰（2026-10-17）
+
+[詳細](pages-browser-acceptance-20261017.md#追加検証通信復旧とキャッシュ異常2026-10-17pr-32)／[GitHub Actions成功](https://github.com/Nimrodx0/Umasupport/actions/runs/38950280170)。Linux Chromiumで実公開ページに対して、新スキルJSONの無効更新拒否・キャッシュの破損隔離・初回キャッシュなしエラー・遮断解除後の両ソースオンライン再GETを確認。IndexedDB無効は既取得の実データを使ったブラウザ内モックであり、端末の権限制限と同一と断定しない。**Android・Windows実機、他ブラウザ、完全オフライン資産、承認済み実イベントは依然未検証**。

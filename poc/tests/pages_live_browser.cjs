@@ -48,6 +48,48 @@ async function cacheInventory(page){
   }finally{db.close();}
  });
 }
+
+const SUPPORT_KEY='umasupport/umasim/support_card.txt/v1';
+const SKILL_KEY='umasupport/umasim/skill_data.txt/v1';
+async function readSourceRecords(page){
+ return page.evaluate(async(keys)=>{
+  const req=indexedDB.open('uma-support-lab-runtime-data',1);
+  const db=await new Promise((ok,bad)=>{req.onsuccess=()=>ok(req.result);req.onerror=()=>bad(req.error);});
+  try{
+   const tx=db.transaction('sources','readonly'),records={};
+   for(const key of keys){
+    const request=tx.objectStore('sources').get(key);
+    records[key]=await new Promise((ok,bad)=>{
+     request.onsuccess=()=>ok(request.result);request.onerror=()=>bad(request.error);
+    });
+   }
+   return records;
+  }finally{db.close();}
+ },[SUPPORT_KEY,SKILL_KEY]);
+}
+async function replaceSourceRecord(page,key,record){
+ await page.evaluate(async({key,record})=>{
+  const request=indexedDB.open('uma-support-lab-runtime-data',1);
+  const db=await new Promise((ok,bad)=>{
+   request.onsuccess=()=>ok(request.result);request.onerror=()=>bad(request.error);
+  });
+  try{
+   await new Promise((ok,bad)=>{
+    const tx=db.transaction('sources','readwrite');
+    tx.objectStore('sources').put(record,key);
+    tx.oncomplete=ok;tx.onerror=()=>bad(tx.error);tx.onabort=()=>bad(tx.error);
+   });
+  }finally{db.close();}
+ },{key,record});
+}
+async function assertBootError(page,fragment){
+ const response=await page.goto(APP,{waitUntil:'domcontentloaded',timeout:45000});
+ assert.equal(response?.status(),200);
+ await page.locator('#bootstrap-status[data-mode="error"]').waitFor({timeout:25000});
+ assert.match(await page.locator('#bootstrap-status').innerText(),fragment);
+ assert.equal(await page.locator('#app main.app').count(),0);
+}
+
 async function main(){
  let browser;
  try{
@@ -135,6 +177,85 @@ async function main(){
   assert.ok(await page.locator('section[aria-label="継承育成デッキ"] .slot:not(.empty)').count()>=1);
   await page.locator('button[data-action="goals"]').click();
   await page.locator('button[data-action="close"]').click();
+
+  // Preserve verified live data in transient test memory only. Never log or persist it.
+  const originals=await readSourceRecords(page);
+  assert.ok(originals[SUPPORT_KEY]?.text?.length>10000);
+  assert.ok(originals[SKILL_KEY]?.text?.length>10000);
+
+  // A syntactically invalid ONLINE skill update must not poison valid IndexedDB.
+  await page.route('**/data/support_card.txt',r=>r.abort());
+  await page.route('**/data/skill_data.txt',r=>r.fulfill({
+   status:200,contentType:'application/json',body:'{}'
+  }));
+  const rejected=await boot(page);
+  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
+  assert.match(rejected,/スキル辞書は保存済み版を使用/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  const afterRejected=await readSourceRecords(page);
+  assert.deepEqual(afterRejected,originals,'Rejected publisher content changed last good cache');
+
+  // A corrupt SKILL cache must not masquerade as a valid hierarchy on outage.
+  await page.unroute('**/data/skill_data.txt');
+  await page.route('**/data/skill_data.txt',r=>r.abort());
+  await replaceSourceRecord(page,SKILL_KEY,{...originals[SKILL_KEY],text:'{}'});
+  const noSkill=await boot(page);
+  assert.match(noSkill,/金白対応データは未取得/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy||null),null);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.cards.length),actual.cards);
+  await replaceSourceRecord(page,SKILL_KEY,originals[SKILL_KEY]);
+
+  // A corrupt SUPPORT cache must fail closed, rather than show invented cards.
+  await replaceSourceRecord(page,SUPPORT_KEY,{...originals[SUPPORT_KEY],text:'{}'});
+  await assertBootError(page,/使用可能な保存データもありません/);
+  await replaceSourceRecord(page,SUPPORT_KEY,originals[SUPPORT_KEY]);
+  const afterRestoredCache=await boot(page);
+  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
+  assert.match(afterRestoredCache,/スキル辞書は保存済み版を使用/);
+
+  // Return to REAL LIVE publisher endpoints. Both caches can refresh automatically.
+  await page.unroute('**/data/support_card.txt');
+  await page.unroute('**/data/skill_data.txt');
+  const restoredOnline=await boot(page);
+  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'online');
+  assert.match(restoredOnline,/金白構造候補/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  const refreshed=await readSourceRecords(page);
+  assert.ok(refreshed[SUPPORT_KEY]?.text?.length>10000);
+  assert.ok(refreshed[SKILL_KEY]?.text?.length>10000);
+  assert.equal(external.filter(u=>u.endsWith('/support_card.txt')).length,7);
+  assert.equal(external.filter(u=>u.endsWith('/skill_data.txt')).length,6);
+  // When support bootstrap fails closed, the separate skill request is not started.
+  // Exactly two requests actually reach each publisher: initial boot and online recovery.
+  // Other attempts above are intercepted by local Playwright routing.
+
+  // No online data and no cache on a fresh profile: fail visibly and never invent entries.
+  const freshContext=await browser.newContext({locale:'ja-JP'});
+  const fresh=await freshContext.newPage();
+  await fresh.route('**/data/support_card.txt',r=>r.abort());
+  await fresh.route('**/data/skill_data.txt',r=>r.abort());
+  await assertBootError(fresh,/使用可能な保存データもありません/);
+  await freshContext.close();
+
+  // Restricted/private-browser storage: valid online input still loads in a new profile.
+  // Fulfill the two source requests with the already obtained verified input in memory.
+  const noStorage=await browser.newContext({locale:'ja-JP'});
+  await noStorage.addInitScript(()=>{
+   Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});
+  });
+  const stateless=await noStorage.newPage();
+  await stateless.route('**/data/support_card.txt',r=>r.fulfill({
+   status:200,contentType:'text/plain',body:originals[SUPPORT_KEY].text
+  }));
+  await stateless.route('**/data/skill_data.txt',r=>r.fulfill({
+   status:200,contentType:'application/json',body:originals[SKILL_KEY].text
+  }));
+  await boot(stateless);
+  assert.equal(await stateless.locator('#bootstrap-status').getAttribute('data-mode'),'online');
+  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  await noStorage.close();
+  console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
+
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
   console.log('PASS: real Pages Chromium, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),

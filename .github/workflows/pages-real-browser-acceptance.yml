@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/pages-real-browser-acceptance.yml
+      - poc/tests/pages_live_browser.cjs
   workflow_dispatch:
 
 permissions:
