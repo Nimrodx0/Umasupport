@@ -38,3 +38,11 @@
 - [直接取得版PoC](poc/live.html)：UmaSimの通常ヒントをブラウザから直接取得。データは本レポジトリに同梱しません。
 - [実行時取得の設計と現状](docs/runtime-data-loading.md)：ネットワーク優先、検証後キャッシュ、障害時フォールバック。
 - **v8.1の完全移植ではありません**。イベント・金白スキル対応・元データの名寄せ等は後続工程。実ブラウザのCORS・公開サイト検証も未了。
+
+## GitHub Pagesで公開する
+
+GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy from a branch**、**Branch: main**、**Folder: /(root)** を指定して **Save**。
+
+公開URL: https://nimrodx0.github.io/Umasupport/
+
+ルートの `index.html` は `poc/live.html` への入口です。現行のアプリ本体は `poc/live.html` と `poc/src/` にあり、`poc/demo.html` は架空データのテスト画面です。ゲームデータはアプリ起動時に外部公開元からブラウザが直接取得するため、初回はネット接続が必要です。実ブラウザでのCORSとキャッシュ確認は引き続きIssue #1で追跡します。
