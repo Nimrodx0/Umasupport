@@ -140,15 +140,18 @@ def compare(umasim, independent):
                                 result["conflicts"] = conflicts
                             else:
                                 result["status"] = "rank_and_group_agree"
-                                if nonnull:
-                                    checks["chainsWithConsistentPointers"] += 1
+                                if nonnull != 2 * (len(ordered) - 1):
+                                    result["status"] = "explicit_links_incomplete"
+                                    result["observedPointerCount"] = nonnull
+                                    result["expectedPointerCount"] = 2 * (len(ordered) - 1)
+                                else:
+                                    checks["chainsWithCompleteConsistentPointers"] += 1
                                     checks["nonNullPointersConsistent"] += nonnull
-                                else:
-                                    checks["chainsWithoutExplicitPointers"] += 1
-                                if circles:
-                                    checks["threeStepChainsAgreed"] += 1
-                                else:
-                                    checks["twoStepChainsAgreed"] += 1
+                                if result["status"] == "rank_and_group_agree":
+                                    if circles:
+                                        checks["threeStepChainsAgreed"] += 1
+                                    else:
+                                        checks["twoStepChainsAgreed"] += 1
         status[result["status"]] += 1
         results.append(result)
     total_rare = sum(len(g["rare"]) for g in umasim["groups"].values())
