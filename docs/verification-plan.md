@@ -111,3 +111,20 @@ UIのみの変更等、B軸に新しいデータがない場合は「対象デ�
 - C（実機）：Chromiumでの初期描画、カード選択・集計、IndexedDBへの両ソース保存、取得先遮断後のキャッシュ復旧、イベントJSON故障時のUIを自動検証する。**GitHub Pages本番配信とスマホ実機は別途未完**。
 
 CIのテストを通してもPhase 1全体の完了と判定しない。具体的なGitHub Actions実行リンクと成否はPR・開発履歴に記録する。
+
+## 9. 全322構造候補の独立マスター照合（2026-10-17追加）
+
+コード：§poc/tools/verify_skill_master.py§、人工データ回帰：§poc/tests/test_verify_skill_master.py§。通常CIは独立の元データを取得・保存しない。次を**許可された形で別途取得した実ファイル**について実行する：
+
+~~~sh
+python3 poc/tools/verify_skill_master.py \
+  --umasim local-data/skill_data.txt \
+  --master local-data/master.mdb \
+  --source-revision "<UmaSimのコミットID>" \
+  --master-revision "<マスターの版・日付・ゲーム環境>" \
+  --strict
+~~~
+
+出力は比較対象の全金スキルについて、構造候補・白なしの分類、独立マスターでの順序一致、マスター欠損・レアリティ・group衝突、余分な同グループ候補などの**件数とIDのみ**を記録する。§--strict§ は独立照合を全件通過できなければ失敗。マスター版がUmaSimと異なる場合の「欠損」は最新版の誤りではなく版差である可能性がある。出典・版を揃えてから結果を審査する。
+
+A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未実施。C：この監査器はCLIであり、ブラウザ実機の検証には代用できない。
