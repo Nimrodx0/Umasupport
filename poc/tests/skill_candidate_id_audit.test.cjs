@@ -1,6 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {parseSkillData,audit}=require('../src/skill_candidate_id_audit.cjs');
+const {parseSkillData,audit,verifyCandidateTable}=require('../src/skill_candidate_id_audit.cjs');
+const table=require('../config/missing-ssr-skill-id-candidates.v1.json');
 const facts=require('../config/missing-ssr-event-facts.v1.json');
 const {validate}=require('../src/missing_ssr_fact_review.cjs');
 const ids=['30240','30269','30295','30302','30320'];
@@ -48,4 +49,22 @@ test('bad source data or duplicate numeric IDs fails closed',()=>{
  assert.throws(()=>parseSkillData('{}'),/suspiciously short/);
  assert.throws(()=>parseSkillData(JSON.stringify([...baseline,baseline[0]])),/Duplicate/);
  assert.throws(()=>parseSkillData(JSON.stringify([...baseline,{id:11,name:'bad',rarity:'normal',group:1}])),/Invalid skill item/);
+});
+
+
+test('reviewed ID candidate table covers every candidate name, with 13 UmaSim and one cross-source provisional',()=>{
+ const entries=table.rows.filter(x=>x.status==='umasim-unique').map(x=>({id:x.id,name:x.name,rarity:x.rarity,group:x.group}));
+ const report=verifyCandidateTable(facts,db(entries),table);
+ assert.deepEqual(report,{totalSkills:14,umasimUnique:13,externalProvisional:1,fullyMasterVerified:false});
+ assert.ok(table.rows.find(x=>x.name==='逃げためらい').sourceUrls.length>=2);
+});
+test('a source ID correction or an unreviewed extra skill rejects the table',()=>{
+ const entries=table.rows.filter(x=>x.status==='umasim-unique').map(x=>({id:x.id,name:x.name,rarity:x.rarity,group:x.group}));
+ const x=clone(table);x.rows.find(e=>e.name==='一所懸命').id='999999';
+ assert.throws(()=>verifyCandidateTable(facts,db(entries),x),/UmaSim skill ID changed/);
+ const y=clone(table);y.rows.pop();
+ assert.throws(()=>verifyCandidateTable(facts,db(entries),y),/omits a skill/);
+ const z=clone(table);
+ const extras=[...entries,{id:'200851',name:'逃げためらい',rarity:'normal',group:20085}];
+ assert.throws(()=>verifyCandidateTable(facts,db(extras),z),/no longer unresolved/);
 });
