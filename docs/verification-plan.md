@@ -151,3 +151,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ## 14. Phase 1ヒント性能の0〜4凸別ソース監査（2026-10-17）
 
 [専用記録](hint-performance-audit.md)。UmaSim固定版（2026-10-13）の全563枚×5段階=2,815レコードから基本/固有の`hintLevel`・`hintFrequency`を読み取り、列位置を[提供元コード](https://github.com/mee1080/umasim/blob/cf9366f6a487bd8f197b53d8a11981207beb9f6c/core/src/commonMain/kotlin/io/github/mee1080/umasim/data/SupportCardLoader.kt)で確認。0凸→4凸でヒントLv補正が変わる271枚、ヒント発生率補正が変わる390枚。[Actions #38952732567](https://github.com/Nimrodx0/Umasupport/actions/runs/38952732567)成功。A=数値検証・段階切替の人工DOM回帰に合格、B=UmaSim内の該当フィールドのみ全件検証（ゲーム内独立照合・特殊固有は未実施）、C=[Pages/Linux Chromiumの0/4凸実表示テスト](https://github.com/Nimrodx0/Umasupport/actions/runs/38953159885)合格。スマートフォン等の物理端末で新UIを確認する試験は未実施。Phase 1全体は未完。
+
+## 15. 公開日本版サポカID一覧の相互全件照合（2026-10-17）
+
+[再現可能な照合と証拠](card-population-independent-audit.md)。2026-10-17取得のGameTora日本語サポカ一覧から、リンク先の**異なる563カードID**を全件抽出し、UmaSim固定版563のIDと相互比較。**共通563、双方の片側だけのIDは0**。[限定実ソースActions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930)にて確認。ほかに9月版の部分データ45件・英語版台帳259件（互いに重複0）をID／レアリティ照合し、45件は日本語名も一致。A=監査器人工回帰と実データ実行Pass、B=GameTora公開一覧とUmaSim間のID集合一致のみPass。ゲームの正式全実装数や全性能値・通常ヒントの独立正確性までは保証しない。C=外部一覧のLinux Chromium DOM確認でありウマサルタントの実機検証ではない。RタッカーブラインID10128はUmaSimに収録済みと訂正、イベントの収録状態とは別。
