@@ -49,13 +49,18 @@ function audit({supports,eventsDocument,model}){
      }
    }
    if(!reason){
+     const localNames=new Map();
      for(const s of rows){
        if(!obj(s)||!numericId(s.skillId)||!validText(s.skillName)||
           !Number.isInteger(s.hintLevel)||s.hintLevel<1){
          reason='invalid-skill-row';break;
        }
        const key=String(s.skillId),name=normalize(s.skillName);
-       if(skills.has(key)&&skills.get(key).name!==name){reason='conflicting-skill-names';break;}
+       if((skills.has(key)&&skills.get(key).name!==name)||
+          (localNames.has(key)&&localNames.get(key)!==name)){
+         reason='conflicting-skill-names';break;
+       }
+       localNames.set(key,name);
      }
    }
    if(reason){issues.push({kind:reason,eventId:event.id,...(cardId?{cardId}:{})});continue;}
