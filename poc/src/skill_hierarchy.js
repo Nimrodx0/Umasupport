@@ -45,7 +45,7 @@ function derive(source){
  }
  return {chains,unresolved,withoutLower,totalRare:[...source.byId.values()].filter(s=>s.rarity==='rare').length};
 }
-function stage({model,source,skills=[],pairs=PAIRS}){
+function stage({model,source,skills=[],pairs=PAIRS,fullRegistry=false}){
  if(!model||!model.skillById||!Array.isArray(skills)||!Array.isArray(pairs))
    throw Error('上下関係の照合に必要なデータが不正');
  const report=derive(source),added=new Map(skills.map(s=>[s.id,s])),patchMap=new Map();
@@ -80,22 +80,25 @@ function stage({model,source,skills=[],pairs=PAIRS}){
  }
  // One-to-one or ○->◎->rare only. No guess for complex/unknown families.
  for(const {gold,white,base} of report.chains){
+   const goldKey=idFor(gold);
+   if(!fullRegistry&&!added.has(goldKey)&&!own(model.skillById,goldKey))continue;
    link(gold,white);
    if(base)link(white,base);
  }
  // The three independently reviewed examples serve as regression anchors.
  for(const pair of pairs){
+   if(!source.byId.has(pair.goldId)&&!source.byId.has(pair.whiteId))continue;
    const match=report.chains.find(c=>c.gold.id===pair.goldId&&c.white.id===pair.whiteId&&
      c.gold.name===pair.goldName&&c.white.name===pair.whiteName&&c.group===pair.group);
    if(!match)throw Error('独立レビュー済みスキル組とソースが矛盾: '+pair.goldId);
  }
  // Expose ALL rare/normal records for goal selection, not only those from events.
  // Unpaired ones remain as individual entries with no speculative lowerId.
- for(const record of source.byId.values()){
+ if(fullRegistry)for(const record of source.byId.values()){
    if(record.rarity==='rare'||record.rarity==='normal')ensure(record);
  }
  return {skills:[...added.values()],patches:[...patchMap.values()],
-   linkedPairs:report.chains.length,structuralPairs:report.chains.length,
+   linkedPairs:[...patchMap.values()].filter(p=>p.id.startsWith('skill:')&&p.lowerId).length,structuralPairs:report.chains.length,
    unresolvedGroups:report.unresolved.length,withoutLower:report.withoutLower.length,
    totalRare:report.totalRare};
 }
