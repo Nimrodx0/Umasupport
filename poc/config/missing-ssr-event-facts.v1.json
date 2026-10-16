@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-candidates-only",
+  "reviewedAt": "2026-10-16",
+  "cards": [
+    {
+      "cardId": "30240",
+      "status": "structure-only",
+      "sourceUrls": [
+        "https://umamusu.wiki/Game%3ASSR_Jungle_Pocket_%28%E3%80%8E%E6%9C%80%E5%BC%B7%E3%81%AF%E4%BF%BA%E3%81%A0%EF%BC%81%EF%BC%81%E3%80%8F%29",
+        "https://gametora.com/ja/umamusume/supports/30240-jungle-pocket"
+      ],
+      "chain": [
+        {
+          "step": 1,
+          "mode": "unknown",
+          "hints": []
+        },
+        {
+          "step": 2,
+          "mode": "unknown",
+          "hints": []
+        },
+        {
+          "step": 3,
+          "mode": "unknown",
+          "hints": []
+        }
+      ],
+      "random": [
+        {
+          "ordinal": 1,
+          "mode": "unknown",
+          "hints": []
+        },
+        {
+          "ordinal": 2,
+          "mode": "unknown",
+          "hints": []
+        }
+      ]
+    },
+    {
+      "cardId": "30269",
+      "status": "skill-hint-candidates",
+      "sourceUrls": [
+        "https://game8.jp/umamusume/715262",
+        "https://gametora.com/ja/umamusume/supports/30269-dantsu-flame"
+      ],
+      "chain": [
+        {
+          "step": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "step": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "step": 3,
+          "mode": "auto",
+          "hints": [
+            {
+              "skillName": "決死の覚悟",
+              "hintLevel": 1
+            }
+          ]
+        }
+      ],
+      "random": [
+        {
+          "ordinal": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "ordinal": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "食らいつき",
+              "hintLevel": 1,
+              "choiceIndex": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30295",
+      "status": "skill-hint-candidates",
+      "sourceUrls": [
+        "https://game8.jp/umamusume/775197",
+        "https://gametora.com/ja/umamusume/supports/30295-curren-bouquetdor"
+      ],
+      "chain": [
+        {
+          "step": 1,
+          "mode": "auto",
+          "hints": []
+        },
+        {
+          "step": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "step": 3,
+          "mode": "auto",
+          "hints": [
+            {
+              "skillName": "勇迅円刃",
+              "hintLevel": 1
+            }
+          ]
+        }
+      ],
+      "random": [
+        {
+          "ordinal": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "ordinal": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "さらなる高みへ",
+              "hintLevel": 1,
+              "choiceIndex": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30302",
+      "status": "skill-hint-candidates",
+      "sourceUrls": [
+        "https://game8.jp/umamusume/785656",
+        "https://gametora.com/ja/umamusume/supports/30302-satono-diamond"
+      ],
+      "chain": [
+        {
+          "step": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "step": 2,
+          "mode": "choice",
+          "choiceCount": 3,
+          "hints": [
+            {
+              "skillName": "がむしゃら",
+              "hintLevel": 1,
+              "choiceIndex": 3
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "連鎖反応",
+              "hintLevel": 1,
+              "choiceIndex": 1
+            },
+            {
+              "skillName": "一所懸命",
+              "hintLevel": 1,
+              "choiceIndex": 1
+            },
+            {
+              "skillName": "光輝燦然",
+              "hintLevel": 1,
+              "choiceIndex": 2
+            },
+            {
+              "skillName": "一所懸命",
+              "hintLevel": 1,
+              "choiceIndex": 2
+            }
+          ]
+        }
+      ],
+      "random": [
+        {
+          "ordinal": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "ordinal": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "逃げためらい",
+              "hintLevel": 1,
+              "choiceIndex": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30320",
+      "status": "skill-hint-candidates",
+      "sourceUrls": [
+        "https://game8.jp/umamusume/818830",
+        "https://gametora.com/ja/umamusume/supports/30320-admire-groove"
+      ],
+      "chain": [
+        {
+          "step": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        },
+        {
+          "step": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "スリップストリーム",
+              "hintLevel": 1,
+              "choiceIndex": 1
+            }
+          ]
+        },
+        {
+          "step": 3,
+          "mode": "auto",
+          "hints": [
+            {
+              "skillName": "解き放つ情念",
+              "hintLevel": 2
+            },
+            {
+              "skillName": "一往直前",
+              "hintLevel": 1
+            }
+          ]
+        }
+      ],
+      "random": [
+        {
+          "ordinal": 1,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": [
+            {
+              "skillName": "ワンチャンス",
+              "hintLevel": 1,
+              "choiceIndex": 1
+            }
+          ]
+        },
+        {
+          "ordinal": 2,
+          "mode": "choice",
+          "choiceCount": 2,
+          "hints": []
+        }
+      ]
+    }
+  ]
+}

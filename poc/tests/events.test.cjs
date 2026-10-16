@@ -78,3 +78,26 @@ test('legacy fixture maintains direct routes and conditional outcomes',()=>{
  assert.ok(routes.some(r=>r.skillId==='kunrin'&&r.conditional));
  assert.equal(core.isReachable(events[2],{'a-start':'stop'},events),false);
 });
+
+
+test('any selected nonterminal choice allows a chain to continue, but never an unselected or terminal route',()=>{
+ const events=[
+  {id:'begin',name:'開始',type:'choice',choices:[
+   {id:'upper',label:'上'}, {id:'lower',label:'下'}, {id:'quit',label:'打ち切り',terminal:true}
+  ]},
+  {id:'middle',name:'中間',type:'auto',requires:{all:[{eventId:'begin'}]}},
+  {id:'end',name:'終わり',type:'auto',requires:{all:[{eventId:'middle'}]},rewards:[reward('last')]}
+ ];
+ validate(events);
+ for(const selected of ['upper','lower']){
+  assert.deepEqual(core.directRoutes(card(events),config({begin:selected})).map(r=>r.skillId),['last']);
+ }
+ assert.deepEqual(core.directRoutes(card(events),config({})).map(r=>r.skillId),[]);
+ assert.deepEqual(core.directRoutes(card(events),config({begin:'quit'})).map(r=>r.skillId),[]);
+});
+test('a chain cannot continue if every parent option is terminal',()=>{
+ assert.throws(()=>validate([
+  {id:'end',name:'終了',type:'choice',choices:[{id:'a',label:'打ち切り',terminal:true}]},
+  {id:'next',name:'後続',type:'auto',requires:{all:[{eventId:'end'}]}}
+ ]),/全分岐打ち切り/);
+});

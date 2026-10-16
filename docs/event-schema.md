@@ -71,3 +71,9 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 ## 外部イベントソースとの接続
 
 [実ソース照合記録](event-source-audit.md) にID一致・例外・スキル未照合をまとめた。`poc/src/event_review_compiler.js` は、個別イベントの到達・打ち切り・報酬条件を `chainVerified:true` と `rewardSemanticsVerified:true` でそれぞれ確認し、数値スキルID対応も明示したの場合に限ってスキーマv1を出力する。元JSONの `defaultChoiceId` を育成で選択済みのルートとみなしてはいけない。
+
+## 選択分岐に依存しない連続継続（2026-10-16、PR #20）
+
+従来の `requires:{all:[{eventId,choiceId}]}` に加え、**親が選択式でも** `requires:{all:[{eventId}]}` を記述できるようにした。この場合「親の選択肢が実際に一つ選ばれ、かつ打ち切りではないなら後続へ進む」意味。未選択、打ち切りは後続へ進まない。すべて打ち切り選択肢の親をこの形で参照することは検証エラー。`src/core.js` の実行時判定と検証器を一致させた。
+
+このルールはイベントの発生率や成功失敗の自動確定を意味しない。Game8の欠損4枚の**検証用候補**と、残り1枚の未確認記録は [Game8のSSR欠損監査](game8-missing-ssr-review.md) を参照。
