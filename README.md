@@ -69,3 +69,5 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 [供給元の全件測定](docs/event-source-selection.md) で `umaumacruise_customjson` の466カード見出し・1,403イベントを実測し、UmaSimの563枚に対する名前＋レアリティ一致442枚を確認しました。現時点では**ゲーム内ID・連続イベントの構造化・利用条件が不十分なため主データ元は未決定**。開発者は `node poc/tools/audit_cruise_source.cjs` でデータを公開元から直接取得して再監査できます（ゲームデータをリポジトリに含めません）。
 
 追加調査によりUmaUmaCheckerの日本語イベントJSONはSSR・SRのカード見出し417/417枚と一致。ただしSSR5枚のイベント記録が空で、イベントありは412/417。詳しくは[イベントデータソース比較](docs/event-source-selection.md)。
+
+**イベント収録の追加検証：** 5枚の空レコードはGame8／U-toolsで参照ページを確認でき、既存412枚ではイベントタイトルの差分検査を追加しました。結果と未照合の11枚は[供給元の調査記録](docs/event-source-selection.md)にあります。実ゲームイベントは公開版にまだ取り込んでいません。
