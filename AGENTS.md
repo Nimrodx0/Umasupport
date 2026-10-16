@@ -50,3 +50,5 @@
 
 34. PR #24 は金白対応の固定3組PoCを全件抽出に拡張。UmaSim `skill_data.txt` 2,139件中 `rare` 325、`normal` 478。監査では284組一対一、7組のID例外、31組○◎二段階、白なし3組。詳しくは `docs/skill-hierarchy-coverage.md`。322組は構造上の対応であり、独立検証が済んだ確定件数ではない。
 35. 現行ランタイムはイベント0件でもスキル辞書を取得・検証してIndexedDBへキャッシュし、`public_event_catalog.attach(...,{skillText,fullRegistry:true})` で利用する。○◎金の多段階 `lowerId` を `core.coverage` が辿る。元データ不一致や取得失敗で根拠のない上下関係を作らない。次の工程は全件の独立裏取りとブラウザ検証、イベントはそれから。
+
+36. 2026-10-16 [実ソース結合検証](https://github.com/Nimrodx0/Umasupport/actions/runs/38927481224) ではサポカ563・通常ヒント4,015・統合スキル836件、金325中322構造対応／3白なし／構造未確定0を確認。ブラウザUI検証とは区別し、`poc/tools/verify_live_skill_hierarchy.cjs --online` は手動開発者用のみにする。通常CIで公開ソースを勝手に取得しない。
