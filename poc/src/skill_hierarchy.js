@@ -90,7 +90,7 @@ function stage({model,source,skills=[],pairs=PAIRS,fullRegistry=false}){
    if(!source.byId.has(pair.goldId)&&!source.byId.has(pair.whiteId))continue;
    const match=report.chains.find(c=>c.gold.id===pair.goldId&&c.white.id===pair.whiteId&&
      c.gold.name===pair.goldName&&c.white.name===pair.whiteName&&c.group===pair.group);
-   if(!match)throw Error('独立レビュー済みスキル組とソースが矛盾: '+pair.goldId);
+   if(!match)throw Error('上下関係の独立レビュー済みスキル組とソースが矛盾: '+pair.goldId);
  }
  // Expose ALL rare/normal records for goal selection, not only those from events.
  // Unpaired ones remain as individual entries with no speculative lowerId.
