@@ -117,6 +117,18 @@ async function main(){
   highConfidenceSSR_SR:aliasCandidates.filter(x=>x.candidates[0]?.sameCharacter&&x.candidates[0]?.titleEditDistance<=1).length+a.matchesSSR_SR
  };
 
+
+ const checkerEmptyCrossSource=checkerEmptyCards.map(entry=>{
+  const expected=splitName(entry.name);
+  const candidates=cruiseEntries.filter(x=>x.path[1]===entry.rarity).map(x=>{
+   const other=splitName(x.path[2]);
+   return {sameCharacter:other.character===expected.character&&other.character.length>0,
+    titleDistance:distance(simplify(other.title),simplify(expected.title)),
+    candidateEventRecords:x.events.length,candidateName:x.path[2]};
+  }).filter(x=>x.sameCharacter&&x.titleDistance<=2).sort((a,b)=>a.titleDistance-b.titleDistance);
+  return {rarity:entry.rarity,name:entry.name,candidates:candidates.slice(0,3)};
+ });
+
  const r={
   time:new Date().toISOString(),
   sourceSizes:{checker:Buffer.byteLength(checkerText),cruise:Buffer.byteLength(cruiseText),uma:Buffer.byteLength(umaText)},
@@ -127,7 +139,7 @@ async function main(){
   modelCount:model.cards.length,modelSSR_SR:modelSS.length,
   checker:{cards:checkerEntries.length,byRarity:a.byRarity,strictMatches:a.hits.size,strictMatchesByRarity:a.hitrate,matchedSSR_SR:a.matchesSSR_SR,...eventStats(checkerEntries),unmatchedCount:a.unknown.length,unmatchedSample:a.unknown.slice(0,8)},
   cruise:{cards:cruiseEntries.length,byRarity:b.byRarity,strictMatches:b.hits.size,strictMatchesByRarity:b.hitrate,matchedSSR_SR:b.matchesSSR_SR,...eventStats(cruiseEntries)},
-  checkerByRarityEventStats:checkerCountsByRarity,checkerEmptyCards,checkerEntriesWithAnyEvent,oneToOneCandidateCheck,
+  checkerByRarityEventStats:checkerCountsByRarity,checkerEmptyCards,checkerEmptyCrossSource,checkerEntriesWithAnyEvent,oneToOneCandidateCheck,
   checkerEventCountDistribution:countByEventLength,checkerEventTitleStats,unmatchedAliasCandidates:aliasCandidates,
   union:{all:union.size,SSR_SR:unionSS.length,SSR_SR_target:modelSS.length,
    missingSSR_SR:modelSS.filter(c=>!union.has(c.id)).map(c=>({id:c.id,rarity:c.rarity,name:c.name})),
