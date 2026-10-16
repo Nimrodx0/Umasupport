@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "source": "GameWith",
+  "checkedAt": "2026-10-16",
+  "cards": {
+    "30240": {
+      "url": "https://gamewith.jp/uma-musume/article/show/490549",
+      "eventDetailsStatus": "placeholder"
+    },
+    "30269": {
+      "url": "https://gamewith.jp/uma-musume/article/show/516410",
+      "eventDetailsStatus": "placeholder"
+    },
+    "30295": {
+      "url": "https://gamewith.jp/uma-musume/article/show/551779",
+      "eventDetailsStatus": "placeholder"
+    },
+    "30302": {
+      "url": "https://gamewith.jp/uma-musume/article/show/561920",
+      "eventDetailsStatus": "listed"
+    },
+    "30320": {
+      "url": "https://gamewith.jp/uma-musume/article/show/578818",
+      "eventDetailsStatus": "unverified"
+    }
+  }
+}
