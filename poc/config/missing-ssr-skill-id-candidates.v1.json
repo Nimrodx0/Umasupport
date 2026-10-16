@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "kind": "skill-id-lookup-candidates",
+  "checkedAt": "2026-10-16",
+  "sourceNote": "Numeric identifiers are external-source candidates, not game-master-verified skill IDs and not permissions to republish event content.",
+  "rows": [
+    {
+      "name": "がむしゃら",
+      "id": "202422",
+      "rarity": "normal",
+      "group": 20242,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "さらなる高みへ",
+      "id": "203122",
+      "rarity": "normal",
+      "group": 20312,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "スリップストリーム",
+      "id": "201651",
+      "rarity": "normal",
+      "group": 20165,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "ワンチャンス",
+      "id": "202082",
+      "rarity": "normal",
+      "group": 20208,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "一往直前",
+      "id": "204721",
+      "rarity": "rare",
+      "group": 20472,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "一所懸命",
+      "id": "203561",
+      "rarity": "rare",
+      "group": 20356,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "解き放つ情念",
+      "id": "203801",
+      "rarity": "rare",
+      "group": 20380,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "決死の覚悟",
+      "id": "201701",
+      "rarity": "rare",
+      "group": 20170,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "光輝燦然",
+      "id": "204381",
+      "rarity": "rare",
+      "group": 20438,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "食らいつき",
+      "id": "202472",
+      "rarity": "normal",
+      "group": 20247,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "迅速果断",
+      "id": "200591",
+      "rarity": "rare",
+      "group": 20059,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "逃げためらい",
+      "id": "200851",
+      "rarity": "normal",
+      "status": "external-provisional",
+      "sourceUrls": [
+        "https://wiki.biligame.com/umamusume/%E4%B8%AD%E6%97%A5%E6%96%87%E5%AF%B9%E6%AF%94%E8%A1%A8",
+        "https://pages.snep.pw/uma/anni2-skill-changes/"
+      ]
+    },
+    {
+      "name": "勇迅円刃",
+      "id": "201323",
+      "rarity": "rare",
+      "group": 20132,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    },
+    {
+      "name": "連鎖反応",
+      "id": "203241",
+      "rarity": "rare",
+      "group": 20324,
+      "status": "umasim-unique",
+      "sourceUrls": [
+        "https://github.com/mee1080/umasim/blob/main/data/skill_data.txt"
+      ]
+    }
+  ]
+}

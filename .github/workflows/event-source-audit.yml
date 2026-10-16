@@ -19,3 +19,5 @@ jobs:
         run: node poc/tools/audit_cruise_source.cjs
       - name: Compare updated Japanese SSR/SR sources
         run: node poc/tools/compare_event_sources.cjs
+      - name: Check UmaSim numeric IDs for reviewed SSR skill candidates
+        run: node poc/tools/audit_skill_candidate_ids.cjs

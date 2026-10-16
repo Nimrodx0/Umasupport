@@ -14,11 +14,17 @@ function validate(doc,expectedIds){
  for(const card of doc.cards){
   if(!obj(card)||!expected.has(card.cardId)||seen.has(card.cardId))fail('対象カードIDが未定義・重複');
   seen.add(card.cardId);stats.cards++;
-  keys(card,['cardId','status','sourceUrls','chain','random'],'card '+card.cardId);
+  keys(card,['cardId','status','sourceUrls','chain','random','cardLevelSkillCandidates'],'card '+card.cardId);
   if(!['skill-hint-candidates','structure-only'].includes(card.status))fail('レビュー状態不正');
   if(card.status==='structure-only')stats.structuralOnly++;
-  if(!Array.isArray(card.sourceUrls)||card.sourceUrls.length<1||card.sourceUrls.some(u=>typeof u!=='string'||!/^https:\/\/(?:game8\.jp\/umamusume\/\d+|gametora\.com\/ja\/umamusume\/supports\/\d{5}-[a-z-]+|umamusu\.wiki\/Game%3A[\w%()-]+)$/.test(u)))
+  if(!Array.isArray(card.sourceUrls)||card.sourceUrls.length<1||card.sourceUrls.some(u=>typeof u!=='string'||!/^https:\/\/(?:game8\.jp\/umamusume\/\d+|gametora\.com\/ja\/umamusume\/supports\/\d{5}-[a-z-]+|umamusu\.wiki\/Game%3A[\w%()-]+|gamewith\.jp\/uma-musume\/article\/show\/\d+)$/.test(u)))
    fail('出典URL不正');
+  if(card.cardLevelSkillCandidates!==undefined){
+    if(card.status!=='structure-only'||!Array.isArray(card.cardLevelSkillCandidates)||card.cardLevelSkillCandidates.length===0||
+       new Set(card.cardLevelSkillCandidates).size!==card.cardLevelSkillCandidates.length||
+       card.cardLevelSkillCandidates.some(v=>typeof v!=='string'||!v.trim()||v.length>80||/[\r\n<>]/.test(v)))
+      fail('カードレベルのヒント候補は配置未確認の構造のみカードに限る');
+  }
   if(!Array.isArray(card.chain)||!Array.isArray(card.random)||card.chain.length!==3||card.random.length!==2)fail('5イベント構造の不足');
   for(const [category,collection] of [['chain',card.chain],['random',card.random]]){
    for(let i=0;i<collection.length;i++){

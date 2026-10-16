@@ -79,3 +79,6 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 SSR・SRの表記差24件を[明示的な対応表](docs/checker-aliases-and-gaps.md)として整理し、UmaUmaCheckerの417枚全件をUmaSimのカードIDに対応付けました。候補イベント2,099件を検出しましたが、SSR5枚はイベント0件で、GameWithにも詳細「検証中」のカードがあります。実イベント公開DBはまだ0件です。
 
 欠損SSR5枚のうち4枚でGame8のイベント段階・スキル報酬位置を確認し、[文章を含まない事実候補](docs/game8-missing-ssr-review.md)として構造化しました。残るジャングルポケットは報酬未確認。**公開イベントDBはまだ実イベント0件**です。
+
+
+**スキルID照合の進捗（2026-10-16）：** Game8による欠損SSR4枚のスキル報酬とジャングルポケットの獲得スキルを、[UmaSim数値IDと照合](docs/skill-id-candidate-audit.md)しました。14種類中13種類はUmaSimで厳密一致、残る「逃げためらい」は別資料からの暫定IDです。通常ヒントの名前IDとの統合・分岐検証は未着手のため、公開DBへの実イベント登録は引き続き0件です。
