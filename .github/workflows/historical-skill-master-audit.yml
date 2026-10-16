@@ -60,6 +60,17 @@ jobs:
               if row["status"] == "master_extra_group_members":
                   print(" extra group =",row["group"],"currentGoldIDs =",row["goldIds"],
                         "historicalExtraIDs =",row["extraIds"])
+          import sqlite3
+          master_file=(pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-master-audit/master.mdb")
+          with sqlite3.connect(master_file.resolve().as_uri()+"?mode=ro",uri=True) as db:
+              for row in unresolved:
+                  if row["status"]!="master_extra_group_members":
+                      continue
+                  for extra_id in row["extraIds"]:
+                      rate,rarity=db.execute(
+                          "SELECT group_rate,rarity FROM skill_data WHERE id=?",(extra_id,)).fetchone()
+                      print("historical extra member group/id/rate/rarity =",
+                            row["group"],extra_id,rate,rarity)
           print("Missing groups =",sum(x["status"]=="master_missing" for x in unresolved))
           assert data["totalRareInUmaSim"]>=300
           PY
