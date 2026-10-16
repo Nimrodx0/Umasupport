@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: '22'
       - name: Check browser JavaScript syntax
-        run: node --check poc/src/live_app.js && node --check poc/src/live_loader.js && node --check poc/src/settings.js && node --check poc/src/event_schema.js && node --check poc/src/event_source_audit.js && node --check poc/src/event_review_compiler.js && node --check poc/src/cruise_source_audit.js && node --check poc/tools/audit_events.cjs && node --check poc/tools/audit_cruise_source.cjs && node --check poc/tools/compare_event_sources.cjs
+        run: node --check poc/src/live_app.js && node --check poc/src/live_loader.js && node --check poc/src/settings.js && node --check poc/src/event_schema.js && node --check poc/src/event_source_audit.js && node --check poc/src/event_review_compiler.js && node --check poc/src/cruise_source_audit.js && node --check poc/src/event_title_diff.js && node --check poc/tools/audit_events.cjs && node --check poc/tools/audit_cruise_source.cjs && node --check poc/tools/compare_event_sources.cjs
       - name: Run data-independent tests
-        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs poc/tests/events.test.cjs poc/tests/event_source_audit.test.cjs poc/tests/event_review_compiler.test.cjs poc/tests/cruise_source_audit.test.cjs
+        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs poc/tests/events.test.cjs poc/tests/event_source_audit.test.cjs poc/tests/event_review_compiler.test.cjs poc/tests/cruise_source_audit.test.cjs poc/tests/event_title_diff.test.cjs
