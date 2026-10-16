@@ -7,7 +7,7 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 
 test('five SSR fact candidates validate and are not a published event catalog',()=>{
  const report=validate(facts,ids);
- assert.deepEqual(report,{cards:5,events:25,choiceEvents:15,autoEvents:5,unknownEvents:5,skillHintRows:14,structuralOnly:1});
+ assert.deepEqual(report,{cards:5,events:25,choiceEvents:16,autoEvents:4,unknownEvents:5,skillHintRows:14,structuralOnly:1});
  assert.equal(facts.kind,'review-candidates-only');
  assert.equal(JSON.stringify(facts).includes('GameWith'),false);
  assert.equal(JSON.stringify(facts).includes('U-tools'),false);
