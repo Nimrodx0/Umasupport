@@ -26,7 +26,7 @@ function buildReviewedCatalog({supports,eventsDocument,model,review}){
  };
  for(const p of review.events){
    if(!p||typeof p.sourceEventId!=='string'||!validIds.has(p.sourceEventId)||
-      seen.has(p.sourceEventId)||p.chainVerified!==true)fail('未承認・重複・不存在のイベントが含まれます');
+      seen.has(p.sourceEventId)||p.chainVerified!==true||p.rewardSemanticsVerified!==true)fail('未承認・重複・不存在のイベントが含まれます');
    seen.add(p.sourceEventId);
    const event=available.get(p.sourceEventId);
    const idMatch=/^evt_(\d{5})_/.exec(event.id);
@@ -36,7 +36,9 @@ function buildReviewedCatalog({supports,eventsDocument,model,review}){
      fail('カードIDとイベントIDの照合が失敗: '+event.id);
    if(p.requires!==undefined&&
       (!p.requires||!Array.isArray(p.requires.all)))fail(event.id+': requires形式が不正');
-   const converted={id:event.id,name:event.label,
+   // An event may grant a reward only upon success/failure; source JSON does not encode that distinction.
+ // The reviewer must separately confirm reward semantics and prerequisites.
+ const converted={id:event.id,name:event.label,
      type:event.selection==='single'?'choice':'auto',
      ...(p.requires?{requires:p.requires}:{})};
    if(event.selection==='auto'){
