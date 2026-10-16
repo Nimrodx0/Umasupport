@@ -71,3 +71,8 @@
 
 [U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/) はゲーム内カードIDでイベントページを参照でき、連続イベントとランダムイベントを区別する。UmaUmaCheckerが0件とする5枚のイベントについてGame8/U-toolsで参考資料を確認した。UmaUmaCheckerとUmaUmaCruise系の412カード対応候補におけるタイトル差分は、両方に共通1,277、Checkerのみ821、Cruiseのみ11（11枚）。**名前差や同一データ出典の相関を含む未検証の差分**。参照：[選定調査](event-source-selection.md)。
 
+
+## U-tools個別ページの利用可否（2026-10-16）
+
+[U-toolsの実通信検証](utools-feasibility.md) を参照。2つのイベントページのうち1件はHTML取得（CORS `*`）、1件はCloudflare 403。公式APIとデータ再利用条件は確認できていない。SSR/SRの全イベントを閲覧できるかも未検証。現時点でU-toolsを直接取得前提の本番依存先にしない。
+

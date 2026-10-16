@@ -71,3 +71,6 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 追加調査によりUmaUmaCheckerの日本語イベントJSONはSSR・SRのカード見出し417/417枚と一致。ただしSSR5枚のイベント記録が空で、イベントありは412/417。詳しくは[イベントデータソース比較](docs/event-source-selection.md)。
 
 **イベント収録の追加検証：** 5枚の空レコードはGame8／U-toolsで参照ページを確認でき、既存412枚ではイベントタイトルの差分検査を追加しました。結果と未照合の11枚は[供給元の調査記録](docs/event-source-selection.md)にあります。実ゲームイベントは公開版にまだ取り込んでいません。
+
+イベントデータのU-tools依存可否を[技術・権利の両面から検証](docs/utools-feasibility.md)しました。2件の公開ページで200と403が混在し、API・再利用許可も未確認のため、本番データ供給元としては保留です。
+
