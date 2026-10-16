@@ -13,7 +13,7 @@
     const result={};
     for(const [key,index] of Object.entries(fields)){
       const text=f[index];
-      if(typeof text!=='string'||!/^-?\\d+$/.test(text))
+      if(typeof text!=='string'||!/^-?\d+$/.test(text))
         throw new Error('ヒント性能値が不正です（列 '+index+'）');
       const value=Number(text);
       if(!Number.isSafeInteger(value))throw new Error('ヒント性能値が安全な整数ではありません（列 '+index+'）');
