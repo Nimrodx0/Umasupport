@@ -97,6 +97,26 @@ async function main(){
  }
  checkerEventTitleStats.distinct=titles.size;
 
+
+ const checkerCountsByRarity={SSR:{cards:0,events:0,emptyCards:0,options:0},SR:{cards:0,events:0,emptyCards:0,options:0},R:{cards:0,events:0,emptyCards:0,options:0}};
+ const checkerEntriesWithAnyEvent=checkerEntries.filter(x=>x.events.length>0).length;
+ const checkerEmptyCards=[];
+ for(const item of checkerEntries){
+   const rarity=item.path.find(x=>['SSR','SR','R'].includes(x));
+   const r=checkerCountsByRarity[rarity];
+   if(!r)continue;
+   r.cards++;r.events+=item.events.length;
+   if(!item.events.length){r.emptyCards++;checkerEmptyCards.push({rarity,name:item.path[item.path.length-1]});}
+   for(const e of item.events)for(const choices of Object.values(e||{}))if(Array.isArray(choices))r.options+=choices.length;
+ }
+ const oneToOneCandidateCheck={
+  aliasCount:aliasCandidates.length,
+  allSameCharacter:aliasCandidates.every(x=>x.candidates[0]?.sameCharacter),
+  allEditAtMostOne:aliasCandidates.every(x=>x.candidates[0]?.titleEditDistance<=1),
+  uniqueSourceMatches:new Set(aliasCandidates.map(x=>x.candidates[0]?.sourceName)).size===aliasCandidates.length,
+  highConfidenceSSR_SR:aliasCandidates.filter(x=>x.candidates[0]?.sameCharacter&&x.candidates[0]?.titleEditDistance<=1).length+a.matchesSSR_SR
+ };
+
  const r={
   time:new Date().toISOString(),
   sourceSizes:{checker:Buffer.byteLength(checkerText),cruise:Buffer.byteLength(cruiseText),uma:Buffer.byteLength(umaText)},
@@ -107,6 +127,7 @@ async function main(){
   modelCount:model.cards.length,modelSSR_SR:modelSS.length,
   checker:{cards:checkerEntries.length,byRarity:a.byRarity,strictMatches:a.hits.size,strictMatchesByRarity:a.hitrate,matchedSSR_SR:a.matchesSSR_SR,...eventStats(checkerEntries),unmatchedCount:a.unknown.length,unmatchedSample:a.unknown.slice(0,8)},
   cruise:{cards:cruiseEntries.length,byRarity:b.byRarity,strictMatches:b.hits.size,strictMatchesByRarity:b.hitrate,matchedSSR_SR:b.matchesSSR_SR,...eventStats(cruiseEntries)},
+  checkerByRarityEventStats:checkerCountsByRarity,checkerEmptyCards,checkerEntriesWithAnyEvent,oneToOneCandidateCheck,
   checkerEventCountDistribution:countByEventLength,checkerEventTitleStats,unmatchedAliasCandidates:aliasCandidates,
   union:{all:union.size,SSR_SR:unionSS.length,SSR_SR_target:modelSS.length,
    missingSSR_SR:modelSS.filter(c=>!union.has(c.id)).map(c=>({id:c.id,rarity:c.rarity,name:c.name})),
