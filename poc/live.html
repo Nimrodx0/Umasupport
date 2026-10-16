@@ -3,7 +3,7 @@
 <title>Uma Support Lab | 外部データ直接読込PoC</title><link rel="stylesheet" href="./src/style.css"></head>
 <body><div id="bootstrap-status" role="status" style="max-width:1100px;margin:30px auto;padding:16px;background:#eee;color:#222;border-radius:10px">公開元のサポートカードデータを確認しています…</div>
 <div id="app"></div>
-<script src="./src/core.js"></script><script src="./src/live_loader.js"></script><script src="./src/settings.js"></script>
+<script src="./src/core.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/settings.js"></script>
 <script src="./src/event_schema.js"></script><script src="./src/public_event_catalog.js"></script>
 <script>
 (async function(){
@@ -14,7 +14,19 @@
    let msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
    try {
      const catalog=await UmaPublicEventCatalog.load();
-     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog);
+     let skillText=null;
+     if(catalog.cards?.some(c=>c.events?.length)){
+       try {
+         const skillSource=await UmaSkillBridge.load();
+         skillText=skillSource.text;
+         if(skillSource.mode==='cached')msg+='。スキル辞書は保存済み版を使用';
+       } catch(skillError) {
+         // An unavailable dictionary must never break ordinary support-card hints.
+         console.warn('数値スキルID辞書を取得できません',skillError);
+         msg+='。数値スキルID辞書を取得できません';
+       }
+     }
+     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog,{skillText});
      msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
    } catch(eventError) {
      // Ignore invalid/failed event updates. Never treat missing events as obtainable.

@@ -54,7 +54,7 @@
         checkedAt:meta.checkedAt||null, verifiedIdCards:cards.length, totalHints:hintCount,
         unknownHintIds:0, eventStatus:'not-loaded', aliasCardIds:{}}};
   }
-  function indexedDbStore(indexedDBImpl=g.indexedDB) {
+  function indexedDbStore(indexedDBImpl=g.indexedDB,key=KEY) {
     const open=()=>new Promise((resolve,reject)=>{
       if (!indexedDBImpl) return reject(new Error('IndexedDBを利用できません'));
       const req=indexedDBImpl.open('uma-support-lab-runtime-data',1);
@@ -69,7 +69,7 @@
       tx.oncomplete=()=>db.close();
       tx.onerror=()=>{db.close();reject(tx.error||new Error('キャッシュ操作に失敗'));};
     }));
-    return {get:()=>operation('readonly',s=>s.get(KEY)),put:record=>operation('readwrite',s=>s.put(record,KEY))};
+    return {get:()=>operation('readonly',s=>s.get(key)),put:record=>operation('readwrite',s=>s.put(record,key))};
   }
   async function load({fetchImpl=g.fetch?.bind(g),store=indexedDbStore(),now=()=>new Date().toISOString(),timeoutMs=12000}={}) {
     if (!fetchImpl) throw new Error('Fetch APIを利用できません');
