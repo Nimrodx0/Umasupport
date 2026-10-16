@@ -2,6 +2,7 @@
 'use strict';
 /* Temporary read-only diagnostic: log counts and keys, not copyrighted event text. */
 const {buildModel}=require('../src/live_loader.js');
+const {compare:compareEventTitles}=require('../src/event_title_diff.js');
 const norm=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim();
 const urls={
  checker:'https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json',
@@ -139,6 +140,7 @@ async function main(){
   modelCount:model.cards.length,modelSSR_SR:modelSS.length,
   checker:{cards:checkerEntries.length,byRarity:a.byRarity,strictMatches:a.hits.size,strictMatchesByRarity:a.hitrate,matchedSSR_SR:a.matchesSSR_SR,...eventStats(checkerEntries),unmatchedCount:a.unknown.length,unmatchedSample:a.unknown.slice(0,8)},
   cruise:{cards:cruiseEntries.length,byRarity:b.byRarity,strictMatches:b.hits.size,strictMatchesByRarity:b.hitrate,matchedSSR_SR:b.matchesSSR_SR,...eventStats(cruiseEntries)},
+  eventTitleComparison:compareEventTitles(model,checker,cruise),
   checkerByRarityEventStats:checkerCountsByRarity,checkerEmptyCards,checkerEmptyCrossSource,checkerEntriesWithAnyEvent,oneToOneCandidateCheck,
   checkerEventCountDistribution:countByEventLength,checkerEventTitleStats,unmatchedAliasCandidates:aliasCandidates,
   union:{all:union.size,SSR_SR:unionSS.length,SSR_SR_target:modelSS.length,
