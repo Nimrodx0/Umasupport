@@ -41,7 +41,7 @@ test('inventory records strict names, no R, unresolved aliases and zero-event re
  assert.deepEqual(inv.unmatchedModelIds,['30002']);
  assert.equal(JSON.stringify(inv).includes('ヒントLv'),false);
  assert.equal(JSON.stringify(inv).includes('架空イベント1'),false);
- assert.match(inv.cards[0].events[0].sourceKey,/^checker:30001:[a-f0-9]{20}$/);
+ assert.match(inv.cards.find(c=>c.cardId==='30001').events[0].sourceKey,/^checker:30001:[a-f0-9]{20}$/);
 });
 test('an explicit unique alias can join one card without guessing from similar names',()=>{
  const inv=makeInventory({'30002':'［名称相違］トレーナーB'});
