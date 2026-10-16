@@ -95,7 +95,14 @@ def audit(source, master):
                   sum(x.endswith("◎") for x in normal_names) == 1)
         safe = all(int(x["id"]) // 10 == group_id and
                    source["name_counts"][x["name"]] == 1 for x in normal + rare)
-        base = {"group": group_id, "goldIds": gold_ids, "normalIds": [x["id"] for x in normal]}
+        # Master groups may contain non-upgrade siblings with group_rate < 0.
+        # They are excluded from the progression graph, not treated as conflicts.
+        negative_extras = sorted(
+            x["id"] for x in master["groups"].get(group_id, [])
+            if x["id"] not in member_ids and x["rate"] is not None and x["rate"] < 0)
+        base = {"group": group_id, "goldIds": gold_ids,
+                "normalIds": [x["id"] for x in normal],
+                "ignoredNegativeRateExtras": negative_extras}
         if len(rare) != 1 or (normal and (not safe or not (len(normal) == 1 or circle))):
             results.append({**base, "status": "source_ambiguous"})
             continue
@@ -110,8 +117,10 @@ def audit(source, master):
         if any(x["group"] != group_id or x["rarity"] != expected_rarities[x["id"]] for x in rows):
             results.append({**base, "status": "master_group_or_rarity_mismatch"})
             continue
-        extras = sorted(x["id"] for x in master["groups"].get(group_id, [])
-                        if x["id"] not in member_ids)
+        extras = sorted(
+            x["id"] for x in master["groups"].get(group_id, [])
+            if x["id"] not in member_ids and
+            (x["rate"] is None or x["rate"] >= 0))
         if extras:
             results.append({**base, "status": "master_extra_group_members", "extraIds": extras})
             continue
@@ -152,6 +161,7 @@ def audit(source, master):
             "sourceStructuralCandidates": candidates, "sourceWithoutLower": no_lower,
             "independentAgreedChains": agreed, "independentNoLowerSnapshot": no_lower_agreed,
             "unresolvedRareInSource": unresolved_rare, "statusCounts": dict(sorted(counts.items())),
+            "ignoredNegativeRateMasterExtras": sum(len(x["ignoredNegativeRateExtras"]) for x in results),
             "results": results}
 
 
