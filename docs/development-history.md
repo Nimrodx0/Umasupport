@@ -111,3 +111,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 
 - 利用者が実端末で公開試験版を確認し、「対応する金スキル」の冗長な表記を削除してほしい、ほかに目立つ問題はないと報告。PR #33で**一覧だけの余計な補足表記を削除**。スキルの金白リンクや間接カバーは維持。機種・OS・全受け入れ項目の確認記録がないため、Android等の正式なC軸全合格にはしない。
 - 続いて[PR #34](https://github.com/Nimrodx0/Umasupport/pull/34)でF-07のヒント関連性能へ進む。[2,815行の一時取得・全件監査](hint-performance-audit.md)を行い、UmaSimの`hintLevel`・`hintFrequency`（基本/固有）の元ソース列と段階別数値を検査。ゲーム内の確率推定や特殊固有は表示対象外。
+
+## 2026-10-17：公開Pagesの実データヒント性能UI受け入れ（PR #35）
+
+[Actions #38953159885](https://github.com/Nimrodx0/Umasupport/actions/runs/38953159885)でLinux Chromium/140の公開Pages実体へ接続し、実カードの0凸／4凸ごとの基礎ヒントLv・発生率アップ基本／固有が実取得元パラメータから期待した画面文字列と一致することを検証。既存の編成・目標・金白・通信遮断／キャッシュ破損復旧も再度合格。[詳細](pages-browser-acceptance-20261017.md)。Android物理実機の新性能UIについては未検証。
