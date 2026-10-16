@@ -65,6 +65,38 @@ async function main(){
  const unionSS=modelSS.filter(c=>union.has(c.id));
  const cOnly=[...a.hits].filter(id=>!b.hits.has(id));
  const cruiseOnly=[...b.hits].filter(id=>!a.hits.has(id));
+
+ const unmatchedModel=modelSS.filter(c=>!a.hits.has(c.id));
+ const unmatchedChecker=a.unknown.filter(e=>e.rarity!=='R');
+ function splitName(name){
+   const normalized=norm(name);
+   const match=/^\[([^\]]+)\](.+)$/.exec(normalized);
+   return match?{title:match[1],character:match[2]}:{title:normalized,character:''};
+ }
+ function simplify(x){return x.normalize('NFKC').toLowerCase().replace(/[\s!"'’“”‘「」『』（）()！？!?,.，．・:：\-‐〜～～♯#♪☆★∞&＆]/g,'');}
+ function distance(a,b){
+   let p=Array.from({length:b.length+1},(_,i)=>i);
+   for(let i=1;i<=a.length;i++){let next=[i];for(let j=1;j<=b.length;j++)next[j]=Math.min(next[j-1]+1,p[j]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=next;}
+   return p[b.length];
+ }
+ const aliasCandidates=unmatchedModel.map(card=>{
+   const m=splitName(card.name);
+   const candidates=unmatchedChecker.filter(src=>src.rarity===card.rarity).map(src=>{
+     const x=splitName(src.name);
+     const sameCharacter=x.character===m.character&&m.character.length>0;
+     const dist=distance(simplify(x.title),simplify(m.title));
+     return {sourceName:src.name,sameCharacter,titleEditDistance:dist,titleAfterPunctuationMatch:simplify(x.title)===simplify(m.title)};
+   }).sort((a,b)=>Number(b.sameCharacter)-Number(a.sameCharacter)||a.titleEditDistance-b.titleEditDistance);
+   return {id:card.id,rarity:card.rarity,modelName:card.name,candidates:candidates.slice(0,3)};
+ });
+ const countByEventLength={}, checkerEventTitleStats={total:0,distinct:0};
+ const titles=new Set();
+ for(const e of checkerEntries){
+   const n=e.events.length;countByEventLength[n]=(countByEventLength[n]||0)+1;
+   for(const event of e.events){for(const title of Object.keys(event||{})){titles.add(norm(title));checkerEventTitleStats.total++}}
+ }
+ checkerEventTitleStats.distinct=titles.size;
+
  const r={
   time:new Date().toISOString(),
   sourceSizes:{checker:Buffer.byteLength(checkerText),cruise:Buffer.byteLength(cruiseText),uma:Buffer.byteLength(umaText)},
@@ -75,6 +107,7 @@ async function main(){
   modelCount:model.cards.length,modelSSR_SR:modelSS.length,
   checker:{cards:checkerEntries.length,byRarity:a.byRarity,strictMatches:a.hits.size,strictMatchesByRarity:a.hitrate,matchedSSR_SR:a.matchesSSR_SR,...eventStats(checkerEntries),unmatchedCount:a.unknown.length,unmatchedSample:a.unknown.slice(0,8)},
   cruise:{cards:cruiseEntries.length,byRarity:b.byRarity,strictMatches:b.hits.size,strictMatchesByRarity:b.hitrate,matchedSSR_SR:b.matchesSSR_SR,...eventStats(cruiseEntries)},
+  checkerEventCountDistribution:countByEventLength,checkerEventTitleStats,unmatchedAliasCandidates:aliasCandidates,
   union:{all:union.size,SSR_SR:unionSS.length,SSR_SR_target:modelSS.length,
    missingSSR_SR:modelSS.filter(c=>!union.has(c.id)).map(c=>({id:c.id,rarity:c.rarity,name:c.name})),
    checkerOnlyCount:cOnly.length,cruiseOnlyCount:cruiseOnly.length,
