@@ -8,15 +8,18 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const loader=require('../src/live_loader.js');
 const pipeline=require('../src/checker_candidate_pipeline.cjs');
+const {track}=require('../src/checker_gap_tracker.cjs');
 const urls={
  uma:'https://raw.githubusercontent.com/mee1080/umasim/main/data/support_card.txt',
  checker:'https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json'
 };
 function options(argv){
- const result={local:null,aliases:null,review:null,output:null,candidates:null};
+ const result={local:null,aliases:null,review:null,output:null,candidates:null,noAliases:false};
  for(let i=0;i<argv.length;i++){
    const flag=argv[i];
-   if(flag==='--local'){
+   if(flag==='--no-aliases'){
+     result.noAliases=true;
+   }else if(flag==='--local'){
      if(result.local||!argv[i+1]||!argv[i+2])throw Error('--localは2ファイル指定');
      result.local=[argv[++i],argv[++i]];
    }else if(['--aliases','--review','--output','--candidates'].includes(flag)){
@@ -26,6 +29,7 @@ function options(argv){
    }else throw Error('不明な引数: '+flag);
  }
  if(Boolean(result.review)!==Boolean(result.output))throw Error('--reviewと--outputはセットで指定');
+ if(result.noAliases&&result.aliases)throw Error('--aliases と --no-aliases は併用不可');
  return result;
 }
 async function download(url){
@@ -40,8 +44,11 @@ async function run(){
    await Promise.all([download(urls.uma),download(urls.checker)]);
  const model=loader.buildModel(umaText);
  const source=JSON.parse(checkerText.replace(/^\uFEFF/,''));
- const aliases=flags.aliases?JSON.parse(await fs.readFile(flags.aliases,'utf8')):{};
+ const aliasPath=flags.aliases||path.resolve(__dirname,'../config/checker-name-aliases.json');
+ const aliases=flags.noAliases?{}:JSON.parse(await fs.readFile(aliasPath,'utf8'));
  const candidate=pipeline.inventory({source,model,aliases});
+ const gameWith=JSON.parse(await fs.readFile(path.resolve(__dirname,'../config/gamewith-ssr-review-status.json'),'utf8'));
+ const gap=track({candidate,gameWith,model});
  if(flags.candidates){
    const dest=path.resolve(flags.candidates);
    await fs.mkdir(path.dirname(dest),{recursive:true});
@@ -49,6 +56,7 @@ async function run(){
  }
  const report={
    ...candidate.stats,unmatchedModelIds:candidate.unmatchedModelIds,
+   gameWithGapReview:gap.reviewQueue,gameWithStatusCounts:gap.gameWithStatusCounts,
    incompleteCardIds:candidate.cards.filter(c=>c.events.length===0).map(c=>c.cardId),
    eventStatus:'CANDIDATES_ONLY',
    warning:candidate.warning
