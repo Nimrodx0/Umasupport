@@ -2,6 +2,7 @@
 'use strict';
 /* Temporary read-only diagnostic: log counts and keys, not copyrighted event text. */
 const {buildModel}=require('../src/live_loader.js');
+const {compare:compareEventTitles}=require('../src/event_gap_audit.js');
 const norm=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim();
 const urls={
  checker:'https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json',
@@ -129,9 +130,15 @@ async function main(){
   return {rarity:entry.rarity,name:entry.name,candidates:candidates.slice(0,3)};
  });
 
+ const eventTitleAudit=compareEventTitles({
+   modelCards:model.cards,
+   checkerCards:checkerEntries.map(e=>({rarity:e.path[1],name:e.path[e.path.length-1],events:e.events})),
+   cruiseCards:cruiseEntries.map(e=>({rarity:e.path[1],name:e.path[e.path.length-1],events:e.events}))
+ });
  const r={
   time:new Date().toISOString(),
   sourceSizes:{checker:Buffer.byteLength(checkerText),cruise:Buffer.byteLength(cruiseText),uma:Buffer.byteLength(umaText)},
+  eventTitleAudit,
   checkerRootKeys:keysOf(checker),checkerRootChildren:Object.fromEntries(Object.entries(checker).slice(0,4).map(([k,v])=>[k,keysOf(v)])),
   checkerFirstPath:checkerEntries[0]?.path.map((x,i)=>i===checkerEntries[0].path.length-1?'<card name>':x),
   checkerEventFields:checkerEntries[0]?.events?.[0]?keysOf(checkerEntries[0].events[0]).map(_=>'<event title>'):[],
