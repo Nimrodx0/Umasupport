@@ -92,3 +92,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 `src/event_gap_audit.js` はSSR・SRのカード名を正規化し、二つのイベントJSON内のイベント見出しをカード単位で比較する純粋な関数。タイトルをログへ出さず、不一致の件数とカードIDのみ提示する。通常ヒントや実データは書き換えない。`tests/event_gap_audit.test.cjs` は架空イベントで名前衝突・異表記・不一致を検証。再実行：手動ワークフロー Event Source Coverage Audit（`tools/compare_event_sources.cjs`）。
 
+
+## U-tools取得試験
+
+`tools/probe_utools.cjs` は2026-10-16の**少数回の試験用**。手動実行した際、GitHub ActionsのイベントページGETはCloudflare challenge付き403で停止。通常CIでは**このツールを実行しない**。承認のない再試行や保護回避、大量アクセスは行わず、結果は [U-tools評価](../docs/utools-source-evaluation.md) に記録。 
