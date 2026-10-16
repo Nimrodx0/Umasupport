@@ -17,3 +17,5 @@ jobs:
           node-version: '22'
       - name: Audit upstream events without redistributing their text
         run: node poc/tools/audit_cruise_source.cjs
+      - name: Compare updated Japanese SSR/SR sources
+        run: node poc/tools/compare_event_sources.cjs
