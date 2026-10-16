@@ -1,0 +1,39 @@
+# 上下位スキルの明示レビュー記録（2026-10-17）
+
+## 目的
+
+イベント由来の金スキルと通常ヒントの下位白スキルを、同一名称やUmaSim `group` 番号の一致だけから**推測して結び付けない**。2種類の情報を独立に照合して承認した少数のペアにだけ、アプリの `lowerId` を設定する。
+
+このファイルはイベント発生条件・スキルヒント獲得位置・ゲームマスターID・元サイトの再配布許諾を認定しない。元イベント文章や画像は収録しない。
+
+## 機械可読の承認済み3組
+
+対応の正本は [`poc/src/skill_hierarchy.js`](../poc/src/skill_hierarchy.js) の `PAIRS`。ゲーム内技能名の表記だけでなくUmaSim数値ID、`rarity`、`group` をそれぞれ検証する。
+
+| レビュー済み金スキル | ID (rare) | 下位白スキル | ID (normal) | group | 対応の独立根拠 |
+|---|---:|---|---:|---:|---|
+| 迅速果断 | 200591 | 位置取り押し上げ | 200592 | 20059 | [GameWith](https://gamewith.jp/uma-musume/article/show/257945)、[Game8](https://game8.jp/umamusume/372729) |
+| 一所懸命 | 203561 | 奮闘 | 203562 | 20356 | [GameWith](https://gamewith.jp/uma-musume/article/show/561923)、[Game8の金](https://game8.jp/umamusume/785661)、[Game8の白](https://game8.jp/umamusume/676109) |
+| 解き放つ情念 | 203801 | 想い焦がれて | 203802 | 20380 | [GameWithの金](https://gamewith.jp/uma-musume/article/show/514488)、[GameWithの白](https://gamewith.jp/uma-musume/article/show/514492)、[Game8の白](https://game8.jp/umamusume/712518) |
+
+元の数値ID・名称・rarity・groupは [UmaSim skill_data.txt](https://github.com/mee1080/umasim/blob/main/data/skill_data.txt) の対象レコードで確認。記事の最終更新日は必ずしもゲーム実装日と同じではない。実行時には取得した**その時点の**UmaSim辞書へもう一度照合し、変化を検出する。
+
+**未登録の例：** 「一往直前 → 怯むことなく」は[GameWith金](https://gamewith.jp/uma-musume/article/show/578820)／[GameWith白](https://gamewith.jp/uma-musume/article/show/578821)で上下関係を確認したが、今回参照できたUmaSimのデータでは下位スキル名のレコードを特定できなかったため、現在の対応表には含めない。今後、数値IDとsourceの照合が済んでから追加する。ほかにも未レビューの組み合わせは多数ある。
+
+## 実装の挙動
+
+1. 公開イベントの数値報酬がある場合のみ `skill_bridge.js` がUmaSimスキル辞書を直接取得（または検証済みのIndexedDBキャッシュから復旧）する。現時点の公開DBは0件なので、この処理はまだ実ゲームイベントを集計しない。
+2. `skill_hierarchy.stage` は、そのモデルに数値IDで登場した金スキルだけを対象に `PAIRS` を調べ、金・白の名前とID、rarity、group、名前の一意性を確認する。単なる同groupの未レビュー記録は関係を推論しない。
+3. 下位白スキルが既存の通常ヒントにある場合、 `lowerId` はその `hint:名称` へリンクする。なければ `skill:数値ID` の**独立したスキル辞書項目**を用意し、直接提供カード数がゼロのまま間接カバーの対象にできる。
+4. 検証失敗、ソース側の名称変更・重複、既存の上下関係との矛盾があれば、イベントカタログを**一括拒否**する。モデルを更新するのはイベント検証に成功した後のみ。
+5. `core.coverage` は下位白スキルが金スキル経由でのみ存在する場合を `indirect` とし、直接提供枚数に加算しない。 `core.hierarchyRows` は一覧内に両方がある場合だけ金の下に白を並べ、無い行を捏造しない。
+
+人工データによる回帰テストは [`poc/tests/skill_hierarchy.test.cjs`](../poc/tests/skill_hierarchy.test.cjs)。外部元データを通常CI中に大量取得することはない。
+
+## 制限・次に必要な確認
+
+- この3組は**外部資料から人手で照合した関係**で、全スキルの完全な上下関係DBではない。
+- 金スキルを下位白スキルの間接カバーとして表示することと、ゲーム内で下位スキルのヒントを獲得したと断定することは異なる。
+- 既存の実イベント公開DBは0件。実ゲームイベントについての達成状況には変化なし。
+- 次に、欠損SSR4枚の選択肢・連続進行・成功失敗・打ち切りを個別に確認し、承認したものだけ公開DBへ反映。ジャングルポケット30240のイベント段階・選択肢別スキルは引き続き不明。
+- **実ブラウザで数値報酬から金白リンクが成立するかは未検証**。架空イベントを使う自動テストが合格した段階と区別する。
