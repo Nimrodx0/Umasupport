@@ -28,12 +28,12 @@ function readUmaSim(txt){
 function checkIndependent({umasim,japan,english}){
  const cards=readUmaSim(umasim),sources=[
   {name:'Japanese 2026-09 selected supports',records:japan,id:c=>c.id,rarity:c=>c.rarity,name:c=>c.name},
-  {name:'English version support registry',records:english,id:c=>c.support_id,
+  {sourceName:'English version support registry',records:english,id:c=>c.support_id,
    rarity:c=>({1:'R',2:'SR',3:'SSR'}[c.rarity]),name:null}
  ];
  const union=new Set(),checks=[];
  for(const source of sources){
-  if(!Array.isArray(source.records)||!source.records.length)throw Error(source.name+' empty');
+  if(!Array.isArray(source.records)||!source.records.length)throw Error(source.sourceName+' empty');
   const seen=new Set(),missing=[],rarityConflicts=[],nameConflicts=[];
   for(const entry of source.records){
    const id=Number(source.id(entry));
@@ -44,7 +44,7 @@ function checkIndependent({umasim,japan,english}){
    if(source.rarity(entry)!==card.rarity)rarityConflicts.push(id);
    if(source.name&&entry.name!==card.name)nameConflicts.push(id);
   }
-  checks.push({source:source.name,records:seen.size,idMatched:seen.size-missing.length,
+  checks.push({source:source.sourceName,records:seen.size,idMatched:seen.size-missing.length,
    absentFromUmaSim:missing,rarityConflicts,nameConflicts});
  }
  const counts={R:0,SR:0,SSR:0};
@@ -102,12 +102,17 @@ async function main(){
  try{
   const result=await gametoraCount();
   // Number-only comparison is not an ID-level match; don't upgrade coverage gate.
+  const sim=readUmaSim(a),siteSet=new Set(result.ids);
+  const absentIDs=result.ids.filter(id=>!sim.has(id));
+  const missingFromSite=[...sim.keys()].filter(id=>!siteSet.has(id));
   site={status:result.status,total:result.total,linkedIds:result.linkedIds,
-   absentIDs:result.ids.filter(id=>!readUmaSim(a).has(id)),
-   overlapIDs:result.ids.filter(id=>readUmaSim(a).has(id)).length};
+   absentIDs,missingFromSite,overlapIDs:result.ids.length-absentIDs.length,
+   sameCompleteIdSet:result.status===200&&result.total===sim.size&&
+     result.linkedIds===sim.size&&!absentIDs.length&&!missingFromSite.length};
  }catch(e){site={status:'unavailable',reason:String(e.message).slice(0,140)};}
+ if(!site.sameCompleteIdSet)throw Error('GameTora full 563 ID population could not be independently confirmed: '+JSON.stringify(site));
  console.log(JSON.stringify({revisions,sha256:{umasim:sha256(a),japan:sha256(b),english:sha256(c)},
-  report,gameTora:site,conclusion:'subset_verified_not_full_population_coverage'},null,2));
+  report,gameTora:site,conclusion:'full_563_id_set_matches_Gametora_listing; independent provenance_and_in_game_truth_not_proven'},null,2));
 }
 if(require.main===module)main().catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={readUmaSim,checkIndependent};
