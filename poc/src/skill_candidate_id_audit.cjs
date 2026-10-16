@@ -39,7 +39,7 @@ function audit(facts,skillRecords){
        const name=norm(hint.skillName);
        if(!name)throw Error('Empty skill name');
        const entry=input.get(name)||{name,occurrences:0,fromCards:new Set(),placement:'event-option-or-auto'};
-       entry.occurrences++;entry.fromCards.add(card.cardId);input.set(name,entry);
+       entry.occurrences++;entry.placement='event-option-or-auto';entry.fromCards.add(card.cardId);input.set(name,entry);
      }
    }
    for(const nameOriginal of card.cardLevelSkillCandidates||[]){
