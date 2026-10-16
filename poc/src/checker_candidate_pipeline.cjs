@@ -51,25 +51,30 @@ function inventory({source,model,aliases={}}){
    joinCounts.alias++;
  }
  const cards=[],sourceKeys=new Set();
- let eventCount=0,optionCount=0,emptyCards=0;
+ let eventCount=0,optionCount=0,emptyCards=0,duplicateTitleRecords=0;
  for(const {card,row,join} of mapped.values()){
-   const events=[],seenTitles=new Set();
+   const events=[],titleCounts=new Map();
    for(const event of row.events){
      if(!object(event)||Object.keys(event).length!==1)fail(card.id+': イベント項目の形が不正');
      const [title,options]=Object.entries(event)[0];
      const normalizedTitle=norm(title);
-     if(!normalizedTitle||seenTitles.has(normalizedTitle)||!Array.isArray(options))fail(card.id+': イベント名が空、重複、または選択肢が不正');
-     seenTitles.add(normalizedTitle);
+     if(!normalizedTitle||!Array.isArray(options))fail(card.id+': イベント名または選択肢が不正');
+     titleCounts.set(normalizedTitle,(titleCounts.get(normalizedTitle)||0)+1);
      const validated=options.map((v,i)=>{
        if(!object(v)||typeof v.Title!=='string'||typeof v.Effect!=='string'||Object.keys(v).some(k=>!['Title','Effect'].includes(k)))fail(card.id+': 選択肢が不正: '+i);
        return {Title:v.Title,Effect:v.Effect};
      });
-     const sourceKey='checker:'+card.id+':'+sha(card.id+'\u0000'+normalizedTitle).slice(0,20);
+     const sourceKey='checker:'+card.id+':'+sha(card.id+'\u0000'+normalizedTitle+'\u0000'+String(events.length)).slice(0,20);
      if(sourceKeys.has(sourceKey))fail('イベントキー重複: '+card.id);
      sourceKeys.add(sourceKey);
      const sourceDigest='sha256:'+sha(JSON.stringify({title:normalizedTitle,choices:validated}));
      events.push({sourceKey,sourceDigest,sourceIndex:events.length,optionCount:validated.length});
      optionCount+=validated.length;
+   }
+   for(let i=0;i<events.length;i++){
+     if(titleCounts.get(norm(Object.keys(row.events[i])[0]))>1){
+       events[i].duplicateTitle=true;duplicateTitleRecords++;
+     }
    }
    if(events.length===0)emptyCards++;
    eventCount+=events.length;
@@ -81,7 +86,7 @@ function inventory({source,model,aliases={}}){
    stats:{modelCards:idIndex.size,sourceCards:sourceRows.length,
       matchedCards:cards.length,strictMatchedCards:joinCounts.strict,reviewedAliases:joinCounts.alias,
       unresolvedModelCards:unmatchedModelIds.length,unusedSourceCards:sourceRows.length-used.size,
-      cardsWithEvents:cards.length-emptyCards,emptyCards,eventCount,optionCount},
+      cardsWithEvents:cards.length-emptyCards,emptyCards,eventCount,optionCount,duplicateTitleRecords},
    unmatchedModelIds,cards,
    warning:'Card-name joins and event hashes are candidate identities, not confirmed game event IDs or proof of complete event coverage.'};
 }
@@ -94,7 +99,7 @@ function publishReviewed({candidate,review,model}){
    if(!own(model.cardById,card.cardId))fail('カードモデルが一致しない: '+card.cardId);
    for(const item of card.events){
      if(available.has(item.sourceKey))fail('候補イベントキーが重複');
-     available.set(item.sourceKey,{cardId:card.cardId,digest:item.sourceDigest});
+     available.set(item.sourceKey,{cardId:card.cardId,digest:item.sourceDigest,duplicateTitle:item.duplicateTitle===true});
    }
  }
  const seen=new Set(),byCard=new Map();
@@ -103,6 +108,7 @@ function publishReviewed({candidate,review,model}){
    seen.add(item.sourceKey);
    const record=available.get(item.sourceKey);
    if(!record||record.cardId!==item.cardId||record.digest!==item.sourceDigest)fail('元ソースが未照合・更新済み: '+item.sourceKey);
+   if(record.duplicateTitle&&item.duplicateTitleReviewed!==true)fail('同名イベントの個別確認が不足: '+item.sourceKey);
    if(item.chainVerified!==true||item.rewardSemanticsVerified!==true||
       item.publicationReviewed!==true)fail('分岐・報酬・公開可否の承認が不足: '+item.sourceKey);
    const e=item.event;
