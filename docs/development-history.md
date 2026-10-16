@@ -98,3 +98,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 - 2026-10-13 UmaSimと2026-09-30抽出の別系統スキルJSONを固定版・SHA-256で突き合わせる読み取り専用監査器を追加。人工JSON回帰もCIに実装。公開元データをPublicリポジトリに保存しない。
 - [実測 #38944822566](https://github.com/Nimrodx0/Umasupport/actions/runs/38944822566)：金325、金白322候補のうち**321組（2段階290、3段階31）**でID・昇格順・**双方向704参照一致**。白なし3組は別資料でも白なし。唯一の欠損はグループ20480の金204801・白204802。
 - 欠損組の「抜山蓋世→規格外」は2026-10-13更新[GameWith](https://gamewith.jp/uma-musume/article/show/582564)が名称関係を裏付ける。ただし数値IDの第三者確認ではない。[検証結果](independent-skill-json-audit.md)。**Phase 1全体は未完**。
+
+## 2026-10-17：公開Pagesの実データChromium検証（PR #31）
+
+[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)で、配信コードのSHA-256一致を確認したLinux Chromium/140からGitHub Pagesを起動。外部UmaSim2ソースを実ブラウザで取得し、カード563/通常ヒント4,015/辞書836/金325/連鎖322/白なし3/未解決0、カード編成・目標直接カバー・表示切替、両IndexedDB保存と遮断後の再読込を確認。390pxの表示幅で継承側のカード選択と目標モーダルも操作（**Android実機ではない**）。[受け入れ記録](pages-browser-acceptance-20261017.md)。実イベント0件、実機OS差・オンライン復帰後再GET、Phase 1の完全化は未達。

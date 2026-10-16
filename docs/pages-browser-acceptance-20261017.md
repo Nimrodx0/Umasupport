@@ -1,0 +1,44 @@
+# 公開GitHub Pagesの実ソースChromium受け入れ検証
+
+検証日：2026-10-17（JST）
+参照：[三軸ゲート](verification-plan.md) / [Phase 1](roadmap.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28)
+
+## 目的と実施環境
+
+GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaScriptをブラウザから読み、通常ヒント・金白スキル階層・編成/目標設定・IndexedDB障害時復旧を確認する。架空入力のローカルChromium回帰とは別のテスト。
+
+- **配信版**：main `f74866e2a05acf0ebee36be41efe36abff93b07b`。このPRは配信ソースに変更を加えず、`poc/live.html`, `core.js`, `skill_hierarchy.js`, `skill_bridge.js`, `live_app.js` の5ファイルが配信ファイルとチェックアウト内で**バイト単位のSHA-256一致**することを検査。
+- **環境**：GitHub Actions Ubuntu runner、Playwright、Linuxの **HeadlessChrome/140.0.7339.186**。
+- **公開URL**：https://nimrodx0.github.io/Umasupport/poc/live.html
+- **実測ログ**：[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)（成功、PR #31）。
+- **実行プログラム**：[pages_live_browser.cjs](../poc/tests/pages_live_browser.cjs) と [明示実行限定ワークフロー](../.github/workflows/pages-real-browser-acceptance.yml)。ワークフローファイルを変更するPRまたは手動起動時のみ。通常のCI/Pages公開時には外部ソースへの追加リクエストを行わない。
+
+## 事前に定義した合格条件と観測結果
+
+| 受け入れケース | 期待結果 | 実測 | 判定 |
+|---|---|---|---|
+| 配信コード同一性 | 上記5ファイルが対象mainと完全一致 | 全5ファイルのSHA-256一致 | Pass |
+| 実公開元の起動 | ブラウザから両ソースを取得し、検証後UIを描画 | 初回のUmaSim外部GETは`support_card.txt`と`skill_data.txt`各1回。オンライン起動成功 | Pass |
+| 実データ母数 | サポカ500以上、通常ヒント3,000以上、金325/連鎖322/白なし3、未解決0 | カード**563**、通常ヒント**4,015**、統合辞書**836**、金325、連鎖322、白なし3、未解決0 | Pass（**UmaSim内の版に限定**） |
+| 金→◎→○ | 実データで正しい階層を作る | `右回りの鬼→右回り◎→右回り○`をブラウザ実測 | Pass |
+| 間接カバー・提供枚数 | 直接提供が上位金だけの場合、下位○を間接カバーかつ直接提供0枚とする | 実辞書＋**架空の金直接提供経路**を`UmaCore.coverage`へ渡し、`indirect`・`count=0`を確認 | Pass（機構のみ） |
+| 実カード/目標UI | 実カードを本育成へ編成し実ヒントを直接カバー、目標を保存 | カード選択・通常ヒント一覧・目標追加・直接カバー表示・統合/左右比較切替が成功 | Pass |
+| 2つのデータキャッシュ | IndexedDBに両ソースの検証済み版を保存 | `support_card.txt/v1`・`skill_data.txt/v1` の2キーに日時と本文あり | Pass |
+| 取得先のみ遮断→再読込 | HTML/JSは配信可能のままソース2本だけ切断しキャッシュを使用 | 両GETをネットワーク側で中断、サポカとスキルがキャッシュで復元。目標セットも復元 | Pass |
+| 狭幅のUI | 390pxで全画面横スクロールなし、別デッキの編成・目標操作が可能 | ビューポート390px、文書幅**390px**。継承デッキのカード追加と目標モーダル操作成功 | Pass（**画面幅の模擬**） |
+| ページ例外 | ブラウザ実行時の未処理JS例外なし | `pageerror` **0件** | Pass |
+
+## 検証結果の範囲と未達
+
+- **A 機構：一部Pass**。実スキル階層に対する上下位・`coverage`の判定、実カードのUI反映とキャッシュ復帰を確認。ただし公開イベントは承認済み**0件**のため、金スキルを本当に提供するイベント経路は試験できていない。間接カバーは仮想の直接提供を使う。
+- **B データ：このブラウザ検証は全ゲームマスターの網羅を保証しない**。表示数は公開UmaSimの取得元内実測。2026年9月版独立JSONによる321組照合＋残り1組の別資料確認は[独立監査](independent-skill-json-audit.md)の別の根拠。
+- **C 配信実ブラウザ：Linux Chromiumで上記のケースPass**。ただし**Windows実PC、Android/iOS実端末、Edge/Safari/Firefox、低速通信・動的更新、オンライン復帰後の再GET、カード性能値と正式ゲームUI**は未実施。幅390pxのテストをAndroid実機と呼ばない。
+- アセットHTML/JSの完全オフライン再起動はテストしていない。HTML/CSS/JSは配信可能なまま**ゲームデータ2取得先のみ**を遮断した。
+- 全フェーズ完了ゲートは未通過。利用条件・ゲーム実装全体のデータ品質・実イベント等の別未解決が残る。
+
+## 次の行動
+
+1. Android Chrome実端末とWindows Chrome/Edgeで同じ操作と表示を再現し、OS/バージョン、端末幅、Pagesコミット、スクリーンショット等の証拠を記録。
+2. 取得元遮断解除後の**再取得**と、誤ったキャッシュ/ストレージ拒否時の例外回復を実機確認。
+3. 実イベント承認後、金報酬による間接カバーの実ブラウザ結合を個別に追加。
+4. Phase 1の「カード母集団・性能値・表示順」は[ロードマップ](roadmap.md)のB軸で引き続き管理。
