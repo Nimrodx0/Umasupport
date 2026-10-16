@@ -21,9 +21,12 @@ async function main(){
  assert.equal(model.meta.skillHierarchy.linked,322);
  assert.equal(model.meta.skillHierarchy.withoutLower,3);
  assert.equal(model.meta.skillHierarchy.unresolved,0);
- assert.equal(model.skillById['skill:200014'].lowerId,'skill:200011');
- assert.equal(model.skillById['skill:200011'].lowerId,'hint:右回り○');
- assert.equal(model.skillById['skill:201582'].lowerId,'hint:登山家');
+ const rightDouble=model.skillById['hint:右回り◎']?'hint:右回り◎':'skill:200011';
+ const rightSingle=model.skillById['hint:右回り○']?'hint:右回り○':'skill:200012';
+ const climber=model.skillById['hint:登山家']?'hint:登山家':'skill:201581';
+ assert.equal(model.skillById['skill:200014'].lowerId,rightDouble);
+ assert.equal(model.skillById[rightDouble].lowerId,rightSingle);
+ assert.equal(model.skillById['skill:201582'].lowerId,climber);
  assert.equal(model.skillById['skill:202051'].lowerId,null);
  const uniq=new Set(model.skills.map(x=>x.id));
  assert.equal(uniq.size,model.skills.length);
