@@ -113,3 +113,7 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 ## イベント候補の技能数値ID照合
 
 `tools/audit_skill_candidate_ids.cjs` はUmaSimの `data/skill_data.txt` を直接読み、`src/skill_candidate_id_audit.cjs` で欠損SSR候補14スキルのID・レアリティ・グループを厳密照合。オフライン版：`node poc/tools/audit_skill_candidate_ids.cjs --local local-data/skill_data.txt`。`config/missing-ssr-skill-id-candidates.v1.json` は13件のUmaSim一致＋1件の外部暫定IDを区別して保持する。今後の公式・ソース更新でIDが変化すれば監査失敗にする。`config/missing-ssr-event-facts.v1.json` 内のジャングルポケット30240のスキル名2件はカード単位の取得候補で、イベント段階・選択肢は一切未特定。詳細：[技能ID監査](../docs/skill-id-candidate-audit.md)。
+
+## 全件スキル階層のランタイム導入（2026-10-16）
+
+`src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はレビュー済みイベント0件でも金白辞書を起動時直接GETしてIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/skill-hierarchy-coverage.md)。
