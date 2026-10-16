@@ -45,4 +45,11 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 
 公開URL: https://nimrodx0.github.io/Umasupport/
 
-ルートの `index.html` は `poc/live.html` への入口です。現行のアプリ本体は `poc/live.html` と `poc/src/` にあり、`poc/demo.html` は架空データのテスト画面です。ゲームデータはアプリ起動時に外部公開元からブラウザが直接取得するため、初回はネット接続が必要です。実ブラウザでのCORSとキャッシュ確認は引き続きIssue #1で追跡します。
+ルートの `index.html` は `poc/live.html` への入口です。現行のアプリ本体は `poc/live.html` と `poc/src/` にあり、`poc/demo.html` は架空データのテスト画面です。ゲームデータはアプリ起動時に外部公開元からブラウザが直接取得するため、初回はネット接続が必要です。2026-10-16にGitHub Pages上での通常起動・公開元データ読込・表示をユーザーが実ブラウザで確認済みです。GitHub ActionsのPoCテストとPagesデプロイも最新mainで成功。**IndexedDBの保存内容・オフライン再読込は未検証**で、[Issue #1](https://github.com/Nimrodx0/Umasupport/issues/1)で追跡します。
+
+## 保存設定の互換性
+
+- 現行データにないカード・目標スキルIDは削除せず「未収録」と表示し、集計には加えない。
+- レビュー済みのIDエイリアスだけを変換する。旧v8.1の全エイリアス表は未移植で、全面互換ではない。
+- 不正な保存設定は上書き前に退避を試み、JSONダウンロードを案内する。
+- ユーザー設定はlocalStorage、取得したゲームデータはIndexedDBに別々に保存する。

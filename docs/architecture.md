@@ -42,3 +42,12 @@
 ## 開発環境の引き継ぎ
 
 新規チャット／Codexは `AGENTS.md` → `docs/requirements.md` → `docs/roadmap.md` → `docs/development-history.md` を読み、GitHubの内容を優先する。既存PoCのソースがレポジトリに未収録なら、資料だけで完成済みと見なさず、移管ステップを明示する。
+
+## 実行時取得版の構成
+
+- `poc/src/live_loader.js`：取得、形式検証、IndexedDBキャッシュ。
+- `poc/src/settings.js`：保存設定のスキーマ検査・レビュー済みID対応表の変換・未知ID保全。
+- `poc/src/live_app.js`：設定をlocalStorageに保存し、未収録項目を明示。未知IDのスキルを集計しない。
+- `poc/src/core.js`：純粋な集計エンジン。ゲームデータが未収録なら推測しない。
+
+データ取得のキャッシュ復旧とアプリ本体の完全オフライン起動は別工程。
