@@ -96,3 +96,9 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 ## U-tools取得試験
 
 `tools/probe_utools.cjs` は2026-10-16の**少数回の試験用**。手動実行した際、GitHub ActionsのイベントページGETはCloudflare challenge付き403で停止。通常CIでは**このツールを実行しない**。承認のない再試行や保護回避、大量アクセスは行わず、結果は [U-tools評価](../docs/utools-source-evaluation.md) に記録。 
+
+## SSR・SRイベントを候補から公開DBへ
+
+詳しくは [公開イベントDB手順](../docs/checker-public-catalog.md)。CLI：node poc/tools/build_checker_catalog.cjs（読み取り専用、SSR・SRの元ファイルから実カード名厳密照合とイベント候補件数）。ローカル入力：--local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json。エイリアスは --aliases、レビュー済みイベントは --review と --output のセットで独立JSONへ出力。
+
+poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。現時点で承認済みの実イベントは0件。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。

@@ -4,13 +4,23 @@
 <body><div id="bootstrap-status" role="status" style="max-width:1100px;margin:30px auto;padding:16px;background:#eee;color:#222;border-radius:10px">公開元のサポートカードデータを確認しています…</div>
 <div id="app"></div>
 <script src="./src/core.js"></script><script src="./src/live_loader.js"></script><script src="./src/settings.js"></script>
+<script src="./src/event_schema.js"></script><script src="./src/public_event_catalog.js"></script>
 <script>
 (async function(){
  const status=document.getElementById('bootstrap-status');
  try {
    const result=await UmaLiveLoader.load();
    window.UmaDemoData=UmaLiveLoader.buildModel(result.text,result);
-   const msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
+   let msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
+   try {
+     const catalog=await UmaPublicEventCatalog.load();
+     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog);
+     msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
+   } catch(eventError) {
+     // Ignore invalid/failed event updates. Never treat missing events as obtainable.
+     console.warn('公開イベントJSONを検証できません',eventError);
+     msg+='。イベントデータは検証できないため通常ヒントのみ表示';
+   }
    status.textContent=msg+'。カード '+window.UmaDemoData.cards.length+'枚。'+(result.fetchedAt?'データ取得: '+result.fetchedAt:'');
    status.dataset.mode=result.mode;
    const script=document.createElement('script');script.src='./src/live_app.js';
