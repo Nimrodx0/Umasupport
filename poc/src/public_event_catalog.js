@@ -12,7 +12,7 @@ function attach(model,catalog,{skillText=null,fullRegistry=false}={}){
  const candidateSkills={...model.skillById,
    ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))};
  for(const patch of prepared.skillPatches||[]){
-   if(!candidateSkills[patch.id]||!candidateSkills[patch.lowerId])
+   if(!candidateSkills[patch.id]||(patch.lowerId!==undefined&&!candidateSkills[patch.lowerId]))
      throw Error('レビュー済み上下関係のIDが辞書にありません');
    candidateSkills[patch.id]={...candidateSkills[patch.id],...patch};
  }
