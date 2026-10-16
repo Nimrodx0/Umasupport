@@ -224,7 +224,8 @@ async function main(){
   assert.ok(refreshed[SUPPORT_KEY]?.text?.length>10000);
   assert.ok(refreshed[SKILL_KEY]?.text?.length>10000);
   assert.equal(external.filter(u=>u.endsWith('/support_card.txt')).length,7);
-  assert.equal(external.filter(u=>u.endsWith('/skill_data.txt')).length,7);
+  assert.equal(external.filter(u=>u.endsWith('/skill_data.txt')).length,6);
+  // When support bootstrap fails closed, the separate skill request is not started.
   // Exactly two requests actually reach each publisher: initial boot and online recovery.
   // Other attempts above are intercepted by local Playwright routing.
 
