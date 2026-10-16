@@ -15,7 +15,7 @@ function parseSkillData(json){
   const ids=new Set(),byName=new Map();
   for(const [i,item] of list.entries()){
     if(!obj(item)||!/^\d+$/.test(String(item.id))||typeof item.id!=='string'||!norm(item.name)||
-       !Number.isSafeInteger(item.group)||!['normal','rare','unique','evo','scenario'].includes(item.rarity))
+       !Number.isSafeInteger(item.group)||(typeof item.rarity!=='string'||!item.rarity.trim()))
       throw Error('Invalid skill item at index '+i);
     if(ids.has(item.id))throw Error('Duplicate UmaSim numeric skill id: '+item.id);
     ids.add(item.id);
