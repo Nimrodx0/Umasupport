@@ -54,5 +54,12 @@ jobs:
           for k in ("totalRareInUmaSim","sourceStructuralCandidates","independentAgreedChains",
                     "independentNoLowerSnapshot","statusCounts","sourceSha256","masterSha256","passed"):
               print(k,":",data[k])
+          unresolved=data.get("rejectedOrUnconfirmed",[])
+          print("Group-level exceptions (IDs only):")
+          for row in unresolved:
+              if row["status"] == "master_extra_group_members":
+                  print(" extra group =",row["group"],"currentGoldIDs =",row["goldIds"],
+                        "historicalExtraIDs =",row["extraIds"])
+          print("Missing groups =",sum(x["status"]=="master_missing" for x in unresolved))
           assert data["totalRareInUmaSim"]>=300
           PY

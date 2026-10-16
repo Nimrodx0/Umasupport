@@ -87,3 +87,5 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-17：過去の実マスターデータによる限定照合
 
 2025-10-10公開終了版と2026-10-13 UmaSimのID・グループ・昇格順を、一時的に照合するGitHub Actions限定ワークフローを追加。版差を未照合として切り分け、実データをリポジトリに保存せず、[専用記録](historical-master-audit.md)に実測を記す。工程の全件完了は別。
+
+**履歴照合の実測（[Actions #38937045493](https://github.com/Nimrodx0/Umasupport/actions/runs/38937045493)）：** 現行金325中、旧版と昇格順を含めて一致251、旧版欠損53、同グループに旧版余剰18、白なし3。直接のレアリティ・グループ・昇格順矛盾0。旧版との版差があるためPhase 1の独立全件照合ゲートは未通過。[詳細](historical-master-audit.md)。
