@@ -137,3 +137,7 @@ python3 poc/tools/verify_skill_master.py --umasim local-data/skill_data.txt \
 ~~~
 
 §--strict§ では全件の独立照合が通過しなければ非0終了になります。版が一致しないと欠損が出る可能性があり、収録率・現行ゲーム仕様の保証とは区別します。通常CIでのテストは人工SQLiteのみです。§python3 -m unittest discover -s poc/tests -p 'test_verify_skill_master.py' -v§。
+
+## 固定版旧マスターとのクロスチェック
+
+[履歴照合](../docs/historical-master-audit.md)と[限定的Actions](../.github/workflows/historical-skill-master-audit.yml)を参照。2025年で更新が停止したSQLiteなので、2026年の全322組の独立確認とは区別する。通常CIとブラウザでの外部通信は増やさない。

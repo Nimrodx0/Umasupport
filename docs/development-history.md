@@ -83,3 +83,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 - §poc/tools/verify_skill_master.py§ を新設。UmaSimと別のゲームマスターSQLiteを全群突合し、数値ID・group・group_rate・レアリティの矛盾、白なしの食い違いを拒否する。
 - §poc/tests/test_verify_skill_master.py§ とCIに架空SQLiteによる境界・異常系テストを追加。実ゲームマスターはCIに同梱・取得しない。
 - 取得元版を明示した実マスターの全件照合は**まだ未実施**。Phase 1のデータゲートを通過したとは扱わない。[検証計画](verification-plan.md)参照。
+
+## 2026-10-17：過去の実マスターデータによる限定照合
+
+2025-10-10公開終了版と2026-10-13 UmaSimのID・グループ・昇格順を、一時的に照合するGitHub Actions限定ワークフローを追加。版差を未照合として切り分け、実データをリポジトリに保存せず、[専用記録](historical-master-audit.md)に実測を記す。工程の全件完了は別。
