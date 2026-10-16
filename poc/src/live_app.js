@@ -37,12 +37,9 @@ function skillLabel(row){
  const child=row.groupRole==='child';
  const extraIndent=Math.max(0,Math.min(3,Number(row.hierarchyDepth)||0)-1)*16;
  const lower=row.skill.lowerId&&data.skillById[row.skill.lowerId];
- const uppers=data.skills.filter(s=>s.lowerId===row.skill.id&&s.tier==='gold');
  let relation='';
  if(row.groupRole==='solo'&&lower){
    relation=`<span class="skill-relation-note">↳ 下位：${esc(lower.name)} <span class="relation-unlisted">（一覧外）</span></span>`;
- }else if(row.groupRole==='solo'&&uppers.length){
-   relation=`<span class="skill-relation-note">対応する金スキル：${uppers.map(s=>esc(s.name)).join(' / ')} <span class="relation-unlisted">（一覧外）</span></span>`;
  }
  return `<span class="skill-label-block ${child?'lower-child':''}"${extraIndent?' style="margin-left:'+extraIndent+'px"':''}><span class="skill-cell">${child?'<span class="skill-branch" aria-hidden="true">└</span>':''}<span class="skill-name">${esc(row.skill.name)}</span>${row.skill.tier==='gold'?'<span class="tag gold">金</span>':''}${child?'<span class="tag lower-tag">下位</span>':''}${row.goal?'<span class="tag goal">☆ 目標</span>':''}${row.goal&&!row.main&&!row.inherit?'<span class="tag missing">直接提供なし</span>':''}</span>${relation}</span>`;
 }
