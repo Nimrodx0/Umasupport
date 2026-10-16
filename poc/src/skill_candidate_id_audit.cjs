@@ -69,4 +69,34 @@ function audit(facts,skillRecords){
   hintOccurrences:rows.reduce((s,x)=>s+x.occurrences,0),rows,
   warning:'Numeric IDs, rarity and group are UmaSim data-derived candidates. Do not automatically treat them as verified official game IDs or confirmed source-event rewards.'};
 }
-module.exports={parseSkillData,audit};
+
+function verifyCandidateTable(facts,skillRecords,table){
+ if(!obj(table)||table.schemaVersion!==1||table.kind!=='skill-id-lookup-candidates'||!Array.isArray(table.rows))
+  throw Error('Invalid reviewed skill candidate table');
+ const comparison=audit(facts,skillRecords);
+ const expected=new Map(comparison.rows.map(x=>[x.name,x]));
+ const seen=new Set();let strict=0,externalProvisional=0;
+ for(const entry of table.rows){
+   if(!obj(entry)||typeof entry.name!=='string'||!expected.has(entry.name)||seen.has(entry.name)||
+      !/^\d+$/.test(entry.id)||!['normal','rare'].includes(entry.rarity)||
+      !Array.isArray(entry.sourceUrls)||entry.sourceUrls.length===0||
+      entry.sourceUrls.some(x=>typeof x!=='string'||!x.startsWith('https://')))
+      throw Error('Invalid or duplicated candidate skill: '+entry?.name);
+   seen.add(entry.name);
+   const observed=expected.get(entry.name);
+   if(entry.status==='umasim-unique'){
+     if(observed.status!=='unique'||observed.candidates.length!==1||
+        observed.candidates[0].id!==entry.id||observed.candidates[0].rarity!==entry.rarity||
+        observed.candidates[0].group!==entry.group)
+       throw Error('UmaSim skill ID changed or is ambiguous: '+entry.name);
+     strict++;
+   }else if(entry.status==='external-provisional'){
+     if(observed.status!=='not-in-source'||entry.group!==undefined||entry.sourceUrls.length<2)
+       throw Error('External-only skill is no longer unresolved in UmaSim: '+entry.name);
+     externalProvisional++;
+   }else throw Error('Unsupported skill-ID evidence status');
+ }
+ if(seen.size!==expected.size)throw Error('Candidate table omits a skill');
+ return {totalSkills:seen.size,umasimUnique:strict,externalProvisional,fullyMasterVerified:false};
+}
+module.exports={parseSkillData,audit,verifyCandidateTable};
