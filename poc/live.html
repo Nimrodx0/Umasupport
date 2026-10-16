@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uma Support Lab | 外部データ直接読込PoC</title><link rel="stylesheet" href="./src/style.css"></head>
+<body><div id="bootstrap-status" role="status" style="max-width:1100px;margin:30px auto;padding:16px;background:#eee;color:#222;border-radius:10px">公開元のサポートカードデータを確認しています…</div>
+<div id="app"></div>
+<script src="./src/core.js"></script><script src="./src/live_loader.js"></script>
+<script>
+(async function(){
+ const status=document.getElementById('bootstrap-status');
+ try {
+   const result=await UmaLiveLoader.load();
+   window.UmaDemoData=UmaLiveLoader.buildModel(result.text,result);
+   const msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
+   status.textContent=msg+'。カード '+window.UmaDemoData.cards.length+'枚。'+(result.fetchedAt?'データ取得: '+result.fetchedAt:'');
+   status.dataset.mode=result.mode;
+   const script=document.createElement('script');script.src='./src/live_app.js';
+   script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
+   document.body.appendChild(script);
+ }catch(err){status.textContent=String(err.message||err)+'。接続状況をご確認ください。';status.dataset.mode='error';}
+})();
+</script>
+</body></html>
