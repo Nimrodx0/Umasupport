@@ -61,12 +61,16 @@ test('source mutation changes digest, but stable title has same candidate key',(
  assert.equal(a.cards[1].events[0].sourceKey,b.cards[1].events[0].sourceKey);
  assert.notEqual(a.cards[1].events[0].sourceDigest,b.cards[1].events[0].sourceDigest);
 });
-test('malformed or duplicate events are rejected; no guessing about unknown structures',()=>{
+test('malformed rows are rejected and duplicate event titles remain distinct review candidates',()=>{
  const s=makeSource();
  s.Skills.SSR['［架空］トレーナーA'].Events[0]['架空イベント1'][0].Effect=null;
  assert.throws(()=>pipeline.inventory({source:s,model}),/選択肢が不正/);
  const q=makeSource();q.Skills.SSR['［架空］トレーナーA'].Events.push(q.Skills.SSR['［架空］トレーナーA'].Events[0]);
- assert.throws(()=>pipeline.inventory({source:q,model}),/イベント名が空、重複/);
+ const inv=pipeline.inventory({source:q,model});
+ assert.equal(inv.stats.duplicateTitleRecords,2);
+ const events=inv.cards.find(c=>c.cardId==='30001').events;
+ assert.notEqual(events[0].sourceKey,events[2].sourceKey);
+ assert.ok(events[0].duplicateTitle&&events[2].duplicateTitle);
 });
 function manifest(){
  const inv=makeInventory();
