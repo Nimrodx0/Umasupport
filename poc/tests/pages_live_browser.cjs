@@ -12,7 +12,7 @@ const BASE='https://nimrodx0.github.io/Umasupport';
 const APP=BASE+'/poc/live.html';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 async function checkPublishedFiles(request){
- for(const file of ['poc/live.html','poc/src/core.js','poc/src/skill_hierarchy.js',
+ for(const file of ['poc/live.html','poc/src/core.js','poc/src/live_loader.js','poc/src/skill_hierarchy.js',
                       'poc/src/skill_bridge.js','poc/src/live_app.js']){
   const resp=await request.get(BASE+'/'+file,{timeout:30000});
   assert.equal(resp.status(),200,'Published file HTTP '+file);
@@ -140,6 +140,26 @@ async function main(){
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
   await page.locator('#picker-search').fill(actual.candidate.name);
   await page.locator('button[data-action="set-card"][data-id="'+cardId+'"]').click();
+  // Newly introduced Phase 1 F-07: source-derived stage modifiers on the actual Pages card dialog.
+  const livePerformance=await page.evaluate(cardId=>{
+   const p=window.UmaDemoData.cardById[cardId].hintPerformanceByStage;
+   return {low:p['0'],high:p['4']};
+  },cardId);
+  for(const stage of [livePerformance.low,livePerformance.high]){
+   assert.ok(Object.values(stage).every(Number.isSafeInteger),'Publisher hint stats must be safe integers');
+  }
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  let hintDescription=await page.locator('.modal-body').innerText();
+  assert.match(hintDescription,/ヒント関連性能（4凸）/);
+  assert.ok(hintDescription.includes('基礎 Lv.'+(1+livePerformance.high.levelBase+livePerformance.high.levelUnique)));
+  assert.ok(hintDescription.includes('基本 '+livePerformance.high.frequencyBase+'% / 固有 '+livePerformance.high.frequencyUnique+'%'));
+  await page.locator('select[data-stage]').selectOption('0');
+  hintDescription=await page.locator('.modal-body').innerText();
+  assert.match(hintDescription,/ヒント関連性能（0凸）/);
+  assert.ok(hintDescription.includes('基礎 Lv.'+(1+livePerformance.low.levelBase+livePerformance.low.levelUnique)));
+  assert.ok(hintDescription.includes('基本 '+livePerformance.low.frequencyBase+'% / 固有 '+livePerformance.low.frequencyUnique+'%'));
+  await page.locator('select[data-stage]').selectOption('4');
+  await page.locator('button[data-action="close"]').click();
   const row=page.locator('tr[data-skill="'+skillId+'"]');
   await row.waitFor();assert.match(await row.innerText(),/1/);
   await page.locator('button[data-action="goals"]').click();
@@ -257,7 +277,7 @@ async function main(){
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
-  console.log('PASS: real Pages Chromium, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
+  console.log('PASS: real Pages Chromium, real 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),
    viewport:geometry,cards:actual.cards,hints:actual.hints,skills:actual.skills,
    rare:actual.rare,linked:actual.linked,withoutLower:actual.withoutLower,
