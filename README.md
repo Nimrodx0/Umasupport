@@ -50,3 +50,5 @@ node --test poc/tests/*.test.js poc/tests/*.test.cjs
 - このツールは非公式のファン制作であり、Cygamesの公式サービスではありません。
 
 ヒント関連性能は、公開元UmaSimの0〜4凸別パラメータ（ヒントLvアップ／ヒント発生率アップ）の一部をカード詳細に表示します。数値の根拠とゲーム内実測でない範囲は[ヒント性能監査](docs/hint-performance-audit.md)を参照。
+
+**サポカ母集団の照合：** UmaSimの563枚は[GameTora日本版が列挙する563枚の数値IDと全件一致](docs/card-population-independent-audit.md)しました。RタッカーブラインもID10128で存在します。これは公開一覧間の照合であり、ゲーム内の全性能値やイベントを独立検証したものではありません。
