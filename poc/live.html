@@ -12,26 +12,27 @@
    const result=await UmaLiveLoader.load();
    window.UmaDemoData=UmaLiveLoader.buildModel(result.text,result);
    let msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
+   // Skill data is independent of events and is needed for complete goal selection.
+   let skillText=null;
+   try {
+     const skillSource=await UmaSkillBridge.load();
+     skillText=skillSource.text;
+     if(skillSource.mode==='cached')msg+='。スキル辞書は保存済み版を使用';
+   } catch(skillError) {
+     console.warn('スキル辞書を取得できません',skillError);
+     msg+='。金白対応データは未取得（通常ヒントは利用できます）';
+   }
    try {
      const catalog=await UmaPublicEventCatalog.load();
-     let skillText=null;
-     if(catalog.cards?.some(c=>c.events?.length)){
-       try {
-         const skillSource=await UmaSkillBridge.load();
-         skillText=skillSource.text;
-         if(skillSource.mode==='cached')msg+='。スキル辞書は保存済み版を使用';
-       } catch(skillError) {
-         // An unavailable dictionary must never break ordinary support-card hints.
-         console.warn('数値スキルID辞書を取得できません',skillError);
-         msg+='。数値スキルID辞書を取得できません';
-       }
-     }
-     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog,{skillText});
+     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog,
+       {skillText,fullRegistry:!!skillText});
      msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
+     const hierarchy=window.UmaDemoData.meta.skillHierarchy;
+     if(hierarchy)msg+='。金白構造 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
    } catch(eventError) {
-     // Ignore invalid/failed event updates. Never treat missing events as obtainable.
+     // Do not discard valid support-card hints if external catalog fails.
      console.warn('公開イベントJSONを検証できません',eventError);
-     msg+='。イベントデータは検証できないため通常ヒントのみ表示';
+     msg+='。イベントデータの検証に失敗したため通常ヒントのみ表示';
    }
    status.textContent=msg+'。カード '+window.UmaDemoData.cards.length+'枚。'+(result.fetchedAt?'データ取得: '+result.fetchedAt:'');
    status.dataset.mode=result.mode;
