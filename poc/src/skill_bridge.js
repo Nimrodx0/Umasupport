@@ -4,6 +4,8 @@
 const normalize=x=>String(x).normalize('NFKC').replace(/\s+/g,' ').trim();
 const isObject=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 const numericKey=/^skill:([0-9]+)$/;
+const hierarchy=typeof module!=='undefined'&&module.exports
+  ?require('./skill_hierarchy.js'):g.UmaSkillHierarchy;
 const SOURCE_URL='https://raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt';
 const CACHE_KEY='umasupport/umasim/skill_data.txt/v1';
 function parseSource(text){
@@ -71,7 +73,10 @@ function prepare(model,catalog,text){
       if(Array.isArray(event?.choices))event.choices.forEach(mapPart);
     }
   }
-  return {catalog:converted,skills:[...skills.values()],matchedHints};
+  const reviewed=source?hierarchy.stage({model,source,skills:[...skills.values()]}):
+    {skills:[...skills.values()],patches:[],linkedPairs:0};
+  return {catalog:converted,skills:reviewed.skills,skillPatches:reviewed.patches,
+    reviewedHierarchyPairs:reviewed.linkedPairs,matchedHints};
 }
 async function load({fetchImpl=g.fetch?.bind(g),store=g.UmaLiveLoader?.indexedDbStore(g.indexedDB,CACHE_KEY),
   now=()=>new Date().toISOString(),timeoutMs=12000}={}){

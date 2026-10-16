@@ -9,14 +9,21 @@ const URL='./data/reviewed_events.v1.json';
 function attach(model,catalog,{skillText=null}={}){
  // Resolve numeric rewards before validation, but do not modify model if any check fails.
  const prepared=bridge.prepare(model,catalog,skillText);
- const candidateModel={...model,skillById:{...model.skillById,
-   ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))}};
+ const candidateSkills={...model.skillById,
+   ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))};
+ for(const patch of prepared.skillPatches){
+   if(!candidateSkills[patch.id]||!candidateSkills[patch.lowerId])
+     throw Error('レビュー済み上下関係のIDが辞書にありません');
+   candidateSkills[patch.id]={...candidateSkills[patch.id],lowerId:patch.lowerId};
+ }
+ const candidateModel={...model,skillById:candidateSkills};
  const summary=schema.validateCatalog(prepared.catalog,candidateModel);
  for(const skill of prepared.skills){
    if(!Array.isArray(model.skills))model.skills=[];
    model.skills.push(skill);
    model.skillById[skill.id]=skill;
  }
+ for(const patch of prepared.skillPatches)model.skillById[patch.id].lowerId=patch.lowerId;
  for(const entry of prepared.catalog.cards){
    const card=model.cardById[entry.cardId];
    card.events=entry.events.map(e=>JSON.parse(JSON.stringify(e)));
@@ -27,6 +34,7 @@ function attach(model,catalog,{skillText=null}={}){
  model.meta.reviewedEventCards=summary.cardsWithRecords;
  model.meta.reviewedEventRecords=summary.eventsWithRecords;
  model.meta.numericRewardsMatchedToHints=prepared.matchedHints;
+ model.meta.reviewedHierarchyPairs=prepared.reviewedHierarchyPairs;
  return summary;
 }
 async function load({fetchImpl=g.fetch?.bind(g),url=URL}={}){

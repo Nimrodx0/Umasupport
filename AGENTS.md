@@ -44,3 +44,6 @@
 
 30. `poc/src/skill_bridge.js` はイベント報酬 `skill:数値ID` をUmaSimスキル辞書へ照合するランタイム変換層。イベントJSONには `verifiedSkillName` のレビュー済み名称が必要。名前一意一致時だけ既存の通常ヒント `hint:名称` へ統合する。名称の重複・ID変更は自動承認しない。
 31. 数値スキル辞書はイベントレコードがあるときだけ直接取得してIndexedDBに保存。公開DBの実イベントはまだ0件。数値IDの一致は、金白の上下関係・分岐・獲得条件・ゲームマスター由来ID・第三者データの利用許諾の承認ではない。CIは `poc/tests/skill_bridge.test.cjs` を含む。
+
+32. 2026-10-17 金白対応の**明示レビュー済み3組のみ** `poc/src/skill_hierarchy.js` に記録。出典は `docs/reviewed-skill-hierarchy.md`。UmaSim `group` を自動探索して対応表を拡張してはならない。取得辞書の数値ID・名前・rare/normal・groupを再検証する。イベント由来金スキルの `lowerId` は既存ヒントIDを優先し、無い白は独立IDで登録。元データの異常ならイベント全体を拒否。
+33. 残る「一往直前→怯むことなく」は攻略資料で対応を確認できたが、今回のUmaSim下位白数値ID照合未了のため未登録。実イベント公開DBは0件のまま。CIの `skill_hierarchy.test.cjs` は人工データのみで、Pages上の実イベント動作は未検証。
