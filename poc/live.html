@@ -30,9 +30,20 @@
      const hierarchy=window.UmaDemoData.meta.skillHierarchy;
      if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
    } catch(eventError) {
-     // Do not discard valid support-card hints if external catalog fails.
+     // The reviewed event catalog and the skill hierarchy are independent.
+     // Even when event JSON is unavailable, retain verified skill relationships.
      console.warn('公開イベントJSONを検証できません',eventError);
-     msg+='。イベントデータの検証に失敗したため通常ヒントのみ表示';
+     msg+='。イベントデータの検証に失敗したため実イベントは反映しません';
+     try {
+       UmaPublicEventCatalog.attach(window.UmaDemoData,{schemaVersion:1,cards:[]},
+         {skillText,fullRegistry:!!skillText});
+       const hierarchy=window.UmaDemoData.meta.skillHierarchy;
+       if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+
+         '組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
+     }catch(hierarchyError){
+       console.warn('イベント障害後のスキル辞書検証にも失敗しました',hierarchyError);
+       msg+='。金白対応データを表示できません';
+     }
    }
    status.textContent=msg+'。カード '+window.UmaDemoData.cards.length+'枚。'+(result.fetchedAt?'データ取得: '+result.fetchedAt:'');
    status.dataset.mode=result.mode;
