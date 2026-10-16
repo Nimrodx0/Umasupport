@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run data-independent tests
-        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs
+        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs
