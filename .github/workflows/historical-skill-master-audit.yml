@@ -52,7 +52,7 @@ jobs:
               assert field in data
           print("HISTORICAL (2025/2026 VERSION SKEW), NOT PHASE 1 COMPLETION")
           for k in ("totalRareInUmaSim","sourceStructuralCandidates","independentAgreedChains",
-                    "independentNoLowerSnapshot","statusCounts","sourceSha256","masterSha256","passed"):
+                    "independentNoLowerSnapshot","ignoredNegativeRateMasterExtras","statusCounts","sourceSha256","masterSha256","passed"):
               print(k,":",data[k])
           unresolved=data.get("rejectedOrUnconfirmed",[])
           print("Group-level exceptions (IDs only):")
