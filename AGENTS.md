@@ -38,3 +38,6 @@
 27. docs/checker-aliases-and-gaps.md とpoc/config/checker-name-aliases.json を参照。UmaUmaCheckerのSSR/SR全417枚は393厳密+24明示的なソース表示名対応。イベント自体の正式ID照合と全件性は未検証。GameWithでは欠損SSRのうち3枚がイベント欄「検証中」なので、記事存在だけを根拠に補完済みにしない。U-toolsは使用しない。
 
 28. Game8の4枚の実ページで選択肢位置・ヒントLv等の事実候補を確認し `poc/config/missing-ssr-event-facts.v1.json` に保存（計20イベント構造、14ヒント行）。これはreview-candidates-onlyで本番アプリには接続しない。30240はUmamusume Wiki等で構造だけ確認しスキル報酬は未知のまま。U-toolsは使用禁止方針。docs/game8-missing-ssr-review.md参照。イベントv1 requiresが選択式の親にchoiceIdを指定しない場合は、どの選択肢でも非terminalなら継続する。
+
+
+29. PR #21のスキルID監査は `docs/skill-id-candidate-audit.md` を参照。`poc/config/missing-ssr-skill-id-candidates.v1.json` にスキル14種のID候補（UmaSim厳密一致13＋BWiki等の外部暫定1）を記録。これはゲームマスターで正式確認したID・イベント獲得経路を意味しない。欠損SSR30240でイベントスキル『がむしゃら』『迅速果断』のカード単位の掲載を別資料でも確認したが、出現段階・選択肢は未知で、イベントごとのhintsに配置してはならない。手動監査のみで通常CIから元データをGETしない。
