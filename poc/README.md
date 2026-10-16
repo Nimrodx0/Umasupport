@@ -59,10 +59,10 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 - テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDBの内容とオフライン復旧は未検証。
 - [設計と未解決課題](../docs/runtime-data-loading.md)。
 
-## 直接取得版の設定移行
+## 直接取得版の保存設定（開発中）
 
-- `src/settings.js`：保存設定スキーマ検査、レビュー済みエイリアスの適用、未知IDの保持。
-- 未収録カード・スキルIDを画面に示し、経路を捏造・集計しない。旧v8.1の全対応表の移植は別工程。
-- 壊れた保存JSONは `localStorage` の `uma-support-lab-runtime-umasim-v1-unreadable-backup` へ退避を試み、UIから回収可能とする。
-- `tests/settings.test.cjs` で正常移行・未知ID保全・JSON読込・不正形式拒否を検査する。
-- アプリ本体のオフライン再読込には別途アセットキャッシュが必要。
+- `src/settings.js` で現行の設定構造とカード・スキルIDのみを検証する。旧保存IDの移行や未知IDの保持は行わない。
+- 不正なJSONまたは現行の参照データに存在しないIDを含む設定は読み込まず、エラー画面と確認付き初期化を表示する。
+- 復旧用の自動バックアップは設けない。通常のJSONエクスポート／インポートは維持する。
+- `tests/settings.test.cjs` では正常読込、形式不正、未知ID拒否を検証する。
+- **UmaSimのIndexedDBキャッシュ／通信断フォールバックは別機能であり維持**。アプリ本体の完全オフライン再読込には別途アセットキャッシュが必要。
