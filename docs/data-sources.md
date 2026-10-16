@@ -40,3 +40,10 @@
 2. 全イベント・分岐・打ち切り・成功失敗の機械可読データの確保。
 3. ゲーム内スキルID、金／白の親子関係、表示順の正規化。
 4. ヒント関連性能の段階別表示に必要な項目の検証。
+
+## 2026-10-16 イベントデータ候補の確認（Issue #2）
+
+- [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) のREADMEは、データの取得元をGameWithと明記している。GitHub API上のリポジトリライセンス欄は未指定であり、READMEにある自己責任での利用説明は再利用・再配布許諾と同義ではない。
+- [umamusume-data](https://github.com/Tsuyuchan-jp/umamusume-data) のREADMEは、公開JSONを配布するリポジトリと非公開の抽出元を区別している。GitHub API上のリポジトリライセンス欄は未指定。イベントとゲーム内カードIDの対応、スキルID対応、取得方式、利用条件の確認が必要。
+- 今回の成果は自作のイベントv1スキーマ、純粋な集計関数の改善と**架空データを使った**回帰テスト。第三者由来のイベントJSON／本文／画像はリポジトリに同梱しておらず、公開アプリの実イベントは引き続き未収録。
+- スキーマと導入条件は [event-schema.md](event-schema.md) を参照。

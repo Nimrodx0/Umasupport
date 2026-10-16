@@ -1,24 +1,57 @@
 (function(g){
 'use strict';
 // 副作用のない集計層。テストとUIから同じ関数を呼ぶ。
-function isReachable(event,choices){
-  if(!event.requires)return true;
-  return choices[event.requires.eventId]===event.requires.choiceId;
+function prerequisites(event){
+  if(!event.requires)return [];
+  const r=event.requires;
+  return Array.isArray(r.all)?r.all:[r];
+}
+function isReachable(event,choices,events,visiting=new Set()){
+  if(!event||visiting.has(event.id))return false;
+  const next=new Set(visiting);next.add(event.id);
+  for(const r of prerequisites(event)){
+    if(!r||typeof r.eventId!=='string')return false;
+    if(!events){
+      if(typeof r.choiceId!=='string'||choices[r.eventId]!==r.choiceId)return false;
+      continue;
+    }
+    const parent=events.find(x=>x.id===r.eventId);
+    if(!parent||!isReachable(parent,choices,events,next))return false;
+    if(parent.type==='choice'){
+      const selected=(parent.choices||[]).find(c=>c.id===choices[parent.id]);
+      if(!selected||selected.terminal===true)return false;
+      if(r.choiceId!==undefined&&r.choiceId!==selected.id)return false;
+    }else if(parent.type==='auto'){
+      if(r.choiceId!==undefined)return false;
+    }else return false;
+  }
+  return true;
 }
 function directRoutes(card,config){
-  const choices=(config&&config.choices)||{};
-  const routes=[];
-  const hintList = (card.hintsByStage && Object.prototype.hasOwnProperty.call(card.hintsByStage, String(config?.stage ?? 4))) ? card.hintsByStage[String(config.stage)] : card.hints;
-  for(const id of hintList){routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:null,conditional:false,condition:null});}
-  for(const event of card.events){
-    if(!isReachable(event,choices))continue;
-    if(event.type==='choice'){
-      const selected=(event.choices||[]).find(x=>x.id===choices[event.id]);
-      if(!selected)continue;
-      for(const r of selected.rewards||[]){routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,choiceLabel:selected.label,level:r.level,conditional:!!r.condition,condition:r.condition||null});}
-    }else if(event.type==='auto'){
-      for(const r of event.rewards||[]){routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,level:r.level,conditional:!!r.condition,condition:r.condition||null});}
+  const choices=(config&&config.choices)||{},routes=[];
+  const hintList=(card.hintsByStage&&Object.prototype.hasOwnProperty.call(card.hintsByStage,String(config?.stage??4)))
+    ?card.hintsByStage[String(config.stage)]:card.hints||[];
+  for(const id of hintList)routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:null,conditional:false,condition:null});
+  const events=card.events||[];
+  function add(rewards,event,choiceLabel,outcome){
+    for(const r of rewards||[]){
+      const condition=[outcome,r.condition].filter(Boolean).join(' / ')||null;
+      routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,
+        ...(choiceLabel?{choiceLabel}:{}),level:r.level??null,conditional:!!condition,condition});
     }
+  }
+  function collect(part,event,choiceLabel){
+    add(part.rewards,event,choiceLabel,null);
+    for(const outcome of part.outcomes||[]){
+      add(outcome.rewards,event,choiceLabel,(outcome.label||outcome.id)+'時');
+    }
+  }
+  for(const event of events){
+    if(!isReachable(event,choices,events))continue;
+    if(event.type==='choice'){
+      const selected=(event.choices||[]).find(c=>c.id===choices[event.id]);
+      if(selected)collect(selected,event,selected.label);
+    }else if(event.type==='auto')collect(event,event,null);
   }
   return routes;
 }
@@ -87,9 +120,18 @@ function hierarchyRows(rows,data){
   return groups.flatMap(group=>group.items);
 }
 function clearDescendants(card,choices,eventId){
-  const next={...choices};
-  let queue=[eventId];
-  while(queue.length){let parent=queue.shift();for(const e of card.events){if(e.requires&&e.requires.eventId===parent){delete next[e.id];queue.push(e.id);}}}
+  const next={...choices},queue=[eventId],visited=new Set();
+  while(queue.length){
+    const parent=queue.shift();
+    if(visited.has(parent))continue;
+    visited.add(parent);
+    for(const e of card.events||[]){
+      if(prerequisites(e).some(r=>r.eventId===parent)){
+        delete next[e.id];
+        queue.push(e.id);
+      }
+    }
+  }
   return next;
 }
 const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,isReachable};

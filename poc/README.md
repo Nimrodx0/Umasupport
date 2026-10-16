@@ -66,3 +66,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 - 復旧用の自動バックアップは設けない。通常のJSONエクスポート／インポートは維持する。
 - `tests/settings.test.cjs` では正常読込、形式不正、未知ID拒否を検証する。
 - **UmaSimのIndexedDBキャッシュ／通信断フォールバックは別機能であり維持**。アプリ本体の完全オフライン再読込には別途アセットキャッシュが必要。
+
+## イベント分岐のテスト
+
+`src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**直接取得版の `live_loader.js` は引き続きイベント未収録（events: []）**。
