@@ -105,4 +105,8 @@ jobs:
               print(key,':',json.dumps(report[key],ensure_ascii=False,sort_keys=True))
           print('Unconfirmed IDs only:')
           print(json.dumps(report['unconfirmed'],ensure_ascii=False,sort_keys=True))
+          src=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/skill_data.txt').read_text())
+          by_id={str(s['id']):s.get('name') for s in src}
+          missing=[sid for row in report['unconfirmed'] for sid in row.get('missingIds',[])]
+          print('Missing skill names (only for further research):',[(sid,by_id.get(sid)) for sid in missing])
           PY
