@@ -58,10 +58,15 @@
        const parent=byId.get(r.eventId);
        if(!parent)fail(e.id+': 親イベントが未登録');
        if(parent.type==='choice'){
-         if(!id(r.choiceId))fail(e.id+': choiceIdが必須');
-         const picked=parent.choices.find(c=>c.id===r.choiceId);
-         if(!picked)fail(e.id+': 親選択肢が未登録');
-         if(picked.terminal)fail(e.id+': 打ち切りルートに後続イベント');
+         // No choiceId means any *selected non-terminal* choice can advance.
+         // The runtime reachability evaluator independently requires a selection.
+         if(r.choiceId===undefined){
+           if(parent.choices.every(c=>c.terminal===true))fail(e.id+': 全分岐打ち切りの親からは継続できません');
+         }else{
+           const picked=parent.choices.find(c=>c.id===r.choiceId);
+           if(!picked)fail(e.id+': 親選択肢が未登録');
+           if(picked.terminal)fail(e.id+': 打ち切りルートに後続イベント');
+         }
        }else if(r.choiceId!==undefined)fail(e.id+': autoイベントにchoiceIdが指定されている');
      }
    }
