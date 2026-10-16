@@ -125,3 +125,15 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 §poc/tests/browser_skill_smoke.cjs§ を実行すると、PlaywrightのChromiumで現行§live.html§をHTTP配信・操作します。§node poc/tests/browser_skill_smoke.cjs§ は§playwright@1.55.1§とChromiumが別途必要です。CIの§browser-smoke§ジョブはセットアップから行います。
 
 第三者元データはダウンロードせず、563枚×5段階の架空カードと126個の架空スキルをネットワーク代用応答として返します。階層の実表示と金白辞書のIndexedDB復旧、イベントJSON失敗時の階層維持をテストします。**本テスト合格は実ゲーム金白322組の独立裏付けやPages／スマホ実機の合格ではありません。** [検証ゲート](../docs/verification-plan.md)で区別します。
+
+## マスター由来データによる金白関係の独立監査
+
+§poc/tools/verify_skill_master.py§ は、UmaSim §skill_data.txt§ と別のゲームマスターSQLite §master.mdb§ をローカルで読み取り、全金スキルのID・group_id・group_rateを突合します。Python標準ライブラリのみで動作します。外部ファイルをダウンロードしたり、データ本体を公開リポジトリへ保存したりしません。
+
+~~~sh
+python3 poc/tools/verify_skill_master.py --umasim local-data/skill_data.txt \
+  --master local-data/master.mdb --source-revision "<コミットID>" \
+  --master-revision "<版／日付>" --strict
+~~~
+
+§--strict§ では全件の独立照合が通過しなければ非0終了になります。版が一致しないと欠損が出る可能性があり、収録率・現行ゲーム仕様の保証とは区別します。通常CIでのテストは人工SQLiteのみです。§python3 -m unittest discover -s poc/tests -p 'test_verify_skill_master.py' -v§。

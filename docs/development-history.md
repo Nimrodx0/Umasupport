@@ -77,3 +77,9 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 - スキル階層を実装済みなのに「未照合」と固定表示していたUIを修正し、ソース構造候補の件数と独立裏付け未完了を明示。
 - 独自イベントJSONの取得／検証失敗時にも、検証済み通常ヒントとスキル階層を安全に結合。未承認イベントは読み込まない。
 - Playwright Chromiumで架空全サイズの入力を用いたDOM・編成操作・IndexedDBのキャッシュ復旧・異常系の回帰をCIに追加。実ソースの独立全件照合・Pages／スマホの実機確認は引き続き未実施。詳細：[検証計画](verification-plan.md)。
+
+## 2026-10-17：独立スキルマスターの全件照合器
+
+- §poc/tools/verify_skill_master.py§ を新設。UmaSimと別のゲームマスターSQLiteを全群突合し、数値ID・group・group_rate・レアリティの矛盾、白なしの食い違いを拒否する。
+- §poc/tests/test_verify_skill_master.py§ とCIに架空SQLiteによる境界・異常系テストを追加。実ゲームマスターはCIに同梱・取得しない。
+- 取得元版を明示した実マスターの全件照合は**まだ未実施**。Phase 1のデータゲートを通過したとは扱わない。[検証計画](verification-plan.md)参照。
