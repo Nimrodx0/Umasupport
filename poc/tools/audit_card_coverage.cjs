@@ -27,7 +27,7 @@ function readUmaSim(txt){
 }
 function checkIndependent({umasim,japan,english}){
  const cards=readUmaSim(umasim),sources=[
-  {name:'Japanese 2026-09 selected supports',records:japan,id:c=>c.id,rarity:c=>c.rarity,name:c=>c.name},
+  {sourceName:'Japanese 2026-09 selected supports',records:japan,id:c=>c.id,rarity:c=>c.rarity,name:c=>c.name},
   {sourceName:'English version support registry',records:english,id:c=>c.support_id,
    rarity:c=>({1:'R',2:'SR',3:'SSR'}[c.rarity]),name:null}
  ];
