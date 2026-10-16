@@ -12,7 +12,10 @@
 10. 可能な範囲で自動テストとブラウザ操作テストを実行し、未実施項目を明示する。
 11. 実装コードは `poc/src/`、Python変換は `poc/tools/`、テストは `poc/tests/`。必ず `poc/README.md` を読む。
 12. `poc/demo.html` は架空カードで動く公開可能なデモ。実データ版v8.1と混同しない。
-13. 最低限の検証コマンドは `node --test poc/tests/core.test.js poc/tests/stage.test.cjs`。legacy配下のテストは未公開の実データ入力が必要。
-14. 最新データ方式は `poc/live.html` と `poc/src/live_loader.js`（通常ヒントのみ・移行中）。`docs/runtime-data-loading.md` を読む。旧データ同梱v8.1の実HTMLは公開していない。実ブラウザ検証・イベントの取得方式は未完了。
+13. 最低限の検証コマンドは `node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs`。legacy配下のテストは未公開の実データ入力が必要。
+14. 最新データ方式は `poc/live.html` と `poc/src/live_loader.js`（通常ヒントのみ・移行中）。`docs/runtime-data-loading.md` を読む。旧データ同梱v8.1の実HTMLは公開していない。Pages通常起動・公開元データ読込・表示は2026-10-16にユーザー確認済み。IndexedDB保存内容・オフライン復旧の実機検証とイベント取得方式は未完了。
 
 15. `poc/live.html` の起動にはインターネットが必要（初回）。`poc/demo.html` はオフラインの架空デモ。混同しない。
+
+16. 保存設定は `poc/src/settings.js` で検査する。レビュー済みエイリアスのみ変換し、未知IDは保持・非集計の「未収録」として表示。旧v8.1との全面互換は未完了。
+17. CIテストとPages公開は2026-10-16のmainで成功済み。「CI未設定・ブラウザ未検証」という古い記述より最新実行記録を優先。

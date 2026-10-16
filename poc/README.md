@@ -17,10 +17,10 @@
 リポジトリのルートから：
 
 ```sh
-node --test poc/tests/core.test.js poc/tests/stage.test.cjs
+node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs
 ```
 
-移管前のローカルソースで上記2ファイルのNode.jsテストは2件成功。GitHub上でのCIは未設定。
+移管前のローカルソースで上記2ファイルのNode.jsテストは2件成功。GitHub Actions CIは設定済みで、2026-10-16のmainでテスト成功。
 
 ## v8.1の全実データ版を再ビルドするには
 
@@ -56,5 +56,13 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 - [`live.html`](live.html) はUmaSimの通常ヒントを外部公開元から取得する移行PoC。ゲームデータ自体をこのレポジトリに含めない。
 - 起動時取得→検証→IndexedDBキャッシュ。失敗したときは検証済みの前回データを使用。利用者向け更新ボタンはない。
 - 現段階ではイベント報酬や金白スキル関係の移植は未完了。初回利用にはネット接続が必要。
-- テスト：`node --test poc/tests/runtime.test.cjs`。実ブラウザでのCORS・GitHub Pages動作は未検証。
+- テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDBの内容とオフライン復旧は未検証。
 - [設計と未解決課題](../docs/runtime-data-loading.md)。
+
+## 直接取得版の設定移行
+
+- `src/settings.js`：保存設定スキーマ検査、レビュー済みエイリアスの適用、未知IDの保持。
+- 未収録カード・スキルIDを画面に示し、経路を捏造・集計しない。旧v8.1の全対応表の移植は別工程。
+- 壊れた保存JSONは `localStorage` の `uma-support-lab-runtime-umasim-v1-unreadable-backup` へ退避を試み、UIから回収可能とする。
+- `tests/settings.test.cjs` で正常移行・未知ID保全・JSON読込・不正形式拒否を検査する。
+- アプリ本体のオフライン再読込には別途アセットキャッシュが必要。
