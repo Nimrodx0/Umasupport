@@ -35,6 +35,7 @@ function goalHTML(r){return `<section class="surface goals"><div class="section-
 function statsHTML(r){const skills=new Set([...Object.keys(r.main),...Object.keys(r.inherit)]);const same=[...skills].filter(x=>r.main[x]&&r.inherit[x]).length;const overlaps=Object.values(r.main).filter(v=>v.count>1).length+Object.values(r.inherit).filter(v=>v.count>1).length;const achieved=r.goals.filter(g=>core.goalStatus(g,r.main,r.inherit,data).satisfied).length;return `<div class="stats"><section class="surface stat"><div class="stat-label">獲得候補スキル</div><div class="stat-num">${skills.size}</div><div class="stat-label">両デッキのユニーク数</div></section><section class="surface stat"><div class="stat-label">デッキ間共通</div><div class="stat-num">${same}</div><div class="stat-label">両デッキに直接経路あり</div></section><section class="surface stat"><div class="stat-label">デッキ内重複</div><div class="stat-num">${overlaps}</div><div class="stat-label">各デッキ内の重複件数の合計</div></section><section class="surface stat"><div class="stat-label">目標カバー</div><div class="stat-num">${achieved}<span style="font-size:14px;color:var(--muted)"> / ${r.goals.length}</span></div><div class="stat-label">間接・条件付きも含む</div></section></div>`;}
 function skillLabel(row){
  const child=row.groupRole==='child';
+ const extraIndent=Math.max(0,Math.min(3,Number(row.hierarchyDepth)||0)-1)*16;
  const lower=row.skill.lowerId&&data.skillById[row.skill.lowerId];
  const uppers=data.skills.filter(s=>s.lowerId===row.skill.id&&s.tier==='gold');
  let relation='';
@@ -43,7 +44,7 @@ function skillLabel(row){
  }else if(row.groupRole==='solo'&&uppers.length){
    relation=`<span class="skill-relation-note">対応する金スキル：${uppers.map(s=>esc(s.name)).join(' / ')} <span class="relation-unlisted">（一覧外）</span></span>`;
  }
- return `<span class="skill-label-block ${child?'lower-child':''}"><span class="skill-cell">${child?'<span class="skill-branch" aria-hidden="true">└</span>':''}<span class="skill-name">${esc(row.skill.name)}</span>${row.skill.tier==='gold'?'<span class="tag gold">金</span>':''}${child?'<span class="tag lower-tag">下位</span>':''}${row.goal?'<span class="tag goal">☆ 目標</span>':''}${row.goal&&!row.main&&!row.inherit?'<span class="tag missing">直接提供なし</span>':''}</span>${relation}</span>`;
+ return `<span class="skill-label-block ${child?'lower-child':''}"${extraIndent?' style="margin-left:'+extraIndent+'px"':''}><span class="skill-cell">${child?'<span class="skill-branch" aria-hidden="true">└</span>':''}<span class="skill-name">${esc(row.skill.name)}</span>${row.skill.tier==='gold'?'<span class="tag gold">金</span>':''}${child?'<span class="tag lower-tag">下位</span>':''}${row.goal?'<span class="tag goal">☆ 目標</span>':''}${row.goal&&!row.main&&!row.inherit?'<span class="tag missing">直接提供なし</span>':''}</span>${relation}</span>`;
 }
 function skillRowClass(row){return row.groupRole==='parent'?'class="skill-group-parent"':row.groupRole==='child'?'class="skill-group-child"':'';}
 function filteredRows(r){return r.rows.filter(x=>{if(ui.onlyGoals&&!x.goal)return false;if(ui.onlyDuplicate&&!((x.main&&x.main.count>1)||(x.inherit&&x.inherit.count>1)||(x.main&&x.inherit)))return false;return !ui.search||x.skill.name.includes(ui.search);});}
