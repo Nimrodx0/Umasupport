@@ -1,0 +1,275 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Uma Support Lab | Fictional Demo</title><style>:root{color-scheme:dark;--bg:#0d1322;--panel:#151d30;--panel2:#1b263a;--panel3:#223047;--line:#34435b;--text:#e9effc;--muted:#9eafc6;--teal:#7bdfce;--amber:#f4d093;--red:#ed9b9b;--blue:#a8beff;--radius:16px;font-family:system-ui,-apple-system,'Yu Gothic UI','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:14px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 45% -10%,#263855 0,transparent 45%),var(--bg);color:var(--text)}button,select,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.38;cursor:not-allowed}.app{max-width:1460px;margin:auto;padding:22px 24px 70px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}.brand{font-size:12px;font-weight:750;letter-spacing:.15em;color:var(--teal)}h1{font-size:25px;letter-spacing:-.025em;margin:4px 0 8px}h2{font-size:16px;margin:0}h3{font-size:14px;margin:0}.lede{color:var(--muted);line-height:1.7;margin:0}.notice{border:1px solid #736545;background:#332d22;color:#f7dc9a;border-radius:11px;padding:10px 14px;font-size:12px;line-height:1.6;margin:12px 0 18px}.controls,.switches,.inline{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.top-actions{justify-content:flex-end}.btn{border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);padding:8px 11px;line-height:1.3;min-height:37px;transition:background .12s,border-color .12s}.btn:hover{border-color:#7384a1;background:var(--panel3)}.btn.primary{background:#214c58;border-color:#3d8d90;color:#d8fff2}.btn.primary:hover{background:#286671}.btn.ghost{background:transparent}.btn.tiny{padding:5px 7px;min-height:29px;font-size:12px}.btn.danger:hover{border-color:#bb7777}.surface{background:linear-gradient(170deg,#182238,var(--panel));border:1px solid var(--line);border-radius:var(--radius);padding:16px}.eyebrow{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:12px}.stat{padding:14px 15px}.stat-num{font-size:25px;font-weight:760;letter-spacing:-.03em;margin:4px 0}.stat-label{font-size:12px;color:var(--muted)}.deck-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}.deck-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.deck-heading small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:4px}.slot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.slot{background:#101a2a;border:1px solid #34435b;border-radius:11px;min-height:78px;padding:8px;display:flex;align-items:center;gap:8px;text-align:left;min-width:0}.slot:hover{background:#203048;border-color:#849ab0}.card-icon{display:flex;justify-content:center;align-items:center;border-radius:10px;color:white;font-weight:800;flex:0 0 44px;height:57px;box-shadow:inset 0 0 0 1px #ffffff20;font-size:22px}.card-icon.small{width:32px;height:40px;flex-basis:32px;font-size:16px;border-radius:7px}.card-name{font-size:12px;font-weight:700;line-height:1.4}.card-sub{font-size:11px;color:var(--muted);margin-top:5px}.empty{justify-content:center;display:flex;flex-direction:column;gap:3px;color:var(--muted)}.empty strong{font-size:18px;font-weight:400}.slotnum{font-size:10px;color:var(--muted)}.flex{display:flex;gap:10px;align-items:center}.grow{flex:1}.muted{color:var(--muted)}.tiny-note{font-size:11px;color:var(--muted);line-height:1.7}.goals{margin-bottom:12px}.section-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.goal-strip{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}.goal-pill{background:#202a3c;border:1px solid #3b4b62;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-width:146px;max-width:100%}.goal-pill span:first-child{font-weight:650}.goal-pill small{font-size:11px;color:var(--muted)}.goal-pill .good{color:var(--teal)}.goal-pill .bad{color:var(--red)}.goal-pill .warn{color:var(--amber)}.comparison{min-height:250px}.comparison-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}.tabs{display:inline-flex;border:1px solid var(--line);background:#111a2b;border-radius:10px;padding:3px;gap:2px}.tabs button{padding:7px 11px;min-height:30px;background:transparent;border:0;border-radius:7px;color:var(--muted)}.tabs button[aria-pressed="true"]{color:#e8ffff;background:#285b62;font-weight:650}.filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}.field{border:1px solid var(--line);background:#0e1727;border-radius:9px;min-height:36px;padding:7px 9px;color:var(--text);min-width:0}.search{min-width:210px;flex:1}.filterlabel{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px}.filterlabel input{accent-color:#63c5b6}.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px}th{color:#a8b8cf;font-size:12px;font-weight:600;text-align:left;border-bottom:1px solid var(--line);padding:10px 9px;white-space:nowrap}td{padding:9px;border-bottom:1px solid #2c394e;vertical-align:middle}tr:last-child td{border-bottom:none}tbody tr[data-skill]{cursor:pointer}tbody tr[data-skill]:hover{background:#26344b}.skill-cell{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.skill-name{font-weight:600}.skill-label-block{display:flex;flex-direction:column;gap:4px;min-width:0}.skill-relation-note{font-size:11px;color:#beac89;padding-left:3px;line-height:1.45}.relation-unlisted{color:var(--muted)}.skill-label-block.lower-child{padding-left:20px;position:relative}.skill-branch{position:absolute;left:1px;top:-1px;font-size:17px;line-height:1.2;color:var(--amber);font-weight:600}.tag.lower-tag{border-color:#6b5d43;color:#e6cc9a;background:#29271f}.skill-group-parent{background:rgba(244,208,147,.04)}.skill-group-child{background:rgba(244,208,147,.075)}.skill-group-child td{border-bottom:1px solid #5b5547}tbody tr.skill-group-child:hover{background:rgba(244,208,147,.13)}.tag{display:inline-flex;border-radius:6px;border:1px solid #46536b;padding:2px 5px;font-size:10px;color:var(--muted);white-space:nowrap}.tag.gold{color:var(--amber);border-color:#695a3d;background:#302918}.tag.goal{color:var(--amber);border-color:#665538}.tag.condition{color:#eac8a1;border-color:#756148}.tag.missing{color:var(--red);border-color:#815154}.count{font-variant-numeric:tabular-nums;font-weight:650}.count.dup{color:var(--blue)}.count.zero{color:#718298}.center{text-align:center}.common{color:var(--teal);font-weight:750}.providers{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.mini{border:0;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:5px 6px;min-width:26px}.split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.split-grid table{min-width:260px}.split-grid .surface{padding:10px}.split-grid th{font-size:11px}.summary-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}.summary-legend b{color:var(--blue)}.overlay{position:fixed;inset:0;background:#050a14b8;display:flex;align-items:center;justify-content:center;padding:16px;z-index:90}.modal{background:#182236;border:1px solid #53647d;border-radius:18px;max-width:820px;width:100%;max-height:min(91vh,920px);display:flex;flex-direction:column;box-shadow:0 20px 80px #0008}.modal-head{padding:17px 19px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.modal-head h2{font-size:19px}.modal-sub{font-size:12px;color:var(--muted);margin-top:5px}.modal-body{padding:18px 19px;overflow:auto}.modal-foot{padding:13px 19px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}.event{background:#101a2b;border:1px solid #30435c;border-radius:11px;padding:12px;margin:9px 0}.event.dim{opacity:.56}.event-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.event-options{display:flex;flex-direction:column;gap:7px;margin-top:11px}.option{display:flex;align-items:flex-start;gap:8px;border:1px solid #3a4c63;padding:9px;border-radius:8px;background:#182638;cursor:pointer}.option:hover{background:#23344a}.option input{margin-top:3px;accent-color:#7bdfce}.option small{display:block;color:var(--muted);margin-top:4px;line-height:1.5}.auto{color:var(--teal);font-size:11px}.event h3{font-size:14px}.event .muted{font-size:12px}.picker-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.picker-card{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:#111b2c;border-radius:11px;padding:10px;color:var(--text)}.picker-card:hover{background:#23334a;border-color:#8294ad}.info-list{display:flex;flex-direction:column;gap:10px}.info-item{padding:11px;background:#101a2b;border-radius:10px;border:1px solid #35445d}.info-item .sub{color:var(--muted);font-size:12px;line-height:1.7;margin-top:3px}.select-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.sep{border:0;border-top:1px solid var(--line);margin:15px 0}.stage{min-width:65px}.slot-badge{color:var(--muted);font-size:11px}.help{font-size:12px;line-height:1.7;color:var(--muted)}.goal-edit{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid #304059;flex-wrap:wrap}.goal-edit:last-child{border:0}.goal-edit .goal-name{flex:1;min-width:120px;font-weight:600}.goal-edit .field{min-height:32px}.footer{color:var(--muted);font-size:11px;text-align:center;margin-top:17px;line-height:1.8}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}@media(max-width:850px){.deck-grid{grid-template-columns:1fr}.app{padding:14px 12px 48px}.top{flex-direction:column}.top-actions{justify-content:flex-start}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.comparison-head{align-items:stretch}.split-grid{grid-template-columns:1fr}}@media(max-width:490px){h1{font-size:22px}.slot-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.slot{min-height:72px}.picker-list{grid-template-columns:1fr}.modal{max-height:94vh}.modal-body{padding:13px}.modal-head{padding:13px}.goal-pill{min-width:calc(50% - 5px)}.search{min-width:100%}.btn{padding:7px 9px}.stats{gap:8px}.stat-num{font-size:22px}.split-grid th,.split-grid td{padding:7px 5px}}
+</style></head><body><div id="app"></div><script>(function (g) {
+  'use strict';
+  const skills = [
+    ['straight','直線巧者','white'],
+    ['tail','尻尾上がり','white'],
+    ['umazuki','ウマ好み','white'],
+    ['step','渾身の足取り','white'],
+    ['kunrin','君臨','gold','step'],
+    ['corner','コーナー巧者○','white'],
+    ['midstraight','中距離直線○','white'],
+    ['focus','集中力','white'],
+    ['early','先駆け','white'],
+    ['last','末脚','white'],
+    ['spirit','闘争心','white'],
+    ['tempo','テンポアップ','white'],
+    ['position','ポジションセンス','white'],
+    ['avoid','垂れウマ回避','white'],
+    ['finish','差し切り体勢','white']
+  ].map(([id,name,tier,lowerId])=>({id,name,tier,lowerId:lowerId||null}));
+  const reward=(skillId,level=1,condition=null)=>({skillId,level,condition});
+  const cards = [
+    {id:'A',name:'検証カード A',character:'架空・スピード',type:'スピード',rarity:'SSR',accent:'#c76c5c',hints:['straight','tail','last'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'a-free',name:'普段の積み重ね',type:'auto',rewards:[reward('straight',1)]},
+      {id:'a-start',name:'道は二つ（連続①）',type:'choice',choices:[
+        {id:'continue',label:'先へ進む（後続イベントへ）',rewards:[]},
+        {id:'stop',label:'ここで終える（打ち切り）',rewards:[reward('umazuki',2)]}
+      ]},
+      {id:'a-final',name:'結末の足音（連続②）',type:'auto',requires:{eventId:'a-start',choiceId:'continue'},rewards:[reward('kunrin',2,'成功時'),reward('step',1,'失敗時')]}
+    ]},
+    {id:'B',name:'検証カード B',character:'架空・賢さ',type:'賢さ',rarity:'SSR',accent:'#748ac6',hints:['straight','umazuki','focus'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'b-auto',name:'一瞬の判断',type:'auto',rewards:[reward('position')]},
+      {id:'b-choice',name:'練習の方針',type:'choice',choices:[
+        {id:'steady',label:'着実に進める',rewards:[reward('focus',2)]},
+        {id:'risky',label:'勝負に出る',rewards:[reward('tail',3,'成功時')]}
+      ]}
+    ]},
+    {id:'C',name:'検証カード C',character:'架空・パワー',type:'パワー',rarity:'SR',accent:'#bf934a',hints:['tail','corner','step'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'c-auto',name:'鍛錬の成果',type:'auto',rewards:[reward('midstraight')]},
+      {id:'c-choice',name:'どちらの道を選ぶ？',type:'choice',choices:[
+        {id:'left',label:'追い込み練習',rewards:[reward('last',2)]},
+        {id:'right',label:'位置取り練習',rewards:[reward('position',1)]}
+      ]}
+    ]},
+    {id:'D',name:'検証カード D',character:'架空・スタミナ',type:'スタミナ',rarity:'SSR',accent:'#579da2',hints:['umazuki','tempo','spirit'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'d-auto',name:'静かな準備',type:'auto',rewards:[reward('avoid')]},
+      {id:'d-choice',name:'次なる一歩',type:'choice',choices:[
+        {id:'speed',label:'速度に賭ける',rewards:[reward('straight',1)]},
+        {id:'endurance',label:'持久力を磨く',rewards:[reward('tempo',2)]}
+      ]}
+    ]},
+    {id:'E',name:'検証カード E',character:'架空・根性',type:'根性',rarity:'SSR',accent:'#916db1',hints:['corner','step'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'e-begin',name:'はじまりの約束（連続①）',type:'choice',choices:[
+        {id:'go',label:'挑戦を続ける',rewards:[]},
+        {id:'quit',label:'ここでやめる（打ち切り）',rewards:[reward('finish')]}
+      ]},
+      {id:'e-end',name:'約束の結末（連続②）',type:'auto',requires:{eventId:'e-begin',choiceId:'go'},rewards:[reward('kunrin',1)]}
+    ]},
+    {id:'F',name:'検証カード F',character:'架空・スピード',type:'スピード',rarity:'SR',accent:'#bc737e',hints:['corner','last','early'],effects:['ヒント関連性能：仮データ'],events:[
+      {id:'f-auto',name:'まっすぐな眼差し',type:'auto',rewards:[reward('straight')]},
+      {id:'f-choice',name:'いざ本番',type:'choice',choices:[
+        {id:'front',label:'前に出る',rewards:[reward('tail')]},
+        {id:'back',label:'後ろから攻める',rewards:[reward('finish',2,'成功時')]}
+      ]}
+    ]}
+  ];
+  const data={version:'poc-fixture-1',skills,cards,cardById:Object.fromEntries(cards.map(c=>[c.id,c])),skillById:Object.fromEntries(skills.map(s=>[s.id,s]))};
+  if(typeof module!=='undefined'&&module.exports)module.exports=data;
+  g.UmaDemoData=data;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>(function(g){
+'use strict';
+// 副作用のない集計層。テストとUIから同じ関数を呼ぶ。
+function isReachable(event,choices){
+  if(!event.requires)return true;
+  return choices[event.requires.eventId]===event.requires.choiceId;
+}
+function directRoutes(card,config){
+  const choices=(config&&config.choices)||{};
+  const routes=[];
+  const hintList = (card.hintsByStage && Object.prototype.hasOwnProperty.call(card.hintsByStage, String(config?.stage ?? 4))) ? card.hintsByStage[String(config.stage)] : card.hints;
+  for(const id of hintList){routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:null,conditional:false,condition:null});}
+  for(const event of card.events){
+    if(!isReachable(event,choices))continue;
+    if(event.type==='choice'){
+      const selected=(event.choices||[]).find(x=>x.id===choices[event.id]);
+      if(!selected)continue;
+      for(const r of selected.rewards||[]){routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,choiceLabel:selected.label,level:r.level,conditional:!!r.condition,condition:r.condition||null});}
+    }else if(event.type==='auto'){
+      for(const r of event.rewards||[]){routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,level:r.level,conditional:!!r.condition,condition:r.condition||null});}
+    }
+  }
+  return routes;
+}
+function aggregate(deck,data){
+  const bySkill={};
+  deck.slots.forEach((slot,index)=>{
+    if(!slot||!data.cardById[slot.cardId])return;
+    const card=data.cardById[slot.cardId];
+    const routes=directRoutes(card,slot);
+    for(const route of routes){
+      const v=bySkill[route.skillId]||(bySkill[route.skillId]={skillId:route.skillId,providers:{},count:0,conditionalOnly:true});
+      const key=String(index); // 枚数は物理スロット単位。１枚に複数経路があっても重複しない。
+      if(!v.providers[key]){v.providers[key]={slotIndex:index,cardId:card.id,routes:[]};v.count++;}
+      v.providers[key].routes.push(route);
+      if(!route.conditional)v.conditionalOnly=false;
+    }
+  });
+  return bySkill;
+}
+function coverage(skillId,bySkill,data){
+  const direct=bySkill[skillId];
+  if(direct){return {kind:'direct',conditional:direct.conditionalOnly,count:direct.count};}
+  const upper = data.skills.filter(s=>s.lowerId===skillId).map(s=>bySkill[s.id]).filter(Boolean);
+  if(upper.length){return {kind:'indirect',conditional:upper.every(x=>x.conditionalOnly),count:0};}
+  return {kind:'missing',conditional:false,count:0};
+}
+function goalStatus(goal,main,inherit,data){
+  const m=coverage(goal.skillId,main,data),i=coverage(goal.skillId,inherit,data);
+  let relevant=[];
+  switch(goal.scope){
+    case 'main':relevant=[m];break;
+    case 'inherit':relevant=[i];break;
+    case 'either':relevant=[m,i];break;
+    default:relevant=[m,i];
+  }
+  const supported=relevant.filter(x=>x.kind!=='missing');
+  const satisfied=goal.scope==='either'?supported.length>0:supported.length===relevant.length;
+  return {satisfied,conditional:satisfied&&(goal.scope==='either'?supported.every(x=>x.conditional):supported.some(x=>x.conditional)),indirect:satisfied&&(goal.scope==='either'?supported.every(x=>x.kind==='indirect'):supported.some(x=>x.kind==='indirect')),main:m,inherit:i};
+}
+function combinedRows(main,inherit,goals,data){
+  const ids=new Set([...Object.keys(main),...Object.keys(inherit),...goals.map(x=>x.skillId)]);
+  return [...ids].map(id=>({skill:data.skillById[id]||{id,name:'未収録スキル ('+id+')',tier:'unknown'},main:main[id]||null,inherit:inherit[id]||null,goal:goals.find(x=>x.skillId===id)||null,mainCover:coverage(id,main,data),inheritCover:coverage(id,inherit,data)})).sort((a,b)=>a.skill.name.localeCompare(b.skill.name,'ja'));
+}
+// 表示用の順序。集計結果を変更せず、金スキルの直後に対応する下位スキルを配置する。
+// フィルター後の行集合にも適用でき、片方がない場合は擬似的な獲得行を生成しない。
+function hierarchyRows(rows,data){
+  const byId=new Map(rows.map(row=>[row.skill.id,row]));
+  const used=new Set();
+  const groups=[];
+  for(const row of rows){
+    const lowerId=row.skill.tier==='gold'?row.skill.lowerId:null;
+    const lower=lowerId&&byId.get(lowerId);
+    if(lower&&!used.has(row.skill.id)&&!used.has(lowerId)&&lowerId!==row.skill.id){
+      groups.push({name:row.skill.name,items:[
+        {...row,groupRole:'parent'},
+        {...lower,groupRole:'child',parentSkillId:row.skill.id}
+      ]});
+      used.add(row.skill.id);
+      used.add(lowerId);
+    }
+  }
+  for(const row of rows){
+    if(!used.has(row.skill.id))groups.push({name:row.skill.name,items:[{...row,groupRole:'solo'}]});
+  }
+  groups.sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+  return groups.flatMap(group=>group.items);
+}
+function clearDescendants(card,choices,eventId){
+  const next={...choices};
+  let queue=[eventId];
+  while(queue.length){let parent=queue.shift();for(const e of card.events){if(e.requires&&e.requires.eventId===parent){delete next[e.id];queue.push(e.id);}}}
+  return next;
+}
+const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,isReachable};
+if(typeof module!=='undefined'&&module.exports)module.exports=core;
+g.UmaCore=core;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>(function(){
+'use strict';
+const data=window.UmaDemoData, core=window.UmaCore;
+const SAVE_KEY='uma-support-lab-realdata-poc-v3';
+const blank=()=>({cardId:null,stage:4,choices:{}});
+const deck=(name,ids)=>({name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{}}:blank())});
+const DEFAULT=()=>({version:1,decks:{main:deck('本育成デッキ',['A','B','C']),inherit:deck('継承育成デッキ',['D','E','F'])},goalSets:[{id:'goals-default',name:'架空データの目標',goals:[{skillId:'kunrin',scope:'inherit'},{skillId:'straight',scope:'main'},{skillId:'tail',scope:'both'}]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
+let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,pickerSearch:''};
+const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
+const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goalSets[0];
+// Import older settings only if all IDs exist in this specific bundled dataset.
+const results=()=>{const main=core.aggregate(state.decks.main,data),inherit=core.aggregate(state.decks.inherit,data),goals=goalSet().goals;return {main,inherit,goals,rows:core.combinedRows(main,inherit,goals,data)};};
+function migrateCardIds(s){
+ const aliases=data.meta?.aliasCardIds||{};
+ for(const deckKey of ['main','inherit'])for(const sl of s.decks[deckKey].slots){
+  const newer=aliases[sl.cardId];if(newer&&data.cardById[newer])sl.cardId=newer;
+ }
+ return s;
+}
+function store(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.warn('保存できません',e)}}
+function validate(o){return !!(o&&o.version===1&&o.decks&&['main','inherit'].every(k=>o.decks[k]&&Array.isArray(o.decks[k].slots)&&o.decks[k].slots.length===6&&o.decks[k].slots.every(s=>s&&typeof s.stage==='number'&&s.stage>=0&&s.stage<=4&&(!s.cardId||data.cardById[s.cardId])&&s.choices&&typeof s.choices==='object'))&&Array.isArray(o.goalSets)&&o.goalSets.length>0&&o.goalSets.every(x=>Array.isArray(x.goals)&&x.goals.every(y=>data.skillById[y.skillId]&&['main','inherit','both','either'].includes(y.scope))))}
+try{let raw=localStorage.getItem(SAVE_KEY);if(raw){let prev=JSON.parse(raw);if(validate(prev))state=migrateCardIds(prev);}}catch(e){console.warn('保存データ読み込み失敗',e)}
+function saveRender(){store();render();}
+function cardIcon(c,sm=false){return `<span class="card-icon${sm?' small':''}" style="background:${esc(c.accent)}" aria-hidden="true">${esc((c.character||'?').slice(0,2))}</span>`;}
+function hintDetailText(c,sl){const hints=c.hintsByStage?.[String(sl.stage)]??c.hints;return hints.map(id=>esc(data.skillById[id]?.name||id)).join(' / ')||(c.sourceStatus?.startsWith('verified_hints')?'通常ヒントなし（データ収録済み）':'通常ヒントは未収録');}
+function countCell(v,mode,deckKey){
+ if(!v)return `<span class="count zero">－</span>`;
+ const n=`<span class="count${v.count>1?' dup':''}">${v.count}</span>${v.conditionalOnly?' <span class="tag condition">条件付のみ</span>':''}`;
+ if(mode==='detailed'){return `<span class="providers">${n}　${Object.values(v.providers).map(p=>{let c=data.cardById[p.cardId];return `<button class="mini" type="button" data-action="edit-card" data-deck="${deckKey}" data-index="${p.slotIndex}" style="background:${esc(c.accent)}" title="${esc(c.name)}のイベント設定">${esc((c.character||'?').slice(0,1))}</button>`}).join('')}</span>`;}
+ return n;
+}
+function goalLabel(st){if(!st.satisfied)return '<span class="bad">未カバー</span>';let s=st.indirect?'間接カバー':'直接カバー';if(st.conditional)s+='（条件付き）';return `<span class="${st.conditional?'warn':'good'}">${s}</span>`;}
+const scopeLabel={main:'本育成',inherit:'継承育成',either:'どちらか',both:'両方'};
+function slotHTML(sl,deckKey,i){const c=sl.cardId&&data.cardById[sl.cardId];if(!c)return `<button class="slot empty" data-action="pick" data-deck="${deckKey}" data-index="${i}" aria-label="${scopeLabel[deckKey]}の${i+1}番スロットにカードを追加"><strong>＋</strong><span class="slotnum">スロット ${i+1}</span></button>`;return `<button class="slot" data-action="edit-card" data-deck="${deckKey}" data-index="${i}" aria-label="${esc(c.name)}のイベントを設定">${cardIcon(c)}<span style="min-width:0"><span class="card-name">${esc(c.name)}</span><span class="card-sub">${esc(c.type)} · ${esc(c.rarity)} · ${sl.stage}凸</span></span></button>`;}
+function deckHTML(k){const d=state.decks[k],count=d.slots.filter(s=>s.cardId).length;return `<section class="surface" aria-label="${scopeLabel[k]}デッキ"><div class="deck-top"><div class="deck-heading"><h2>${scopeLabel[k]}</h2><small>${count} / 6 枚 · 全枠対等</small></div><button class="btn tiny" data-action="deck-events" data-deck="${k}">イベント一括設定</button></div><div class="slot-grid">${d.slots.map((s,i)=>slotHTML(s,k,i)).join('')}</div></section>`;}
+function goalHTML(r){return `<section class="surface goals"><div class="section-top"><div><h2>目標スキル</h2><div class="tiny-note">現在の編成にない目標も一覧に残します</div></div><div class="controls"><select class="field" id="goal-set" aria-label="目標スキルセット">${state.goalSets.map(g=>`<option value="${esc(g.id)}" ${g.id===state.currentGoalSet?'selected':''}>${esc(g.name)}</option>`).join('')}</select><button class="btn tiny" data-action="goals">セットを編集</button></div></div><div class="goal-strip">${r.goals.length?r.goals.map(g=>{const st=core.goalStatus(g,r.main,r.inherit,data);return `<button class="goal-pill" data-action="skill" data-id="${esc(g.skillId)}" style="color:var(--text);text-align:left;cursor:pointer"><span>☆ ${esc(data.skillById[g.skillId].name)}</span><small>対象：${scopeLabel[g.scope]} / ${goalLabel(st)}</small></button>`}).join(''):'<span class="muted">目標スキルが未登録です。</span>'}</div></section>`;}
+function statsHTML(r){const skills=new Set([...Object.keys(r.main),...Object.keys(r.inherit)]);const same=[...skills].filter(x=>r.main[x]&&r.inherit[x]).length;const overlaps=Object.values(r.main).filter(v=>v.count>1).length+Object.values(r.inherit).filter(v=>v.count>1).length;const achieved=r.goals.filter(g=>core.goalStatus(g,r.main,r.inherit,data).satisfied).length;return `<div class="stats"><section class="surface stat"><div class="stat-label">獲得候補スキル</div><div class="stat-num">${skills.size}</div><div class="stat-label">両デッキのユニーク数</div></section><section class="surface stat"><div class="stat-label">デッキ間共通</div><div class="stat-num">${same}</div><div class="stat-label">両デッキに直接経路あり</div></section><section class="surface stat"><div class="stat-label">デッキ内重複</div><div class="stat-num">${overlaps}</div><div class="stat-label">各デッキ内の重複件数の合計</div></section><section class="surface stat"><div class="stat-label">目標カバー</div><div class="stat-num">${achieved}<span style="font-size:14px;color:var(--muted)"> / ${r.goals.length}</span></div><div class="stat-label">間接・条件付きも含む</div></section></div>`;}
+function skillLabel(row){
+ const child=row.groupRole==='child';
+ const lower=row.skill.lowerId&&data.skillById[row.skill.lowerId];
+ const uppers=data.skills.filter(s=>s.lowerId===row.skill.id&&s.tier==='gold');
+ let relation='';
+ if(row.groupRole==='solo'&&lower){
+   relation=`<span class="skill-relation-note">↳ 下位：${esc(lower.name)} <span class="relation-unlisted">（一覧外）</span></span>`;
+ }else if(row.groupRole==='solo'&&uppers.length){
+   relation=`<span class="skill-relation-note">対応する金スキル：${uppers.map(s=>esc(s.name)).join(' / ')} <span class="relation-unlisted">（一覧外）</span></span>`;
+ }
+ return `<span class="skill-label-block ${child?'lower-child':''}"><span class="skill-cell">${child?'<span class="skill-branch" aria-hidden="true">└</span>':''}<span class="skill-name">${esc(row.skill.name)}</span>${row.skill.tier==='gold'?'<span class="tag gold">金</span>':''}${child?'<span class="tag lower-tag">下位</span>':''}${row.goal?'<span class="tag goal">☆ 目標</span>':''}${row.goal&&!row.main&&!row.inherit?'<span class="tag missing">直接提供なし</span>':''}</span>${relation}</span>`;
+}
+function skillRowClass(row){return row.groupRole==='parent'?'class="skill-group-parent"':row.groupRole==='child'?'class="skill-group-child"':'';}
+function filteredRows(r){return r.rows.filter(x=>{if(ui.onlyGoals&&!x.goal)return false;if(ui.onlyDuplicate&&!((x.main&&x.main.count>1)||(x.inherit&&x.inherit.count>1)||(x.main&&x.inherit)))return false;return !ui.search||x.skill.name.includes(ui.search);});}
+function integratedTable(rows){const ordered=core.hierarchyRows(rows,data);return `<div class="table-scroll"><table><thead><tr><th>スキル</th><th>本育成の提供枚数</th><th>継承育成の提供枚数</th><th class="center">両デッキ</th></tr></thead><tbody>${ordered.map(r=>`<tr ${skillRowClass(r)} data-skill="${r.skill.id}" data-action="skill" data-id="${r.skill.id}"><td>${skillLabel(r)}</td><td>${countCell(r.main,state.density,'main')}</td><td>${countCell(r.inherit,state.density,'inherit')}</td><td class="center">${r.main&&r.inherit?'<span class="common">✓ 共通</span>':'<span class="muted">－</span>'}</td></tr>`).join('')}</tbody></table>${!rows.length?'<p class="help">一致するスキルはありません。</p>':''}</div>`;}
+function splitTable(rows){return `<div class="split-grid">${['main','inherit'].map(k=>`<section class="surface"><h3>${scopeLabel[k]}</h3><div class="table-scroll"><table><thead><tr><th>スキル</th><th>提供</th></tr></thead><tbody>${core.hierarchyRows(rows.filter(r=>r[k]||r.goal),data).map(r=>`<tr ${skillRowClass(r)} data-action="skill" data-id="${r.skill.id}" data-skill="${r.skill.id}"><td>${skillLabel(r)}${r.main&&r.inherit?' <span class="common">⇄</span>':''}</td><td>${countCell(r[k],state.density,k)}</td></tr>`).join('')}</tbody></table></div></section>`).join('')}</div>`;}
+function tableHTML(r){const rows=filteredRows(r);return state.view==='integrated'?integratedTable(rows):splitTable(rows);}
+function render(){const r=results();document.getElementById('app').innerHTML=`<main class="app"><header class="top"><div><div class="brand">UMA SUPPORT LAB / STATIC DATA v5</div><h1>サポカ編成 × スキル可視化</h1><p class="lede">本育成と継承育成を見比べ、イベントの選択でスキルがどう変わるか試せます。</p></div><div class="controls top-actions"><button class="btn" data-action="reset">設定を初期化</button><button class="btn" data-action="import">JSON読込</button><button class="btn primary" data-action="export">JSON保存</button></div></header><div class="notice"><strong>実データの部分検証版です。</strong> ${data.cards.length}件のサポカ台帳を利用中（詳細データ ${data.meta?.verifiedIdCards??6}件）。未照合スキル ${data.meta?.unknownHintIds??data.meta?.unresolvedHintCount??"?"}件。<b>カード台帳があることは全スキル収録を意味しません。</b> アプリの配信データは起動時に自動で使用されます。データビルド：${esc(data.meta?.compiledAt||"サンプル版（更新時刻未記録）")}。</div>${statsHTML(r)}<div class="deck-grid">${deckHTML('main')}${deckHTML('inherit')}</div>${goalHTML(r)}<section class="surface comparison"><div class="comparison-head"><div><h2>獲得候補スキルの比較</h2><div class="tiny-note">数値＝そのスキルを直接提供するサポカ枚数。同じカードの複数経路は1枚で集計。</div></div><div class="switches"><div class="tabs" aria-label="一覧形式"><button data-action="view" data-value="integrated" aria-pressed="${state.view==='integrated'}">統合表</button><button data-action="view" data-value="split" aria-pressed="${state.view==='split'}">左右比較</button></div><div class="tabs" aria-label="表示密度"><button data-action="density" data-value="compact" aria-pressed="${state.density==='compact'}">コンパクト</button><button data-action="density" data-value="detailed" aria-pressed="${state.density==='detailed'}">カード付き</button></div></div></div><div class="filterbar"><input id="skill-search" class="field search" placeholder="スキル名で検索…" aria-label="スキル名で検索" value="${esc(ui.search)}"><label class="filterlabel"><input type="checkbox" id="only-goals" ${ui.onlyGoals?'checked':''}>目標のみ</label><label class="filterlabel"><input type="checkbox" id="only-duplicate" ${ui.onlyDuplicate?'checked':''}>重複・共通のみ</label><span class="tiny-note">${filteredRows(r).length} 件表示</span></div><div id="table-region">${tableHTML(r)}</div><div class="summary-legend"><span><b>2以上</b> デッキ内重複</span><span><span class="common">✓</span> デッキ間共通</span><span>金スキル → インデントした下位スキル（それぞれ独立集計）</span><span>☆ 目標</span><span>「条件付のみ」は成功・失敗等に依存</span></div></section><footer class="footer">検証用PoC · ゲームデータは配信時に組込み · 通常操作で外部通信なし</footer></main><input id="import-file" type="file" accept="application/json,.json" hidden><div id="modal-layer"></div>`;renderModal();}
+function refreshTable(){let r=results();document.getElementById('table-region').innerHTML=tableHTML(r);document.querySelector('.filterbar .tiny-note').textContent=`${filteredRows(r).length} 件表示`;}
+function titleModal(title,subtitle,body,foot=''){document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;}
+function pickerModal(){const {deckKey,index}=ui.modal;const d=state.decks[deckKey],selected=d.slots[index];const cards=data.cards.filter(c=>(c.name+c.character+c.type+c.rarity+(c.searchAliases||[]).join(' ')).includes(ui.pickerSearch)).slice(0,120);const body=`<p class="help">${scopeLabel[deckKey]}のスロット${index+1}に設定するサポカを選択。既存カードは上書きされます。</p><input class="field search" id="picker-search" placeholder="カード名・タイプで絞り込み" value="${esc(ui.pickerSearch)}"><div class="picker-list" id="picker-cards"><p class="tiny-note">候補 ${data.cards.filter(c=>(c.name+c.character+c.type+c.rarity+(c.searchAliases||[]).join(' ')).includes(ui.pickerSearch)).length} 件 / 先頭120件を表示</p>${cards.map(c=>pickerCard(c)).join('')}</div>`;titleModal('サポカを選択',`${scopeLabel[deckKey]} / スロット${index+1}`,body,selected.cardId?`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button>`:'');}
+function pickerCard(c){return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span><strong>${esc(c.name)}</strong><br><small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} ${c.referenceSkills?.length?' / 参考スキル候補'+c.referenceSkills.length+'件':''}</small></span></button>`;}
+function pickerRefresh(){const el=document.getElementById('picker-cards');if(el)el.innerHTML=data.cards.filter(c=>(c.name+c.character+c.type+c.rarity+(c.searchAliases||[]).join(' ')).includes(ui.pickerSearch)).slice(0,120).map(pickerCard).join('')||'<p class="help">該当なし</p>';}
+function eventRewardHTML(rewards){if(!rewards||!rewards.length)return '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}（Lv.${r.level}）${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
+function eventHTML(card,slot,k,i){return card.events.map(e=>{const reachable=core.isReachable(e,slot.choices);const selected=e.type==='choice'?slot.choices[e.id]:null;return `<div class="event ${reachable?'':'dim'}"><div class="event-head"><h3>${esc(e.name)}</h3><span class="${e.type==='auto'?'auto':'slot-badge'}">${!reachable?'到達不可':e.type==='auto'?'自動集計':selected?'設定済み':'未設定'}</span></div>${e.requires?`<div class="tiny-note">必要条件：${esc(e.requires.eventId)} → ${esc(e.requires.choiceId)}</div>`:''}${e.type==='auto'?`<div class="help" style="margin-top:7px">暫定獲得候補（到達条件未検証）：${eventRewardHTML(e.rewards)}</div>`:`<div class="event-options"><label class="option"><input type="radio" data-event-choice data-deck="${k}" data-index="${i}" data-event="${e.id}" value="" ${!selected?'checked':''} ${!reachable?'disabled':''}><span>未設定<small>このイベント由来のスキルは集計しません</small></span></label>${e.choices.map(opt=>`<label class="option"><input type="radio" data-event-choice data-deck="${k}" data-index="${i}" data-event="${e.id}" value="${opt.id}" ${selected===opt.id?'checked':''} ${!reachable?'disabled':''}><span>${esc(opt.label)}<small>獲得候補：${eventRewardHTML(opt.rewards)}</small></span></label>`).join('')}</div>`}</div>`}).join('');}
+function editCardModal(){const {deckKey,index}=ui.modal,sl=state.decks[deckKey].slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)} / ${esc(c.dataStatus||'獲得条件未検証')}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select><span class="tiny-note">性能値は未収録のためスキル集計には影響しません</span></div><div class="info-item"><strong>照合済み通常ヒント（自動集計）</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${c.referenceSkills?.length?`<div class="info-item"><strong>参考：スキル候補（集計対象外）</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div><p class="help">古い公開カード一覧由来。通常ヒントとイベント報酬が混在する可能性があるため集計には加えません。</p></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3><p class="help">選択式イベントは初期状態では未設定。公開データの候補分岐であり、実ゲーム上のイベント選択・到達関係とは未照合です。</p>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
+ titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
+function deckEventsModal(){const k=ui.modal.deckKey;const slots=state.decks[k].slots;const body=`<p class="help">6枚分のイベントをまとめて確認できます。個別カードから編集しても同じ設定が更新されます。</p>${slots.map((sl,i)=>{const c=data.cardById[sl.cardId];return !c?`<div class="info-item"><strong>スロット${i+1}：空</strong></div>`:`<div class="info-item" style="margin-bottom:10px"><div class="flex">${cardIcon(c,true)}<strong>${esc(c.name)}</strong><span class="slot-badge">スロット${i+1}</span></div>${eventHTML(c,sl,k,i)}</div>`}).join('')}`;
+ titleModal('デッキ全体のイベント設定',scopeLabel[k],body);}
+function skillDetailModal(){const id=ui.modal.id,skill=data.skillById[id];let r=results();const body=`<p class="help">スキルごとに提供カードと獲得経路を表示します。編成に未登録のカードも逆引きできます。</p>${['main','inherit'].map(k=>{let item=r[k][id],cov=core.coverage(id,r[k],data);return `<div class="info-item" style="margin-bottom:10px"><strong>${scopeLabel[k]}</strong><div class="sub">${item?`直接提供：${item.count}枚${item.conditionalOnly?'（すべて条件付き）':''}`:cov.kind==='indirect'?'上位スキル経由の間接カバー':'直接提供なし'}</div>${item?Object.values(item.providers).map(p=>`<div style="margin:10px 0"><b>${esc(data.cardById[p.cardId].name)}（スロット${p.slotIndex+1}）</b><div class="sub">${p.routes.map(x=>`${x.source==='hint'?'通常ヒント':esc(x.eventName)+(x.choiceLabel?' / '+esc(x.choiceLabel):'')}${x.level?` · Lv.${x.level}`:''}${x.conditional?' · '+esc(x.condition):''}`).join('<br>')}</div></div>`).join(''):''}</div>`}).join('')}<h3 style="margin:15px 0 9px">全カードから逆引き</h3><div class="info-list">${data.cards.filter(c=>c.hints.includes(id)||c.events.some(e=>(e.rewards||[]).some(x=>x.skillId===id)||(e.choices||[]).some(o=>(o.rewards||[]).some(x=>x.skillId===id)))).map(c=>{let src=[];if(c.hints.includes(id))src.push('通常ヒント');if(c.events.some(e=>(e.rewards||[]).some(x=>x.skillId===id)||(e.choices||[]).some(o=>(o.rewards||[]).some(x=>x.skillId===id))))src.push('イベント候補（ルート・到達条件あり）');return `<div class="info-item flex">${cardIcon(c,true)}<div class="grow"><b>${esc(c.name)}</b><div class="sub">${src.join(' / ')}</div></div><button class="btn tiny" data-action="assign" data-id="${c.id}">編成へ</button></div>`}).join('')||'<p class="help">収録したサポカに該当する提供経路がありません。</p>'}</div>${data.skills.filter(s=>s.lowerId===id).length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${data.skills.filter(s=>s.lowerId===id).map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name)}</div>`:''}`;
+ titleModal(skill.name,skill.tier==='gold'?'金スキル':'スキル詳細',body);
+}
+function assignModal(){const c=data.cardById[ui.modal.cardId];const body=`<p class="help">${esc(c.name)}をどの枠へ配置しますか？選んだ枠に登録済みのカードは置き換わります。</p><div class="picker-list">${['main','inherit'].flatMap(k=>state.decks[k].slots.map((sl,i)=>`<button class="picker-card" data-action="assign-slot" data-deck="${k}" data-index="${i}"><span class="grow"><b>${scopeLabel[k]} · ${i+1}番枠</b><br><small class="muted">${sl.cardId?esc(data.cardById[sl.cardId].name):'空スロット'}</small></span><span>→</span></button>`)).join('')}</div>`;titleModal('配置先を選択',c.name,body);}
+function goalsModal(){const g=goalSet();let all=data.skills.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');const body=`<p class="help">目標セットはデッキとは独立して保存されます。サポカを入れ替えるとカバー判定が更新されます。</p><div class="select-row"><label>セット名：</label><input class="field" id="goal-set-name" value="${esc(g.name)}"><button class="btn tiny" data-action="rename-goal-set">名称を保存</button></div><div class="select-row"><button class="btn tiny" data-action="duplicate-goal-set">現在のセットを複製</button><button class="btn tiny" data-action="new-goal-set">空のセットを作成</button>${state.goalSets.length>1?'<button class="btn tiny danger" data-action="delete-goal-set">現在のセットを削除</button>':''}</div><hr class="sep">${g.goals.map((x,i)=>`<div class="goal-edit"><span class="goal-name">${esc(data.skillById[x.skillId].name)}</span><select class="field" data-goal-scope="${i}">${Object.entries(scopeLabel).filter(([k])=>['main','inherit','either','both'].includes(k)).map(([k,n])=>`<option value="${k}" ${k===x.scope?'selected':''}>${n}</option>`).join('')}</select><button class="btn tiny" data-action="delete-goal" data-index="${i}">削除</button></div>`).join('')||'<p class="help">登録済みの目標はありません。</p>'}<div class="select-row" style="margin-top:15px"><select id="new-goal-skill" class="field grow" aria-label="追加するスキル">${all}</select><select id="new-goal-scope" class="field" aria-label="目標の対象デッキ">${Object.entries(scopeLabel).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary" data-action="add-goal">目標を追加</button></div>`;
+ titleModal('目標スキルセットを編集',g.name,body);}
+function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
+function changeSelection(el){const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=state.decks[k].slots[i];if(!sl?.cardId)return;const card=data.cardById[sl.cardId];let choice=el.value;let next=core.clearDescendants(card,sl.choices,eid);if(choice)next[eid]=choice;else delete next[eid];sl.choices=next;const oldScroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();const body=document.querySelector('.modal-body');if(body)body.scrollTop=oldScroll;}
+function handleAction(el){const a=el.dataset.action,k=el.dataset.deck,i=Number(el.dataset.index);switch(a){
+case 'close-overlay':ui.modal=null;renderModal();break;
+case 'close':ui.modal=null;renderModal();break;
+case 'pick':ui.pickerSearch='';ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
+case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
+case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
+case 'set-card':{const sl=state.decks[ui.modal.deckKey].slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};ui.modal=null;saveRender();break;}
+case 'remove-card':state.decks[k].slots[i]=blank();ui.modal=null;saveRender();break;
+case 'view':state.view=el.dataset.value;saveRender();break;
+case 'density':state.density=el.dataset.value;saveRender();break;
+case 'skill':ui.modal={kind:'skill',id:el.dataset.id};renderModal();break;
+case 'assign':ui.modal={kind:'assign',cardId:el.dataset.id};renderModal();break;
+case 'assign-slot':state.decks[k].slots[i]={cardId:ui.modal.cardId,stage:4,choices:{}};ui.modal=null;saveRender();break;
+case 'goals':ui.modal={kind:'goals'};renderModal();break;
+case 'rename-goal-set':goalSet().name=document.getElementById('goal-set-name').value.trim()||goalSet().name;store();render();break;
+case 'duplicate-goal-set':{const g=goalSet();const dup=JSON.parse(JSON.stringify(g));dup.id='goals-'+Date.now();dup.name+='（複製）';state.goalSets.push(dup);state.currentGoalSet=dup.id;store();render();break;}
+case 'new-goal-set':{const v={id:'goals-'+Date.now(),name:'新しい目標セット',goals:[]};state.goalSets.push(v);state.currentGoalSet=v.id;store();render();break;}
+case 'delete-goal-set':if(state.goalSets.length>1){state.goalSets=state.goalSets.filter(x=>x.id!==state.currentGoalSet);state.currentGoalSet=state.goalSets[0].id;store();render();}break;
+case 'delete-goal':goalSet().goals.splice(i,1);store();render();break;
+case 'add-goal':{const skillId=document.getElementById('new-goal-skill').value,scope=document.getElementById('new-goal-scope').value;const exists=goalSet().goals.find(x=>x.skillId===skillId);if(exists)exists.scope=scope;else goalSet().goals.push({skillId,scope});store();render();break;}
+case 'export':{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const href=URL.createObjectURL(blob);const link=document.createElement('a');link.href=href;link.download='uma-support-lab-poc-settings.json';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);break;}
+case 'import':document.getElementById('import-file').click();break;
+case 'reset':if(confirm('すべての設定を初期状態に戻しますか？')){state=DEFAULT();ui.modal=null;saveRender();}break;
+}}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;handleAction(el)});
+document.addEventListener('input',e=>{if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;pickerRefresh();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.hasAttribute('data-stage')){state.decks[el.dataset.deck].slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
+ const f=el.files?.[0];if(!f)return;f.text().then(t=>{let obj;try{obj=JSON.parse(t)}catch(e){alert('JSONを読み取れませんでした。');return}if(!validate(obj)){alert('このPoCに対応する設定JSONではありません。');return}if(!confirm('現在の設定をこのファイルの内容で置き換えますか？'))return;state=migrateCardIds(obj);ui.modal=null;saveRender();}).catch(()=>alert('ファイルの読み込みに失敗しました。'));
+ }});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;renderModal();}});
+render();
+})();
+</script></body></html>
