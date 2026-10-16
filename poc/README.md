@@ -85,3 +85,5 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 ローカル検証では `node poc/tools/audit_cruise_source.cjs --local path/to/UmaMusumeLibrary.json path/to/support_card.txt`。単体テストは `poc/tests/cruise_source_audit.test.cjs`。GitHub Actionsの「Event Source Coverage Audit」は手動実行専用で、頻繁に公開元へGETしない。実カードのイベント報酬を公開版に追加する機能ではない。
 
+
+開発者向け node poc/tools/compare_event_sources.cjs でUmaUmaCheckerとUmaUmaCruise系の公開JSONを直接取得し、SSR・SRのカード数、イベント件数、選択肢数、表記差候補、空イベントカードを比較できる。第三者データ自体は保存・同梱しない。GitHub Actionsの Event Source Coverage Audit を手動で実行することもできる。

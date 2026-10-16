@@ -25,3 +25,5 @@
 
 21. 大規模イベントソースの全件測定は `docs/event-source-selection.md` にある（2026-10-16に466カード見出し、1,403イベント、UmaSimとの名前＋レアリティ一致442/563）。この値をゲーム内ID一致やイベント網羅率と称さない。調査には `poc/tools/audit_cruise_source.cjs` を使う。サポカ実イベントの自動統合は未許可。
 
+
+22. 2026-10-16のUmaUmaChecker照合（docs/event-source-selection.md）ではSSR・SRカード417件、イベントあり412件、5件空。残る24件は表記差候補だがゲーム内ID未検証。イベント全件収録やID一致を宣言しない。

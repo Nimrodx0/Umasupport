@@ -54,3 +54,31 @@ GitHub Actions上で公開元の大きなJSONを直接取得し、第三者イ�
 再現可能な監査コード：`poc/src/cruise_source_audit.js`、`poc/tools/audit_cruise_source.cjs`。単体テストは `poc/tests/cruise_source_audit.test.cjs`。GitHub Actionsの **Event Source Coverage Audit** を手動実行できる。自動定期取得は設けない。
 
 今後の優先順は、①ゲームマスター由来のカード・イベントID／連続段階の取得可能性、②R・SSR・SRの未収録カードのイベント有無の確認、③第三者データの利用条件、④実装用の正規化スキーマ採用。まだ公開版に実イベントを入れない。
+
+## 2026-10-16：第二のデータ源UmaUmaCheckerの全件照合
+
+[UmaUmaChecker](https://github.com/Cilda/UmaUmaChecker) の [Events.json](https://github.com/Cilda/UmaUmaChecker/blob/master/UmaUmaChecker/Library/Events.json) を公開元から取得し、UmaSimおよびUmaUmaCruise系データと比較した。
+
+| 検証指標 | UmaUmaChecker | UmaUmaCruise系 |
+|---|---:|---:|
+| SSRカード見出し | 316 | 311 |
+| SRカード見出し | 101 | 101 |
+| Rカード見出し | 6 | 54 |
+| サポカイベントレコード | 2,156 | 1,403 |
+| 選択肢／効果レコード | 3,517 | 2,852 |
+| SSR＋SRの名称・レアリティ厳密一致 | 393/417 | 389/417 |
+
+- UmaSimのSSR316＋SR101＝417と、UmaUmaCheckerのSSR316＋SR101＝417は同数。一方、名前＋レアリティの正規化一致は393枚。残る24件は全て、キャラクター名一致・カード固有タイトルが記号除去後一致または1文字違いの、一対一候補。**ゲーム内IDによる直接照合ではないので、この24件は正式承認前に自動名寄せしない。**
+- UmaUmaChecker内のSSRイベント1,687件／選択肢2,743行、SRイベント412件／選択肢695行。SSR＋SR合計2,099イベント・3,438選択肢／効果行。Rは57イベント・79行。
+- **417枚のうちSSR5枚はイベント記録0件、SR101枚は全て1件以上。** よってイベントが1件以上存在するカードの比率は412/417（98.8%）。全イベントを網羅した比率ではない。
+- イベントが空のSSR：［鈴凜なるビスクドール］アドマイヤグルーヴ、［永久の誓い、永久の輝き］サトノダイヤモンド、［花ども集いて束となる］カレンブーケドール、［今日が楽しかったから、］ダンツフレーム、［『最強は俺だ！！』］ジャングルポケット。
+- [Game8](https://game8.jp/umamusume/818830) にはアドマイヤグルーヴ［冷凜なるビスクドール］の連続3件＋ランダム2件が掲載されており、空配列は少なくともこのカードについて**取得元側の欠損**である。
+- UmaUmaCheckerのデータ構造は、Skills → SSR/SR/R → カード名 → Events → イベント名 → 選択肢（TitleとEffect）。**実カードID、イベントID、依存関係、打ち切り・結果確率が構造化されていない。** 効果は文字列で、無条件獲得を推測してはならない。
+- READMEではイベントデータをGameWithから抽出し、毎日9時・15時・18時・22時に更新すると説明。MITライセンスの対象はソフトウェアのソースコードで、データ本体や転載元の再利用許可の根拠とはしない。
+
+**採用方針（暫定）：** SSR・SRのイベント候補の主ソースはUmaUmaChecker。GameTora／Game8／GameWithをイベント0件の5枚、各カード内の抜け、連続段階・打ち切りの検証に利用する。ゲームマスターデータ由来のWiki処理で正式ID・連続段階を検証する。UmaUmaCruise系は同じGameWith由来の別抽出・差分監視用。
+
+**未達成：** 5枚の補完、既存412枚の全イベント一致、正式ID照合、権利・利用条件、起動時取得方式の評価。現段階で全イベント収録完了と扱わない。
+
+再計測は node poc/tools/compare_event_sources.cjs。通常CIで毎回外部取得せず、GitHub Actionsの Event Source Coverage Audit の手動ジョブで必要に応じて取得・診断する。元の第三者データはこのリポジトリに同梱しない。
+
