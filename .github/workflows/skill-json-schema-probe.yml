@@ -85,3 +85,24 @@ jobs:
             if min(x.get('groupRate',0) for x in rows[1:])>rows[0].get('groupRate',0):observed['gold_has_min_groupRate']+=1
           print('group_observations',dict(observed))
           PY
+
+      - name: Compare all UmaSim rare groups with independent skill export
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_independent_skill_json.py \
+            --umasim "$RUNNER_TEMP/uma-json-probe/skill_data.txt" \
+            --independent "$RUNNER_TEMP/uma-json-probe/skills.json" \
+            --umasim-revision "mee1080/umasim@cf9366f6a487bd8f197b53d8a11981207beb9f6c" \
+            --independent-revision "Tsuyuchan-jp/umamusume-data@0cacbb1aaf9dca10283d5b9ea20b205b9d204535 (2026-09-30)" \
+            > "$RUNNER_TEMP/uma-json-probe/audit.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          report=json.loads((Path(os.environ['RUNNER_TEMP'])/'uma-json-probe/audit.json').read_text())
+          print('INDEPENDENT JSON FULL GROUP AUDIT')
+          for key in ('sourceRare','sourceStructuralChains','matchingChains','matchingNoLowerSnapshot','statusCounts','pointerEvidence','allConfirmedInIndependentSnapshot'):
+              print(key,':',json.dumps(report[key],ensure_ascii=False,sort_keys=True))
+          print('Unconfirmed IDs only:')
+          print(json.dumps(report['unconfirmed'],ensure_ascii=False,sort_keys=True))
+          PY
