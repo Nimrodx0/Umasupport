@@ -8,7 +8,8 @@
       "status": "structure-only",
       "sourceUrls": [
         "https://umamusu.wiki/Game%3ASSR_Jungle_Pocket_%28%E3%80%8E%E6%9C%80%E5%BC%B7%E3%81%AF%E4%BF%BA%E3%81%A0%EF%BC%81%EF%BC%81%E3%80%8F%29",
-        "https://gametora.com/ja/umamusume/supports/30240-jungle-pocket"
+        "https://gametora.com/ja/umamusume/supports/30240-jungle-pocket",
+        "https://gamewith.jp/uma-musume/article/show/490549"
       ],
       "chain": [
         {
@@ -38,6 +39,10 @@
           "mode": "unknown",
           "hints": []
         }
+      ],
+      "cardLevelSkillCandidates": [
+        "がむしゃら",
+        "迅速果断"
       ]
     },
     {
