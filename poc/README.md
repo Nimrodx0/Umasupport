@@ -1,6 +1,8 @@
 # PoC v8.1：ソース移管と動作手順
 
-**現在の実装は単一HTML＋JavaScript＋Python変換スクリプトです。React/TypeScript移行前。**
+**現行公開版はHTML/CSS/JavaScriptの直接取得型PoC。React/TypeScript/Viteは未導入。** 旧v8.1のPythonビルド・実データ同梱版は履歴として以下に残す。
+
+> 最新の進捗・工程完了ゲート：[ロードマップ](../docs/roadmap.md)／[検証計画](../docs/verification-plan.md)。現行`poc/live.html`はサポカ通常ヒントと金白スキル辞書の取得に対応し、イベント公開DBの実イベントは**0件**。2026-10-16の実ソースNode結合試験は成功したが、最新の階層画面のPages／スマホ検証は未完。以降の旧記述はその機能を実装した当時の状態を説明する場合がある。
 
 ## 公開できる動作デモ
 
@@ -32,7 +34,7 @@ node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.te
 - `poc/src/data.js`：6枚の実カード・イベント情報を含む過去の部分データ
 - 実カード情報を同梱した`uma_support_lab_v8_1.html`：約925KBの完成データ版
 
-したがって、**この公開レポジトリのままでは実データ版v8.1は完全再ビルドできない**。移管前のZIPは会話で配布した `uma_support_lab_v8_1_source.zip`。再配布条件を確認し、必要なら元ソースから合法的に再取得・生成するパイプラインへ移行する。
+したがって、**この公開レポジトリのままでは**旧同梱版**v8.1は完全再ビルドできない**。移管前のZIPは会話で配布した `uma_support_lab_v8_1_source.zip`。再配布条件を確認し、必要なら元ソースから合法的に再取得・生成するパイプラインへ移行する。
 
 元データを用意できた場合の旧ビルドコマンド：
 
@@ -55,8 +57,8 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 - [`live.html`](live.html) はUmaSimの通常ヒントを外部公開元から取得する移行PoC。ゲームデータ自体をこのレポジトリに含めない。
 - 起動時取得→検証→IndexedDBキャッシュ。失敗したときは検証済みの前回データを使用。利用者向け更新ボタンはない。
-- 現段階ではイベント報酬や金白スキル関係の移植は未完了。初回利用にはネット接続が必要。
-- テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDBの内容とオフライン復旧は未検証。
+- 金白スキル階層は実装・Node実ソース検証済みで最新ブラウザ確認待ち。実イベント報酬は未収録（0件）。初回利用にはネット接続が必要。
+- テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDB保存・サポカデータ取得先遮断時復旧・再取得は2026-10-16のPages実ブラウザで確認済み。スキル辞書側の実機検証は未完。
 - [設計と未解決課題](../docs/runtime-data-loading.md)。
 
 ## 直接取得版の保存設定（開発中）
@@ -69,13 +71,13 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 ## イベント分岐のテスト
 
-`src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**直接取得版の `live_loader.js` は引き続きイベント未収録（events: []）**。
+`src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**`live_loader.js` が作る初期モデルにはイベントを含めず（events: []）、後段の `public_event_catalog.js` が公開レビュー済みイベントJSONを検証後に結合する。現行公開JSONの実イベントは0件。**
 
 ## 実イベント候補の監査とレビュー付き変換
 
 `node poc/tools/audit_events.cjs` は開発者向けコマンド。UmaSimと `umamusume-data` の3ファイルを公開元へ直接GETし、ID照合・レコード件数・隔離理由を表示する。元JSONをGitHubへ保存しない。`--local support_card.txt supports.json events.json` でローカル監査も可能。
 
-`src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。公開版の `events: []` は変えていない。
+`src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。公開版の承認済み実イベントは0件のまま。
 
 [照合記録](../docs/event-source-audit.md)。
 
