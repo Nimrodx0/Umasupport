@@ -20,3 +20,5 @@
 16. `poc/src/settings.js` は設定形式と現在のカード・スキルIDのみ検証する。旧ID移行・未知ID保持・復旧用バックアップは不要。読み込めなければエラー画面で確認付き初期化を案内し、確認まで保存値を上書きしない。
 17. CIテストとPages公開は2026-10-16のmainで成功済み。「CI未設定・ブラウザ未検証」という古い記述より最新実行記録を優先。
 18. イベントモデルを変更する場合は `docs/event-schema.md` と `poc/src/event_schema.js` の検証処理を参照する。第三者イベントはまだ公開版未収録。GameWith等の由来データを権利確認前に同梱しない。入力カタログの件数をゲーム内の網羅率と混同しない。
+19. `docs/event-source-audit.md` は実ソースの照合結果。45枚のカードID・名称一致は確認したがイベントの到達条件やスキルID対応は未検証。`poc/src/event_source_audit.js` は読み取り専用監査、`poc/src/event_review_compiler.js` は各イベントの `chainVerified:true` と `rewardSemanticsVerified:true`、承認済みのスキル対応を要求。未レビューイベントの公開版自動導入は禁止。
+20. 2026-10-16 IndexedDB保存・データ取得先遮断時復旧・再取得の実ブラウザ検証は3項目成功。アプリ本体の完全オフライン起動は未検証。

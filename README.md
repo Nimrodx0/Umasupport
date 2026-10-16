@@ -45,7 +45,7 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 
 公開URL: https://nimrodx0.github.io/Umasupport/
 
-ルートの `index.html` は `poc/live.html` への入口です。現行のアプリ本体は `poc/live.html` と `poc/src/` にあり、`poc/demo.html` は架空データのテスト画面です。ゲームデータはアプリ起動時に外部公開元からブラウザが直接取得するため、初回はネット接続が必要です。2026-10-16にGitHub Pages上での通常起動・公開元データ読込・表示をユーザーが実ブラウザで確認済みです。GitHub ActionsのPoCテストとPagesデプロイも最新mainで成功。**IndexedDBの保存内容・オフライン再読込は未検証**で、[Issue #1](https://github.com/Nimrodx0/Umasupport/issues/1)で追跡します。
+ルートの `index.html` は `poc/live.html` への入口です。現行のアプリ本体は `poc/live.html` と `poc/src/` にあり、`poc/demo.html` は架空データのテスト画面です。ゲームデータはアプリ起動時に外部公開元からブラウザが直接取得するため、初回はネット接続が必要です。2026-10-16にGitHub Pages上での通常起動・公開元データ読込・表示をユーザーが実ブラウザで確認済みです。GitHub ActionsのPoCテストとPagesデプロイも最新mainで成功。**IndexedDB保存・外部データ取得先遮断時のキャッシュ復旧・通信再開後の再取得は2026-10-16に実ブラウザで確認済み（アプリ本体の完全オフライン起動は未検証）**で、[Issue #1](https://github.com/Nimrodx0/Umasupport/issues/1)で追跡します。
 
 ## 開発版の保存設定
 
@@ -57,3 +57,7 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 ## イベントモデルv1
 
 [イベント到達条件スキーマv1](docs/event-schema.md) と架空データの回帰テストを追加しました。連続イベントの到達・打ち切り・成功失敗を候補として扱う基盤です。**実ゲームのイベント報酬データはまだPagesの公開版に収録しておらず、引き続き通常ヒントのみ表示します。**
+
+## 実イベントソースの照合監査
+
+[実イベントデータの照合記録](docs/event-source-audit.md) に、候補45枚のIDと名称がUmaSimと一致し、126イベント中124件でカードIDを特定できた結果を記載しています。元データに連続イベントの依存・打ち切り情報が不足し、正式スキルIDや利用条件も未確認です。`node poc/tools/audit_events.cjs` は開発者向けに元データを直接読み取って再監査します。公開アプリには実イベントを導入していません。

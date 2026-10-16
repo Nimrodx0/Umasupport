@@ -70,3 +70,11 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 ## イベント分岐のテスト
 
 `src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**直接取得版の `live_loader.js` は引き続きイベント未収録（events: []）**。
+
+## 実イベント候補の監査とレビュー付き変換
+
+`node poc/tools/audit_events.cjs` は開発者向けコマンド。UmaSimと `umamusume-data` の3ファイルを公開元へ直接GETし、ID照合・レコード件数・隔離理由を表示する。元JSONをGitHubへ保存しない。`--local support_card.txt supports.json events.json` でローカル監査も可能。
+
+`src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。公開版の `events: []` は変えていない。
+
+[照合記録](../docs/event-source-audit.md)。
