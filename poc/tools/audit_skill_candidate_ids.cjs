@@ -4,7 +4,7 @@
 // Does not write source's full skill records or game/event source prose.
 const fs=require('node:fs/promises');
 const path=require('node:path');
-const {parseSkillData,audit}=require('../src/skill_candidate_id_audit.cjs');
+const {parseSkillData,audit,verifyCandidateTable}=require('../src/skill_candidate_id_audit.cjs');
 const URL='https://raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt';
 async function run(){
  const args=process.argv.slice(2);
@@ -17,7 +17,9 @@ async function run(){
      return r.text();
    })();
  const facts=require('../config/missing-ssr-event-facts.v1.json');
- const r=audit(facts,parseSkillData(text));
+ const parsed=parseSkillData(text);
+ const r=audit(facts,parsed);
+ r.candidateTableVerification=verifyCandidateTable(facts,parsed,require('../config/missing-ssr-skill-id-candidates.v1.json'));
  console.log('UMA_SKILL_ID_AUDIT_START');
  console.log(JSON.stringify(r,null,2));
  console.log('UMA_SKILL_ID_AUDIT_END');
