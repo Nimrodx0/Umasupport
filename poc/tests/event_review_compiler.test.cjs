@@ -23,8 +23,8 @@ const eventsDocument={version:2,events:[
 const config=()=>({
  supports,eventsDocument,model,review:{
   events:[
-   {sourceEventId:'evt_30242_1',cardId:'30242',chainVerified:true,terminalChoiceIds:['stop']},
-   {sourceEventId:'evt_30242_2',cardId:'30242',chainVerified:true,
+   {sourceEventId:'evt_30242_1',cardId:'30242',chainVerified:true,rewardSemanticsVerified:true,terminalChoiceIds:['stop']},
+   {sourceEventId:'evt_30242_2',cardId:'30242',chainVerified:true,rewardSemanticsVerified:true,
     requires:{all:[{eventId:'evt_30242_1',choiceId:'go'}]}}
   ],
   skillMap:{'2001':'hint:直線巧者','2002':'gold:架空'}
@@ -64,4 +64,9 @@ test('terminal choices must exist in the external event choices',()=>{
 test('events dependent on unreviewed parents cannot be compiled',()=>{
  const x=config();x.review.events=x.review.events.slice(1);
  assert.throws(()=>buildReviewedCatalog(x),/親イベントが未登録/);
+});
+
+test('unverified success or failure reward semantics cannot be compiled as unconditional',()=>{
+ const x=config();x.review.events[1].rewardSemanticsVerified=false;
+ assert.throws(()=>buildReviewedCatalog(x),/未承認/);
 });
