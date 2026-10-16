@@ -84,7 +84,7 @@ async function main(){
  const revisions={
   umasim:'cf9366f6a487bd8f197b53d8a11981207beb9f6c',
   japan:'0cacbb1aaf9dca10283d5b9ea20b205b9d204535',
-  english:'main'};
+  english:'d678b738992c3b76f321a0bf51e096b04503237b'};
  const [a,b,c]=await Promise.all([
   httpText('https://raw.githubusercontent.com/mee1080/umasim/'+revisions.umasim+'/data/support_card.txt'),
   httpText('https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/'+revisions.japan+'/data/supports.json'),
