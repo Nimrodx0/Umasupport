@@ -85,6 +85,17 @@ async function main(){
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
   const row=page.locator('tr[data-skill="hint:右回り○"]');
   await row.waitFor();assert.match(await row.innerText(),/右回り○/);
+  // Goal-only white skill: keep gold/white relationships in the model, not as noisy table text.
+  await page.locator('button[data-action="goals"]').click();
+  await page.locator('#new-goal-skill').selectOption('skill:700002');
+  await page.locator('#new-goal-scope').selectOption('main');
+  await page.locator('button[data-action="add-goal"]').click();
+  await page.locator('button[data-action="close"]').click();
+  const orphanWhite=page.locator('tr[data-skill="skill:700002"]');
+  await orphanWhite.waitFor();
+  assert.match(await orphanWhite.innerText(),/右回り◎/);
+  assert.doesNotMatch(await orphanWhite.innerText(),/対応する金スキル/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   // The browser must really have persisted both published source records.
   const stored=await page.evaluate(async()=>{
    const r=indexedDB.open('uma-support-lab-runtime-data',1);
