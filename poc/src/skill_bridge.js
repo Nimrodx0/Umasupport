@@ -26,12 +26,12 @@ function parseSource(text){
   }
   return {byId,byName,count:raw.length};
 }
-function prepare(model,catalog,text){
+function prepare(model,catalog,text,{fullRegistry=false}={}){
   if(!model||!isObject(model.skillById))throw Error('スキル照合用モデルが不正');
   if(!catalog||!Array.isArray(catalog.cards))return {catalog,skills:[],matchedHints:0};
   // JSON-safe public catalogs are cloned, so failed validation never mutates input or model.
   const converted=JSON.parse(JSON.stringify(catalog));
-  let source=null,matchedHints=0;
+  let source=typeof text==='string'&&fullRegistry?parseSource(text):null,matchedHints=0;
   const skills=new Map();
   function mapReward(reward){
     if(!isObject(reward)||typeof reward.skillId!=='string')return;
@@ -73,10 +73,13 @@ function prepare(model,catalog,text){
       if(Array.isArray(event?.choices))event.choices.forEach(mapPart);
     }
   }
-  const reviewed=source?hierarchy.stage({model,source,skills:[...skills.values()]}):
+  const reviewed=source?hierarchy.stage({model,source,skills:[...skills.values()],fullRegistry}):
     {skills:[...skills.values()],patches:[],linkedPairs:0};
   return {catalog:converted,skills:reviewed.skills,skillPatches:reviewed.patches,
-    reviewedHierarchyPairs:reviewed.linkedPairs,matchedHints};
+    reviewedHierarchyPairs:reviewed.linkedPairs,structuralPairs:reviewed.structuralPairs||0,
+    unresolvedHierarchyGroups:reviewed.unresolvedGroups||0,
+    hierarchyWithoutLower:reviewed.withoutLower||0,totalRareSkills:reviewed.totalRare||0,
+    matchedHints};
 }
 async function load({fetchImpl=g.fetch?.bind(g),store=g.UmaLiveLoader?.indexedDbStore(g.indexedDB,CACHE_KEY),
   now=()=>new Date().toISOString(),timeoutMs=12000}={}){
