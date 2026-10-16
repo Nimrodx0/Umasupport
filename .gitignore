@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+dist/
+coverage/
+.DS_Store
+.vscode/
+.env
+.env.*
+# Third-party-derived game data. Keep out of public commits pending rights review.
+poc/inputs/
+poc/src/data.js
+poc/uma_support_lab_v*.html
+local-data/
+scratch/
