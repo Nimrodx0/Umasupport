@@ -115,3 +115,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-17：公開Pagesの実データヒント性能UI受け入れ（PR #35）
 
 [Actions #38953159885](https://github.com/Nimrodx0/Umasupport/actions/runs/38953159885)でLinux Chromium/140の公開Pages実体へ接続し、実カードの0凸／4凸ごとの基礎ヒントLv・発生率アップ基本／固有が実取得元パラメータから期待した画面文字列と一致することを検証。既存の編成・目標・金白・通信遮断／キャッシュ破損復旧も再度合格。[詳細](pages-browser-acceptance-20261017.md)。Android物理実機の新性能UIについては未検証。
+
+## 2026-10-17：サポカ全563件の別系統ID照合（PR #36）
+
+[GameTora日本版一覧とUmaSim固定版の全563個のID集合が一致](card-population-independent-audit.md)し、片側のみに存在するIDは双方0。さらに日本版選択JSONの45枚と英語版カード台帳の259枚（互いに重複なし）のID・レアリティを全件照合し、合計304枚に矛盾0。日本版45枚の完全名称も一致。[限定監査Actions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930)で再現。**RタッカーブラインはUmaSim上にID10128で既に存在**。旧「Rタッカーブライン未照合」を「UmaSim未収録」と解釈しないよう訂正。ゲーム公式マスターの全件照合・個別性能・表示順などは未確認。アプリ内カードを自動追加する変更は発生せず。
