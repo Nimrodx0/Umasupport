@@ -41,3 +41,6 @@
 
 
 29. PR #21のスキルID監査は `docs/skill-id-candidate-audit.md` を参照。`poc/config/missing-ssr-skill-id-candidates.v1.json` にスキル14種のID候補（UmaSim厳密一致13＋BWiki等の外部暫定1）を記録。これはゲームマスターで正式確認したID・イベント獲得経路を意味しない。欠損SSR30240でイベントスキル『がむしゃら』『迅速果断』のカード単位の掲載を別資料でも確認したが、出現段階・選択肢は未知で、イベントごとのhintsに配置してはならない。手動監査のみで通常CIから元データをGETしない。
+
+30. `poc/src/skill_bridge.js` はイベント報酬 `skill:数値ID` をUmaSimスキル辞書へ照合するランタイム変換層。イベントJSONには `verifiedSkillName` のレビュー済み名称が必要。名前一意一致時だけ既存の通常ヒント `hint:名称` へ統合する。名称の重複・ID変更は自動承認しない。
+31. 数値スキル辞書はイベントレコードがあるときだけ直接取得してIndexedDBに保存。公開DBの実イベントはまだ0件。数値IDの一致は、金白の上下関係・分岐・獲得条件・ゲームマスター由来ID・第三者データの利用許諾の承認ではない。CIは `poc/tests/skill_bridge.test.cjs` を含む。
