@@ -63,3 +63,7 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 [実イベントデータの照合記録](docs/event-source-audit.md) に、候補45枚のIDと名称がUmaSimと一致し、126イベント中124件でカードIDを特定できた結果を記載しています。元データに連続イベントの依存・打ち切り情報が不足し、正式スキルIDや利用条件も未確認です。`node poc/tools/audit_events.cjs` は開発者向けに元データを直接読み取って再監査します。公開アプリには実イベントを導入していません。
 
 **イベントデータの今後の優先課題：** まず [網羅的な供給元の選定](docs/event-source-selection.md) とカード別収録率を調査し、それが済んでから実イベントを段階的に導入します。現時点で主ソースは未決定です。
+
+## 全サポカ向けイベントソースの調査
+
+[供給元の全件測定](docs/event-source-selection.md) で `umaumacruise_customjson` の466カード見出し・1,403イベントを実測し、UmaSimの563枚に対する名前＋レアリティ一致442枚を確認しました。現時点では**ゲーム内ID・連続イベントの構造化・利用条件が不十分なため主データ元は未決定**。開発者は `node poc/tools/audit_cruise_source.cjs` でデータを公開元から直接取得して再監査できます（ゲームデータをリポジトリに含めません）。

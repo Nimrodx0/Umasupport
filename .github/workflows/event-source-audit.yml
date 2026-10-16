@@ -1,0 +1,19 @@
+name: Event Source Coverage Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit upstream events without redistributing their text
+        run: node poc/tools/audit_cruise_source.cjs
