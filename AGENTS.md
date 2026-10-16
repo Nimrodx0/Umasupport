@@ -42,3 +42,7 @@
 - リポジトリのPRには該当Issue、差分、再現手順と三軸ゲートのPass／Fail／未実施を記載し、未通過であれば残件を引き継ぐ。
 
 **次の優先作業**：[近時点の独立金白照合](docs/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。残る1組の数値IDの独立検証、Android/Windows実端末、Phase 1のカード・性能・表示順の全件監査は未完。[Pages Chromium実測](docs/pages-browser-acceptance-20261017.md)を参照。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](docs/roadmap.md)参照。
+
+## 2026-10-17の追加引き継ぎ
+
+[公開Pagesの受け入れ記録](docs/pages-browser-acceptance-20261017.md)に、**通信復帰後の実GET、破損キャッシュ2種類、更新版スキル辞書破損の拒否、初回データなし、IndexedDB拒否時のオンライン利用**のChromium合格結果を追記。実機Android・Windowsやブラウザ横断検証ではない。再現は[限定的Pages受け入れワークフロー](.github/workflows/pages-real-browser-acceptance.yml)で手動実行（通常CIで繰返しPublisher GETしない）。
