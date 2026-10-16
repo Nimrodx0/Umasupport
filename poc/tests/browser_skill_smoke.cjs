@@ -1,0 +1,126 @@
+'use strict';
+// Real Chromium DOM/IndexedDB smoke with synthetic data, never a production-data audit.
+const assert=require('node:assert/strict');
+const fs=require('node:fs/promises');
+const http=require('node:http');
+const path=require('node:path');
+const {chromium}=require('playwright');
+const ROOT=path.resolve(__dirname,'../..');
+const CARDS=563,SKILL_NORMALS=120;
+
+function supportFixture(){
+ const lines=[];
+ for(let n=0;n<CARDS;n++){
+  const id=String(30001+n);
+  for(let stage=0;stage<=4;stage++){
+   const f=Array(62).fill('');
+   f[0]=id;f[1]='[架空'+id+']サポカ'+n;f[3]='3';f[4]=String(stage);
+   f[6]='スピード';f[59]=n===0?'右回り○':'';
+   lines.push(f.join('\t'));
+  }
+ }
+ return lines.join('\n');
+}
+function skillFixture(){
+ const skills=[
+  {id:'700004',name:'右回りの鬼',rarity:'rare',group:70000},
+  {id:'700002',name:'右回り◎',rarity:'normal',group:70000},
+  {id:'700001',name:'右回り○',rarity:'normal',group:70000},
+  {id:'700014',name:'架空の金スキル',rarity:'rare',group:70001},
+  {id:'700012',name:'架空の下位白',rarity:'normal',group:70001},
+  {id:'700024',name:'架空の白なし金',rarity:'rare',group:70002}
+ ];
+ for(let i=0;i<SKILL_NORMALS;i++){
+  skills.push({id:String(800000+i),name:'無関係な架空スキル'+i,
+   rarity:'normal',group:Math.floor((800000+i)/10)});
+ }
+ return JSON.stringify(skills);
+}
+const supports=supportFixture(),skills=skillFixture();
+const contentTypes={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
+ '.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8'};
+function makeServer(){
+ return http.createServer(async (req,res)=>{
+  try{
+   const url=new URL(req.url,'http://127.0.0.1');
+   const file=path.resolve(ROOT,'.'+decodeURIComponent(url.pathname));
+   if(!file.startsWith(ROOT+path.sep))throw Error('outside root');
+   const content=await fs.readFile(file);
+   res.writeHead(200,{'Content-Type':contentTypes[path.extname(file)]||'text/plain'});
+   res.end(content);
+  }catch(e){res.writeHead(404);res.end('Not found');}
+ });
+}
+async function boot(page,base){
+ await page.goto(base+'/poc/live.html',{waitUntil:'load'});
+ await page.locator('#app main.app').waitFor({timeout:20000});
+ const mode=await page.locator('#bootstrap-status').getAttribute('data-mode');
+ assert.notEqual(mode,'error');
+ return await page.locator('#bootstrap-status').innerText();
+}
+async function mockSources(page,{eventFailure=false}={}){
+ await page.route('**/data/support_card.txt',r=>r.fulfill({status:200,contentType:'text/plain',body:supports}));
+ await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,contentType:'text/plain',body:skills}));
+ if(eventFailure)await page.route('**/reviewed_events.v1.json',r=>r.abort());
+}
+async function main(){
+ const server=makeServer();
+ await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});
+ const base='http://127.0.0.1:'+server.address().port;
+ let browser;
+ try{
+  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+  const context=await browser.newContext(),page=await context.newPage();
+  await mockSources(page);
+  let status=await boot(page,base);
+  assert.match(status,/金白構造候補 2\/3組/);
+  let notice=await page.locator('.notice').innerText();
+  assert.match(notice,/金白の構造上の対応候補 2\/3組/);
+  assert.match(notice,/承認済み実イベントは0件/);
+  assert.doesNotMatch(notice,/金スキル階層、カード性能は未照合/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
+  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await page.locator('button[data-action="set-card"][data-id="30001"]').click();
+  const row=page.locator('tr[data-skill="hint:右回り○"]');
+  await row.waitFor();assert.match(await row.innerText(),/右回り○/);
+  // The browser must really have persisted both published source records.
+  const stored=await page.evaluate(async()=>{
+   const r=indexedDB.open('uma-support-lab-runtime-data',1);
+   const db=await new Promise((ok,fail)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>fail(r.error)});
+   const tx=db.transaction('sources','readonly'),keys=tx.objectStore('sources').getAllKeys();
+   const ids=await new Promise((ok,fail)=>{keys.onsuccess=()=>ok(keys.result);keys.onerror=()=>fail(keys.error)});
+   db.close();return ids;
+  });
+  assert.ok(stored.some(x=>String(x).includes('support_card.txt')));
+  assert.ok(stored.some(x=>String(x).includes('skill_data.txt')));
+  await page.unroute('**/data/support_card.txt');
+  await page.route('**/data/support_card.txt',r=>r.abort());
+  status=await boot(page,base);
+  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
+  assert.match(status,/保存済みデータを利用中/);
+  await page.unroute('**/data/skill_data.txt');
+  await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,contentType:'text/plain',body:'{}'}));
+  status=await boot(page,base);
+  assert.match(status,/スキル辞書は保存済み版を使用/);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
+  await context.close();
+
+  const failureContext=await browser.newContext(),failurePage=await failureContext.newPage();
+  await mockSources(failurePage,{eventFailure:true});
+  status=await boot(failurePage,base);
+  assert.match(status,/イベントデータの検証に失敗/);
+  assert.match(status,/金白構造候補 2\/3組/);
+  assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
+  assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
+  notice=await failurePage.locator('.notice').innerText();
+  assert.match(notice,/金白の構造上の対応候補 2\/3組/);
+  await failureContext.close();
+  console.log('PASS: Chromium DOM, full synthetic 563-card load, hierarchy, IndexedDB fallback, bad skill update, event outage');
+ } finally {
+  await browser?.close();
+  await new Promise(resolve=>server.close(resolve));
+ }
+}
+main().catch(e=>{console.error(e);process.exitCode=1});

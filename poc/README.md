@@ -119,3 +119,9 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 ## 全件スキル階層のランタイム導入（2026-10-16）
 
 `src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はレビュー済みイベント0件でも金白辞書を起動時直接GETしてIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/skill-hierarchy-coverage.md)。
+
+## Chromiumの自動ブラウザ回帰（2026-10-17）
+
+§poc/tests/browser_skill_smoke.cjs§ を実行すると、PlaywrightのChromiumで現行§live.html§をHTTP配信・操作します。§node poc/tests/browser_skill_smoke.cjs§ は§playwright@1.55.1§とChromiumが別途必要です。CIの§browser-smoke§ジョブはセットアップから行います。
+
+第三者元データはダウンロードせず、563枚×5段階の架空カードと126個の架空スキルをネットワーク代用応答として返します。階層の実表示と金白辞書のIndexedDB復旧、イベントJSON失敗時の階層維持をテストします。**本テスト合格は実ゲーム金白322組の独立裏付けやPages／スマホ実機の合格ではありません。** [検証ゲート](../docs/verification-plan.md)で区別します。
