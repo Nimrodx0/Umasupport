@@ -82,3 +82,7 @@ GitHub Actions上で公開元の大きなJSONを直接取得し、第三者イ�
 
 再計測は node poc/tools/compare_event_sources.cjs。通常CIで毎回外部取得せず、GitHub Actionsの Event Source Coverage Audit の手動ジョブで必要に応じて取得・診断する。元の第三者データはこのリポジトリに同梱しない。
 
+
+## 2026-10-16 実イベント名の差分監査
+
+[完全性監査結果](event-completeness-audit.md)：厳密にカード名・レアリティが一致する389枚のイベントタイトルで、共通1,211、UmaUmaCheckerのみ769、UmaUmaCruise系のみ11。11件は11枚の追加検証候補に留まる。U-toolsで4枚の空イベントサポカのイベント専用ページ、5枚目についてもカード詳細ページを確認。U-toolsは5桁カードIDのURLと連続／ランダム分類を備えるため、独立検証先の候補に追加する。利用許可は未確認で、イベント本文をコピーしない。

@@ -66,3 +66,7 @@
 
 [UmaUmaChecker](https://github.com/Cilda/UmaUmaChecker) の日本語イベントJSONはSSR316・SR101カードで、UmaSimと枚数が一致。厳密な名前一致393/417、残り24件は一対一の表記差候補。SSR＋SRでは2,099イベントがあるが5枚のSSRはイベント配列が空で、イベント記録あり412/417。GameWithから抽出し1日4回更新すると説明されており、MITのコードライセンスをイベントデータの利用許可と混同しない。詳細は[ソース選定](event-source-selection.md)。
 
+
+## イベント単位の差分検証（2026-10-16）
+
+[SSR・SRの完全性監査](event-completeness-audit.md) ではカード名厳密一致389枚でイベント名を差分比較し、UmaUmaCruise系だけに存在する名称11件（11カード）を抽出。欠損確定ではない。独立照合先としてU-toolsの5桁IDを用いたカードページと連続／ランダムイベントの掲載を確認。U-toolsはAll Rights Reservedであり、再利用可能性・機械取得の条件を別途確認する。

@@ -87,3 +87,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 
 開発者向け node poc/tools/compare_event_sources.cjs でUmaUmaCheckerとUmaUmaCruise系の公開JSONを直接取得し、SSR・SRのカード数、イベント件数、選択肢数、表記差候補、空イベントカードを比較できる。第三者データ自体は保存・同梱しない。GitHub Actionsの Event Source Coverage Audit を手動で実行することもできる。
+
+## イベント名レベルの欠損候補監査
+
+`src/event_title_diff.js` はSSR／SRの**カード表示名とレアリティが厳密に一意照合できた場合のみ**UmaUmaCheckerとUmaUmaCruise系のイベント名集合を比較する。名前の違いがある24件を推測で自動結合しない。`tools/compare_event_sources.cjs` の `eventTitleComparison` にカードIDと件数だけを出力し、第三者のイベント本文やイベント名を再配布しない。`tests/event_title_diff.test.cjs` に人工データの回帰テストあり。調査詳細： [event-completeness-audit.md](../docs/event-completeness-audit.md)。

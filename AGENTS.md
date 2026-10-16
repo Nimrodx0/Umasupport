@@ -27,3 +27,5 @@
 
 
 22. 2026-10-16のUmaUmaChecker照合（docs/event-source-selection.md）ではSSR・SRカード417件、イベントあり412件、5件空。残る24件は表記差候補だがゲーム内ID未検証。イベント全件収録やID一致を宣言しない。
+
+23. SSR・SRイベントの完全性は `docs/event-completeness-audit.md` を参照。UmaUmaCheckerとUmaUmaCruise系で厳密照合した389枚からイベント名差分候補11件を抽出。U-toolsのID付きイベントページは独立した確認先だが、利用条件未確認のためイベント本文の大量取得／転載はしない。暫定比較を完全性の証明にしない。
