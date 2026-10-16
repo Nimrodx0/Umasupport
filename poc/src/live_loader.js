@@ -5,6 +5,24 @@
   const COLOR = { 'スピード':'#bc6665','スタミナ':'#58959c','パワー':'#bb9148','根性':'#a66d9b','賢さ':'#758bc1','友人':'#6caa89','グループ':'#8b91af' };
   const KEY = 'umasupport/umasim/support_card.txt/v1';
   function normalizeName(s) { return String(s).normalize('NFKC').replace(/\s+/g, ' ').trim(); }
+  // UmaSim SupportCardLoader.kt: base status begins at column 7, fixed unique at 33.
+  // Hint level and hint-frequency modifiers are offsets 16/17 in those 26 fields.
+  // This is published SOURCE metadata, not a measured in-game activation probability.
+  function parseHintPerformance(f) {
+    const fields={levelBase:23,frequencyBase:24,levelUnique:49,frequencyUnique:50};
+    const result={};
+    for(const [key,index] of Object.entries(fields)){
+      const text=f[index];
+      if(typeof text!=='string'||!/^-?\\d+$/.test(text))
+        throw new Error('ヒント性能値が不正です（列 '+index+'）');
+      const value=Number(text);
+      if(!Number.isSafeInteger(value))throw new Error('ヒント性能値が安全な整数ではありません（列 '+index+'）');
+      result[key]=value;
+    }
+    if(result.levelBase+result.levelUnique < 0)
+      throw new Error('ヒントLv補正が不正です');
+    return result;
+  }
   function parseSupportCards(text) {
     if (typeof text !== 'string' || text.length < 100000) throw new Error('カードデータが短すぎます');
     const cards = new Map();
@@ -18,12 +36,14 @@
       lines++;
       const id=f[0], stage=f[4], name=f[1], type=f[6], rarity={'1':'R','2':'SR','3':'SSR'}[f[3]];
       const hints=[...new Set(f[59].split(',').map(normalizeName).filter(Boolean))];
-      if (!cards.has(id)) cards.set(id, {id,name,type,rarity,stages:{}});
+      const hintPerformance=parseHintPerformance(f);
+      if (!cards.has(id)) cards.set(id, {id,name,type,rarity,stages:{},hintPerformanceStages:{}});
       const card=cards.get(id);
       if (card.name!==name || card.type!==type || card.rarity!==rarity || Object.hasOwn(card.stages,stage)) {
         throw new Error('サポカの段階または属性に矛盾があります：'+id);
       }
       card.stages[stage]=hints;
+      card.hintPerformanceStages[stage]=hintPerformance;
     }
     if (cards.size < 500) throw new Error('収録カード数が想定より少ないため採用しません：'+cards.size);
     for (const c of cards.values()) if (Object.keys(c.stages).length !== 5 || [0,1,2,3,4].some(i=>!Object.hasOwn(c.stages,String(i)))) {
@@ -42,6 +62,7 @@
       });
       cards.push({id:c.id,name:c.name,character:c.name.includes(']')?c.name.split(']').slice(1).join(']'):c.name,
         rarity:c.rarity,type:c.type,accent:COLOR[c.type],hints:hintsByStage['4'],hintsByStage,
+        hintPerformanceByStage:c.hintPerformanceStages,
         events:[],effects:[],sourceStatus:'verified_hints',
         dataStatus:'通常ヒントは公開データから取得済み。イベント獲得経路は未収録。'});
     }
