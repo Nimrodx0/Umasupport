@@ -104,3 +104,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。現時点で承認済みの実イベントは0件。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。
 
 表記差24件の明示対応は `config/checker-name-aliases.json`。`tools/build_checker_catalog.cjs` は標準でこれを使い、417枚を照合します。`--no-aliases` で厳密一致393枚だけを検証、`--aliases` でローカル対応表を指定できます。欠損SSR5枚のGameWith個別記事の詳細掲載状態は `config/gamewith-ssr-review-status.json`、新規カードやイベント0件の検出は `src/checker_gap_tracker.cjs`。
+
+## Game8からの欠損SSR事実候補
+
+`config/missing-ssr-event-facts.v1.json` はSSR4枚の連続3＋ランダム2、選択位置別のスキルヒント・Lvを人手で整理した未承認の構造化候補。SSR30240はイベント報酬不明として保持。選択肢原文は含めず、公開データ `data/reviewed_events.v1.json` に結合しない。`src/missing_ssr_fact_review.cjs` がイベント型・スキルLv・候補ID・許可URL等を検証。`tests/missing_ssr_fact_review.test.cjs` は不正データを拒否するテスト。[詳細](../docs/game8-missing-ssr-review.md)。

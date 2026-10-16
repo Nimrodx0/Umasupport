@@ -36,3 +36,5 @@
 25. **最新決定（2026-10-16）：** U-toolsは当面使わない。SSR・SRの初期収録候補UmaUmaCheckerからウマサルタント独自形式を作り、不足・新規はGameWithの当該カード記事を参照。イベントDBはGitHub Pagesに公開するが、GameWith等の元イベント全文を無検証で複製しない。docs/checker-public-catalog.md参照。src/checker_candidate_pipeline.cjsは名前厳密一致／明示エイリアス、sourceDigest、同名イベント識別を扱う。公開DBへの変換は分岐・報酬・公開可否の個別レビューを要求。公開済み実イベントは0件。
 
 27. docs/checker-aliases-and-gaps.md とpoc/config/checker-name-aliases.json を参照。UmaUmaCheckerのSSR/SR全417枚は393厳密+24明示的なソース表示名対応。イベント自体の正式ID照合と全件性は未検証。GameWithでは欠損SSRのうち3枚がイベント欄「検証中」なので、記事存在だけを根拠に補完済みにしない。U-toolsは使用しない。
+
+28. Game8の4枚の実ページで選択肢位置・ヒントLv等の事実候補を確認し `poc/config/missing-ssr-event-facts.v1.json` に保存（計20イベント構造、14ヒント行）。これはreview-candidates-onlyで本番アプリには接続しない。30240はUmamusume Wiki等で構造だけ確認しスキル報酬は未知のまま。U-toolsは使用禁止方針。docs/game8-missing-ssr-review.md参照。イベントv1 requiresが選択式の親にchoiceIdを指定しない場合は、どの選択肢でも非terminalなら継続する。
