@@ -50,3 +50,11 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 4. 新しい版ごとに集計テストとブラウザテストを実行。
 
 [要件定義](../docs/requirements.md) ｜ [意思決定](../docs/decisions.md) ｜ [ロードマップ](../docs/roadmap.md)
+
+## ブラウザから公開元を直接取得する新方式
+
+- [`live.html`](live.html) はUmaSimの通常ヒントを外部公開元から取得する移行PoC。ゲームデータ自体をこのレポジトリに含めない。
+- 起動時取得→検証→IndexedDBキャッシュ。失敗したときは検証済みの前回データを使用。利用者向け更新ボタンはない。
+- 現段階ではイベント報酬や金白スキル関係の移植は未完了。初回利用にはネット接続が必要。
+- テスト：`node --test poc/tests/runtime.test.cjs`。実ブラウザでのCORS・GitHub Pages動作は未検証。
+- [設計と未解決課題](../docs/runtime-data-loading.md)。
