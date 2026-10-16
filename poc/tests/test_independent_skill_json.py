@@ -51,7 +51,7 @@ class IndependentSkillsTests(unittest.TestCase):
         self.assertEqual(r["matchingChains"],2)
         self.assertEqual(r["matchingNoLowerSnapshot"],1)
         self.assertEqual(r["pointerEvidence"]["threeStepChainsAgreed"],1)
-        self.assertEqual(r["pointerEvidence"]["chainsWithConsistentPointers"],2)
+        self.assertEqual(r["pointerEvidence"]["chainsWithCompleteConsistentPointers"],2)
 
     def test_missing_member_is_not_a_pass(self):
         r = self.audit(lambda s,i: i.__setitem__(slice(None),[v for v in i if v["id"]!=700002]))
@@ -79,6 +79,13 @@ class IndependentSkillsTests(unittest.TestCase):
                       "groupRate":-1,"rarity":1,
                       "lowerSkillId":None,"upperSkillId":None})
         self.assertTrue(self.audit(change)["allConfirmedInIndependentSnapshot"])
+
+    def test_null_pointer_is_not_fully_confirmed(self):
+        def change(s,i):
+            next(v for v in i if v["id"]==700004)["lowerSkillId"]=None
+        r = self.audit(change)
+        self.assertFalse(r["allConfirmedInIndependentSnapshot"])
+        self.assertEqual(r["statusCounts"]["explicit_links_incomplete"],1)
 
     def test_nonnegative_extra_blocks_confirmation(self):
         def change(s,i):
