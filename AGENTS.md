@@ -18,7 +18,7 @@
 - 現行アプリ：`index.html` → `poc/live.html`、HTML/CSS/JavaScript、`poc/src/`。React/TypeScript/Viteは未導入。`poc/demo.html`は架空データのデモで、実データ版と混同しない。
 - 通常ヒント：UmaSim `support_card.txt` を起動時にブラウザ取得・検証し、IndexedDBへ保存。2026-10-16にPages通常起動・サポカキャッシュ復旧・再取得の実ブラウザ確認済み。
 - 金白スキル：`skill_data.txt` を起動時に取得し、金325を全件分類。構造対応候補322、白なし3。Node実ソース統合試験成功。**独立全件照合と新辞書のPages／スマホ確認はまだ**。
-- イベント：SSR・SR417の候補表記対応は完了。候補イベント2,099件／ソース上イベント0枚5。**公開イベントDBの実ゲームイベントは0件**。入力候補はUmaUmaChecker、欠損／新規はGameWith個別資料。U-toolsは当面使用しない。
+- イベント：SSR・SR417の候補表記対応は完了。候補イベント2,099件。ソース上イベント記録0件のSSRが5枚。**公開イベントDBの実ゲームイベントは0件**。入力候補はUmaUmaChecker、欠損／新規はGameWith個別資料。U-toolsは当面使用しない。
 - 独自イベント公開DB：`poc/data/reviewed_events.v1.json`。元の効果文をそのまま配布せず、イベントID・分岐・報酬スキルID・公開可否を別々に検証して承認したレコードだけを反映。
 - 旧v8.1の全実データ同梱HTMLはPublicに存在せず、再ビルド用旧入力は一部未移管。現行PoCと混同しない。
 
