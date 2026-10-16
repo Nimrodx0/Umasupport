@@ -61,3 +61,5 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 ## 実イベントソースの照合監査
 
 [実イベントデータの照合記録](docs/event-source-audit.md) に、候補45枚のIDと名称がUmaSimと一致し、126イベント中124件でカードIDを特定できた結果を記載しています。元データに連続イベントの依存・打ち切り情報が不足し、正式スキルIDや利用条件も未確認です。`node poc/tools/audit_events.cjs` は開発者向けに元データを直接読み取って再監査します。公開アプリには実イベントを導入していません。
+
+**イベントデータの今後の優先課題：** まず [網羅的な供給元の選定](docs/event-source-selection.md) とカード別収録率を調査し、それが済んでから実イベントを段階的に導入します。現時点で主ソースは未決定です。
