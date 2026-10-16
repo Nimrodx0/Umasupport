@@ -28,7 +28,7 @@ function disallowsRobots(robots,route){
   if(key==='user-agent')applicable=value==='*';
   if(key==='disallow'&&applicable&&value)disallow.push(value);
  }
- return disallow.some(d=>route.startsWith(d)&&d!=='/');
+ return disallow.some(d=>route.startsWith(d));
 }
 async function main(){
  const robots=await call('/robots.txt').catch(e=>({status:0,body:'',error:String(e)}));
