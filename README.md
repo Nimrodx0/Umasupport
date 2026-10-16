@@ -75,3 +75,5 @@ GitHubの **Settings → Pages → Build and deployment** で、**Source: Deploy
 ## ウマサルタント独自イベントDB（初期基盤）
 
 [公開イベントDBの構築・レビュー手順](docs/checker-public-catalog.md) を追加しました。UmaUmaCheckerのSSR・SRイベントを候補として取り込み、個別に承認した事実データのみを poc/data/reviewed_events.v1.json に公開する構成です。通常ヒントは引き続きUmaSimから起動時取得。実イベントの公開収録は**まだ0件**で、欠損・新規カードはGameWithの個別記事を使って補完する予定です。U-toolsは当面利用しません。
+
+SSR・SRの表記差24件を[明示的な対応表](docs/checker-aliases-and-gaps.md)として整理し、UmaUmaCheckerの417枚全件をUmaSimのカードIDに対応付けました。候補イベント2,099件を検出しましたが、SSR5枚はイベント0件で、GameWithにも詳細「検証中」のカードがあります。実イベント公開DBはまだ0件です。
