@@ -34,3 +34,5 @@
 24. U-toolsの技術・利用条件の評価は `docs/utools-source-evaluation.md`。GitHub Actionsからの自動GETは30302で403（Cloudflare challenge）、30164で200かつCORS `*` と混在した。保護回避や大量の自動収集を行わず、公式のデータ提供手段と第三者アプリ利用許可を確認するまでは本番接続しない。
 
 25. **最新決定（2026-10-16）：** U-toolsは当面使わない。SSR・SRの初期収録候補UmaUmaCheckerからウマサルタント独自形式を作り、不足・新規はGameWithの当該カード記事を参照。イベントDBはGitHub Pagesに公開するが、GameWith等の元イベント全文を無検証で複製しない。docs/checker-public-catalog.md参照。src/checker_candidate_pipeline.cjsは名前厳密一致／明示エイリアス、sourceDigest、同名イベント識別を扱う。公開DBへの変換は分岐・報酬・公開可否の個別レビューを要求。公開済み実イベントは0件。
+
+27. docs/checker-aliases-and-gaps.md とpoc/config/checker-name-aliases.json を参照。UmaUmaCheckerのSSR/SR全417枚は393厳密+24明示的なソース表示名対応。イベント自体の正式ID照合と全件性は未検証。GameWithでは欠損SSRのうち3枚がイベント欄「検証中」なので、記事存在だけを根拠に補完済みにしない。U-toolsは使用しない。
