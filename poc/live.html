@@ -28,7 +28,7 @@
        {skillText,fullRegistry:!!skillText});
      msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
      const hierarchy=window.UmaDemoData.meta.skillHierarchy;
-     if(hierarchy)msg+='。金白構造 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
+     if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
    } catch(eventError) {
      // Do not discard valid support-card hints if external catalog fails.
      console.warn('公開イベントJSONを検証できません',eventError);
