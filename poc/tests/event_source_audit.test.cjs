@@ -64,3 +64,11 @@ test('strict input structure and duplicate support IDs are rejected',()=>{
  assert.throws(()=>A.audit({supports:{},eventsDocument:source,model}),/不正/);
  assert.throws(()=>A.audit({supports:[supports[0],supports[0]],eventsDocument:source,model}),/重複/);
 });
+
+
+test('conflicting names for the same ID within a single event are quarantined',()=>{
+ const e={...source.events[0],skills:[skill(2001,'直線巧者'),skill(2001,'別の技')]};
+ const r=A.audit({supports,eventsDocument:{events:[e]},model});
+ assert.equal(r.assignedEvents,0);
+ assert.deepEqual(r.issues.map(i=>i.kind),['conflicting-skill-names']);
+});
