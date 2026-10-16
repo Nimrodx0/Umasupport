@@ -141,3 +141,7 @@ python3 poc/tools/verify_skill_master.py --umasim local-data/skill_data.txt \
 ## 固定版旧マスターとのクロスチェック
 
 [履歴照合](../docs/historical-master-audit.md)と[限定的Actions](../.github/workflows/historical-skill-master-audit.yml)を参照。2025年で更新が停止したSQLiteなので、2026年の全322組の独立確認とは区別する。通常CIとブラウザでの外部通信は増やさない。
+
+## 公開Pagesの実データChromium受け入れ（2026-10-17）
+
+[実測記録](../docs/pages-browser-acceptance-20261017.md)、[スクリプト](tests/pages_live_browser.cjs)、[限定的Actions](../.github/workflows/pages-real-browser-acceptance.yml)を参照。公開中の配信物5ファイルのバイト一致、UmaSim2ファイルを各1回の実GET、ブラウザ描画/編成/目標/IndexedDB、データ取得先のみ遮断した復旧を自動検証。実測はLinux HeadlessChrome/140・390px幅の操作であり、Android実機でも全イベント/全ゲームデータの保証でもない。通常CIでは外部GETを追加せず、明示実行のみ。

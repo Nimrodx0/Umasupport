@@ -17,7 +17,7 @@
 
 - 現行アプリ：`index.html` → `poc/live.html`、HTML/CSS/JavaScript、`poc/src/`。React/TypeScript/Viteは未導入。`poc/demo.html`は架空データのデモで、実データ版と混同しない。
 - 通常ヒント：UmaSim `support_card.txt` を起動時にブラウザ取得・検証し、IndexedDBへ保存。2026-10-16にPages通常起動・サポカキャッシュ復旧・再取得の実ブラウザ確認済み。
-- 金白スキル：`skill_data.txt` を起動時に取得し、金325を全件分類。構造対応候補322、白なし3。Node実ソース統合試験成功。**独立全件照合と新辞書のPages／スマホ確認はまだ**。
+- 金白スキル：`skill_data.txt` を起動時に取得し、金325を全件分類。構造対応候補322、白なし3。Node実ソース統合試験成功。**別系統JSONで321/322組の双方向参照・1組の名称対応を外部確認。2026-10-17にPages/Linux Chromiumで実データ取得・辞書・キャッシュ・編成を検証済み**。Android/Windows実機と全数値IDの独立確認は未完。
 - イベント：SSR・SR417の候補表記対応は完了。候補イベント2,099件。ソース上イベント記録0件のSSRが5枚。**公開イベントDBの実ゲームイベントは0件**。入力候補はUmaUmaChecker、欠損／新規はGameWith個別資料。U-toolsは当面使用しない。
 - 独自イベント公開DB：`poc/data/reviewed_events.v1.json`。元の効果文をそのまま配布せず、イベントID・分岐・報酬スキルID・公開可否を別々に検証して承認したレコードだけを反映。
 - 旧v8.1の全実データ同梱HTMLはPublicに存在せず、再ビルド用旧入力は一部未移管。現行PoCと混同しない。
@@ -41,4 +41,4 @@
 - 直接取得の技術検証は `poc/tests/runtime.test.cjs`、金白の全件監査は `poc/tools/audit_skill_groups.cjs`、イベント候補は `poc/tools/build_checker_catalog.cjs`。オンライン実行は原則手動。
 - リポジトリのPRには該当Issue、差分、再現手順と三軸ゲートのPass／Fail／未実施を記載し、未通過であれば残件を引き継ぐ。
 
-**次の優先作業**：[近時点の独立金白照合](docs/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。数値IDの独立検証、Pages／スマホ実機、Phase 1のカード・性能・表示順の全件監査は未完。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](docs/roadmap.md)参照。
+**次の優先作業**：[近時点の独立金白照合](docs/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。残る1組の数値IDの独立検証、Android/Windows実端末、Phase 1のカード・性能・表示順の全件監査は未完。[Pages Chromium実測](docs/pages-browser-acceptance-20261017.md)を参照。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](docs/roadmap.md)参照。
