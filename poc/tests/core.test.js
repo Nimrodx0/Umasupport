@@ -38,7 +38,7 @@ test('同じカードIDの複数枠は提供枚数1、枠ごとの経路と選�
  assert.equal(r.kunrin.count,1,'片方のスロットだけのイベント報酬');
  assert.equal(r.kunrin.providers[1].routes[0].source,'event');
  assert.equal(r.kunrin.providers[0],undefined);
- const multi=C.aggregate(deck(S('A'),S('A'),S('C')),D);
+ const multi=C.aggregate(deck(S('A'),S('A'),S('B')),D);
  assert.equal(multi.straight.count,2,'同カード2枠＋別カード1枠は提供2枚');
  assert.equal(Object.keys(multi.straight.providers).length,3);
  assert.equal(C.coverage('straight',r,D).count,1);
