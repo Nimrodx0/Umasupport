@@ -54,7 +54,13 @@ function auditLegacy(support,raw,release){
    historicalEvidence:ref?diff.missingNames.map(s=>({skill:s,
     listedAsNormalHintIn2025:ref.hintNames.has(s)})):null});
  }
- return {legacyRecords:legacy.totalMarkers,validLegacyRows:legacy.rows.length,
+ const triageLinks=triage.flatMap(x=>x.historicalEvidence||[]);
+ const triageAvailable=triageLinks.filter(x=>x.listedAsNormalHintIn2025).length;
+ const triageMissingLegacy=triageLinks.filter(x=>!x.listedAsNormalHintIn2025).length;
+ const triageNoOldDocumentation=triage.reduce((a,x)=>a+(x.historicalEvidence?0:x.missingNamesIn2026CombinedCatalog.length),0);
+ return {latest2026CombinedSourceExceptions:{cards:triage.length,missingHintLinks:triageAvailable+triageMissingLegacy+triageNoOldDocumentation,
+    namedIn2025NormalHintData:triageAvailable,notIn2025NormalHintData:triageMissingLegacy,
+    withoutUsable2025CardData:triageNoOldDocumentation},legacyRecords:legacy.totalMarkers,validLegacyRows:legacy.rows.length,
   sourceFormatExceptions:legacy.parsingExceptions.length,exceptions:legacy.parsingExceptions,
   historicalExactNameMatches:byCard.size+unpublished.length,
   noDocumentedNormalHints:unpublished.length,unmatchedLegacyNames:unmatched,
@@ -67,6 +73,11 @@ function auditLegacy(support,raw,release){
 function main(){
  const [a,b,c]=process.argv.slice(2).map(p=>fs.readFileSync(p));
  const summary=auditLegacy(a.toString('utf8'),b.toString('utf8'),JSON.parse(c.toString('utf8')));
+ if(summary.legacyRecords!==503||summary.historicalCardsWithNormalHints!==412||
+    summary.allNormalHintsSameCards!==403||summary.historicalHintLinks!==2891||
+    summary.identicalNameLinks!==2877||
+    summary.latest2026CombinedSourceExceptions.namedIn2025NormalHintData!==14)
+   throw Error('Historical source data audit drift');
  console.log(JSON.stringify({hashes:{
    umaSim:crypto.createHash('sha256').update(a).digest('hex'),
    legacy:crypto.createHash('sha256').update(b).digest('hex'),
