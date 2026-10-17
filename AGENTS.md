@@ -121,3 +121,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：runtime source health（PR #55）
 
 [仕様](docs/runtime-source-health-acceptance.md)。`poc/live.html` は起動時のカード・スキル・イベントを `UmaDemoData.meta.runtimeSources` に別々に記録。イベントJSON失敗時に空カタログをモデルへ代替適用しても `runtimeSources.events.mode='failed'` を維持し、`eventStatus='unavailable'` を付与する。`source_health.js` はブラウザの取得経路と現行採用モデルの構造を**表示**するだけで、マスターデータ網羅性の保証ではない。取得/再検証ボタンやソース配布は増やさない。
+
+## 2026-10-18：六枠イベント管理（PR #56）
+
+[受け入れ正本](docs/deck-event-overview-acceptance.md)。`poc/src/deck_events.js` は選択デッキ6枠の既存 `card.events` のみ読み、選択式未設定とイベント原文**未収録**を別状態として数える。イベント表示フィルターでも到達判定に使う先行イベントの全グラフは落とさない。`clearSlot`/`clearDeck` は選択済みイベントだけ消しカードID、凸、他デッキを変更しない。人工イベントのChromium注入を実ゲーム公開DBの裏付けとみなさない。実イベントDB0件・Android/Windows未受け入れ。
