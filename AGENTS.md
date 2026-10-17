@@ -129,3 +129,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：distinct-card aggregate and stage-specific hint Lv（PR #57）
 
 [正本](docs/phase3-gap-matrix-20261018.md)。集計の`count`はスキルIDごとに重複排除した**カードIDの数**。`providers`は物理スロットごとに保持するため、その数が`count`を上回り得る。カードの重複スロットがあっても重複スキル枚数を水増ししない。`directRoutes`で通常ヒントのLvが存在する場合は選択中stageに対応した検証可能なlevelBase+levelUnique+1に限り表示。未収録・不正数値の推測を禁止。F-01〜F-09の未受け入れ境界は上記マトリクスを参照。
+
+## 2026-10-18 Stage hint external source audit (PR #58)
+
+[Source review and limits](docs/stage-hint-consistency-audit.md). The pinned `poc/tools/audit_stage_hint_integrity.cjs` checks 12 distinct SSR/SR/R IDs, full normalized card names, rarity, and two values at all five limit-break stages. Respect `basis=base` vs `basis=total`: the six new SR/R entries compare GameWith's support-effect base columns, not unknown unique effects. Only the limited audit workflow fetches source. Never call the 12-card selected sample complete coverage of the other 551 cards or of the current in-game rules.
