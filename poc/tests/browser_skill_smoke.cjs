@@ -465,6 +465,7 @@ async function main(){
   await eventPage.setViewportSize({width:390,height:844});
   assert.ok(await eventPage.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)<=1,
    'event overview mobile horizontal overflow');
+  await eventPage.locator('button[data-action="close"]').click();
   // F-04 regression: two physical slots with the SAME card ID count as one
   // distinct provider. Both slots remain independently editable and visible.
   await eventPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
