@@ -431,11 +431,11 @@ async function main(){
   assert.match(await eventPage.locator('#deck-event-results').innerText(),/人工後編/);
   await eventPage.locator('#event-status-filter').selectOption('pending');
   assert.equal(await eventPage.locator('#deck-event-results .event').count(),2);
-  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').check();
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
   overview=await eventPage.locator('.modal-body').innerText();
   assert.match(overview,/自動候補\s*1/);
   assert.match(overview,/条件付きの報酬経路\s*1/);
-  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="synthetic-second"][value="yes"]').check();
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="synthetic-second"][value="yes"]').click();
   let saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
   assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
   assert.equal(saved.decks.main[0].slots[1].choices['synthetic-second'],'yes');
@@ -452,7 +452,7 @@ async function main(){
   assert.equal(saved.decks.main[0].slots[1].choices['synthetic-second'],'yes');
   await eventPage.locator('button[data-action="close"]').click();
   await eventPage.locator('button[data-action="deck-events"][data-deck="inherit"]').click();
-  await eventPage.locator('input[data-event-choice][data-deck="inherit"][data-index="0"][data-event="synthetic-start"][value="go"]').check();
+  await eventPage.locator('input[data-event-choice][data-deck="inherit"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
   await eventPage.locator('button[data-action="close"]').click();
   await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
   eventPage.once('dialog',d=>d.accept());
