@@ -61,9 +61,9 @@ def read_candidate_titles(text, source_cards):
     return by_card
 
 
-def read_historical_titles(master: Path, *, title_index="id"):
+def read_historical_titles(master: Path, *, title_index="story_id"):
     # Explicitly supported schema keys, not guesses based on higher match rate.
-    if title_index not in ("id", "short_story_id"):
+    if title_index not in ("story_id", "id", "short_story_id"):
         raise ValueError("Unsupported title index column")
     with sqlite3.connect(master.resolve().as_uri() + "?mode=ro", uri=True) as db:
         for table, columns in (
@@ -159,7 +159,7 @@ def main(argv=None):
     ap.add_argument("--umasim", type=Path, required=True)
     ap.add_argument("--master", type=Path, required=True)
     ap.add_argument("--candidates", type=Path, required=True)
-    ap.add_argument("--title-index", choices=("id", "short_story_id"), default="id")
+    ap.add_argument("--title-index", choices=("story_id", "id", "short_story_id"), default="story_id")
     ap.add_argument("--focus-only", action="store_true", help="Print only aggregate totals and focus ID")
     args = ap.parse_args(argv)
     cards = read_source_cards(args.umasim.read_text(encoding="utf-8"))
