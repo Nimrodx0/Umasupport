@@ -1,0 +1,26 @@
+name: One-Off Stage Hint Integrity and Performance Cross-check
+on:
+  pull_request:
+    paths:
+      - .github/workflows/stage-hint-integrity-audit.yml
+      - poc/tools/audit_stage_hint_integrity.cjs
+      - poc/tests/stage_hint_integrity.test.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage-hints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check 563 cards, all 5 limit-break hint sets and independent Efforia effects
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 1 --max-time 120 \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt" |
+            node poc/tools/audit_stage_hint_integrity.cjs

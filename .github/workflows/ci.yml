@@ -22,12 +22,12 @@ jobs:
       - name: Run independent-master audit regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_verify_skill_master.py' -v
       - name: Run data-independent tests
-        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs poc/tests/events.test.cjs poc/tests/event_source_audit.test.cjs poc/tests/event_review_compiler.test.cjs poc/tests/cruise_source_audit.test.cjs poc/tests/event_gap_audit.test.cjs poc/tests/checker_candidate_pipeline.test.cjs poc/tests/public_event_catalog.test.cjs poc/tests/checker_gap_tracker.test.cjs poc/tests/missing_ssr_fact_review.test.cjs poc/tests/skill_candidate_id_audit.test.cjs poc/tests/skill_bridge.test.cjs poc/tests/skill_hierarchy.test.cjs poc/tests/full_skill_hierarchy.test.cjs poc/tests/card_coverage.test.cjs poc/tests/card_hint_audit.test.cjs poc/tests/deckbuilder_cards.test.cjs poc/tests/legacy_raw_hints.test.cjs poc/tests/gametora_hint_parser.test.cjs
+        run: node --test poc/tests/core.test.js poc/tests/stage.test.cjs poc/tests/runtime.test.cjs poc/tests/settings.test.cjs poc/tests/events.test.cjs poc/tests/event_source_audit.test.cjs poc/tests/event_review_compiler.test.cjs poc/tests/cruise_source_audit.test.cjs poc/tests/event_gap_audit.test.cjs poc/tests/checker_candidate_pipeline.test.cjs poc/tests/public_event_catalog.test.cjs poc/tests/checker_gap_tracker.test.cjs poc/tests/missing_ssr_fact_review.test.cjs poc/tests/skill_candidate_id_audit.test.cjs poc/tests/skill_bridge.test.cjs poc/tests/skill_hierarchy.test.cjs poc/tests/full_skill_hierarchy.test.cjs poc/tests/card_coverage.test.cjs poc/tests/card_hint_audit.test.cjs poc/tests/deckbuilder_cards.test.cjs poc/tests/legacy_raw_hints.test.cjs poc/tests/gametora_hint_parser.test.cjs poc/tests/stage_hint_integrity.test.cjs
 
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
-        run: node --check poc/tools/audit_card_coverage.cjs && node --check poc/tools/audit_independent_card_hints.cjs && node --check poc/tools/audit_deckbuilder_cards.cjs && node --check poc/tools/audit_legacy_raw_hints.cjs && node --check poc/tools/probe_gametora_hint_page.cjs
+        run: node --check poc/tools/audit_card_coverage.cjs && node --check poc/tools/audit_independent_card_hints.cjs && node --check poc/tools/audit_deckbuilder_cards.cjs && node --check poc/tools/audit_legacy_raw_hints.cjs && node --check poc/tools/probe_gametora_hint_page.cjs && node --check poc/tools/audit_stage_hint_integrity.cjs
 
   browser-smoke:
     runs-on: ubuntu-latest
