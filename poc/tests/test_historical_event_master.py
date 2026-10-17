@@ -27,18 +27,20 @@ def source_data(ids=("30001", "20001", "10001")):
 
 def fake_master(path, missing_gallery=False):
     with sqlite3.connect(path) as db:
-        db.execute("CREATE TABLE support_card_data (id INTEGER PRIMARY KEY)")
+        db.execute("CREATE TABLE support_card_data (id INTEGER PRIMARY KEY, chara_id INTEGER)")
         db.execute("CREATE TABLE single_mode_story_data (id INTEGER PRIMARY KEY, "
                    "support_card_id INTEGER, support_chara_id INTEGER" +
                    ("" if missing_gallery else ", gallery_flag INTEGER") + ")")
-        db.executemany("INSERT INTO support_card_data(id) VALUES (?)",
-                       [(30001,), (20001,), (10002,)])
+        db.executemany("INSERT INTO support_card_data(id,chara_id) VALUES (?,?)",
+                       [(30001, 101), (20001, 102), (10002, 103)])
         if not missing_gallery:
             db.executemany(
                 "INSERT INTO single_mode_story_data VALUES (?,?,?,?)",
-                [(901, 30001, 0, 2), (902, 30001, 0, 2),
+                [(901, 30001, 0, 2), (902, 30001, 101, 2),
                  (903, 30001, 0, 1), (904, 0, 5555, 2),
-                 (905, 99999, 0, 2)]
+                 (905, 99999, 0, 2), (906, 0, 101, 2),
+                 (907, 0, 101, 2), (908, 0, 102, 2),
+                 (909, 0, 105, 2)]
             )
 
 
@@ -74,6 +76,11 @@ class HistoricalEventAudit(unittest.TestCase):
         self.assertEqual(self.master["direct_stories"]["30001"], { "901", "902" })
         self.assertEqual(self.master["orphan_direct_card_ids"], ["99999"])
         self.assertNotIn("904", self.master["direct_stories"].get("30001", set()))
+        self.assertEqual(self.master["eligible_shared_rows"], 6)
+        self.assertEqual(self.master["card_chara_ids"]["30001"], "101")
+        self.assertEqual(self.master["shared_stories"]["101"], {"902", "906", "907"})
+        self.assertEqual(self.master["shared_stories"]["102"], {"908"})
+        self.assertEqual(self.master["unused_shared_chara_count"], 2)
 
     def test_version_gap_is_not_misreported_as_missing_event(self):
         checker = read_candidates(candidates(self.cards, {"30001": 1, "20001": 3}), self.cards)
@@ -81,6 +88,11 @@ class HistoricalEventAudit(unittest.TestCase):
         self.assertEqual(result["sourceCardCount"], 3)
         self.assertEqual(result["sourceNotInOldMasterIds"], ["10001"])
         self.assertEqual(result["oldMasterWithoutCardDirectStoryIds"], ["20001"])
+        self.assertEqual(result["oldMasterWithoutDirectOrSharedStoryIds"], [])
+        self.assertEqual(result["byRarity"]["SR"]["withAnyDirectOrSharedStories"], 1)
+        self.assertEqual(result["byRarity"]["SSR"]["sharedStoryIdsAttributed"], 3)
+        self.assertEqual(result["byRarity"]["SSR"]["uniqueDirectOrSharedStoryIdsAttributed"], 4)
+        self.assertEqual(result["historicalSharedCharacterStoryRows"], 6)
         self.assertEqual(result["lessCandidateThanHistoricalDirectStoryCount"], 1)
         self.assertEqual(result["possibleCardSpecificGaps"][0]["cardId"], "30001")
         self.assertEqual(result["possibleCardSpecificGaps"][0]["historicalDirectStories"], 2)
@@ -101,6 +113,16 @@ class HistoricalEventAudit(unittest.TestCase):
                 "cards": [{"cardId": "30001", "events": []}, {"cardId": "30001", "events": []}],
                 "stats": {"matchedCards": 2, "eventCount": 0}
             }), self.cards)
+
+    def test_grouped_shared_character_links_not_counted_as_card_direct(self):
+        # A story shared by character 101 is visible to its associated card,
+        # but never increments the card-specific story total. Story 902 belongs
+        # to both source predicates and appears once in the union.
+        result = audit(self.cards, self.master)
+        self.assertEqual(result["byRarity"]["SSR"]["directStoryIds"], 2)
+        self.assertEqual(result["byRarity"]["SSR"]["sharedStoryIdsAttributed"], 3)
+        self.assertEqual(result["byRarity"]["SSR"]["uniqueDirectOrSharedStoryIdsAttributed"], 4)
+        self.assertEqual(result["lessCandidateThanHistoricalDirectStoryCount"], 0)
 
     def test_master_schema_missing_column_rejected(self):
         path = Path(self.temp.name) / "broken.mdb"

@@ -72,6 +72,8 @@ jobs:
           print("HISTORICAL SNAPSHOT: NOT CURRENT GAME EVENT COVERAGE")
           for field in ("sourceCardCount","historicalMasterCardCount","historicalDirectStoryRows",
                         "sourceNotInOldMasterCount","oldMasterWithoutCardDirectStoryCount",
+                        "historicalSharedCharacterStoryRows", "oldMasterWithoutDirectOrSharedStoryCount",
+                        "unusedSharedCharaCount",
                         "candidateSourceCards","candidateRecords",
                         "lessCandidateThanHistoricalDirectStoryCount","byRarity",
                         "sourceSha256","masterSha256"):
@@ -81,5 +83,7 @@ jobs:
               print(row["cardId"], row["historicalDirectStories"], row["checkerCandidateEvents"])
           print("Version-gap card count only:",len(r["sourceNotInOldMasterIds"]))
           print("Direct-less historic card count only:",len(r["oldMasterWithoutCardDirectStoryIds"]))
+          print("Historic source cards with neither direct nor simple shared-character events:",
+                len(r["oldMasterWithoutDirectOrSharedStoryIds"]))
           print("Caveat:",r["scope"])
           PY
