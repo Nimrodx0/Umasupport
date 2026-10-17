@@ -162,3 +162,7 @@ Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Um
 ## 2026-10-17：30241の記号差を独立した診断へ（PR #46）
 
 Checker候補名の `typographicFingerprint` を一時生成し、旧masterカテゴリー181の名前指紋と比較。[限定監査 #39036963530](https://github.com/Nimrodx0/Umasupport/actions/runs/39036963530)成功。主判定の厳密名称一致SSR/SR956／30241は15を保持したまま、記号・空白除去と小文字化の**補助候補**では全体985／30241は17。30241の旧名側だけ残る候補1件をさらに調べる対象とした。これは同一イベントIDの承認ではない。人工SQLiteとNodeの異常系を通常CIへ追加し、公開DB0件・アプリUI変更なし。
+
+## 2026-10-17：旧イベント名称の残差からstory_id・数値カテゴリへ（PR #47）
+
+[限定監査 #39037787554](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787554)成功、[通常CI #39037787528](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787528)成功。2025年固定masterのSSR/SRカード直結1,017件とChecker2,099候補の補助名称一致985を維持し、未一致32行（25カード）をすべて数値メタデータで分類。同名候補と未一致が競合しIDが特定できない残数2。**SSR30241は数値story_id=830241004**（event_category=4、show_progress_1/2/3すべて0、ending_type=0、gallery_main_scenario=0、gallery_condition=0）を特定。残り32のevent_categoryも全て4。外部Wikiの変換コードでは進行数値0はchainNum=0、chainMax=0、isGroupChain=falseに対応。発生条件／現在も実装されているか／Checker欠損かどうかは未検証。イベントタイトル・指紋・元DBをPublicへ配布せず、アプリUI・イベント公開DB0件を維持。[監査記録](story-residual-metadata-audit.md)。
