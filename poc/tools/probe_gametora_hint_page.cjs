@@ -8,7 +8,7 @@ const ids=[30311,30090,20098,30302,30284,30299,
 function extractHints(renderedText){
  const start=renderedText.indexOf('\nサポートヒント\n');
  if(start<0)return {status:'missing-support-hints-heading',names:[]};
- const endCandidates=['\\nイベントで貰えるスキル\\n','\\n育成イベント\\n']
+ const endCandidates=['\nイベントで貰えるスキル\n','\n育成イベント\n']
   .map(text=>renderedText.indexOf(text,start+1)).filter(pos=>pos>start);
  const end=endCandidates.length?Math.min(...endCandidates):-1;
  if(end<0)return {status:'missing-next-section-boundary',names:[]};
