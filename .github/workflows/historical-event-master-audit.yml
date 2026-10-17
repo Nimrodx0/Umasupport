@@ -10,6 +10,8 @@ on:
       - poc/tests/test_story_title_links.py
       - poc/tools/audit_story_residual_metadata.py
       - poc/tests/test_story_residual_metadata.py
+      - poc/tools/audit_three_source_event_headings.py
+      - poc/tests/test_three_source_event_headings.py
       - poc/src/checker_candidate_pipeline.cjs
   workflow_dispatch:
 
@@ -31,6 +33,8 @@ jobs:
         run: python3 -m unittest discover -s poc/tests -p 'test_story_title_links.py' -v
       - name: Verify story-ID residual tests with synthetic SQLite
         run: python3 -m unittest discover -s poc/tests -p 'test_story_residual_metadata.py' -v
+      - name: Run three-source parser regression without external GET
+        run: python3 -m unittest discover -s poc/tests -p 'test_three_source_event_headings.py' -v
       - name: Fetch exact public source snapshots into temporary directory
         shell: bash
         run: |
@@ -193,4 +197,40 @@ jobs:
           print("All SSR/SR:",r["allSSR_SR"])
           print("Residual event_category numeric distribution:",r["residualMetadataByEventCategory"])
           print("Caveat:",r["explanation"])
+          PY
+
+      - name: One-shot read-only external card event inventory fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            --retry 1 --max-time 45 --user-agent 'Umasupport-Research/0.1 (single-card public fact cross-check)' \
+            --output "$RUNNER_TEMP/uma-event-master/utools-30241.html" \
+            "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event"
+          test -s "$RUNNER_TEMP/uma-event-master/utools-30241.html"
+
+      - name: Compare 2025 game master and 2026 Checker with the external 30241 event headings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_three_source_event_headings.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --external-html "$RUNNER_TEMP/uma-event-master/utools-30241.html" \
+            --focus 30241 \
+            > "$RUNNER_TEMP/uma-event-master/three-way.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          r=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/three-way.json").read_text())
+          assert r["focusCardId"]=="30241" and r["historicalDirectRows"]==18 and r["checkerCandidateRecords"]==17
+          assert r["oldVsCheckerTypographicOverlap"]==17
+          assert any("830241004" in item["possibleHistoricalStoryIds"] for item in r["historicalResidualInChecker"])
+          print("TRIANGULATION: TITLE HEADINGS ONLY, NOT GAME EVENT EXISTENCE PROOF")
+          print("Source sizes:",r["historicalDirectRows"],r["checkerCandidateRecords"],r["externalSectionCounts"])
+          print("Overlaps old/checker, old/external, checker/external:",
+                r["oldVsCheckerTypographicOverlap"],r["oldVsExternalTypographicOverlap"],r["checkerVsExternalTypographicOverlap"])
+          print("30241 residual historical numeric story IDs with independent website title coverage:",
+                r["historicalResidualInChecker"])
+          print("Caveat:",r["scope"])
           PY
