@@ -119,3 +119,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-17：サポカ全563件の別系統ID照合（PR #36）
 
 [GameTora日本版一覧とUmaSim固定版の全563個のID集合が一致](card-population-independent-audit.md)し、片側のみに存在するIDは双方0。さらに日本版選択JSONの45枚と英語版カード台帳の259枚（互いに重複なし）のID・レアリティを全件照合し、合計304枚に矛盾0。日本版45枚の完全名称も一致。[限定監査Actions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930)で再現。**RタッカーブラインはUmaSim上にID10128で既に存在**。旧「Rタッカーブライン未照合」を「UmaSim未収録」と解釈しないよう訂正。ゲーム公式マスターの全件照合・個別性能・表示順などは未確認。アプリ内カードを自動追加する変更は発生せず。
+
+## 2026-10-17：通常ヒント独立照合と表示順ソース調査（PR #37）
+
+[限定監査](independent-card-hint-audit.md)で、別系統日本版45サポカが指定する通常ヒント527件をUmaSimのヒント一覧・数値スキル辞書と照合。**45/45枚の0/4凸名称集合一致**、数値ID526件はUmaSim辞書内、1件（`201012`「後方釘付」）は別系統の数値辞書とUmaSimカード内名称で確認、UmaSimのスキル辞書にはID未収録。元データを書き換えず例外を記録。別系統スキルJSON2,194件に`disp_order`相当フィールドがなく、UIゲーム標準順への変更は見送った。[Umamusume Wikiのマスター変換コード](https://umamusu.wiki/Module:Game/Skills/Data)に`skill_data.disp_order`の利用例はあるので、実データとゲームUIとの関係を今後調査する。
