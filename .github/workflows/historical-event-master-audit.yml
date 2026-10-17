@@ -152,6 +152,9 @@ jobs:
           print("30241 remaining title differences (not game omissions):",
                 b["focus30241"]["historicalTitlesNotTypographicInChecker"],
                 b["focus30241"]["checkerTitlesNotTypographicInMaster"])
+          print("30241 possible typographic fingerprint collisions (master / Checker):",
+                b["focus30241"]["duplicateHistoricalTitleRows"],
+                b["focus30241"]["duplicateCheckerTitleRows"])
           print("Overall SSR+SR typographic overlaps:",
                 sum(b["byRarity"][r]["typographicTitleOverlaps"] for r in ("SSR","SR")))
           PY
