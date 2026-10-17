@@ -104,6 +104,14 @@ jobs:
             --title-index id \
             --focus-only \
             > "$RUNNER_TEMP/uma-event-master/title-summary.json"
+          # Explicit second hypothesis: title data keyed by short_story_id, not story id.
+          python3 poc/tools/audit_story_title_links.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --title-index short_story_id \
+            --focus-only \
+            > "$RUNNER_TEMP/uma-event-master/title-summary-short.json"
           python3 - <<'PY'
           import json,os,pathlib
           r=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/title-summary.json").read_text())
@@ -115,4 +123,8 @@ jobs:
           print("By rarity:",r["byRarity"])
           print("30241:",r["focus30241"])
           print("Scope:",r["scope"])
+          alt=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/title-summary-short.json").read_text())
+          print("Alternate index:",alt["titleLookupColumn"])
+          print("Alternate by rarity:",alt["byRarity"])
+          print("Alternate 30241:",alt["focus30241"])
           PY
