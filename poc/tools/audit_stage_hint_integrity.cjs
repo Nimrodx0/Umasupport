@@ -14,15 +14,15 @@ const norm=s=>String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();
 // Values are hint LEVEL MODIFIERS, not acquisition levels (1 + modifier).
 const EXPECTED_UMASIM_SHA256='153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424';
 const EXTERNAL_REFERENCES=Object.freeze([
- {id:'30311',name:'[As if Guided]エフフォーリア',basis:'total',url:'https://gamewith.jp/uma-musume/article/show/573288',
+ {id:'30311',name:'[As if Guided]エフフォーリア',basis:'total',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/573288',
   hintLevels:[2,2,3,3,4],hintFrequencies:[60,70,80,90,100]},
- {id:'30312',name:'[時に交わる海と空]ミスターシービー',basis:'total',url:'https://gamewith.jp/uma-musume/article/show/573289',
+ {id:'30312',name:'[時に交わる海と空]ミスターシービー',basis:'total',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/573289',
   hintLevels:[1,1,1,1,2],hintFrequencies:[60,70,80,90,100]},
- {id:'30314',name:'[わたしときみの交換こ♪]ハルウララ',basis:'total',url:'https://gamewith.jp/uma-musume/article/show/574385',
+ {id:'30314',name:'[わたしときみの交換こ♪]ハルウララ',basis:'total',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/574385',
   hintLevels:[1,2,3,3,3],hintFrequencies:[5,30,60,60,60]},
- {id:'30297',name:'[全てに挑む勇ましき者]アグネスデジタル',basis:'total',url:'https://gamewith.jp/uma-musume/article/show/559252',
+ {id:'30297',name:'[全てに挑む勇ましき者]アグネスデジタル',basis:'total',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/559252',
   hintLevels:[1,1,1,2,4],hintFrequencies:[5,5,5,50,100]},
- {id:'30292',name:'[響け、二人の凱歌]マルシュロレーヌ',basis:'total',url:'https://gamewith.jp/uma-musume/article/show/548286',
+ {id:'30292',name:'[響け、二人の凱歌]マルシュロレーヌ',basis:'total',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/548286',
   hintLevels:[2,2,3,3,4],hintFrequencies:[60,70,80,90,100]},
  {id:'30012',name:'[B・N・Winner!!]ウイニングチケット',basis:'base',rarity:'SSR',url:'https://gamewith.jp/uma-musume/article/show/257449',
   hintLevels:[0,0,0,2,3],hintFrequencies:[0,0,0,30,40]},
