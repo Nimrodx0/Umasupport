@@ -109,3 +109,7 @@
 [受け入れ正本](docs/card-route-search-acceptance.md)。`poc/src/card_search.js`は純粋検索関数で、`sourceStatus=verified_hints*` のカードの0～4凸の照合済みヒントIDと、公開イベント台帳で承認された`card.events`のスキルIDのみを検索に使う。`referenceSkills`やChecker候補・未承認イベントは混ぜない。所持一覧・編成ピッカーの複合絞り込みを共有し、ピッカー120枚固定から120枚/ページ方式へ。検索は到達や獲得確率の証明ではない。実イベント公開0件、画像は略字表示のまま、Android/Windows実機未受入れ。
 
 [公式ゲーム画像の扱い](docs/card-image-rights-decision.md)：Cygamesのゲームプレイ静止画「共有サイト投稿」条件をサポカ画像の複製・GitHub再配布・外部CDN大量参照の包括許諾とみなさない。カードの略字アイコンを維持し、実画像グリッドは別ゲート未完として残す。
+
+## 2026-10-18：スキル一覧の表示と全カード逆引き（PR #53）
+
+[検証の正本](docs/skill-table-search-acceptance.md)。`poc/src/skill_table.js`で`core.combinedRows`の集計結果を**変更せず**表示フィルター・並べ替えを行い、`core.hierarchyRows`で親子を連続表示する。目標未カバーはrow.mainCover/row.inheritCoverにある`core.coverage`結果から指定scope別に判定（直接提供枚数の水増し禁止）。スキル逆引きは`UmaCardSearch.normalHintIds()`で検証済み0..4段階の和集合、`approvedEventSkillIds()`で公開承認済みイベントのスキルIDに限定。現行ステージでの取得保証ではなく、元のカード直接提供数の算定とも区別する。
