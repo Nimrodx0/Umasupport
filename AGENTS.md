@@ -125,3 +125,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：六枠イベント管理（PR #56）
 
 [受け入れ正本](docs/deck-event-overview-acceptance.md)。`poc/src/deck_events.js` は選択デッキ6枠の既存 `card.events` のみ読み、選択式未設定とイベント原文**未収録**を別状態として数える。イベント表示フィルターでも到達判定に使う先行イベントの全グラフは落とさない。`clearSlot`/`clearDeck` は選択済みイベントだけ消しカードID、凸、他デッキを変更しない。人工イベントのChromium注入を実ゲーム公開DBの裏付けとみなさない。実イベントDB0件・Android/Windows未受け入れ。
+
+## 2026-10-18：distinct-card aggregate and stage-specific hint Lv（PR #57）
+
+[正本](docs/phase3-gap-matrix-20261018.md)。集計の`count`はスキルIDごとに重複排除した**カードIDの数**。`providers`は物理スロットごとに保持するため、その数が`count`を上回り得る。カードの重複スロットがあっても重複スキル枚数を水増ししない。`directRoutes`で通常ヒントのLvが存在する場合は選択中stageに対応した検証可能なlevelBase+levelUnique+1に限り表示。未収録・不正数値の推測を禁止。F-01〜F-09の未受け入れ境界は上記マトリクスを参照。
