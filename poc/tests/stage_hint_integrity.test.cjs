@@ -35,7 +35,7 @@ test('stage performance decreases are separately reported for review',()=>{
 test('independent third-party performance reference compares all 0-4 limits exactly',()=>{
  const x=compareStages(fixture(),{reference:{id:'30000',
    hintLevels:[1,2,3,4,5],hintFrequencies:[20,30,40,50,60]}});
- assert.deepEqual(x.externalEfforia0to4,{id:'30000',present:true,levelPass:true,frequencyPass:true,
+ assert.deepEqual(x.externalEfforia0to4,{id:'30000',basis:'total',present:true,namePass:true,levelPass:true,frequencyPass:true,
   levelMismatchStages:[],frequencyMismatchStages:[]});
  const y=compareStages(fixture(),{reference:{id:'30000',
    hintLevels:[1,2,3,4,9],hintFrequencies:[20,30,40,50,60]}});
