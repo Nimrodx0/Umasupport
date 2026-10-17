@@ -11,7 +11,7 @@ function extractHints(renderedText){
  const endCandidates=['\nイベントで貰えるスキル\n','\n育成イベント\n']
   .map(text=>renderedText.indexOf(text,start+1)).filter(pos=>pos>start);
  const end=endCandidates.length?Math.min(...endCandidates):-1;
- if(end<0)return {status:'missing-next-section-boundary',names:[]};
+ if(end<0)return {status:'missing-next-section-boundary',names:[],diagnostic:{hasEvent:renderedText.includes('イベントで貰えるスキル'),hasTraining:renderedText.includes('育成イベント'),tail:renderedText.slice(start+20,start+160)}};
  const sec=renderedText.slice(start,end);
  // GameTora detail list renders: "詳細", skill name, brief skill description.
  // Restrict extraction to between explicit headings to exclude all event skills.
@@ -52,10 +52,10 @@ async function audit(supportFile){
    try{
     const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
     if(res?.status()!==200){rows.push({id,status:'http-'+res?.status()});continue;}
-    await page.waitForTimeout(120);
+    await page.waitForTimeout(700);
     result=extractHints(await page.locator('body').innerText());
    }catch(e){rows.push({id,status:'navigation-error',reason:String(e.message).slice(0,150)});continue;}
-   if(result.status!=='ok'){rows.push({id,status:result.status});continue;}
+   if(result.status!=='ok'){rows.push({id,status:result.status,...(rows.length<2?{diagnostic:result.diagnostic}: {})});continue;}
    const expected=new Set(card.stages['4'].map(norm)),found=new Set(result.names);
    const missing=[...expected].filter(x=>!found.has(x)),extra=[...found].filter(x=>!expected.has(x));
    rows.push({id,url,status:'parsed',expected:expected.size,gameTora:found.size,
