@@ -53,6 +53,19 @@ test('重複カード2枠だけではデッキ内重複の判定にならず、�
  assert.equal(skill.main.count>1,false);
  assert.ok(skill.main&&skill.inherit,'デッキ間共通は真');
 });
+test('段階別ヒントLvは個々のスロット経路に表示し、未収録データは不明のまま',()=>{
+ const example={id:'A',hints:['straight'],hintsByStage:{'0':['straight'],'4':['straight']},
+  hintPerformanceByStage:{'0':{levelBase:0,levelUnique:0},'4':{levelBase:2,levelUnique:1}},events:[]};
+ const stageData={cardById:{A:example}};
+ const r=C.aggregate(deck({cardId:'A',stage:0,choices:{}},{cardId:'A',stage:4,choices:{}}),stageData);
+ assert.equal(r.straight.count,1);
+ assert.equal(r.straight.providers['0'].routes[0].level,1);
+ assert.equal(r.straight.providers['1'].routes[0].level,4);
+ assert.equal(Object.keys(r.straight.providers).length,2);
+ const missing={...example,hintPerformanceByStage:{'0':{levelBase:'0',levelUnique:0}}};
+ const unknown=C.directRoutes(missing,{stage:0,choices:{}});
+ assert.equal(unknown[0].level,null,'unknown values never become invented numerical hint levels');
+});
 test('上位スキルによる間接カバーは直接枚数には加算しない',()=>{
  let r=C.aggregate(deck(S('A',{'a-start':'continue'})),D);
  // Aには直接のstepは失敗時の候補もあるため、この場合は直接カバー。
