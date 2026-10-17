@@ -170,3 +170,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-17：30241の第三サイト見出し件数・3資料照合機構（PR #48）
 
 [U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)のSSR30241イベント一覧はページ閲覧で連続5・ランダム13の計18見出しを観測。Checker17と数が違うが、旧マスター18との**名称・ID対応は未確認**。[限定Actions #39039021792](https://github.com/Nimrodx0/Umasupport/actions/runs/39039021792)で外部HTML取得を試したところHTTP 403。意図的に取得制限の回避はせず外部GETをワークフローから削除。第三サイト・Checker・旧masterをローカル入力で多重集合比較し、曖昧IDを拒否する純粋照合器／人工HTML回帰を追加した。外部サイトに対するデータBの3者一致ゲートは未達、現行ゲーム実装・報酬・権利も未合格。詳細[監査文書](utools-third-source-event-audit.md)。
+
+## 2026-10-17：新しいmaster.mdbを入手した場合の差分照合（PR #49）
+
+[詳細](master-snapshot-differential-audit.md)。旧2025年SQLiteを固定SHAで検査し、別リビジョンのSQLiteが正当に用意できた場合のみ、採用元563枚のカードID増減、2025→新版の数値story_id維持、830241004の存在・同カード所属、名称（記号差を除く）・数値メタデータ変更を出力する独立ツールを追加。重複・表欠落・孤児ID・同一SHA・不明リビジョンを拒否する人工SQLite通常CI。**新版ゲームマスターの実データを入手・実行した記録ではない。** アプリUI・公開イベント0件は維持。
