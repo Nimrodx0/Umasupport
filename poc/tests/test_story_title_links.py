@@ -27,11 +27,11 @@ class TitleLinkTests(unittest.TestCase):
         self.cards = {"30001": "SSR", "20001": "SR", "10001": "R"}
         with sqlite3.connect(self.path) as db:
             db.execute("CREATE TABLE single_mode_story_data "
-                       "(id INTEGER PRIMARY KEY, support_card_id INTEGER, gallery_flag INTEGER, short_story_id INTEGER)")
+                       "(id INTEGER PRIMARY KEY, story_id INTEGER, support_card_id INTEGER, gallery_flag INTEGER, short_story_id INTEGER)")
             db.execute('CREATE TABLE text_data (category INTEGER, "index" INTEGER, text TEXT)')
             db.executemany("INSERT INTO single_mode_story_data VALUES (?,?,?,?)",
-                           [(901,30001,2,701),(902,30001,2,702),(903,30001,2,703),
-                            (904,20001,2,704),(905,30001,1,705)])
+                           [(1,901,30001,2,701),(2,902,30001,2,702),(3,903,30001,2,703),
+                            (4,904,20001,2,704),(5,905,30001,1,705)])
             db.executemany('INSERT INTO text_data VALUES (?,?,?)',
                            [(181,901,"Ａ  タイトル"),(181,902,"イベント乙"),
                             (181,903,"イベント乙"),(181,904,"SRイベント"),
@@ -56,6 +56,8 @@ class TitleLinkTests(unittest.TestCase):
         # Switching the key is a recorded alternative hypothesis, not automatic best-match selection.
         hist=read_historical_titles(self.path,title_index="short_story_id")
         self.assertEqual(hist["30001"],[title_digest("別インデックス名"),None,None])
+        internal_id = read_historical_titles(self.path,title_index="id")
+        self.assertEqual(internal_id["30001"],[None,None,None])
         report=compare_titles(self.cards,read_candidate_titles(candidate_json(["A タイトル"]),self.cards),hist)
         self.assertEqual(report["byRarity"]["SSR"]["historicalTitlesMissing"],2)
 
