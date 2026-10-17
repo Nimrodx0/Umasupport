@@ -24,7 +24,7 @@ test('rejects unknown skill IDs even if an alias table is present',()=>{
 });
 test('rejects corrupted JSON, unsupported versions and invalid fields',()=>{
  assert.throws(()=>parse('{bad',data),SyntaxError);
- const s=sample();s.decks.main.slots[0].stage=7;assert.throws(()=>parse(s,data),/スロット/);
+ const s=sample();s.decks.main[0].slots[0].stage=7;assert.throws(()=>parse(s,data),/スロット/);
  const future=sample();future.version=3;assert.throws(()=>parse(future,data),/バージョン/);
  const scope=sample();scope.goalSets[0].goals[0].scope='invalid';assert.throws(()=>parse(scope,data),/目標スキル/);
  const selection=sample();selection.currentGoalSet='missing';assert.throws(()=>parse(selection,data),/目標セット/);
@@ -44,7 +44,7 @@ function mountApp(raw) {
   const handlers={};
   const data={cards:[],skills:[],cardById:{},skillById:{},meta:{totalHints:0}};
   const context={
-    window:{UmaDemoData:data,UmaCore:core,UmaSettings:{parse}},
+    window:{UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js')},
     localStorage:{
       getItem:k=>values.get(k)??null,
       setItem:(k,v)=>{writes++;values.set(k,v)}
