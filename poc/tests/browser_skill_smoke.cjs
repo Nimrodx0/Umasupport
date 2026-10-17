@@ -399,6 +399,74 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   await context.close();
 
+  // Synthetic events in an isolated real browser; public reviewed DB stays EMPTY.
+  const eventContext=await browser.newContext(),eventPage=await eventContext.newPage();
+  await mockSources(eventPage);
+  await boot(eventPage,base);
+  for(const [kind,index,id] of [['main',0,'30001'],['main',1,'30002'],['main',2,'30003'],['inherit',0,'30001']]){
+   await eventPage.locator('button[data-action="pick"][data-deck="'+kind+'"][data-index="'+index+'"]').click();
+   await eventPage.locator('button[data-action="set-card"][data-id="'+id+'"]').click();
+  }
+  await eventPage.evaluate(()=>{
+   window.UmaDemoData.cardById['30001'].events=[
+    {id:'synthetic-start',name:'人工開始',type:'choice',choices:[
+     {id:'go',label:'続行',rewards:[{skillId:'hint:右回り○'}]},
+     {id:'stop',label:'打ち切り',terminal:true}]},
+    {id:'synthetic-follow',name:'人工後編',type:'auto',
+     requires:{all:[{eventId:'synthetic-start',choiceId:'go'}]},
+     outcomes:[{id:'ok',label:'成功',rewards:[{skillId:'hint:右回り○'}]},
+      {id:'ng',label:'失敗',rewards:[]}]}];
+   window.UmaDemoData.cardById['30002'].events=[
+    {id:'synthetic-second',name:'人工独立',type:'choice',choices:[
+     {id:'yes',label:'承認'},{id:'no',label:'辞退'}]}];
+  });
+  await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  let overview=await eventPage.locator('.modal-body').innerText();
+  assert.match(overview,/選択肢の未設定\s*2/);
+  assert.match(overview,/到達不可\s*1/);
+  assert.match(overview,/イベント未収録のカード\s*1/);
+  assert.match(overview,/未収録（存在しないという意味ではありません）/);
+  await eventPage.locator('#event-status-filter').selectOption('blocked');
+  assert.equal(await eventPage.locator('#deck-event-results .event').count(),1);
+  assert.match(await eventPage.locator('#deck-event-results').innerText(),/人工後編/);
+  await eventPage.locator('#event-status-filter').selectOption('pending');
+  assert.equal(await eventPage.locator('#deck-event-results .event').count(),2);
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').check();
+  overview=await eventPage.locator('.modal-body').innerText();
+  assert.match(overview,/自動候補\s*1/);
+  assert.match(overview,/条件付きの報酬経路\s*1/);
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="synthetic-second"][value="yes"]').check();
+  let saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
+  assert.equal(saved.decks.main[0].slots[1].choices['synthetic-second'],'yes');
+  assert.deepEqual(saved.decks.inherit[0].slots[0].choices,{});
+  await eventPage.locator('#event-status-filter').selectOption('all');
+  eventPage.once('dialog',d=>d.dismiss());
+  await eventPage.locator('[data-action="deck-event-slot-reset"][data-index="0"]').click();
+  saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
+  eventPage.once('dialog',d=>d.accept());
+  await eventPage.locator('[data-action="deck-event-slot-reset"][data-index="0"]').click();
+  saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.deepEqual(saved.decks.main[0].slots[0].choices,{});
+  assert.equal(saved.decks.main[0].slots[1].choices['synthetic-second'],'yes');
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="deck-events"][data-deck="inherit"]').click();
+  await eventPage.locator('input[data-event-choice][data-deck="inherit"][data-index="0"][data-event="synthetic-start"][value="go"]').check();
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  eventPage.once('dialog',d=>d.accept());
+  await eventPage.locator('[data-action="deck-events-reset"]').click();
+  saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.deepEqual(saved.decks.main[0].slots[1].choices,{});
+  assert.equal(saved.decks.inherit[0].slots[0].choices['synthetic-start'],'go');
+  assert.equal(saved.decks.main[0].slots[2].cardId,'30003');
+  assert.equal(await eventPage.locator('[data-action="deck-events-reset"]').isDisabled(),true);
+  await eventPage.setViewportSize({width:390,height:844});
+  assert.ok(await eventPage.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)<=1,
+   'event overview mobile horizontal overflow');
+  await eventContext.close();
+
   const failureContext=await browser.newContext(),failurePage=await failureContext.newPage();
   await mockSources(failurePage,{eventFailure:true});
   status=await boot(failurePage,base);
