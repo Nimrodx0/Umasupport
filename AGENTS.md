@@ -113,3 +113,7 @@
 ## 2026-10-18：スキル一覧の表示と全カード逆引き（PR #53）
 
 [検証の正本](docs/skill-table-search-acceptance.md)。`poc/src/skill_table.js`で`core.combinedRows`の集計結果を**変更せず**表示フィルター・並べ替えを行い、`core.hierarchyRows`で親子を連続表示する。目標未カバーはrow.mainCover/row.inheritCoverにある`core.coverage`結果から指定scope別に判定（直接提供枚数の水増し禁止）。スキル逆引きは`UmaCardSearch.normalHintIds()`で検証済み0..4段階の和集合、`approvedEventSkillIds()`で公開承認済みイベントのスキルIDに限定。現行ステージでの取得保証ではなく、元のカード直接提供数の算定とも区別する。
+
+## 2026-10-18 F-06/F-09: JSON import merge
+
+See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge performs schema validation on copies, adds imported decks and goal sets with unique IDs, preserves current selections and display settings, and keeps existing ownership records on conflicts. Only previously unregistered cards receive imported ownership records. Deck capacity: 50 per kind; goal set capacity: 100. Reject any invalid or over-capacity import atomically. Keep the original data unchanged until the user chooses merge or replacement in the preview.
