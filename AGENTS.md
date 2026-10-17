@@ -117,3 +117,7 @@
 ## 2026-10-18 F-06/F-09: JSON import merge
 
 See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge performs schema validation on copies, adds imported decks and goal sets with unique IDs, preserves current selections and display settings, and keeps existing ownership records on conflicts. Only previously unregistered cards receive imported ownership records. Deck capacity: 50 per kind; goal set capacity: 100. Reject any invalid or over-capacity import atomically. Keep the original data unchanged until the user chooses merge or replacement in the preview.
+
+## 2026-10-18：runtime source health（PR #55）
+
+[仕様](docs/runtime-source-health-acceptance.md)。`poc/live.html` は起動時のカード・スキル・イベントを `UmaDemoData.meta.runtimeSources` に別々に記録。イベントJSON失敗時に空カタログをモデルへ代替適用しても `runtimeSources.events.mode='failed'` を維持し、`eventStatus='unavailable'` を付与する。`source_health.js` はブラウザの取得経路と現行採用モデルの構造を**表示**するだけで、マスターデータ網羅性の保証ではない。取得/再検証ボタンやソース配布は増やさない。
