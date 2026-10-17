@@ -5,7 +5,7 @@ const SAVE_KEY='uma-support-lab-runtime-umasim-v1';
 const blank=()=>({cardId:null,stage:4,choices:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
-let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,pickerSearch:'',pickerOnlyOwned:false,ownedQuery:'',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0};
+let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
 const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goalSets[0];
 const activeDeck=k=>window.UmaSettings.activeDeck(state,k);
@@ -73,14 +73,7 @@ function ownedLabel(c){
  const rec=state.ownedCards[c.id];
  return rec?.status==='owned'?'所持 '+rec.stage+'凸':rec?.status==='unowned'?'未所持':'未登録';
 }
-function matchOwned(c){
- if(ui.ownedRarity!=='all'&&c.rarity!==ui.ownedRarity)return false;
- if(ui.ownedType!=='all'&&c.type!==ui.ownedType)return false;
- if(ui.ownedFilter!=='all'&&window.UmaSettings.ownedStatus(state,c.id)!==ui.ownedFilter)return false;
- if(!ui.ownedQuery)return true;
- const skills=(c.hints||[]).map(id=>data.skillById[id]?.name||id).join(' ');
- return (c.name+' '+c.character+' '+c.type+' '+c.rarity+' '+skills+' '+(c.searchAliases||[]).join(' ')).toLocaleLowerCase().includes(ui.ownedQuery.toLocaleLowerCase());
-}
+function matchOwned(c){return window.UmaCardSearch.matches(c,data,{query:ui.ownedQuery,skillQuery:ui.ownedSkillQuery,route:ui.ownedRoute,rarity:ui.ownedRarity,type:ui.ownedType,ownership:ui.ownedFilter},state.ownedCards);}
 function ownedCardHtml(c){
  const rec=state.ownedCards[c.id],status=rec?.status||'unregistered';
  return `<article class="owned-card" data-owned-id="${esc(c.id)}">${cardIcon(c,true)}<div class="owned-card-detail"><strong>${esc(c.name)}</strong><span class="muted">${esc(c.type)} · ${esc(c.rarity)}</span><div class="owned-states" role="group" aria-label="${esc(c.name)}の所持状態">${[['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([k,name])=>`<button type="button" class="btn tiny" data-action="owned-status" data-id="${esc(c.id)}" data-status="${k}" aria-pressed="${status===k}">${name}</button>`).join('')}</div>${status==='owned'?`<label class="owned-stage">所持凸 <select class="field" data-owned-stage="${esc(c.id)}" aria-label="${esc(c.name)}の所持凸">${[0,1,2,3,4].map(i=>`<option value="${i}" ${rec.stage===i?'selected':''}>${i}凸</option>`).join('')}</select></label>`:''}</div></article>`;
@@ -100,16 +93,36 @@ function refreshOwnedGrid(){
 function ownedManagerModal(){
  const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort();
  const types=[...new Set(data.cards.map(c=>c.type))].sort();
- const opts=(list,chosen)=>list.map(v=>`<option value="${esc(v)}" ${v===chosen?'selected':''}>${esc(v)}</option>`).join('');
- const body=`<p class="help">所持・未所持・未登録を区別して記録します。所持凸は編成内の想定凸とは独立です。カード画像の代わりに現在はキャラクター略字を表示しています。</p><div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター・タイプ・スキル名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select></div><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
+ const opts=(list,chosen)=>list.map(v=>`<option value="${esc(v)}" ${v===chosen?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
+ const routes=[['all','すべての獲得経路'],['hint','通常ヒント'],['event','承認済みイベント'],['both','通常ヒント＋承認済みイベント']];
+ const routeOptions=routes.map(([v,label])=>`<option value="${v}" ${ui.ownedRoute===v?'selected':''}>${label}</option>`).join('');
+ const body=`<p class="help">所持・未所持・未登録を区別して記録します。所持凸は編成内の想定凸とは独立です。カード画像の代わりに現在はキャラクター略字を表示しています。</p><div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><input id="owned-skill-search" class="field search" placeholder="提供スキル名・ID…" aria-label="提供スキル名で検索" value="${esc(ui.ownedSkillQuery)}"><select class="field" id="owned-route" aria-label="獲得経路">${routeOptions}</select><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select></div><p class="tiny-note">「提供スキル」は照合済み通常ヒントと公開承認済みイベントだけを対象にします。未承認イベントや参考候補は含めません。イベントで候補0件は「イベントが存在しない」意味ではありません。</p><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
  titleModal('所持サポカを一括登録',data.cards.length+'枚を検索・整理',body);
 }
 function pickerMatches(){
- return data.cards.filter(c=>(!ui.pickerOnlyOwned||window.UmaSettings.ownedStatus(state,c.id)==='owned')&&(c.name+c.character+c.type+c.rarity+(c.searchAliases||[]).join(' ')).includes(ui.pickerSearch));
+ return window.UmaCardSearch.filterCards(data.cards,data,{query:ui.pickerSearch,skillQuery:ui.pickerSkillQuery,rarity:ui.pickerRarity,type:ui.pickerType,route:ui.pickerRoute,ownership:ui.pickerOnlyOwned?'owned':'all'},state.ownedCards);
 }
-function pickerModal(){const {deckKey,index}=ui.modal;const d=activeDeck(deckKey),selected=d.slots[index];const cards=pickerMatches();const body=`<p class="help">${scopeLabel[deckKey]}のスロット${index+1}に設定するサポカを選択。所持・未所持に関係なく編成できます。所持凸はこの枠の想定凸を自動変更しません。</p><input class="field search" id="picker-search" placeholder="カード名・タイプで絞り込み" value="${esc(ui.pickerSearch)}"><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label><div class="picker-list" id="picker-cards"><p class="tiny-note">候補 ${cards.length} 件 / 先頭120件を表示</p>${cards.slice(0,120).map(pickerCard).join('')}</div>`;titleModal('サポカを選択',`${scopeLabel[deckKey]} / スロット${index+1}`,body,selected.cardId?`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button>`:'');}
+function pickerFiltersHtml(){
+ const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort(),types=[...new Set(data.cards.map(c=>c.type))].sort();
+ const opts=(list,current)=>list.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
+ const routeOptions=[['all','全経路'],['hint','通常ヒント'],['event','承認済みイベント'],['both','通常ヒント＋承認済みイベント']].map(([v,t])=>`<option value="${v}" ${ui.pickerRoute===v?'selected':''}>${t}</option>`).join('');
+ return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label></div><p class="tiny-note">提供スキルの絞り込みは照合済み通常ヒントと承認済みイベントのみ。イベント候補・参考スキルは検索対象にしません。</p>`;
+}
+function pickerCardsHtml(){
+ const matched=pickerMatches(),perPage=120,pages=Math.max(1,Math.ceil(matched.length/perPage));
+ ui.pickerPage=Math.max(0,Math.min(ui.pickerPage,pages-1));
+ const shown=matched.slice(ui.pickerPage*perPage,(ui.pickerPage+1)*perPage);
+ return `<p class="tiny-note">候補 ${matched.length} 件 / ${ui.pickerPage+1} / ${pages} ページ（1ページ最大120枚）</p><div class="picker-list">${shown.map(pickerCard).join('')||'<p class="help">該当なし</p>'}</div><div class="owned-pages"><button class="btn tiny" data-action="picker-prev" ${ui.pickerPage===0?'disabled':''}>前へ</button><span class="tiny-note">${ui.pickerPage+1} / ${pages}</span><button class="btn tiny" data-action="picker-next" ${ui.pickerPage===pages-1?'disabled':''}>次へ</button></div>`;
+}
+function pickerModal(){
+ const {deckKey,index}=ui.modal,d=activeDeck(deckKey),selected=d.slots[index];
+ const body=`<p class="help">${scopeLabel[deckKey]}のスロット${index+1}に設定するサポカを選択。所持・未所持に関係なく編成できます。所持凸はこの枠の想定凸を自動変更しません。</p>${pickerFiltersHtml()}<div id="picker-cards">${pickerCardsHtml()}</div>`;
+ titleModal('サポカを選択',`${scopeLabel[deckKey]} / スロット${index+1}`,body,selected.cardId?`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button>`:'');
+}
 function pickerCard(c){return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span><strong>${esc(c.name)}</strong><br><small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${ownedLabel(c)}</small></span></button>`;}
-function pickerRefresh(){const el=document.getElementById('picker-cards');if(el){const c=pickerMatches();el.innerHTML=`<p class="tiny-note">候補 ${c.length} 件 / 先頭120件を表示</p>${c.slice(0,120).map(pickerCard).join('')||'<p class="help">該当なし</p>'}`;}}
+function pickerRefresh(){
+ const el=document.getElementById('picker-cards');if(el)el.innerHTML=pickerCardsHtml();
+}
 function eventRewardHTML(rewards){if(!rewards||!rewards.length)return '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.level?`（Lv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
 function eventCandidateHTML(part){
  const guaranteed=(part.rewards||[]).length?eventRewardHTML(part.rewards):'';
@@ -141,14 +154,16 @@ function goalsModal(){const g=goalSet();let all=data.skills.map(x=>`<option valu
 function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
 function changeSelection(el){const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];if(!sl?.cardId)return;const card=data.cardById[sl.cardId];let choice=el.value;let next=core.clearDescendants(card,sl.choices,eid);if(choice)next[eid]=choice;else delete next[eid];sl.choices=next;const oldScroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();const body=document.querySelector('.modal-body');if(body)body.scrollTop=oldScroll;}
 function handleAction(el){const a=el.dataset.action,k=el.dataset.deck,i=Number(el.dataset.index);switch(a){
-case 'owned-manage':ui.ownedQuery='';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;ui.modal={kind:'owned-manager'};renderModal();break;
+case 'owned-manage':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;ui.modal={kind:'owned-manager'};renderModal();break;
  case 'owned-status':window.UmaSettings.setOwnedCard(state,data,el.dataset.id,el.dataset.status,state.ownedCards[el.dataset.id]?.stage??0);store();refreshOwnedGrid();break;
  case 'owned-bulk':{const ids=filteredOwned().map(c=>c.id);const label={owned:'所持',unowned:'未所持',unregistered:'未登録'}[el.dataset.status];if(ids.length&&confirm('検索条件に一致する'+ids.length+'枚すべてを「'+label+'」に変更しますか？')){window.UmaSettings.setOwnedBulk(state,data,ids,el.dataset.status);store();refreshOwnedGrid();}break;}
+ case 'picker-prev':ui.pickerPage=Math.max(0,ui.pickerPage-1);pickerRefresh();break;
+ case 'picker-next':ui.pickerPage++;pickerRefresh();break;
  case 'owned-prev':ui.ownedPage=Math.max(0,ui.ownedPage-1);refreshOwnedGrid();break;
  case 'owned-next':ui.ownedPage++;refreshOwnedGrid();break;
  case 'close-overlay':ui.modal=null;renderModal();break;
 case 'close':ui.modal=null;renderModal();break;
-case 'pick':ui.pickerSearch='';ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
+case 'pick':ui.pickerSearch='';ui.pickerSkillQuery='';ui.pickerRarity='all';ui.pickerType='all';ui.pickerRoute='all';ui.pickerPage=0;ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
 case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
 case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
  case 'deck-manage':ui.modal={kind:'deck-manager',deckKey:k};renderModal();break;
@@ -175,8 +190,8 @@ case 'import':document.getElementById('import-file').click();break;
 case 'reset':if(confirm('すべての設定を初期状態に戻しますか？')){state=DEFAULT();settingsLoadError=null;ui.modal=null;saveRender();}break;
 }}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;handleAction(el)});
-document.addEventListener('input',e=>{if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
-document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
+document.addEventListener('input',e=>{if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='picker-skill-search'){ui.pickerSkillQuery=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}if(e.target.id==='owned-skill-search'){ui.ownedSkillQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
+document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;ui.pickerPage=0;pickerRefresh();return}if(['picker-rarity','picker-type','picker-route'].includes(el.id)){ui[{'picker-rarity':'pickerRarity','picker-type':'pickerType','picker-route':'pickerRoute'}[el.id]]=el.value;ui.pickerPage=0;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter','owned-route'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter','owned-route':'ownedRoute'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
  const f=el.files?.[0];if(!f)return;f.text().then(t=>{let obj;try{obj=JSON.parse(t)}catch(e){alert('JSONを読み取れませんでした。');return}let parsed;try{parsed=window.UmaSettings.parse(obj,data)}catch(e){alert('設定JSONの構造を読み取れませんでした。'+String(e.message||e));return}if(!confirm('現在の設定をこのファイルの内容で置き換えますか？'))return;state=parsed;settingsLoadError=null;ui.modal=null;saveRender();}).catch(()=>alert('ファイルの読み込みに失敗しました。'));
  }});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;renderModal();}});

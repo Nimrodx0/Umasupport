@@ -171,6 +171,46 @@ async function main(){
   assert.equal(savedOwnership.ownedCards['30002'].status,'unowned');
   assert.equal(savedOwnership.decks.main[0].slots[0].stage,0);
 
+  // Search routes are verified hints only while the reviewed events catalog is empty.
+  await page.locator('button[data-action="owned-manage"]').click();
+  await page.locator('#owned-skill-search').fill('右回り○');
+  assert.equal(await page.locator('.owned-card').count(),1);
+  assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30001');
+  await page.locator('#owned-route').selectOption('event');
+  assert.equal(await page.locator('.owned-card').count(),0);
+  await page.locator('#owned-route').selectOption('hint');
+  assert.equal(await page.locator('.owned-card').count(),1);
+  await page.locator('#owned-skill-search').fill('');
+  await page.locator('#owned-skill-search').fill('');
+  await page.locator('#owned-route').selectOption('all');
+  await page.locator('#owned-rarity').selectOption('SSR');
+  await page.locator('#owned-type').selectOption('スピード');
+  assert.match(await page.locator('#owned-results .tiny-note').first().innerText(),/条件一致 563枚/);
+  await page.locator('button[data-action="close"]').click();
+  await page.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
+  await page.locator('#picker-skill-search').fill('右回り○');
+  assert.equal(await page.locator('button[data-action="set-card"]').count(),1);
+  await page.locator('#picker-route').selectOption('event');
+  assert.equal(await page.locator('button[data-action="set-card"]').count(),0);
+  await page.locator('#picker-route').selectOption('hint');
+  assert.equal(await page.locator('button[data-action="set-card"]').count(),1);
+  await page.locator('#picker-skill-search').fill('');
+  await page.locator('#picker-route').selectOption('all');
+  assert.equal(await page.locator('button[data-action="set-card"]').count(),120);
+  await page.locator('button[data-action="picker-next"]').click();
+  assert.equal(await page.locator('button[data-action="set-card"]').first().getAttribute('data-id'),'30121');
+  await page.locator('button[data-action="picker-next"]').click();
+  await page.locator('button[data-action="picker-next"]').click();
+  await page.locator('button[data-action="picker-next"]').click();
+  assert.equal(await page.locator('button[data-action="set-card"]').last().getAttribute('data-id'),'30563');
+  await page.locator('#picker-search').fill('サポカ562');
+  assert.equal(await page.locator('button[data-action="set-card"]').count(),1);
+  assert.equal(await page.locator('button[data-action="set-card"]').first().getAttribute('data-id'),'30563');
+  await page.locator('button[data-action="set-card"][data-id="30563"]').click();
+  assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="1"]').innerText(),/サポカ562/);
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  await page.locator('button[data-action="remove-card"][data-deck="main"][data-index="1"]').click();
+
   // Phase 3: both deck libraries remain independent across create/copy/rename/delete.
   await page.locator('button[data-action="deck-manage"][data-deck="main"]').click();
   await page.locator('#deck-name').fill('試験デッキA');
