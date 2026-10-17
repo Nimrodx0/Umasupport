@@ -36,6 +36,9 @@ jobs:
       - name: Run three-source event headings parser regression (synthetic HTML)
         run: python3 -m unittest discover -s poc/tests -p 'test_three_source_event_headings.py' -v
 
+      - name: Check later master snapshot comparison logic (synthetic SQLite)
+        run: python3 -m unittest discover -s poc/tests -p 'test_compare_event_master_snapshots.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
