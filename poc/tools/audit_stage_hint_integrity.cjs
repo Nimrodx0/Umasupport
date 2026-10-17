@@ -1,6 +1,6 @@
 'use strict';
 // Audits the publisher's all-card/all-stage source schema against source-local
-// invariants and one explicitly sourced third-party 0-4 limit break example.
+// invariants and six explicitly sourced third-party 0-4 limit-break examples.
 // The publisher's raw data is only streamed to this process; not stored in git.
 const fs=require('node:fs');
 const crypto=require('node:crypto');
