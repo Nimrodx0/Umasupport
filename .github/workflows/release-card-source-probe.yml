@@ -1,7 +1,7 @@
 name: One-Off Alternative 2026 Card Dataset Format Probe
 on:
   pull_request:
-    paths: [.github/workflows/release-card-source-probe.yml, poc/tools/audit_deckbuilder_cards.cjs, poc/tests/deckbuilder_cards.test.cjs]
+    paths: [.github/workflows/release-card-source-probe.yml, poc/tools/audit_deckbuilder_cards.cjs, poc/tests/deckbuilder_cards.test.cjs, poc/tools/audit_legacy_raw_hints.cjs, poc/tests/legacy_raw_hints.test.cjs]
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,3 +23,5 @@ jobs:
           node poc/tools/probe_release_card_format.cjs "$RUNNER_TEMP/release-cards.json"
           curl -fLsS --max-time 120 --retry 1             -o "$RUNNER_TEMP/umasim-support.txt"             "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt"
           node poc/tools/audit_deckbuilder_cards.cjs "$RUNNER_TEMP/umasim-support.txt" "$RUNNER_TEMP/release-cards.json"
+          curl -fLsS --max-time 120 --retry 1             -o "$RUNNER_TEMP/legacy-cards.txt"             "https://raw.githubusercontent.com/ktkhikr1228-lab/uma-tool/4bfc708a558bc2ac02266860b42e61fec8a6ffe4/raw_data.txt"
+          node poc/tools/audit_legacy_raw_hints.cjs             "$RUNNER_TEMP/umasim-support.txt" "$RUNNER_TEMP/legacy-cards.txt" "$RUNNER_TEMP/release-cards.json"
