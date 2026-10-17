@@ -29,6 +29,7 @@ async function audit(supportFile){
   const listUrl='https://gametora.com/ja/umamusume/supports';
   const listing=await page.goto(listUrl,{waitUntil:'domcontentloaded',timeout:45000});
   if(!listing?.ok())throw Error('GameTora index unavailable');
+  await page.waitForSelector('a[href*="/supports/30311"]',{timeout:25000});
   const hrefs=await page.evaluate(()=>[...document.querySelectorAll('a[href]')]
     .map(a=>a.getAttribute('href'))
     .filter(x=>x&&/\/supports\/\d{5}(?:[-/?#]|$)/.test(x)));
