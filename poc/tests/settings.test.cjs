@@ -1,9 +1,9 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,MAX_DECKS}=require('../src/settings.js');
+const {parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS}=require('../src/settings.js');
 const slot=(cardId=null)=>({cardId,stage:4,choices:{}});
 const sample=()=>({
- version:2,decks:{
+ version:3,ownedCards:{},decks:{
   main:[{id:'main-default',name:'本育成',slots:[slot('card-1'),...Array.from({length:5},()=>slot())]}],
   inherit:[{id:'inherit-default',name:'継承',slots:Array.from({length:6},()=>slot())}]
  },activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,
@@ -25,7 +25,7 @@ test('rejects unknown skill IDs even if an alias table is present',()=>{
 test('rejects corrupted JSON, unsupported versions and invalid fields',()=>{
  assert.throws(()=>parse('{bad',data),SyntaxError);
  const s=sample();s.decks.main[0].slots[0].stage=7;assert.throws(()=>parse(s,data),/スロット/);
- const future=sample();future.version=3;assert.throws(()=>parse(future,data),/バージョン/);
+ const future=sample();future.version=4;assert.throws(()=>parse(future,data),/バージョン/);
  const scope=sample();scope.goalSets[0].goals[0].scope='invalid';assert.throws(()=>parse(scope,data),/目標スキル/);
  const selection=sample();selection.currentGoalSet='missing';assert.throws(()=>parse(selection,data),/目標セット/);
 });
@@ -76,7 +76,7 @@ test('invalid stored settings show an error without an automatic overwrite',()=>
   app.clickReset();
   assert.equal(app.writes,1);
   assert.match(app.nodes.app.innerHTML,/サポカ編成/);
-  assert.equal(JSON.parse(app.values.get('uma-support-lab-runtime-umasim-v1')).version,2);
+  assert.equal(JSON.parse(app.values.get('uma-support-lab-runtime-umasim-v1')).version,3);
 });
 test('fresh development settings launch directly without a recovery UI',()=>{
   const app=mountApp(null);
@@ -93,7 +93,8 @@ test('valid v1 settings migrate every slot, stage and event choice without mutat
    goalSets:v2.goalSets,currentGoalSet:v2.currentGoalSet,view:v2.view,density:v2.density};
  const before=JSON.stringify(old);
  const migrated=parse(before,data);
- assert.equal(migrated.version,2);
+ assert.equal(migrated.version,3);
+ assert.deepEqual(migrated.ownedCards,{});
  assert.equal(migrated.decks.main[0].id,'main-default');
  assert.equal(migrated.activeDecks.main,'main-default');
  assert.deepEqual(migrated.decks.main[0].slots[0].choices,{'old-event':'keep'});
@@ -153,4 +154,68 @@ test('limit each deck type independently to 50 named decks',()=>{
  assert.equal(s.decks.inherit.length,1);
  assert.throws(()=>addDeck(s,'main'),/50件/);
  assert.equal(s.decks.main.length,50);
+});
+
+test('v2 deck-library settings migrate losslessly to v3 without inventing ownership',()=>{
+ const before=sample();before.version=2;delete before.ownedCards;
+ before.decks.main[0].slots[0].stage=3;
+ const migrated=parse(JSON.stringify(before),data);
+ assert.equal(migrated.version,3);
+ assert.deepEqual(migrated.ownedCards,{});
+ assert.equal(migrated.decks.main[0].slots[0].stage,3);
+ assert.equal(migrated.goalSets[0].goals[0].skillId,'skill-1');
+ assert.equal(before.version,2);
+});
+test('ownership has 3 distinct states and independent owned vs deck stages',()=>{
+ const s=sample();
+ assert.equal(ownedStatus(s,'card-1'),'unregistered');
+ setOwnedCard(s,data,'card-1','owned',2);
+ assert.deepEqual(s.ownedCards['card-1'],{status:'owned',stage:2});
+ assert.equal(activeDeck(s,'main').slots[0].stage,4);
+ activeDeck(s,'main').slots[0].stage=1;
+ assert.equal(s.ownedCards['card-1'].stage,2);
+ assert.equal(parse(JSON.stringify(s),data).ownedCards['card-1'].stage,2);
+ setOwnedCard(s,data,'card-1','unowned');
+ assert.equal(ownedStatus(s,'card-1'),'unowned');
+ assert.deepEqual(s.ownedCards['card-1'],{status:'unowned'});
+ assert.equal(activeDeck(s,'main').slots[0].cardId,'card-1');
+ setOwnedCard(s,data,'card-1','unregistered');
+ assert.equal(ownedStatus(s,'card-1'),'unregistered');
+ assert.ok(!Object.hasOwn(s.ownedCards,'card-1'));
+});
+test('ownership batch is atomic, retains stages for already-owned cards',()=>{
+ const cards={cardById:{'card-1':{},'card-2':{},'card-3':{}},skillById:data.skillById};
+ const s=sample();
+ setOwnedCard(s,cards,'card-1','owned',4);
+ assert.equal(setOwnedBulk(s,cards,['card-1','card-2','card-3'],'owned'),3);
+ assert.deepEqual(s.ownedCards['card-1'],{status:'owned',stage:4});
+ assert.deepEqual(s.ownedCards['card-2'],{status:'owned',stage:0});
+ const before=JSON.stringify(s);
+ assert.throws(()=>setOwnedBulk(s,cards,['card-2','not-in-data'],'unowned'),/不正/);
+ assert.throws(()=>setOwnedBulk(s,cards,['card-1','card-1'],'owned'),/不正/);
+ assert.throws(()=>setOwnedBulk(s,cards,['card-1'],'invalid'),/不正/);
+ assert.equal(JSON.stringify(s),before);
+ setOwnedBulk(s,cards,['card-2','card-3'],'unregistered');
+ assert.equal(ownedStatus(s,'card-2'),'unregistered');
+ assert.equal(ownedStatus(s,'card-1'),'owned');
+});
+test('all malformed owned records and unknown IDs are rejected before storage',()=>{
+ const edits=[
+  x=>{x.ownedCards['unknown']={status:'owned',stage:1};},
+  x=>{x.ownedCards['card-1']={status:'owned',stage:5};},
+  x=>{x.ownedCards['card-1']={status:'owned',stage:-1};},
+  x=>{x.ownedCards['card-1']={status:'owned',stage:'2'};},
+  x=>{x.ownedCards['card-1']={status:'owned'};},
+  x=>{x.ownedCards['card-1']={status:'unowned',stage:0};},
+  x=>{x.ownedCards['card-1']={status:'unregistered'};},
+  x=>{x.ownedCards['card-1']={status:'owned',stage:1,level:50};},
+  x=>{x.ownedCards=[];},
+  x=>{delete x.ownedCards;},
+ ];
+ for(const fn of edits){const s=sample();fn(s);assert.throws(()=>parse(s,data),/所持サポカ/);}
+ const s=sample();
+ assert.throws(()=>setOwnedCard(s,data,'unknown','owned'),/不正/);
+ assert.throws(()=>setOwnedCard(s,data,'card-1','owned',5),/不正/);
+ assert.throws(()=>setOwnedCard(s,data,'card-1','invalid'),/不正/);
+ assert.deepEqual(s.ownedCards,{});
 });
