@@ -88,7 +88,7 @@ async function main(){
   assert.match(await page.locator('#source-status-cards').innerText(),/563 \/ 563枚/);
   assert.match(await page.locator('#source-status-skills').innerText(),/公開元から取得・検証/);
   assert.match(await page.locator('#source-status-events').innerText(),/公開JSONの検証成功/);
-  assert.match(await page.locator('#source-status-events').innerText(),/検証済みイベント 0件/);
+  assert.match(await page.locator('#source-status-events').innerText(),/検証済みイベント\s+0件/);
   assert.match(await page.locator('.modal-body').innerText(),/受信した日時/);
   await page.locator('button[data-action="close"]').click();
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
@@ -407,7 +407,7 @@ async function main(){
   await failurePage.locator('button[data-action="source-health"]').click();
   assert.match(await failurePage.locator('#source-status-events').innerText(),/公開JSONの検証失敗・未反映/);
   assert.match(await failurePage.locator('#source-status-events').innerText(),/検証不能・件数未確定/);
-  assert.doesNotMatch(await failurePage.locator('#source-status-events').innerText(),/検証済みイベント 0件/);
+  assert.doesNotMatch(await failurePage.locator('#source-status-events').innerText(),/検証済みイベント\s+0件/);
   await failurePage.locator('button[data-action="close"]').click();
   assert.match(status,/金白構造候補 2\/3組/);
   assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
