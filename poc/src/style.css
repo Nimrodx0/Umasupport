@@ -23,3 +23,6 @@
 
 /* Skill comparison filters preserve table readability and responsive controls. */
 .skill-filter{font-size:12px;min-height:33px;max-width:230px}.reverse-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 12px}.reverse-filter .field{max-width:230px}.reverse-filter .tiny-note{margin-left:auto}@media(max-width:490px){.skill-filter{flex:1 1 calc(50% - 6px);min-width:0;max-width:none}.reverse-filter .field{flex:1 1 auto;min-width:0}.reverse-filter .tiny-note{margin-left:0}}
+
+/* Runtime data provenance without implying full master coverage. */
+.source-health-detail{display:grid;gap:5px;margin:8px 0}.source-health-detail>div{display:grid;grid-template-columns:minmax(100px,38%) minmax(0,1fr);gap:12px;align-items:baseline;font-size:12px}.source-health-detail dt{color:var(--muted)}.source-health-detail dd{margin:0;overflow-wrap:anywhere;user-select:text}.source-health-state{display:inline-block;margin:8px 0 3px;font-size:12px;color:var(--teal)}@media(max-width:490px){.source-health-detail>div{grid-template-columns:1fr;gap:2px}}
