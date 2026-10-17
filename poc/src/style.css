@@ -20,3 +20,6 @@
 @media(max-width:600px){.owned-grid{grid-template-columns:1fr}.owned-filters .search{flex-basis:100%;min-width:0}.owned-filters select{min-width:0;flex:1 1 calc(50% - 6px)}}
 
 .picker-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}.picker-filters .search{flex:1 1 200px;min-width:160px}.picker-filters select{flex:1 1 115px;min-width:105px;max-width:100%}.picker-filters .filterlabel{flex-basis:100%}.picker-list{margin-bottom:0}.picker-filters+.tiny-note{margin:8px 0 10px}@media(max-width:490px){.picker-filters .search{flex-basis:100%;min-width:0}.picker-filters select{flex:1 1 calc(50% - 8px);min-width:0}.owned-filters select#owned-route{flex-basis:100%}}
+
+/* Skill comparison filters preserve table readability and responsive controls. */
+.skill-filter{font-size:12px;min-height:33px;max-width:230px}.reverse-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 12px}.reverse-filter .field{max-width:230px}.reverse-filter .tiny-note{margin-left:auto}@media(max-width:490px){.skill-filter{flex:1 1 calc(50% - 6px);min-width:0;max-width:none}.reverse-filter .field{flex:1 1 auto;min-width:0}.reverse-filter .tiny-note{margin-left:0}}
