@@ -1,6 +1,6 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {compareStages,assertSnapshot,EFFORIA,EXTERNAL_REFERENCES}=require('../tools/audit_stage_hint_integrity.cjs');
+const {compareStages,assertSnapshot,EFFORIA,EXTERNAL_REFERENCES,EXPECTED_UMASIM_SHA256}=require('../tools/audit_stage_hint_integrity.cjs');
 function fixture({hintSwitch=null,levelDrop=false,frequencyDrop=false,uniqueFrequency=0}={}){
  const rows=[];
  for(let card=0;card<510;card++)for(let stage=0;stage<5;stage++){
@@ -35,7 +35,7 @@ test('stage performance decreases are separately reported for review',()=>{
 test('independent third-party performance reference compares all 0-4 limits exactly',()=>{
  const x=compareStages(fixture(),{reference:{id:'30000',
    hintLevels:[1,2,3,4,5],hintFrequencies:[20,30,40,50,60]}});
- assert.deepEqual(x.externalEfforia0to4,{id:'30000',basis:'total',present:true,namePass:true,levelPass:true,frequencyPass:true,
+ assert.deepEqual(x.externalEfforia0to4,{id:'30000',basis:'total',present:true,namePass:true,levelPass:true,frequencyPass:true,rarityPass:true,
   levelMismatchStages:[],frequencyMismatchStages:[]});
  const y=compareStages(fixture(),{reference:{id:'30000',
    hintLevels:[1,2,3,4,9],hintFrequencies:[20,30,40,50,60]}});
@@ -49,16 +49,21 @@ test('missing reference fails closed',()=>{
  assert.throws(()=>assertSnapshot(x),/population drift/);
 });
 
-test('six reviewed references have unique source IDs, fixed names, evidence and five values per metric',()=>{
- assert.equal(EXTERNAL_REFERENCES.length,6);
- assert.equal(new Set(EXTERNAL_REFERENCES.map(r=>r.id)).size,6);
+test('twelve cited references include SSR, SR and R with distinct IDs and all 0..4 stage values',()=>{
+ assert.equal(EXTERNAL_REFERENCES.length,12);
+ assert.equal(new Set(EXTERNAL_REFERENCES.map(r=>r.id)).size,12);
  for(const r of EXTERNAL_REFERENCES){
   assert.match(r.name,/^\[.+\].+/);
   assert.match(r.url,/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/);
+  assert.ok(['SSR','SR','R'].includes(r.rarity));
+  assert.equal(r.id[0],{R:'1',SR:'2',SSR:'3'}[r.rarity]);
   assert.equal(r.hintLevels.length,5);
   assert.equal(r.hintFrequencies.length,5);
  }
- assert.equal(EXTERNAL_REFERENCES.filter(r=>r.basis==='base').length,1);
+ assert.equal(EXTERNAL_REFERENCES.filter(r=>r.basis==='base').length,7);
+ assert.deepEqual(Object.fromEntries(['SSR','SR','R'].map(x=>[x,EXTERNAL_REFERENCES.filter(r=>r.rarity===x).length])),{SSR:6,SR:5,R:1});
+ assert.match(EXPECTED_UMASIM_SHA256,/^[0-9a-f]{64}$/);
+ assert.equal(EXTERNAL_REFERENCES.length*2*5,120);
 });
 test('base-only GameWith support effect is not confused with the extra fixed unique bonus',()=>{
  const raw=fixture({uniqueFrequency:20});
@@ -89,4 +94,31 @@ test('empty, duplicated and malformed reference sets fail closed',()=>{
  assert.throws(()=>compareStages(fixture(),{references:[]}),/Independent reference/);
  assert.throws(()=>compareStages(fixture(),{references:[ref,ref]}),/duplicate/);
  assert.throws(()=>compareStages(fixture(),{references:[{...ref,hintLevels:[1,2,3]}]}),/Invalid independent/);
+});
+
+test('rarity mismatch fails the card identity gate even if every numerical cell matches',()=>{
+ const ref={id:'30000',name:'[架空試験用0]競走馬0',rarity:'SR',basis:'total',
+  hintLevels:[1,2,3,4,5],hintFrequencies:[20,30,40,50,60]};
+ const r=compareStages(fixture(),{references:[ref]}).externalReferences[0];
+ assert.equal(r.namePass,true);
+ assert.equal(r.levelPass,true);
+ assert.equal(r.frequencyPass,true);
+ assert.equal(r.rarityPass,false);
+ assert.throws(()=>compareStages(fixture(),{references:[{...ref,rarity:'X'}]}),/Invalid independent/);
+});
+test('numerical data in six new SR/R references is pinned at all five stages',()=>{
+ const expected={
+  '20097':[[2,2,2,2,2],[30,32,35,37,40]],
+  '20098':[[2,2,2,2,2],[30,32,35,37,40]],
+  '20081':[[1,1,1,2,2],[20,23,26,30,30]],
+  '20020':[[2,2,2,2,3],[40,42,45,47,50]],
+  '20048':[[2,2,2,2,2],[30,32,35,37,40]],
+  '10025':[[2,2,2,2,2],[30,32,35,37,40]]
+ };
+ assert.deepEqual(EXTERNAL_REFERENCES.filter(r=>r.rarity!=='SSR').map(r=>r.id).sort(),
+  Object.keys(expected).sort());
+ for(const r of EXTERNAL_REFERENCES.filter(r=>r.rarity!=='SSR')){
+  assert.deepEqual([r.hintLevels,r.hintFrequencies],expected[r.id],r.id);
+  assert.equal(r.basis,'base',r.id);
+ }
 });
