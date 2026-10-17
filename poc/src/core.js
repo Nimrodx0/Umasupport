@@ -57,14 +57,20 @@ function directRoutes(card,config){
 }
 function aggregate(deck,data){
   const bySkill={};
+  // F-04: unique support-card IDs define the count. Slot-indexed routes
+  // stay separate, preserving different stages and choices for duplicate IDs.
+  const countedCards=new Map();
   deck.slots.forEach((slot,index)=>{
     if(!slot||!data.cardById[slot.cardId])return;
     const card=data.cardById[slot.cardId];
     const routes=directRoutes(card,slot);
     for(const route of routes){
       const v=bySkill[route.skillId]||(bySkill[route.skillId]={skillId:route.skillId,providers:{},count:0,conditionalOnly:true});
-      const key=String(index); // 枚数は物理スロット単位。１枚に複数経路があっても重複しない。
-      if(!v.providers[key]){v.providers[key]={slotIndex:index,cardId:card.id,routes:[]};v.count++;}
+      const key=String(index); // 経路はスロット別、提供枚数はカードID別。
+      if(!v.providers[key])v.providers[key]={slotIndex:index,cardId:card.id,routes:[]};
+      let unique=countedCards.get(route.skillId);
+      if(!unique){unique=new Set();countedCards.set(route.skillId,unique);}
+      if(!unique.has(card.id)){unique.add(card.id);v.count++;}
       v.providers[key].routes.push(route);
       if(!route.conditional)v.conditionalOnly=false;
     }
