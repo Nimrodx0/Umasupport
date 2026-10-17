@@ -297,11 +297,34 @@ async function main(){
   assert.equal(await page.locator('button[data-action="deck-delete"][data-deck="main"]').isDisabled(),true);
   await page.locator('button[data-action="close"]').click();
   assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="0"]').innerText(),/0凸/);
-  // Verify the actual JSON import path restores BOTH libraries and selected IDs.
+  // Readonly until choosing replace or merge. Cancel should leave localStorage unchanged.
+  const currentBeforeImport=await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
+  const sourceFile={name:'backup.json',mimeType:'application/json',buffer:Buffer.from(multiDeckBackup)};
+  await page.locator('#import-file').setInputFiles(sourceFile);
+  await page.locator('[data-action="import-merge"]').waitFor();
+  assert.match(await page.locator('.modal-body').innerText(),/読み込むファイル/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),currentBeforeImport);
+  await page.locator('[data-action="import-cancel"]').click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),currentBeforeImport);
+  await page.locator('#import-file').setInputFiles(sourceFile);
+  await page.locator('[data-action="import-merge"]').click();
+  await page.waitForFunction(()=>document.querySelectorAll('#deck-select-main option').length===4);
+  assert.equal(await page.locator('#deck-select-main').inputValue(),'main-default');
+  assert.equal(await page.locator('#deck-select-inherit').inputValue(),'deck-3');
+  assert.equal(await page.locator('#deck-select-main option').count(),4);
+  let imported=await page.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(imported.goalSets.length,2);
+  assert.equal(imported.decks.inherit.length,4);
+  assert.equal(new Set([...imported.decks.main,...imported.decks.inherit].map(d=>d.id)).size,8);
+  assert.equal(imported.decks.main[0].slots[0].stage,0);
+  assert.equal(imported.decks.main[1].slots[0].stage,0,'imported default deck');
+  assert.equal(imported.decks.main[2].slots[0].stage,4,'imported copied deck');
+  // Load the same file again and explicitly select full replacement.
+  await page.locator('#import-file').setInputFiles(sourceFile);
+  await page.locator('[data-action="import-replace"]').waitFor();
+  assert.equal(await page.locator('#deck-select-main option').count(),4);
   page.once('dialog',dialog=>dialog.accept());
-  await page.locator('#import-file').setInputFiles({
-   name:'backup.json',mimeType:'application/json',buffer:Buffer.from(multiDeckBackup)
-  });
+  await page.locator('[data-action="import-replace"]').click();
   await page.waitForFunction(()=>document.querySelectorAll('#deck-select-main option').length===3);
   assert.equal(await page.locator('#deck-select-main option').count(),3);
   assert.equal(await page.locator('#deck-select-main').inputValue(),'deck-1');
@@ -309,12 +332,33 @@ async function main(){
   assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="0"]').innerText(),/4凸/);
   // Invalid imported JSON must not overwrite the last good saved state.
   const beforeBadImport=await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
-  page.once('dialog',dialog=>dialog.accept());
   await page.locator('#import-file').setInputFiles({
    name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"version":2,"decks":{}}')
   });
   await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),beforeBadImport);
+  // Repeated rapid goal actions must assign unique IDs without Date.now collisions.
+  await page.locator('button[data-action="goals"]').click();
+  await page.locator('button[data-action="duplicate-goal-set"]').click();
+  await page.locator('button[data-action="new-goal-set"]').click();
+  let goalsSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(goalsSaved.goalSets.length,3);
+  assert.equal(new Set(goalsSaved.goalSets.map(g=>g.id)).size,3);
+  assert.equal(await page.locator('#goals-modal-select option').count(),3);
+  await page.locator('#goals-modal-select').selectOption(goalsSaved.goalSets[1].id);
+  assert.match(await page.locator('#goal-set-name').inputValue(),/複製/);
+  await page.locator('#goal-set-name').fill('保存した周回目標');
+  await page.locator('button[data-action="rename-goal-set"]').click();
+  assert.match(await page.locator('#goal-set').innerText(),/保存した周回目標/);
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.locator('button[data-action="delete-goal-set"]').click();
+  goalsSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(goalsSaved.goalSets.length,3);
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('button[data-action="delete-goal-set"]').click();
+  goalsSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(goalsSaved.goalSets.length,2);
+  await page.locator('button[data-action="close"]').click();
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   assert.ok(overflow<=1,'mobile deck selector overflow '+overflow);
