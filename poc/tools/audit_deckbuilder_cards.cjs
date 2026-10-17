@@ -80,6 +80,7 @@ function audit(support,external){
   externalUnmatchedCount:unmatched.length,externalUnmatched:unmatched.slice(0,35),
   reviewedAliases:verifiedAliases,
   umaSimOutsideExternal:source.cards.size-matched.length,
+  umaSimOutsideExternalIds:[...source.cards.keys()].filter(id=>!used.has(id)).map(Number),
   checkedNormalHintLinks:totalHintLinks,matchedNormalHintLinks:totalHintLinks-noHintMatch,
   missingNormalHintLinks:noHintMatch,allNormalHintsIncludedCards:matched.length-mismatched.length,
   cardsWithMissingNormalHints:mismatched.length,
