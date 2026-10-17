@@ -153,6 +153,7 @@ async function main(){
   assert.equal(await page.locator('#deck-select-main').inputValue(),'deck-1');
   assert.equal(await page.locator('#deck-select-inherit').inputValue(),'deck-3');
   assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="0"]').innerText(),/4凸/);
+  const multiDeckBackup=await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
   await page.locator('button[data-action="deck-manage"][data-deck="main"]').click();
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('button[data-action="deck-delete"][data-deck="main"]').click();
@@ -167,6 +168,24 @@ async function main(){
   assert.equal(await page.locator('button[data-action="deck-delete"][data-deck="main"]').isDisabled(),true);
   await page.locator('button[data-action="close"]').click();
   assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="0"]').innerText(),/0凸/);
+  // Verify the actual JSON import path restores BOTH libraries and selected IDs.
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('#import-file').setInputFiles({
+   name:'backup.json',mimeType:'application/json',buffer:Buffer.from(multiDeckBackup)
+  });
+  await page.locator('#deck-select-main option').nth(2).waitFor();
+  assert.equal(await page.locator('#deck-select-main option').count(),3);
+  assert.equal(await page.locator('#deck-select-main').inputValue(),'deck-1');
+  assert.equal(await page.locator('#deck-select-inherit').inputValue(),'deck-3');
+  assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="0"]').innerText(),/4凸/);
+  // Invalid imported JSON must not overwrite the last good saved state.
+  const beforeBadImport=await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('#import-file').setInputFiles({
+   name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"version":2,"decks":{}}')
+  });
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),beforeBadImport);
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
   assert.ok(overflow<=1,'mobile deck selector overflow '+overflow);
