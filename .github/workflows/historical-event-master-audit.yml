@@ -93,7 +93,7 @@ jobs:
           print("Caveat:",r["scope"])
           PY
 
-      - name: Compare source-title fingerprints without emitting original text
+      - name: Compare category 181 by verified story_id, fail closed on absent titles
         shell: bash
         run: |
           set -euo pipefail
@@ -101,57 +101,22 @@ jobs:
             --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
             --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
             --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
-            --title-index id \
+            --title-index story_id \
             --focus-only \
             > "$RUNNER_TEMP/uma-event-master/title-summary.json"
-          # Explicit second hypothesis: title data keyed by short_story_id, not story id.
-          python3 poc/tools/audit_story_title_links.py \
-            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
-            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
-            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
-            --title-index short_story_id \
-            --focus-only \
-            > "$RUNNER_TEMP/uma-event-master/title-summary-short.json"
           python3 - <<'PY'
           import json,os,pathlib
           r=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/title-summary.json").read_text())
           assert r["candidateCards"]==417 and r["sourceCards"]==563
+          assert r["titleLookupColumn"]=="story_id"
+          assert sum(x.get("historicalTitlesResolved",0) for x in r["byRarity"].values()) == 1028, \
+              "Historical category 181 title join incomplete; do not treat missing text as unmatched event."
+          assert sum(x.get("historicalTitlesMissing",0) for x in r["byRarity"].values()) == 0
           assert r["focus30241"]["historicalDirectStoryRows"]==18
           assert r["focus30241"]["checkerCandidateRecords"]==17
-          print("HISTORICAL TITLE ONLY, NOT OFFICIAL EVENT ID CORROBORATION")
-          print("Lookup index:",r["titleLookupColumn"])
-          print("By rarity:",r["byRarity"])
-          print("30241:",r["focus30241"])
+          print("PROVISIONAL TITLE MATCHING (NOT OFFICIAL CHECKER EVENT IDs)")
+          print("Historical story title lookup:",r["titleLookupColumn"])
+          print("All-card by rarity counts:",r["byRarity"])
+          print("30241 exact normalized title counts:",r["focus30241"])
           print("Scope:",r["scope"])
-          alt=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/title-summary-short.json").read_text())
-          print("Alternate index:",alt["titleLookupColumn"])
-          print("Alternate by rarity:",alt["byRarity"])
-          print("Alternate 30241:",alt["focus30241"])
-
-          import sqlite3
-          dbfile=pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/master.mdb"
-          with sqlite3.connect(dbfile.resolve().as_uri()+"?mode=ro",uri=True) as db:
-              counts=db.execute("SELECT category,COUNT(*) FROM text_data GROUP BY category ORDER BY category").fetchall()
-              cats=dict(counts)
-              print("Historical master category 181 text row count:",cats.get(181,0))
-              print("Historical master text category count:",len(cats))
-              # Do not expose any game text, only database shape for key troubleshooting.
-              print("Historical category 181 available:",181 in cats)
-
-              cols=[z[1] for z in db.execute("PRAGMA table_info(single_mode_story_data)")]
-              print("Historical story table column names:",cols)
-              idx=db.execute('SELECT MIN("index"),MAX("index") FROM text_data WHERE category=181').fetchone()
-              print("Category 181 numeric index range:",idx)
-              if "story_id" in cols:
-                  print("30241 actual story_id range:",
-                        db.execute("SELECT MIN(story_id),MAX(story_id),COUNT(DISTINCT story_id) FROM single_mode_story_data WHERE support_card_id=30241 AND gallery_flag=2").fetchone())
-                  print("Category181 joined by story_id count:",
-                        db.execute('SELECT COUNT(*) FROM single_mode_story_data s JOIN text_data t ON t.category=181 AND t."index"=s.story_id WHERE s.gallery_flag=2 AND s.support_card_id>0').fetchone()[0])
-
-              for column in ("id","short_story_id"):
-                  meta=db.execute(f'SELECT MIN("{column}"),MAX("{column}"),'
-                                  f'COUNT(DISTINCT "{column}") FROM single_mode_story_data '
-                                  'WHERE gallery_flag=2 AND support_card_id=30241').fetchone()
-                  print("30241 numeric",column,"range/distinct:",meta)
-
           PY
