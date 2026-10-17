@@ -26,3 +26,6 @@
 
 /* Runtime data provenance without implying full master coverage. */
 .source-health-detail{display:grid;gap:5px;margin:8px 0}.source-health-detail>div{display:grid;grid-template-columns:minmax(100px,38%) minmax(0,1fr);gap:12px;align-items:baseline;font-size:12px}.source-health-detail dt{color:var(--muted)}.source-health-detail dd{margin:0;overflow-wrap:anywhere;user-select:text}.source-health-state{display:inline-block;margin:8px 0 3px;font-size:12px;color:var(--teal)}@media(max-width:490px){.source-health-detail>div{grid-template-columns:1fr;gap:2px}}
+
+/* Six-card reviewed-event overview: missing data is not an unselected route. */
+.event-overview-stats{display:flex;flex-wrap:wrap;gap:7px 12px;margin:12px 0;padding:9px 12px;border:1px solid var(--line);border-radius:10px}.event-overview-stats span{font-size:12px;color:var(--muted)}.event-overview-stats b{color:var(--text)}.event-overview-controls{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.event-overview-controls label{display:flex;align-items:center;gap:8px}.event-slot{margin-bottom:12px;overflow-wrap:anywhere}.event-slot .flex{flex-wrap:wrap}.event-slot-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px}.event-slot .event{margin:10px 0}
