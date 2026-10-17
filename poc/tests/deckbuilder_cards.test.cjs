@@ -36,3 +36,17 @@ test('duplication and low-quality input fail safely',()=>{
  external[1]={...external[0]};
  assert.throws(()=>audit(source,external),/Repeated external/);
 });
+
+test('seven aliases are explicit; unrelated character name never silently matched',()=>{
+ const names=[
+  '[”最強”なる眷属]ドゥラメンテ',
+  '[ずーっと一緒、だぞー!]ブラストワンピース',
+  '[その執念は怒涛が如く]メイショウドトウ',
+  '[ゆるり、ゆこま旅館]]保科健子',
+  '[わたしときみの交換こ]ハルウララ',
+  '[永遠の誓い、永遠の輝き]サトノダイヤモンド',
+  '[鈴凜なるビスクドール]アドマイヤグルーヴ'
+ ];
+ assert.equal(new Set(names).size,7);
+ assert.notEqual(displayName({Title:'Title One',CharacterName:'ホース'}),names[0]);
+});
