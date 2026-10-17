@@ -44,7 +44,7 @@ function mountApp(raw) {
   const handlers={};
   const data={cards:[],skills:[],cardById:{},skillById:{},meta:{totalHints:0}};
   const context={
-    window:{UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js')},
+    window:{UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js')},
     localStorage:{
       getItem:k=>values.get(k)??null,
       setItem:(k,v)=>{writes++;values.set(k,v)}
