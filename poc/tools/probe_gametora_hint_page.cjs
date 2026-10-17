@@ -73,7 +73,7 @@ async function audit(supportFile){
 }
 if(require.main===module){
  audit(process.argv[2]).then(x=>{console.log(JSON.stringify(x,null,2));
-  if(x.parsed!==x.checked)process.exitCode=1;
+  if(x.checked!==22||x.parsed!==22||x.exact!==22||x.normalHintsTotal!==180||x.normalHintsCorroborated!==180)process.exitCode=1;
  }).catch(e=>{console.error(String(e.stack||e));process.exitCode=1});
 }
 module.exports={extractHints};
