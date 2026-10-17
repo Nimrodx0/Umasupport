@@ -5,7 +5,7 @@ const SAVE_KEY='uma-support-lab-runtime-umasim-v1';
 const blank=()=>({cardId:null,stage:4,choices:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
-let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,pickerSearch:'',pickerOnlyOwned:false,ownedQuery:'',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0};
+let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
 const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goalSets[0];
 const activeDeck=k=>window.UmaSettings.activeDeck(state,k);
@@ -73,14 +73,7 @@ function ownedLabel(c){
  const rec=state.ownedCards[c.id];
  return rec?.status==='owned'?'所持 '+rec.stage+'凸':rec?.status==='unowned'?'未所持':'未登録';
 }
-function matchOwned(c){
- if(ui.ownedRarity!=='all'&&c.rarity!==ui.ownedRarity)return false;
- if(ui.ownedType!=='all'&&c.type!==ui.ownedType)return false;
- if(ui.ownedFilter!=='all'&&window.UmaSettings.ownedStatus(state,c.id)!==ui.ownedFilter)return false;
- if(!ui.ownedQuery)return true;
- const skills=(c.hints||[]).map(id=>data.skillById[id]?.name||id).join(' ');
- return (c.name+' '+c.character+' '+c.type+' '+c.rarity+' '+skills+' '+(c.searchAliases||[]).join(' ')).toLocaleLowerCase().includes(ui.ownedQuery.toLocaleLowerCase());
-}
+function matchOwned(c){return window.UmaCardSearch.matches(c,data,{query:ui.ownedQuery,skillQuery:ui.ownedSkillQuery,route:ui.ownedRoute,rarity:ui.ownedRarity,type:ui.ownedType,ownership:ui.ownedFilter},state.ownedCards);}
 function ownedCardHtml(c){
  const rec=state.ownedCards[c.id],status=rec?.status||'unregistered';
  return `<article class="owned-card" data-owned-id="${esc(c.id)}">${cardIcon(c,true)}<div class="owned-card-detail"><strong>${esc(c.name)}</strong><span class="muted">${esc(c.type)} · ${esc(c.rarity)}</span><div class="owned-states" role="group" aria-label="${esc(c.name)}の所持状態">${[['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([k,name])=>`<button type="button" class="btn tiny" data-action="owned-status" data-id="${esc(c.id)}" data-status="${k}" aria-pressed="${status===k}">${name}</button>`).join('')}</div>${status==='owned'?`<label class="owned-stage">所持凸 <select class="field" data-owned-stage="${esc(c.id)}" aria-label="${esc(c.name)}の所持凸">${[0,1,2,3,4].map(i=>`<option value="${i}" ${rec.stage===i?'selected':''}>${i}凸</option>`).join('')}</select></label>`:''}</div></article>`;
@@ -100,8 +93,10 @@ function refreshOwnedGrid(){
 function ownedManagerModal(){
  const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort();
  const types=[...new Set(data.cards.map(c=>c.type))].sort();
- const opts=(list,chosen)=>list.map(v=>`<option value="${esc(v)}" ${v===chosen?'selected':''}>${esc(v)}</option>`).join('');
- const body=`<p class="help">所持・未所持・未登録を区別して記録します。所持凸は編成内の想定凸とは独立です。カード画像の代わりに現在はキャラクター略字を表示しています。</p><div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター・タイプ・スキル名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select></div><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
+ const opts=(list,chosen)=>list.map(v=>`<option value="${esc(v)}" ${v===chosen?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
+ const routes=[['all','すべての獲得経路'],['hint','通常ヒント'],['event','承認済みイベント'],['both','通常ヒント＋承認済みイベント']];
+ const routeOptions=routes.map(([v,label])=>`<option value="${v}" ${ui.ownedRoute===v?'selected':''}>${label}</option>`).join('');
+ const body=`<p class="help">所持・未所持・未登録を区別して記録します。所持凸は編成内の想定凸とは独立です。カード画像の代わりに現在はキャラクター略字を表示しています。</p><div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><input id="owned-skill-search" class="field search" placeholder="提供スキル名・ID…" aria-label="提供スキル名で検索" value="${esc(ui.ownedSkillQuery)}"><select class="field" id="owned-route" aria-label="獲得経路">${routeOptions}</select><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select></div><p class="tiny-note">「提供スキル」は照合済み通常ヒントと公開承認済みイベントだけを対象にします。未承認イベントや参考候補は含めません。イベントで候補0件は「イベントが存在しない」意味ではありません。</p><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
  titleModal('所持サポカを一括登録',data.cards.length+'枚を検索・整理',body);
 }
 function pickerMatches(){
