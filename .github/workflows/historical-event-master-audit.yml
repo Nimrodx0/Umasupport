@@ -8,6 +8,8 @@ on:
       - poc/tests/test_historical_event_master.py
       - poc/tools/audit_story_title_links.py
       - poc/tests/test_story_title_links.py
+      - poc/tools/audit_story_residual_metadata.py
+      - poc/tests/test_story_residual_metadata.py
       - poc/src/checker_candidate_pipeline.cjs
   workflow_dispatch:
 
@@ -27,6 +29,8 @@ jobs:
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_event_master.py' -v
       - name: Check event-title overlap logic using synthetic SQLite
         run: python3 -m unittest discover -s poc/tests -p 'test_story_title_links.py' -v
+      - name: Verify story-ID residual tests with synthetic SQLite
+        run: python3 -m unittest discover -s poc/tests -p 'test_story_residual_metadata.py' -v
       - name: Fetch exact public source snapshots into temporary directory
         shell: bash
         run: |
@@ -157,4 +161,36 @@ jobs:
                 b["focus30241"]["duplicateCheckerTitleRows"])
           print("Overall SSR+SR typographic overlaps:",
                 sum(b["byRarity"][r]["typographicTitleOverlaps"] for r in ("SSR","SR")))
+          PY
+
+      - name: Classify unresolved historical story metadata without title text
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_story_residual_metadata.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --focus 30241 \
+            --focus-only \
+            > "$RUNNER_TEMP/uma-event-master/story-residuals.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          base=pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master"
+          r=json.loads((base/"story-residuals.json").read_text())
+          title=json.loads((base/"title-typography.json").read_text())
+          assert r["focus"]["cardId"]=="30241"
+          assert r["focus"]["historicalStoryCount"]==18
+          assert r["focus"]["candidateCount"]==17
+          assert r["focus"]["provisionalTypographyMatches"] == title["focus30241"]["provisionalTypographicOverlap"]
+          assert r["focus"]["unmatchedHistoricalTitleRows"] == title["focus30241"]["historicalTitlesNotTypographicInChecker"]
+          assert r["allSSR_SR"]["provisionalTypographyMatches"] == sum(
+              title["byRarity"][rarity]["typographicTitleOverlaps"] for rarity in ("SSR","SR"))
+          assert r["allSSR_SR"]["historicalStoryRowsSSR_SR"]==1017
+          assert r["allSSR_SR"]["candidateEventsSSR_SR"]==2099
+          print("HISTORICAL STORY RESIDUAL METADATA (NOT GAME CONTENT COMPLETENESS)")
+          print("30241:",json.dumps(r["focus"],sort_keys=True))
+          print("All SSR/SR:",r["allSSR_SR"])
+          print("Residual event_category numeric distribution:",r["residualMetadataByEventCategory"])
+          print("Caveat:",r["explanation"])
           PY
