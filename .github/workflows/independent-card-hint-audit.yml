@@ -1,0 +1,21 @@
+name: One-Off Independent Card Hint and Skill Ordering Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/independent-card-hint-audit.yml
+      - poc/tools/audit_independent_card_hints.cjs
+      - poc/tests/card_hint_audit.test.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: One-off independent ID and skill-order source schema audit
+        run: node poc/tools/audit_independent_card_hints.cjs
