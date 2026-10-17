@@ -14,7 +14,7 @@ const EFFORIA={id:'30311',hintLevels:[2,2,3,3,4],hintFrequencies:[60,70,80,90,10
 
 function compareStages(text,{reference=EFFORIA}={}){
  const parsed=parseSupportCards(text);
- const distribution=[0,0,0,0,0],changeCount=[0,0,0,0],lvs=[0,0,0,0,0],rates=[0,0,0,0,0];
+ const distribution=[0,0,0,0,0],changeCount=[0,0,0,0,0],lvs=[0,0,0,0,0],rates=[0,0,0,0,0];
  const issues=[];
  let commonHintLinks=0,distinctNames=0,lowerHintLevel=0,lowerFrequency=0,added=0,removed=0;
  for(const [id,card] of parsed.cards){
