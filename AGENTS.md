@@ -95,3 +95,7 @@
 ## 2026-10-17：将来の新マスター差分ゲート（PR #49）
 
 [poc/tools/compare_event_master_snapshots.py](poc/tools/compare_event_master_snapshots.py) は、2025年固定masterと、利用許可・出典・時点が確認できた別のSQLiteをローカルでID監査する入力ツール。旧SHAを確認し、不正テーブル・重複・孤児カード参照を拒否。現在、**2026年版の検証可能なSQLiteを持っていないので実データBは未実施**。ゲームデータファイルやタイトルをPublicへ同梱しない。[計画](docs/master-snapshot-differential-audit.md)。
+
+## 2026-10-17 Phase 3：名前付き複数デッキ（PR #50）
+
+[仕様・受け入れ基準](docs/named-deck-library-acceptance.md)。設定JSONは**v2**（decks.main/inheritの配列、activeDecksの選択ID、nextDeckId）。`poc/src/settings.js`がv1の単一デッキ構造を保持して変換し、未知カードや保存済み非選択デッキの不正も拒否。`UmaSettings.activeDeck(state,k)`から集計とカード編集を行い、`state.decks[k].slots`を再び用いない。各側50件以内、最後1件は削除不可、複製はdeep copy。通常CIのNode検証とChromium人工563枚を整備、実機Android/Windowsはまとめて受入れ。Phase 2の実イベント公開JSONは0件のまま。
