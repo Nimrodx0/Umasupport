@@ -41,13 +41,13 @@
 
 **成果物**：対象カードのID台帳・通常ヒント、スキル数値ID、金白・○◎上下関係、レアリティ／分類、標準表示順、ヒントLv／発生率・解放段階情報。
 
-**残作業**：[GameToraとUmaSimの全563カードID一致](card-population-independent-audit.md)を確認し、RタッカーブラインはUmaSim収録済み（ID10128）と訂正済み。ただし公式ゲーム全実装の独立母数、カード全件の名称・性能・ヒントの個別照合は未完。322組の別資料による対応関係は確認したが、残る1組の数値IDの独立根拠・ソースの来歴・版差を追跡、ヒントLv・ヒント発生率は[元データの全2,815行を監査](hint-performance-audit.md)し、カード詳細へ段階別表示を実装、**公開Pages/Linux Chromiumで0・4凸の実データ照合に合格**。ただし[別系統日本版45枚・通常ヒント527件の名称集合が全一致](independent-card-hint-audit.md)した一方、**UmaSim数値スキル辞書のID 201012が未収録**（別辞書とカード名から名称「後方釘付」を確認）。ゲーム内独立照合・特殊固有効果・標準表示順・全性能項目は引き続き未完。新スキル辞書のPages/Linux Chromium確認は成功し、**Android実機・他ブラウザ**とオンライン復帰後の再取得は未確認。
+**残作業**：[GameToraとUmaSimの全563カードID一致](card-population-independent-audit.md)を確認し、RタッカーブラインはUmaSim収録済み（ID10128）と訂正済み。ただし公式ゲーム全実装の独立母数、カード全件の名称・性能・ヒントの個別照合は未完。322組の別資料による対応関係は確認したが、残る1組の数値IDの独立根拠・ソースの来歴・版差を追跡、ヒントLv・ヒント発生率は[元データの全2,815行を監査](hint-performance-audit.md)し、カード詳細へ段階別表示を実装、**公開Pages/Linux Chromiumで0・4凸の実データ照合に合格**。ただし[別系統日本版45枚・通常ヒント527件の名称集合が全一致](independent-card-hint-audit.md)。さらに[2026-10公開の別カタログ560枚と通常ヒント延べ3,986件を照合](expanded-card-hint-crosscheck.md)し、**3,965件は掲載一致、21件は別資料に未掲載**。2025資料によりこの21件のうち14件を補強、7件は資料不足した一方、**UmaSim数値スキル辞書のID 201012が未収録**（別辞書とカード名から名称「後方釘付」を確認）。ゲーム内独立照合・特殊固有効果・標準表示順・全性能項目は引き続き未完。新スキル辞書のPages/Linux Chromium確認は成功し、**Android実機・他ブラウザ**とオンライン復帰後の再取得は未確認。
 
 **完了条件**：分母を明示した全件監査で対象レコードを「検証済み／根拠付き非該当／未解決」に分類し、誤統合・推測補完を防止でき、階層と直接／間接カバーを実ブラウザで検証済み。保留カードを全件完了と呼ばない。
 
 ゲーム内の表示順について、[2025年マスターの`disp_order`を1,786共有IDで確認](historical-skill-order-probe.md)したが、同値グループ214と古い版のため、そのまま2026年の標準順として採用できない。数値ID`201012`の旧マスター存在も確認。
 
-詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
+詳細：[拡大通常ヒント監査](expanded-card-hint-crosscheck.md)、[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
 
 ## Phase 2：イベントデータの完全化
 
@@ -85,7 +85,7 @@
 
 ## 直近の順序と依存関係
 
-1. **Phase 1ゲートを閉じる**：322組の外部裏付けを元資料・版と共に保存し、残る1組の数値IDの独立確認、実Pages/Linux Chromiumで確認済みの範囲を証拠付きで保持し、Android/Windows実機で階層・間接カバー・キャッシュを検証（Linux Chromiumでは破損キャッシュ隔離と取得先のオンライン復帰後再GETまで確認済み）。
+1. **Phase 1ゲートを閉じる**：10月版カタログ[560/563枚・3,965件ヒント掲載一致、21件未掲載](expanded-card-hint-crosscheck.md)を優先してトリアージし、未掲載3枚（R ID10146〜10148）を別時点の収録差として追跡。322組の外部裏付けを元資料・版と共に保存し、残る1組の数値IDの独立確認、実Pages/Linux Chromiumで確認済みの範囲を証拠付きで保持し、Android/Windows実機で階層・間接カバー・キャッシュを検証（Linux Chromiumでは破損キャッシュ隔離と取得先のオンライン復帰後再GETまで確認済み）。
 2. **Phase 2の供給元と網羅の証拠を揃える**：417カード／2,099候補と、実イベント全件性・連続条件・スキルID・利用条件は別に監査。
 3. **実イベントを少数で結合試験し、その後対象全件へ展開**。部分試験を公開収録完了としない。
 4. 並行してPhase 3のUIを進め、Phase 4の受け入れマトリクスを機能ごとに埋める。
