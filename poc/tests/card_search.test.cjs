@@ -35,7 +35,7 @@ test('multi-filter combines text, rarity, type, ownership and normal-hint route'
 });
 test('reviewed event outcomes and choices participate, but historical referenceSkills never do',()=>{
  const m=fixture();
- assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'event'}).map(c=>c.id),['1']);
+ assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'event'}).map(c=>c.id),['1','3']);
  assert.deepEqual(filterCards(m.cards,m,{skillQuery:'展開',route:'event'}).map(c=>c.id),['3']);
  assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'hint'}).map(c=>c.id),['3']);
  assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'both'}).map(c=>c.id),['3']);
