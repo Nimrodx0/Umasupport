@@ -145,3 +145,7 @@ python3 poc/tools/verify_skill_master.py --umasim local-data/skill_data.txt \
 ## 公開Pagesの実データChromium受け入れ（2026-10-17）
 
 [実測記録](../docs/pages-browser-acceptance-20261017.md)、[スクリプト](tests/pages_live_browser.cjs)、[限定的Actions](../.github/workflows/pages-real-browser-acceptance.yml)を参照。公開中の配信物5ファイルのバイト一致、UmaSim2ファイルを各1回の実GET、ブラウザ描画/編成/目標/IndexedDB、データ取得先のみ遮断した復旧を自動検証。実測はLinux HeadlessChrome/140・390px幅の操作であり、Android実機でも全イベント/全ゲームデータの保証でもない。通常CIでは外部GETを追加せず、明示実行のみ。
+
+### 2026-10-17：旧マスターのイベントタイトル指紋照合
+
+[イベント名の監査結果](../docs/event-title-fingerprint-audit.md)。候補専用JSONに `titleFingerprint`（NFKC＋空白統一したイベント見出しのSHA-256）を追加。旧masterの `single_mode_story_data.story_id` と `text_data.category=181` から得られたタイトルのハッシュと、**タイトル名の暫定一致**のみ比較する。固定版旧マスターのカード直結1,028件はタイトル全件取得、SSR/SR1,017件のうちChecker候補との暫定一致956件。30241は旧18、Checker17、同名15、旧だけ3、Checkerだけ2。元イベント名・本文をPublicへ保存せず、正式ゲームID・報酬・分岐の確認として扱わない。監査は通常CIの人工SQLite回帰と、明示／PR限定の[ワークフロー](../.github/workflows/historical-event-master-audit.yml)で実行。

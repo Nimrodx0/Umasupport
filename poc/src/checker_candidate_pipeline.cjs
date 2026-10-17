@@ -68,7 +68,11 @@ function inventory({source,model,aliases={}}){
      if(sourceKeys.has(sourceKey))fail('イベントキー重複: '+card.id);
      sourceKeys.add(sourceKey);
      const sourceDigest='sha256:'+sha(JSON.stringify({title:normalizedTitle,choices:validated}));
-     events.push({sourceKey,sourceDigest,sourceIndex:events.length,optionCount:validated.length});
+     events.push({sourceKey,sourceDigest,
+      // SHA-256 of NFKC/whitespace-normalized title for read-only master comparison.
+      // It is not a verified in-game story/event ID and is never published as one.
+      titleFingerprint:'sha256:'+sha(normalizedTitle),
+      sourceIndex:events.length,optionCount:validated.length});
      optionCount+=validated.length;
    }
    for(let i=0;i<events.length;i++){

@@ -154,3 +154,7 @@ Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Um
 ## 2026-10-17：キャラクター共通イベント経路を別計上（PR #44）
 
 [限定監査 #39035136209](https://github.com/Nimrodx0/Umasupport/actions/runs/39035136209)で、旧2025年マスターのカード直結1,028行に加えて**共通358行**を確認。support_card_data.chara_idを通じてカードIDに結合し、直結/共有/カード単位重複除去和集合を区別。旧版収録495枚は全て直結か共有のストーリーを持ち、R135枚も全て共有経路を持っていた。直結0件のR126枚をイベント無しと誤読しない。グループ構成員の全結合、2026年実ゲーム全件、条件・報酬・権利は未検証。人工SQLiteで共有と直結の重複除外をCI試験。公開JSON0件、Phase 2未完。
+
+## 2026-10-17：旧ストーリー名の指紋・Checker候補の突合（PR #45）
+
+2025年固定SQLiteのsingle_mode_story_data.story_idをtext_data(category=181)に結合し、カード直結1,028件でタイトル解決1,028、未解決0。内部id・short_story_idでは全件解決不能であったため、テーブルのキーを区別して修正した。[限定Actions #39036365422](https://github.com/Nimrodx0/Umasupport/actions/runs/39036365422)成功。Checker候補名称のSHA-256（NFKC＋空白正規化）を一時作成し、SSR/SR旧1,017タイトルに対して956名称一致、61は同名候補なし。**SSR30241グループカードは旧18／Checker17のうち15名称一致、旧のみ3／Checkerのみ2**。いずれもゲーム正式ストーリーIDとのペア承認やイベントの不在を証明しない。人工SQLiteで重複タイトル、多重集合、テキスト欠損、不正指紋を試験、通常CIにも追加。出典・残件：[監査文書](event-title-fingerprint-audit.md)。UIと公開イベント0件は変更なし。

@@ -27,6 +27,9 @@ jobs:
       - name: Test historical event-ID overlap (synthetic SQLite, no external GET)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_event_master.py' -v
 
+      - name: Run event-story title fingerprint regression (synthetic SQLite)
+        run: python3 -m unittest discover -s poc/tests -p 'test_story_title_links.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts

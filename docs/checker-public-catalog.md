@@ -26,7 +26,7 @@ node poc/tools/build_checker_catalog.cjs
 node poc/tools/build_checker_catalog.cjs --local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json
 ~~~
 
-local-dataディレクトリはgitignore対象。candidates.jsonには、カードIDと、元の配列上の番号（sourceIndex）、イベント識別子（sourceKey）、元のタイトル・選択肢・効果文全体のSHA-256（sourceDigest）、選択肢の件数だけを記録する。**イベント名・選択肢原文・効果原文は含まない。**
+local-dataディレクトリはgitignore対象。candidates.jsonには、カードIDと、元の配列上の番号（sourceIndex）、イベント識別子（sourceKey）、元のタイトル・選択肢・効果文全体のSHA-256（sourceDigest）、選択肢の件数だけを記録する。**イベント名・選択肢原文・効果原文は含まない。2026-10-17から各候補へ `titleFingerprint`（正規化イベント名のSHA-256）も追加し、[旧マスターのイベント名監査](event-title-fingerprint-audit.md)で一時利用する。これは正式ゲームイベントIDではなく、候補ファイルそのものをPublicへコミットしない。**
 
 カード名の揺れは推測で自動統合しない。人手で対応を確認したときだけ、別ファイルに実ID→元ソースのカード表示名を明記して --aliases local-data/aliases.json を指定する。同一カードの同名イベントは消去・統合せず、別々のsourceIndexを持つ候補とし、duplicateTitleフラグで追加レビューを要求する。
 
