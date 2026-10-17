@@ -146,3 +146,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 - **C 実機**：アプリ画面には変更なし。新規Android・Windowsの物理実機試験は行わず、既存の保留リストを維持。
 
 第三者生データはレポジトリにもActionsアーティファクトにも保存せず、明示的な限定監査だけ外部GETを行う。
+
+## 2026-10-17：歴史ゲームマスターのサポカ直結ストーリーIDとの独立照合（PR #43）
+
+Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Umasupport/actions/runs/39034550562)が合格。2025年旧マスターのサポカID495が2026年UmaSim563の一部であり、直結ストーリー1,028行（SSR837/SR180/R11）。旧版にない現行カード68、旧版でカード直結イベントIDがない134（うちR126）。Checker固定版のSSR・SR417カード／候補2,099件と比べ、旧マスター直接ストーリー数を候補数が下回るカードは3枚：30240(3対0)、30241(18対17、グループSSR)、30269(3対0)。コードは[監査ツール](../poc/tools/audit_historical_event_master.py)・人工SQLite回帰・限定ワークフローを追加。数値の比較は調査優先順位だけであり、共有キャラクターイベント・経路・スキル報酬・2026年の正式マスター・転載許可は未検証。実イベント公開JSON0件を維持。[監査文書](historical-event-story-audit.md)。
