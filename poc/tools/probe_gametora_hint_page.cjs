@@ -1,5 +1,5 @@
 'use strict';
-const fs=require('node:fs'),{chromium}=require('playwright');
+const fs=require('node:fs');
 const {parseSupportCards}=require('../src/live_loader.js');
 const norm=s=>String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();
 const ids=[30311,30090,20098,30302,30284,30299,
@@ -20,6 +20,7 @@ function extractHints(renderedText){
  return {status:'ok',names};
 }
 async function audit(supportFile){
+ const {chromium}=require('playwright');
  const source=parseSupportCards(fs.readFileSync(supportFile,'utf8')),byId=new Map([...source.cards].map(([k,v])=>[Number(k),v]));
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
