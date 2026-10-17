@@ -4,8 +4,9 @@
 Source card IDs are from UmaSim. The old master provides card-specific story IDs
 with gallery_flag=2, as used by Umamusume Wiki. UmaUmaChecker *candidate* event
 record counts may be compared, but they are not assumed to share event identity
-or a 1:1 relationship with story records. This does not verify character-shared
-events, branching, choice rewards, or current-game completeness.
+or a 1:1 relationship with story records. This additionally counts character-shared story IDs through support_card_data.chara_id,
+but cannot verify group-card multi-character membership, branching, choice rewards,
+or current-game completeness.
 """
 from __future__ import annotations
 
@@ -54,8 +55,8 @@ def read_master(path):
     with sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True) as db:
         schema = {}
         for table, required in (
-            ("support_card_data", {"id"}),
-            ("single_mode_story_data", {"id", "support_card_id", "gallery_flag"}),
+            ("support_card_data", {"id", "chara_id"}),
+            ("single_mode_story_data", {"id", "support_card_id", "support_chara_id", "gallery_flag"}),
         ):
             if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone() is None:
                 raise ValueError("Historical master missing table: " + table)
@@ -65,11 +66,15 @@ def read_master(path):
                                  ", ".join(sorted(required - columns)))
             schema[table] = sorted(columns)
         all_card_ids = set()
-        for (value,) in db.execute("SELECT id FROM support_card_data"):
+        card_chara_ids = {}
+        for value, chara in db.execute("SELECT id, chara_id FROM support_card_data"):
             sid = positive_id(value)
             if sid in all_card_ids:
                 raise ValueError("Duplicate historical support card ID " + sid)
             all_card_ids.add(sid)
+            # Some group cards may need additional multi-character relationship
+            # tables; do not invent such memberships from the character field.
+            card_chara_ids[sid] = positive_id(chara) if chara is not None and int(chara) > 0 else None
 
         by_card = defaultdict(set)
         seen_story_ids = set()
@@ -83,11 +88,20 @@ def read_master(path):
             seen_story_ids.add(sid)
             by_card[cid].add(sid)
             eligible_rows += 1
-        # Other classifications such as support_chara_id are deliberately not
-        # treated as card-specific events; a separate join is required.
-        return {"card_ids": all_card_ids, "direct_stories": by_card,
+        by_character = defaultdict(set)
+        eligible_shared_rows = 0
+        for story_id, chara_id in db.execute(
+                "SELECT id, support_chara_id FROM single_mode_story_data "
+                "WHERE gallery_flag = 2 AND support_chara_id > 0"):
+            by_character[positive_id(chara_id)].add(positive_id(story_id))
+            eligible_shared_rows += 1
+        known_charas = set(x for x in card_chara_ids.values() if x)
+        return {"card_ids": all_card_ids, "card_chara_ids": card_chara_ids,
+                "direct_stories": by_card, "shared_stories": by_character,
                 "master_card_count": len(all_card_ids), "eligible_story_rows": eligible_rows,
-                "orphan_direct_card_ids": sorted(set(by_card) - all_card_ids)}
+                "eligible_shared_rows": eligible_shared_rows,
+                "orphan_direct_card_ids": sorted(set(by_card) - all_card_ids),
+                "unused_shared_chara_count": len(set(by_character) - known_charas)}
 
 
 def read_candidates(raw, source_cards):
@@ -119,6 +133,8 @@ def audit(source_cards, master, candidate_counts=None):
         raise ValueError("Empty UmaSim population")
     historic = master["card_ids"]
     stories = master["direct_stories"]
+    shared_stories = master["shared_stories"]
+    card_charas = master["card_chara_ids"]
     candidate_counts = candidate_counts if candidate_counts is not None else {}
     if not set(candidate_counts).issubset(source_cards):
         raise ValueError("Candidate references an unknown source card")
@@ -127,7 +143,12 @@ def audit(source_cards, master, candidate_counts=None):
     by_rarity = {r: Counter() for r in ("SSR", "SR", "R")}
     for cid, rarity in sorted(source_cards.items()):
         present = cid in historic
-        direct = len(stories.get(cid, ())) if present else None
+        direct_set = stories.get(cid, set()) if present else set()
+        chara_id = card_charas.get(cid) if present else None
+        shared_set = shared_stories.get(chara_id, set()) if chara_id else set()
+        direct = len(direct_set) if present else None
+        shared = len(shared_set) if present else None
+        combined = len(direct_set | shared_set) if present else None
         candidate = candidate_counts.get(cid) if rarity != "R" else None
         s = by_rarity[rarity]
         s["sourceCards"] += 1
@@ -135,6 +156,12 @@ def audit(source_cards, master, candidate_counts=None):
             s["historicalMasterCards"] += 1
             s["withDirectStories" if direct else "withoutDirectStories"] += 1
             s["directStoryIds"] += direct
+            s["sharedStoryIdsAttributed"] += shared
+            s["uniqueDirectOrSharedStoryIdsAttributed"] += combined
+            s["withSharedStories" if shared else "withoutSharedStories"] += 1
+            s["withAnyDirectOrSharedStories" if combined else "withoutAnyDirectOrSharedStories"] += 1
+            if not chara_id:
+                s["withoutCharacterIdJoin"] += 1
         else:
             s["notInHistoricalMaster"] += 1
         if candidate is not None:
@@ -143,7 +170,10 @@ def audit(source_cards, master, candidate_counts=None):
             if present and direct > candidate:
                 s["candidateLessThanDirectStory"] += 1
         rows.append({"cardId": cid, "rarity": rarity, "inHistoricalMaster": present,
-                     "historicalDirectStories": direct, "checkerCandidateEvents": candidate})
+                     "historicalDirectStories": direct,
+                     "historicalSharedCharacterStories": shared,
+                     "historicalDirectOrSharedStories": combined,
+                     "checkerCandidateEvents": candidate})
 
     # This is a triage signal only. A master story ID is not guaranteed to
     # correspond to exactly one checker title; neither is a complete denominator.
@@ -152,23 +182,31 @@ def audit(source_cards, master, candidate_counts=None):
             and r["checkerCandidateEvents"] < r["historicalDirectStories"]]
     unknown = [r["cardId"] for r in rows if not r["inHistoricalMaster"]]
     no_stories = [r["cardId"] for r in rows if r["inHistoricalMaster"] and r["historicalDirectStories"] == 0]
+    no_any = [r["cardId"] for r in rows if r["inHistoricalMaster"] and r["historicalDirectOrSharedStories"] == 0]
     return {
         "sourceCardCount": len(source_cards),
         "historicalMasterCardCount": master["master_card_count"],
         "historicalDirectStoryRows": master["eligible_story_rows"],
+        "historicalSharedCharacterStoryRows": master["eligible_shared_rows"],
+        "unusedSharedCharaCount": master["unused_shared_chara_count"],
         "orphansInHistoricalMaster": master["orphan_direct_card_ids"],
         "sourceNotInOldMasterCount": len(unknown),
         "sourceNotInOldMasterIds": unknown,
         "oldMasterWithoutCardDirectStoryCount": len(no_stories),
         "oldMasterWithoutCardDirectStoryIds": no_stories,
+        "oldMasterWithoutDirectOrSharedStoryCount": len(no_any),
+        "oldMasterWithoutDirectOrSharedStoryIds": no_any,
         "candidateSourceCards": len(candidate_counts),
         "candidateRecords": sum(candidate_counts.values()),
         "lessCandidateThanHistoricalDirectStoryCount": len(less),
         "possibleCardSpecificGaps": less,
         "byRarity": {rarity: dict(sorted(stats.items())) for rarity, stats in by_rarity.items()},
-        "scope": "Historic gallery_flag=2 / support_card_id direct links only; "
-                 "excludes support_chara_id shared events and all branch/choice/reward semantics. "
-                 "Numerical deficits are investigation cues, not confirmed omissions or game event totals."
+        "scope": "Historic gallery_flag=2 records split into support_card_id direct "
+                 "and support_chara_id character-shared links (via support_card_data.chara_id). "
+                 "Does not infer group multi-character links. Aggregated shared attribution "
+                 "may count one event under multiple cards; per-card union deduplicates IDs. "
+                 "Direct-only count deficits are triage cues, NOT complete-game event totals "
+                 "or verified branch/choice/reward semantics."
     }
 
 
