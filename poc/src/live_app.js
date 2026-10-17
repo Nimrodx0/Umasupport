@@ -113,7 +113,7 @@ case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
  case 'deck-copy':try{window.UmaSettings.addDeck(state,k,a==='deck-copy');saveRender();}catch(e){alert(e.message)}break;
  case 'deck-rename':try{window.UmaSettings.renameDeck(state,k,document.getElementById('deck-name').value);saveRender();}catch(e){alert(e.message)}break;
  case 'deck-delete':if(state.decks[k].length>1&&confirm('「'+activeDeck(k).name+'」を削除しますか？このデッキのスロットとイベント設定も消えます。')){window.UmaSettings.deleteDeck(state,k);saveRender();}break;
-case 'set-card':{const sl=state.decks[ui.modal.deckKey].slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};ui.modal=null;saveRender();break;}
+case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};ui.modal=null;saveRender();break;}
 case 'remove-card':activeDeck(k).slots[i]=blank();ui.modal=null;saveRender();break;
 case 'view':state.view=el.dataset.value;saveRender();break;
 case 'density':state.density=el.dataset.value;saveRender();break;
