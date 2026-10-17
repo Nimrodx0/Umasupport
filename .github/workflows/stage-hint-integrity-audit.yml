@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check 563 cards, all 5 limit-break hint sets and independent Efforia effects
+      - name: Check 563 cards, all 5 limit-break hint sets and six independent card-effect tables
         shell: bash
         run: |
           set -euo pipefail
