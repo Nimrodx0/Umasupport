@@ -50,3 +50,20 @@ test('seven aliases are explicit; unrelated character name never silently matche
  assert.equal(new Set(names).size,7);
  assert.notEqual(displayName({Title:'Title One',CharacterName:'ホース'}),names[0]);
 });
+
+test('reviewed source-name alias is accepted only for exact recorded card identity',()=>{
+ const canonical='[“最強”なる眷属]ドゥラメンテ';
+ const support=fake().replaceAll('[Title 321]ホース321',canonical);
+ const ext=[{Title:'”最強”なる眷属',CharacterName:'ドゥラメンテ',
+   Rarity:'SSR',Category:'パワー',Skills:['ヒントA','ヒントB']}];
+ for(let i=1;i<=100;i++)ext.push({Title:'Title '+i,CharacterName:'ホース'+i,
+  Rarity:'SSR',Skills:['ヒントA','ヒントB']});
+ const got=audit(support,ext);
+ assert.equal(got.reviewedAliases.length,1);
+ assert.equal(got.reviewedAliases[0].id,30321);
+ assert.equal(got.matchedCards,101);
+ assert.throws(()=>audit(support,ext.map((x,i)=>i===0?{...x,Category:'賢さ'}:x)),
+  /Reviewed alias identity changed/);
+ const changed=support.replaceAll(canonical,'[未知の同名カード]ドゥラメンテ');
+ assert.throws(()=>audit(changed,ext),/Reviewed alias identity changed/);
+});
