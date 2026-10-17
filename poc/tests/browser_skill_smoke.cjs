@@ -182,6 +182,7 @@ async function main(){
   assert.equal(await page.locator('.owned-card').count(),1);
   await page.locator('#owned-skill-search').fill('');
   await page.locator('#owned-skill-search').fill('');
+  await page.locator('#owned-route').selectOption('all');
   await page.locator('#owned-rarity').selectOption('SSR');
   await page.locator('#owned-type').selectOption('スピード');
   assert.match(await page.locator('#owned-results .tiny-note').first().innerText(),/条件一致 563枚/);
