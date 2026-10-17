@@ -14,9 +14,9 @@ test('normal matched numeric hints for 4-star stage',()=>{
 test('missing numeric skill and changed hint flagged, never guessed',()=>{
  const r=auditCards(cards,skills,single({hintSkillIds:[1,999]}));
  assert.equal(r.classification.neither,1);
- assert.deepEqual(r.missingSkillIds,[999]);
+ assert.deepEqual(r.missingPrimarySkillIds,[999]);
  assert.equal(r.mismatches[0].onlyUmaSimStage4,1);
- assert.deepEqual(r.mismatches[0].unresolvedIds,[999]);
+ assert.deepEqual(r.mismatches[0].unresolved,[999]);
 });
 test('no card silently introduced and conflicting rarity is fatal',()=>{
  let r=auditCards(cards,skills,[{id:39999,name:'C',rarity:'SSR',hintSkillIds:[]}]);
@@ -39,4 +39,21 @@ test('one unresolved numeric ID does not taint subsequent cards',()=>{
  assert.equal(r.classification.neither,1);
  assert.equal(r.classification.both,1);
  assert.equal(r.mismatches.length,1);
+});
+
+test('independently resolved numeric ID matches its UmaSim hint NAME without guessing source ID',()=>{
+ const report=auditCards(cards,skills,single({hintSkillIds:[1,999]}),[
+  {id:1,name:'ヒント1'},{id:999,name:'ヒント2'}
+ ]);
+ assert.equal(report.stage4ExactCards,1);
+ assert.deepEqual(report.missingPrimarySkillIds,[999]);
+ assert.deepEqual(report.unresolvedInBothSkillDictionaries,[]);
+ assert.equal(report.resolvedByPrimaryDictionary,1);
+ assert.equal(report.recoveredByIndependentDictionary,1);
+ assert.deepEqual(report.mismatches,[]);
+});
+test('numeric ID with two conflicting spellings must not be treated as exact',()=>{
+ const report=auditCards(cards,skills,single(),[{id:1,name:'別のヒント'},{id:2,name:'ヒント2'}]);
+ assert.equal(report.stage4ExactCards,0);
+ assert.deepEqual(report.numericNameConflictIds,[1]);
 });
