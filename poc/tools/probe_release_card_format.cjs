@@ -31,9 +31,13 @@ function probe(root){
    ))}))};
 }
 function main(){
- const buf=fs.readFileSync(process.argv[2]);const result=probe(JSON.parse(buf.toString('utf8')));
+ const buf=fs.readFileSync(process.argv[2]);const parsed=JSON.parse(buf.toString('utf8'));
+ const result=probe(parsed);
+ const examples=Array.isArray(parsed)?parsed.slice(0,5).map(c=>({
+    rarity:c.Rarity,title:c.Title,character:c.CharacterName,category:c.Category,
+    skillSample:c.Skills?.slice(0,4)})):[];
  console.log(JSON.stringify({source:'dareuma/umamusume-deck-build-tool release cards.json',
-  sha256:crypto.createHash('sha256').update(buf).digest('hex'),bytes:buf.length, ...result},null,2));
+  sha256:crypto.createHash('sha256').update(buf).digest('hex'),bytes:buf.length, ...result,examples},null,2));
 }
 if(require.main===module)main();
 module.exports={probe};
