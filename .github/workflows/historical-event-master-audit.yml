@@ -127,4 +127,20 @@ jobs:
           print("Alternate index:",alt["titleLookupColumn"])
           print("Alternate by rarity:",alt["byRarity"])
           print("Alternate 30241:",alt["focus30241"])
+
+          import sqlite3
+          dbfile=pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/master.mdb"
+          with sqlite3.connect(dbfile.resolve().as_uri()+"?mode=ro",uri=True) as db:
+              counts=db.execute("SELECT category,COUNT(*) FROM text_data GROUP BY category ORDER BY category").fetchall()
+              cats=dict(counts)
+              print("Historical master category 181 text row count:",cats.get(181,0))
+              print("Historical master text category count:",len(cats))
+              # Do not expose any game text, only database shape for key troubleshooting.
+              print("Historical category 181 available:",181 in cats)
+              for column in ("id","short_story_id"):
+                  meta=db.execute(f'SELECT MIN("{column}"),MAX("{column}"),'
+                                  f'COUNT(DISTINCT "{column}") FROM single_mode_story_data '
+                                  'WHERE gallery_flag=2 AND support_card_id=30241').fetchone()
+                  print("30241 numeric",column,"range/distinct:",meta)
+
           PY
