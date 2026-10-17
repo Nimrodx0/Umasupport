@@ -108,3 +108,5 @@
 CIとPagesの成否は最新のGitHub Actionsで確認する（固定の旧コミットを「最新main」と呼ばない）。実ソース結合試験は [Actions実行記録](https://github.com/Nimrodx0/Umasupport/actions/runs/38927481224) を参照。**2026-10-17のPages/Linux Chromium実測は[記録済み](pages-browser-acceptance-20261017.md)だが、Android実機や他OSは未検証**。
 
 新しい作業のIssue／PRでは、[検証計画](verification-plan.md)のテンプレートを使い、計画時点でスコープ・合格条件・検証方法を設定する。
+
+[Phase 3 F-06/F-09：目標セットと設定JSON統合](settings-import-merge-acceptance.md)では、目標セットのID衝突を防ぎ、JSON読込に「キャンセル／統合／置き換え」を設けた。現行の選択・所持状態を優先し、読込デッキ・目標セットを別IDで追加。異常入力・上限超過は統合を拒否して保存を保護。実機受け入れは未了。
