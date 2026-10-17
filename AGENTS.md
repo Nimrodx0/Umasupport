@@ -91,3 +91,7 @@
 ## 2026-10-17：U-tools SSR30241の第三ソース照合制約（PR #48）
 
 [調査記録](docs/utools-third-source-event-audit.md)。外部サイトのSSR30241個別ページでは見出し連続5＋ランダム13＝18件が可視であり、Checker17、旧master18と件数は比較可能。ただしGithub Actionsの単発GETでHTTP 403。アクセス制限を回避せずジョブからGETを外したため、**story_id 830241004の第三サイトでの見出し掲載は未照合**。人工HTMLのパーサ回帰は追加。取得が許されたローカルHTMLを直接渡せるツールはあるが、テキスト・ハッシュをPublicに追加しない。U-toolsをデータの運用・公開ソースに採用したわけではない。
+
+## 2026-10-17：将来の新マスター差分ゲート（PR #49）
+
+[poc/tools/compare_event_master_snapshots.py](poc/tools/compare_event_master_snapshots.py) は、2025年固定masterと、利用許可・出典・時点が確認できた別のSQLiteをローカルでID監査する入力ツール。旧SHAを確認し、不正テーブル・重複・孤児カード参照を拒否。現在、**2026年版の検証可能なSQLiteを持っていないので実データBは未実施**。ゲームデータファイルやタイトルをPublicへ同梱しない。[計画](docs/master-snapshot-differential-audit.md)。
