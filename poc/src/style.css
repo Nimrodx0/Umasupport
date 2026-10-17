@@ -18,3 +18,5 @@
 .owned-stage select{min-height:30px;padding:3px 7px}
 .owned-pages{display:flex;gap:11px;justify-content:center;align-items:center;padding:12px 0 2px}
 @media(max-width:600px){.owned-grid{grid-template-columns:1fr}.owned-filters .search{flex-basis:100%;min-width:0}.owned-filters select{min-width:0;flex:1 1 calc(50% - 6px)}}
+
+.picker-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}.picker-filters .search{flex:1 1 200px;min-width:160px}.picker-filters select{flex:1 1 115px;min-width:105px;max-width:100%}.picker-filters .filterlabel{flex-basis:100%}.picker-list{margin-bottom:0}.picker-filters+.tiny-note{margin:8px 0 10px}@media(max-width:490px){.picker-filters .search{flex-basis:100%;min-width:0}.picker-filters select{flex:1 1 calc(50% - 8px);min-width:0}.owned-filters select#owned-route{flex-basis:100%}}
