@@ -30,6 +30,9 @@ jobs:
       - name: Run event-story title fingerprint regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_story_title_links.py' -v
 
+      - name: Run historical event residual ID and metadata regression (synthetic SQLite)
+        run: python3 -m unittest discover -s poc/tests -p 'test_story_residual_metadata.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
