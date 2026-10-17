@@ -30,3 +30,13 @@ test('sort discovery does not silently infer game order',()=>{
  assert.equal(schema.possibleOrder[0].key,'sortKey');
  assert.throws(()=>sortSchemaProbe([]),/empty/);
 });
+
+test('one unresolved numeric ID does not taint subsequent cards',()=>{
+ const cards2=new Map(cards);
+ cards2.set('30243',{name:'[C]D',rarity:'SSR',stages:{'0':['ヒント1'],'4':['ヒント1']}});
+ const r=auditCards(cards2,skills,[...single({hintSkillIds:[1,999]}),
+  {id:30243,name:'[C]D',rarity:'SSR',hintSkillIds:[1]}]);
+ assert.equal(r.classification.neither,1);
+ assert.equal(r.classification.both,1);
+ assert.equal(r.mismatches.length,1);
+});
