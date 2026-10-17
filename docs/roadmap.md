@@ -41,11 +41,11 @@
 
 **成果物**：対象カードのID台帳・通常ヒント、スキル数値ID、金白・○◎上下関係、レアリティ／分類、標準表示順、ヒントLv／発生率・解放段階情報。
 
-**残作業**：[GameToraとUmaSimの全563カードID一致](card-population-independent-audit.md)を確認し、RタッカーブラインはUmaSim収録済み（ID10128）と訂正済み。ただし公式ゲーム全実装の独立母数、カード全件の名称・性能・ヒントの個別照合は未完。322組の別資料による対応関係は確認したが、残る1組の数値IDの独立根拠・ソースの来歴・版差を追跡、ヒントLv・ヒント発生率は[元データの全2,815行を監査](hint-performance-audit.md)し、カード詳細へ段階別表示を実装、**公開Pages/Linux Chromiumで0・4凸の実データ照合に合格**。ただしゲーム内独立照合・特殊固有効果・標準表示順・全性能項目は未完。新スキル辞書のPages/Linux Chromium確認は成功し、**Android実機・他ブラウザ**とオンライン復帰後の再取得は未確認。
+**残作業**：[GameToraとUmaSimの全563カードID一致](card-population-independent-audit.md)を確認し、RタッカーブラインはUmaSim収録済み（ID10128）と訂正済み。ただし公式ゲーム全実装の独立母数、カード全件の名称・性能・ヒントの個別照合は未完。322組の別資料による対応関係は確認したが、残る1組の数値IDの独立根拠・ソースの来歴・版差を追跡、ヒントLv・ヒント発生率は[元データの全2,815行を監査](hint-performance-audit.md)し、カード詳細へ段階別表示を実装、**公開Pages/Linux Chromiumで0・4凸の実データ照合に合格**。ただし[別系統日本版45枚・通常ヒント527件の名称集合が全一致](independent-card-hint-audit.md)した一方、**UmaSim数値スキル辞書のID 201012が未収録**（別辞書とカード名から名称「後方釘付」を確認）。ゲーム内独立照合・特殊固有効果・標準表示順・全性能項目は引き続き未完。新スキル辞書のPages/Linux Chromium確認は成功し、**Android実機・他ブラウザ**とオンライン復帰後の再取得は未確認。
 
 **完了条件**：分母を明示した全件監査で対象レコードを「検証済み／根拠付き非該当／未解決」に分類し、誤統合・推測補完を防止でき、階層と直接／間接カバーを実ブラウザで検証済み。保留カードを全件完了と呼ばない。
 
-詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
+詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
 
 ## Phase 2：イベントデータの完全化
 
