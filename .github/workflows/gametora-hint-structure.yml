@@ -1,0 +1,22 @@
+name: One-Off GameTora Single Card Hint Structure Probe
+on:
+  pull_request:
+    paths: [.github/workflows/gametora-hint-structure.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-one:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Check one public individual card page without image downloads
+        run: node poc/tools/probe_gametora_hint_page.cjs
