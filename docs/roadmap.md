@@ -45,6 +45,8 @@
 
 **完了条件**：分母を明示した全件監査で対象レコードを「検証済み／根拠付き非該当／未解決」に分類し、誤統合・推測補完を防止でき、階層と直接／間接カバーを実ブラウザで検証済み。保留カードを全件完了と呼ばない。
 
+ゲーム内の表示順について、[2025年マスターの`disp_order`を1,786共有IDで確認](historical-skill-order-probe.md)したが、同値グループ214と古い版のため、そのまま2026年の標準順として採用できない。数値ID`201012`の旧マスター存在も確認。
+
 詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
 
 ## Phase 2：イベントデータの完全化

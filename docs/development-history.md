@@ -123,3 +123,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-17：通常ヒント独立照合と表示順ソース調査（PR #37）
 
 [限定監査](independent-card-hint-audit.md)で、別系統日本版45サポカが指定する通常ヒント527件をUmaSimのヒント一覧・数値スキル辞書と照合。**45/45枚の0/4凸名称集合一致**、数値ID526件はUmaSim辞書内、1件（`201012`「後方釘付」）は別系統の数値辞書とUmaSimカード内名称で確認、UmaSimのスキル辞書にはID未収録。元データを書き換えず例外を記録。別系統スキルJSON2,194件に`disp_order`相当フィールドがなく、UIゲーム標準順への変更は見送った。[Umamusume Wikiのマスター変換コード](https://umamusu.wiki/Module:Game/Skills/Data)に`skill_data.disp_order`の利用例はあるので、実データとゲームUIとの関係を今後調査する。
+
+## 2026-10-17：旧マスターのスキル並び順列と数値辞書IDの確認（PR #38）
+
+[履歴的`disp_order`の実測](historical-skill-order-probe.md)では2025年と2026年の共通スキルID1,786件全件に正値があり、753種類の値に対して同値214グループ（1,247行）が存在。2026年の353件は2025年資料にはない。`201012`「後方釘付」は旧マスターにも存在しrarity=1、group=20101、order=20120。**ゲーム内UIの標準順は引き続き未確認でアプリ表示を変更しない**。また、過去に独立カード監査の人工テストをCIへ登録し忘れた点を修正し、新たに回帰を明示実行する。
