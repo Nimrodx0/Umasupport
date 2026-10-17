@@ -65,3 +65,5 @@
 ## 2026-10-17の追加引き継ぎ
 
 [公開Pagesの受け入れ記録](docs/pages-browser-acceptance-20261017.md)に、**通信復帰後の実GET、破損キャッシュ2種類、更新版スキル辞書破損の拒否、初回データなし、IndexedDB拒否時のオンライン利用**のChromium合格結果を追記。実機Android・Windowsやブラウザ横断検証ではない。再現は[限定的Pages受け入れワークフロー](.github/workflows/pages-real-browser-acceptance.yml)で手動実行（通常CIで繰返しPublisher GETしない）。
+
+2026-10-17追加：`poc/tools/audit_stage_hint_integrity.cjs` は6枚×5段階×2指標のGameWith表を固定レビュー値で照合する。ウイニングチケットID30012はGameWith表が基礎値のみ（固有補正+20は別扱い）。対象6枚以外の性能は未独立照合、詳細は[段階別監査](docs/stage-hint-consistency-audit.md)。
