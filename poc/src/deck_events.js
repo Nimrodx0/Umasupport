@@ -3,7 +3,7 @@
 'use strict';
 function cardSummary(card,slot,core){
  const out={cardId:card?.id||null,hasCard:!!card,known:0,configured:0,pending:0,
-  blocked:0,automatic:0,conditionalRoutes:0,activeEventRoutes:0,events:[],unknown:!card};
+  blocked:0,automatic:0,conditionalRoutes:0,activeEventRoutes:0,events:[],unknown:!card||!Array.isArray(card.events)||card.events.length===0};
  if(!card)return out;
  if(!Array.isArray(card.events)||card.events.length===0)return out;
  out.unknown=false;
