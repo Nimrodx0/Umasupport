@@ -45,7 +45,7 @@
 
 **完了条件**：分母を明示した全件監査で対象レコードを「検証済み／根拠付き非該当／未解決」に分類し、誤統合・推測補完を防止でき、階層と直接／間接カバーを実ブラウザで検証済み。保留カードを全件完了と呼ばない。
 
-詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
+詳細：[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
 
 ## Phase 2：イベントデータの完全化
 
