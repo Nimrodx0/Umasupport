@@ -1,0 +1,27 @@
+name: One-Off Targeted GameTora Normal Hint Audit
+on:
+  pull_request:
+    paths: [.github/workflows/gametora-hint-structure.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-22:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium for 22 selected public card detail checks
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Get one pinned publisher file to ephemeral workspace
+        run: |
+          curl -fLsS --retry 1 --max-time 120 \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt" \
+            -o "$RUNNER_TEMP/card-coverage-source.txt"
+      - name: Compare 22 selected support hints against GameTora individual pages
+        run: node poc/tools/probe_gametora_hint_page.cjs "$RUNNER_TEMP/card-coverage-source.txt"
