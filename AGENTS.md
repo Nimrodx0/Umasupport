@@ -67,3 +67,7 @@
 [公開Pagesの受け入れ記録](docs/pages-browser-acceptance-20261017.md)に、**通信復帰後の実GET、破損キャッシュ2種類、更新版スキル辞書破損の拒否、初回データなし、IndexedDB拒否時のオンライン利用**のChromium合格結果を追記。実機Android・Windowsやブラウザ横断検証ではない。再現は[限定的Pages受け入れワークフロー](.github/workflows/pages-real-browser-acceptance.yml)で手動実行（通常CIで繰返しPublisher GETしない）。
 
 2026-10-17追加：`poc/tools/audit_stage_hint_integrity.cjs` は6枚×5段階×2指標のGameWith表を固定レビュー値で照合する。ウイニングチケットID30012はGameWith表が基礎値のみ（固有補正+20は別扱い）。対象6枚以外の性能は未独立照合、詳細は[段階別監査](docs/stage-hint-consistency-audit.md)。
+
+## 2026-10-17 Phase 2の歴史的マスター照合（PR #43）
+
+[監査記録](docs/historical-event-story-audit.md)を正本とする。2025年固定master.mdbにはUmaSim現行563枚のうち495枚が存在し、gallery_flag=2のカード直結ストーリーIDが1,028件。Checker候補2,099との件数差はID30240(3対0)、30241(18対17・グループSSR)、30269(3対0)。Rのカード直結0件にはキャラクター共通経路の除外が大きく関係する。**歴史マスターのカード直結ストーリーIDはCheckerイベント見出しと1対1ではなく、正式ゲーム内全イベントIDの確証でもない**。旧データに存在しない現行68枚と共有イベントは別途監査。公開承認済み実イベント0件のまま。再実行は[限定workflow](.github/workflows/historical-event-master-audit.yml)を利用し、ゲーム生データをPublicへ追加しない。
