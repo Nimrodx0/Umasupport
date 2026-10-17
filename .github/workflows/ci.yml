@@ -33,6 +33,9 @@ jobs:
       - name: Run historical event residual ID and metadata regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_story_residual_metadata.py' -v
 
+      - name: Run three-source event headings parser regression (synthetic HTML)
+        run: python3 -m unittest discover -s poc/tests -p 'test_three_source_event_headings.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
