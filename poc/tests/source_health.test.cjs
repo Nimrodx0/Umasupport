@@ -20,7 +20,6 @@ const model=()=>({
    skills:{mode:'online',url:'https://example.org/skill_data.txt',fetchedAt:'2026-10-18T01:00:01Z'},
    events:{mode:'reviewed',url:'./data/reviewed_events.v1.json'}}
  }
- }
 });
 test('validated empty event JSON has a definite zero and independent stage completeness',()=>{
  const r=health.summarize(model());
