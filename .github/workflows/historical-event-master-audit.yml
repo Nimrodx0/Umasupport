@@ -6,6 +6,9 @@ on:
       - .github/workflows/historical-event-master-audit.yml
       - poc/tools/audit_historical_event_master.py
       - poc/tests/test_historical_event_master.py
+      - poc/tools/audit_story_title_links.py
+      - poc/tests/test_story_title_links.py
+      - poc/src/checker_candidate_pipeline.cjs
   workflow_dispatch:
 
 permissions:
@@ -22,6 +25,8 @@ jobs:
           node-version: '22'
       - name: Run synthetic SQLite regression first
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_event_master.py' -v
+      - name: Check event-title overlap logic using synthetic SQLite
+        run: python3 -m unittest discover -s poc/tests -p 'test_story_title_links.py' -v
       - name: Fetch exact public source snapshots into temporary directory
         shell: bash
         run: |
@@ -86,4 +91,28 @@ jobs:
           print("Historic source cards with neither direct nor simple shared-character events:",
                 len(r["oldMasterWithoutDirectOrSharedStoryIds"]))
           print("Caveat:",r["scope"])
+          PY
+
+      - name: Compare source-title fingerprints without emitting original text
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_story_title_links.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --title-index id \
+            --focus-only \
+            > "$RUNNER_TEMP/uma-event-master/title-summary.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          r=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/title-summary.json").read_text())
+          assert r["candidateCards"]==417 and r["sourceCards"]==563
+          assert r["focus30241"]["historicalDirectStoryRows"]==18
+          assert r["focus30241"]["checkerCandidateRecords"]==17
+          print("HISTORICAL TITLE ONLY, NOT OFFICIAL EVENT ID CORROBORATION")
+          print("Lookup index:",r["titleLookupColumn"])
+          print("By rarity:",r["byRarity"])
+          print("30241:",r["focus30241"])
+          print("Scope:",r["scope"])
           PY
