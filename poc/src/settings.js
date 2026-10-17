@@ -1,4 +1,4 @@
-/* Strict current settings + lossless verified v1 single-deck migration. */
+/* Strict current settings with validated v1/v2 migration and owned card registry. */
 (function(g){
 'use strict';
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
@@ -22,11 +22,21 @@ function migrateV1(s){
 }
 function parse(raw,data){
  let s=typeof raw==='string'?JSON.parse(raw):raw;
- if(!obj(s)||![1,2].includes(s.version)||!obj(s.decks)||!Array.isArray(s.goalSets)||!s.goalSets.length)
+ if(!obj(s)||![1,2,3].includes(s.version)||!obj(s.decks)||!Array.isArray(s.goalSets)||!s.goalSets.length)
   throw new Error('設定データの構造またはバージョンに対応していません');
  if(!obj(data)||!obj(data.cardById)||!obj(data.skillById))
   throw new Error('参照データが不正です');
  if(s.version===1)s=migrateV1(s);
+ if(s.version===2)s={...s,version:3,ownedCards:{}};
+ if(!obj(s.ownedCards))throw new Error('所持サポカ情報の構造が不正です');
+ for(const [cid,rec] of Object.entries(s.ownedCards)){
+  if(!own(data.cardById,cid)||!obj(rec)||
+     !['owned','unowned'].includes(rec.status)||
+     (rec.status==='owned'
+      ? !Number.isInteger(rec.stage)||rec.stage<0||rec.stage>4||Object.keys(rec).some(k=>!['status','stage'].includes(k))
+      : own(rec,'stage')||Object.keys(rec).some(k=>k!=='status')))
+   throw new Error('所持サポカのID・状態・凸段階が不正です: '+cid);
+ }
  if(!obj(s.activeDecks)||!Number.isSafeInteger(s.nextDeckId)||s.nextDeckId<1)
   throw new Error('デッキの管理情報が不正です');
  const ids=new Set();
@@ -69,6 +79,32 @@ function parse(raw,data){
   throw new Error('表示設定が不正です');
  return s;
 }
+function ownedStatus(s,cardId){
+ const rec=s.ownedCards[cardId];
+ return rec ? rec.status : 'unregistered';
+}
+function setOwnedCard(s,data,cardId,status,stage=0){
+ if(!obj(s)||!obj(s.ownedCards)||!obj(data)||!obj(data.cardById)||
+    typeof cardId!=='string'||!own(data.cardById,cardId)||
+    !['owned','unowned','unregistered'].includes(status))
+   throw new Error('所持サポカのID・状態が不正です');
+ if(status==='owned'&&(!Number.isInteger(stage)||stage<0||stage>4))
+   throw new Error('所持サポカの凸段階が不正です');
+ if(status==='unregistered'){delete s.ownedCards[cardId];return;}
+ s.ownedCards[cardId]=status==='owned'?{status,stage}:{status};
+}
+function setOwnedBulk(s,data,cardIds,status){
+ if(!Array.isArray(cardIds)||new Set(cardIds).size!==cardIds.length||
+    cardIds.some(id=>typeof id!=='string'||!own(data.cardById,id)))
+   throw new Error('一括操作のカードIDが不正です');
+ if(!['owned','unowned','unregistered'].includes(status))
+   throw new Error('一括操作の所持状態が不正です');
+ for(const cid of cardIds){
+  const old=s.ownedCards[cid];
+  setOwnedCard(s,data,cid,status,status==='owned'&&old?.status==='owned'?old.stage:0);
+ }
+ return cardIds.length;
+}
 function selectDeck(s,key,id){
  if(!KEYS.includes(key)||!s.decks[key].some(d=>d.id===id))throw new Error('切り替えるデッキが見つかりません');
  s.activeDecks[key]=id;
@@ -104,7 +140,7 @@ function deleteDeck(s,key){
  s.decks[key].splice(index,1);s.activeDecks[key]=s.decks[key][Math.max(0,index-1)].id;
  return activeDeck(s,key);
 }
-const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,MAX_DECKS};
+const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSettings=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
