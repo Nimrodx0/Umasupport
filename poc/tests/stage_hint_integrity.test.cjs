@@ -51,7 +51,7 @@ test('missing reference fails closed',()=>{
 
 test('twelve cited references include SSR, SR and R with distinct IDs and all 0..4 stage values',()=>{
  assert.equal(EXTERNAL_REFERENCES.length,12);
- assert.equal(new Set(EXTERNAL_REFERENCES.map(r=>r.id)).size,6);
+ assert.equal(new Set(EXTERNAL_REFERENCES.map(r=>r.id)).size,12);
  for(const r of EXTERNAL_REFERENCES){
   assert.match(r.name,/^\[.+\].+/);
   assert.match(r.url,/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/);
