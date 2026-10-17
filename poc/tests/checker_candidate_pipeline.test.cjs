@@ -1,4 +1,5 @@
 const {test}=require('node:test');
+const crypto=require('node:crypto');
 const assert=require('node:assert/strict');
 const pipeline=require('../src/checker_candidate_pipeline.cjs');
 const core=require('../src/core.js');
@@ -42,6 +43,9 @@ test('inventory records strict names, no R, unresolved aliases and zero-event re
  assert.equal(JSON.stringify(inv).includes('ヒントLv'),false);
  assert.equal(JSON.stringify(inv).includes('架空イベント1'),false);
  assert.match(inv.cards.find(c=>c.cardId==='30001').events[0].sourceKey,/^checker:30001:[a-f0-9]{20}$/);
+ const hash='sha256:'+crypto.createHash('sha256').update('架空イベント1').digest('hex');
+ assert.equal(inv.cards.find(c=>c.cardId==='30001').events[0].titleFingerprint,hash);
+ assert.equal(JSON.stringify(inv).includes('架空イベント2'),false);
 });
 test('an explicit unique alias can join one card without guessing from similar names',()=>{
  const inv=makeInventory({'30002':'［名称相違］トレーナーB'});
@@ -60,6 +64,7 @@ test('source mutation changes digest, but stable title has same candidate key',(
  assert.equal(a.cards[1].cardId,'30001');
  assert.equal(a.cards[1].events[0].sourceKey,b.cards[1].events[0].sourceKey);
  assert.notEqual(a.cards[1].events[0].sourceDigest,b.cards[1].events[0].sourceDigest);
+ assert.equal(a.cards[1].events[0].titleFingerprint,b.cards[1].events[0].titleFingerprint);
 });
 test('malformed rows are rejected and duplicate event titles remain distinct review candidates',()=>{
  const s=makeSource();
