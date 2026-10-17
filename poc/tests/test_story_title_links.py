@@ -77,7 +77,7 @@ class TitleLinkTests(unittest.TestCase):
         invalid["cards"][0]["events"][0]["titleFingerprint"]="sha256:bad"
         with self.assertRaisesRegex(ValueError,"fingerprint"):
             read_candidate_titles(json.dumps(invalid),self.cards)
-        with self.assertRaisesRegex(ValueError,"not.*candidate|Duplicate|invalid"):
+        with self.assertRaisesRegex(ValueError,"Invalid candidate"):
             read_candidate_titles(candidate_json(["A タイトル"]),{"10001":"R"})
 
     def test_schema_guard_and_no_implicit_character_events(self):
