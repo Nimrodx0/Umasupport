@@ -5,6 +5,7 @@ const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const KEYS=['main','inherit'];
 const MAX_DECKS=50;
+const MAX_GOAL_SETS=100;
 const MAX_NAME_LENGTH=60;
 
 function activeDeck(s,key){
@@ -22,7 +23,7 @@ function migrateV1(s){
 }
 function parse(raw,data){
  let s=typeof raw==='string'?JSON.parse(raw):raw;
- if(!obj(s)||![1,2,3].includes(s.version)||!obj(s.decks)||!Array.isArray(s.goalSets)||!s.goalSets.length)
+ if(!obj(s)||![1,2,3].includes(s.version)||!obj(s.decks)||!Array.isArray(s.goalSets)||!s.goalSets.length||s.goalSets.length>MAX_GOAL_SETS)
   throw new Error('設定データの構造またはバージョンに対応していません');
  if(!obj(data)||!obj(data.cardById)||!obj(data.skillById))
   throw new Error('参照データが不正です');
@@ -64,7 +65,7 @@ function parse(raw,data){
  const goalIds=new Set();
  for(const gs of s.goalSets){
   if(!obj(gs)||typeof gs.id!=='string'||!gs.id.trim()||goalIds.has(gs.id)||
-    typeof gs.name!=='string'||!Array.isArray(gs.goals))
+    typeof gs.name!=='string'||!gs.name.trim()||gs.name.length>MAX_NAME_LENGTH||!Array.isArray(gs.goals))
     throw new Error('目標セットの構造が不正です');
   goalIds.add(gs.id);
   for(const goal of gs.goals){
@@ -140,7 +141,86 @@ function deleteDeck(s,key){
  s.decks[key].splice(index,1);s.activeDecks[key]=s.decks[key][Math.max(0,index-1)].id;
  return activeDeck(s,key);
 }
-const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS};
+function uniqueGoalId(existing){
+ const ids=new Set(existing.map(g=>g.id));
+ let seq=1,id;
+ do {id='goals-'+seq++;} while(ids.has(id));
+ return id;
+}
+function addGoalSet(s,copy=false){
+ if(!obj(s)||!Array.isArray(s.goalSets)||s.goalSets.length>=MAX_GOAL_SETS)
+  throw new Error('目標セットは100件までです');
+ const current=s.goalSets.find(g=>g.id===s.currentGoalSet);
+ if(!current)throw new Error('選択中の目標セットが見つかりません');
+ const next={id:uniqueGoalId(s.goalSets),name:(copy?current.name+'（複製）':'新しい目標セット').slice(0,MAX_NAME_LENGTH),
+  goals:copy?JSON.parse(JSON.stringify(current.goals)):[]};
+ s.goalSets.push(next);s.currentGoalSet=next.id;return next;
+}
+function renameGoalSet(s,name){
+ if(typeof name!=='string'||!name.trim()||name.trim().length>MAX_NAME_LENGTH)
+  throw new Error('目標セット名は1～60文字で入力してください');
+ const current=s.goalSets.find(g=>g.id===s.currentGoalSet);
+ if(!current)throw new Error('選択中の目標セットが見つかりません');
+ current.name=name.trim();return current;
+}
+function deleteGoalSet(s){
+ if(!Array.isArray(s.goalSets)||s.goalSets.length<=1)throw new Error('最後の目標セットは削除できません');
+ const index=s.goalSets.findIndex(g=>g.id===s.currentGoalSet);
+ if(index<0)throw new Error('選択中の目標セットが見つかりません');
+ s.goalSets.splice(index,1);
+ s.currentGoalSet=s.goalSets[Math.max(0,index-1)].id;
+ return s.goalSets.find(g=>g.id===s.currentGoalSet);
+}
+function merge(currentRaw,importedRaw,data){
+ // Parsed clones only: failure cannot partially modify in-memory state or localStorage.
+ const current=parse(JSON.parse(JSON.stringify(currentRaw)),data);
+ const incoming=parse(JSON.parse(JSON.stringify(importedRaw)),data);
+ const next=JSON.parse(JSON.stringify(current));
+ for(const k of KEYS){
+  if(next.decks[k].length+incoming.decks[k].length>MAX_DECKS)
+   throw new Error(k+'のデッキ数が50件を超えるため統合できません');
+ }
+ if(next.goalSets.length+incoming.goalSets.length>MAX_GOAL_SETS)
+  throw new Error('目標セットが100件を超えるため統合できません');
+ const existingIds=new Set([...next.decks.main,...next.decks.inherit].map(d=>d.id));
+ let nextId=next.nextDeckId,deckCount=0;
+ const genId=()=>{
+  let id;
+  do{
+   if(!Number.isSafeInteger(nextId)||nextId<1)throw new Error('デッキIDの割当て上限です');
+   id='deck-'+nextId++;
+  }while(existingIds.has(id));
+  existingIds.add(id);return id;
+ };
+ for(const k of KEYS){
+  for(const imported of incoming.decks[k]){
+   const added=JSON.parse(JSON.stringify(imported));
+   added.id=genId();
+   // Keep names visible; IDs isolate structurally independent settings.
+   next.decks[k].push(added);deckCount++;
+  }
+ }
+ next.nextDeckId=nextId;
+ const goalsBefore=next.goalSets.length;
+ for(const imported of incoming.goalSets){
+  const added=JSON.parse(JSON.stringify(imported));
+  added.id=uniqueGoalId(next.goalSets);
+  next.goalSets.push(added);
+ }
+ let ownedAdded=0,ownedConflicts=0;
+ for(const [cid,record] of Object.entries(incoming.ownedCards)){
+  if(own(next.ownedCards,cid)){if(JSON.stringify(next.ownedCards[cid])!==JSON.stringify(record))ownedConflicts++;continue;}
+  next.ownedCards[cid]=JSON.parse(JSON.stringify(record));ownedAdded++;
+ }
+ // Current selections, ownership conflicts, display preferences always win.
+ const result=parse(next,data);
+ return {settings:result,report:{
+  decksAdded:deckCount,goalSetsAdded:next.goalSets.length-goalsBefore,
+  ownershipAdded:ownedAdded,ownershipConflictsKept:ownedConflicts,
+  activeSelectionsPreserved:true,displayPreferencesPreserved:true
+ }};
+}
+const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,addGoalSet,renameGoalSet,deleteGoalSet,merge,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS,MAX_GOAL_SETS};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSettings=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
