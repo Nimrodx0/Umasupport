@@ -13,7 +13,9 @@ function hasRoute(row,source){
   (p.routes||[]).some(route=>route.source===source)));
 }
 function goalUncovered(r,core,data){
- return !!r.goal&&!core.goalStatus(r.goal,r.main||{},r.inherit||{},data).satisfied;
+ if(!r.goal)return false;
+ const m=r.mainCover?.kind!=='missing'&&!!r.mainCover, i=r.inheritCover?.kind!=='missing'&&!!r.inheritCover;
+ switch(r.goal.scope){case 'main':return !m;case 'inherit':return !i;case 'both':return !(m&&i);default:return !(m||i);}
 }
 function matches(r,options,core,data){
  const o=options||{},query=norm(o.query);
