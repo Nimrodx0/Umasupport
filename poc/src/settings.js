@@ -1,42 +1,110 @@
-/* Validate settings against the current development data schema. No legacy ID migration. */
-(function (g) {
-  'use strict';
-  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-  const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
-  function parse(raw,data) {
-    const s=typeof raw==='string'?JSON.parse(raw):raw;
-    if(!obj(s)||s.version!==1||!obj(s.decks)||!Array.isArray(s.goalSets)||s.goalSets.length===0)
-      throw new Error('設定データの構造またはバージョンに対応していません');
-    if(!obj(data)||!obj(data.cardById)||!obj(data.skillById))
-      throw new Error('参照データが不正です');
-    for(const k of ['main','inherit']) {
-      const d=s.decks[k];
-      if(!obj(d)||!Array.isArray(d.slots)||d.slots.length!==6||typeof d.name!=='string')
-        throw new Error('デッキの構造が不正です');
-      for(const slot of d.slots) {
-        if(!obj(slot)||!(slot.cardId===null||typeof slot.cardId==='string')||!Number.isInteger(slot.stage)||slot.stage<0||slot.stage>4||!obj(slot.choices))
-          throw new Error('デッキのスロットが不正です');
-        if(slot.cardId!==null&&!own(data.cardById,slot.cardId))
-          throw new Error('現行データに存在しないサポカID: '+slot.cardId);
-      }
-    }
-    for(const gs of s.goalSets) {
-      if(!obj(gs)||typeof gs.id!=='string'||typeof gs.name!=='string'||!Array.isArray(gs.goals))
-        throw new Error('目標セットの構造が不正です');
-      for(const goal of gs.goals) {
-        if(!obj(goal)||typeof goal.skillId!=='string'||!['main','inherit','both','either'].includes(goal.scope))
-          throw new Error('目標スキルが不正です');
-        if(!own(data.skillById,goal.skillId))
-          throw new Error('現行データに存在しないスキルID: '+goal.skillId);
-      }
-    }
-    if(typeof s.currentGoalSet!=='string'||!s.goalSets.some(gs=>gs.id===s.currentGoalSet))
-      throw new Error('選択中の目標セットが見つかりません');
-    if(!['integrated','split'].includes(s.view)||!['compact','detailed'].includes(s.density))
-      throw new Error('表示設定が不正です');
-    return s;
+/* Strict current settings + lossless verified v1 single-deck migration. */
+(function(g){
+'use strict';
+const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const KEYS=['main','inherit'];
+const MAX_DECKS=50;
+const MAX_NAME_LENGTH=60;
+
+function activeDeck(s,key){
+ if(!KEYS.includes(key)||!obj(s)||!obj(s.decks)||!obj(s.activeDecks)||!Array.isArray(s.decks[key]))throw new Error('デッキ選択の状態が不正です');
+ const found=s.decks[key].find(d=>d.id===s.activeDecks[key]);
+ if(!found)throw new Error('選択中のデッキが見つかりません');
+ return found;
+}
+function migrateV1(s){
+ if(!obj(s.decks)||!obj(s.decks.main)||!obj(s.decks.inherit))throw new Error('旧デッキの形式が不正です');
+ return {...s,version:2,decks:{
+  main:[{...s.decks.main,id:'main-default'}],
+  inherit:[{...s.decks.inherit,id:'inherit-default'}]
+ },activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1};
+}
+function parse(raw,data){
+ let s=typeof raw==='string'?JSON.parse(raw):raw;
+ if(!obj(s)||![1,2].includes(s.version)||!obj(s.decks)||!Array.isArray(s.goalSets)||!s.goalSets.length)
+  throw new Error('設定データの構造またはバージョンに対応していません');
+ if(!obj(data)||!obj(data.cardById)||!obj(data.skillById))
+  throw new Error('参照データが不正です');
+ if(s.version===1)s=migrateV1(s);
+ if(!obj(s.activeDecks)||!Number.isSafeInteger(s.nextDeckId)||s.nextDeckId<1)
+  throw new Error('デッキの管理情報が不正です');
+ const ids=new Set();
+ for(const k of KEYS){
+  const lib=s.decks[k];
+  if(!Array.isArray(lib)||!lib.length||lib.length>MAX_DECKS)
+   throw new Error('デッキの保存数が不正です');
+  for(const d of lib){
+   if(!obj(d)||typeof d.id!=='string'||!d.id.trim()||d.id.length>80||ids.has(d.id)||
+     typeof d.name!=='string'||!d.name.trim()||d.name.length>MAX_NAME_LENGTH||
+     !Array.isArray(d.slots)||d.slots.length!==6)
+     throw new Error('デッキの構造・ID・名前が不正です');
+   ids.add(d.id);
+   for(const slot of d.slots){
+    if(!obj(slot)||!(slot.cardId===null||typeof slot.cardId==='string')||
+      !Number.isInteger(slot.stage)||slot.stage<0||slot.stage>4||!obj(slot.choices)||
+      Object.values(slot.choices).some(x=>typeof x!=='string'))
+      throw new Error('デッキのスロットが不正です');
+    if(slot.cardId!==null&&!own(data.cardById,slot.cardId))
+      throw new Error('現行データに存在しないサポカID: '+slot.cardId);
+   }
   }
-  const api={parse};
-  if(typeof module!=='undefined'&&module.exports)module.exports=api;
-  g.UmaSettings=api;
+  activeDeck(s,k);
+ }
+ const goalIds=new Set();
+ for(const gs of s.goalSets){
+  if(!obj(gs)||typeof gs.id!=='string'||!gs.id.trim()||goalIds.has(gs.id)||
+    typeof gs.name!=='string'||!Array.isArray(gs.goals))
+    throw new Error('目標セットの構造が不正です');
+  goalIds.add(gs.id);
+  for(const goal of gs.goals){
+   if(!obj(goal)||typeof goal.skillId!=='string'||!['main','inherit','both','either'].includes(goal.scope))
+    throw new Error('目標スキルが不正です');
+   if(!own(data.skillById,goal.skillId))throw new Error('現行データに存在しないスキルID: '+goal.skillId);
+  }
+ }
+ if(typeof s.currentGoalSet!=='string'||!goalIds.has(s.currentGoalSet))
+  throw new Error('選択中の目標セットが見つかりません');
+ if(!['integrated','split'].includes(s.view)||!['compact','detailed'].includes(s.density))
+  throw new Error('表示設定が不正です');
+ return s;
+}
+function selectDeck(s,key,id){
+ if(!KEYS.includes(key)||!s.decks[key].some(d=>d.id===id))throw new Error('切り替えるデッキが見つかりません');
+ s.activeDecks[key]=id;
+ return activeDeck(s,key);
+}
+function addDeck(s,key,copy=false){
+ if(!KEYS.includes(key)||!Array.isArray(s.decks[key]))throw new Error('デッキ種別が不正です');
+ if(s.decks[key].length>=MAX_DECKS)throw new Error('デッキは各種類50件までです');
+ if(!Number.isSafeInteger(s.nextDeckId)||s.nextDeckId<1)throw new Error('デッキ管理番号が不正です');
+ const current=activeDeck(s,key);
+ const baseName=copy?current.name+'（複製）':(key==='main'?'新しい本育成デッキ':'新しい継承育成デッキ');
+ const allIds=new Set([...s.decks.main,...s.decks.inherit].map(d=>d.id));
+ let id;
+ do {
+  id='deck-'+s.nextDeckId++;
+  if(!Number.isSafeInteger(s.nextDeckId))throw new Error('デッキ管理番号の上限に達しました');
+ }while(allIds.has(id));
+ const slots=copy?JSON.parse(JSON.stringify(current.slots)):
+  Array.from({length:6},()=>({cardId:null,stage:4,choices:{}}));
+ const created={id,name:baseName.slice(0,MAX_NAME_LENGTH),slots};
+ s.decks[key].push(created);s.activeDecks[key]=id;
+ return created;
+}
+function renameDeck(s,key,name){
+ if(typeof name!=='string'||!name.trim()||name.trim().length>MAX_NAME_LENGTH)
+  throw new Error('デッキ名は1～60文字で入力してください');
+ const d=activeDeck(s,key);d.name=name.trim();return d;
+}
+function deleteDeck(s,key){
+ if(!KEYS.includes(key)||s.decks[key].length<=1)throw new Error('最後のデッキは削除できません');
+ const id=s.activeDecks[key],index=s.decks[key].findIndex(d=>d.id===id);
+ if(index<0)throw new Error('選択中のデッキが見つかりません');
+ s.decks[key].splice(index,1);s.activeDecks[key]=s.decks[key][Math.max(0,index-1)].id;
+ return activeDeck(s,key);
+}
+const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,MAX_DECKS};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;
+g.UmaSettings=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
