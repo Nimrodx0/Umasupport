@@ -3,7 +3,7 @@
 <title>Uma Support Lab | 外部データ直接読込PoC</title><link rel="stylesheet" href="./src/style.css"></head>
 <body><div id="bootstrap-status" role="status" style="max-width:1100px;margin:30px auto;padding:16px;background:#eee;color:#222;border-radius:10px">公開元のサポートカードデータを確認しています…</div>
 <div id="app"></div>
-<script src="./src/core.js"></script><script src="./src/skill_table.js"></script><script src="./src/card_search.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_hierarchy.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/settings.js"></script>
+<script src="./src/core.js"></script><script src="./src/skill_table.js"></script><script src="./src/card_search.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_hierarchy.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/settings.js"></script><script src="./src/source_health.js"></script>
 <script src="./src/event_schema.js"></script><script src="./src/public_event_catalog.js"></script>
 <script>
 (async function(){
@@ -11,12 +11,18 @@
  try {
    const result=await UmaLiveLoader.load();
    window.UmaDemoData=UmaLiveLoader.buildModel(result.text,result);
+   window.UmaDemoData.meta.runtimeSources={
+     cards:{mode:result.mode,url:UmaLiveLoader.SOURCE_URL,fetchedAt:result.fetchedAt||null,checkedAt:result.checkedAt||null},
+     skills:{mode:'unavailable',url:UmaSkillBridge.SOURCE_URL,fetchedAt:null},
+     events:{mode:'unknown',url:UmaPublicEventCatalog.URL}
+   };
    let msg=result.mode==='cached'?'公開元を取得できなかったため、保存済みデータを利用中':'公開元のデータを取得しました';
    // Skill data is independent of events and is needed for complete goal selection.
    let skillText=null;
    try {
      const skillSource=await UmaSkillBridge.load();
      skillText=skillSource.text;
+     window.UmaDemoData.meta.runtimeSources.skills={mode:skillSource.mode,url:UmaSkillBridge.SOURCE_URL,fetchedAt:skillSource.fetchedAt||null};
      if(skillSource.mode==='cached')msg+='。スキル辞書は保存済み版を使用';
    } catch(skillError) {
      console.warn('スキル辞書を取得できません',skillError);
@@ -26,6 +32,7 @@
      const catalog=await UmaPublicEventCatalog.load();
      const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog,
        {skillText,fullRegistry:!!skillText});
+     window.UmaDemoData.meta.runtimeSources.events.mode='reviewed';
      msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
      const hierarchy=window.UmaDemoData.meta.skillHierarchy;
      if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
@@ -34,12 +41,15 @@
      // Even when event JSON is unavailable, retain verified skill relationships.
      console.warn('公開イベントJSONを検証できません',eventError);
      msg+='。イベントデータの検証に失敗したため実イベントは反映しません';
+     window.UmaDemoData.meta.runtimeSources.events.mode='failed';
      try {
        UmaPublicEventCatalog.attach(window.UmaDemoData,{schemaVersion:1,cards:[]},
          {skillText,fullRegistry:!!skillText});
        const hierarchy=window.UmaDemoData.meta.skillHierarchy;
        if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+
          '組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
+       // The optional empty fallback does NOT establish that the public JSON was valid.
+       window.UmaDemoData.meta.eventStatus='unavailable';
      }catch(hierarchyError){
        console.warn('イベント障害後のスキル辞書検証にも失敗しました',hierarchyError);
        msg+='。金白対応データを表示できません';
