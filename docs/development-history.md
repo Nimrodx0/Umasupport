@@ -158,3 +158,7 @@ Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Um
 ## 2026-10-17：旧ストーリー名の指紋・Checker候補の突合（PR #45）
 
 2025年固定SQLiteのsingle_mode_story_data.story_idをtext_data(category=181)に結合し、カード直結1,028件でタイトル解決1,028、未解決0。内部id・short_story_idでは全件解決不能であったため、テーブルのキーを区別して修正した。[限定Actions #39036365422](https://github.com/Nimrodx0/Umasupport/actions/runs/39036365422)成功。Checker候補名称のSHA-256（NFKC＋空白正規化）を一時作成し、SSR/SR旧1,017タイトルに対して956名称一致、61は同名候補なし。**SSR30241グループカードは旧18／Checker17のうち15名称一致、旧のみ3／Checkerのみ2**。いずれもゲーム正式ストーリーIDとのペア承認やイベントの不在を証明しない。人工SQLiteで重複タイトル、多重集合、テキスト欠損、不正指紋を試験、通常CIにも追加。出典・残件：[監査文書](event-title-fingerprint-audit.md)。UIと公開イベント0件は変更なし。
+
+## 2026-10-17：30241の記号差を独立した診断へ（PR #46）
+
+Checker候補名の `typographicFingerprint` を一時生成し、旧masterカテゴリー181の名前指紋と比較。[限定監査 #39036963530](https://github.com/Nimrodx0/Umasupport/actions/runs/39036963530)成功。主判定の厳密名称一致SSR/SR956／30241は15を保持したまま、記号・空白除去と小文字化の**補助候補**では全体985／30241は17。30241の旧名側だけ残る候補1件をさらに調べる対象とした。これは同一イベントIDの承認ではない。人工SQLiteとNodeの異常系を通常CIへ追加し、公開DB0件・アプリUI変更なし。
