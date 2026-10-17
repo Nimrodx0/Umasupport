@@ -31,7 +31,11 @@ function directRoutes(card,config){
   const choices=(config&&config.choices)||{},routes=[];
   const hintList=(card.hintsByStage&&Object.prototype.hasOwnProperty.call(card.hintsByStage,String(config?.stage??4)))
     ?card.hintsByStage[String(config.stage)]:card.hints||[];
-  for(const id of hintList)routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:null,conditional:false,condition:null});
+  const perf=card.hintPerformanceByStage?.[String(config?.stage??4)];
+  const validHintLevel=perf&&Number.isSafeInteger(perf.levelBase)&&Number.isSafeInteger(perf.levelUnique)&&
+    perf.levelBase>=0&&perf.levelUnique>=0;
+  const hintLevel=validHintLevel?1+perf.levelBase+perf.levelUnique:null;
+  for(const id of hintList)routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:hintLevel,conditional:false,condition:null});
   const events=card.events||[];
   function add(rewards,event,choiceLabel,outcome){
     for(const r of rewards||[]){
