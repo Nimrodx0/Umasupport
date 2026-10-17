@@ -1,0 +1,22 @@
+name: One-Off Alternative 2026 Card Dataset Format Probe
+on:
+  pull_request:
+    paths: [.github/workflows/release-card-source-probe.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download only the published JSON asset (do not redistribute)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLsS --max-time 120 --retry 1 -o "$RUNNER_TEMP/release-cards.json" "https://github.com/dareuma/umamusume-deck-build-tool/releases/download/updata/cards.json"
+          node poc/tools/probe_release_card_format.cjs "$RUNNER_TEMP/release-cards.json"
