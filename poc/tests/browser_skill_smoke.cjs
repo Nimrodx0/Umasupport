@@ -465,6 +465,33 @@ async function main(){
   await eventPage.setViewportSize({width:390,height:844});
   assert.ok(await eventPage.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)<=1,
    'event overview mobile horizontal overflow');
+  // F-04 regression: two physical slots with the SAME card ID count as one
+  // distinct provider. Both slots remain independently editable and visible.
+  await eventPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  await eventPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
+  await eventPage.locator('button[data-action="set-card"][data-id="30001"]').click();
+  await eventPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  await eventPage.locator('select[data-stage]').selectOption('0');
+  await eventPage.locator('button[data-action="close"]').click();
+  const duplicatedRow=eventPage.locator('tr[data-skill="hint:右回り○"]');
+  await duplicatedRow.waitFor();
+  assert.match(await duplicatedRow.innerText(),/同カード複数枠/);
+  assert.match(await duplicatedRow.innerText(),/^\s*右回り○/);
+  await eventPage.locator('button[data-action="density"][data-value="detailed"]').click();
+  assert.equal(await eventPage.locator('tr[data-skill="hint:右回り○"] button.mini[data-deck="main"]').count(),2);
+  await eventPage.locator('tr[data-skill="hint:右回り○"]').click();
+  const detailText=await eventPage.locator('.modal-body').innerText();
+  assert.match(detailText,/直接提供：1枚/);
+  assert.match(detailText,/同じサポカが複数枠/);
+  assert.match(detailText,/スロット1/);
+  assert.match(detailText,/スロット2/);
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('#only-duplicate').check();
+  assert.equal(await eventPage.locator('tr[data-skill="hint:右回り○"]').count(),0);
+  await eventPage.locator('#only-duplicate').uncheck();
+  const duplicateSaved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(duplicateSaved.decks.main[0].slots[0].stage,4);
+  assert.equal(duplicateSaved.decks.main[0].slots[1].stage,0);
   await eventContext.close();
 
   const failureContext=await browser.newContext(),failurePage=await failureContext.newPage();
