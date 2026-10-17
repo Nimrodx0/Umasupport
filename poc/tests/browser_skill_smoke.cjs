@@ -317,7 +317,8 @@ async function main(){
   assert.equal(imported.decks.inherit.length,4);
   assert.equal(new Set([...imported.decks.main,...imported.decks.inherit].map(d=>d.id)).size,8);
   assert.equal(imported.decks.main[0].slots[0].stage,0);
-  assert.equal(imported.decks.main[1].slots[0].stage,4);
+  assert.equal(imported.decks.main[1].slots[0].stage,0,'imported default deck');
+  assert.equal(imported.decks.main[2].slots[0].stage,4,'imported copied deck');
   // Load the same file again and explicitly select full replacement.
   await page.locator('#import-file').setInputFiles(sourceFile);
   await page.locator('[data-action="import-replace"]').waitFor();
