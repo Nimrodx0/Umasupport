@@ -173,7 +173,7 @@ async function main(){
   await page.locator('#import-file').setInputFiles({
    name:'backup.json',mimeType:'application/json',buffer:Buffer.from(multiDeckBackup)
   });
-  await page.locator('#deck-select-main option').nth(2).waitFor();
+  await page.waitForFunction(()=>document.querySelectorAll('#deck-select-main option').length===3);
   assert.equal(await page.locator('#deck-select-main option').count(),3);
   assert.equal(await page.locator('#deck-select-main').inputValue(),'deck-1');
   assert.equal(await page.locator('#deck-select-inherit').inputValue(),'deck-3');
