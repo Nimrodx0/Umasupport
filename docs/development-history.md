@@ -166,3 +166,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-17：旧イベント名称の残差からstory_id・数値カテゴリへ（PR #47）
 
 [限定監査 #39037787554](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787554)成功、[通常CI #39037787528](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787528)成功。2025年固定masterのSSR/SRカード直結1,017件とChecker2,099候補の補助名称一致985を維持し、未一致32行（25カード）をすべて数値メタデータで分類。同名候補と未一致が競合しIDが特定できない残数2。**SSR30241は数値story_id=830241004**（event_category=4、show_progress_1/2/3すべて0、ending_type=0、gallery_main_scenario=0、gallery_condition=0）を特定。残り32のevent_categoryも全て4。外部Wikiの変換コードでは進行数値0はchainNum=0、chainMax=0、isGroupChain=falseに対応。発生条件／現在も実装されているか／Checker欠損かどうかは未検証。イベントタイトル・指紋・元DBをPublicへ配布せず、アプリUI・イベント公開DB0件を維持。[監査記録](story-residual-metadata-audit.md)。
+
+## 2026-10-17：30241の第三サイト見出し件数・3資料照合機構（PR #48）
+
+[U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)のSSR30241イベント一覧はページ閲覧で連続5・ランダム13の計18見出しを観測。Checker17と数が違うが、旧マスター18との**名称・ID対応は未確認**。[限定Actions #39039021792](https://github.com/Nimrodx0/Umasupport/actions/runs/39039021792)で外部HTML取得を試したところHTTP 403。意図的に取得制限の回避はせず外部GETをワークフローから削除。第三サイト・Checker・旧masterをローカル入力で多重集合比較し、曖昧IDを拒否する純粋照合器／人工HTML回帰を追加した。外部サイトに対するデータBの3者一致ゲートは未達、現行ゲーム実装・報酬・権利も未合格。詳細[監査文書](utools-third-source-event-audit.md)。
