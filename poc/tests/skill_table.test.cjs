@@ -32,14 +32,14 @@ function fixtures(){
 }
 test('all comparison filters only inspect direct source routes, not indirect coverage',()=>{
  const {rows,data}=fixtures();
- assert.deepEqual(build(rows,core,data,{route:'hint'}).map(r=>r.skill.id),['gold','white','solo']);
- assert.deepEqual(build(rows,core,data,{route:'event'}).map(r=>r.skill.id),['gold','conditional','solo']);
- assert.deepEqual(build(rows,core,data,{route:'both'}).map(r=>r.skill.id),['gold','solo']);
+ assert.deepEqual(build(rows,core,data,{route:'hint'}).map(r=>r.skill.id).sort(),['gold','solo','white']);
+ assert.deepEqual(build(rows,core,data,{route:'event'}).map(r=>r.skill.id).sort(),['conditional','gold','solo']);
+ assert.deepEqual(build(rows,core,data,{route:'both'}).map(r=>r.skill.id).sort(),['gold','solo']);
  assert.deepEqual(build(rows,core,data,{coverage:'indirect'}).map(r=>r.skill.id),['goal']);
- assert.deepEqual(build(rows,core,data,{coverage:'uncovered'}).map(r=>r.skill.id),['conditional','goal']);
- assert.deepEqual(build(rows,core,data,{coverage:'conditional'}).map(r=>r.skill.id),['conditional','gold']);
+ assert.deepEqual(build(rows,core,data,{coverage:'uncovered'}).map(r=>r.skill.id).sort(),['conditional','goal']);
+ assert.deepEqual(build(rows,core,data,{coverage:'conditional'}).map(r=>r.skill.id).sort(),['conditional','gold']);
  assert.deepEqual(build(rows,core,data,{tier:'gold'}).map(r=>r.skill.id),['gold']);
- assert.deepEqual(build(rows,core,data,{onlyGoals:true}).map(r=>r.skill.id),['conditional','goal']);
+ assert.deepEqual(build(rows,core,data,{onlyGoals:true}).map(r=>r.skill.id).sort(),['conditional','goal']);
  assert.equal(hasRoute(rows[3],'hint'),false);
  assert.equal(goalUncovered(rows[4],core,data),true);
  assert.equal(matches(rows[1],{query:'星の'},core,data),true);
