@@ -29,7 +29,7 @@ class TitleLinkTests(unittest.TestCase):
             db.execute("CREATE TABLE single_mode_story_data "
                        "(id INTEGER PRIMARY KEY, story_id INTEGER, support_card_id INTEGER, gallery_flag INTEGER, short_story_id INTEGER)")
             db.execute('CREATE TABLE text_data (category INTEGER, "index" INTEGER, text TEXT)')
-            db.executemany("INSERT INTO single_mode_story_data VALUES (?,?,?,?)",
+            db.executemany("INSERT INTO single_mode_story_data VALUES (?,?,?,?,?)",
                            [(1,901,30001,2,701),(2,902,30001,2,702),(3,903,30001,2,703),
                             (4,904,20001,2,704),(5,905,30001,1,705)])
             db.executemany('INSERT INTO text_data VALUES (?,?,?)',
