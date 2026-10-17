@@ -1,0 +1,85 @@
+name: Historical Support Story-ID Cross-check
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/historical-event-master-audit.yml
+      - poc/tools/audit_historical_event_master.py
+      - poc/tests/test_historical_event_master.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-event-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run synthetic SQLite regression first
+        run: python3 -m unittest discover -s poc/tests -p 'test_historical_event_master.py' -v
+      - name: Fetch exact public source snapshots into temporary directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/uma-event-master"
+          curl --fail --silent --show-error --location --retry 1 --max-time 180 \
+            --output "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt"
+          curl --fail --silent --show-error --location --retry 1 --max-time 240 \
+            --output "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          curl --fail --silent --show-error --location --retry 1 --max-time 180 \
+            --output "$RUNNER_TEMP/uma-event-master/checker.json" \
+            "https://raw.githubusercontent.com/Cilda/UmaUmaChecker/30ec4d0c3dd61d1e208b0e5c3853c22a5a10f49c/UmaUmaChecker/Library/Events.json"
+          echo "153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424  $RUNNER_TEMP/uma-event-master/support_card.txt" | sha256sum -c -
+          echo "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb  $RUNNER_TEMP/uma-event-master/master.mdb" | sha256sum -c -
+      - name: Create candidate-only IDs and digest inventory (no event text output)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node poc/tools/build_checker_catalog.cjs \
+            --local "$RUNNER_TEMP/uma-event-master/support_card.txt" "$RUNNER_TEMP/uma-event-master/checker.json" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            > "$RUNNER_TEMP/uma-event-master/candidate-summary.json"
+          node -e "const r=require(process.argv[1]);if(r.matchedCards!==417||r.unmatchedModelIds.length!==0)process.exit(2)" \
+            "$RUNNER_TEMP/uma-event-master/candidate-summary.json"
+          node -e "const r=require(process.argv[1]);console.log('Candidate counts only:',r.matchedCards,'cards;',r.eventCount,'records;',r.emptyCards,'source-empty cards') " \
+            "$RUNNER_TEMP/uma-event-master/candidate-summary.json"
+      - name: Compare old master direct story IDs and checker candidate event counts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_historical_event_master.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidate "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --expect-source-count 563 \
+            --source-revision "mee1080/umasim@cf9366f6 (2026-10-13)" \
+            --master-revision "SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135 (2025-10-10)" \
+            --candidate-revision "Cilda/UmaUmaChecker@30ec4d0c (2026-10-17)" \
+            > "$RUNNER_TEMP/uma-event-master/report.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          r=json.loads((pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master/report.json").read_text())
+          assert r["sourceCardCount"] == 563
+          assert r["candidateSourceCards"] == 417
+          assert sum(x["sourceCards"] for x in r["byRarity"].values()) == 563
+          print("HISTORICAL SNAPSHOT: NOT CURRENT GAME EVENT COVERAGE")
+          for field in ("sourceCardCount","historicalMasterCardCount","historicalDirectStoryRows",
+                        "sourceNotInOldMasterCount","oldMasterWithoutCardDirectStoryCount",
+                        "candidateSourceCards","candidateRecords",
+                        "lessCandidateThanHistoricalDirectStoryCount","byRarity",
+                        "sourceSha256","masterSha256"):
+              print(field, "=", r[field])
+          print("Candidate < historic direct story: card ID / master count / candidate count")
+          for row in r["possibleCardSpecificGaps"]:
+              print(row["cardId"], row["historicalDirectStories"], row["checkerCandidateEvents"])
+          print("Version-gap card count only:",len(r["sourceNotInOldMasterIds"]))
+          print("Direct-less historic card count only:",len(r["oldMasterWithoutCardDirectStoryIds"]))
+          print("Caveat:",r["scope"])
+          PY
