@@ -1,22 +1,9 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {audit,displayName}=require('../tools/audit_deckbuilder_cards.cjs');
-function source(){
- const rows=[];
- for(const [id,name,rarity,hint]of [
-  ['30001','[Title One]ホース','3','ヒントA,ヒントB'],
-  ['20002','[トレセン学園]ポニー','2','ヒントA'],
-  ['10003','[トレセン学園]ミニ','1','']]){
-  for(let stage=0;stage<5;stage++){
-   const f=Array(62).fill('0');f[0]=id;f[1]=name;f[3]=rarity;f[4]=String(stage);f[6]='スピード';
-   f[23]='0';f[24]='0';f[49]='0';f[50]='0';f[59]=hint;rows.push(f.join('\t'));
-  }
- }
- return rows.join('\n').repeat(10); // Deliberately wrong if source parser sees repeated IDs.
-}
 function fake(){
  const cards=[];
- for(let j=1;j<=101;j++)for(let stage=0;stage<5;stage++){
+ for(let j=1;j<=501;j++)for(let stage=0;stage<5;stage++){
   const f=Array(62).fill('0');f[0]=String(30000+j);f[1]='[Title '+j+']ホース'+j;
   f[3]='3';f[4]=String(stage);f[6]='スピード';f[59]='ヒントA,ヒントB';
   cards.push(f.join('\t'));
