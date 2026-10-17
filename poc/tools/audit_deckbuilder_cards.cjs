@@ -92,6 +92,12 @@ function audit(support,external){
 function main(){
  const a=fs.readFileSync(process.argv[2]),b=fs.readFileSync(process.argv[3]);
  const report=audit(a.toString('utf8'),JSON.parse(b.toString('utf8')));
+ if(report.externalCards!==560||report.matchedCards!==560||
+    report.checkedNormalHintLinks!==3986||report.missingNormalHintLinks>21||
+    report.umaSimOutsideExternal!==3)
+   throw Error('Version-pinned card data comparison drift: '+JSON.stringify({
+     listed:report.externalCards,matched:report.matchedCards,links:report.checkedNormalHintLinks,
+     missing:report.missingNormalHintLinks,outside:report.umaSimOutsideExternal}));
  console.log(JSON.stringify({sources:{
   umasimRevision:'cf9366f6a487bd8f197b53d8a11981207beb9f6c',
   release:'dareuma/umamusume-deck-build-tool/releases/download/updata/cards.json',
