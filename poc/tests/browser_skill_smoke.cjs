@@ -211,6 +211,35 @@ async function main(){
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
   await page.locator('button[data-action="remove-card"][data-deck="main"][data-index="1"]').click();
 
+  // Skill comparison filters are view-only, with root/child groups unchanged in model.
+  await page.locator('#skill-coverage').selectOption('uncovered');
+  assert.equal(await page.locator('tr[data-skill="hint:右回り○"]').count(),0);
+  assert.equal(await page.locator('tr[data-skill="skill:700002"]').count(),1);
+  await page.locator('#skill-coverage').selectOption('all');
+  await page.locator('#skill-route').selectOption('event');
+  assert.equal(await page.locator('#table-region tr[data-skill]').count(),0);
+  await page.locator('#skill-route').selectOption('hint');
+  assert.equal(await page.locator('tr[data-skill="hint:右回り○"]').count(),1);
+  await page.locator('#skill-sort').selectOption('total-desc');
+  assert.equal(await page.locator('tr[data-skill="hint:右回り○"]').count(),1);
+  await page.locator('#skill-tier').selectOption('gold');
+  assert.equal(await page.locator('tr[data-skill="hint:右回り○"]').count(),0);
+  await page.locator('#skill-tier').selectOption('all');
+  await page.locator('#skill-route').selectOption('all');
+  await page.locator('tr[data-skill="hint:右回り○"]').click();
+  assert.match(await page.locator('.modal-body').innerText(),/全カードから逆引き/);
+  assert.match(await page.locator('.modal-body').innerText(),/通常ヒント（0～4凸のいずれか）/);
+  assert.equal(await page.locator('.modal-body button[data-action="assign"]').count(),1);
+  await page.locator('#reverse-only-owned').check();
+  assert.equal(await page.locator('.modal-body button[data-action="assign"]').count(),1);
+  await page.locator('#reverse-route').selectOption('event');
+  assert.equal(await page.locator('.modal-body button[data-action="assign"]').count(),0);
+  assert.match(await page.locator('.modal-body').innerText(),/情報未収録とゲーム内に存在しないことは別/);
+  await page.locator('#reverse-route').selectOption('hint');
+  assert.equal(await page.locator('.modal-body button[data-action="assign"]').count(),1);
+  await page.locator('button[data-action="close"]').click();
+  await page.locator('#skill-sort').selectOption('name');
+
   // Phase 3: both deck libraries remain independent across create/copy/rename/delete.
   await page.locator('button[data-action="deck-manage"][data-deck="main"]').click();
   await page.locator('#deck-name').fill('試験デッキA');
