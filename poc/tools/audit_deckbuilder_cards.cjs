@@ -12,6 +12,18 @@ function displayName(row){
  if(title.startsWith('[')&&title.endsWith(']'))title=title.slice(1,-1);
  return '['+title+']'+name;
 }
+
+// Exactly reviewed source spellings that differ from UmaSim by punctuation or
+// publication title; never infer an alias solely from character/rarity.
+const REVIEWED_ALIASES=new Map([
+ ['[”最強”なる眷属]ドゥラメンテ',{id:'30321',expected:'[“最強”なる眷属]ドゥラメンテ',category:'パワー'}],
+ ['[ずーっと一緒、だぞー!]ブラストワンピース',{id:'30303',expected:'[『ずーっと一緒、だぞー!』]ブラストワンピース',category:'スタミナ'}],
+ ['[その執念は怒涛が如く]メイショウドトウ',{id:'30304',expected:'[その執念は怒濤が如く]メイショウドトウ',category:'スタミナ'}],
+ ['[ゆるり、ゆこま旅館]]保科健子',{id:'30276',expected:'[ゆるり、ゆこま旅館]保科健子',category:'友人/グループ'}],
+ ['[わたしときみの交換こ]ハルウララ',{id:'30314',expected:'[わたしときみの交換こ♪]ハルウララ',category:'パワー'}],
+ ['[永遠の誓い、永遠の輝き]サトノダイヤモンド',{id:'30302',expected:'[永久の誓い、永久の輝き]サトノダイヤモンド',category:'スピード'}],
+ ['[鈴凜なるビスクドール]アドマイヤグルーヴ',{id:'30320',expected:'[冷凜なるビスクドール]アドマイヤグルーヴ',category:'賢さ'}]
+]);
 function audit(support,external){
  const source=parseSupportCards(support);
  if(!Array.isArray(external)||external.length<100)throw Error('External card list missing or too short');
@@ -23,7 +35,7 @@ function audit(support,external){
   const chr=key.slice(key.lastIndexOf(']')+1);
   const bucket=byChar.get(chr)||[];bucket.push({id,...card});byChar.set(chr,bucket);
  }
- const used=new Set(),unmatched=[],mismatched=[],suspicious=[],byRarity={},matched=[],seenKeys=new Set();
+ const used=new Set(),unmatched=[],mismatched=[],suspicious=[],byRarity={},matched=[],seenKeys=new Set(),verifiedAliases=[];
  for(const x of external){
   if(!x||!['R','SR','SSR'].includes(x.Rarity)||typeof x.Title!=='string'||
    typeof x.CharacterName!=='string'||!Array.isArray(x.Skills)||
@@ -31,7 +43,14 @@ function audit(support,external){
   const name=displayName(x),key=norm(name);
   if(seenKeys.has(key))throw Error('Repeated external card name '+key);
   seenKeys.add(key);
-  const record=byName.get(key);
+  let record=byName.get(key);
+  if(!record&&REVIEWED_ALIASES.has(key)){
+   const alias=REVIEWED_ALIASES.get(key),candidate=source.cards.get(alias.id);
+   if(!candidate||norm(candidate.name)!==norm(alias.expected)||x.Category!==alias.category||
+      candidate.rarity!==x.Rarity)throw Error('Reviewed alias identity changed: '+key);
+   record={id:alias.id,...candidate};
+   verifiedAliases.push({id:Number(alias.id),externalName:key,umasimName:norm(candidate.name)});
+  }
   if(!record){
    const candidates=(byChar.get(norm(x.CharacterName))||[])
     .filter(c=>c.rarity===x.Rarity).map(c=>c.id);
@@ -59,6 +78,7 @@ function audit(support,external){
  return {umesimCards:source.cards.size,externalCards:external.length,
   matchedCards:matched.length,matchedByRarity:byRarity,
   externalUnmatchedCount:unmatched.length,externalUnmatched:unmatched.slice(0,35),
+  reviewedAliases:verifiedAliases,
   umaSimOutsideExternal:source.cards.size-matched.length,
   checkedNormalHintLinks:totalHintLinks,matchedNormalHintLinks:totalHintLinks-noHintMatch,
   missingNormalHintLinks:noHintMatch,allNormalHintsIncludedCards:matched.length-mismatched.length,
