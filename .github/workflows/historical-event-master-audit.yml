@@ -137,6 +137,17 @@ jobs:
               print("Historical master text category count:",len(cats))
               # Do not expose any game text, only database shape for key troubleshooting.
               print("Historical category 181 available:",181 in cats)
+
+              cols=[z[1] for z in db.execute("PRAGMA table_info(single_mode_story_data)")]
+              print("Historical story table column names:",cols)
+              idx=db.execute('SELECT MIN("index"),MAX("index") FROM text_data WHERE category=181').fetchone()
+              print("Category 181 numeric index range:",idx)
+              if "story_id" in cols:
+                  print("30241 actual story_id range:",
+                        db.execute("SELECT MIN(story_id),MAX(story_id),COUNT(DISTINCT story_id) FROM single_mode_story_data WHERE support_card_id=30241 AND gallery_flag=2").fetchone())
+                  print("Category181 joined by story_id count:",
+                        db.execute('SELECT COUNT(*) FROM single_mode_story_data s JOIN text_data t ON t.category=181 AND t."index"=s.story_id WHERE s.gallery_flag=2 AND s.support_card_id>0').fetchone()[0])
+
               for column in ("id","short_story_id"):
                   meta=db.execute(f'SELECT MIN("{column}"),MAX("{column}"),'
                                   f'COUNT(DISTINCT "{column}") FROM single_mode_story_data '
