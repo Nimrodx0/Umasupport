@@ -10,6 +10,7 @@ const schema=require('./event_schema.js');
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 const object=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
 const norm=x=>String(x).normalize('NFKC').replace(/\s+/g,' ').trim();
+const typographic=x=>norm(x).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'');
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const fail=x=>{throw new Error('Checker取り込み: '+x);};
 function inventory({source,model,aliases={}}){
@@ -72,6 +73,8 @@ function inventory({source,model,aliases={}}){
       // SHA-256 of NFKC/whitespace-normalized title for read-only master comparison.
       // It is not a verified in-game story/event ID and is never published as one.
       titleFingerprint:'sha256:'+sha(normalizedTitle),
+      // Diagnostic only: ignore punctuation/spacing but never promote to event identity.
+      typographicFingerprint:typographic(normalizedTitle)?'sha256:'+sha(typographic(normalizedTitle)):null,
       sourceIndex:events.length,optionCount:validated.length});
      optionCount+=validated.length;
    }

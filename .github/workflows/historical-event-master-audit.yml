@@ -120,3 +120,41 @@ jobs:
           print("30241 exact normalized title counts:",r["focus30241"])
           print("Scope:",r["scope"])
           PY
+
+      - name: Diagnose typography-only matches without accepting them as event IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_story_title_links.py \
+            --umasim "$RUNNER_TEMP/uma-event-master/support_card.txt" \
+            --master "$RUNNER_TEMP/uma-event-master/master.mdb" \
+            --candidates "$RUNNER_TEMP/uma-event-master/candidates.json" \
+            --title-index story_id \
+            --normalization typography \
+            --focus-only \
+            > "$RUNNER_TEMP/uma-event-master/title-typography.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          d=pathlib.Path(os.environ["RUNNER_TEMP"])/"uma-event-master"
+          a=json.loads((d/"title-summary.json").read_text())
+          b=json.loads((d/"title-typography.json").read_text())
+          assert a["normalization"]=="strict" and b["normalization"]=="typography"
+          assert b["sourceCards"]==563 and b["candidateCards"]==417
+          for rarity in ("SSR","SR"):
+              strict=a["byRarity"][rarity]["exactNormalizedTitleOverlaps"]
+              loose=b["byRarity"][rarity]["typographicTitleOverlaps"]
+              assert loose>=strict, "Punctuation normalization must not reduce overlapping names"
+          strict=a["focus30241"]["provisionalExactTitleOverlap"]
+          loose=b["focus30241"]["provisionalTypographicOverlap"]
+          assert loose>=strict
+          print("TYPOGRAPHIC ALTERNATIVES ONLY; NEVER AUTO-LINK AN EVENT ID")
+          print("30241 strict/typographic overlap:",strict,loose)
+          print("30241 remaining title differences (not game omissions):",
+                b["focus30241"]["historicalTitlesNotTypographicInChecker"],
+                b["focus30241"]["checkerTitlesNotTypographicInMaster"])
+          print("30241 possible typographic fingerprint collisions (master / Checker):",
+                b["focus30241"]["duplicateHistoricalTitleRows"],
+                b["focus30241"]["duplicateCheckerTitleRows"])
+          print("Overall SSR+SR typographic overlaps:",
+                sum(b["byRarity"][r]["typographicTitleOverlaps"] for r in ("SSR","SR")))
+          PY

@@ -14,7 +14,8 @@ from audit_story_title_links import (
 
 def candidate_json(events):
     records = [{"cardId": "30001", "events": [
-        {"sourceDigest": "sha256:" + "a"*64, "titleFingerprint": title_digest(title)}
+        {"sourceDigest": "sha256:" + "a"*64, "titleFingerprint": title_digest(title),
+         "typographicFingerprint": title_digest(title, normalization="typography")}
         for title in events]}]
     return json.dumps({"source": "UmaUmaChecker", "format": 1, "cards": records,
                        "stats": {"matchedCards": 1, "eventCount": len(events)}})
@@ -51,6 +52,33 @@ class TitleLinkTests(unittest.TestCase):
         self.assertEqual(r["duplicateHistoricalTitleRows"],2)
         self.assertEqual(report["byRarity"]["SSR"]["historicalTitlesResolved"],3)
         self.assertNotIn("イベント",json.dumps(report,ensure_ascii=False))
+
+    def test_typography_diagnostic_does_not_replace_strict_event_identity(self):
+        # Punctuation/spacing removal can show a hypothesis but is not an ID proof.
+        strict=compare_titles(self.cards,read_candidate_titles(
+            candidate_json(["A・タイトル","イベント乙"]),self.cards),
+            read_historical_titles(self.path))
+        loose=compare_titles(self.cards,read_candidate_titles(
+            candidate_json(["A・タイトル","イベント乙"]),self.cards,normalization="typography"),
+            read_historical_titles(self.path,normalization="typography"),normalization="typography")
+        a=strict["byRarity"]["SSR"]["exactNormalizedTitleOverlaps"]
+        b=loose["byRarity"]["SSR"]["typographicTitleOverlaps"]
+        self.assertEqual(a,1)
+        self.assertEqual(b,2)
+        self.assertEqual(loose["normalization"],"typography")
+        self.assertEqual(loose["byRarity"]["SSR"]["historicalTitlesWithoutTypographicCandidate"],1)
+        self.assertNotIn("A・タイトル",json.dumps(loose,ensure_ascii=False))
+
+    def test_secondary_fingerprint_must_be_explicit_and_valid(self):
+        bad=json.loads(candidate_json(["A タイトル"]))
+        del bad["cards"][0]["events"][0]["typographicFingerprint"]
+        with self.assertRaisesRegex(ValueError,"secondary"):
+            read_candidate_titles(json.dumps(bad),self.cards,normalization="typography")
+        bad["cards"][0]["events"][0]["typographicFingerprint"]="sha256:short"
+        with self.assertRaisesRegex(ValueError,"Malformed"):
+            read_candidate_titles(json.dumps(bad),self.cards,normalization="typography")
+        with self.assertRaisesRegex(ValueError,"Unsupported"):
+            title_digest("TEST",normalization="undefined")
 
     def test_text_index_is_explicit_not_auto_guessed(self):
         # Switching the key is a recorded alternative hypothesis, not automatic best-match selection.

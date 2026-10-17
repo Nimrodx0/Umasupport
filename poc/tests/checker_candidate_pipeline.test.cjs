@@ -45,7 +45,18 @@ test('inventory records strict names, no R, unresolved aliases and zero-event re
  assert.match(inv.cards.find(c=>c.cardId==='30001').events[0].sourceKey,/^checker:30001:[a-f0-9]{20}$/);
  const hash='sha256:'+crypto.createHash('sha256').update('架空イベント1').digest('hex');
  assert.equal(inv.cards.find(c=>c.cardId==='30001').events[0].titleFingerprint,hash);
+ assert.equal(inv.cards.find(c=>c.cardId==='30001').events[0].typographicFingerprint,hash);
  assert.equal(JSON.stringify(inv).includes('架空イベント2'),false);
+});
+test('typographic fingerprint strips punctuation only in separate audit field',()=>{
+ const s=makeSource();
+ s.Skills.SSR['［架空］トレーナーA'].Events[0]={'『架空・イベント１！』':[{Title:'架空',Effect:'1'}]};
+ const a=pipeline.inventory({source:s,model});
+ const one=a.cards.find(c=>c.cardId==='30001').events[0];
+ const expected='sha256:'+crypto.createHash('sha256').update('架空イベント1').digest('hex');
+ assert.equal(one.typographicFingerprint,expected);
+ assert.notEqual(one.titleFingerprint,one.typographicFingerprint);
+ assert.equal(JSON.stringify(a).includes('『架空・イベント１！』'),false);
 });
 test('an explicit unique alias can join one card without guessing from similar names',()=>{
  const inv=makeInventory({'30002':'［名称相違］トレーナーB'});
