@@ -46,6 +46,7 @@ local-data/reviews.jsonの形式（以下は実データでなく、説明用の
       "cardId": "30001",
       "chainVerified": true,
       "rewardSemanticsVerified": true,
+      "selectionSemanticsVerified": true,
       "publicationReviewed": true,
       "event": {
         "id": "checker:30001:0123456789abcdef0123",
@@ -112,3 +113,11 @@ poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトの�
 ## 金白辞書の全件対応（2026-10-16）
 
 金白対応は `poc/src/skill_hierarchy.js` の実行時全件グルーピングを使用する。通常ヒントと同一名称・一意な場合は既存 `hint:名前` に統合し、固有の金・白は `skill:数値ID` とする。起動時にスキル辞書を取得し、3段階の○・◎・金を相互にリンクする。公開イベントDBは実イベント0件のまま。[実測・例外の資料](skill-hierarchy-coverage.md)参照。
+
+## 2026-10-18：選択式イベントを自動報酬に変換しないゲート（PR #68）
+
+`checker_candidate_pipeline.publishReviewed` でも `selectionSemanticsVerified:true` を独立必須とした。候補インベントリに保存済みの `optionCount` が2以上の場合、手動レビューで `type:auto` としたり、候補側の選択肢数より公開 `choices` が少ない／多いイベントは**拒否**する。候補ソース本文を表示・転載する必要はなく、候補のハッシュ・選択肢の個数だけを使った検査となる。複数結果（成功／大成功）は選択肢数を増やすのでなく、各 `choices[].outcomes` に記述する。
+
+元ソース `optionCount` が0または1の場合、この件数だけでは自動イベントなのか選択式なのか判定できないため、`selectionSemanticsVerified` を個別に取得する必要がある。2以上の場合も**数の一致が実ゲームでの効果と全結果の正確性を証明するわけではない**。本文・スキル報酬・分岐条件・配布権利のレビューと2026年のゲーム照合は依然必要。
+
+従来のレビューmanifestで `selectionSemanticsVerified` が欠けているものは今後拒否する。これは未確認報酬を公開しないための意図的な仕様変更。架空データの回帰で複数枝→auto、枝数不足、候補メタデータ欠落、成功／大成功の条件付きスキル2経路を検証。公開実イベント0件を維持。
