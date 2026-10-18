@@ -107,12 +107,19 @@ def compare(source, wiki_ids, wiki_details):
     }
 
 
+def require_full_overlap(result):
+    if result["sourceOnlyCount"] or result["wikiOnlyCount"] or result["wikiCargo"]["nonStandardIdCount"]:
+        raise ValueError("Wiki and UmaSim card ID inventories diverged; review required")
+    return True
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umasim", type=Path, required=True)
     parser.add_argument("--pages", type=Path, nargs="+", required=True)
     parser.add_argument("--expected-page-size", type=int, default=500)
     parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--strict-overlap", action="store_true", help="Fail if the numeric ID sets diverge")
     args = parser.parse_args(argv)
     if args.expected_page_size < 1 or args.expected_page_size > 500 or not args.source_revision.strip():
         parser.error("Expected a valid page size and nonempty revision")
@@ -129,6 +136,8 @@ def main(argv=None):
     result["sourceRevision"] = args.source_revision
     result["sourceSha256"] = digest
     result["wikiSnapshot"] = "Live Wiki Cargo Game_Supports; request time is NOT a pinned master revision."
+    if args.strict_overlap:
+        require_full_overlap(result)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
