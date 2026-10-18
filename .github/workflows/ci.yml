@@ -39,6 +39,9 @@ jobs:
       - name: Check later master snapshot comparison logic (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_compare_event_master_snapshots.py' -v
 
+      - name: Check external Wiki ID inventory logic (synthetic metadata, no network)
+        run: python3 -m unittest discover -s poc/tests -p 'test_wiki_cargo_supports.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
