@@ -33,8 +33,15 @@ def fixture():
                         {"skillId":204701,"skillName":"素質の証明","hintLevel":2},
                         {"skillId":204531,"skillName":"清麗高雅","hintLevel":2}
                     ]},
-                    {"id":"no","skills":[{"skillId":204532,"skillName":"華麗な踏み込み","hintLevel":1}]},
-                    {"id":"other","skills":[{"skillId":204532,"skillName":"華麗な踏み込み","hintLevel":1}]}
+                    {"id":"no","skills":[
+                        {"skillId":204701,"skillName":"素質の証明","hintLevel":2},
+                        {"skillId":204571,"skillName":"純真無垢","hintLevel":2}
+                    ]},
+                    {"id":"other","skills":[
+                        {"skillId":203712,"skillName":"勇気の一歩","hintLevel":5},
+                        {"skillId":204701,"skillName":"素質の証明","hintLevel":2},
+                        {"skillId":203711,"skillName":"ショーダウン","hintLevel":2}
+                    ]}
                 ]
                 event["defaultChoiceId"]="yes"
             arr.append(event)
@@ -47,7 +54,8 @@ def fixture():
       "generatedAt":"2026-10-04T00:00:00Z",
       "source":{"factory":"umamusume-data-src","extractedAt":"2026-09-30T00:00:00Z"},
       "files":{k:{"path":v,"sha256":"a"*64} for k,v in mod.SOURCE_FILE_KEYS.items()}}
-    skills={"204532":"華麗な踏み込み","204701":"素質の証明","204531":"清麗高雅"}
+    skills={"204532":"華麗な踏み込み","204701":"素質の証明","204531":"清麗高雅",
+            "204571":"純真無垢","203712":"勇気の一歩","203711":"ショーダウン"}
     return manifest,supports,{"version":2,"prioritySupportIds":ids,"events":arr},{str(i) for i in ids},skills
 
 class EventCandidateAuditTest(TestCase):
@@ -62,7 +70,50 @@ class EventCandidateAuditTest(TestCase):
         self.assertEqual(r["referencedSkillIdsAbsentFromPinnedUmaSim"],0)
         self.assertEqual(r["gameRewardClaimsApproved"],0)
         self.assertFalse(r["focus30311GameWithSpotCheck"]["lowerSuccessTierRepresented"])
+        self.assertEqual(r["focus30311GameWithSpotCheck"]["greatSuccessChoiceGroupsMatching"],3)
+        self.assertEqual(r["focus30311GameWithSpotCheck"]["greatSuccessHintRecordsMatching"],8)
+        self.assertEqual(r["focus30311GameWithSpotCheck"]["ordinarySuccessChoiceGroupsMissing"],3)
+        self.assertFalse(r["focus30311GameWithSpotCheck"]["gameRewardsApproved"])
+        self.assertEqual(r["focus30311ChoiceCoverage"]["candidateMissingEventIds"],
+            ["830311001","830311002","801146001","801146002"])
+        self.assertEqual(r["focus30311ChoiceCoverage"]["missingChoicePositions"],8)
         self.assertNotIn("Test 30001",str(r))
+    def test_known_wiki_30311_event_gaps_and_flattened_choices(self):
+        m,c,e,ids,skills=fixture()
+        # Synthetic five-event inventory; two of the present records still
+        # lack their source-verified choice branches.
+        expected=[("830311001",2),("830311002",2),
+                  ("801146001",2),("801146002",2)]
+        for offset,(sid,n) in enumerate(expected):
+            e["events"].append({"id":"evt_30311_"+sid,"selection":"auto","skills":[]})
+            # Drop exactly one record from each of four other cards,
+            # retaining at least one event for all 45 source cards.
+            other_card=str(30001+offset)
+            index=next(i for i,v in enumerate(e["events"])
+                       if v["id"].startswith("evt_"+other_card+"_"))
+            e["events"].pop(index)
+        # The fixture now has five 30311 records (finale + four added).
+        r=mod.audit(m,c,e,ids,skills)
+        x=r["focus30311ChoiceCoverage"]
+        self.assertEqual(x["candidateMissingEventIds"],[])
+        self.assertEqual(x["missingChoicePositions"],8)
+        self.assertEqual(x["presentEventsWithoutRequiredChoices"]["830311002"],
+            {"expected":2,"candidate":0})
+        self.assertEqual(x["candidateEventsEligibleForPublication"],0)
+        self.assertEqual(r["gameRewardClaimsApproved"],0)
+
+    def test_all_three_finale_great_success_choices_are_guarded(self):
+        m,c,e,ids,skills=fixture()
+        for j in range(3):
+            bad=copy.deepcopy(e)
+            bad["events"][0]["choices"][j]["skills"][0]["hintLevel"]=0
+            with self.assertRaisesRegex(ValueError,"great-success-tier"):
+                mod.audit(m,c,bad,ids,skills)
+        bad=copy.deepcopy(e)
+        bad["events"][0]["choices"][1]["skills"][1]["skillId"]=999999
+        with self.assertRaisesRegex(ValueError,"great-success-tier"):
+            mod.audit(m,c,bad,ids,skills)
+
     def test_malformed_skill_id_and_unknown_id_are_distinct(self):
         m,c,e,ids,skills=fixture()
         bad=copy.deepcopy(e)
@@ -70,7 +121,7 @@ class EventCandidateAuditTest(TestCase):
         with self.assertRaisesRegex(ValueError,"Invalid numeric"):
             mod.audit(m,c,bad,ids,skills)
         unknown=copy.deepcopy(e)
-        unknown["events"][0]["choices"][0]["skills"][0]["skillId"]=999999
+        unknown["events"][1]["skills"][0]["skillId"]=999999
         r=mod.audit(m,c,unknown,ids,skills)
         self.assertEqual(r["referencedSkillIdsAbsentFromPinnedUmaSim"],1)
         self.assertEqual(r["unmatchedSkillIds"],["999999"])
@@ -134,7 +185,7 @@ class EventCandidateAuditTest(TestCase):
         m,c,e,ids,skills=fixture()
         bad=copy.deepcopy(e)
         bad["events"][0]["choices"][0]["skills"][0]["hintLevel"]=1
-        with self.assertRaisesRegex(ValueError,"success-tier"):
+        with self.assertRaisesRegex(ValueError,"great-success-tier"):
             mod.audit(m,c,bad,ids,skills)
         r=mod.audit(m,c,e,ids,{"204532":"Changed name","204701":"素質の証明","204531":"清麗高雅"})
         self.assertEqual(r["skillNameDisagreementsVsPinnedUmaSim"],1)
