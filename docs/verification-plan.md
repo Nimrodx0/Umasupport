@@ -245,3 +245,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ### Phase 2：Wiki公開サポカページと旧masterのイベントIDクロスチェック（2026-10-18、PR #61）
 
 [実測・解釈](wiki-masterdata-rendered-event-audit.md)。A：サポカ記事HTMLのTraining Eventsから連続とその他を分けた数値リンク抽出。旧SQLite内部行idとstory_idを区別し、同ID重複・不正ページ・SHAズレを人工テストで拒否。B：固定旧マスター30241のstory_id18件とWiki公開記事18件が数値ID全件一致。2026年8月登場SSR30311のWiki記事5件は固定2025年masterには全て未収録。Wikiのmasterdata版・条件・報酬・ゲーム最新性は未確認。C：アプリUI変更なし、Android/Windows実機未受入れ。
+
+### Phase 1：Wiki自身のJP masterdata→Cargo未掲載ID照合（2026-10-18、PR #62）
+
+[実測・方法と制限](wiki-masterdata-cargo-gap-audit.md)。A：Module:Game/Contribution展開応答を安全に分類、解析失敗で未掲載0件を誤認しない回帰テスト。B：公開APIに1GETだけ要求し、support_card_data→Game_Supportsの未掲載IDが0件、card_data→Game_Cardsも0件と報告された。Wiki側のid<9000000抽出であり、バックエンドSQLite版・masterdataの全件数・Cargo→masterdata逆方向・現行ゲーム全件性を保証しない。C：公開UI変更なし、既存Chromium回帰のみ。Android/Windows物理端末は未確認。
