@@ -1,0 +1,75 @@
+name: Limited Unreviewed Numeric Event Candidate Audit
+on:
+  pull_request:
+    paths:
+      - .github/workflows/event-candidate-numeric-audit.yml
+      - poc/tools/audit_unreviewed_numeric_event_candidates.py
+      - poc/tests/test_unreviewed_numeric_event_candidates.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unreviewed-event-metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify read-only numeric structural audit using synthetic fixtures
+        run: python3 -m unittest discover -s poc/tests -p 'test_unreviewed_numeric_event_candidates.py' -v
+      - name: Fetch pinned third-party manifest, supports and event candidate JSON only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,pathlib,urllib.request
+          out=pathlib.Path(os.environ["RUNNER_TEMP"])
+          sources=[
+             ("https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/manifest.json","manifest.json"),
+             ("https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/supports.json","supports.json"),
+             ("https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/events.json","events.json"),
+             ("https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt","umasim-support-card.txt"),
+             ("https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt","umasim-skill-data.txt")
+          ]
+          for url,name in sources:
+              req=urllib.request.Request(url,headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport)"})
+              with urllib.request.urlopen(req,timeout=35) as response:
+                  if response.status!=200:raise RuntimeError("Pinned source unavailable")
+                  payload=response.read(4*1024*1024+1)
+              if len(payload)>4*1024*1024:raise RuntimeError("Pinned source unexpectedly large")
+              (out/name).write_bytes(payload)
+              print("Pinned external source read:",name,"bytes:",len(payload))
+          PY
+      - name: One bounded public Wiki SSR30311 rendered event-link query
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,urllib.parse,urllib.request
+          params={"action":"parse","page":"Game:SSR Efforia (As if Guided)",
+                  "prop":"text|revid","format":"json","formatversion":"2",
+                  "disableeditsection":"1"}
+          req=urllib.request.Request(
+              "https://umamusu.wiki/w/api.php?"+urllib.parse.urlencode(params),
+              headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; public numeric event IDs only)",
+                       "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=30) as r:
+              if r.status!=200:raise RuntimeError("Wiki public parse API unavailable")
+              b=r.read(256*1024+1)
+          if len(b)>256*1024:raise RuntimeError("Wiki page exceeds bounded size")
+          x=json.loads(b)
+          if "error" in x:raise RuntimeError("Wiki public parse refused query")
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-30311.json").write_bytes(b)
+          print("Wiki public page retrieved for numeric ID-only audit")
+          PY
+      - name: Report only candidate counts, numeric IDs and unsupported-claim gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_unreviewed_numeric_event_candidates.py \
+            --manifest "$RUNNER_TEMP/manifest.json" \
+            --supports "$RUNNER_TEMP/supports.json" \
+            --events "$RUNNER_TEMP/events.json" \
+            --umasim-supports "$RUNNER_TEMP/umasim-support-card.txt" \
+            --umasim-skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            --wiki-30311 "$RUNNER_TEMP/wiki-30311.json"
+          echo "Unreviewed event reward candidates are NEVER copied into reviewed_events.v1.json"

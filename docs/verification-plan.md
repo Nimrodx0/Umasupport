@@ -249,3 +249,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ### Phase 1：Wiki自身のJP masterdata→Cargo未掲載ID照合（2026-10-18、PR #62）
 
 [実測・方法と制限](wiki-masterdata-cargo-gap-audit.md)。A：Module:Game/Contribution展開応答を安全に分類、解析失敗で未掲載0件を誤認しない回帰テスト。B：公開APIに1GETだけ要求し、support_card_data→Game_Supportsの未掲載IDが0件、card_data→Game_Cardsも0件と報告された。Wiki側のid<9000000抽出であり、バックエンドSQLite版・masterdataの全件数・Cargo→masterdata逆方向・現行ゲーム全件性を保証しない。C：公開UI変更なし、既存Chromium回帰のみ。Android/Windows物理端末は未確認。
+
+### Phase 2：未承認イベントスキル候補の数値ID・部分報酬監査（2026-10-18、PR #63）
+
+[監査根拠](unreviewed-event-numeric-candidate-audit.md)。A：源のSHA・カード/イベントのID構造・スキルID/名称・選択モード・30311の一枝の大成功値の変化検知を人工テスト。B：公開候補45カード126イベントの124正規数値ID・2独自ID、Wiki 30311の5中3件一致、UmaSim辞書未照合スキルID2種類を確認。元抽出非公開、候補の結果分岐と報酬未網羅、配布条件未確定。**数値が一致しても正式なゲームイベント収録承認ではない**。C：アプリを変更せず既存Chromium回帰のみ。実Android/Windows未受け入れ。

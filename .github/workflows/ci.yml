@@ -51,6 +51,9 @@ jobs:
       - name: Check Wiki JP masterdata-to-Cargo missing ID classifier (synthetic)
         run: python3 -m unittest discover -s poc/tests -p 'test_wiki_masterdata_cargo.py' -v
 
+      - name: Verify unreviewed event candidate metadata audit with synthetic fixtures
+        run: python3 -m unittest discover -s poc/tests -p 'test_unreviewed_numeric_event_candidates.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts

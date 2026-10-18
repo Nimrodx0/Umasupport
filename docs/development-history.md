@@ -226,3 +226,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：Wiki JP masterdataからWiki掲載サポカへの未掲載ID0件（PR #62）
 
 [監査正本](wiki-masterdata-cargo-gap-audit.md)。公開WikiのModule:Game/Contribution.listMissingがExternalDataのJP masterdataからsupport_card_dataを照会し、Cargo Game_Supportsに存在しないIDを調べる既存機能を、公開MediaWiki APIのテンプレート展開で一回だけ実行。Supports/CardsともにUp to date、未掲載0件。リクエストは1回、テキストなどは保存せず、失敗を0と誤認しないPythonテストを追加。**masterdata自身の時点・ハッシュ・逆方向完全性は未確認**。公開承認済み実イベントは0件のまま。
+
+## 2026-10-18：第三者イベント報酬候補45枚126件を限定監査（PR #63）
+
+[証拠と不足](unreviewed-event-numeric-candidate-audit.md)。Tsuyuchan-jp公開配信repoの版0.1.14、抽出2026-09-30/生成2026-10-04の固定データを、配信manifest SHAとUmaSimの563カード・数値スキル辞書に照合。45カード・126候補（正規9桁story_id124、独自イベントID2）、スキル参照222レコード・191数値ID。2 ID（200831、200851）はUmaSim固定数値辞書に不在。Wikiの30311公開記事5 ID中、候補3 IDは全件一致、2 ID未収録。GameWithの30311の3スキル大成功時だけは名称・Lv一致するが、**成功時の低Lv結果が候補に無いため、正確な報酬全体とは扱えない**。出典の選択モードautoは『計画時自動計上』で実ゲーム確定取得ではない。元抽出コード非公開、再配布権利未確認。公開イベント0件のまま。
