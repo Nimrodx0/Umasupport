@@ -26,12 +26,12 @@ def read_old_direct_story_ids(path: Path, card_id=TARGET_CARD) -> set[str]:
     if not card_id.isascii() or not card_id.isdecimal():
         raise ValueError("Invalid target support card ID")
     with sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True) as db:
-        required = {"id", "support_card_id", "gallery_flag"}
+        required = {"story_id", "support_card_id", "gallery_flag"}
         columns = {r[1] for r in db.execute("PRAGMA table_info(single_mode_story_data)")}
         if not required.issubset(columns):
             raise ValueError("Old master lacks the required story-ID columns")
         entries = db.execute(
-            "SELECT id FROM single_mode_story_data WHERE support_card_id=? AND gallery_flag=2",
+            "SELECT story_id FROM single_mode_story_data WHERE support_card_id=? AND gallery_flag=2",
             (int(card_id),),
         ).fetchall()
     ids = [str(row[0]) for row in entries]
