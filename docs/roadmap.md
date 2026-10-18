@@ -120,3 +120,5 @@ CIとPagesの成否は最新のGitHub Actionsで確認する（固定の旧コ�
 **2026-10-18 Phase 1 数値照合拡張：** [0〜4凸ヒント性能の外部参照](stage-hint-consistency-audit.md)を、旧SSR6枚60数値から**SSR6・SR5・R1枚計12枚120数値**に拡張（GameWith個別効果表、名称・レアリティ・ID一致を必須）。採用UmaSim563枚×5段階の内部整合性検査は維持。残る551枚の性能数値・現在ゲームの全件性・特別な固有条件の独立照合は未達。
 
 **2026-10-18 Phase 1 カードID全件クロスチェック：** [Wiki CargoとUmaSimの数値ID比較](wiki-cargo-support-id-audit.md)で、コミュニティWiki索引のサポカ563 IDと採用UmaSimの563 IDが**563/563、SSR316・SR101・R146すべて集合一致**。限定Actionsで3ページのみ取得、数値IDのみを保持・出力。これは**Wiki索引の収録ID範囲**の独立照合であり、最新ゲームマスターの網羅率やイベント収録の検証ではない。Phase 1全体とPhase 2のゲートは未通過。
+
+**2026-10-18 Phase 2 Wikiイベント索引の実測：** [Wiki Cargo Game_Training_Eventと固定2025年マスターの照合](wiki-event-story-index-audit.md)では、30241の旧カード直結story_id 18件に対して、Wiki上の**個別イベント解説ページの索引登録は0件**。既知別カードイベント830021001の登録は確認。**Wikiの解説ページ索引が不完全**という観測で、Checkerの収録漏れや現行ゲームでの削除を意味しない。実イベント公開0件、Phase 2の最新ゲームマスター検証は未通過。
