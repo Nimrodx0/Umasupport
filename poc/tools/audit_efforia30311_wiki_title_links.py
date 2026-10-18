@@ -61,8 +61,11 @@ def audit_title_links(payload):
     for section, expected in EXPECTED_GROUPS.items():
         visible = reader.visible[section]
         links = reader.positions[section]
-        if len(links) != len(expected):
-            raise ValueError(f"{section}: expected {len(expected)} links, found {len(links)}")
+        # Rendered Wiki cards may contain TWO links per event:
+        # a linked event heading and its edit link (same story ID).
+        # Check distinct IDs and title ownership, NOT raw anchor counts.
+        if len({story for _, story in links}) != len(expected):
+            raise ValueError(f"{section}: expected {len(expected)} distinct story links")
         for index, (title, story_id) in enumerate(expected):
             first = visible.find(title)
             if first < 0 or visible.find(title, first + 1) >= 0:
@@ -75,8 +78,8 @@ def audit_title_links(payload):
                     raise ValueError(f"{section}: event heading ordering changed")
             else:
                 next_first = len(visible)
-            linked = [sid for pos, sid in links if last <= pos < next_first]
-            if linked != [story_id]:
+            linked = [sid for pos, sid in links if first <= pos < next_first]
+            if not linked or set(linked) != {story_id}:
                 raise ValueError(f"{section}: numeric story link does not belong to event title {index+1}")
             if story_id in pairs:
                 raise ValueError(f"duplicate candidate story ID {story_id}")
