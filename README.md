@@ -78,3 +78,5 @@ JSON設定は[読込プレビューから統合・置き換え](docs/settings-im
 [Wiki CargoとのサポカID全件比較](docs/wiki-cargo-support-id-audit.md)では、2026-10-18時点のWikiコミュニティ索引563件と固定UmaSimの563件が数値IDレベルで全件一致（SSR316・SR101・R146）しました。この照合結果はゲーム内の最新全カード枚数や実イベントの正確性を保証するものではありません。
 
 [Wikiサーバー側masterdataとWiki記事索引の未掲載カード調査](docs/wiki-masterdata-cargo-gap-audit.md)では、Wiki公式Luaの公開比較結果がサポカ・育成カードとも未掲載0件でした。これはWikiの一方向の比較であり、サーバー側ゲームマスターのバージョン・ゲーム現行の全件数を確認できた意味ではありません。
+
+[未承認イベント候補の監査](docs/unreviewed-event-numeric-candidate-audit.md)では、第三者公開データのサポカ45枚・イベント126候補を数値IDで検査し、Wiki側5件のうち候補3件の一致と2件の未収録、UmaSimスキル辞書にない数値ID2種類、成功時の結果分岐の不足を確認しました。**イベント候補は承認・公開DBに追加せず**、再利用条件と独立した報酬検証を継続します。
