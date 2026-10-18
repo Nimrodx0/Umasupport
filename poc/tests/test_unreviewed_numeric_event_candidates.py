@@ -74,6 +74,31 @@ class EventCandidateAuditTest(TestCase):
         r=mod.audit(m,c,unknown,ids,skills)
         self.assertEqual(r["referencedSkillIdsAbsentFromPinnedUmaSim"],1)
         self.assertEqual(r["unmatchedSkillIds"],["999999"])
+    def test_historical_id_name_evidence_keeps_both_ids_unapproved(self):
+        m,c,e,ids,skills=fixture()
+        e["events"][1]["skills"][0]={"skillId":200831,"skillName":"逃げけん制","hintLevel":1}
+        e["events"][2]["skills"][0]={"skillId":200851,"skillName":"逃げためらい","hintLevel":1}
+        r=mod.audit(m,c,e,ids,skills)
+        self.assertEqual(r["unmatchedSkillIds"],["200831","200851"])
+        self.assertEqual(r["historicalNameMatchedAbsentSkillIds"],["200831","200851"])
+        self.assertEqual(r["historicalNameDisagreedAbsentSkillIds"],[])
+        self.assertEqual(r["absentSkillIdsWithoutHistoricalNameMatch"],[])
+        self.assertFalse(r["historicalEvidenceApprovesEventReward"])
+        self.assertEqual(r["gameRewardClaimsApproved"],0)
+
+        e["events"][2]["skills"][0]["skillName"]="unrelated synthetic name"
+        r=mod.audit(m,c,e,ids,skills)
+        self.assertEqual(r["historicalNameMatchedAbsentSkillIds"],["200831"])
+        self.assertEqual(r["historicalNameDisagreedAbsentSkillIds"],["200851"])
+        self.assertEqual(r["absentSkillIdsWithoutHistoricalNameMatch"],["200851"])
+        self.assertEqual(r["gameRewardClaimsApproved"],0)
+
+        # A previously missing ID entering the pinned registry is a separate
+        # situation; the historical-only classification must not be retained.
+        skills["200831"]="逃げけん制"
+        r=mod.audit(m,c,e,ids,skills)
+        self.assertEqual(r["unmatchedSkillIds"],["200851"])
+        self.assertEqual(r["historicalNameMatchedAbsentSkillIds"],[])
     def test_missing_choice_or_nonstory_group_rejected(self):
         m,c,e,ids,skills=fixture()
         bad=copy.deepcopy(e)
