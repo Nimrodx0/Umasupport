@@ -159,3 +159,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：GameWith優先の追加決定（PR #73）
 
 ユーザーは、攻略サイト間でSSR30311の絆・体力報酬の数字が異なる場合、**GameWith掲載値を暫定正として採用**する方針を選択した。詳細は [意思決定ログ](docs/decisions.md)、[30311監査](docs/unreviewed-event-numeric-candidate-audit.md)、機械可読の `poc/config/event-source-priority.v1.json` を参照。Game8との不一致そのものはリリースブロッカーではない。GameWithに存在しない項目は未解決（他資料を黙って採用しない）。**優先ソースの指定は、正式ゲームのデータID・イベント分岐・成功率・公開再利用権限の独立承認ではない。** 実公開DBのイベント0件を維持。
+
+## 2026-10-18：SSR30311の開発用in-memoryプレビュー（PR #74）
+
+[検証と限界](docs/efforia30311-preview.md)。`poc/src/efforia30311_review_preview.cjs` が **5イベント/11選択肢/連続最終6結果/スキル報酬18参照**のスキル経路を本番schema/core/skill bridgeへ投入して人工的に検証する。出典はGameWith 2026-10-08の記事とコミュニティWiki 30311 IDリンク。**本コードに載せた連続条件とWiki/記事の紐付けは仮**で、既定でデータファイルを生成しない。CLIは件数と残るゲートのみ出力する。**このプレビューを `poc/data/reviewed_events.v1.json` にコピーしないこと**。正式ID/連続/結果条件/公開表現・権利はIssue #72で未承認。

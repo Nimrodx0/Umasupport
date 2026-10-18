@@ -262,3 +262,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：イベント効果の暫定参照元をGameWithに統一（PR #73）
 
 [ユーザー決定](decisions.md)を反映。GameWithとGame8で矛盾するSSR30311の3箇所はGameWithの数値（絆+10/+10、連続3段目成功時体力+10）を暫定的な採用値とし、Game8との差を消さず記録。 [小さなオフライン数値優先関数](../poc/src/event_source_precedence.cjs) と人工テストで優先・欠落・同一資料内矛盾・URL詐称を検査。実ゲーム独立確認・正式ID・分岐・画像/転載条件・公開承認は別ゲート。公開JSONの実イベントは0件のまま。
+
+## 2026-10-18：SSR30311 5イベントの実ID候補とGameWithスキルヒントの結合プレビュー（PR #74）
+
+[検証範囲と留保](efforia30311-preview.md)。GameWith優先で把握したスキル報酬（連続2段目の1選択肢、通常イベントの1選択肢、連続3段目の成功/大成功の3選択肢×2結果）を、Wiki上の数値story IDと**仮の順序対応**でつなぎ、**5イベント・11選択肢・6条件付き結果群・18件のスキルヒント項目**をレビュー専用メモリ上の公開形式v1で組み立てる。実行コマンドは `node poc/tools/inspect_efforia30311_review_preview.cjs`。スキルID・名称は仮のUmaSim辞書でruntime bridge検査、選択状態と連続条件は本番schema/coreでテスト。台詞・他サイトの選択肢文言・画像は追加しない。**GameWith記事からWiki story_idへの直接照合、連続打ち切り条件、権利承認、実機受け入れは未完**。本番JSONの実イベント0件を維持。
