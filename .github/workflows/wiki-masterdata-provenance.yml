@@ -87,20 +87,6 @@ jobs:
           print("Link query key names",sorted({key for link in links for key in re.findall(r'[?&amp;]([A-Za-z][A-Za-z0-9_]+)=',link)}))
           print("Event heading tag samples (without game titles)",re.findall(r'<h[234][^>]*',html[html.find('Training Events'):html.find('Training Events')+12000])[:12])
           PY
-      - name: Read-only compare rendered event links with pinned 2025 story IDs
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --silent --show-error --location --max-time 85 \
-            --output "$RUNNER_TEMP/old-story-master.mdb" \
-            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
-          python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
-          python3 poc/tools/audit_wiki_rendered_support_events.py \
-            --old-master "$RUNNER_TEMP/old-story-master.mdb" \
-            --page-json "$RUNNER_TEMP/wiki-support-page.json" \
-            --recent-page-json "$RUNNER_TEMP/wiki-recent-support-page.json" \
-            --strict-equal
-
       - name: Inspect one August 2026 support-card page for numeric event IDs
         shell: bash
         run: |
@@ -129,3 +115,16 @@ jobs:
           print("Recent event section presence",{"chain":'id="Event_Chain"' in html,
                 "other":'id="Other_Events"' in html,"unreviewedRewardPlaceholders":html.count("No data yet!")})
           PY
+      - name: Read-only compare rendered event links with pinned 2025 story IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 85 \
+            --output "$RUNNER_TEMP/old-story-master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
+          python3 poc/tools/audit_wiki_rendered_support_events.py \
+            --old-master "$RUNNER_TEMP/old-story-master.mdb" \
+            --page-json "$RUNNER_TEMP/wiki-support-page.json" \
+            --recent-page-json "$RUNNER_TEMP/wiki-recent-support-page.json" \
+            --strict-equal
