@@ -1,0 +1,50 @@
+name: Limited Wiki masterdata backend provenance probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-masterdata-provenance.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect three public Lua modules' signatures and revision dates only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.parse,urllib.request,re
+          api="https://umamusu.wiki/w/api.php"
+          params={"action":"query","prop":"revisions","rvprop":"ids|timestamp|content",
+                  "rvslots":"main","titles":"Module:Game|Module:Game/Supports/Data/Events|Module:Game/TrainingEvents/Data",
+                  "format":"json","formatversion":"2"}
+          req=urllib.request.Request(api+"?"+urllib.parse.urlencode(params),
+            headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; public-code metadata only)",
+                     "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=25) as r:
+              if r.status!=200:raise RuntimeError("Public module API unavailable")
+              blob=r.read(128*1024+1)
+          if len(blob)>128*1024:raise RuntimeError("Unexpected oversized API response")
+          pages=json.loads(blob)["query"]["pages"]
+          for page in pages:
+              if page.get("missing"):raise RuntimeError("Expected public module is missing")
+              rev=page["revisions"][0]
+              text=rev["slots"]["main"].get("content")
+              if not isinstance(text,str):raise RuntimeError("Missing public Lua source")
+              print("MODULE",page["title"],"rev",rev["revid"],"edited",rev["timestamp"],"bytes",len(text.encode()))
+              lines=text.splitlines()
+              patterns=[r"queryMaster",r"getSupportCardEvents",r"getTrainingEventsByStoryIds",
+                        r"ExternalData",r"_queryMaster",r"get_db_data",r"single_mode_story_data",r"return [a-zA-Z_]+",r"^function "]
+              seen=set()
+              for i,line in enumerate(lines):
+                  if not any(re.search(p,line) for p in patterns):continue
+                  for k in range(max(0,i-1),min(len(lines),i+2)):
+                      if k not in seen:
+                          seen.add(k)
+                          print(" LUA-LINE",k+1,lines[k][:220])
+              print("MODULE LINE COUNT",len(lines))
+          PY
