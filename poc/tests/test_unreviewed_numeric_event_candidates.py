@@ -153,6 +153,14 @@ class EventCandidateAuditTest(TestCase):
         self.assertEqual(r["wiki30311"]["wikiRenderedEventIds"],5)
         self.assertEqual(r["wiki30311"]["commonNumericStoryIds"],1)
         self.assertEqual(r["wiki30311"]["onWikiButNotInCandidate"],4)
+        self.assertEqual(r["wiki30311"]["matchingStoryIds"],["830311003"])
+        self.assertEqual(r["wiki30311"]["wikiOnlyStoryIds"],[
+            "801146002","801146003","830311088","830311089"
+        ])
+        # Candidate has two other synthetic story IDs not found on this Wiki fixture.
+        self.assertEqual(r["wiki30311"]["candidateOnlyStoryIds"],
+            sorted({x["id"].rsplit("_",1)[-1] for x in e["events"]
+                    if x["id"].startswith("evt_30311_")}-{"830311003"}))
     def test_umasim_pinning_fails_closed_when_bytes_change(self):
         raw=b"synthetic file contents"
         with patch.object(mod,"UMA_SUPPORT_SHA",mod.sha(raw)):
