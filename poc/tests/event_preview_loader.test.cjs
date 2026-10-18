@@ -25,7 +25,7 @@ test('preview JSON remains byte-independent but structurally identical to review
  assert.deepEqual(JSON_CATALOG,compiler.buildUnpublishedPreview());
 });
 test('strict opt-in URL and no arbitrary preview URL construction',()=>{
- assert.equal(preview.requested(''),'');
+ assert.equal(preview.requested(''),null);
  assert.equal(preview.requested('?eventPreview=30311'),'30311');
  assert.equal(preview.previewURL('30311'),'./data/preview/efforia30311.v1.json');
  assert.equal(preview.previewURL('../../reviewed_events.v1.json'),null);
