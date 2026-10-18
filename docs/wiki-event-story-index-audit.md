@@ -40,3 +40,11 @@ Umamusume Wikiの[イベント定義テンプレート](https://umamusu.wiki/Tem
 数値`story_id`の広い範囲とサポカIDの紐付けを持つ、適切に入手・出典確認された**2025年版より新しいゲームマスター**を優先する。または、Wikiの内部データアクセサが参照するデータの更新履歴・配布条件を、コードの実装と出典が確認できる範囲で調べる。Wikiの解説ページが作られていないことは、新マスターからのストーリー削除の証拠にはしない。
 
 公開承認済み実イベントは**0件**のまま。過去の推定見出し比較の結論は変更しない。
+
+## Wikiの実際のイベント表示データソース（追加確認）
+
+[公開Lua実装 Module:Game/Supports/Data/Events](https://umamusu.wiki/Module:Game/Supports/Data/Events) は `Game.queryMaster` で `single_mode_story_data` の`support_card_id` または `support_chara_id` が該当する行を取得し、`gallery_flag=2` に絞る。**ここで使う `single_mode_story_data.id` は内部行ID**であり、[イベントData変換](https://umamusu.wiki/Module:Game/TrainingEvents/Data)と結び付けて`story_id` に到達する。固定2025年マスターの `id` と `story_id` を取り違えて突き合わせてはならない。
+
+[公開Lua実装 Module:Game](https://umamusu.wiki/Module:Game) の`Game.queryMaster` は`db='masterdata'`の**ExternalData経由のSQLite照会**として定義され、English版は`masterdata_en`を用いる。したがって**Wikiのゲームマスターテーブル参照**と、個別解説ページだけを登録する**Wiki Cargo Game_Training_Event索引**は別データ経路。Wikiのゲームマスターが何月何日の固定版か、2026年10月時点の現行ゲームに一致するか、直接データが第三者アプリで配布・再利用可能かは未検証。公開Luaコードにアクセスできるだけで、サーバー側masterdata SQLiteのスナップショットを取得したことにはならない。
+
+[限定モジュール検査 #39088658357](https://github.com/Nimrodx0/Umasupport/actions/runs/39088658357) は、公開Module:Gameを含む3モジュールの構成と照合元を確認した。ソースにイベント原文・選択肢・報酬はコピーしていない。
