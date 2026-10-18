@@ -218,3 +218,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：Wikiイベントページ索引と2025年旧master story_idを照合（PR #60）
 
 [結果と制約](wiki-event-story-index-audit.md)。公開WikiのGame_Training_Event.story_idを数値で限定取得。SSR30241ではWiki個別解説ページ0件、旧masterの直結story_id18件との一致も0件。ただし同索引で既知イベント830021001は登録されており、APIは動作。WikiのLuaモジュールは存在するがコード自体に830241004の文字列埋込なし。**Wikiの解説ページ索引とゲームmasterのイベント全件DBは別物**と確定し、Checker未収録／現行ゲーム削除といった根拠のない推論を回避。公開実イベントDB0件。
+
+## 2026-10-18：WikiレンダリングのイベントIDが旧master18件と完全一致（PR #61）
+
+[証拠・制約](wiki-masterdata-rendered-event-audit.md)。Wiki Cargoイベント解説索引の30241登録0件と異なり、公開WikiのSSR30241サポカ記事にはstory_id数値リンク18件（連続5・その他13）が存在し、2025年固定マスターの30241直結ID18件と**18/18一致**。焦点830241004も両方に存在。さらに2026年8月登場SSRエフフォーリア30311の公開記事にイベント5件、その5 IDはいずれも固定2025年マスターには存在しなかった。公開Luaの`masterdata`照会仕様・2025年8月のプログラム編集日時は確認できたが、Wikiサーバー上のSQLite版・正規入手条件は未確認。本文/報酬を公開アプリへ移さずイベントDB0件を維持。
