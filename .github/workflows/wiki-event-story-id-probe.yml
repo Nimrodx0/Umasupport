@@ -46,5 +46,28 @@ jobs:
               keys=[sorted(row.get("title",{})) for row in rows if isinstance(row,dict)]
               ids=[row.get("title",{}).get("story id") for row in rows]
               print(label,"rows",len(rows),"field keys",keys[:2],"numeric story IDs",ids[:100])
-              if len(rows)>=int(params["limit"]):raise RuntimeError("Potentially truncated query; inspect before expansion")
+              if len(rows)>=int(params["limit"]):
+                  print(label,"bounded sample reached request limit; do not infer total event count")
+          for name in ("Module:Game/Supports/Data/Events","Module:Game/TrainingEvents/Data"):
+              params={"action":"query","prop":"revisions","rvprop":"content","rvslots":"main",
+                      "titles":name,"format":"json","formatversion":"2"}
+              url=API+"?"+urllib.parse.urlencode(params)
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=22) as response:
+                  if response.status!=200:raise RuntimeError("Wiki module API unavailable")
+                  blob=response.read(512*1024+1)
+              if len(blob)>512*1024:raise RuntimeError("Wiki module response exceeds 512KB probe budget")
+              result=json.loads(blob)
+              pages=result.get("query",{}).get("pages",[])
+              if len(pages)!=1:raise RuntimeError("Unexpected module lookup response")
+              page=pages[0]
+              main=page.get("revisions",[{}])[0].get("slots",{}).get("main",{})
+              source=main.get("content",main.get("*",""))
+              if not isinstance(source,str):source=""
+              print("module",name,"found",not page.get("missing",False),
+                    "source bytes",len(source.encode()),"contains focus 830241004",("830241004" in source),
+                    "has support event method",("getSupportCardEvents" in source),
+                    "has story ID method",("getTrainingEventsByStoryIds" in source),
+                    "has Cargo query method",("Cargo.query" in source))
+
           PY
