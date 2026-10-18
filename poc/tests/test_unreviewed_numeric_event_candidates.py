@@ -84,9 +84,14 @@ class EventCandidateAuditTest(TestCase):
         # lack their source-verified choice branches.
         expected=[("830311001",2),("830311002",2),
                   ("801146001",2),("801146002",2)]
-        for sid,n in expected:
+        for offset,(sid,n) in enumerate(expected):
             e["events"].append({"id":"evt_30311_"+sid,"selection":"auto","skills":[]})
-            e["events"].pop(3)  # keep the 126-record source shape fixed
+            # Drop exactly one record from each of four other cards,
+            # retaining at least one event for all 45 source cards.
+            other_card=str(30001+offset)
+            index=next(i for i,v in enumerate(e["events"])
+                       if v["id"].startswith("evt_"+other_card+"_"))
+            e["events"].pop(index)
         # The fixture now has five 30311 records (finale + four added).
         r=mod.audit(m,c,e,ids,skills)
         x=r["focus30311ChoiceCoverage"]
@@ -116,7 +121,7 @@ class EventCandidateAuditTest(TestCase):
         with self.assertRaisesRegex(ValueError,"Invalid numeric"):
             mod.audit(m,c,bad,ids,skills)
         unknown=copy.deepcopy(e)
-        unknown["events"][0]["choices"][0]["skills"][0]["skillId"]=999999
+        unknown["events"][1]["skills"][0]["skillId"]=999999
         r=mod.audit(m,c,unknown,ids,skills)
         self.assertEqual(r["referencedSkillIdsAbsentFromPinnedUmaSim"],1)
         self.assertEqual(r["unmatchedSkillIds"],["999999"])
