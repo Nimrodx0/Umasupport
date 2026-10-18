@@ -68,5 +68,6 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m unittest discover -s poc/tests -p 'test_wiki_cargo_supports.py' -v
-          python3 poc/tools/audit_wiki_cargo_supports.py             --umasim "$RUNNER_TEMP/wiki-umasim-support.txt"             --pages "$RUNNER_TEMP"/wiki-id-page-*.json             --expected-page-size 200             --source-revision "mee1080/umasim@cf9366f6"
+          python3 poc/tools/audit_wiki_cargo_supports.py             --umasim "$RUNNER_TEMP/wiki-umasim-support.txt"             --pages "$RUNNER_TEMP"/wiki-id-page-*.json             --expected-page-size 200             --source-revision "mee1080/umasim@cf9366f6" \
+            --strict-overlap
           echo "Wiki is a community-maintained page index, NOT a production game-master snapshot."
