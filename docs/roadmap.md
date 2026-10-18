@@ -126,3 +126,5 @@ CIとPagesの成否は最新のGitHub Actionsで確認する（固定の旧コ�
 **2026-10-18 Phase 2 続報：** [WikiのサポカページHTMLと旧masterの正式story_id照合](wiki-masterdata-rendered-event-audit.md)。SSR30241の公開記事内イベントリンク18 IDは2025年固定マスターの直結story_id18件と**完全一致（連続5＋その他13）**し、830241004を含む。2026年8月登場SSR30311のWiki記事には新規イベントID5件があり、2025年マスターの全story_idには無い。**これはWikiの表示記事の収録であり、サーバー側masterdata SQLiteの版・現行ゲーム内イベント・結果報酬を検証したものではない**。公開承認イベント0件を維持。
 
 **2026-10-18 Phase 1 Wikiバックエンド照合：** [Wiki JP masterdata→Cargo記事索引の一方向ギャップ実測](wiki-masterdata-cargo-gap-audit.md)。Wikiの公開Module:Game/Contributionが利用するExternalDataのsupport_card_dataについて、Cargoに存在しないサポカIDは**0件報告**。以前のUmaSim↔Wiki掲載ID563/563一致と補完的な根拠。ただし一方向・id<9000000・マスターの更新日時とハッシュ未確認のため、最新版ゲームの全件保証ではない。Phase 1・Phase 2の完了判定は変えない。
+
+**2026-10-18 Phase 2 未承認の数値報酬候補を調査：** [45枚・126イベント候補の数値ID監査](unreviewed-event-numeric-candidate-audit.md)。別公開リポジトリの固定manifestから45カード/126イベント/222スキル記録を調査し、124件の正規形式ストーリーIDと2件の独自IDを分離。30311についてWikiの5イベントID中3件が候補と一致、2件は候補未収録。191報酬スキルID中2種類はUmaSim固定数値辞書では未照合。GameWithで1枝の大成功時3スキルLvを確認できるが成功時の異なる分岐が候補データに不足するため、**公開承認イベント0件を維持**。元抽出コード非公開・第三者素材の権利未確認。
