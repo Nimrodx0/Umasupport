@@ -1,0 +1,73 @@
+name: Limited Wiki Cargo Support-ID Inventory Audit
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-cargo-support-audit.yml
+      - poc/tools/audit_wiki_cargo_supports.py
+      - poc/tests/test_wiki_cargo_supports.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wiki-cargo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned UmaSim source once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --fail --location --max-time 45             --output "$RUNNER_TEMP/wiki-umasim-support.txt"             "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt"
+      - name: Fetch only Wiki Cargo numeric card IDs (at most 5 requests)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,time,urllib.parse,urllib.request
+          out=pathlib.Path(os.environ["RUNNER_TEMP"])
+          limit=200
+          fetched=0
+          for page in range(5):
+              args={"action":"cargoquery","tables":"Game_Supports","fields":"support_id",
+                    "order_by":"support_id","limit":str(limit),"offset":str(page*limit),"format":"json"}
+              url="https://umamusu.wiki/w/api.php?"+urllib.parse.urlencode(args)
+              req=urllib.request.Request(url,headers={
+                  "User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; numeric IDs only)",
+                  "Accept":"application/json"})
+              try:
+                  with urllib.request.urlopen(req,timeout=25) as r:
+                      if r.status!=200: raise RuntimeError("Wiki API did not return HTTP 200")
+                      raw=r.read(1024*1024+1)
+              except Exception:
+                  print("Public Wiki API unavailable; no bypass and no retries")
+                  raise
+              if len(raw)>1024*1024: raise RuntimeError("Wiki numeric ID page unexpectedly large")
+              data=json.loads(raw)
+              rows=data.get("cargoquery") if isinstance(data,dict) else None
+              if not isinstance(rows,list) or len(rows)>limit:
+                  raise RuntimeError("Unexpected Wiki Cargo API JSON response")
+              if page==0 and len(rows)<limit:
+                  raise RuntimeError("First page unexpectedly short: verify API limit and completeness manually")
+              for item in rows:
+                  title=item.get("title") if isinstance(item,dict) else None
+                  value=title.get("support id") if isinstance(title,dict) else None
+                  if not isinstance(value,(int,str)) or not str(value).isdigit():
+                      raise RuntimeError("Wiki row is not a numeric support ID")
+              (out/f"wiki-id-page-{page}.json").write_bytes(raw)
+              fetched+=len(rows)
+              print(f"Wiki Cargo numeric ID page {page+1}: {len(rows)} records; cumulative {fetched}")
+              if len(rows)<limit:break
+              if page==4:raise RuntimeError("Exceeded page budget before exhaustively reading Cargo IDs")
+              time.sleep(0.8)
+          PY
+      - name: Strict numeric ID overlap and gap audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_cargo_supports.py' -v
+          python3 poc/tools/audit_wiki_cargo_supports.py             --umasim "$RUNNER_TEMP/wiki-umasim-support.txt"             --pages "$RUNNER_TEMP"/wiki-id-page-*.json             --expected-page-size 200             --source-revision "mee1080/umasim@cf9366f6" \
+            --strict-overlap
+          echo "Wiki is a community-maintained page index, NOT a production game-master snapshot."

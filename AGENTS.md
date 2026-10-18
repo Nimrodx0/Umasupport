@@ -133,3 +133,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18 Stage hint external source audit (PR #58)
 
 [Source review and limits](docs/stage-hint-consistency-audit.md). The pinned `poc/tools/audit_stage_hint_integrity.cjs` checks 12 distinct SSR/SR/R IDs, full normalized card names, rarity, and two values at all five limit-break stages. Respect `basis=base` vs `basis=total`: the six new SR/R entries compare GameWith's support-effect base columns, not unknown unique effects. Only the limited audit workflow fetches source. Never call the 12-card selected sample complete coverage of the other 551 cards or of the current in-game rules.
+
+## 2026-10-18：Wiki Cargo numeric-card inventory cross-check（PR #59）
+
+[記録](docs/wiki-cargo-support-id-audit.md)。限定実データ監査は`poc/tools/audit_wiki_cargo_supports.py`でUmaSim固定SHAとWiki Cargo `Game_Supports.support_id`（返却は `title['support id']`）の数値IDを直接照合。3 API GETで563/563が一致した。Wikiはライブのコミュニティ索引でゲームの最新正式masterやイベント本文そのものではなく、**独立したゲーム全収録保証ではない**。ページング・重複・差分があればFail Closed。コミュニティ索引の文章・画像・ゲーム原文はPublicへ保存しない。
