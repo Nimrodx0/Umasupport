@@ -171,3 +171,9 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：5イベントのWiki見出し↔9桁story_id監査（PR #76）
 
 [poc/tools/audit_efforia30311_wiki_title_links.py](poc/tools/audit_efforia30311_wiki_title_links.py) はWikiのSSR30311レンダリング記事について、GameWith記事と一致する5イベント見出しに隣接する9桁リンクが、`830311001/002/003`・`801146001/002` の仮対応に一致するか検査する。人工HTMLは通常CI、実Wiki 1ページは外部監査専用ワークフロー（既存GET再利用）。このチェックだけで現在ゲームのイベント分岐や取得条件が承認されたわけではない。ゲーム実装確認・権利・連続条件の未解決はIssue #72へ。
+
+## 2026-10-18：SSR30311 数値スキル辞書直接検査（PR #77）
+
+`poc/src/efforia30311_skill_registry_audit.cjs` とCLIは、プレビューの8スキル番号／名称と18報酬行を実際の固定UmaSim `skill_data.txt` 全件に対して直接照合する。人工テストは通常CI、実ソース検査は外部取得済みファイルを再利用する専用Actionsで行う。**IDと名称が一致しても実ゲームでの選択肢効果を独立に証明したわけではない**。Wiki名↔IDのrev74431リンク検証はPR #76 / [Actions #39142566896](https://github.com/Nimrodx0/Umasupport/actions/runs/39142566896)で成功。
+
+実ソース実測：[限定Actions #39142875109](https://github.com/Nimrodx0/Umasupport/actions/runs/39142875109) でSSR30311の8スキル番号/名称が固定UmaSim `skill_data.txt` 全2,139件に対して**8/8一致**、全18ヒント候補を形式検証。数値辞書SHA-256 `b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec`。**この結果でGameWithイベントの取得条件や出版権利が承認されたとは扱わない。**
