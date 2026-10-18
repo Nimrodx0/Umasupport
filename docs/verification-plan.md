@@ -237,3 +237,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ### Phase 1：Wiki Cargo数値サポカID全件照合（2026-10-18、PR #59）
 
 [実測とスコープ](wiki-cargo-support-id-audit.md)。A：公開Cargo応答の表示用キー、ページング不足・重複、カードのID/レアリティ/5段階形式を人工テスト。B：公開Wikiのコミュニティ索引563件と固定UmaSim563件を直接IDで集合比較し、SSR316/SR101/R146の全IDが一致。相互参照の上流独立性・現行ゲームの絶対枚数は保証しない。C：利用者向けUI変更なし、Chromium回帰を維持しAndroid/Windows実機は未受入れ。
+
+### Phase 2：Wiki個別イベントページ索引を旧master story_idへ突合（2026-10-18、PR #60）
+
+[限定Wiki実測](wiki-event-story-index-audit.md)。A：2025年`single_mode_story_data.story_id`と内部`id`を区別し、公開Wiki Cargo応答形状・対象prefix・対照サンプル・ページ打切りを人工テスト。B：30241旧master18件、Wiki解説ページ0件、別イベント830021001索引あり。**Wikiの全ゲームイベント収録率やイベント存続率を判断しない。** C：公開アプリUI・ゲームデータの更新なし。
