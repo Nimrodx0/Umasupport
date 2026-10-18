@@ -1,0 +1,51 @@
+name: Bounded Wiki masterdata-to-Cargo gap audit
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-masterdata-cargo-gap.yml
+      - poc/tools/audit_wiki_masterdata_cargo.py
+      - poc/tests/test_wiki_masterdata_cargo.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wiki-masterdata-gap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run synthetic response validation without network
+        run: python3 -m unittest discover -s poc/tests -p 'test_wiki_masterdata_cargo.py' -v
+      - name: Query once using public Contribution module; do not fetch backend SQLite
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,urllib.parse,urllib.request
+          url="https://umamusu.wiki/w/api.php?"+urllib.parse.urlencode({
+              "action":"expandtemplates",
+              "text":"{{#invoke:Game/Contribution|listMissing}}",
+              "prop":"wikitext",
+              "format":"json",
+              "formatversion":"2",
+          })
+          request=urllib.request.Request(url,headers={
+              "User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; one public read-only module expansion)",
+              "Accept":"application/json"
+          })
+          with urllib.request.urlopen(request,timeout=45) as response:
+              if response.status!=200:raise RuntimeError("Public Wiki API refused module expansion; do not retry or bypass")
+              body=response.read(256*1024+1)
+          if len(body)>256*1024:raise RuntimeError("Public Wiki module response exceeded safety bound")
+          obj=json.loads(body)
+          print("Wiki expansion top-level fields:",sorted(obj))
+          if "error" in obj:raise RuntimeError("Wiki expansion returned an API error")
+          result=obj.get("expandtemplates")
+          print("Wiki expansion fields:",sorted(result) if isinstance(result,dict) else None)
+          if not isinstance(result,dict) or not isinstance(result.get("wikitext"),str):
+              raise RuntimeError("No public expansion data; do not guess current Wiki master version")
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-masterdata-gap.json").write_bytes(body)
+          print("Wiki response size:",len(body))
+          PY
+      - name: Classify public Wiki's one-way numeric missing-ID output
+        run: python3 poc/tools/audit_wiki_masterdata_cargo.py --response "$RUNNER_TEMP/wiki-masterdata-gap.json"
