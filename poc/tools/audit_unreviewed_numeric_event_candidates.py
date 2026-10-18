@@ -170,8 +170,14 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         "caveat":"Private extractor cites U-tools+mdb, so source independence and reward effects are unverified. 'auto' denotes that producer's planning-mode automatic counting, NOT a confirmed guaranteed in-game event. No event is admitted to reviewed_events.v1.json.",
     }
     if wiki_page is not None:
-        from audit_wiki_rendered_support_events import parse_wiki_page, RECENT_PAGE_TITLE
-        page=parse_wiki_page(wiki_page,RECENT_PAGE_TITLE)
+        import importlib.util
+        parser_path=Path(__file__).with_name("audit_wiki_rendered_support_events.py")
+        spec=importlib.util.spec_from_file_location("wiki_rendered_event_parser",parser_path)
+        if spec is None or spec.loader is None:
+            raise ValueError("Missing existing strict Wiki support-page parser")
+        parser=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(parser)
+        page=parser.parse_wiki_page(wiki_page,parser.RECENT_PAGE_TITLE)
         wiki_ids=page["chain"]|page["other"]
         candidate_ids={sid for card,sid in numerics if card=="30311"}
         result["wiki30311"]={
