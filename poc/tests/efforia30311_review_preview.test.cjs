@@ -26,8 +26,9 @@ test('five ordered Wiki ID candidates and all eleven GameWith choice positions a
  assert.equal(x.choicePositions,11);
  assert.equal(x.outcomeGroups,6);
  assert.equal(x.finaleSkillHintRows,16);
- assert.equal(x.conditionalRouteRows,16);
- assert.equal(x.allSelectedOption1RouteRows,18);
+ assert.equal(x.allChoiceSkillHintRows,18);
+ assert.equal(x.conditionalSelectedRoutes,6);
+ assert.equal(x.selectedOption1RouteRows,8);
  assert.equal(x.blockers.length,6);
  assert.deepEqual(prepared().events.map(e=>e.id),[
   ids.chain1,ids.chain2,ids.finale,ids.other1,ids.other2]);
