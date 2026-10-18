@@ -53,7 +53,7 @@ jobs:
               print(label,"rows",len(rows),"field keys",keys[:2],"numeric story IDs",ids[:100])
               if len(rows)>=int(params["limit"]):
                   print(label,"bounded sample reached request limit; do not infer total event count")
-          for name in ("Module:Game/Supports/Data/Events","Module:Game/TrainingEvents/Data"):
+          for name in ("Module:Game/Supports/Data/Events","Module:Game/TrainingEvents/Data","Module:Game"):
               params={"action":"query","prop":"revisions","rvprop":"content","rvslots":"main",
                       "titles":name,"format":"json","formatversion":"2"}
               url=API+"?"+urllib.parse.urlencode(params)
@@ -77,6 +77,10 @@ jobs:
               import re
               print("module dependencies",sorted(set(re.findall(r'[Mm]odule:[A-Za-z0-9_/-]+',source)))[:20])
               print("module named functions",sorted(set(re.findall(r'function\\s+[a-zA-Z0-9_.:]+',source)))[:15])
+              if name=="Module:Game":
+                  needle=source.find("function Game.queryMaster")
+                  if needle<0:needle=source.find("function p.queryMaster")
+                  print("Game.queryMaster code excerpt",source[needle:needle+500] if needle>=0 else "(not found)")
 
           PY
       - name: Fetch and verify pinned October 2025 game master snapshot
