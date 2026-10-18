@@ -17,6 +17,8 @@ function perfStageComplete(c){
 function modeLabel(mode,kind){
  if(kind==='event'){
   if(mode==='reviewed')return '公開JSONの検証成功';
+  if(mode==='preview')return '未承認イベント試用中（公開承認0件）';
+  if(mode==='preview-failed')return '公開JSONは正常・試用データ検証失敗';
   if(mode==='failed')return '公開JSONの検証失敗・未反映';
   return '検証状況不明';
  }
