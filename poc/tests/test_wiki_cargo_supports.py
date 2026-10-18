@@ -25,7 +25,7 @@ def wiki_page(ids):
 class WikiAuditTests(unittest.TestCase):
     def test_valid_numeric_overlaps_and_by_rarity(self):
         source = audit.read_umasim(uma_rows(["10001", "20002", "30003", "30004"]))
-        ids, meta = audit.read_wiki_pages([wiki_page(["10001", "20002"]), wiki_page(["30003", "30005"])], 2)
+        ids, meta = audit.read_wiki_pages([wiki_page(["10001", "20002"]), wiki_page(["30003", "30005"]), wiki_page([])], 2)
         result = audit.compare(source, ids, meta)
         self.assertEqual(result["sourceCards"], 4)
         self.assertEqual(result["overlap"], 3)
