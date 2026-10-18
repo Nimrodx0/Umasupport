@@ -70,6 +70,9 @@ jobs:
           python3 poc/tools/audit_efforia30311_wiki_title_links.py \
             --page-json "$RUNNER_TEMP/wiki-30311.json"
 
+      - name: Crosscheck all SSR30311 preview skill numbers and names against pinned full UmaSim dictionary
+        run: node poc/tools/audit_efforia30311_preview_skills.cjs "$RUNNER_TEMP/umasim-skill-data.txt"
+
       - name: Report only candidate counts, numeric IDs and unsupported-claim gates
         shell: bash
         run: |
