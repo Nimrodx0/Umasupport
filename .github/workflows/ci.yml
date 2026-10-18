@@ -42,6 +42,9 @@ jobs:
       - name: Check external Wiki ID inventory logic (synthetic metadata, no network)
         run: python3 -m unittest discover -s poc/tests -p 'test_wiki_cargo_supports.py' -v
 
+      - name: Verify Wiki event-page index scope against synthetic old master
+        run: python3 -m unittest discover -s poc/tests -p 'test_wiki_event_index_focus.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts

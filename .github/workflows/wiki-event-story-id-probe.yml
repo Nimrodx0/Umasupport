@@ -1,0 +1,103 @@
+name: Limited Wiki Event Story-ID Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-event-story-id-probe.yml
+      - poc/tools/audit_wiki_event_index_focus.py
+      - poc/tests/test_wiki_event_index_focus.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wiki-story:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect only bounded public numeric Wiki story IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,urllib.parse,urllib.request
+          API="https://umamusu.wiki/w/api.php"
+          headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; numeric ids only)",
+                   "Accept":"application/json"}
+          queries=[
+            ("known-sample",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "where":"story_id IN (830021001, 830241004)","limit":"5","format":"json"}),
+            ("focus-30241",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "where":"story_id >= 830241000 AND story_id < 830242000","limit":"100","format":"json"}),
+            ("index-sample",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "order_by":"story_id","limit":"5","format":"json"})
+          ]
+          for label,params in queries:
+              url=API+"?"+urllib.parse.urlencode(params)
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=22) as r:
+                  if r.status!=200:raise RuntimeError("Wiki event API unavailable; do not retry")
+                  blob=r.read(1024*1024+1)
+              if len(blob)>1024*1024:raise RuntimeError("Unexpected event index payload size")
+              data=json.loads(blob)
+              print(label,"top-level keys",sorted(data) if isinstance(data,dict) else type(data).__name__)
+              if "error" in data:
+                  print(label,"API error code",data["error"].get("code"))
+                  raise RuntimeError("Cargo query rejected; do not bypass")
+              if label in ("known-sample","focus-30241"):
+                  path=pathlib.Path(os.environ["RUNNER_TEMP"])/("wiki-event-"+label+".json")
+                  path.write_bytes(blob)
+              rows=data.get("cargoquery")
+              if not isinstance(rows,list):raise RuntimeError("Unexpected event Cargo query format")
+              keys=[sorted(row.get("title",{})) for row in rows if isinstance(row,dict)]
+              ids=[row.get("title",{}).get("story id") for row in rows]
+              print(label,"rows",len(rows),"field keys",keys[:2],"numeric story IDs",ids[:100])
+              if len(rows)>=int(params["limit"]):
+                  print(label,"bounded sample reached request limit; do not infer total event count")
+          for name in ("Module:Game/Supports/Data/Events","Module:Game/TrainingEvents/Data","Module:Game"):
+              params={"action":"query","prop":"revisions","rvprop":"content","rvslots":"main",
+                      "titles":name,"format":"json","formatversion":"2"}
+              url=API+"?"+urllib.parse.urlencode(params)
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=22) as response:
+                  if response.status!=200:raise RuntimeError("Wiki module API unavailable")
+                  blob=response.read(512*1024+1)
+              if len(blob)>512*1024:raise RuntimeError("Wiki module response exceeds 512KB probe budget")
+              result=json.loads(blob)
+              pages=result.get("query",{}).get("pages",[])
+              if len(pages)!=1:raise RuntimeError("Unexpected module lookup response")
+              page=pages[0]
+              main=page.get("revisions",[{}])[0].get("slots",{}).get("main",{})
+              source=main.get("content",main.get("*",""))
+              if not isinstance(source,str):source=""
+              print("module",name,"found",not page.get("missing",False),
+                    "source bytes",len(source.encode()),"contains focus 830241004",("830241004" in source),
+                    "has support event method",("getSupportCardEvents" in source),
+                    "has story ID method",("getTrainingEventsByStoryIds" in source),
+                    "has Cargo query method",("Cargo.query" in source))
+              import re
+              print("module dependencies",sorted(set(re.findall(r'[Mm]odule:[A-Za-z0-9_/-]+',source)))[:20])
+              print("module named functions",sorted(set(re.findall(r'function\\s+[a-zA-Z0-9_.:]+',source)))[:15])
+              if name=="Module:Game":
+                  needle=source.find("function Game.queryMaster")
+                  if needle<0:needle=source.find("function p.queryMaster")
+                  print("Game.queryMaster code excerpt",source[needle:needle+500] if needle>=0 else "(not found)")
+
+          PY
+      - name: Fetch and verify pinned October 2025 game master snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 90 --output "$RUNNER_TEMP/wiki-event-old-master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          echo "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb  $RUNNER_TEMP/wiki-event-old-master.mdb" | sha256sum -c -
+      - name: Compare numeric story IDs against documented Wiki event-page index
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_event_index_focus.py' -v
+          python3 poc/tools/audit_wiki_event_index_focus.py \
+            --old-master "$RUNNER_TEMP/wiki-event-old-master.mdb" \
+            --wiki-focus "$RUNNER_TEMP/wiki-event-focus-30241.json" \
+            --wiki-control "$RUNNER_TEMP/wiki-event-known-sample.json" \
+            --source-revision "SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135 (2025-10-10)"
+          echo "Index pages are selectively documented; zero Wiki pages never means no game event."

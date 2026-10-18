@@ -137,3 +137,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：Wiki Cargo numeric-card inventory cross-check（PR #59）
 
 [記録](docs/wiki-cargo-support-id-audit.md)。限定実データ監査は`poc/tools/audit_wiki_cargo_supports.py`でUmaSim固定SHAとWiki Cargo `Game_Supports.support_id`（返却は `title['support id']`）の数値IDを直接照合。3 API GETで563/563が一致した。Wikiはライブのコミュニティ索引でゲームの最新正式masterやイベント本文そのものではなく、**独立したゲーム全収録保証ではない**。ページング・重複・差分があればFail Closed。コミュニティ索引の文章・画像・ゲーム原文はPublicへ保存しない。
+
+## 2026-10-18：Wiki Game_Training_Eventは解説ページ索引（PR #60）
+
+[受け入れ正本](docs/wiki-event-story-index-audit.md)。Wiki `Game_Training_Event` Cargoは`Template:Game_Training_Event_Definition`で登録された個別解説ページに対応する。**全ゲームマスターのstory_idではない**。2025年旧masterのSSR30241直結18件に対し、Wikiページ登録は0件。ページが無いことをイベント不在・Checker漏れ・削除と解釈しない。旧SQLiteの照合カラムは`single_mode_story_data.story_id`でありDB内部行`id`と混同しない。公開イベントDB0件のまま。
