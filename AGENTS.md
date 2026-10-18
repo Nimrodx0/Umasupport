@@ -145,3 +145,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：Wiki rendered support-page numeric event links（PR #61）
 
 [Provenance and acceptance](docs/wiki-masterdata-rendered-event-audit.md)。For card 30241, 18 story IDs in rendered Wiki Training Events links equal 18 canonical `single_mode_story_data.story_id` values in the pinned Oct 2025 master (5 chain, 13 other). Focus 830241004 is linked. A separately rendered Aug 2026 card 30311 has five IDs absent from all 2025 stories. **Neither fact proves current Wiki masterdata SQLite revision, live game story availability or event reward accuracy.** Never treat missing Cargo explanation pages as game-event absence, or reuse rendered event titles, dialogue and effects in the public catalog without a separate rights and content audit.
+
+## 2026-10-18：Wiki JP masterdata/Cargo missing-index audit（PR #62）
+
+[Audit evidence](docs/wiki-masterdata-cargo-gap-audit.md). Public `Module:Game/Contribution.listMissing` compares `masterdata.support_card_data` IDs (filtered id<9000000) against Cargo `Game_Supports.support_id`. A single bounded public expandtemplates request returned `Up to date!` for both Supports and Cards, i.e. no master-to-Wiki missing records reported. This is **one-way only**; it does not expose a masterdata SQLite revision/hash, game freshness or the inverse Cargo-to-master relation. Keep the schema-checking Python test fail-closed and never use this to promote unreviewed event content.

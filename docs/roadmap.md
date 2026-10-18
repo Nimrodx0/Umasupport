@@ -124,3 +124,5 @@ CIとPagesの成否は最新のGitHub Actionsで確認する（固定の旧コ�
 **2026-10-18 Phase 2 Wikiイベント索引の実測：** [Wiki Cargo Game_Training_Eventと固定2025年マスターの照合](wiki-event-story-index-audit.md)では、30241の旧カード直結story_id 18件に対して、Wiki上の**個別イベント解説ページの索引登録は0件**。既知別カードイベント830021001の登録は確認。**Wikiの解説ページ索引が不完全**という観測で、Checkerの収録漏れや現行ゲームでの削除を意味しない。実イベント公開0件、Phase 2の最新ゲームマスター検証は未通過。
 
 **2026-10-18 Phase 2 続報：** [WikiのサポカページHTMLと旧masterの正式story_id照合](wiki-masterdata-rendered-event-audit.md)。SSR30241の公開記事内イベントリンク18 IDは2025年固定マスターの直結story_id18件と**完全一致（連続5＋その他13）**し、830241004を含む。2026年8月登場SSR30311のWiki記事には新規イベントID5件があり、2025年マスターの全story_idには無い。**これはWikiの表示記事の収録であり、サーバー側masterdata SQLiteの版・現行ゲーム内イベント・結果報酬を検証したものではない**。公開承認イベント0件を維持。
+
+**2026-10-18 Phase 1 Wikiバックエンド照合：** [Wiki JP masterdata→Cargo記事索引の一方向ギャップ実測](wiki-masterdata-cargo-gap-audit.md)。Wikiの公開Module:Game/Contributionが利用するExternalDataのsupport_card_dataについて、Cargoに存在しないサポカIDは**0件報告**。以前のUmaSim↔Wiki掲載ID563/563一致と補完的な根拠。ただし一方向・id<9000000・マスターの更新日時とハッシュ未確認のため、最新版ゲームの全件保証ではない。Phase 1・Phase 2の完了判定は変えない。

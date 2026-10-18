@@ -222,3 +222,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：WikiレンダリングのイベントIDが旧master18件と完全一致（PR #61）
 
 [証拠・制約](wiki-masterdata-rendered-event-audit.md)。Wiki Cargoイベント解説索引の30241登録0件と異なり、公開WikiのSSR30241サポカ記事にはstory_id数値リンク18件（連続5・その他13）が存在し、2025年固定マスターの30241直結ID18件と**18/18一致**。焦点830241004も両方に存在。さらに2026年8月登場SSRエフフォーリア30311の公開記事にイベント5件、その5 IDはいずれも固定2025年マスターには存在しなかった。公開Luaの`masterdata`照会仕様・2025年8月のプログラム編集日時は確認できたが、Wikiサーバー上のSQLite版・正規入手条件は未確認。本文/報酬を公開アプリへ移さずイベントDB0件を維持。
+
+## 2026-10-18：Wiki JP masterdataからWiki掲載サポカへの未掲載ID0件（PR #62）
+
+[監査正本](wiki-masterdata-cargo-gap-audit.md)。公開WikiのModule:Game/Contribution.listMissingがExternalDataのJP masterdataからsupport_card_dataを照会し、Cargo Game_Supportsに存在しないIDを調べる既存機能を、公開MediaWiki APIのテンプレート展開で一回だけ実行。Supports/CardsともにUp to date、未掲載0件。リクエストは1回、テキストなどは保存せず、失敗を0と誤認しないPythonテストを追加。**masterdata自身の時点・ハッシュ・逆方向完全性は未確認**。公開承認済み実イベントは0件のまま。
