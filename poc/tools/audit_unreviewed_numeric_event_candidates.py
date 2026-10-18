@@ -25,6 +25,24 @@ SOURCE_FILE_KEYS = {"events": "data/events.json", "supports": "data/supports.jso
 # This is DIAGNOSTIC evidence only, not approval of an event reward, skill
 # availability in the current game, or an alternative runtime skill dictionary.
 HISTORICAL_ID_NAMES = {"200831": "逃げけん制", "200851": "逃げためらい"}
+# Human-reviewed 2026-10-18 comparison: Wiki event-link IDs and the
+# GameWith SSR30311 choice table (updated 2026-10-08). Numbers only.
+# These are expected choice *positions*, not complete result/reward evidence.
+EFFORIA_REVIEWED_CHOICES = {
+    "830311001": 2,  # chain 1
+    "830311002": 2,  # chain 2
+    "830311003": 3,  # chain 3: two outcome tiers per choice
+    "801146001": 2,  # other 1
+    "801146002": 2,  # other 2
+}
+# GameWith and Bilibili published the following GREAT-SUCCESS hint levels.
+# Names and numbers are matched to the candidate and the pinned UmaSim
+# dictionary. The ordinary-success tier remains absent from candidate JSON.
+EFFORIA_GREAT_SUCCESS = [
+    [("華麗な踏み込み", 204532, 5), ("素質の証明", 204701, 2), ("清麗高雅", 204531, 2)],
+    [("素質の証明", 204701, 2), ("純真無垢", 204571, 2)],
+    [("勇気の一歩", 203712, 5), ("素質の証明", 204701, 2), ("ショーダウン", 203711, 2)],
+]
 def norm(v):
     return " ".join(unicodedata.normalize("NFKC", v).split())
 
@@ -149,16 +167,29 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
                     named_mismatch.add(i)
     if len(referenced_cards)!=45 or len(numerics)!=124 or noncanonical!=NUMERIC_NONSTORY:
         raise ValueError("Pinned source's 45-card/124-numeric-event shape changed")
-    # Machine guard for the externally spot-reviewed success-tier branch.
-    # GameWith independently lists a lower 'success' tier as well: this
-    # candidates' one choice must never be treated as a complete reward tree.
-    focus=next((v for v in events["events"] if v["id"]=="evt_30311_830311003"),None)
+    # The human-reviewed evidence lists two outcome tiers per finale choice.
+    # The candidate has one undifferentiated reward set per choice. Even
+    # perfectly matching GREAT-SUCCESS hints cannot approve its event rewards.
+    by_id={v["id"]:v for v in events["events"]}
+    focus=by_id.get("evt_30311_830311003")
     if focus is None or len(focus.get("choices",[]))!=3:
         raise ValueError("30311 spotlight candidate event/choice records changed")
-    reviewed=[("華麗な踏み込み",5),("素質の証明",2),("清麗高雅",2)]
-    first=[(r["skillName"],r["hintLevel"]) for r in focus["choices"][0].get("skills",[])]
-    if first!=reviewed:
-        raise ValueError("30311 first-choice success-tier spot check values changed")
+    for index,(choice,expected) in enumerate(zip(focus["choices"],EFFORIA_GREAT_SUCCESS)):
+        observed=[(norm(r["skillName"]),r["skillId"],r["hintLevel"]) for r in choice.get("skills",[])]
+        if observed!=expected:
+            raise ValueError("30311 great-success-tier spot check values changed at choice "+str(index+1))
+        if any(skill_registry.get(str(i))!=name for name,i,level in expected):
+            raise ValueError("30311 spotlight skill ID/name pairing absent from pinned UmaSim")
+    present=[sid for sid in EFFORIA_REVIEWED_CHOICES if "evt_30311_"+sid in by_id]
+    absent=[sid for sid in EFFORIA_REVIEWED_CHOICES if "evt_30311_"+sid not in by_id]
+    missing_choices={
+        sid:{"expected":expected,"candidate":len(by_id["evt_30311_"+sid].get("choices",[]))}
+        for sid,expected in EFFORIA_REVIEWED_CHOICES.items()
+        if sid in present and len(by_id["evt_30311_"+sid].get("choices",[]))<expected
+    }
+    choice_expected=sum(EFFORIA_REVIEWED_CHOICES.values())
+    choice_observed=sum(min(expected,len(by_id["evt_30311_"+sid].get("choices",[])))
+                        for sid,expected in EFFORIA_REVIEWED_CHOICES.items() if sid in present)
     result={
         "source":EXPECTED_REPO+"@"+EXPECTED_REVISION,
         "schemaVersion":events["version"],
@@ -185,7 +216,28 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         "historicalEvidenceApprovesEventReward":False,
         "skillNameMismatchIds":sorted(named_mismatch),
         "gameRewardClaimsApproved":0,
-        "focus30311GameWithSpotCheck":{"successTierHintsMatching":3,"expectedHintRecords":3,"lowerSuccessTierRepresented":False,"scope":"one choice of one event at the documented highest success tier; name and hint levels only"},
+        "focus30311GameWithSpotCheck":{
+            "greatSuccessChoiceGroupsMatching":3,
+            "expectedGreatSuccessChoiceGroups":3,
+            "greatSuccessHintRecordsMatching":sum(len(x) for x in EFFORIA_GREAT_SUCCESS),
+            "ordinarySuccessChoiceGroupsMissing":3,
+            "lowerSuccessTierRepresented":False,
+            "gameRewardsApproved":False,
+            "scope":"All three great-success skill hint sets by ID/name/level only; ordinary-success tiers and complete rewards not represented.",
+        },
+        "focus30311ChoiceCoverage":{
+            "wikiListedEventIds":list(EFFORIA_REVIEWED_CHOICES),
+            "candidatePresentEventIds":present,
+            "candidateMissingEventIds":absent,
+            "gameWithListedChoicePositions":choice_expected,
+            "candidateRepresentedChoicePositions":choice_observed,
+            "missingChoicePositions":choice_expected-choice_observed,
+            "presentEventsWithoutRequiredChoices":missing_choices,
+            "finaleOrdinarySuccessResultGroupsMissing":3,
+            "candidateEventsEligibleForPublication":0,
+            "source":"Wiki SSR30311 event-link order + GameWith SSR30311 choice table, reviewed 2026-10-18; fixed counts only.",
+            "warning":"Choice positions and three great-success hint sets do not establish outcomes, probabilities, conditions, or rights.",
+        },
         "caveat":"Private extractor cites U-tools+mdb, so source independence and reward effects are unverified. 'auto' denotes that producer's planning-mode automatic counting, NOT a confirmed guaranteed in-game event. No event is admitted to reviewed_events.v1.json.",
     }
     if wiki_page is not None:
