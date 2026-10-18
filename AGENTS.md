@@ -163,3 +163,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：SSR30311の開発用in-memoryプレビュー（PR #74）
 
 [検証と限界](docs/efforia30311-preview.md)。`poc/src/efforia30311_review_preview.cjs` が **5イベント/11選択肢/連続最終6結果/スキル報酬18参照**のスキル経路を本番schema/core/skill bridgeへ投入して人工的に検証する。出典はGameWith 2026-10-08の記事とコミュニティWiki 30311 IDリンク。**本コードに載せた連続条件とWiki/記事の紐付けは仮**で、既定でデータファイルを生成しない。CLIは件数と残るゲートのみ出力する。**このプレビューを `poc/data/reviewed_events.v1.json` にコピーしないこと**。正式ID/連続/結果条件/公開表現・権利はIssue #72で未承認。
+
+## 2026-10-18：数値メタデータのPublicコードと配信用実データを区別
+
+[SSR30311プレビュー](docs/efforia30311-preview.md)は開発用in-memoryデータを組み立てるため、**そのビルダーのソースコード内の5 story IDと8スキルの数値ID/名称/ヒントLvはPublic GitHub上で読める**。これは公開アプリの `reviewed_events.v1.json` に掲載し、獲得可能性を保証することと区別する。GameWithの原文・選択肢文面・ゲーム画面・画像を含めていないが、数値等の事実情報をPublicに限定掲載したことを第三者コンテンツの包括利用許諾と呼んではならない。利用者に提供する正式なイベントDBは、別途6観点の出典・条件・公開判断をレビューしてから採用する。
