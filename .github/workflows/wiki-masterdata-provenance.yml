@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/wiki-masterdata-provenance.yml
+      - poc/tools/audit_wiki_rendered_support_events.py
+      - poc/tests/test_wiki_rendered_support_events.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -74,6 +76,8 @@ jobs:
           page=obj.get("parse",{})
           html=page.get("text")
           if not isinstance(html,str) or len(html)<200:raise RuntimeError("Missing parsed page HTML")
+          import os,pathlib
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-support-page.json").write_bytes(blob)
           print("Existing page",page.get("title"),"revision",page.get("revid"),"HTML bytes",len(html.encode()))
           for needle in ("Training Events","Event Chain","Other Events","No data yet!", "830241004","830241001","830241002","830241003","story_id","storyId","eventId"):
               print("Page marker",needle,"count",html.count(needle))
@@ -83,3 +87,14 @@ jobs:
           print("Link query key names",sorted({key for link in links for key in re.findall(r'[?&amp;]([A-Za-z][A-Za-z0-9_]+)=',link)}))
           print("Event heading tag samples (without game titles)",re.findall(r'<h[234][^>]*',html[html.find('Training Events'):html.find('Training Events')+12000])[:12])
           PY
+      - name: Read-only compare rendered event links with pinned 2025 story IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 85 \
+            --output "$RUNNER_TEMP/old-story-master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
+          python3 poc/tools/audit_wiki_rendered_support_events.py \
+            --old-master "$RUNNER_TEMP/old-story-master.mdb" \
+            --page-json "$RUNNER_TEMP/wiki-support-page.json"
