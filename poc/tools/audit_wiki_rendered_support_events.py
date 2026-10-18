@@ -21,6 +21,8 @@ PINNED_OLD_SHA256 = "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167
 FOCUS_CARD = 30241
 FOCUS_STORY = "830241004"
 PAGE_TITLE = "Game:SSR Speed Symboli (導きの光)"
+RECENT_PAGE_TITLE = "Game:SSR Efforia (As if Guided)"
+RECENT_CARD_ID = "30311"
 NINE_DIGITS = re.compile(r"(?<![0-9])[0-9]{9}(?![0-9])")
 
 
@@ -86,11 +88,11 @@ class TrainingLinkParser(HTMLParser):
                 self.link_occurrences[self.section] += 1
 
 
-def parse_wiki_page(response):
+def parse_wiki_page(response, expected_title=PAGE_TITLE):
     if not isinstance(response, dict) or set(response) != {"parse"}:
         raise ValueError("Unexpected public MediaWiki Parse API shape")
     page = response["parse"]
-    if not isinstance(page, dict) or page.get("title") != PAGE_TITLE:
+    if not isinstance(page, dict) or page.get("title") != expected_title:
         raise ValueError("Unexpected Wiki support-card article")
     if not isinstance(page.get("revid"), int) or page["revid"] <= 0:
         raise ValueError("Missing Wiki page revision")
@@ -137,11 +139,45 @@ def compare(old_ids, page):
     }
 
 
+
+
+def recent_page_scope(path: Path, rendered: dict):
+    """A bounded 2026 page signal, not evidence of current DB revision."""
+    with sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True) as db:
+        tables = {name[0] for name in db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('support_card_data','single_mode_story_data')")}
+        if tables != {"support_card_data", "single_mode_story_data"}:
+            raise ValueError("Historical master lacks support/story tables")
+        support = db.execute("SELECT id FROM support_card_data WHERE id=?", (int(RECENT_CARD_ID),)).fetchall()
+        if len(support) > 1:
+            raise ValueError("Duplicate historical Efforia card ID")
+        # All historical stories are compared, even those not directly linked to
+        # a support card, to avoid silently mistaking shared-character stories.
+        old_story_ids = {str(item[0]) for item in db.execute(
+            "SELECT story_id FROM single_mode_story_data")}
+    ids = rendered["chain"] | rendered["other"]
+    if not ids:
+        raise ValueError("Recent page has no rendered training-event IDs")
+    return {
+        "recentPageTitle": RECENT_PAGE_TITLE,
+        "recentPageRevision": rendered["revision"],
+        "recentPageEventLinks": len(ids),
+        "recentPageChainLinks": len(rendered["chain"]),
+        "recentPageOtherLinks": len(rendered["other"]),
+        "recentCardId": RECENT_CARD_ID,
+        "recentCardPresentInPinned2025Master": len(support) == 1,
+        "recentPageIdsAlreadyInPinned2025Master": len(ids & old_story_ids),
+        "recentPageIdsNotInPinned2025Master": len(ids - old_story_ids),
+        "caveat": "Card introduced in Aug 2026 per public Wiki. A rendered page does not expose the backing masterdata SQLite revision; numeric event links cannot prove choice rewards or current-game event persistence.",
+    }
+
+
 def main(argv=None):
     arg = argparse.ArgumentParser(description=__doc__)
     arg.add_argument("--old-master", type=Path, required=True)
     arg.add_argument("--page-json", type=Path, required=True)
     arg.add_argument("--strict-equal", action="store_true", help="Fail on differences in numeric ID sets")
+    arg.add_argument("--recent-page-json", type=Path, help="Optional August 2026 Wiki support-card page")
     opts = arg.parse_args(argv)
     raw = opts.old_master.read_bytes()
     digest = hashlib.sha256(raw).hexdigest()
@@ -152,10 +188,14 @@ def main(argv=None):
         raise ValueError("Pinned 2025 master reference assumptions changed")
     page = parse_wiki_page(json.loads(opts.page_json.read_text(encoding="utf-8")))
     result = compare(old_ids, page)
+    if opts.recent_page_json:
+        recent = parse_wiki_page(json.loads(opts.recent_page_json.read_text(encoding="utf-8")), RECENT_PAGE_TITLE)
+        result["recentPage"] = recent_page_scope(opts.old_master, recent)
     result["oldMasterSha256"] = digest
     print(json.dumps(result, indent=2, ensure_ascii=False))
-    if opts.strict_equal and (result["onlyInOldMasterCount"] or result["onlyInWikiRenderedPageCount"]):
-        raise ValueError("Wiki rendered story links differ from the pinned master")
+    if opts.strict_equal and (result["onlyInOldMasterCount"] or result["onlyInWikiRenderedPageCount"] or
+                               result["wikiChainIdCount"] != 5 or result["wikiOtherIdCount"] != 13):
+        raise ValueError("Wiki rendered story links or source-defined grouping differ from the pinned master")
 
 
 if __name__ == "__main__":
