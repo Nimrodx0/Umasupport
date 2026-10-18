@@ -1,6 +1,6 @@
 # 開発ロードマップ
 
-更新：2026-10-17
+更新：2026-10-18
 正本：[要件定義](requirements.md) / [設計](architecture.md) / [検証基準](verification-plan.md) / [意思決定](decisions.md)
 
 ## この文書の役割
@@ -50,6 +50,14 @@
 ゲーム内の表示順について、[2025年マスターの`disp_order`を1,786共有IDで確認](historical-skill-order-probe.md)したが、同値グループ214と古い版のため、そのまま2026年の標準順として採用できない。数値ID`201012`の旧マスター存在も確認。
 
 詳細：[拡大通常ヒント監査](expanded-card-hint-crosscheck.md)、[カードID独立母集団監査](card-population-independent-audit.md)、[通常ヒント527件の別資料照合](independent-card-hint-audit.md)、[金白スキル全件監査](skill-hierarchy-coverage.md)、[2026年版の独立照合](independent-skill-json-audit.md)、[Pages実ブラウザ受け入れ](pages-browser-acceptance-20261017.md)。
+
+### 2026-10-18：イベント取り込み安全性と公開前ゲートを追加（PR #66〜#70）
+
+SSR30311のWikiイベントリンク5件、GameWith選択肢11位置を突き合わせ、候補が2イベント・8選択肢位置を欠くことを具体的に把握。GameWith/Game8の連続3段目スキルヒント結果16件の一致と、体力/絆の局所的な資料差を記録。**イベント候補の全件検証ではなく、B軸は未完。** [監査](unreviewed-event-numeric-candidate-audit.md)参照。
+
+イベントレビュー変換の成功／大成功別出力と、複数選択肢の無条件化防止、`rewards` と `outcomes` の同時指定拒否を実装。さらに配信JSONのイベント内容SHA-256と人手承認・根拠URLを照合する **CI公開ゲート**を追加。 [公開手順](checker-public-catalog.md)・[イベントモデル](event-schema.md)参照。
+
+次に必要なのは **（1）正式イベントIDと選択/結果別報酬・打ち切り/到達条件の版を明示した独立検証、（2）公開表現と利用条件の適法な判断、（3）少数の承認済み実イベントのPages操作テスト、（4）全カードへの段階的な網羅監査**。この順序を守り、実イベントの公開0件、Android/Windows実機の未受け入れを維持する。
 
 ## Phase 2：イベントデータの完全化
 

@@ -1,6 +1,6 @@
 # 開発支援AI向け引き継ぎ
 
-更新：2026-10-17。**本リポジトリの文書とコードが作業の正本**。チャットの発言や古いPoC記録で上書きしない。
+更新：2026-10-18。**本リポジトリの文書とコードが作業の正本**。チャットの発言や古いPoC記録で上書きしない。
 
 ## 最初に読む順序
 
@@ -23,6 +23,8 @@
 - 金白スキル：`skill_data.txt` を起動時に取得し、金325を全件分類。構造対応候補322、白なし3。Node実ソース統合試験成功。**別系統JSONで321/322組の双方向参照・1組の名称対応を外部確認。2026-10-17にPages/Linux Chromiumで実データ取得・辞書・キャッシュ・編成を検証済み**。Android/Windows実機と全数値IDの独立確認は未完。
 - イベント：SSR・SR417の候補表記対応は完了。候補イベント2,099件。ソース上イベント記録0件のSSRが5枚。**公開イベントDBの実ゲームイベントは0件**。入力候補はUmaUmaChecker、欠損／新規はGameWith個別資料。U-toolsは当面使用しない。
 - 独自イベント公開DB：`poc/data/reviewed_events.v1.json`。元の効果文をそのまま配布せず、イベントID・分岐・報酬スキルID・公開可否を別々に検証して承認したレコードだけを反映。
+- **2026-10-18現在の追加実装**：レビュー変換器は `chainVerified`、`rewardSemanticsVerified`、`selectionSemanticsVerified`、`publicationReviewed` をすべて要求。結果分岐の成功／大成功は `outcomes` に別々に記録し、同位置に無条件 `rewards` を同時記録することを禁止。Checker候補で選択肢が2件以上のとき `type:auto` への平坦化を禁止。公開イベントJSONの実イベントは引き続き**0件**。
+- **公開前の最終ゲート（PR #70）**：`poc/config/event-release-approvals.v1.json` と実際の公開JSONを `node poc/tools/verify_event_release.cjs` で照合。全イベントのカードID・イベントID・SHA・6種類の根拠リンク・公開判断が一致しなければCIで拒否。**自動CIの合格は根拠そのものの独立性・ゲーム内正確性・転載権利を証明しない**。詳細は [公開手順](docs/checker-public-catalog.md) と [30311監査](docs/unreviewed-event-numeric-candidate-audit.md)。
 - 旧v8.1の全実データ同梱HTMLはPublicに存在せず、再ビルド用旧入力は一部未移管。現行PoCと混同しない。
 
 ## 守るべきルール
@@ -35,7 +37,7 @@
 6. ユーザー用のデータ更新ボタンは作らない。通常ヒント・スキル辞書は起動時直接取得＋IndexedDB検証済みキャッシュ。イベントは独自公開JSON。通常CIに頻繁な外部GETを追加しない。
 7. 設定不正は確認付き初期化まで保存値を上書きしない。一般利用者不在の開発段階では旧ユーザー設定の保存ID・スキーマ互換を維持しない。ゲームデータのID照合は厳密に続ける。
 8. 構文・人工データ回帰、公開元を使う限定的な実ソース検証、Pages実ブラウザ操作を区別して結果を記録する。実施していないものを「検証済み」と言わない。
-9. 公開イベントの承認は `poc/src/event_review_compiler.js`、`poc/src/public_event_catalog.js`、[レビュー仕様](docs/checker-public-catalog.md)に従う。依存・打ち切り・報酬・ID・公開権利の未承認レコードを自動実装しない。
+9. 公開イベントの承認は `poc/src/event_review_compiler.js`、`poc/src/checker_candidate_pipeline.cjs`、`poc/src/public_event_catalog.js`、[レビュー仕様](docs/checker-public-catalog.md)に従う。最終的に `node poc/tools/verify_event_release.cjs` を必ず実行。依存・打ち切り・結果別報酬・ID・公開権利の未承認レコードを自動実装しない。
 10. 変更によってソース版・例外が変わった場合は、旧監査値を現行網羅率として再利用しない。
 
 ## ユーザーとの作業連携（2026-10-17）
