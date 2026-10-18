@@ -14,6 +14,11 @@
    fail(e.id+': requiresは{all:[...]}で指定する');
  }
  function checkRewards(part,model,where){
+   // A verified result tree is exclusive: alongside unconditional rewards,
+   // the same skills could be falsely counted as guaranteed and conditional.
+   // Shared rewards must be placed explicitly in each reviewed outcome.
+   if(part.rewards!==undefined&&part.outcomes!==undefined)
+     fail(where+': rewardsとoutcomesは同時指定できません');
    if(part.rewards!==undefined){
      if(!Array.isArray(part.rewards))fail(where+': rewardsが不正');
      for(const r of part.rewards){
