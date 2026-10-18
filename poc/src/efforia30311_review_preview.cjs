@@ -106,8 +106,9 @@ function inspect(){
   cardId:CARD,previewOnly:true,releaseEligible:false,
   originURLs:ARTICLES,sourceEvents,choicePositions,outcomeGroups,
   finaleSkillHintRows:finaleRewardRows,otherSkillHintRows:2,
-  allSelectedOption1RouteRows:routes.length,
-  conditionalRouteRows:routes.filter(x=>x.conditional).length,
+  allChoiceSkillHintRows,
+  selectedOption1RouteRows:routes.length,
+  conditionalSelectedRoutes:routes.filter(x=>x.conditional).length,
   coverage,blockers:blockers()};
 }
 module.exports={CARD,ARTICLES,SKILLS,buildUnpublishedPreview,inspect,blockers};
