@@ -23,8 +23,10 @@ const eventsDocument={version:2,events:[
 const config=()=>({
  supports,eventsDocument,model,review:{
   events:[
-   {sourceEventId:'evt_30242_1',cardId:'30242',chainVerified:true,rewardSemanticsVerified:true,terminalChoiceIds:['stop']},
+   {sourceEventId:'evt_30242_1',cardId:'30242',chainVerified:true,rewardSemanticsVerified:true,
+    selectionSemanticsVerified:true,publicationReviewed:true,terminalChoiceIds:['stop']},
    {sourceEventId:'evt_30242_2',cardId:'30242',chainVerified:true,rewardSemanticsVerified:true,
+    selectionSemanticsVerified:true,publicationReviewed:true,
     requires:{all:[{eventId:'evt_30242_1',choiceId:'go'}]}}
   ],
   skillMap:{'2001':'hint:直線巧者','2002':'gold:架空'}
@@ -69,4 +71,62 @@ test('events dependent on unreviewed parents cannot be compiled',()=>{
 test('unverified success or failure reward semantics cannot be compiled as unconditional',()=>{
  const x=config();x.review.events[1].rewardSemanticsVerified=false;
  assert.throws(()=>buildReviewedCatalog(x),/未承認/);
+});
+
+test('individual reviewed choice outcome tiers compile as conditional routes without source-default rewards',()=>{
+ const x=config();
+ x.review.events[0].choiceOutcomeReviews={
+  go:[
+   {id:'success',label:'成功',skills:[skill(2001,'直線巧者',1)]},
+   {id:'great',label:'大成功',skills:[skill(2001,'直線巧者',5)]}
+  ],
+  stop:[
+   {id:'success',label:'成功',skills:[]},
+   {id:'great',label:'大成功',skills:[]}
+  ]
+ };
+ const compiled=buildReviewedCatalog(x);
+ const event=compiled.catalog.cards[0].events[0];
+ assert.equal(event.choices[0].rewards,undefined);
+ assert.equal(event.choices[0].outcomes.length,2);
+ assert.deepEqual(event.choices[0].outcomes.map(v=>v.rewards[0].level),[1,5]);
+ const card={hints:[],events:compiled.catalog.cards[0].events};
+ assert.deepEqual(core.directRoutes(card,{choices:{}}),[]);
+ const routes=core.directRoutes(card,{choices:{'evt_30242_1':'go'}})
+   .filter(v=>v.eventId==='evt_30242_1');
+ assert.equal(routes.length,2);
+ assert.deepEqual(routes.map(v=>v.level),[1,5]);
+ assert.ok(routes.every(v=>v.conditional));
+ assert.match(routes[0].condition,/成功時/);
+ assert.match(routes[1].condition,/大成功時/);
+ assert.deepEqual(core.directRoutes(card,{choices:{'evt_30242_1':'stop'}}),[]);
+});
+test('outcome review must cover exactly every source choice and at least two valid outcomes',()=>{
+ const x=config();
+ const tiers=[
+  {id:'success',label:'成功',skills:[skill(2001,'直線巧者',1)]},
+  {id:'great',label:'大成功',skills:[skill(2001,'直線巧者',5)]}
+ ];
+ x.review.events[0].choiceOutcomeReviews={go:tiers};
+ assert.throws(()=>buildReviewedCatalog(x),/全選択肢/);
+ x.review.events[0].choiceOutcomeReviews={go:tiers,stop:tiers,ghost:tiers};
+ assert.throws(()=>buildReviewedCatalog(x),/全選択肢/);
+ x.review.events[0].choiceOutcomeReviews={go:tiers,stop:[tiers[0]]};
+ assert.throws(()=>buildReviewedCatalog(x),/2つ以上/);
+ x.review.events[0].choiceOutcomeReviews={go:[tiers[0],tiers[0]],stop:tiers};
+ assert.throws(()=>buildReviewedCatalog(x),/重複または不正/);
+ x.review.events[0].choiceOutcomeReviews={
+  go:[tiers[0],{...tiers[1],skills:[skill(9999,'未知のスキル',5)]}],stop:tiers};
+ assert.throws(()=>buildReviewedCatalog(x),/承認されていないスキルID/);
+});
+test('publication rights and selection semantics are separately required before any event compiles',()=>{
+ const x=config();
+ delete x.review.events[0].publicationReviewed;
+ assert.throws(()=>buildReviewedCatalog(x),/未承認/);
+ x.review.events[0].publicationReviewed=true;
+ delete x.review.events[0].selectionSemanticsVerified;
+ assert.throws(()=>buildReviewedCatalog(x),/未承認/);
+ x.review.events[0].selectionSemanticsVerified=true;
+ x.review.events[1].choiceOutcomeReviews={x:[{id:'a',label:'A',skills:[]},{id:'b',label:'B',skills:[]}]};
+ assert.throws(()=>buildReviewedCatalog(x),/選択肢のない候補/);
 });

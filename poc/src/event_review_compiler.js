@@ -6,6 +6,8 @@ const auditApi=typeof module!=='undefined'&&module.exports
 const schema=typeof module!=='undefined'&&module.exports
   ?require('./event_schema.js'):g.UmaEventSchema;
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const nonempty=x=>typeof x==='string'&&x.trim().length>0;
 const fail=msg=>{throw new Error('イベント変換: '+msg)};
 function buildReviewedCatalog({supports,eventsDocument,model,review}){
  if(!review||!Array.isArray(review.events)||!review.skillMap||typeof review.skillMap!=='object'||
@@ -26,7 +28,9 @@ function buildReviewedCatalog({supports,eventsDocument,model,review}){
  };
  for(const p of review.events){
    if(!p||typeof p.sourceEventId!=='string'||!validIds.has(p.sourceEventId)||
-      seen.has(p.sourceEventId)||p.chainVerified!==true||p.rewardSemanticsVerified!==true)fail('未承認・重複・不存在のイベントが含まれます');
+      seen.has(p.sourceEventId)||p.chainVerified!==true||p.rewardSemanticsVerified!==true||
+      p.selectionSemanticsVerified!==true||p.publicationReviewed!==true)
+     fail('未承認・重複・不存在のイベントが含まれます');
    seen.add(p.sourceEventId);
    const event=available.get(p.sourceEventId);
    const idMatch=/^evt_(\d{5})_/.exec(event.id);
@@ -42,6 +46,8 @@ function buildReviewedCatalog({supports,eventsDocument,model,review}){
      type:event.selection==='single'?'choice':'auto',
      ...(p.requires?{requires:p.requires}:{})};
    if(event.selection==='auto'){
+     if(p.choiceOutcomeReviews!==undefined)
+       fail(event.id+': 選択肢のない候補への結果分岐指定はできません');
      converted.rewards=event.skills.map(raw=>toReward(raw,event.id));
      if(p.terminalChoiceIds!==undefined)fail(event.id+': autoにterminalChoiceIdsは使えない');
    }else if(event.selection==='single'){
@@ -50,9 +56,36 @@ function buildReviewedCatalog({supports,eventsDocument,model,review}){
         (p.terminalChoiceIds||[]).length!==terminals.size||
         [...terminals].some(id=>!event.choices.some(c=>c.id===id)))
        fail(event.id+': 未知または重複した打ち切り選択肢');
-     converted.choices=event.choices.map(c=>({id:c.id,label:c.label,
-       ...(terminals.has(c.id)?{terminal:true}:{}),
-       rewards:c.skills.map(raw=>toReward(raw,event.id))}));
+     // Optional independently reviewed result trees replace the source's
+     // flattened per-choice skill rewards. They are never silently combined.
+     const reviews=p.choiceOutcomeReviews;
+     if(reviews!==undefined){
+       if(!obj(reviews)||Object.keys(reviews).length!==event.choices.length||
+          event.choices.some(c=>!own(reviews,c.id))||
+          Object.keys(reviews).some(id=>!event.choices.some(c=>c.id===id)))
+         fail(event.id+': 全選択肢の結果分岐レビューが必要');
+     }
+     converted.choices=event.choices.map(c=>{
+       const convertedChoice={id:c.id,label:c.label,
+         ...(terminals.has(c.id)?{terminal:true}:{})};
+       if(reviews===undefined){
+         convertedChoice.rewards=c.skills.map(raw=>toReward(raw,event.id));
+       }else{
+         const outcomes=reviews[c.id];
+         if(!Array.isArray(outcomes)||outcomes.length<2)
+           fail(event.id+'/'+c.id+': 2つ以上の結果分岐が必要');
+         const usedResults=new Set();
+         convertedChoice.outcomes=outcomes.map(result=>{
+           if(!obj(result)||!nonempty(result.id)||!nonempty(result.label)||
+              usedResults.has(result.id)||!Array.isArray(result.skills))
+             fail(event.id+'/'+c.id+': 重複または不正な結果分岐');
+           usedResults.add(result.id);
+           return {id:result.id,label:result.label,
+             rewards:result.skills.map(raw=>toReward(raw,event.id))};
+         });
+       }
+       return convertedChoice;
+     });
      // Source defaultChoiceId is a UI preference, NOT a user-selected route.
    }else fail(event.id+': 非対応イベント形式');
    const collection=cards.get(cardId)||[];
