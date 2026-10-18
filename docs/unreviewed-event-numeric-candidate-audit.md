@@ -32,6 +32,12 @@
 
 **照合未完了のスキルID**（数値のみ掲載）：`200831`（候補イベント `evt_30317_801062002`）、`200851`（`evt_30302_801067002`）。これらがゲームに存在しないという判定ではない。辞書側の収録時点やID付与の違い、候補の誤対応を追加調査する。
 
+### 過去資料での2 ID・名称の照合（2026-10-18追記）
+
+採用辞書とは別の過去の公開データ一覧 [Bilibiliウマ娘Wikiの日本語・中国語対照表](https://wiki.biligame.com/umamusume/中日文对比表) と [同Wikiのスキル因子対応一覧](https://wiki.biligame.com/umamusume/缺失技能因子检测页)、および [2023年頃のスキル効果表](https://pages.snep.pw/uma/anni2-skill-changes/) には、**200831 = 逃げけん制**、**200851 = 逃げためらい** が掲載されている。固定候補の該当2レコードにも同じ名前・数値IDが入っている。過去に使用されたIDと名称の組の傍証が得られたため、監査器は `historicalNameMatchedAbsentSkillIds` と `historicalNameDisagreedAbsentSkillIds` を機械的に区別する。人工テストでは一致2件・名称変更1件・採用辞書への追加を検査する。
+
+**重要：** この外部照合は歴史的な名称対応のみ。上記の公開資料は同一抽出源に依存する可能性があり、2026年現行ゲームにそのスキルIDが実装されているか、2サポカの報酬として出現するか、第三者データを転載してよいかを証明しない。`unmatchedSkillIds` には引き続き2件を残し、`historicalEvidenceApprovesEventReward=false`、`gameRewardClaimsApproved=0` を維持する。公開イベントJSONにも一切追加しない。
+
 ## 30311の複数ソース突き合わせ
 
 | 検査 | 結果 |
