@@ -274,3 +274,5 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：エフフォーリア候補の8数値スキルIDと固定UmaSim辞書の全件突合（PR #77）
 
 [検証範囲](efforia30311-preview.md)。Wiki名↔IDの実データ監査がrev74431に対し成功した後、プレビューの8種類の数値スキルIDと名称を、固定UmaSimスキル辞書2,139件から直接抽出・照合する限定Actionsステップを追加。全18スキルヒント項目の数値とLv形式、名称一致、参照欠落時の拒否を通常CIの人工回帰でも検査。これは辞書上のID名称であり、GameWithの結果別スキル報酬が現行ゲームで有効と証明したものではない。公開DBには追加しない。
+
+[PR #77 実ソース結果追補] [Actions #39142875109](https://github.com/Nimrodx0/Umasupport/actions/runs/39142875109) 成功。固定UmaSim 2,139スキル（SHA-256 `b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec`）に対して、SSR30311プレビューの数値ID・名称**8/8件一致**。18件のスキルヒント報酬候補の数値形式も合格。ゲーム実イベント獲得の確証ではなく本番収録0件を維持。
