@@ -204,8 +204,11 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
             "wikiRenderedEventIds":len(wiki_ids),
             "candidateCardStoryIds":len(candidate_ids),
             "commonNumericStoryIds":len(wiki_ids&candidate_ids),
+            "matchingStoryIds":sorted(wiki_ids&candidate_ids),
             "onWikiButNotInCandidate":len(wiki_ids-candidate_ids),
+            "wikiOnlyStoryIds":sorted(wiki_ids-candidate_ids),
             "inCandidateButNotOnWiki":len(candidate_ids-wiki_ids),
+            "candidateOnlyStoryIds":sorted(candidate_ids-wiki_ids),
             "warning":"This checks story-ID presence only, not event choices, rewards or acquisition probability.",
         }
     return result
