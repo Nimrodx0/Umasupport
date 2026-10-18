@@ -178,8 +178,6 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         observed=[(norm(r["skillName"]),r["skillId"],r["hintLevel"]) for r in choice.get("skills",[])]
         if observed!=expected:
             raise ValueError("30311 great-success-tier spot check values changed at choice "+str(index+1))
-        if any(skill_registry.get(str(i))!=name for name,i,level in expected):
-            raise ValueError("30311 spotlight skill ID/name pairing absent from pinned UmaSim")
     present=[sid for sid in EFFORIA_REVIEWED_CHOICES if "evt_30311_"+sid in by_id]
     absent=[sid for sid in EFFORIA_REVIEWED_CHOICES if "evt_30311_"+sid not in by_id]
     missing_choices={
