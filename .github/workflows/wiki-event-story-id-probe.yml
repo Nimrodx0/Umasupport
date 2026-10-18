@@ -1,0 +1,50 @@
+name: Limited Wiki Event Story-ID Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-event-story-id-probe.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wiki-story:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect only bounded public numeric Wiki story IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.parse,urllib.request
+          API="https://umamusu.wiki/w/api.php"
+          headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; numeric ids only)",
+                   "Accept":"application/json"}
+          queries=[
+            ("known-sample",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "where":"story_id IN (830021001, 830241004)","limit":"5","format":"json"}),
+            ("focus-30241",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "where":"story_id >= 830241000 AND story_id < 830242000","limit":"100","format":"json"}),
+            ("index-sample",{"action":"cargoquery","tables":"Game_Training_Event","fields":"story_id",
+              "order_by":"story_id","limit":"5","format":"json"})
+          ]
+          for label,params in queries:
+              url=API+"?"+urllib.parse.urlencode(params)
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=22) as r:
+                  if r.status!=200:raise RuntimeError("Wiki event API unavailable; do not retry")
+                  blob=r.read(1024*1024+1)
+              if len(blob)>1024*1024:raise RuntimeError("Unexpected event index payload size")
+              data=json.loads(blob)
+              print(label,"top-level keys",sorted(data) if isinstance(data,dict) else type(data).__name__)
+              if "error" in data:
+                  print(label,"API error code",data["error"].get("code"))
+                  raise RuntimeError("Cargo query rejected; do not bypass")
+              rows=data.get("cargoquery")
+              if not isinstance(rows,list):raise RuntimeError("Unexpected event Cargo query format")
+              keys=[sorted(row.get("title",{})) for row in rows if isinstance(row,dict)]
+              ids=[row.get("title",{}).get("story id") for row in rows]
+              print(label,"rows",len(rows),"field keys",keys[:2],"numeric story IDs",ids[:100])
+              if len(rows)>=int(params["limit"]):raise RuntimeError("Potentially truncated query; inspect before expansion")
+          PY
