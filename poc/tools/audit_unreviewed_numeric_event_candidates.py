@@ -84,8 +84,6 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         raise ValueError("Expected pinned curated 126 event records")
     if events.get("version")!=2 or not isinstance(events.get("prioritySupportIds"),list):
         raise ValueError("Unexpected candidate event schema")
-    if [str(c) for c in events["prioritySupportIds"]] != [str(c["id"]) for c in events.get("prioritySupports",[])] if False else False:
-        pass
     if {str(i) for i in events["prioritySupportIds"]}!=set(cards):
         raise ValueError("Event-source priority-card population disagrees with support records")
     numerics=set()
@@ -125,10 +123,12 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         for v in ([e]+choices):
             if not isinstance(v,dict) or not isinstance(v.get("skills",[]),list):raise ValueError("Malformed event skill group")
             for r in v.get("skills",[]):
-                if not isinstance(r,dict) or not isinstance(r.get("skillId"),int) or r["skillId"]<=0:
+                if not isinstance(r,dict) or not isinstance(r.get("skillId"),int) or isinstance(r["skillId"],bool) or r["skillId"]<=0:
                     raise ValueError("Invalid numeric event skill reference")
                 if not isinstance(r.get("hintLevel"),int) or r["hintLevel"]<0 or r["hintLevel"]>7:
                     raise ValueError("Invalid candidate hint level")
+                if not isinstance(r.get("skillName"),str) or not norm(r["skillName"]):
+                    raise ValueError("Candidate skill reference lacks nonempty skill name")
                 skill_rows+=1
                 i=str(r["skillId"])
                 skill_ids.add(i)
@@ -136,6 +136,16 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
                 elif isinstance(r.get("skillName"),str) and norm(r["skillName"])!=skill_registry[i]:named_mismatch.add(i)
     if len(referenced_cards)!=45 or len(numerics)!=124 or noncanonical!=NUMERIC_NONSTORY:
         raise ValueError("Pinned source's 45-card/124-numeric-event shape changed")
+    # Machine guard for the externally spot-reviewed success-tier branch.
+    # GameWith independently lists a lower 'success' tier as well: this
+    # candidates' one choice must never be treated as a complete reward tree.
+    focus=next((v for v in events["events"] if v["id"]=="evt_30311_830311003"),None)
+    if focus is None or len(focus.get("choices",[]))!=3:
+        raise ValueError("30311 spotlight candidate event/choice records changed")
+    reviewed=[("華麗な踏み込み",5),("素質の証明",2),("清麗高雅",2)]
+    first=[(r["skillName"],r["hintLevel"]) for r in focus["choices"][0].get("skills",[])]
+    if first!=reviewed:
+        raise ValueError("30311 first-choice success-tier spot check values changed")
     result={
         "source":EXPECTED_REPO+"@"+EXPECTED_REVISION,
         "schemaVersion":events["version"],
@@ -156,6 +166,7 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         "unmatchedSkillIds":sorted(unknown),
         "skillNameMismatchIds":sorted(named_mismatch),
         "gameRewardClaimsApproved":0,
+        "focus30311GameWithSpotCheck":{"successTierHintsMatching":3,"expectedHintRecords":3,"lowerSuccessTierRepresented":False,"scope":"one choice of one event at the documented highest success tier; name and hint levels only"},
         "caveat":"Private extractor cites U-tools+mdb, so source independence and reward effects are unverified. 'auto' denotes that producer's planning-mode automatic counting, NOT a confirmed guaranteed in-game event. No event is admitted to reviewed_events.v1.json.",
     }
     if wiki_page is not None:
