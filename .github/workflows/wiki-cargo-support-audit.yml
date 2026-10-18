@@ -1,0 +1,31 @@
+name: Limited Wiki Cargo Availability Probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-cargo-support-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wiki-cargo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe a single public numeric-ID Cargo request
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://umamusu.wiki/w/api.php?action=cargoquery&tables=Game_Supports&fields=support_id&order_by=support_id&limit=3&format=json'
+          code=$(curl --silent --show-error --location --max-time 20 --user-agent 'UmasupportSourceAudit/1.0 (GitHub Nimrodx0/Umasupport; 1 read-only metadata request)' --output "$RUNNER_TEMP/wiki-cargo-probe.json" --write-out '%{http_code}' "$url")
+          echo "Wiki Cargo HTTP status: $code"
+          test "$code" = 200 || { echo 'API unavailable; do not retry or bypass access control'; exit 1; }
+          python3 - <<'PY'
+          import json,os,pathlib
+          path=pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-cargo-probe.json"
+          obj=json.loads(path.read_text())
+          if not isinstance(obj,dict) or not isinstance(obj.get("cargoquery"),list):
+              raise RuntimeError("Missing Cargo query rows (public API returned a different schema)")
+          ids=[row.get("title",{}).get("support_id") for row in obj["cargoquery"]]
+          print("Numeric card IDs received:",ids,"count:",len(ids))
+          PY
