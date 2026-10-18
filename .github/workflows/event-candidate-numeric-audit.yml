@@ -4,6 +4,8 @@ on:
     paths:
       - .github/workflows/event-candidate-numeric-audit.yml
       - poc/tools/audit_unreviewed_numeric_event_candidates.py
+      - poc/tools/audit_efforia30311_wiki_title_links.py
+      - poc/tests/test_efforia30311_wiki_title_links.py
       - poc/tests/test_unreviewed_numeric_event_candidates.py
   workflow_dispatch:
 permissions:
@@ -61,6 +63,13 @@ jobs:
           (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-30311.json").write_bytes(b)
           print("Wiki public page retrieved for numeric ID-only audit")
           PY
+      - name: Verify SSR30311 title/story-ID correspondence (same bounded Wiki response)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 poc/tools/audit_efforia30311_wiki_title_links.py \
+            --page-json "$RUNNER_TEMP/wiki-30311.json"
+
       - name: Report only candidate counts, numeric IDs and unsupported-claim gates
         shell: bash
         run: |

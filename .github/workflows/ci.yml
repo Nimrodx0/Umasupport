@@ -57,6 +57,9 @@ jobs:
       - name: Check Wiki JP masterdata-to-Cargo missing ID classifier (synthetic)
         run: python3 -m unittest discover -s poc/tests -p 'test_wiki_masterdata_cargo.py' -v
 
+      - name: Bind SSR30311 Wiki story IDs to title positions (synthetic HTML)
+        run: python3 -m unittest discover -s poc/tests -p 'test_efforia30311_wiki_title_links.py' -v
+
       - name: Verify unreviewed event candidate metadata audit with synthetic fixtures
         run: python3 -m unittest discover -s poc/tests -p 'test_unreviewed_numeric_event_candidates.py' -v
 
