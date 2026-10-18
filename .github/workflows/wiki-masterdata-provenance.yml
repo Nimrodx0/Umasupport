@@ -98,3 +98,32 @@ jobs:
           python3 poc/tools/audit_wiki_rendered_support_events.py \
             --old-master "$RUNNER_TEMP/old-story-master.mdb" \
             --page-json "$RUNNER_TEMP/wiki-support-page.json"
+
+      - name: Inspect one August 2026 support-card page for numeric event IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,urllib.parse,urllib.request
+          from html.parser import HTMLParser
+          title="Game:SSR Efforia (As if Guided)"
+          params={"action":"parse","page":title,"prop":"text|revid","format":"json","formatversion":"2",
+                  "disableeditsection":"1"}
+          req=urllib.request.Request("https://umamusu.wiki/w/api.php?"+urllib.parse.urlencode(params),
+                 headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; one recent public support-page metadata lookup)",
+                          "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=25) as response:
+              if response.status!=200:raise RuntimeError("Recent Wiki page Parse API unavailable")
+              blob=response.read(256*1024+1)
+          if len(blob)>256*1024:raise RuntimeError("Recent support page exceeds bounded API budget")
+          obj=json.loads(blob)
+          if "error" in obj:raise RuntimeError("Recent Wiki page not available through ordinary API")
+          page=obj["parse"]
+          html=page["text"]
+          if not isinstance(html,str):raise RuntimeError("Recent page did not render HTML")
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-recent-support-page.json").write_bytes(blob)
+          print("2026 card Wiki page",page.get("title"),"page revision",page.get("revid"),
+                "rendered bytes",len(html.encode()),"contains numeric card ID 30311",html.count("30311"))
+          print("Recent event section presence",{"chain":'id="Event_Chain"' in html,
+                "other":'id="Other_Events"' in html,"unreviewedRewardPlaceholders":html.count("No data yet!")})
+          PY
