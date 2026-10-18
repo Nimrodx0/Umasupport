@@ -210,3 +210,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：Phase 1 SR/Rヒント性能の独立参照を追加（PR #58）
 
 [監査対象と結果](stage-hint-consistency-audit.md)。従来のSSR6枚60セルに、GameWith個別記事からSR5枚・R1枚の通常のサポート効果表（計60数値）を追加。UmaSim固定版のカードID・正式名称・レアリティ・全5段階の基礎数値を突合するゲートを構築し、SHA256固定をCLIで確認。元データをPublicへコピーせず、取得を限定Actionsに集約。SSR/SR/Rの12枚120数値のみ独立照合で、他551枚や条件付き特殊固有の全件確認とは扱わない。
+
+## 2026-10-18：Wiki Cargoと固定UmaSimの563カードID集合一致（PR #59）
+
+[証拠](wiki-cargo-support-id-audit.md)。MediaWiki Cargo公開API Game_Supports.support_id の数値フィールドを上限5 GET・今回実測3ページ（200+200+163）だけ取得し、古い2025 masterとは別の独立したコミュニティ索引を照合。採用UmaSim 563枚とWikiの563枚は全ID一致（SSR316 SR101 R146）、両方の片側だけのIDなし。APIレスポンスのキーが `support id` になることも確認。スナップショットが更新されれば不一致で監査を停止。ゲーム最新マスター全件の証拠や実イベントデータ導入ではなく、公開承認イベント0件は維持。
