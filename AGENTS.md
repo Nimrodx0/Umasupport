@@ -177,3 +177,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 `poc/src/efforia30311_skill_registry_audit.cjs` とCLIは、プレビューの8スキル番号／名称と18報酬行を実際の固定UmaSim `skill_data.txt` 全件に対して直接照合する。人工テストは通常CI、実ソース検査は外部取得済みファイルを再利用する専用Actionsで行う。**IDと名称が一致しても実ゲームでの選択肢効果を独立に証明したわけではない**。Wiki名↔IDのrev74431リンク検証はPR #76 / [Actions #39142566896](https://github.com/Nimrodx0/Umasupport/actions/runs/39142566896)で成功。
 
 実ソース実測：[限定Actions #39142875109](https://github.com/Nimrodx0/Umasupport/actions/runs/39142875109) でSSR30311の8スキル番号/名称が固定UmaSim `skill_data.txt` 全2,139件に対して**8/8一致**、全18ヒント候補を形式検証。数値辞書SHA-256 `b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec`。**この結果でGameWithイベントの取得条件や出版権利が承認されたとは扱わない。**
+
+## 2026-10-18：本番UIを使うイベント開発試用モード（PR #78）
+
+プレビューデータ `poc/data/preview/efforia30311.v1.json` は**未承認**で、[専用URL](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=30311)からのみ `poc/src/event_preview_loader.js` を介して読み込む。元記事の選択肢原文や画像は含まず、既存SSR30311の番号ラベルのみ。**通常の `poc/live.html` と `index.html` は候補0件、通常JSON `poc/data/reviewed_events.v1.json` は空のまま。** 試用時のlocalStorageは通常版と別キー。現行UIで編成→選択肢→成功/大成功別スキル経路を操作できる。ビルダーとJSONの構造一致はNode回帰、Chromium人工サポカ全563枚で実ブラウザの導線を検証。ユーザー未承認イベントのゲーム正確性・終端条件・利用権利を承認したものではない。次カード追加時はプレビューレジストリの明示的許可と元記事・辞書・経路根拠を維持。
