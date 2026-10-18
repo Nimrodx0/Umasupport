@@ -21,6 +21,10 @@ CARD_ID = re.compile(r"^[123][0-9]{4}$")
 EVENT_ID = re.compile(r"^evt_([123][0-9]{4})_([0-9]{9})$")
 NUMERIC_NONSTORY = {"evt_tazuna_oodate5", "evt_tazuna_newyear"}
 SOURCE_FILE_KEYS = {"events": "data/events.json", "supports": "data/supports.json", "skills": "data/skills.json"}
+# IDs and names in independent historical reference tables (pre-2026).
+# This is DIAGNOSTIC evidence only, not approval of an event reward, skill
+# availability in the current game, or an alternative runtime skill dictionary.
+HISTORICAL_ID_NAMES = {"200831": "逃げけん制", "200851": "逃げためらい"}
 def norm(v):
     return " ".join(unicodedata.normalize("NFKC", v).split())
 
@@ -94,6 +98,8 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
     skill_ids=set()
     unknown=set()
     named_mismatch=set()
+    historical_name_matches=set()
+    historical_name_disagreements=set()
     selection={"auto":0,"single":0}
     total_choices=0
     for e in events["events"]:
@@ -132,8 +138,15 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
                 skill_rows+=1
                 i=str(r["skillId"])
                 skill_ids.add(i)
-                if i not in skill_registry:unknown.add(i)
-                elif isinstance(r.get("skillName"),str) and norm(r["skillName"])!=skill_registry[i]:named_mismatch.add(i)
+                if i not in skill_registry:
+                    unknown.add(i)
+                    if i in HISTORICAL_ID_NAMES:
+                        if norm(r["skillName"])==HISTORICAL_ID_NAMES[i]:
+                            historical_name_matches.add(i)
+                        else:
+                            historical_name_disagreements.add(i)
+                elif norm(r["skillName"])!=skill_registry[i]:
+                    named_mismatch.add(i)
     if len(referenced_cards)!=45 or len(numerics)!=124 or noncanonical!=NUMERIC_NONSTORY:
         raise ValueError("Pinned source's 45-card/124-numeric-event shape changed")
     # Machine guard for the externally spot-reviewed success-tier branch.
@@ -164,6 +177,12 @@ def audit(manifest, supports, events, umasim_ids, skill_registry, wiki_page=None
         "referencedSkillIdsAbsentFromPinnedUmaSim":len(unknown),
         "skillNameDisagreementsVsPinnedUmaSim":len(named_mismatch),
         "unmatchedSkillIds":sorted(unknown),
+        # Historical name checks do not resolve current-dictionary absence.
+        # An ID appearing with both matched and mismatched names is a mismatch.
+        "historicalNameMatchedAbsentSkillIds":sorted(historical_name_matches-historical_name_disagreements),
+        "historicalNameDisagreedAbsentSkillIds":sorted(historical_name_disagreements),
+        "absentSkillIdsWithoutHistoricalNameMatch":sorted(unknown-(historical_name_matches-historical_name_disagreements)),
+        "historicalEvidenceApprovesEventReward":False,
         "skillNameMismatchIds":sorted(named_mismatch),
         "gameRewardClaimsApproved":0,
         "focus30311GameWithSpotCheck":{"successTierHintsMatching":3,"expectedHintRecords":3,"lowerSuccessTierRepresented":False,"scope":"one choice of one event at the documented highest success tier; name and hint levels only"},
