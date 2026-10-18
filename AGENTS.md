@@ -141,3 +141,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：Wiki Game_Training_Eventは解説ページ索引（PR #60）
 
 [受け入れ正本](docs/wiki-event-story-index-audit.md)。Wiki `Game_Training_Event` Cargoは`Template:Game_Training_Event_Definition`で登録された個別解説ページに対応する。**全ゲームマスターのstory_idではない**。2025年旧masterのSSR30241直結18件に対し、Wikiページ登録は0件。ページが無いことをイベント不在・Checker漏れ・削除と解釈しない。旧SQLiteの照合カラムは`single_mode_story_data.story_id`でありDB内部行`id`と混同しない。公開イベントDB0件のまま。
+
+## 2026-10-18：Wiki rendered support-page numeric event links（PR #61）
+
+[Provenance and acceptance](docs/wiki-masterdata-rendered-event-audit.md)。For card 30241, 18 story IDs in rendered Wiki Training Events links equal 18 canonical `single_mode_story_data.story_id` values in the pinned Oct 2025 master (5 chain, 13 other). Focus 830241004 is linked. A separately rendered Aug 2026 card 30311 has five IDs absent from all 2025 stories. **Neither fact proves current Wiki masterdata SQLite revision, live game story availability or event reward accuracy.** Never treat missing Cargo explanation pages as game-event absence, or reuse rendered event titles, dialogue and effects in the public catalog without a separate rights and content audit.
