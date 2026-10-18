@@ -32,6 +32,10 @@ class WikiAuditTests(unittest.TestCase):
         self.assertEqual(result["sourceOnlyIds"], ["30004"])
         self.assertEqual(result["wikiOnlyIds"], ["30005"])
         self.assertEqual(result["byRarity"]["SSR"]["sourceOnly"], 1)
+        with self.assertRaisesRegex(ValueError, "diverged"):
+            audit.require_full_overlap(result)
+        good_ids, good_meta = audit.read_wiki_pages([wiki_page(["10001", "20002"]), wiki_page(["30003", "30004"]), wiki_page([])], 2)
+        self.assertTrue(audit.require_full_overlap(audit.compare(source, good_ids, good_meta)))
 
     def test_full_page_at_end_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "truncated"):
