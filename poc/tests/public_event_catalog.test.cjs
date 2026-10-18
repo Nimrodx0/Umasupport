@@ -46,3 +46,21 @@ test('fetch is local, with no special cross-origin permissions or silent 404 acc
  assert.deepEqual(got.cards,[]);
  await assert.rejects(()=>publicCatalog.load({fetchImpl:async()=>({ok:false,status:404})}),/404/);
 });
+
+test('mixed unconditional and result-dependent rewards reject atomically',()=>{
+ const model=fixture();
+ model.cards[0].events=[{id:'old',name:'以前の承認済み',type:'auto',rewards:[]}];
+ const oldMeta=JSON.stringify(model.meta);
+ const bad={schemaVersion:1,cards:[{cardId:'30001',events:[{
+  id:'new',name:'不適切な混在',type:'choice',choices:[{
+   id:'go',label:'進む',rewards:[{skillId:'hint:架空',level:5}],
+   outcomes:[
+    {id:'success',label:'成功',rewards:[{skillId:'hint:架空',level:1}]},
+    {id:'great',label:'大成功',rewards:[{skillId:'hint:架空',level:5}]}
+   ]
+  }]
+ }]}]};
+ assert.throws(()=>publicCatalog.attach(model,bad),/rewardsとoutcomesは同時指定できません/);
+ assert.equal(model.cards[0].events[0].id,'old');
+ assert.equal(JSON.stringify(model.meta),oldMeta);
+});
