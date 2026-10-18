@@ -45,6 +45,9 @@ jobs:
       - name: Verify Wiki event-page index scope against synthetic old master
         run: python3 -m unittest discover -s poc/tests -p 'test_wiki_event_index_focus.py' -v
 
+      - name: Verify rendered Wiki support page numeric links against synthetic SQLite
+        run: python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
+
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
       - name: Check new independent audit scripts
