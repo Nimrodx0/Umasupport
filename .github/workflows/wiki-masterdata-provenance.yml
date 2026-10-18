@@ -1,0 +1,130 @@
+name: Limited Wiki masterdata backend provenance probe
+on:
+  pull_request:
+    paths:
+      - .github/workflows/wiki-masterdata-provenance.yml
+      - poc/tools/audit_wiki_rendered_support_events.py
+      - poc/tests/test_wiki_rendered_support_events.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect three public Lua modules' signatures and revision dates only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.parse,urllib.request,re
+          api="https://umamusu.wiki/w/api.php"
+          params={"action":"query","prop":"revisions","rvprop":"ids|timestamp|content",
+                  "rvslots":"main","titles":"Module:Game|Module:Game/Supports/Data/Events|Module:Game/TrainingEvents/Data",
+                  "format":"json","formatversion":"2"}
+          req=urllib.request.Request(api+"?"+urllib.parse.urlencode(params),
+            headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; public-code metadata only)",
+                     "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=25) as r:
+              if r.status!=200:raise RuntimeError("Public module API unavailable")
+              blob=r.read(128*1024+1)
+          if len(blob)>128*1024:raise RuntimeError("Unexpected oversized API response")
+          pages=json.loads(blob)["query"]["pages"]
+          for page in pages:
+              if page.get("missing"):raise RuntimeError("Expected public module is missing")
+              rev=page["revisions"][0]
+              text=rev["slots"]["main"].get("content")
+              if not isinstance(text,str):raise RuntimeError("Missing public Lua source")
+              print("MODULE",page["title"],"rev",rev["revid"],"edited",rev["timestamp"],"bytes",len(text.encode()))
+              lines=text.splitlines()
+              patterns=[r"queryMaster",r"getSupportCardEvents",r"getTrainingEventsByStoryIds",
+                        r"ExternalData",r"_queryMaster",r"get_db_data",r"single_mode_story_data",r"return [a-zA-Z_]+",r"^function "]
+              seen=set()
+              for i,line in enumerate(lines):
+                  if not any(re.search(p,line) for p in patterns):continue
+                  for k in range(max(0,i-1),min(len(lines),i+2)):
+                      if k not in seen:
+                          seen.add(k)
+                          print(" LUA-LINE",k+1,lines[k][:220])
+              print("MODULE LINE COUNT",len(lines))
+          PY
+
+      - name: Inspect one existing public support-card page's event metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,urllib.parse,urllib.request
+          api="https://umamusu.wiki/w/api.php"
+          title="Game:SSR Speed Symboli (導きの光)"
+          params={"action":"parse","page":title,"prop":"text|revid|categories","format":"json",
+                  "formatversion":"2","disableeditsection":"1"}
+          url=api+"?"+urllib.parse.urlencode(params)
+          req=urllib.request.Request(url,headers={"User-Agent":
+              "UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; one public page, metadata only)",
+              "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=35) as response:
+              if response.status!=200:raise RuntimeError("Public page Parse API is unavailable")
+              blob=response.read(1024*1024+1)
+          if len(blob)>1024*1024:raise RuntimeError("Support-card page too large for a bounded probe")
+          obj=json.loads(blob)
+          if "error" in obj:
+              print("Page parse rejected by MediaWiki",obj["error"].get("code"))
+              raise RuntimeError("Public page parse unavailable")
+          page=obj.get("parse",{})
+          html=page.get("text")
+          if not isinstance(html,str) or len(html)<200:raise RuntimeError("Missing parsed page HTML")
+          import os,pathlib
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-support-page.json").write_bytes(blob)
+          print("Existing page",page.get("title"),"revision",page.get("revid"),"HTML bytes",len(html.encode()))
+          for needle in ("Training Events","Event Chain","Other Events","No data yet!", "830241004","830241001","830241002","830241003","story_id","storyId","eventId"):
+              print("Page marker",needle,"count",html.count(needle))
+          links=re.findall(r'href="([^"]+)"',html)
+          nums={num for link in links for num in re.findall(r'(?<![0-9])[0-9]{9}(?![0-9])',link)}
+          print("Distinct nine-digit IDs in links",sorted(nums)[:40],"total",len(nums))
+          print("Link query key names",sorted({key for link in links for key in re.findall(r'[?&amp;]([A-Za-z][A-Za-z0-9_]+)=',link)}))
+          print("Event heading tag samples (without game titles)",re.findall(r'<h[234][^>]*',html[html.find('Training Events'):html.find('Training Events')+12000])[:12])
+          PY
+      - name: Inspect one August 2026 support-card page for numeric event IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,pathlib,urllib.parse,urllib.request
+          from html.parser import HTMLParser
+          title="Game:SSR Efforia (As if Guided)"
+          params={"action":"parse","page":title,"prop":"text|revid","format":"json","formatversion":"2",
+                  "disableeditsection":"1"}
+          req=urllib.request.Request("https://umamusu.wiki/w/api.php?"+urllib.parse.urlencode(params),
+                 headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; one recent public support-page metadata lookup)",
+                          "Accept":"application/json"})
+          with urllib.request.urlopen(req,timeout=25) as response:
+              if response.status!=200:raise RuntimeError("Recent Wiki page Parse API unavailable")
+              blob=response.read(256*1024+1)
+          if len(blob)>256*1024:raise RuntimeError("Recent support page exceeds bounded API budget")
+          obj=json.loads(blob)
+          if "error" in obj:raise RuntimeError("Recent Wiki page not available through ordinary API")
+          page=obj["parse"]
+          html=page["text"]
+          if not isinstance(html,str):raise RuntimeError("Recent page did not render HTML")
+          (pathlib.Path(os.environ["RUNNER_TEMP"])/"wiki-recent-support-page.json").write_bytes(blob)
+          print("2026 card Wiki page",page.get("title"),"page revision",page.get("revid"),
+                "rendered bytes",len(html.encode()),"contains numeric card ID 30311",html.count("30311"))
+          print("Recent event section presence",{"chain":'id="Event_Chain"' in html,
+                "other":'id="Other_Events"' in html,"unreviewedRewardPlaceholders":html.count("No data yet!")})
+          PY
+      - name: Read-only compare rendered event links with pinned 2025 story IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 85 \
+            --output "$RUNNER_TEMP/old-story-master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
+          python3 poc/tools/audit_wiki_rendered_support_events.py \
+            --old-master "$RUNNER_TEMP/old-story-master.mdb" \
+            --page-json "$RUNNER_TEMP/wiki-support-page.json" \
+            --recent-page-json "$RUNNER_TEMP/wiki-recent-support-page.json" \
+            --strict-equal

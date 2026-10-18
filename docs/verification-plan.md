@@ -241,3 +241,7 @@ A：架空SQLite 9ケースの単体検証。B：実マスター全件検証未�
 ### Phase 2：Wiki個別イベントページ索引を旧master story_idへ突合（2026-10-18、PR #60）
 
 [限定Wiki実測](wiki-event-story-index-audit.md)。A：2025年`single_mode_story_data.story_id`と内部`id`を区別し、公開Wiki Cargo応答形状・対象prefix・対照サンプル・ページ打切りを人工テスト。B：30241旧master18件、Wiki解説ページ0件、別イベント830021001索引あり。**Wikiの全ゲームイベント収録率やイベント存続率を判断しない。** C：公開アプリUI・ゲームデータの更新なし。
+
+### Phase 2：Wiki公開サポカページと旧masterのイベントIDクロスチェック（2026-10-18、PR #61）
+
+[実測・解釈](wiki-masterdata-rendered-event-audit.md)。A：サポカ記事HTMLのTraining Eventsから連続とその他を分けた数値リンク抽出。旧SQLite内部行idとstory_idを区別し、同ID重複・不正ページ・SHAズレを人工テストで拒否。B：固定旧マスター30241のstory_id18件とWiki公開記事18件が数値ID全件一致。2026年8月登場SSR30311のWiki記事5件は固定2025年masterには全て未収録。Wikiのmasterdata版・条件・報酬・ゲーム最新性は未確認。C：アプリUI変更なし、Android/Windows実機未受入れ。
