@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/wiki-event-story-id-probe.yml
+      - poc/tools/audit_wiki_event_index_focus.py
+      - poc/tests/test_wiki_event_index_focus.py
   workflow_dispatch:
 permissions:
   contents: read
