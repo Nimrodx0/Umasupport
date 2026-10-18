@@ -19,7 +19,7 @@ class WikiEventFocusTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.db_path = Path(self.temp.name) / "historic.db"
         with sqlite3.connect(self.db_path) as db:
-            db.execute("CREATE TABLE single_mode_story_data (id INT, support_card_id INT, gallery_flag INT)")
+            db.execute("CREATE TABLE single_mode_story_data (story_id INT, support_card_id INT, gallery_flag INT)")
             db.executemany(
                 "INSERT INTO single_mode_story_data VALUES (?,?,?)",
                 [(830241001, 30241, 2), (830241004, 30241, 2),
