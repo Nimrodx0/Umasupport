@@ -106,7 +106,10 @@ function publishReviewed({candidate,review,model}){
    if(!own(model.cardById,card.cardId))fail('カードモデルが一致しない: '+card.cardId);
    for(const item of card.events){
      if(available.has(item.sourceKey))fail('候補イベントキーが重複');
-     available.set(item.sourceKey,{cardId:card.cardId,digest:item.sourceDigest,duplicateTitle:item.duplicateTitle===true});
+     if(!Number.isSafeInteger(item.optionCount)||item.optionCount<0)
+       fail('候補の選択肢件数が不正: '+item.sourceKey);
+     available.set(item.sourceKey,{cardId:card.cardId,digest:item.sourceDigest,
+       optionCount:item.optionCount,duplicateTitle:item.duplicateTitle===true});
    }
  }
  const seen=new Set(),byCard=new Map();
@@ -117,9 +120,16 @@ function publishReviewed({candidate,review,model}){
    if(!record||record.cardId!==item.cardId||record.digest!==item.sourceDigest)fail('元ソースが未照合・更新済み: '+item.sourceKey);
    if(record.duplicateTitle&&item.duplicateTitleReviewed!==true)fail('同名イベントの個別確認が不足: '+item.sourceKey);
    if(item.chainVerified!==true||item.rewardSemanticsVerified!==true||
-      item.publicationReviewed!==true)fail('分岐・報酬・公開可否の承認が不足: '+item.sourceKey);
+      item.selectionSemanticsVerified!==true||item.publicationReviewed!==true)
+     fail('分岐・選択方式・報酬・公開可否の承認が不足: '+item.sourceKey);
    const e=item.event;
    if(!object(e)||e.id!==item.sourceKey||!['auto','choice'].includes(e.type))fail('公開イベントの識別子または種類が不正');
+   // A source with multiple choice positions cannot be flattened to auto or
+   // silently published with fewer choices. Outcome tiers are represented
+   // *inside* each independently reviewed choice, not as extra positions.
+   if(record.optionCount>1&&
+      (e.type!=='choice'||!Array.isArray(e.choices)||e.choices.length!==record.optionCount))
+     fail('元ソースの選択肢件数と公開分岐が一致しない: '+item.sourceKey);
    // event.name, choice labels and rewards must be independently reviewed content.
    if(eventIds.has(e.id))fail('公開イベントIDが重複');
    eventIds.add(e.id);
