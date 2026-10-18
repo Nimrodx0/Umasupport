@@ -74,6 +74,43 @@ class WikiRenderedEventAuditTest(unittest.TestCase):
         p = audit.parse_wiki_page({"parse": {"title": audit.PAGE_TITLE, "revid": 36004, "text": html}})
         self.assertNotIn("830241004", p["chain"])
 
+    def test_recent_2026_card_is_not_in_older_master_with_distinct_event_ids(self):
+        response = page(chain=("830311001","830311002","830311003"),
+                        other=("830311004","830311005"))
+        response["parse"]["title"] = audit.RECENT_PAGE_TITLE
+        recent = audit.parse_wiki_page(response, audit.RECENT_PAGE_TITLE)
+        with tempfile.TemporaryDirectory() as root:
+            db_path = Path(root) / "historic.db"
+            with sqlite3.connect(db_path) as db:
+                db.execute("CREATE TABLE support_card_data (id INT)")
+                db.execute("INSERT INTO support_card_data VALUES (30241)")
+                db.execute("CREATE TABLE single_mode_story_data (story_id INT)")
+                db.executemany("INSERT INTO single_mode_story_data VALUES (?)",
+                               [(830241004,), (809046001,), (830021001,)])
+            r = audit.recent_page_scope(db_path, recent)
+            self.assertEqual(r["recentPageEventLinks"], 5)
+            self.assertEqual(r["recentPageChainLinks"], 3)
+            self.assertEqual(r["recentPageOtherLinks"], 2)
+            self.assertFalse(r["recentCardPresentInPinned2025Master"])
+            self.assertEqual(r["recentPageIdsAlreadyInPinned2025Master"], 0)
+            self.assertEqual(r["recentPageIdsNotInPinned2025Master"], 5)
+            self.assertIn("does not expose", r["caveat"])
+
+    def test_recent_page_with_partial_historical_overlap_is_not_misreported(self):
+        response = page(chain=("830311001","830311002","830311003"),
+                        other=("830311004","830311005"))
+        response["parse"]["title"] = audit.RECENT_PAGE_TITLE
+        rendered = audit.parse_wiki_page(response, audit.RECENT_PAGE_TITLE)
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "master.db"
+            with sqlite3.connect(path) as db:
+                db.execute("CREATE TABLE support_card_data (id INT)")
+                db.execute("CREATE TABLE single_mode_story_data (story_id INT)")
+                db.execute("INSERT INTO single_mode_story_data VALUES (830311001)")
+            result = audit.recent_page_scope(path,rendered)
+            self.assertEqual(result["recentPageIdsAlreadyInPinned2025Master"],1)
+            self.assertEqual(result["recentPageIdsNotInPinned2025Master"],4)
+
     def test_sqlite_story_id_not_internal_row_id(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root) / "fake.db"
