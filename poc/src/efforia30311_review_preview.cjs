@@ -94,7 +94,13 @@ function inspect(){
   throw Error('SSR30311 provisional coverage count changed');
  const selected={...Object.fromEntries(events.map(e=>[e.id,'option1']))};
  const routes=core.directRoutes({events,hints:[]},{choices:selected,stage:4});
- if(routes.length!==18||routes.filter(x=>x.conditional).length!==16)
+ // Total matrix rows are 16 finale outcome hints + two earlier hints.
+ // Only ONE finale choice can be selected per cultivation run:
+ // option1 yields six conditional hints + two non-finale routes.
+ const allChoiceSkillHintRows=events.reduce((sum,e)=>sum+e.choices.reduce((n,c)=>
+  n+(c.rewards||[]).length+(c.outcomes||[]).reduce((m,o)=>m+o.rewards.length,0),0),0);
+ if(allChoiceSkillHintRows!==18||routes.length!==8||
+    routes.filter(x=>x.conditional).length!==6)
   throw Error('SSR30311 provisional route count changed');
  return {source:'GameWith-first + Wiki numeric ID candidates',
   cardId:CARD,previewOnly:true,releaseEligible:false,
