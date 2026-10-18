@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "30311",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "evt_30311_830311001",
+          "name": "連続1 / 830311001（仮の番号表示）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1（位置のみ、仮表示）"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2（位置のみ、仮表示）"
+            }
+          ]
+        },
+        {
+          "id": "evt_30311_830311002",
+          "name": "連続2 / 830311002（仮の番号表示）",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "evt_30311_830311001"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1（位置のみ、仮表示）",
+              "rewards": [
+                {
+                  "skillId": "skill:204072",
+                  "verifiedSkillName": "気持ちを乗せて",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2（位置のみ、仮表示）"
+            }
+          ]
+        },
+        {
+          "id": "evt_30311_830311003",
+          "name": "連続3 / 830311003（仮の番号表示）",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "evt_30311_830311002"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1（位置のみ、仮表示）",
+              "outcomes": [
+                {
+                  "id": "success",
+                  "label": "成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:204532",
+                      "verifiedSkillName": "華麗な踏み込み",
+                      "level": 1
+                    },
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 1
+                    },
+                    {
+                      "skillId": "skill:204531",
+                      "verifiedSkillName": "清麗高雅",
+                      "level": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "great",
+                  "label": "大成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:204532",
+                      "verifiedSkillName": "華麗な踏み込み",
+                      "level": 5
+                    },
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 2
+                    },
+                    {
+                      "skillId": "skill:204531",
+                      "verifiedSkillName": "清麗高雅",
+                      "level": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2（位置のみ、仮表示）",
+              "outcomes": [
+                {
+                  "id": "success",
+                  "label": "成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 1
+                    },
+                    {
+                      "skillId": "skill:204571",
+                      "verifiedSkillName": "純真無垢",
+                      "level": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "great",
+                  "label": "大成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 2
+                    },
+                    {
+                      "skillId": "skill:204571",
+                      "verifiedSkillName": "純真無垢",
+                      "level": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "option3",
+              "label": "選択肢3（位置のみ、仮表示）",
+              "outcomes": [
+                {
+                  "id": "success",
+                  "label": "成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203712",
+                      "verifiedSkillName": "勇気の一歩",
+                      "level": 1
+                    },
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 1
+                    },
+                    {
+                      "skillId": "skill:203711",
+                      "verifiedSkillName": "ショーダウン",
+                      "level": 1
+                    }
+                  ]
+                },
+                {
+                  "id": "great",
+                  "label": "大成功",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203712",
+                      "verifiedSkillName": "勇気の一歩",
+                      "level": 5
+                    },
+                    {
+                      "skillId": "skill:204701",
+                      "verifiedSkillName": "素質の証明",
+                      "level": 2
+                    },
+                    {
+                      "skillId": "skill:203711",
+                      "verifiedSkillName": "ショーダウン",
+                      "level": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "evt_30311_801146001",
+          "name": "通常1 / 801146001（仮の番号表示）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1（位置のみ、仮表示）"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2（位置のみ、仮表示）"
+            }
+          ]
+        },
+        {
+          "id": "evt_30311_801146002",
+          "name": "通常2 / 801146002（仮の番号表示）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1（位置のみ、仮表示）",
+              "rewards": [
+                {
+                  "skillId": "skill:204372",
+                  "verifiedSkillName": "流れに任せて",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2（位置のみ、仮表示）"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
