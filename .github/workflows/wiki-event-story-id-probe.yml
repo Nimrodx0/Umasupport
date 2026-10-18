@@ -69,5 +69,8 @@ jobs:
                     "has support event method",("getSupportCardEvents" in source),
                     "has story ID method",("getTrainingEventsByStoryIds" in source),
                     "has Cargo query method",("Cargo.query" in source))
+              import re
+              print("module dependencies",sorted(set(re.findall(r'[Mm]odule:[A-Za-z0-9_/-]+',source)))[:20])
+              print("module named functions",sorted(set(re.findall(r'function\\s+[a-zA-Z0-9_.:]+',source)))[:15])
 
           PY
