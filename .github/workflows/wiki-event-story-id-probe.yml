@@ -17,7 +17,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json,urllib.parse,urllib.request
+          import json,os,pathlib,urllib.parse,urllib.request
           API="https://umamusu.wiki/w/api.php"
           headers={"User-Agent":"UmasupportSourceAudit/1.0 (github.com/Nimrodx0/Umasupport; numeric ids only)",
                    "Accept":"application/json"}
@@ -41,6 +41,9 @@ jobs:
               if "error" in data:
                   print(label,"API error code",data["error"].get("code"))
                   raise RuntimeError("Cargo query rejected; do not bypass")
+              if label in ("known-sample","focus-30241"):
+                  path=pathlib.Path(os.environ["RUNNER_TEMP"])/("wiki-event-"+label+".json")
+                  path.write_bytes(blob)
               rows=data.get("cargoquery")
               if not isinstance(rows,list):raise RuntimeError("Unexpected event Cargo query format")
               keys=[sorted(row.get("title",{})) for row in rows if isinstance(row,dict)]
@@ -74,3 +77,21 @@ jobs:
               print("module named functions",sorted(set(re.findall(r'function\\s+[a-zA-Z0-9_.:]+',source)))[:15])
 
           PY
+      - name: Fetch and verify pinned October 2025 game master snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 90 --output "$RUNNER_TEMP/wiki-event-old-master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          echo "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb  $RUNNER_TEMP/wiki-event-old-master.mdb" | sha256sum -c -
+      - name: Compare numeric story IDs against documented Wiki event-page index
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s poc/tests -p 'test_wiki_event_index_focus.py' -v
+          python3 poc/tools/audit_wiki_event_index_focus.py \
+            --old-master "$RUNNER_TEMP/wiki-event-old-master.mdb" \
+            --wiki-focus "$RUNNER_TEMP/wiki-event-focus-30241.json" \
+            --wiki-control "$RUNNER_TEMP/wiki-event-known-sample.json" \
+            --source-revision "SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135 (2025-10-10)"
+          echo "Index pages are selectively documented; zero Wiki pages never means no game event."
