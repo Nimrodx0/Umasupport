@@ -214,3 +214,7 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 ## 2026-10-18：Wiki Cargoと固定UmaSimの563カードID集合一致（PR #59）
 
 [証拠](wiki-cargo-support-id-audit.md)。MediaWiki Cargo公開API Game_Supports.support_id の数値フィールドを上限5 GET・今回実測3ページ（200+200+163）だけ取得し、古い2025 masterとは別の独立したコミュニティ索引を照合。採用UmaSim 563枚とWikiの563枚は全ID一致（SSR316 SR101 R146）、両方の片側だけのIDなし。APIレスポンスのキーが `support id` になることも確認。スナップショットが更新されれば不一致で監査を停止。ゲーム最新マスター全件の証拠や実イベントデータ導入ではなく、公開承認イベント0件は維持。
+
+## 2026-10-18：Wikiイベントページ索引と2025年旧master story_idを照合（PR #60）
+
+[結果と制約](wiki-event-story-index-audit.md)。公開WikiのGame_Training_Event.story_idを数値で限定取得。SSR30241ではWiki個別解説ページ0件、旧masterの直結story_id18件との一致も0件。ただし同索引で既知イベント830021001は登録されており、APIは動作。WikiのLuaモジュールは存在するがコード自体に830241004の文字列埋込なし。**Wikiの解説ページ索引とゲームmasterのイベント全件DBは別物**と確定し、Checker未収録／現行ゲーム削除といった根拠のない推論を回避。公開実イベントDB0件。
