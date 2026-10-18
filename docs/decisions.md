@@ -79,4 +79,6 @@
 
 出典は [GameWith SSRエフフォーリア](https://gamewith.jp/uma-musume/article/show/573288)（2026-10-08更新）と [Game8 SSRエフフォーリア](https://game8.jp/umamusume/811059)（2026-09-28更新）。**正式イベントID・カード対応・分岐条件・獲得スキルID・公開する文面/事実データの権利確認は独立した承認項目**。優先サイトの指定だけで公開データへ自動登録しない。
 
+**現行アプリの集計対象はスキルとヒントLvであり、体力・絆・ステータス等の副次的な報酬は公開イベントv1スキーマに存在しない**。そのためSSR30311の体力・絆値の攻略サイト差は監査では暫定裁定するが、イベントのスキル経路収録を阻むゲートにはしない。将来これらの効果を表示する場合は同じGameWith優先ルールと別途スキーマ検証を適用する。
+
 機械処理の参考：`poc/config/event-source-priority.v1.json` と `poc/src/event_source_precedence.cjs`。同一項目の数値掲載値のみをGameWith優先で暫定選定し、GameWithが存在しない場合は未解決のままにする。どの判定結果も `publicationApproved:false`、`gameVerified:false` の診断用出力であり、公開レビューの代替ではない。
