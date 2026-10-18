@@ -44,18 +44,25 @@ class BoundedTitleStoryBinding(unittest.TestCase):
             lambda html:html.replace("運命共同体な僕ら","他の見出し"),
             lambda html:html.replace("運命共同体な僕ら","運命と共同体な淑女"),
         ]:
-            with self.assertRaisesRegex(ValueError,"missing/duplicate"):
+            with self.assertRaisesRegex(ValueError,"missing/duplicate|heading ordering"):
                 audit.audit_title_links(fixture(corrupt))
     def test_extra_story_link_fails_closed(self):
         with self.assertRaises(ValueError):
             audit.audit_title_links(fixture(
               lambda html:html.replace('<h2 id="Episode">', '<a href="/Game:Training_Events/801146003">extra</a><h2 id="Episode">')))
-    def test_title_must_precede_its_link(self):
-        with self.assertRaisesRegex(ValueError,"does not belong"):
+    def test_heading_link_before_title_is_normal_wiki_html(self):
+        x=audit.audit_title_links(fixture(
+          lambda html:html.replace(
+            '<div><span>運命共同体な僕ら</span></div><a href="/Game:Training_Events/801146002?redlink=1">edit</a>',
+            '<a href="/Game:Training_Events/801146002?redlink=1"><span>運命共同体な僕ら</span></a><a href="/Game:Training_Events/801146002?redlink=1">edit</a>')))
+        self.assertEqual(x["namedEventStoryIdPairs"],5)
+
+    def test_multiple_different_ids_inside_same_heading_fail(self):
+        with self.assertRaises(ValueError):
             audit.audit_title_links(fixture(
               lambda html:html.replace(
-                '<div><span>運命共同体な僕ら</span></div><a href="/Game:Training_Events/801146002?redlink=1">edit</a>',
-                '<a href="/Game:Training_Events/801146002?redlink=1">edit</a><div><span>運命共同体な僕ら</span></div>')))
+                '<div><span>運命共同体な僕ら</span></div>',
+                '<div><span>運命共同体な僕ら</span></div><a href="/Game:Training_Events/801146099">wrong</a>')))
     def test_wrong_wiki_page_and_missing_sections_fail(self):
         bad=fixture()
         bad["parse"]["title"]="another article"
