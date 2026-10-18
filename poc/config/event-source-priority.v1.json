@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "scope": "support-event-effect-values",
+  "eventEffectPrimary": "GameWith",
+  "missingPrimary": "unresolved",
+  "automaticPublicationAllowed": false,
+  "sourceArticleExample": "https://gamewith.jp/uma-musume/article/show/573288",
+  "rationale": "User-selected pragmatic default for conflicting guide-site values; no assertion of independently demonstrated accuracy or republication rights."
+}

@@ -155,3 +155,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：Unreviewed numeric event-skill candidates（PR #63）
 
 [Audit and limits](docs/unreviewed-event-numeric-candidate-audit.md). A pinned third-party JSON manifest provides 45 support records and 126 event candidates, including 124 card/story ID pairs and 2 non-story IDs. Cross-check only numeric/metadata against pinned UmaSim skill IDs and one Wiki 30311 public article. Two candidate numeric skill IDs 200831 and 200851 are absent from the pinned UmaSim skill registry. GameWith confirms one highest-success reward triple for event 30311, **not the lower-success outcome, other outcomes, occurrence probabilities or full event graph**. Third-party `selection:auto` means planning-tool automatic counting, NOT guaranteed in-game auto reward. Source extraction is private and redistribution rights not verified. No record from this source may enter `poc/data/reviewed_events.v1.json` without independent event-ID/branch/effect/rights validation.
+
+## 2026-10-18：GameWith優先の追加決定（PR #73）
+
+ユーザーは、攻略サイト間でSSR30311の絆・体力報酬の数字が異なる場合、**GameWith掲載値を暫定正として採用**する方針を選択した。詳細は [意思決定ログ](docs/decisions.md)、[30311監査](docs/unreviewed-event-numeric-candidate-audit.md)、機械可読の `poc/config/event-source-priority.v1.json` を参照。Game8との不一致そのものはリリースブロッカーではない。GameWithに存在しない項目は未解決（他資料を黙って採用しない）。**優先ソースの指定は、正式ゲームのデータID・イベント分岐・成功率・公開再利用権限の独立承認ではない。** 実公開DBのイベント0件を維持。
