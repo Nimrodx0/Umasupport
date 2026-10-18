@@ -167,3 +167,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：数値メタデータのPublicコードと配信用実データを区別
 
 [SSR30311プレビュー](docs/efforia30311-preview.md)は開発用in-memoryデータを組み立てるため、**そのビルダーのソースコード内の5 story IDと8スキルの数値ID/名称/ヒントLvはPublic GitHub上で読める**。これは公開アプリの `reviewed_events.v1.json` に掲載し、獲得可能性を保証することと区別する。GameWithの原文・選択肢文面・ゲーム画面・画像を含めていないが、数値等の事実情報をPublicに限定掲載したことを第三者コンテンツの包括利用許諾と呼んではならない。利用者に提供する正式なイベントDBは、別途6観点の出典・条件・公開判断をレビューしてから採用する。
+
+## 2026-10-18：5イベントのWiki見出し↔9桁story_id監査（PR #76）
+
+[poc/tools/audit_efforia30311_wiki_title_links.py](poc/tools/audit_efforia30311_wiki_title_links.py) はWikiのSSR30311レンダリング記事について、GameWith記事と一致する5イベント見出しに隣接する9桁リンクが、`830311001/002/003`・`801146001/002` の仮対応に一致するか検査する。人工HTMLは通常CI、実Wiki 1ページは外部監査専用ワークフロー（既存GET再利用）。このチェックだけで現在ゲームのイベント分岐や取得条件が承認されたわけではない。ゲーム実装確認・権利・連続条件の未解決はIssue #72へ。
