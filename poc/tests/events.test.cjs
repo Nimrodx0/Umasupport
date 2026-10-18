@@ -101,3 +101,20 @@ test('a chain cannot continue if every parent option is terminal',()=>{
   {id:'next',name:'後続',type:'auto',requires:{all:[{eventId:'end'}]}}
  ]),/全分岐打ち切り/);
 });
+
+test('outcome and unconditional rewards cannot coexist on the same choice or automatic event',()=>{
+ const outcomes=[
+  {id:'success',label:'成功',rewards:[reward('tail')]},
+  {id:'great',label:'大成功',rewards:[reward('kunrin')]}
+ ];
+ const choice={id:'do',label:'進む',rewards:[reward('tail')],outcomes};
+ const mixedChoice=[{id:'mixed',name:'混在',type:'choice',choices:[choice]}];
+ assert.throws(()=>validate(mixedChoice),/rewardsとoutcomesは同時指定できません/);
+ const auto=[{id:'mixed',name:'混在',type:'auto',rewards:[],outcomes}];
+ assert.throws(()=>validate(auto),/rewardsとoutcomesは同時指定できません/);
+ const clean=[{id:'good',name:'選択',type:'choice',choices:[{id:'do',label:'進む',outcomes}]}];
+ validate(clean);
+ const routes=core.directRoutes(card(clean),config({good:'do'}));
+ assert.deepEqual(routes.map(r=>r.skillId),['tail','kunrin']);
+ assert.ok(routes.every(r=>r.conditional));
+});
