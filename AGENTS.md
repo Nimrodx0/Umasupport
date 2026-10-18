@@ -181,3 +181,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-18：本番UIを使うイベント開発試用モード（PR #78）
 
 プレビューデータ `poc/data/preview/efforia30311.v1.json` は**未承認**で、[専用URL](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=30311)からのみ `poc/src/event_preview_loader.js` を介して読み込む。元記事の選択肢原文や画像は含まず、既存SSR30311の番号ラベルのみ。**通常の `poc/live.html` と `index.html` は候補0件、通常JSON `poc/data/reviewed_events.v1.json` は空のまま。** 試用時のlocalStorageは通常版と別キー。現行UIで編成→選択肢→成功/大成功別スキル経路を操作できる。ビルダーとJSONの構造一致はNode回帰、Chromium人工サポカ全563枚で実ブラウザの導線を検証。ユーザー未承認イベントのゲーム正確性・終端条件・利用権利を承認したものではない。次カード追加時はプレビューレジストリの明示的許可と元記事・辞書・経路根拠を維持。
+
+## 2026-10-19：イベントの未確認事項をUIで細分化しない（利用者判断）
+
+**禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions.md`、`docs/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
