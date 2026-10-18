@@ -27,5 +27,10 @@ jobs:
           if not isinstance(obj,dict) or not isinstance(obj.get("cargoquery"),list):
               raise RuntimeError("Missing Cargo query rows (public API returned a different schema)")
           ids=[row.get("title",{}).get("support_id") for row in obj["cargoquery"]]
+          print("Top-level JSON fields:",sorted(obj.keys()))
+          print("Cargo response sample field keys:",[sorted(row.keys()) if isinstance(row,dict) else type(row).__name__ for row in obj["cargoquery"]])
+          print("Inner title sample field keys:",[sorted(row.get("title",{}).keys()) if isinstance(row.get("title"),dict) else type(row.get("title")).__name__ for row in obj["cargoquery"]])
           print("Numeric card IDs received:",ids,"count:",len(ids))
+          if len(ids)!=3 or any(x is None for x in ids):
+              raise RuntimeError("Unexpected Cargo response shape: no requested support_id")
           PY
