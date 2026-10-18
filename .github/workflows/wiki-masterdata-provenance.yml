@@ -97,7 +97,9 @@ jobs:
           python3 -m unittest discover -s poc/tests -p 'test_wiki_rendered_support_events.py' -v
           python3 poc/tools/audit_wiki_rendered_support_events.py \
             --old-master "$RUNNER_TEMP/old-story-master.mdb" \
-            --page-json "$RUNNER_TEMP/wiki-support-page.json"
+            --page-json "$RUNNER_TEMP/wiki-support-page.json" \
+            --recent-page-json "$RUNNER_TEMP/wiki-recent-support-page.json" \
+            --strict-equal
 
       - name: Inspect one August 2026 support-card page for numeric event IDs
         shell: bash
