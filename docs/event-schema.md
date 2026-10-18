@@ -77,3 +77,34 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 従来の `requires:{all:[{eventId,choiceId}]}` に加え、**親が選択式でも** `requires:{all:[{eventId}]}` を記述できるようにした。この場合「親の選択肢が実際に一つ選ばれ、かつ打ち切りではないなら後続へ進む」意味。未選択、打ち切りは後続へ進まない。すべて打ち切り選択肢の親をこの形で参照することは検証エラー。`src/core.js` の実行時判定と検証器を一致させた。
 
 このルールはイベントの発生率や成功失敗の自動確定を意味しない。Game8の欠損4枚の**検証用候補**と、残り1枚の未確認記録は [Game8のSSR欠損監査](game8-missing-ssr-review.md) を参照。
+
+## 2026-10-18：結果分岐のレビュー済みオーバーライドと公開条件（PR #67）
+
+`src/event_review_compiler.js` で第三者候補JSONを公開JSONへ変換する際、イベントごとの `chainVerified:true`（到達条件）、`rewardSemanticsVerified:true`（報酬）、`selectionSemanticsVerified:true`（選択式か自動発生か）、`publicationReviewed:true`（出典・転載等の公開可否）を**それぞれ独立して要求**する。候補配信の `selection=auto` は計画用の分類であり、これを検証せず実ゲームでの無条件取得へ変換してはならない。
+
+候補が `selection=single` の場合、レビュー入力の任意項目 `choiceOutcomeReviews` で**各選択肢の複数の結果別報酬**を指定できる。例は架空のIDと名称のみ：
+
+~~~json
+{
+  "sourceEventId": "evt_30242_1",
+  "cardId": "30242",
+  "chainVerified": true,
+  "rewardSemanticsVerified": true,
+  "selectionSemanticsVerified": true,
+  "publicationReviewed": true,
+  "choiceOutcomeReviews": {
+    "go": [
+      {"id":"success","label":"成功","skills":[{"skillId":2001,"skillName":"架空速度","hintLevel":1}]},
+      {"id":"great","label":"大成功","skills":[{"skillId":2001,"skillName":"架空速度","hintLevel":5}]}
+    ],
+    "stop": [
+      {"id":"success","label":"成功","skills":[]},
+      {"id":"great","label":"大成功","skills":[]}
+    ]
+  }
+}
+~~~
+
+この入力は**既存の候補レコードにあるすべての選択肢に対する結果リストが揃う場合だけ**受け付ける。欠落・余分なID・重複結果・2種類未満の結果・未承認のスキルID/名称を拒否する。外部候補にある既定選択・平坦化報酬を併用せず、承認済み結果だけを公開スキーマの `choices[].outcomes` へ変換する。実行時の `core.directRoutes` はどの結果のスキルも **conditional=true** として扱い、成功・大成功双方のLvを区別する。
+
+`choiceOutcomeReviews` なしの場合は既存の選択枝の `rewards` を維持するが、上記4承認の省略は認めない。レビュー入力は第三者が公表するイベント本文から自動生成されるものではない。独立の検証と公開許諾の審査が必要。今回の検証は人工イベントだけで、SSR30311等の実イベントは**0件のまま**。
