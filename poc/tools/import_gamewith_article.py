@@ -222,6 +222,53 @@ def candidate_choice(fragments: list[str], number: int, skills: dict) -> tuple[d
     return answer, False
 
 
+
+# In actual GameWith support pages the article heading can say
+# "(SSRスピード)" or "(イベント配布報酬)", while a separate
+# performance heading and table identify the rarity and epithet.
+PERFORMANCE_HEADING = re.compile(r"^\s*###\s*(.+?)\((R|SR|SSR)\)の性能\s*$")
+ARTICLE_HEADING = re.compile(
+    r"^\s*#{1,3}\s*(?:〖ウマ娘〗\s*)?(.+?)\((R|SR|SSR)(?:サポート|スピード|スタミナ|パワー|根性|賢さ|友人|グループ)\)")
+RARITY_FIELD = re.compile(r"^\s*レア\s*\|\s*(R|SR|SSR)\s*$")
+EPITHET_FIELD = re.compile(r"^\s*二つ名\s*\|\s*(.*?)\s*$")
+
+
+def validate_article_identity(lines: list[str], card: dict) -> None:
+    """Match the particular pinned support card, not just the character.
+
+    No guessed card IDs from GameWith titles. When an explicit identity
+    field exists, a conflicting value must reject the entire proposal.
+    """
+    end = next((i for i, line in enumerate(lines) if EVENT_SECTION in line), len(lines))
+    header = lines[:end]
+    requested = (normalize(card["name"]), card["rarity"])
+    performance = [(normalize(m[1]), m[2]) for line in header
+                   if (m := PERFORMANCE_HEADING.match(line))]
+    article = [(normalize(m[1]), m[2]) for line in header
+               if (m := ARTICLE_HEADING.match(line))]
+    if performance:
+        if len(performance) != 1 or performance[0] != requested:
+            raise ValueError("GameWith performance identity disagrees with pinned support card")
+    elif not article or any(identity != requested for identity in article):
+        raise ValueError("GameWith article character/rarity does not match pinned support card")
+    # If both ways of identifying the article are available, they must agree.
+    if article and any(identity != requested for identity in article):
+        raise ValueError("GameWith article heading conflicts with performance identity")
+
+    rarity_fields = [m[1] for line in header if (m := RARITY_FIELD.match(line))]
+    if rarity_fields and (len(rarity_fields) != 1 or rarity_fields[0] != card["rarity"]):
+        raise ValueError("GameWith rarity field conflicts with pinned support card")
+    if performance and not rarity_fields:
+        raise ValueError("GameWith performance table lacks rarity field")
+
+    if card["rarity"] != "R":
+        epithet = card["title"].split("]")[0].lstrip("[")
+        titles = [normalize(m[1]) for line in header if (m := EPITHET_FIELD.match(line))]
+        if not epithet or len(titles) != 1 or titles[0] != normalize(epithet):
+            raise ValueError("GameWith support-card epithet does not match pinned SR/SSR")
+
+
+
 def article_to_facts(text: str, card_id: str, card: dict,
                      skills: dict) -> dict:
     if "<html" in text[:1000].lower() or "<h2" in text[:15000].lower():
@@ -229,17 +276,7 @@ def article_to_facts(text: str, card_id: str, card: dict,
         parser.feed(text)
         text = parser.text()
     lines = text.replace("\r\n", "\n").split("\n")
-    intro = "\n".join(lines[:65])
-    if card["name"] not in intro or not any(
-        f"({r}サポート)" in intro or f"({r}サポート" in intro
-        for r in (card["rarity"],)
-    ):
-        raise ValueError("GameWith article character/rarity does not match pinned support card")
-    # For non-R, require support-card epithet. Character-only agreement is unsafe.
-    if card["rarity"] != "R":
-        epithet = card["title"].split("]")[0].lstrip("[")
-        if epithet and epithet not in intro:
-            raise ValueError("article does not identify SR/SSR support-card epithet")
+    validate_article_identity(lines, card)
     if not any(EVENT_SECTION in l for l in lines):
         raise ValueError("event-list section is missing; no silent zero-event import")
 
