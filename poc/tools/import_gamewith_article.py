@@ -89,6 +89,9 @@ class ArticleBlocks(HTMLParser):
                 # it and then accept the remaining rows as a complete event.
                 self.blocks.append(UNPARSED_HTML_ROW)
             self.row = False
+        elif tag == "table" and self.row:
+            self.blocks.append(UNPARSED_HTML_ROW)
+            self.row = False
 
     def text(self):
         return "\n".join(self.blocks)
