@@ -2,6 +2,14 @@
   "schemaVersion": 1,
   "cards": [
     {
+      "cardId": "10001",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257602",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10001.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
       "cardId": "10002",
       "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257601",
       "articleCheckedAt": "2026-10-19",
@@ -26,10 +34,34 @@
       "coverageStatus": "partial"
     },
     {
+      "cardId": "10050",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/259504",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10050.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10061",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/277320",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10061.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
       "cardId": "10073",
       "primaryArticle": "https://gamewith.jp/uma-musume/article/show/302571",
       "articleCheckedAt": "2026-10-19",
       "draftFile": "poc/data/curation/drafts/10073.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10087",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/384974",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10087.v1.json",
       "recordStatus": "draft",
       "coverageStatus": "partial"
     },
