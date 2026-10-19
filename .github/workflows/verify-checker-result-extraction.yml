@@ -1,10 +1,23 @@
 name: Verify pinned Checker result extraction (manual)
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/verify-checker-result-extraction.yml
+      - poc/src/checker_explicit_result_extract.cjs
+      - poc/data/candidates/checker_explicit_result_facts.v1.json
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify-pinned-source:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.repository == 'Nimrodx0/Umasupport' &&
+       github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.user.login == 'Nimrodx0' &&
+       github.event.pull_request.head.ref == 'feat/phase2-explicit-result-batch-20261020')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
