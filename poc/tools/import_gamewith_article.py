@@ -141,6 +141,50 @@ def registry(skill_text: str, supplemental: dict) -> dict[str, list[dict]]:
     return skills
 
 
+
+def validate_source_index(index: dict, cards: dict[str, dict]) -> dict[str, dict]:
+    """Validate a complete card/article/draft index before any import writes.
+
+    Both single-card and batch entry points use this. The same public source
+    article or output draft must not silently become evidence for two cards.
+    """
+    if not isinstance(index, dict) or not isinstance(index.get("cards"), list):
+        raise ValueError("invalid source index")
+    by_card: dict[str, dict] = {}
+    by_url: set[str] = set()
+    by_draft: set[str] = set()
+    for row in index["cards"]:
+        if not isinstance(row, dict):
+            raise ValueError("invalid source index row")
+        cid = row.get("cardId")
+        if not isinstance(cid, str) or not re.fullmatch(r"[1-9]\d{4}", cid):
+            raise ValueError("invalid indexed card ID")
+        if cid in by_card or cid not in cards:
+            raise ValueError("duplicate or unrecognized indexed card: " + cid)
+        url = row.get("primaryArticle")
+        if not isinstance(url, str) or not re.fullmatch(
+                r"https://gamewith\.jp/uma-musume/article/show/[1-9]\d+", url):
+            raise ValueError("invalid GameWith source URL for " + cid)
+        if url in by_url:
+            raise ValueError("GameWith article assigned to multiple cards")
+        draft = row.get("draftFile")
+        if not isinstance(draft, str) or not re.fullmatch(
+                r"poc/data/(?:curation/drafts|preview)/[a-zA-Z0-9_.-]+\.json", draft):
+            raise ValueError("invalid indexed draft path for " + cid)
+        if draft in by_draft:
+            raise ValueError("one draft file assigned to multiple cards")
+        filename = draft.rsplit("/", 1)[-1]
+        if draft.startswith("poc/data/curation/drafts/") and filename != cid + ".v1.json":
+            raise ValueError("draft card ID and filename disagree")
+        if draft.startswith("poc/data/preview/") and cid not in filename:
+            raise ValueError("preview filename does not identify indexed card")
+        by_card[cid] = row
+        by_url.add(url)
+        by_draft.add(draft)
+    return by_card
+
+
+
 def reward(name: str, level: int, skills: dict) -> dict:
     if not name.strip() or level < 1 or level > 10:
         raise ValueError("invalid skill reward")
@@ -451,15 +495,14 @@ def main():
     if not re.fullmatch(r"\d{5}", args.card_id):
         p.error("bad card ID")
     index = json.loads(args.source_index.read_text("utf-8"))
-    indexed = [x for x in index["cards"] if x["cardId"] == args.card_id]
-    if len(indexed) != 1:
-        p.error("card is not associated with exactly one checked GameWith source URL")
-    row = indexed[0]
-    if not re.fullmatch(r"https://gamewith\.jp/uma-musume/article/show/[1-9]\d+", row["primaryArticle"]):
-        p.error("source URL is not an exact GameWith support article")
     cards = roster(args.support_card.read_text("utf-8"))
-    if args.card_id not in cards:
-        p.error("card is not in source UmaSim roster")
+    try:
+        by_card = validate_source_index(index, cards)
+    except ValueError as exc:
+        p.error(str(exc))
+    if args.card_id not in by_card:
+        p.error("card is not associated with exactly one checked GameWith source URL")
+    row = by_card[args.card_id]
     numeric = registry(args.skill_data.read_text("utf-8"),
                        json.loads(args.supplemental.read_text("utf-8")))
     raw = args.article_file.read_bytes()
