@@ -92,6 +92,12 @@
    }
    for(const e of events){
      for(const r of prerequisites(e))validateRequirement(r,e);
+     if(e.type==='choice')for(const c of e.choices){
+       for(const r of prerequisites(c)){
+         if(r.eventId===e.id)fail(e.id+'/'+c.id+': 選択肢の依存が自己参照');
+         validateRequirement(r,e);
+       }
+     }
    }
    const visiting=new Set(),done=new Set();
    function visit(e){
@@ -99,6 +105,8 @@
      if(done.has(e.id))return;
      visiting.add(e.id);
      for(const r of prerequisites(e))visit(byId.get(r.eventId));
+     if(e.type==='choice')for(const c of e.choices)
+       for(const r of prerequisites(c))visit(byId.get(r.eventId));
      visiting.delete(e.id);done.add(e.id);
    }
    for(const e of events)visit(e);

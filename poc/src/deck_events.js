@@ -11,7 +11,8 @@ function cardSummary(card,slot,core){
  for(const event of card.events){
   const progress=core.reachability(event,choices,card.events,outcomes);
   const reachable=progress.status!=='blocked';
-  const selected=event.type==='choice'&&event.choices.some(c=>c.id===choices[event.id]);
+  const selected=event.type==='choice'&&event.choices.some(c=>c.id===choices[event.id]&&
+    core.choiceReachability(c,event,choices,card.events,outcomes).status!=='blocked');
   const status=!reachable?'blocked':progress.status==='conditional'?'conditional':event.type==='auto'?'automatic':selected?'configured':'pending';
   out.known++;out[status]++;
   out.events.push({id:event.id,status,selected:!!selected,reachable});

@@ -26,6 +26,11 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
     }else if(parent.type!=='auto'||r.choiceId!==undefined){
       return {status:'blocked',conditions:[]};
     }
+    if(part.requires){
+      const gate=reachability({id:parent.id+'#'+part.id,requires:part.requires},choices,events,outcomes,next);
+      if(gate.status==='blocked')return gate;
+      conditions.push(...gate.conditions);
+    }
     const variants=part.outcomes||[];
     const chosen=outcomes[parent.id];
     if(chosen!==undefined&&chosen!==''&&!variants.some(o=>o.id===chosen))
@@ -48,6 +53,15 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
     }
   }
   return {status:conditions.length?'conditional':'reachable',conditions:[...new Set(conditions)]};
+}
+function choiceReachability(choice,event,choices,events,outcomes={}){
+  const base=reachability(event,choices,events,outcomes);
+  if(base.status==='blocked'||!choice)return {status:'blocked',conditions:[]};
+  if(!choice.requires)return base;
+  const gate=reachability({id:event.id+'#'+choice.id,requires:choice.requires},choices,events,outcomes);
+  if(gate.status==='blocked')return gate;
+  const conditions=[...new Set([...base.conditions,...gate.conditions])];
+  return {status:conditions.length?'conditional':'reachable',conditions};
 }
 function isReachable(event,choices,events,outcomes={}){
   if(!events){
@@ -89,7 +103,10 @@ function directRoutes(card,config){
     if(progress.status==='blocked')continue;
     if(event.type==='choice'){
       const selected=(event.choices||[]).find(c=>c.id===choices[event.id]);
-      if(selected)collect(selected,event,selected.label,progress.conditions);
+      if(selected){
+        const gate=choiceReachability(selected,event,choices,events,outcomes);
+        if(gate.status!=='blocked')collect(selected,event,selected.label,gate.conditions);
+      }
     }else if(event.type==='auto')collect(event,event,null,progress.conditions);
   }
   return routes;
@@ -193,7 +210,9 @@ function clearDependentState(card,choices,outcomes,eventId){
     if(visited.has(parent))continue;
     visited.add(parent);
     for(const e of card.events||[]){
-      if(prerequisites(e).some(r=>r.eventId===parent)){
+      const selected=(e.choices||[]).find(c=>c.id===nextChoices[e.id]);
+      const affectedChoice=selected&&prerequisites(selected).some(r=>r.eventId===parent);
+      if(prerequisites(e).some(r=>r.eventId===parent)||affectedChoice){
         delete nextChoices[e.id];delete nextOutcomes[e.id];
         queue.push(e.id);
       }
@@ -204,7 +223,7 @@ function clearDependentState(card,choices,outcomes,eventId){
 function clearDescendants(card,choices,eventId){
   return clearDependentState(card,choices,{},eventId).choices;
 }
-const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability};
+const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability};
 if(typeof module!=='undefined'&&module.exports)module.exports=core;
 g.UmaCore=core;
 })(typeof globalThis!=='undefined'?globalThis:this);
