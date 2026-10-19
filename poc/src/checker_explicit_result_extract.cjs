@@ -11,7 +11,8 @@ const {buildModel}=require('./live_loader.js');
 const HINT=/[『「]([^』」\n]+)[』」]\s*のヒント\s*Lv\s*[+＋]\s*([0-9]+)/gu;
 const HEAD=/^[ \t]*(大成功|成功|失敗|通常)(?:時)?[ \t]*(?:[:：][ \t]*|(?=\r?$))/gm;
 const OTHER_CONDITION=/成功|失敗|通常時|確率|ランダム|次回|次のイベント|打ち切り|継続/;
-const TERMINAL=/^[ \t]*(?:※[ \t]*)?連続イベントが終了(?:する)?[ \t]*$/m;
+const NEXT_STOP=/^[ \t]*(?:※[ \t]*)?(?:次回イベントが発生しない|[1-9][0-9]*連続目イベントが発生しない)[ \t]*$/m;
+const TERMINAL=/^[ \t]*(?:※[ \t]*)?(?:連続イベントが終了(?:する)?|次回イベントが発生しない|[1-9][0-9]*連続目イベントが発生しない)[ \t]*$/m;
 const RANGE=/^[ \t]*(?:~|〜|～|-)[ \t]*(\d+)/;
 const KIND={大成功:'great',成功:'success',失敗:'failure',通常:'normal'};
 const norm=s=>String(s).normalize('NFKC').replace(/[◯〇]/g,'○').replace(/\s+/g,' ').trim();
@@ -41,6 +42,7 @@ function parseEffect(effect,original){
  const headings=[...effect.matchAll(HEAD)].map(m=>({kind:KIND[m[1]],start:m.index,end:m.index+m[0].length,label:m[1]}));
  const codes=[];
  if(hints.some(h=>h.hasRange))codes.push('HINT_LEVEL_RANGE');
+ if(NEXT_STOP.test(effect))codes.push('NEXT_EVENT_NOT_FIRED_STATEMENT');
  const leftoverCondition=effect.slice(0,headings[0]?.start??effect.length);
  const repeated=headings.some((h,i)=>headings.findIndex(x=>x.kind===h.kind)!==i);
  const good=headings.length>=2&&!repeated&&
@@ -90,7 +92,7 @@ function generate({checkerText,rosterText,skillText,candidates,aliases}){
   explicitOutcomeChoices:0,explicitOutcomeResults:0,
   explicitOutcomeEvents:0,observedTerminations:0,
   choiceTerminations:0,outcomeTerminations:0,
-  unsegmentedChoices:0,rangedHintChoices:0,
+  unsegmentedChoices:0,rangedHintChoices:0,nextEventSuppressionObservations:0,
   numericHintMentions:0,unresolvedHintMentions:0};
  const cards=candidates.cards.map(card=>{
   const b=baseMap.get(card.cardId);
@@ -119,6 +121,7 @@ function generate({checkerText,rosterText,skillText,candidates,aliases}){
     if(res.structure==='explicit-result-headings'){explicit++;count.explicitOutcomeChoices++;count.explicitOutcomeResults+=res.results.length;}
     else count.unsegmentedChoices++;
     if(res.diagnostics.includes('HINT_LEVEL_RANGE'))count.rangedHintChoices++;
+    if(res.diagnostics.includes('NEXT_EVENT_NOT_FIRED_STATEMENT'))count.nextEventSuppressionObservations++;
     for(const result of res.results){
      if(result.terminalObserved){count.observedTerminations++;
        if(res.structure==='explicit-result-headings')count.outcomeTerminations++;
@@ -162,7 +165,7 @@ function verifyDerived(candidates,derived){
    fail('構造化候補の版・非公開状態・元データSHAが不正');
  const counters={cards:0,events:0,choicePositions:0,explicitOutcomeChoices:0,explicitOutcomeResults:0,
   explicitOutcomeEvents:0,observedTerminations:0,choiceTerminations:0,outcomeTerminations:0,
-  unsegmentedChoices:0,rangedHintChoices:0,numericHintMentions:0,unresolvedHintMentions:0};
+  unsegmentedChoices:0,rangedHintChoices:0,nextEventSuppressionObservations:0,numericHintMentions:0,unresolvedHintMentions:0};
  for(let i=0;i<candidates.cards.length;i++){
   const original=candidates.cards[i],card=derived.cards[i];
   if(card.cardId!==original.cardId||card.rarity!==original.rarity||
@@ -195,6 +198,7 @@ function verifyDerived(candidates,derived){
       counters.unsegmentedChoices++;
     }
     if(x.diagnostics.includes('HINT_LEVEL_RANGE'))counters.rangedHintChoices++;
+    if(x.diagnostics.includes('NEXT_EVENT_NOT_FIRED_STATEMENT'))counters.nextEventSuppressionObservations++;
     let num=0,unresolved=0,terminal=0;
     const observed=[];
     for(const part of x.results){
