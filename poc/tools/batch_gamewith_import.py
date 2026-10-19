@@ -12,8 +12,25 @@ from pathlib import Path
 from import_gamewith_article import article_to_facts, compare, registry, roster, MAX_BYTES
 
 
+def validate_proposal_output(input_dir: Path, output_dir: Path, draft_root: Path):
+    """Keep proposal artifacts out of source inputs and tracked app data.
+
+    Resolve symlinks before checking ancestry. This must run even when the
+    batch has no local articles or every input is rejected, because the CLI
+    still writes a batch report.
+    """
+    destination = output_dir.resolve()
+    sources = input_dir.resolve()
+    published_data = (draft_root.resolve() / "poc" / "data").resolve()
+    if destination == sources or sources in destination.parents or destination in sources.parents:
+        raise ValueError("proposal output directory overlaps local article inputs")
+    if destination == published_data or published_data in destination.parents or destination in published_data.parents:
+        raise ValueError("proposal output directory overlaps tracked poc/data")
+
+
 def plan_and_import(cards, index, skills, input_dir: Path, output_dir: Path,
                     draft_root: Path):
+    validate_proposal_output(input_dir, output_dir, draft_root)
     entries = index.get("cards", [])
     by_card = {}
     for row in entries:
@@ -92,8 +109,10 @@ def main():
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--repository-root", type=Path, default=Path("."))
     args = parser.parse_args()
-    if args.out_dir.resolve() == args.input_dir.resolve():
-        parser.error("cannot overwrite local article source directory")
+    try:
+        validate_proposal_output(args.input_dir, args.out_dir, args.repository_root)
+    except ValueError as exc:
+        parser.error(str(exc))
     cards = roster(args.support_card.read_text("utf-8"))
     skills = registry(args.skill_data.read_text("utf-8"),
                       json.loads(args.supplemental.read_text("utf-8")))

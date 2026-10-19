@@ -75,5 +75,33 @@ class BatchTests(unittest.TestCase):
                 plan_and_import(cards, {"cards": [row, row]}, numeric, input_dir, root / "out", root)
 
 
+    def test_batch_never_writes_to_article_inputs_or_tracked_data(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root = Path(dirname)
+            inputs = root / "poc/inputs/gamewith"
+            inputs.mkdir(parents=True)
+            (inputs / "10001.md").write_text(TEXT, "utf-8")
+            cards = {"10001": {"name": "架空R", "rarity": "R",
+                               "title": "[トレセン学園]架空R"}}
+            index = {"cards": [{
+                "cardId": "10001",
+                "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257602",
+                "draftFile": "poc/data/curation/drafts/10001.v1.json"
+            }]}
+            skills = registry(json.dumps(REC), {"schemaVersion": 1, "skills": []})
+            for unsafe in (inputs, inputs / "proposals", root / "poc/inputs",
+                           root / "poc/data", root / "poc/data/curation",
+                           root / "poc/data/curation/proposals", root):
+                with self.subTest(unsafe=str(unsafe)):
+                    with self.assertRaisesRegex(ValueError, "overlaps"):
+                        plan_and_import(cards, index, skills, inputs, unsafe, root)
+            self.assertFalse((root / "poc/data/curation/10001.proposal.json").exists())
+            self.assertFalse((inputs / "10001.proposal.json").exists())
+            good = root / "local-data/proposals"
+            report = plan_and_import(cards, index, skills, inputs, good, root)
+            self.assertEqual(report["summary"]["proposal-needs-review"], 1)
+            self.assertTrue((good / "10001.proposal.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
