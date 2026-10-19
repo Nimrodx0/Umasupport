@@ -63,6 +63,16 @@ function build({candidates,gaps=null}){
    }
   }
  }
+ // Checker empty-card detection must use the *fully alias-reviewed* 417-card
+ // index, not the provisional name matching of the second-source comparator.
+ // The latter can undercount empty cards on differently styled card titles.
+ for(const card of candidates.cards){
+  if(card.events.length)continue;
+  totals['checker-empty']++;
+  items.push({scope:'card',cardId:card.cardId,priority:'P2',
+   score:WEIGHTS['checker-empty'],reasons:['checker-empty'],
+   requiresIndependentReview:true});
+ }
  let gapCoverage='not-provided';
  if(gaps!==null){
   if(!object(gaps)||!object(gaps.summary)||!Array.isArray(gaps.possibleGaps)||
@@ -82,18 +92,12 @@ function build({candidates,gaps=null}){
       comparisonJoin:row.cruiseJoin||null,
       requiresIndependentReview:true});
   }
-  const empty=new Set();
+  // A separate name matcher can miss cards but may never assert that
+  // a card is empty when our strict + reviewed-alias source has events.
   for(const id of gaps.zeroEventCardIds){
-   if(typeof id!=='string'||!/^[0-9]{5}$/.test(id)||empty.has(id))
-    fail('invalid empty source card');
-   empty.add(id);
-   if(!seenCards.has(id))continue;
+   if(typeof id!=='string'||!/^[0-9]{5}$/.test(id))fail('invalid empty source card');
    const source=candidates.cards.find(c=>c.cardId===id);
-   if(source.events.length)fail('cross-source empty-card contradiction');
-   totals['checker-empty']++;
-   items.push({scope:'card',cardId:id,priority:'P2',
-     score:WEIGHTS['checker-empty'],reasons:['checker-empty'],
-     requiresIndependentReview:true});
+   if(source&&source.events.length)fail('cross-source empty-card contradiction');
   }
  }
  const level=p=>Number(p.slice(1));
