@@ -103,5 +103,37 @@ class BatchTests(unittest.TestCase):
             self.assertTrue((good / "10001.proposal.json").exists())
 
 
+    def test_cross_card_source_and_draft_collisions_rejected_even_without_articles(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root = Path(dirname)
+            inputs = root / "empty-articles"
+            inputs.mkdir()
+            cards = {cid: {"name": "架空" + cid, "title": "[名前]架空" + cid, "rarity": "R"}
+                     for cid in ("10001", "10002")}
+            skill_ids = registry(json.dumps(REC), {"schemaVersion": 1, "skills": []})
+            first = {"cardId": "10001",
+                     "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257602",
+                     "draftFile": "poc/data/curation/drafts/10001.v1.json"}
+            second = {"cardId": "10002",
+                      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257601",
+                      "draftFile": "poc/data/curation/drafts/10002.v1.json"}
+            for changed in (
+                {**second, "primaryArticle": first["primaryArticle"]},
+                {**second, "draftFile": first["draftFile"]},
+                {**second, "draftFile": "poc/data/curation/drafts/99999.v1.json"},
+                {**second, "draftFile": "poc/data/preview/efforia30003.v1.json"},
+                {**second, "draftFile": "../untrusted.json"},
+            ):
+                with self.subTest(index=changed):
+                    with self.assertRaises(ValueError):
+                        plan_and_import(cards, {"cards": [first, changed]}, skill_ids,
+                                        inputs, root / "out", root)
+            self.assertFalse((root / "out").exists())
+            allowed = plan_and_import(cards, {"cards": [first, second]}, skill_ids,
+                                      inputs, root / "out", root)
+            self.assertEqual(allowed["summary"]["indexedCards"], 2)
+            self.assertEqual(allowed["summary"]["no-local-article"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()
