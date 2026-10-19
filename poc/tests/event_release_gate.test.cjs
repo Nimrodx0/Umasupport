@@ -68,3 +68,12 @@ test('two cards with same event ID require separate card-scoped approvals',()=>{
  a.entries.push({...entry(event()),cardId:'fake:card2'});
  assert.equal(verifyRelease(c,a).reviewedEvents,2);
 });
+
+
+test('a complete approval SHA cannot launder pending draft-only skill metadata into public JSON',()=>{
+ const c=catalog(),e=c.cards[0].events[0];
+ e.choices[0].outcomes[0].unresolvedRewards=[{skillName:'匿名',level:1}];
+ const a=approved();
+ a.entries[0].eventSha256=digest(e);
+ assert.throws(()=>verifyRelease(c,a),/未照合報酬の草稿は公開できません/);
+});
