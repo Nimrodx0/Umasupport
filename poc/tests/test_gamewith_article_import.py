@@ -429,5 +429,40 @@ class ImportTests(unittest.TestCase):
                              "10099", CARD, self.skills)
 
 
+    def test_malformed_html_event_row_is_not_silently_omitted(self):
+        prefix = """<html><h2>架空ウマ(Rサポート)の評価</h2>
+<h3>サポート効果</h3>
+<table><tr><th>属性</th><th>無凸</th><th>完凸</th></tr></table>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>通常イベント</h3><h4>ある日の選択</h4><table>
+<tr><td>第一</td><td>『別の技』のヒントLv+1</td></tr>
+"""
+        suffix = """
+<tr><td>第三</td><td>体力+5</td></tr></table>
+<h2>その他の情報</h2></html>"""
+        for malformed in (
+            "<tr><td>第二</td><td>パワー+5</td><td>別欄</td></tr>",
+            "<tr><td>第二のみ</td></tr>",
+            "<tr><td>第二</td><td>パワー+5</td></table>",
+        ):
+            with self.subTest(malformed=malformed):
+                with self.assertRaisesRegex(ValueError, "unparsed HTML table row"):
+                    article_to_facts(prefix + malformed + suffix,
+                                     "10099", CARD, self.skills)
+
+    def test_non_event_multicolumn_html_table_does_not_block_valid_event(self):
+        html = """<html><h2>架空ウマ(Rサポート)の評価</h2>
+<table><tr><th>サポート</th><th>無凸</th><th>1凸</th><th>2凸</th></tr></table>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>通常イベント</h3><h4>ある日の選択</h4><table>
+<tr><td>第一</td><td>『別の技』のヒントLv+1</td></tr>
+<tr><td>第二</td><td>体力+5</td></tr></table>
+<h2>その他の情報</h2></html>"""
+        r = article_to_facts(html, "10099", CARD, self.skills)
+        self.assertEqual(r["observedEventHeadings"], 1)
+        self.assertEqual(r["proposedEvents"], 1)
+        self.assertEqual(r["reviewRequired"], [])
+
+
 if __name__ == "__main__":
     unittest.main()
