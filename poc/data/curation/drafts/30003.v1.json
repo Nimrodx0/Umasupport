@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "30003",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_30003_chain_01",
+          "name": "連続01（仮）",
+          "type": "auto"
+        },
+        {
+          "id": "draft_30003_chain_02",
+          "name": "連続02（仮）",
+          "type": "auto",
+          "requires": {
+            "all": [
+              {
+                "eventId": "draft_30003_chain_01"
+              }
+            ]
+          }
+        },
+        {
+          "id": "draft_30003_chain_03",
+          "name": "連続03（仮）",
+          "type": "auto",
+          "requires": {
+            "all": [
+              {
+                "eventId": "draft_30003_chain_02"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "skill:200371",
+              "verifiedSkillName": "一陣の風",
+              "level": 1
+            }
+          ]
+        },
+        {
+          "id": "draft_30003_normal_01",
+          "name": "通常01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2",
+              "rewards": [
+                {
+                  "skillId": "hint:先行直線○",
+                  "level": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "draft_30003_normal_02",
+          "name": "通常02（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
