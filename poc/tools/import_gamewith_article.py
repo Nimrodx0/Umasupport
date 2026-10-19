@@ -21,7 +21,7 @@ HEADING = re.compile(r"^\s*(#{2,5})\s*(.*?)\s*$")
 CHOICE = re.compile(r"^\s*(.*?)\s+\|\s+(.+?)\s*$")
 EVENT_SECTION = "発生イベントと選択肢一覧"
 EVENT_TYPES = {"通常イベント": "normal", "連続イベント": "chain"}
-UNSAFE = re.compile(r"大成功|成功時|失敗時|成功の場合|失敗の場合|ランダム|確率|打ち切り|進行しない|次に進")
+UNSAFE = re.compile(r"大成功|成功|失敗|ランダム|確率|打ち切り|進行しない|次に進|継続する|継続しない")
 CARD_TITLE = re.compile(r"ウマ娘.*\((R|SR|SSR)[^)]*サポート\)")
 MAX_BYTES = 450_000
 
@@ -314,6 +314,10 @@ def main():
     result["comparison"] = compare(previous, result["proposal"])
     result["evidence"] = {"sourceArticle": row["primaryArticle"],
                           "localInputSha256": hashlib.sha256(raw).hexdigest()}
+    # Proposals must not overwrite committed editorial/released catalogs.
+    tracked_data = Path(__file__).resolve().parents[1] / "data"
+    if args.output.resolve() == tracked_data or tracked_data in args.output.resolve().parents:
+        p.error("refusing to write proposal into tracked poc/data")
     if args.output.resolve() == args.article_file.resolve() or (
         args.existing_draft is not None and args.output.resolve() == args.existing_draft.resolve()
     ):
