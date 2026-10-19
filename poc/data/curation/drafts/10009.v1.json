@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "10009",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_10009_normal_01",
+          "name": "通常01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        },
+        {
+          "id": "draft_10009_normal_02",
+          "name": "通常02（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:先行駆け引き",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2",
+              "rewards": [
+                {
+                  "skillId": "hint:徹底マーク○",
+                  "level": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
