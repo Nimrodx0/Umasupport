@@ -23,10 +23,10 @@ function indexSkills(skillText,supplemental={schemaVersion:1,skills:[]}){
   if(!obj(candidate)||typeof candidate.id!=='string'||!/^[1-9][0-9]*$/.test(candidate.id)||
    !Number.isSafeInteger(Number(candidate.id))||typeof candidate.name!=='string'||
    !clean(candidate.name)||candidate.rarity!=='normal'&&candidate.rarity!=='rare'||
-   candidate.scope!=='curation-only'||!/^20\\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])$/.test(candidate.checkedAt)||
+   candidate.scope!=='curation-only'||!/^20\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(candidate.checkedAt)||
    !obj(candidate.evidence)||
    candidate.evidence.numericId!=='https://umamusu.wiki/Game:Skills/'+candidate.id||
-   !/^https:\\/\\/gamewith\\.jp\\/uma-musume\\/article\\/show\\/[1-9][0-9]+$/.test(candidate.evidence.nameAndEffect)||
+   !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/[1-9][0-9]+$/.test(candidate.evidence.nameAndEffect)||
    Object.keys(candidate).some(k=>!['id','name','rarity','checkedAt','scope','evidence'].includes(k))||
    Object.keys(candidate.evidence).some(k=>!['numericId','nameAndEffect'].includes(k))||
    used.has(candidate.id))fail('根拠不十分・重複・形式不正の補完スキル');
@@ -40,7 +40,7 @@ function indexSkills(skillText,supplemental={schemaVersion:1,skills:[]}){
   const sameName=names.get(clean(candidate.name))||[];
   if(sameName.length)fail('元辞書内の異なるIDと補完名称が衝突: '+candidate.name);
   const record={id:candidate.id,name:candidate.name,rarity:candidate.rarity,
-   group:-Number(candidate.id)};
+   group:-Number(candidate.id),origin:'supplemental'};
   // The negative group is INTERNAL and must never be interpreted as a real
   // game's skill hierarchy relationship.
   names.set(clean(candidate.name),[record]);
@@ -106,7 +106,8 @@ function prepareDraft(catalog,skillText,{supplemental}={}){
      if(seen.has(reward.skillId))fail(context+': 既存報酬との重複');
      seen.add(reward.skillId);
      (part.rewards??=[]).push(reward);
-     resolvedNames.push({location:context,skillName:r.skillName,skillId:result.record.id});
+     resolvedNames.push({location:context,skillName:r.skillName,skillId:result.record.id,
+      source:result.record.origin==='supplemental'?'supplemental':'umasim'});
     }else{
      pending.push({location:context,skillName:r.skillName,level:r.level,
       reason:result.status,...result.status==='ambiguous'?{candidateIds:result.ids}:{}});
