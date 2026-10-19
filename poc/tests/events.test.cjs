@@ -118,3 +118,14 @@ test('outcome and unconditional rewards cannot coexist on the same choice or aut
  assert.deepEqual(routes.map(r=>r.skillId),['tail','kunrin']);
  assert.ok(routes.every(r=>r.conditional));
 });
+
+
+test('editorial unresolvedRewards never enter runtime or reviewed event catalogs',()=>{
+ const draftOnly=[{id:'raw',name:'草稿は公開しない',type:'choice',
+  choices:[{id:'option1',label:'選択肢1',
+   unresolvedRewards:[{skillName:'未確認スキル',level:1}]}]}];
+ assert.throws(()=>validate(draftOnly),/未照合報酬は公開イベントに登録できません/);
+ const auto=[{id:'raw',name:'草稿は公開しない',type:'auto',
+  unresolvedRewards:[{skillName:'未確認スキル',level:1}]}];
+ assert.throws(()=>validate(auto),/未照合報酬は公開イベントに登録できません/);
+});
