@@ -44,7 +44,7 @@ test('a positional match must not be declared when the second source has fewer c
  assert.equal(r.pairMultisetAgreement,false);
 });
 test('invalid source IDs, hint levels and unsupported branch styles must fail',()=>{
- assert.throws(()=>compareEvent(event(),{selection:'single',choices:[{skills:[]}]}));
+ assert.throws(()=>compareEvent(event(),{selection:'single',choices:[]}));
  assert.throws(()=>compareEvent(event(),{selection:'auto',skills:[{skillId:2,hintLevel:1}],choices:[{skills:[]}]}));
  assert.throws(()=>compareEvent(event(),{selection:'auto',skills:[{skillId:2,hintLevel:11}]}));
 });
