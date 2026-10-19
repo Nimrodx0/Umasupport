@@ -125,6 +125,7 @@ class ImportTests(unittest.TestCase):
         other["cards"][0]["events"][0]["choices"][0]["rewards"] = [
             {"skillId": "skill:202992", "level": 4}]
         self.assertEqual(compare(r, other)["changedEventOrdinals"], [1])
+        other = json.loads(json.dumps(r))
         other["cards"][0]["events"].pop()
         self.assertEqual(compare(r, other)["changedEventOrdinals"], [2])
 
