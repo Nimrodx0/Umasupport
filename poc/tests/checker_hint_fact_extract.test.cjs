@@ -59,3 +59,11 @@ test('unknown card join and missing numeric registry rejected',()=>{
   skillText:JSON.stringify(skillArray),aliases:{'20001':'不存在'}}),/Checker取り込み|エイリアス/);
  assert.throws(()=>buildRegistry(JSON.stringify([...skillArray,skillArray[0]])),/duplicated skill/);
 });
+
+test('obsolete alias is ignored when its source card now matches exactly',()=>{
+ const r=extract({source,model,skillText:JSON.stringify(skillArray),
+   aliases:{'30001':'古いSSR表記','20001':'架空SR'}});
+ assert.equal(r.stats.cardsWithCandidates,2);
+ assert.equal(r.stats.staleAliasRecords,2);
+ assert.equal(r.stats.reviewedAliases,0);
+});
