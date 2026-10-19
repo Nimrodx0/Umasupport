@@ -2,6 +2,17 @@
   "schemaVersion": 1,
   "skills": [
     {
+      "id": "200801",
+      "name": "先行駆け引き",
+      "rarity": "normal",
+      "checkedAt": "2026-10-19",
+      "scope": "curation-only",
+      "evidence": {
+        "numericId": "https://umamusu.wiki/Game:Skills/200801",
+        "nameAndEffect": "https://gamewith.jp/uma-musume/article/show/257960"
+      }
+    },
+    {
       "id": "201012",
       "name": "後方釘付",
       "rarity": "normal",
