@@ -172,6 +172,70 @@ class ImportTests(unittest.TestCase):
         changed["cards"][0]["events"][0]["id"] = "draft_10099_normal_02"
         self.assertEqual(compare(old, changed)["changedEventOrdinals"], [1])
 
+    def test_no_choice_chain_preserves_exact_numeric_hint_but_never_guarantees_it(self):
+        text = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### 一段目
+選択肢なし | 体力+5
+#### 二段目
+選択肢なし | 『別の技』のヒントLv+1
+### 通常イベント""", 1)
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["proposedEvents"], 2)
+        self.assertEqual(len(result["manualCandidates"]), 2)
+        self.assertEqual(result["manualCandidates"][0]["eventKind"], "auto")
+        self.assertEqual(result["manualCandidates"][0]["facts"], {})
+        second = result["manualCandidates"][1]
+        self.assertEqual(second["category"], "chain")
+        self.assertEqual(second["categoryOrdinal"], 2)
+        self.assertEqual(second["eventKind"], "auto")
+        self.assertEqual(second["facts"]["rewards"],
+                         [{"skillId": "skill:201012", "verifiedSkillName": "別の技", "level": 1}])
+        self.assertNotIn("requires", second)
+        self.assertNotIn("連続", str(result["proposal"]))
+
+    def test_no_choice_event_success_and_failure_keep_distinct_reward_groups(self):
+        text = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### 最終段
+選択肢なし | 成功時：
+体力+5
+『特別スキル◯』のヒントLv+3
+* * *
+失敗時：
+体力+5
+### 通常イベント""", 1)
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["proposedEvents"], 2)
+        case = result["manualCandidates"][0]
+        self.assertEqual(case["eventKind"], "auto")
+        self.assertEqual(case["categoryOrdinal"], 1)
+        self.assertEqual(case["reason"], "nonchoice-event-needs-manual-reachability")
+        self.assertEqual(case["facts"]["outcomes"], [
+            {"id":"success","label":"成功","rewards":[{"skillId":"skill:202992",
+             "verifiedSkillName":"特別スキル○","level":3}]},
+            {"id":"failure","label":"失敗","rewards":[]}
+        ])
+
+    def test_single_non_no_choice_row_does_not_become_auto(self):
+        text = SOURCE.replace("あちらを選ぶ | やる気アップ", "あちらを選ぶ") \
+                     .replace("こちらを選ぶ | 『特別スキル◯』のヒントLv+2", 
+                              "こちらを選ぶ | 『特別スキル◯』のヒントLv+2")
+        r = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(r["manualCandidates"][0]["reason"], "missing-or-ambiguous-choices")
+        self.assertEqual(r["manualCandidates"][0]["choices"], [])
+        self.assertNotIn("eventKind", r["manualCandidates"][0])
+
+    def test_one_sided_no_choice_outcome_is_not_assumed_success(self):
+        text = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### その日の結果
+選択肢なし | 成功時：
+『特別スキル◯』のヒントLv+2
+### 通常イベント""", 1)
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        item = result["manualCandidates"][0]
+        self.assertEqual(item["reason"], "nonchoice-results-need-human-review")
+        self.assertEqual(item["facts"], {})
+        self.assertEqual(result["proposedEvents"], 2)
+
     def test_wrong_character_and_wrong_card_rarity_rejected(self):
         for src, card in [
             (SOURCE.replace("架空ウマ", "別のウマ"), CARD),
