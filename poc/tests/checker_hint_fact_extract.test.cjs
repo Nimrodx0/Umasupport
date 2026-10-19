@@ -55,8 +55,10 @@ test('ambiguous IDs are retained as uncertainty instead of guessed numeric mappi
 });
 test('unknown card join and missing numeric registry rejected',()=>{
  assert.throws(()=>extract({source,model,skillText:'[]'}),/full skill registry/);
- assert.throws(()=>extract({source:{Skills:{...source.Skills,SR:{}}},model,
-  skillText:JSON.stringify(skillArray),aliases:{'20001':'不存在'}}),/Checker取り込み|エイリアス/);
+ const noSR=extract({source:{Skills:{...source.Skills,SR:{}}},model,
+  skillText:JSON.stringify(skillArray),aliases:{'20001':'不存在'}});
+ assert.equal(noSR.stats.cardsWithCandidates,1);
+ assert.equal(noSR.stats.staleAliasRecords,1);
  assert.throws(()=>buildRegistry(JSON.stringify([...skillArray,skillArray[0]])),/duplicated skill/);
 });
 
