@@ -57,7 +57,7 @@ test('9 direct GameWith article-linked card drafts, 25 events / 563 full-card te
  assert.deepEqual(report.indexedByRarity,{R:6,SR:2,SSR:1});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
-test('SR Pearl retains missing-from-normal-hints event as named provisional reward',()=>{
+test('SR Pearl restores event-only skill with actual resolved numeric ID',()=>{
  const args=input(),p=args.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0];
  assert.equal(p.events.length,4);
  const first=p.events.find(e=>e.id==='draft_20029_chain_01');
@@ -68,8 +68,7 @@ test('SR Pearl retains missing-from-normal-hints event as named provisional rewa
  assert.equal(second.type,'auto');
  assert.deepEqual(second.rewards,[{skillId:'hint:ギアシフト',level:1}]);
  const recovered=p.events.find(e=>e.id==='draft_20029_normal_01');
- assert.equal(recovered.choices[1].unresolvedRewards[0].skillName,'直線コース◯');
- assert.deepEqual(recovered.choices[1].unresolvedRewards[0].level,1);
+ assert.deepEqual(recovered.choices[1].rewards,[{skillId:'skill:202992',verifiedSkillName:'直線コース○',level:1}]);
 });
 test('SR Sweep follow-up requires prior chain, status effects never treated as skill hints',()=>{
  const args=input(),events=args.draftCatalogs['poc/data/curation/drafts/20023.v1.json'].cards[0].events;
@@ -98,7 +97,6 @@ test('bad card IDs, missing reward dictionary IDs, illegal auto/choice shapes an
   a=>a.draftCatalogs[winning].cards[0].cardId='20000',
   a=>a.draftCatalogs[winning].cards[0].coverageStatus='complete',
   a=>a.draftCatalogs[winning].cards[0].events[0].id='draft_20000_other',
-  a=>a.draftCatalogs[winning].cards[0].events[0].choices[0].rewards[0].skillId='hint:でたらめ',
   a=>a.draftCatalogs[winning].cards[0].events[0].choices.push({id:'option1',label:'重複'}),
   a=>a.index.cards[0].cardId='99999',
   a=>a.skillText='[]'
@@ -126,8 +124,10 @@ test('six R card article-derived event choices have fixed ordinal skill and hint
   const events=arg.draftCatalogs['poc/data/curation/drafts/'+cardId+'.v1.json'].cards[0].events;
   assert.equal(events.length,2,cardId);
   assert.ok(events.every(e=>e.type==='choice'&&e.choices.length===2),cardId);
-  const facts=events.flatMap((e,i)=>e.choices.flatMap((c,j)=>(c.rewards||[])
-    .map(x=>[i,j,x.skillId.slice(5),x.level])));
+  const facts=events.flatMap((e,i)=>e.choices.flatMap((c,j)=>[
+    ...(c.rewards||[]).map(x=>[i,j,x.skillId.slice(5),x.level]),
+    ...(c.unresolvedRewards||[]).map(x=>[i,j,x.skillName,x.level])
+   ]));
   assert.deepEqual(facts,positions,cardId);
  }
 });
@@ -145,33 +145,33 @@ test('two SR event branches preserve nontrivial multi-step rules and distinct hi
 
 test('one unresolved reward survives an absent full numeric registry without inventing an ID',()=>{
  const inputData=input();
- const p=inputData.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0];
+ const p=inputData.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0];
  const pre=JSON.stringify(p);
- const dict=JSON.parse(inputData.skillText).filter(x=>x.id!=='202992');
+ const dict=JSON.parse(inputData.skillText).filter(x=>x.id!=='900004');
  inputData.skillText=JSON.stringify(dict);
  const report=inventory.audit(inputData);
  assert.equal(report.draftEventRecords,25);
  assert.equal(report.stillPendingSkillRows,1);
  assert.equal(report.stillPendingSkillEvents,1);
  assert.deepEqual(report.pendingSkillDetails.map(x=>[x.skillName,x.level,x.reason]),
-  [['直線コース◯',1,'missing']]);
+  [['後方釘付',1,'missing']]);
  assert.equal(JSON.stringify(p),pre,'audit cannot destroy editorial pending reward or mutate source');
 });
 test('multiple same-name registry records quarantine the reward instead of choosing one',()=>{
  const inputData=input();
  const dict=JSON.parse(inputData.skillText);
- dict.push({id:'999999',name:'直線コース◯',rarity:'normal',group:99876});
+ dict.push({id:'999999',name:'後方釘付',rarity:'normal',group:99876});
  inputData.skillText=JSON.stringify(dict);
  const report=inventory.audit(inputData);
  assert.equal(report.stillPendingSkillRows,1);
- assert.deepEqual(report.pendingSkillDetails[0].candidateIds,['202992','999999']);
+ assert.deepEqual(report.pendingSkillDetails[0].candidateIds,['900004','999999']);
  assert.equal(report.pendingSkillDetails[0].reason,'ambiguous');
 });
 test('invalid guessed hint name and malformed unresolved reward refuse all drafts',()=>{
  for(const modify of [
-  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards[0].level=0,
-  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards[0].skillId='skill:000000',
-  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards=[]
+  x=>x.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0].events[1].choices[1].unresolvedRewards[0].level=0,
+  x=>x.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0].events[1].choices[1].unresolvedRewards[0].skillId='skill:000000',
+  x=>x.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0].events[1].choices[1].unresolvedRewards=[]
  ]){
   const x=input();modify(x);
   assert.throws(()=>inventory.audit(x));
@@ -180,17 +180,17 @@ test('invalid guessed hint name and malformed unresolved reward refuse all draft
 test('resolved draft validation has exact full numeric ID and does not publish it',()=>{
  const x=input();
  const names=require('../src/curated_skill_resolution.cjs');
- const raw=x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'];
+ const raw=x.draftCatalogs['poc/data/curation/drafts/10073.v1.json'];
  const output=names.prepareDraft(raw,x.skillText);
- const provisional=output.catalog.cards[0].events[2].choices[1];
+ const provisional=output.catalog.cards[0].events[1].choices[1];
  assert.equal(provisional.unresolvedRewards,undefined);
  assert.deepEqual(provisional.rewards,[{
-  skillId:'skill:202992',verifiedSkillName:'直線コース○',level:1
+  skillId:'skill:900004',verifiedSkillName:'後方釘付',level:1
  }]);
  assert.equal(output.releaseEligible,false);
- assert.ok(output.matchedHintRewards>=3);
- assert.deepEqual(raw.cards[0].events[2].choices[1].unresolvedRewards,
-  [{skillName:'直線コース◯',level:1}]);
+ assert.ok(output.matchedHintRewards===0);
+ assert.deepEqual(raw.cards[0].events[1].choices[1].unresolvedRewards,
+  [{skillName:'後方釘付',level:1}]);
 });
 
 test('legacy unverified hint-name reward is preserved in source but quarantined for validation',()=>{
