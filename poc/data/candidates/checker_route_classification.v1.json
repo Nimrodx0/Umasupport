@@ -27,6 +27,8 @@
       "typography-suggestion": 29
     },
     "historicalDirectRowsWithoutStrictTitleLink": 63,
+    "historicalDirectRowsWithTypographySuggestion": 29,
+    "historicalDirectRowsWithNoTitleLink": 34,
     "choiceAndHintMarkers": {
       "conditionalOrUnparsedChoiceRows": 249,
       "unresolvedHintRows": 98
@@ -41603,378 +41605,441 @@
       "cardId": "20003",
       "historicalStoryId": "820003002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20019",
       "historicalStoryId": "820019002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20024",
       "historicalStoryId": "820024002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20056",
       "historicalStoryId": "820056001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20056",
       "historicalStoryId": "820056002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20058",
       "historicalStoryId": "820058002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20078",
       "historicalStoryId": "820078001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20084",
       "historicalStoryId": "820084001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20084",
       "historicalStoryId": "820084002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "20089",
       "historicalStoryId": "820089002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30004",
       "historicalStoryId": "830004001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30004",
       "historicalStoryId": "830004003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30023",
       "historicalStoryId": "830023002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30030",
       "historicalStoryId": "830030003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30043",
       "historicalStoryId": "830043003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30043",
       "historicalStoryId": "830043004",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30060",
       "historicalStoryId": "830060003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30067",
       "historicalStoryId": "830067006",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30067",
       "historicalStoryId": "830067031",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30070",
       "historicalStoryId": "830070003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30076",
       "historicalStoryId": "830076001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30076",
       "historicalStoryId": "830076002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30076",
       "historicalStoryId": "830076003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30081",
       "historicalStoryId": "830081009",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30096",
       "historicalStoryId": "830096002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30104",
       "historicalStoryId": "830104003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30108",
       "historicalStoryId": "830108003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30108",
       "historicalStoryId": "830108004",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30131",
       "historicalStoryId": "830131001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30137",
       "historicalStoryId": "830137005",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30137",
       "historicalStoryId": "830137006",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30137",
       "historicalStoryId": "830137007",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30139",
       "historicalStoryId": "830139003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30143",
       "historicalStoryId": "830143002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30174",
       "historicalStoryId": "830174002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30178",
       "historicalStoryId": "830178001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30178",
       "historicalStoryId": "830178002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30178",
       "historicalStoryId": "830178003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30180",
       "historicalStoryId": "830180004",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30185",
       "historicalStoryId": "830185002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30195",
       "historicalStoryId": "830195003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30198",
       "historicalStoryId": "830198001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30198",
       "historicalStoryId": "830198002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30203",
       "historicalStoryId": "830203003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30205",
       "historicalStoryId": "830205003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30213",
       "historicalStoryId": "830213003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30232",
       "historicalStoryId": "830232003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30233",
       "historicalStoryId": "830233001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30240",
       "historicalStoryId": "830240001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30240",
       "historicalStoryId": "830240002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30240",
       "historicalStoryId": "830240003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30241",
       "historicalStoryId": "830241004",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30241",
       "historicalStoryId": "830241021",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30241",
       "historicalStoryId": "830241030",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30245",
       "historicalStoryId": "830245002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30252",
       "historicalStoryId": "830252002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30259",
       "historicalStoryId": "830259001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "typography-only-title-suggestion",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30264",
       "historicalStoryId": "830264002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30267",
       "historicalStoryId": "830267001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30267",
       "historicalStoryId": "830267002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30269",
       "historicalStoryId": "830269001",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30269",
       "historicalStoryId": "830269002",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     },
     {
       "cardId": "30269",
       "historicalStoryId": "830269003",
       "reason": "historical-direct-title-not-strictly-matched",
+      "diagnostic": "no-provisional-title-link",
       "confirmedMissingIn2026": false
     }
   ],
