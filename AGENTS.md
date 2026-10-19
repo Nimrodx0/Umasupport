@@ -197,3 +197,9 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-19：R/SRの第一独自イベントデータ収録バッチ（PR #82）
 
 [出典と既知の欠損](docs/curated-event-intake.md)を参照。GameWith個別記事に直接当たり、固定UmaSimサポカIDに照合して、独自JSON草稿9枚24イベント。内訳 R6枚12、SR2枚7、SSR1枚5。GameWith原文は同梱しない。SR20029の通常イベント1件（「直線コース◯」）はID照合未完なので**草稿に入っていない**。ないことがゲームにない証明ではない。Rの取得選択肢位置とLv、SR打ち切り・連続進行は回帰テストで固定し、今後もGameWith・UmaSimと照合する。通常版のイベント公開0件と、外部候補45枚の試用は変更しない。新しい草稿は`poc/data/curation/source_index.v1.json`と各`drafts/*.json`へ入力し、CIの実ソース監査を合格させる。
+
+## 2026-10-19：イベント用スキルの全辞書解決・未照合原稿（PR #83）
+
+**要点**：サポカ通常ヒント名が存在しない≠ゲームにスキルが存在しない。草稿用の `poc/src/curated_skill_resolution.cjs` で固定UmaSim `skill_data.txt` 全normal/rare数値IDを照合。 `hint:名前` も完全辞書にある正確な単一IDへ変換してから `skill_bridge.prepare` へ渡す。「○」「◯」は検索時のみ同一視。欠損や同名ID複数は推定せず原稿の `unresolvedRewards:[{skillName,level}]` を保持し、CLIでpending件数と場所を報告。一般用イベントスキーマと公開SHAゲートは未照合報酬の公開を拒否する。20029通常1選択肢2を復旧して**9枚25候補**、本番イベントDB0件。IDを手作業で創作しない。今後も通常ヒントリストだけで存在判定しない。
+
+**実監査による更新:** SR20029の未照合は固定UmaSim全辞書 `202992` で解決したので、元草稿にも正規数値IDを保存済み。R10073「後方釘付」が固定全辞書で未解決のため、イベントと選択肢を残し `unresolvedRewards` で保持中。実草稿9枚25イベント・未解決報酬1件、公開0件。最新の固定UmaSim 2,139件にないことはゲームに存在しない証明にならない。

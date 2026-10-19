@@ -32,9 +32,9 @@
             {
               "id": "option2",
               "label": "選択肢2",
-              "rewards": [
+              "unresolvedRewards": [
                 {
-                  "skillId": "hint:後方釘付",
+                  "skillName": "後方釘付",
                   "level": 1
                 }
               ]

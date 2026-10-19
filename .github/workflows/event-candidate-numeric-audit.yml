@@ -8,6 +8,10 @@ on:
       - poc/src/community_candidate_preview.js
       - poc/src/event_preview_loader.js
       - poc/src/curated_event_inventory.cjs
+      - poc/src/curated_skill_resolution.cjs
+      - poc/src/skill_bridge.js
+      - poc/src/event_schema.js
+      - poc/src/event_release_gate.cjs
       - poc/tools/report_curated_event_inventory.cjs
       - poc/tests/curated_event_inventory.test.cjs
       - 'poc/data/curation/**'

@@ -5,6 +5,7 @@
 'use strict';
 const schema=require('./event_schema.js');
 const bridge=require('./skill_bridge.js');
+const names=require('./curated_skill_resolution.cjs');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
@@ -46,7 +47,10 @@ function audit({index,model,draftCatalogs,publicCatalog,skillText}){
   draftCards:0,draftEventRecords:0,untrackedCards:ids.size-sourceCards.length,
   releasedCards:publicCatalog.cards.length,
   releasedEventRecords:publicCatalog.cards.reduce((n,c)=>n+(Array.isArray(c.events)?c.events.length:0),0),
-  indexedByRarity:{R:0,SR:0,SSR:0},rosterByRarity:{R:0,SR:0,SSR:0}};
+  indexedByRarity:{R:0,SR:0,SSR:0},rosterByRarity:{R:0,SR:0,SSR:0},
+  normalHintRewardIdsMatched:0,draftNamedUnresolvedRows:0,
+  namedRewardsMatchedFromFullRegistry:0,stillPendingSkillRows:0,
+  stillPendingSkillEvents:0,pendingSkillDetails:[]};
  for(const card of model.cards){
   if(!own(stats.rosterByRarity,card.rarity))fail('カードレアリティが不正: '+card.id);
   stats.rosterByRarity[card.rarity]++;
@@ -76,9 +80,20 @@ function audit({index,model,draftCatalogs,publicCatalog,skillText}){
   }
   // Event schema and numeric-skill ID/name bridge are the *same* as live app.
   // No draft is attached to model and no publication flag is set here.
-  let prepared;
-  try{prepared=bridge.prepare(model,doc,skillText,{fullRegistry:false});}
-  catch(e){fail(row.cardId+': スキル照合失敗 '+e.message);}
+  let prepared,unresolved;
+  try{
+    // Draft-only transformation validates ALL names against skill_data.txt.
+    // It never attaches to the real model or overwrites the editorial draft.
+    unresolved=names.prepareDraft(doc,skillText);
+    prepared=bridge.prepare(model,unresolved.catalog,skillText,{fullRegistry:false});
+  }catch(e){fail(row.cardId+': スキル照合失敗 '+e.message);}
+  stats.normalHintRewardIdsMatched+=unresolved.matchedHintRewards;
+  stats.draftNamedUnresolvedRows+=unresolved.resolvedNames.length+unresolved.pending.length;
+  stats.namedRewardsMatchedFromFullRegistry+=unresolved.resolvedNames.length;
+  stats.stillPendingSkillRows+=unresolved.pending.length;
+  const uniquePending=new Set(unresolved.pending.map(x=>x.location.split('/').slice(0,2).join('/')));
+  stats.stillPendingSkillEvents+=uniquePending.size;
+  stats.pendingSkillDetails.push(...unresolved.pending);
   const candidateSkills={...model.skillById,
    ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))};
   let coverage;
