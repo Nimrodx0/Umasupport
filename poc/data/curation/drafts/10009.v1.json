@@ -30,8 +30,9 @@
               "label": "選択肢1",
               "rewards": [
                 {
-                  "skillId": "hint:先行駆け引き",
-                  "level": 1
+                  "skillId": "skill:200801",
+                  "level": 1,
+                  "verifiedSkillName": "先行駆け引き"
                 }
               ]
             },
