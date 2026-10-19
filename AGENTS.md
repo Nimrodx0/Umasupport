@@ -14,6 +14,10 @@
 
 [経路分類の仕様・監査](docs/route-classification-audit-20261019.md)を正本とする。SSR/SR417枚2,109件を漏れなく `needs-review` 等で分類し、古い2025年マスターの数値story_idを同一カードのイベント見出しハッシュで一括**仮照合**する。`strict-unique` でもID・連続・選択・成功結果・報酬が2026年の実ゲームで認証されたという意味はない。Checker空カードはカード単位 `source-gap`、旧版だけのstory IDは `historicalPossibleGaps` で`confirmedMissingIn2026:false`。レビュー・本番承認0件を勝手に増やさない。生成先 `poc/data/candidates/checker_route_classification.v1.json`、検証 `poc/tools/verify_route_classification.cjs`。候補の原文章・ゲームマスターSQLiteはGitへ同梱しない。
 
+## 2026-10-19：連続イベント段階の全件数値照合（PR #102）
+
+[2025年ゲームマスターのchainNum/chainMax/isGroupChain監査](docs/historical-chain-stage-audit-20261019.md)。SSR/SRの仮対応954件中、正数段階910件、非標準段階44件。カード内の同じ総段階数・グループフラグに従う349グループのうち**312グループ・841イベントが数値段階上完備、33欠落、4段階衝突**。すべて「旧マスター上の構造診断」に過ぎず、2026年での経路・報酬承認は0件。ヒント未解決・成功/失敗・選択肢打ち切りを保留。生成先 `poc/data/candidates/checker_chain_stage_audit.v1.json`、コード `poc/src/candidate_chain_stage_audit.cjs`、検証 `node poc/tools/build_candidate_chain_stage_audit.cjs --verify`。ゲーム原文とマスターSQLiteはGitに追加しない。
+
 ## 最初に読む順序
 
 1. [README.md](README.md)：公開版・現在の状態と各文書の入口。
