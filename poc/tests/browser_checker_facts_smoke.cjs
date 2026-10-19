@@ -34,8 +34,17 @@ function supportData(){
 const numericIds=[...new Set(facts.cards.flatMap(c=>c.events.flatMap(e=>
  e.choices.flatMap(ch=>ch.resultCandidates.flatMap(result=>
   result.skillHints.map(s=>s.skillId))))))];
-const skills=JSON.stringify(numericIds.map((id,i)=>({
- id,name:'架空数値スキル'+id,rarity:'normal',group:10000+i})));
+const dictRows=numericIds.map((id,i)=>({
+ id,name:'架空数値スキル'+id,rarity:'normal',group:10000+i}));
+for(const p of require('../src/skill_hierarchy.js').PAIRS){
+ if(!numericIds.includes(p.goldId)&&!numericIds.includes(p.whiteId))continue;
+ for(const [id,name,rarity] of [[p.goldId,p.goldName,'rare'],[p.whiteId,p.whiteName,'normal']]){
+  let row=dictRows.find(x=>x.id===id);
+  if(!row){row={id};dictRows.push(row);}
+  Object.assign(row,{name,rarity,group:p.group});
+ }
+}
+const skills=JSON.stringify(dictRows);
 function serve(){
  return http.createServer(async(req,res)=>{
   try{
