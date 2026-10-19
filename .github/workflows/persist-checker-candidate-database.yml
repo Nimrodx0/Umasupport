@@ -1,0 +1,92 @@
+name: Build pinned factual candidate database (owner only)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/persist-checker-candidate-database.yml
+      - poc/src/checker_candidate_database.cjs
+      - poc/tools/build_checker_candidate_database.cjs
+      - poc/tests/checker_candidate_database.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    # Write credentials are used ONLY for an authorized first-party branch.
+    # Forks/other authors cannot execute third-party code with write privileges.
+    if: >-
+      github.repository == 'Nimrodx0/Umasupport' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'Nimrodx0' &&
+      github.event.pull_request.head.ref == 'feat/persist-checker-facts-db-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regression test strict fact-only schema
+        run: node --test poc/tests/checker_candidate_database.test.cjs
+      - name: Fetch fixed public GitHub source revisions into ephemeral runner temp
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/checker-persistent-source"
+          mkdir -p "$dir"
+          curl --fail --show-error --silent --location --retry 1 --max-time 90 \
+            --output "$dir/support_card.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt"
+          curl --fail --show-error --silent --location --retry 1 --max-time 90 \
+            --output "$dir/skill_data.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt"
+          curl --fail --show-error --silent --location --retry 1 --max-time 90 \
+            --output "$dir/checker.json" \
+            "https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json"
+          curl --fail --show-error --silent --location --retry 1 --max-time 90 \
+            --output "$dir/cruise.json" \
+            "https://raw.githubusercontent.com/po-po-po-pong/umaumacruise_customjson/56b679c582ce2138823eb52796d553d33cdd4862/UmaMusumeLibrary.json"
+          echo "153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424  $dir/support_card.txt" | sha256sum --check
+          echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $dir/skill_data.txt" | sha256sum --check
+      - name: Build and validate original fact-only database
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/checker-persistent-source"
+          node poc/tools/build_checker_candidate_database.cjs \
+            "$dir/support_card.txt" "$dir/skill_data.txt" \
+            "$dir/checker.json" "$dir/cruise.json" \
+            poc/data/candidates/checker_event_hints.v1.json \
+            > "$dir/build-summary.json"
+          node poc/tools/query_checker_candidate_database.cjs > "$dir/verify-summary.json"
+          node poc/tools/verify_event_release.cjs
+          node - "$dir/verify-summary.json" <<'NODE'
+          const fs=require('node:fs');
+          const {summary,status}=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          console.log('Committed DB acceptance totals:',JSON.stringify(summary));
+          if(status!=='UNREVIEWED_NOT_FOR_PUBLICATION'||
+              summary.cards!==417||summary.events!==2109||
+              summary.choices!==3458||summary.numericHints!==1406||
+              summary.pendingHints!==98||summary.reviewEntries!==344)
+            throw Error('Cannot commit unexpected source-derived candidate DB');
+          NODE
+      - name: Commit only the fact-only Umasupport database to the originating branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- poc/data/candidates/checker_event_hints.v1.json
+          if git diff --cached --quiet; then
+            echo 'Database matches pinned source: no commit necessary'
+          else
+            git commit -m 'data: persist 417-card text-free unreviewed event candidate database'
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
