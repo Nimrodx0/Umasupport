@@ -31,6 +31,9 @@ function build(db,classification){
  validate(db);
  const reference=new Map(db.cards.map(c=>[c.cardId,new Map(c.events.map(e=>[e.sourceKey,e]))]));
  const groups=[],unsequenced=[];
+ const firstPassBuckets={readyForIndependentRouteReview:0,noObservedHints:0,
+  needsConditionalOutcomeReview:0,needsSkillIdReview:0,needsBothReviews:0,
+  structuralDiscrepancy:0};
  const count={stageGroups:0,stageCompleteUnique:0,stageIncomplete:0,stageAmbiguous:0,
   stageEvents:0,unsequencedStrictEvents:0,stageCompleteUniqueEventRows:0,
   stageGroupsWithFlaggedChoices:0,stageCompleteGroupsWithFlaggedChoices:0,
@@ -80,8 +83,16 @@ function build(db,classification){
    const flagged=members.some(e=>e.flaggedChoices>0);
    const unresolved=members.some(e=>e.unresolvedHintMentions>0);
    const hints=members.some(e=>e.hintMentions>0);
+   // "No detected condition" is only a triage heuristic. Every route still
+   // requires an independent choice/outcome and in-game verification.
+   const reviewBand=status!=='stage-complete-unique'?'structuralDiscrepancy':
+     flagged&&unresolved?'needsBothReviews':
+     unresolved?'needsSkillIdReview':
+     flagged?'needsConditionalOutcomeReview':
+     !hints?'noObservedHints':'readyForIndependentRouteReview';
+   firstPassBuckets[reviewBand]++;
    groups.push({cardId:card.cardId,chainMax:max,isGroupChain:flag===1,
-    structuralStatus:status,missingStages,events:members,
+    structuralStatus:status,reviewBand,missingStages,events:members,
     needsCurrentGameReview:true,needsChoiceOutcomeReview:true});
    count.stageGroups++;
    if(status==='stage-complete-unique'){
@@ -116,7 +127,8 @@ function build(db,classification){
   sourcePins:{candidateInputSha256:classification.candidateInputSha256,
    historicalMasterRevision:classification.sourcePins.historicalMaster.revision,
    historicalMasterSha256:classification.sourcePins.historicalMaster.sha256},
-  totals:{...count,strictProvisionalEvents:evidence.strictProvisionalLinks,
+  totals:{...count,reviewBands:firstPassBuckets,
+   strictProvisionalEvents:evidence.strictProvisionalLinks,
    verifiedGameChains:0,verifiedRewards:0},
   chainGroups:groups,unsequencedStrictEvents:unsequenced,
   warning:'A structurally complete 2025 chainNum/chainMax stage set is not a confirmed 2026 chain. A shared max/flag within a card is not proof of one chain if multiple chains have identical coordinates; any duplicate stage is ambiguous. All choice/outcome/termination/reward/publication conditions remain unverified.'
