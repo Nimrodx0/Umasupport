@@ -28,10 +28,26 @@ function buildRegistry(sourceText){
  return byName;
 }
 function extract({source,model,skillText,aliases={}}){
- const catalog=pipeline.inventory({source,model,aliases});
+ // Aliases are for cards that have NO strict source-name match. As the
+ // community data evolves, a previously aliased card may become an exact
+ // name match. Never let a stale alias override that exact join.
+ const strict=pipeline.inventory({source,model,aliases:{}});
+ const matched=new Set(strict.cards.map(x=>x.cardId));
+ const activeAliases={},staleAliasIds=[];
+ for(const [id,name] of Object.entries(aliases)){
+  if(matched.has(id)){staleAliasIds.push(id);continue;}
+  const card=model.cardById?.[id]||model.cards.find(x=>x.id===id);
+  if(!card)throw Error('unknown alias card ID '+id);
+  const rows=Object.keys(source.Skills[card.rarity]||{})
+   .filter(x=>norm(x)===norm(name));
+  if(rows.length>1)throw Error('ambiguous alias source '+id);
+  if(rows.length===0){staleAliasIds.push(id);continue;}
+  activeAliases[id]=name;
+ }
+ const catalog=pipeline.inventory({source,model,aliases:activeAliases});
  const byName=buildRegistry(skillText);
  const results=[],stats={
-  cardsWithCandidates:0,eventsObserved:0,choiceRowsObserved:0,
+  staleAliasRecords:staleAliasIds.length,\n  cardsWithCandidates:0,eventsObserved:0,choiceRowsObserved:0,
   extractedHintRows:0,matchedNumericHints:0,
   unresolvedHints:0,ambiguousHints:0,
   conditionalChoiceRows:0,unparsedHintChoiceRows:0
@@ -39,7 +55,7 @@ function extract({source,model,skillText,aliases={}}){
  for(const card of catalog.cards){
   const modelCard=model.cardById?.[card.cardId]||model.cards.find(x=>x.id===card.cardId);
   if(!modelCard)throw Error('unrecognized card ID '+card.cardId);
-  const name=card.join==='reviewed-name-alias'?aliases[card.cardId]:modelCard.name;
+  const name=card.join==='reviewed-name-alias'?activeAliases[card.cardId]:modelCard.name;
   const bucket=source.Skills[card.rarity];
   const sourceRows=Object.entries(bucket).filter(([key])=>norm(key)===norm(name));
   if(sourceRows.length!==1)throw Error('ambiguous Checker card source for '+card.cardId);
