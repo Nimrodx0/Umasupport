@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "10016",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257587",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10016.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "30311",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/573288",
+      "articleCheckedAt": "2026-10-18",
+      "draftFile": "poc/data/preview/efforia30311.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    }
+  ]
+}
