@@ -22,7 +22,8 @@ function main(){
   row.draftFile,readJSON(row.draftFile)
  ]));
  const stats=inventory.audit({index,model,draftCatalogs:drafts,
-  publicCatalog:readJSON('poc/data/reviewed_events.v1.json'),skillText});
+  publicCatalog:readJSON('poc/data/reviewed_events.v1.json'),skillText,
+  supplementalSkills:readJSON('poc/data/curation/supplemental_skills.v1.json')});
  console.log(JSON.stringify({source:'Pinned UmaSim support_card + skill_data; GameWith-first editorial index (NO article download)',
   ...stats,coverageScope:'Draft entry count is NOT game event completeness; all draft cards partial',
   note:'No draft enters the live production reviewed-event catalog through this report'},null,2));
