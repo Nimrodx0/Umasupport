@@ -217,3 +217,7 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 ## 2026-10-19：GameWithオフライン収録器（PR #86）
 
 詳細 [docs/gamewith-offline-ingest.md](docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` はユーザーが合法的に用意したMarkdown/HTML/可読テキストを**ローカルからのみ**解釈し、通常イベント枝を候補JSONとして提案。 `batch_gamewith_import.py` は固定UmaSim全563枚のカードごとにソース紐付け・欠損・解析状態の一覧を作る。GameWithへのHTTP取得は一切実装していない。記事タイトル／レアリティ／SR,SSR二つ名を照合し、報酬名を全数値スキル辞書・補完台帳と突き合わせ、結果依存や連続分岐は自動獲得にせず要手動へ。CIは架空例によるPythonテスト。生ページのHTMLでの正常率は未検証。 `poc/inputs/` と `local-data/` はGit除外。元JSONを上書きするコードは禁止、元記事原文も同梱禁止。GameWith日本語規約のWeb参照では大規模取得の権利を確認できていないため全件GET未実施。既存草稿20枚47件・承認0件。
+
+## 2026-10-19：オフラインGameWith候補の連続・成功分岐解析（PR #87）
+
+詳細は [docs/gamewith-offline-ingest.md](docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` の `manualCandidates` に、SR連続各段・SSRの成功／大成功による異なる数値スキル／Lv報酬を保留データとして残す。公開 `proposal` へ昇格させず、到達条件・打ち切り・出典差は人手で確かめる。未処理の通常イベントによる仮IDの再採番を修正し、差分比較でイベントIDとresult treeを照合。テストは人工R/SR/SSRモデルのみ。実サイトの563枚一括HTTP取得やGameWith記事原文の再配布は禁止。
