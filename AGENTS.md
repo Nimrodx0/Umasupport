@@ -6,6 +6,10 @@
 
 [取得方法と利用許可の意思決定](docs/event-data-acquisition-rights-20261019.md)を正本とする。事実データ（ヒントLv・カードID・スキルID等）と第三者の文章・画像の著作物性を混同しない。またGameWith.jp利用規約による大量自動アクセスの条件は著作権上の扱いとは**独立**。英語版gamewith.netの創作許諾はgamewith.jpに適用されない。**GameWithの大規模GETは正式な許可・範囲が確定するまで実行しない**。記事・メディア問い合わせ窓口と具体的な質問を上記文書に記載。許可がなくても既存Checker候補の構造統計・UmaSim実ID検査・Wiki数値照合などの既存オフライン作業を止める理由にはならない。ただし第三者出典の大量データを権利未確認で本番DBへ無審査転用しない。563枚を1枚ずつ手入力する方式には戻さず、一括処理＋例外だけ人手審査を主軸とする。
 
+## 2026-10-19：417枚の一括候補をウマサルタントの独自DBに永続化（PR #100）
+
+[正本](docs/checker-persistent-candidate-database.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
+
 ## 最初に読む順序
 
 1. [README.md](README.md)：公開版・現在の状態と各文書の入口。
