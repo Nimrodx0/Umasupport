@@ -9,11 +9,11 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const index=read('poc/data/curation/source_index.v1.json');
 const SKILLS=require('../src/efforia30311_review_preview.cjs').SKILLS;
 const indexed={
- '10002':'R','10016':'R','10047':'R','10073':'R','10125':'R','10132':'R',
+ '10001':'R','10002':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
  '20023':'SR','20029':'SR','30311':'SSR'
 };
 const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付','前列狙い','ペースアップ',
- 'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み'];
+ 'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み','別腹タンク','軽い足取り'];
 function input(){
  const active=Object.entries(indexed).map(([id,rarity])=>({
   id,name:'カード'+id,rarity,hints:[],events:[]
@@ -41,13 +41,13 @@ function input(){
   publicCatalog:read('poc/data/reviewed_events.v1.json'),
   supplementalSkills:read('poc/data/curation/supplemental_skills.v1.json')};
 }
-test('9 direct GameWith article-linked card drafts, 25 events / 563 full-card test roster, 0 released',()=>{
+test('13 direct GameWith article-linked card drafts, 33 events / 563 full-card test roster, 0 released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
- assert.equal(report.sourceIndexedCards,9);
- assert.equal(report.draftCards,9);
- assert.equal(report.draftEventRecords,25);
+ assert.equal(report.sourceIndexedCards,13);
+ assert.equal(report.draftCards,13);
+ assert.equal(report.draftEventRecords,33);
  assert.equal(report.draftNamedUnresolvedRows,1);
  assert.equal(report.namedRewardsMatchedFromFullRegistry,0);
  assert.equal(report.namedRewardsMatchedFromSupplement,1);
@@ -55,9 +55,9 @@ test('9 direct GameWith article-linked card drafts, 25 events / 563 full-card te
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.stillPendingSkillEvents,0);
  assert.ok(report.normalHintRewardIdsMatched>=12);
- assert.equal(report.untrackedCards,554);
+ assert.equal(report.untrackedCards,550);
  assert.equal(report.releasedEventRecords,0);
- assert.deepEqual(report.indexedByRarity,{R:6,SR:2,SSR:1});
+ assert.deepEqual(report.indexedByRarity,{R:10,SR:2,SSR:1});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
 test('SR Pearl restores event-only skill with actual resolved numeric ID',()=>{
@@ -113,13 +113,17 @@ test('non-indexed cards are not allowed in production catalog',()=>{
  assert.throws(()=>inventory.audit(arg),/公開DBのカードが独自出典索引/);
 });
 
-test('six R card article-derived event choices have fixed ordinal skill and hint level positions',()=>{
+test('R card article-derived event choices retain skill, choice ordinal, hint levels',()=>{
  const arg=input();
  const expected={
+  '10001':[[0,0,'別腹タンク',1]],
   '10002':[[1,1,'左回り○',1]],
   '10016':[[0,0,'差しコーナー○',1]],
   '10047':[[1,0,'ペースアップ',1]],
+  '10050':[],
+  '10061':[[0,1,'skill:202992',1],[1,1,'ウマ好み',3]],
   '10073':[[1,1,'後方釘付',1]],
+  '10087':[[1,1,'軽い足取り',2]],
   '10125':[[0,1,'前列狙い',1]],
   '10132':[[0,0,'直線巧者',1]]
  };
@@ -128,7 +132,7 @@ test('six R card article-derived event choices have fixed ordinal skill and hint
   assert.equal(events.length,2,cardId);
   assert.ok(events.every(e=>e.type==='choice'&&e.choices.length===2),cardId);
   const facts=events.flatMap((e,i)=>e.choices.flatMap((c,j)=>[
-    ...(c.rewards||[]).map(x=>[i,j,x.skillId.slice(5),x.level]),
+    ...(c.rewards||[]).map(x=>[i,j,x.skillId.startsWith('hint:')?x.skillId.slice(5):x.skillId,x.level]),
     ...(c.unresolvedRewards||[]).map(x=>[i,j,x.skillName,x.level])
    ]));
   assert.deepEqual(facts,positions,cardId);
@@ -152,7 +156,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
  const pre=JSON.stringify(p);
  inputData.supplementalSkills={schemaVersion:1,skills:[]};
  const report=inventory.audit(inputData);
- assert.equal(report.draftEventRecords,25);
+ assert.equal(report.draftEventRecords,33);
  assert.equal(report.stillPendingSkillRows,1);
  assert.equal(report.stillPendingSkillEvents,1);
  assert.deepEqual(report.pendingSkillDetails.map(x=>[x.skillName,x.level,x.reason]),
