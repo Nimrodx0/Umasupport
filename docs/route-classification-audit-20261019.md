@@ -34,6 +34,7 @@ PR #100で保存した `poc/data/candidates/checker_event_hints.v1.json`（SSR/S
 - 一括分類器：`poc/tools/classify_candidate_event_routes.py`
 - 一時fingerprint生成：`poc/tools/build_checker_fingerprint_inventory.cjs`
 - 厳格照合：`poc/src/route_classification_verify.cjs` と `poc/tools/verify_route_classification.cjs`
+- 数値カードIDによる参照：`node poc/tools/query_candidate_event_routes.cjs 30241`。イベントの候補story ID、未確認理由、旧マスター残差、P0/P1/P2キューを**記事原文なしで**確認できる。
 - 実データ限定検証：`.github/workflows/classify-checker-route-coverage.yml`
 - 人工データ異常・一意性テスト：`poc/tests/test_classify_candidate_event_routes.py`
 
