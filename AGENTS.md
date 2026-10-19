@@ -221,3 +221,7 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 ## 2026-10-19：オフラインGameWith候補の連続・成功分岐解析（PR #87）
 
 詳細は [docs/gamewith-offline-ingest.md](docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` の `manualCandidates` に、SR連続各段・SSRの成功／大成功による異なる数値スキル／Lv報酬を保留データとして残す。公開 `proposal` へ昇格させず、到達条件・打ち切り・出典差は人手で確かめる。未処理の通常イベントによる仮IDの再採番を修正し、差分比較でイベントIDとresult treeを照合。テストは人工R/SR/SSRモデルのみ。実サイトの563枚一括HTTP取得やGameWith記事原文の再配布は禁止。
+
+## 2026-10-19：SSR30003／SR20043の条件分岐実例追加（PR #88）
+
+サポカ個別記事から選択肢原文を除いたスキル・ヒントLv情報を草稿へ登録。SSRトウカイテイオー30003は連続3段が自動イベントで、最終段にskill:200371、一方SRスペシャルウィーク20043は連続2段目の成功だけでskill:201902。報酬獲得保証やゲーム内部story IDは推定しない。全カードの編集草稿は22枚56件、未着手541枚、承認公開0件。主要複雑構造の検査をpoc/tests/curated_event_inventory.test.cjsで保証し、出典はpoc/data/curation/source_index.v1.jsonに登録。記事本文・画像の複製は禁止。
