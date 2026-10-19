@@ -63,7 +63,7 @@ GitHub Actionsは固定Checker候補DB（417枚・2,109件）とSHA固定2025年
 
 - **経路状態：** `verified-route: 0`、`needs-review: 2,109`、イベント候補単位の `source-gap: 0`。ID仮リンクを獲得経路の全条件を検証済みと誤認しないためであり、プログラムの失敗ではない。
 - **カード単位のソース欠損：** Checker側イベント空配列3枚（`sourceRecordStatus:source-gap`）。「実ゲームにはイベントが存在しない」ではない。
-- **歴史的な残差：** 旧マスター直結ストーリーの厳密タイトルマッチが取れないID63件を `historicalPossibleGaps` に格納。表記差・版差・別種イベントの可能性があるため `confirmedMissingIn2026:false` を固定。
+- **歴史的な残差：** 旧マスター直結ストーリーで厳密タイトルマッチが取れないID63件を `historicalPossibleGaps` に格納。そのうち**表記差の補助候補が29件**（`typography-only-title-suggestion`）、**緩い照合でも結び付かないもの34件**（`no-provisional-title-link`）。どちらも現在のゲームでイベントが欠落している証拠ではなく、`confirmedMissingIn2026:false` を固定。
 - **要精査のヒント表記：** 数値スキル辞書未照合98記載、条件付きまたはヒント表記に不確実性のある選択肢249位置（既存の条件マーカーと別集計）。
 - **元データ隔離：** CheckerのファイルSHA-256と既存候補DBの保存ピンを照合、旧マスターのSHA-256を照合、イベントのsourceKey／sourceDigest／序数と保存DBを全2,109件突合。タイトル・本文・画像の元データはGitに追加せず、旧マスターも一時領域で処理。
 
