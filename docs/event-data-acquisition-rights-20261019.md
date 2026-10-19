@@ -89,3 +89,27 @@ node poc/tools/extract_checker_hint_candidates.cjs \\
 ```
 
 **出力は編集・比較専用。** 出力先がGit追跡済みの `poc/data` やコードの場所なら拒否。既存の出力ファイルを上書きしない。候補数は正式なゲームイベント数でも、正しい分岐数でも、許諾済み公開数でもない。独立したカードID／イベントID／選択位置／成功条件／再利用根拠を全件確認してから採用する。
+
+## 2026-10-19：417枚候補の「例外だけレビュー」優先順位キュー（PR #99）
+
+`poc/src/checker_review_queue.cjs`、`poc/tools/build_checker_review_queue.cjs` を追加。既存Checker一括候補から **(1) 未解析ヒント・数値ID不足／曖昧、(2) 成功・失敗等の条件付き表記、(3) 別資料だけに現れたイベント見出し／Checkerの空カード** のレビュー待ちを自動分類する。
+
+- P0：ヒント表記を読み切れない、またはUmaSim数値スキル辞書に対するID未照合／複数候補。候補を自動解決せず、選択肢位置ごとに残す。
+- P1：条件付き結果を含む可能性。成功／失敗の文面があっても到達条件・ヒントの無条件獲得とは決めない。
+- P2：同じGameWith由来を含むUmaUmaCruise系とCheckerのイベント見出し差分、およびChecker側のイベント空配列。元データの独立性がなく、タイトル表記差もあり、あくまで**カード単位の追加調査対象**。異なるイベント・真の欠損の確定ではない。
+- 無条件の候補も**承認済み**ではない。各項目に `requiresIndependentReview:true`、レポート全体に `UNREVIEWED_NOT_FOR_PUBLICATION` を付与する。
+
+実行例（4入力をローカルで用意する。GameWith.jpから直接取得しない）：
+
+```bash
+node poc/tools/build_checker_review_queue.cjs \
+  local-data/umasim-support-card.txt \
+  local-data/checker-Events.json \
+  local-data/umasim-skill-data.txt \
+  local-data/cruise-library.json \
+  local-data/checker-review-queue.json
+```
+
+`checker-hint-batch-audit.yml` の手動／関連PR限定実行時にGitHub上の両候補JSONを1回ずつ取得し、一時領域で既存のカードID・スキルID照合と資料間差分を生成。**ログはカードID・順位・件数のみ**。検討資料の著作文章・効果文・選択肢原文・ゲーム画像を配布せず、レポートをPages・公開イベントJSONへ書かない。
+
+レビュー優先順位は作業効率を上げるための順序であり、ゲーム的な重要度・成功確率・取り込み権利・独立実証を示さない。現在の正式公開0件を維持し、上流データの版差は都度検査する。

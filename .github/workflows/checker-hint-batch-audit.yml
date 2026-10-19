@@ -7,6 +7,9 @@ on:
       - poc/src/checker_hint_fact_extract.cjs
       - poc/tools/extract_checker_hint_candidates.cjs
       - poc/tests/checker_hint_fact_extract.test.cjs
+      - poc/src/checker_review_queue.cjs
+      - poc/tools/build_checker_review_queue.cjs
+      - poc/tests/checker_review_queue.test.cjs
   workflow_dispatch:
 
 permissions:
@@ -22,7 +25,7 @@ jobs:
         with:
           node-version: '22'
       - name: Check synthetic facts-only extraction
-        run: node --test poc/tests/checker_hint_fact_extract.test.cjs
+        run: node --test poc/tests/checker_hint_fact_extract.test.cjs poc/tests/checker_review_queue.test.cjs
       - name: Read public GitHub-hosted candidate file and pinned UmaSim sources once
         shell: bash
         run: |
@@ -32,6 +35,9 @@ jobs:
           curl --fail --show-error --silent --location --retry 1 --max-time 100 \
             --output "$base/checker.json" \
             "https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json"
+          curl --fail --show-error --silent --location --retry 1 --max-time 100 \
+            --output "$base/cruise.json" \
+            "https://raw.githubusercontent.com/po-po-po-pong/umaumacruise_customjson/main/UmaMusumeLibrary.json"
           for file in support_card.txt skill_data.txt; do
             curl --fail --show-error --silent --location --retry 1 --max-time 100 \
               --output "$base/$file" \
@@ -65,6 +71,22 @@ jobs:
           if(report.approvalState!=='UNREVIEWED_NOT_FOR_PUBLICATION'||
              s.matchedCards<380||s.eventsObserved<1500||s.choiceRowsObserved<2000) {
             throw Error('Checker candidate coverage/approval state regression');
+          }
+          NODE
+          node poc/tools/build_checker_review_queue.cjs \
+            "$base/support_card.txt" "$base/checker.json" "$base/skill_data.txt" \
+            "$base/cruise.json" "$base/review-queue.json" > "$base/queue-stats.json"
+          node - "$base/queue-stats.json" <<'NODE'
+          const fs=require('node:fs');
+          const q=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          console.log('Prioritized review-only worklist (NO release):',
+           JSON.stringify({priorities:q.priorityEntries,reasons:q.reasonEntries,
+             comparison:q.comparisonScope,cards:q.cardsInspected,
+             events:q.eventsInspected,sourceDifferences:q.crossSource}));
+          if(q.approvalState!=='UNREVIEWED_NOT_FOR_PUBLICATION'||
+             q.cardsInspected<380||q.eventsInspected<1500||
+             q.queueEntries<1||q.comparisonScope!=='present-provisional-name-matching') {
+            throw Error('Review queue was not generated safely');
           }
           NODE
           # Never upload input, diagnostic output or copyrighted article material.
