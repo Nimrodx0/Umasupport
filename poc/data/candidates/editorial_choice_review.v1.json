@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "editorial-numeric-choice-review",
+  "approvalState": "UNREVIEWED_NOT_FOR_PUBLICATION",
+  "forSkillGrant": false,
+  "reviewDate": "2026-10-19",
+  "scope": "Three 2026 public editorial-page branch checks from the 171-chain first-pass worklist. Never treats site agreement as in-game validation.",
+  "sourceCaveat": {
+    "gameWithOverlapsCheckerLineage": true,
+    "game8IndependentExtractionUnverified": true,
+    "publisherRightsUnverified": true,
+    "actualGameOutcomesUnverified": true
+  },
+  "records": [
+    {
+      "cardId": "30256",
+      "provisionalStoryId": "830256002",
+      "sourceKey": "checker:30256:3543c2381b6d08258d41",
+      "sourceDigest": "sha256:21c8aac77c40e1433d2ceee8fcadd46dee847d12e3882971fa4d9a47eb850bcc",
+      "chainStage": 2,
+      "pageReferences": {
+        "gameWith": "https://gamewith.jp/uma-musume/article/show/504763",
+        "game8": "https://game8.jp/umamusume/700421"
+      },
+      "observations": [
+        {
+          "choiceOrdinal": 1,
+          "numericHints": [
+            {
+              "skillId": "201651",
+              "level": 1
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        },
+        {
+          "choiceOrdinal": 2,
+          "numericHints": [
+            {
+              "skillId": "202802",
+              "level": 1
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        }
+      ],
+      "nonSkillSourceDifferences": [
+        {
+          "choiceOrdinal": 1,
+          "quantity": "bondGauge",
+          "gameWith": 7,
+          "game8": 5,
+          "chosenProvisional": 7
+        },
+        {
+          "choiceOrdinal": 2,
+          "quantity": "bondGauge",
+          "gameWith": 7,
+          "game8": 5,
+          "chosenProvisional": 7
+        }
+      ],
+      "publishedOutcomeTiersCompared": false,
+      "chainTerminationVerified": false,
+      "gameRewardVerified": false
+    },
+    {
+      "cardId": "30256",
+      "provisionalStoryId": "830256003",
+      "sourceKey": "checker:30256:e3a0d35b1c557516569c",
+      "sourceDigest": "sha256:214f5405faa3d7bd35917ed780f669346fec04f7b7e79d74ce1264a48e8e23bf",
+      "chainStage": 3,
+      "pageReferences": {
+        "gameWith": "https://gamewith.jp/uma-musume/article/show/504763",
+        "game8": "https://game8.jp/umamusume/700421"
+      },
+      "observations": [
+        {
+          "choiceOrdinal": 1,
+          "numericHints": [
+            {
+              "skillId": "202551",
+              "level": 2
+            },
+            {
+              "skillId": "203361",
+              "level": 1
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        },
+        {
+          "choiceOrdinal": 2,
+          "numericHints": [
+            {
+              "skillId": "202551",
+              "level": 2
+            },
+            {
+              "skillId": "203661",
+              "level": 1
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        }
+      ],
+      "nonSkillSourceDifferences": [],
+      "publishedOutcomeTiersCompared": false,
+      "chainTerminationVerified": false,
+      "gameRewardVerified": false
+    },
+    {
+      "cardId": "30272",
+      "provisionalStoryId": "830272003",
+      "sourceKey": "checker:30272:a4139dc09e89eeb80bcc",
+      "sourceDigest": "sha256:3d7a97ff74d01d46966848105d83c12ae7842a815647b6e016475fbe20073c57",
+      "chainStage": 3,
+      "pageReferences": {
+        "gameWith": "https://gamewith.jp/uma-musume/article/show/521034",
+        "game8": "https://game8.jp/umamusume/723595"
+      },
+      "observations": [
+        {
+          "choiceOrdinal": 1,
+          "numericHints": [
+            {
+              "skillId": "202641",
+              "level": 1
+            },
+            {
+              "skillId": "203671",
+              "level": 1
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        },
+        {
+          "choiceOrdinal": 2,
+          "numericHints": [
+            {
+              "skillId": "210091",
+              "level": 5
+            },
+            {
+              "skillId": "210082",
+              "level": 5
+            },
+            {
+              "skillId": "210062",
+              "level": 5
+            }
+          ],
+          "bothEditorialPagesListSameNumericHints": true
+        }
+      ],
+      "nonSkillSourceDifferences": [],
+      "publishedOutcomeTiersCompared": false,
+      "chainTerminationVerified": false,
+      "gameRewardVerified": false
+    }
+  ],
+  "reviewGates": {
+    "eventRouteApproved": 0,
+    "choiceResultTierApproved": 0,
+    "gameRewardClaimsApproved": 0,
+    "externalTextIncluded": false,
+    "manualEditorialSpotCheck": true
+  },
+  "warning": "Same-site or common-source agreement does not verify game event incidence, outcome tiers, termination, skill availability, current version, or copyright/terms. Both sources' lines were human-reviewed on 2026-10-19; no automated recrawl or self-certification."
+}

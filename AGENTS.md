@@ -22,6 +22,10 @@
 
 [補助数値データの全件照合](docs/candidate-numeric-outcome-crosscheck-20261019.md)。Tsuyuchan-jpの固定45カード・126イベント候補との数値story ID合致を追跡したところ、先行171チェーン中11組・17イベントを照合。スキルID＋Lvの多重集合が16イベントで一致、1件は同じ組の重複回数差。選択肢ごとのID・Lvが位置別に一致したのは3イベント、残り14の補助元が`auto`という編成計画用区分。**獲得経路、成功分岐、報酬の2026年実ゲーム側の検証済みは0件**。出力 `poc/data/candidates/checker_first_pass_numeric_crosscheck.v1.json` は二つの候補系の比較資料であり、`reviewed_events.v1.json` には移さない。非公開抽出元の来歴／再配布条件の確認も継続。
 
+## 2026-10-19：攻略記事2サイトの選択肢別数値レビュー（PR #104）
+
+[3イベントの選択肢別レビュー](docs/editorial-choice-review-20261019.md)。カード30256の連続2・3段目（仮story ID 830256002/003）、30272の連続3段目（830272003）の計3イベント・6選択肢・スキルID＋Lv11件をGameWith/Game8記事の掲載値と目視照合し、本文・選択肢原文なしで `poc/data/candidates/editorial_choice_review.v1.json` に記録。CheckerはGameWith由来なので独立した一次証拠ではない。30256連続2段目の絆ゲージ2箇所はGameWith+7/Game8+5と相違し、既存ユーザー方針で暫定+7（未確定）。検証器 `node poc/tools/verify_editorial_choice_review.cjs` は保存DBとのID/順序/ヒント値の整合を検査するが、**現行ゲーム側の成功・打ち切り・出現条件を検証済みとはしない。公開DBイベント0件のまま**。
+
 ## 最初に読む順序
 
 1. [README.md](README.md)：公開版・現在の状態と各文書の入口。
