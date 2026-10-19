@@ -43,6 +43,11 @@ class ArticleBlocks(HTMLParser):
             self.ignored += 1
         if self.ignored:
             return
+        # A result marker and its hint may occupy different lines within a
+        # single HTML table cell. Flattening <br>/<div> would merge separate
+        # outcomes and misattribute rewards, so retain semantic boundaries.
+        if self.in_cell and tag in ("br", "p", "div", "li", "hr"):
+            self.chunks.append("\n")
         if tag in ("h2", "h3", "h4"):
             self.capture = tag
             self.chunks = []
@@ -63,6 +68,8 @@ class ArticleBlocks(HTMLParser):
             return
         if self.ignored:
             return
+        if self.in_cell and tag in ("p", "div", "li"):
+            self.chunks.append("\n")
         if tag == self.capture:
             prefix = {"h2": "##", "h3": "###", "h4": "####"}[tag]
             self.blocks.append(f"{prefix} {''.join(self.chunks).strip()}")
@@ -155,9 +162,10 @@ HINT_MENTION = re.compile(r"ヒント")
 
 def facts_from_text(content: str, skills: dict) -> dict:
     found = SKILL.findall(content)
-    # "ヒントLv" may appear without an extractable skill name/level, a
-    # formatting drift that must never silently become a zero-reward choice.
-    if HINT_MENTION.search(content) and not found:
+    # Account for EVERY hint mention. A mixed valid/invalid cell must not
+    # quietly keep the first skill while losing a later malformed hint.
+    remainder = SKILL.sub("", content)
+    if HINT_MENTION.search(remainder):
         raise ValueError("unparsed-hint-reward")
     resolved, unresolved = [], []
     for name, level in found:
@@ -173,6 +181,7 @@ def facts_from_text(content: str, skills: dict) -> dict:
 def candidate_choice(fragments: list[str], number: int, skills: dict) -> tuple[dict, bool]:
     lines = "\n".join(fragments).splitlines()
     outcome_lines: dict[str, list[str]] = {}
+    unscoped_lines: list[str] = []
     current = None
     for line in lines:
         result = RESULT.match(line)
@@ -186,8 +195,14 @@ def candidate_choice(fragments: list[str], number: int, skills: dict) -> tuple[d
                 outcome_lines[key].append(result[2])
         elif current is not None:
             outcome_lines[current].append(line)
+        else:
+            unscoped_lines.append(line)
     answer = {"id": f"option{number}", "label": f"選択肢{number}"}
     if outcome_lines:
+        # Hints appearing before the first outcome marker have unknown
+        # applicability. Do not discard them or attach them to all outcomes.
+        if HINT_MENTION.search("\n".join(unscoped_lines)):
+            raise ValueError("unscoped-outcome-hint")
         outcomes = set(outcome_lines)
         if outcomes not in ({"success", "great"}, {"success", "failure"}, {"success", "great", "failure"}):
             raise ValueError("incomplete-or-unsupported-results")
