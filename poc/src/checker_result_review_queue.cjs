@@ -15,7 +15,7 @@ function build(candidate,derived){
    const e=d.events[j],src=old.events[j],reasons=new Set(),focus=[];
    let branchSensitive=false,hasUnresolved=false,hasHints=false,hasRange=false,hasExplicit=false;
    for(let k=0;k<e.choices.length;k++){
-    const c=e.choices[k],raw=src.choices[k];
+    const c=e.choices[k],raw=src.choices[k],before=new Set(reasons);
     if(c.structure==='explicit-result-headings'){
      hasExplicit=true;
      // Multiplicity and levels are compared; different outcomes cannot be merged.
@@ -39,7 +39,7 @@ function build(candidate,derived){
      hasHints=true;
      if(!h.skillId){hasUnresolved=true;reasons.add('SKILL_ID_UNRESOLVED');}
     }
-    if(reasons.size)focus.push(c.ordinal);
+    if([...reasons].some(reason=>!before.has(reason)))focus.push(c.ordinal);
    }
    if(!hasHints)reasons.add('NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE');
    // The route graph has not been verified for any of these observed events.
