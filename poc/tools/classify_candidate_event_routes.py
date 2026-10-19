@@ -19,7 +19,7 @@ from audit_story_title_links import title_digest
 from audit_story_residual_metadata import read_master_metadata
 
 STATUS = ("verified-route", "needs-review", "source-gap")
-LINKS = ("strict-unique", "typography-suggestion", "ambiguous", "no-match", "not-in-2025-master")
+LINKS = ("strict-unique", "typography-suggestion", "ambiguous", "no-match", "no-2025-direct-story-rows")
 EXPECTED_MASTER_SHA = "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb"
 EXPECTED_MASTER_REV = "5a8ec1356859a35e245edef0d40da740e652df68"
 MASTER_URL = ("https://raw.githubusercontent.com/SimpleSandman/"
@@ -129,7 +129,7 @@ def classify(candidate_db, checker_index, historical, master_sha):
             strict_list = by_strict.get(fingerprint, [])
             loose_list = by_loose.get(loose, []) if loose else []
             if old is None:
-                kind = "not-in-2025-master"
+                kind = "no-2025-direct-story-rows"
                 detail = {}
             elif len(strict_list) == 1 and src_strict[fingerprint] == 1:
                 kind = "strict-unique"
