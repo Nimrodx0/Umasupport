@@ -1,0 +1,69 @@
+name: Pinned UmaSim Curated Event Data Audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/curated-real-source-audit.yml
+      - poc/data/curation/**
+      - poc/data/reviewed_events.v1.json
+      - poc/src/curated_event_inventory.cjs
+      - poc/src/curated_skill_resolution.cjs
+      - poc/tools/report_curated_event_inventory.cjs
+      - poc/tests/curated_event_inventory.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch two pinned UmaSim source files, not GameWith articles
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/curated-real-audit"
+          base="https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data"
+          for name in support_card.txt skill_data.txt; do
+            curl --fail --show-error --silent --location --retry 1 --max-time 90 \
+              --output "$RUNNER_TEMP/curated-real-audit/$name" "$base/$name"
+          done
+          echo "153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424  $RUNNER_TEMP/curated-real-audit/support_card.txt" | sha256sum --check
+          echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $RUNNER_TEMP/curated-real-audit/skill_data.txt" | sha256sum --check
+      - name: Audit entire published roster and all indexed editorial drafts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node poc/tools/report_curated_event_inventory.cjs \
+            "$RUNNER_TEMP/curated-real-audit/support_card.txt" \
+            "$RUNNER_TEMP/curated-real-audit/skill_data.txt" \
+            > "$RUNNER_TEMP/curated-real-audit/report.json"
+          node - "$RUNNER_TEMP/curated-real-audit/report.json" <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const facts = {
+            rosterCards: report.rosterCards,
+            sourceIndexedCards: report.sourceIndexedCards,
+            draftCards: report.draftCards,
+            draftEventRecords: report.draftEventRecords,
+            untrackedCards: report.untrackedCards,
+            normalHintRewardIdsMatched: report.normalHintRewardIdsMatched,
+            stillPendingSkillRows: report.stillPendingSkillRows,
+            releasedEventRecords: report.releasedEventRecords
+          };
+          console.log('Pinned UmaSim + in-repo editorial draft summary:', JSON.stringify(facts));
+          if (report.rosterCards !== 563 ||
+              report.sourceIndexedCards !== report.draftCards ||
+              report.sourceIndexedCards + report.untrackedCards !== 563 ||
+              report.draftEventRecords < report.draftCards ||
+              report.stillPendingSkillRows !== 0 ||
+              report.releasedEventRecords !== 0) {
+            throw Error('Pinned real-source editorial audit acceptance failed');
+          }
+          NODE
