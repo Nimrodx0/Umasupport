@@ -1,0 +1,70 @@
+name: One-Off Offline Checker Hint Facts Audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/checker-hint-batch-audit.yml
+      - poc/src/checker_hint_fact_extract.cjs
+      - poc/tools/extract_checker_hint_candidates.cjs
+      - poc/tests/checker_hint_fact_extract.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-facts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check synthetic facts-only extraction
+        run: node --test poc/tests/checker_hint_fact_extract.test.cjs
+      - name: Read public GitHub-hosted candidate file and pinned UmaSim sources once
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$RUNNER_TEMP/checker-hint-facts"
+          mkdir -p "$base"
+          curl --fail --show-error --silent --location --retry 1 --max-time 100 \
+            --output "$base/checker.json" \
+            "https://raw.githubusercontent.com/Cilda/UmaUmaChecker/master/UmaUmaChecker/Library/Events.json"
+          for file in support_card.txt skill_data.txt; do
+            curl --fail --show-error --silent --location --retry 1 --max-time 100 \
+              --output "$base/$file" \
+              "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/$file"
+          done
+          echo "153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424  $base/support_card.txt" | sha256sum --check
+          echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $base/skill_data.txt" | sha256sum --check
+          printf 'Source candidate content fingerprint only (not a rights grant): '
+          sha256sum "$base/checker.json" | cut -d' ' -f1
+      - name: Batch-extract numeric hint facts to ephemeral local output, never publish source text
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$RUNNER_TEMP/checker-hint-facts"
+          node poc/tools/extract_checker_hint_candidates.cjs \
+            "$base/support_card.txt" "$base/checker.json" "$base/skill_data.txt" \
+            "$base/review-only.json" > "$base/stats.json"
+          node - "$base/stats.json" <<'NODE'
+          const fs=require('node:fs');
+          const report=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const s=report.stats;
+          console.log('Checker hints candidates ONLY (not approved):',
+            JSON.stringify({
+              matchedCards:s.matchedCards,eventsObserved:s.eventsObserved,
+              choiceRowsObserved:s.choiceRowsObserved,extractedHintRows:s.extractedHintRows,
+              matchedNumericHints:s.matchedNumericHints,
+              unresolvedHints:s.unresolvedHints,
+              unparsedHintChoiceRows:s.unparsedHintChoiceRows,
+              conditionalChoiceRows:s.conditionalChoiceRows
+            }));
+          if(report.approvalState!=='UNREVIEWED_NOT_FOR_PUBLICATION'||
+             s.matchedCards<380||s.eventsObserved<1500||s.choiceRowsObserved<2000) {
+            throw Error('Checker candidate coverage/approval state regression');
+          }
+          NODE
+          # Never upload input, diagnostic output or copyrighted article material.
