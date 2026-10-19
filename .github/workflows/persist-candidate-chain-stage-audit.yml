@@ -1,0 +1,59 @@
+name: Persist pinned historical chain-stage diagnostics (unreviewed)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/persist-candidate-chain-stage-audit.yml
+      - poc/src/candidate_chain_stage_audit.cjs
+      - poc/tools/build_candidate_chain_stage_audit.cjs
+      - poc/tests/candidate_chain_stage_audit.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stage-structure:
+    if: >-
+      github.repository == 'Nimrodx0/Umasupport' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'Nimrodx0' &&
+      github.event.pull_request.head.ref == 'feat/batch-chain-stage-review-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test full pinned historic 954-link population and fail closed on altered event stages
+        run: node --test poc/tests/candidate_chain_stage_audit.test.cjs
+      - name: Build deterministic numeric-only stage groups using existing Umasupport DB
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Generated sidecar only: rebuild when the auditable schema changes.
+          rm -f poc/data/candidates/checker_chain_stage_audit.v1.json
+          node poc/tools/build_candidate_chain_stage_audit.cjs
+          node poc/tools/build_candidate_chain_stage_audit.cjs --verify
+          node poc/tools/verify_route_classification.cjs
+          node poc/tools/verify_event_release.cjs
+          # No upstream URLs, images, master SQLite, source prose or artifacts.
+      - name: Commit numeric stage diagnostic on first-party reviewed branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- poc/data/candidates/checker_chain_stage_audit.v1.json
+          if git diff --cached --quiet; then
+            echo "No stage-audit change"
+          else
+            git commit -m "data: persist 954-event numeric historic chain-stage diagnostics"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
