@@ -71,3 +71,21 @@
 | ウマサルタントの本番公開 | 既存の独立レビュー・SHA・6項目検査済みイベントだけ | 上の条件が満たされるまで未承認データを混入しない |
 
 **次の具体的な解除条件**：GameWith担当者から回答があれば、アクセス頻度・対象URL・保存範囲・公開表現・撤回条件を収録工程へ反映する。回答がなくても、独立に記録した数値的事実と別資料の正規の利用範囲を用いて収録を進める。禁止されたアクセスや権利不明の文章の丸写しを一括処理の近道にしない。
+
+## 2026-10-19：Checkerの数値ヒント候補をローカル一括抽出（PR #98）
+
+`poc/src/checker_hint_fact_extract.cjs` と `poc/tools/extract_checker_hint_candidates.cjs` を追加した。入力は合法的に用意したローカルのUmaSim `support_card.txt`、全 `skill_data.txt`、UmaUmaChecker `Events.json`。アプリのSSR/SRカードIDへ正規化名と監査済み24別名で結合し、イベント・選択肢の順序ごとに「ヒントLv」から**観測された短いスキル名／数値ID／ヒントLv**だけを抽出する。成功・失敗や構文未解析ヒントは手動レビュー対象にする。イベント名・選択肢原文・効果原文を出力せず、`sourceKey`・SHA・順序と数値だけを返す。候補の原文をコピーせずに作業量を測定するための処理であり、データ公開の許可ではない。
+
+`--local`のデータ入力に加え、専用の手動／関連PR用 `checker-hint-batch-audit.yml` では、既に公開されているGitHub上のChecker候補ファイルを1回のみ取得して一時領域で処理し、件数のみ出力する。GameWith.jpへのGETは行わない。API・源ファイルの公開状態／アクセス条件と、候補由来データの本番再利用可否は別と扱う。
+
+実行例：
+
+```bash
+node poc/tools/extract_checker_hint_candidates.cjs \\
+  local-data/umasim-support-card.txt \\
+  local-data/checker-Events.json \\
+  local-data/umasim-skill-data.txt \\
+  local-data/checker-hint-candidates.json
+```
+
+**出力は編集・比較専用。** 出力先がGit追跡済みの `poc/data` やコードの場所なら拒否。既存の出力ファイルを上書きしない。候補数は正式なゲームイベント数でも、正しい分岐数でも、許諾済み公開数でもない。独立したカードID／イベントID／選択位置／成功条件／再利用根拠を全件確認してから採用する。
