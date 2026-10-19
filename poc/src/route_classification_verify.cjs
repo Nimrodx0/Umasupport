@@ -71,16 +71,25 @@ function verify(db,classification){
     classification.totals.historicalDirectRowsWithoutStrictTitleLink!==classification.historicalPossibleGaps.length)
   throw Error('Historical classification coverage or release status inconsistent');
  const historicalRows=new Set();
+ let looseOnlyOld=0,unlinkedOld=0;
  for(const row of classification.historicalPossibleGaps){
   if(!row||!cardMap.has(row.cardId)||!story.test(row.historicalStoryId)||
-     row.confirmedMissingIn2026!==false||row.reason!=='historical-direct-title-not-strictly-matched')
+     row.confirmedMissingIn2026!==false||row.reason!=='historical-direct-title-not-strictly-matched'||
+     !['typography-only-title-suggestion','no-provisional-title-link'].includes(row.diagnostic))
    throw Error('Historical gap is not a bounded hypothesis');
   const unique=row.cardId+':'+row.historicalStoryId;
   if(historicalRows.has(unique))throw Error('Duplicate historical gap story ID');
   historicalRows.add(unique);
+  if(row.diagnostic==='typography-only-title-suggestion')looseOnlyOld++;
+  else unlinkedOld++;
  }
+ if(classification.totals.historicalDirectRowsWithTypographySuggestion!==looseOnlyOld||
+    classification.totals.historicalDirectRowsWithNoTitleLink!==unlinkedOld||
+    looseOnlyOld!==counts.loose)
+  throw Error('Historical residual tiers are inconsistent with unique loose title links');
  return {classifiedEvents:counts.events,strictProvisionalLinks:counts.strict,
   typographySuggestions:counts.loose,emptySourceCards:classification.totals.cardsWithEmptyCandidateSource,
-  historicalGapHypotheses:historicalRows.size,verifiedRoutes:0};
+  historicalGapHypotheses:historicalRows.size,
+  historicalUnlinkedAfterTypography:unlinkedOld,verifiedRoutes:0};
 }
 module.exports={verify};
