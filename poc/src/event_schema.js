@@ -90,9 +90,26 @@
        fail(e.id+': 全結果打ち切りの親からは継続できません');
      }
    }
+   // Multiple prerequisites are AND-ed. Requiring two exclusive choices or
+   // outcomes from the same event would create a phantom reachable route.
+   function checkCompatible(requirements,where){
+     const constraints=new Map();
+     for(const r of requirements){
+       const previous=constraints.get(r.eventId);
+       if(previous){
+         if(previous.choiceId!==undefined&&r.choiceId!==undefined&&previous.choiceId!==r.choiceId||
+            previous.outcomeId!==undefined&&r.outcomeId!==undefined&&previous.outcomeId!==r.outcomeId)
+           fail(where+': 同じ前段から両立しない選択肢・結果を同時指定できません');
+         if(previous.choiceId===undefined&&r.choiceId!==undefined)previous.choiceId=r.choiceId;
+         if(previous.outcomeId===undefined&&r.outcomeId!==undefined)previous.outcomeId=r.outcomeId;
+       }else constraints.set(r.eventId,{choiceId:r.choiceId,outcomeId:r.outcomeId});
+     }
+   }
    for(const e of events){
+     checkCompatible(prerequisites(e),e.id);
      for(const r of prerequisites(e))validateRequirement(r,e);
      if(e.type==='choice')for(const c of e.choices){
+       checkCompatible(prerequisites(c),e.id+'/'+c.id);
        for(const r of prerequisites(c)){
          if(r.eventId===e.id)fail(e.id+'/'+c.id+': 選択肢の依存が自己参照');
          validateRequirement(r,e);

@@ -1,5 +1,23 @@
 # 開発支援AI向け引き継ぎ
 
+
+結果抽出では「次回イベントが発生しない」などを追加で16位置検出し、元の73終了記載と合わせた停止89位置を数値候補DBへ収録した。これによりP0が199/P1が164/P2が1,746へ更新。レビューはP0の178厳密仮リンク・7表記差・14未リンクから続行。
+
+## 【2026-10-20】Phase 2④：複数資料で照合した連続分岐の監査用ケース
+
+Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_crosscheck.v1.json` と `poc/src/editorial_branch_crosscheck.cjs`。カード30001・30007・30026の4つのP0イベントから10個の選択×結果経路をGame8/U-tools等で別途照合。数値スキル・ヒントLvを8件再確認。30026には「他の情報サイトでは掲載されない報酬」「資料間Lv差」の未解決2件があり、この選択肢報酬は `auditFixture` でも採用しない。レビュー根拠とリンクは `docs/checker-explicit-result-extraction-20261020.md`。
+**分類：** `actualGamePlayVerified:false`、`publicationApproval:false`。複数出版社での一致はゲーム実機検証ではない。`auditFixture` は実行エンジンのテスト用であって通常カタログ公開やサポートカード収録率を増やさない。
+単体テスト：`node --test poc/tests/editorial_branch_crosscheck.test.cjs poc/tests/outcome_dependent_branches.test.cjs`。AND条件に同一親イベントの相容れない選択肢／結果が入れば `event_schema.js` で拒否し、`core.reachability` でも blocked とする。
+
+
+## 【最優先・2026-10-20】Phase 2③ 結果別全件抽出（PR #110）
+
+正本は docs/checker-explicit-result-extraction-20261020.md。Checker固定版のSSR/SR417枚・2,109イベント候補・3,458選択位置を一括再照合し、明示結果分岐203選択位置/411結果、連続終了等の明示89（終了73＋次回不発生16）、Lv範囲4位置を元文章を含まない未承認JSONに保存した。
+`poc/data/candidates/checker_explicit_result_facts.v1.json` と `poc/data/candidates/checker_explicit_result_review_queue.v1.json` は **forSkillGrant:false**。後者はP0 199 / P1 164 / P2 1,746の未確定な全件レビューキュー。P2も連続経路未確認であって獲得可能性の正式承認ではない。
+`node poc/tools/verify_checker_result_facts.cjs --verify` は全件無通信検証、固定元資料からの全件再現は専用の限定PR/手動GitHub Actions `verify-checker-result-extraction.yml` を使う。`node poc/tools/query_checker_result_review.cjs --priority P0 --limit 30` は旧2025年story ID（厳密仮照合178/表記差7/未対応14）を付けてレビューできる。
+次はWiki/Game8の独立経路を用いたP0終了・結果依存の裏付けと、563枚の正式期待イベント一覧・R146枚の収録。通常公開DBのイベント数は依然0件。元資料の大規模転載やGameWith.jp一括GETを行わない。
+
+
 更新：2026-10-18。**本リポジトリの文書とコードが作業の正本**。チャットの発言や古いPoC記録で上書きしない。
 
 ## 【最優先・2026-10-19後刻】連続イベント内の選択肢依存・打ち切りを再現する

@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "umasupport-editorial-branch-crosscheck",
+  "publicationApproval": false,
+  "actualGamePlayVerified": false,
+  "sourceStatus": "TWO_PUBLISHER_WEB_CORROBORATION_NOT_AUTHORITATIVE_GAME_MASTER",
+  "pins": {
+    "checkerRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+    "checkerSha256": "ffce3b6a1795f449d195f2b33f844bbbf097289e352914f114e10b8617c98171"
+  },
+  "stats": {
+    "cards": 3,
+    "transitionEvents": 4,
+    "transitionBranches": 10,
+    "awardChecks": 8,
+    "unresolvedDifferences": 2
+  },
+  "cards": [
+    {
+      "cardId": "30001",
+      "sourceCoverage": "selected-chain-stages-only",
+      "crossPublisherSources": [
+        {
+          "publisher": "Game8",
+          "url": "https://game8.jp/umamusume/372298"
+        },
+        {
+          "publisher": "U-tools",
+          "url": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30001/event"
+        },
+        {
+          "publisher": "GameWith",
+          "url": "https://gamewith.jp/uma-musume/article/show/257460"
+        }
+      ],
+      "transitionStages": [
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30001:1f400adc782c546bdfcf",
+          "sourceDigest": "sha256:fedf3faed8e3fd9e9f482d5f127c0398335ef73ffe73c033eac3e8a3ee0637e6",
+          "branchCoverage": "all-observed-option-result-positions",
+          "branches": [
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "unspecified",
+              "terminal": false,
+              "nextEventOrdinal": 3
+            },
+            {
+              "choiceOrdinal": 2,
+              "resultKind": "unspecified",
+              "terminal": true
+            }
+          ]
+        }
+      ],
+      "awardChecks": [
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30001:1f400adc782c546bdfcf",
+          "sourceDigest": "sha256:fedf3faed8e3fd9e9f482d5f127c0398335ef73ffe73c033eac3e8a3ee0637e6",
+          "choiceOrdinal": 1,
+          "resultKind": "unspecified",
+          "skillId": "201342",
+          "level": 2
+        },
+        {
+          "eventOrdinal": 3,
+          "sourceKey": "checker:30001:2b9907a03a089d0c18fd",
+          "sourceDigest": "sha256:84b6af40caa8861d80580f644a99906aa374e06ee19545ff3a08abcd1d2b66af",
+          "choiceOrdinal": 1,
+          "resultKind": "success",
+          "skillId": "200511",
+          "level": 3
+        },
+        {
+          "eventOrdinal": 3,
+          "sourceKey": "checker:30001:2b9907a03a089d0c18fd",
+          "sourceDigest": "sha256:84b6af40caa8861d80580f644a99906aa374e06ee19545ff3a08abcd1d2b66af",
+          "choiceOrdinal": 1,
+          "resultKind": "failure",
+          "skillId": "200512",
+          "level": 1
+        }
+      ],
+      "unresolvedDifferences": []
+    },
+    {
+      "cardId": "30007",
+      "sourceCoverage": "selected-chain-stages-only",
+      "crossPublisherSources": [
+        {
+          "publisher": "Game8",
+          "url": "https://game8.jp/umamusume/372303"
+        },
+        {
+          "publisher": "U-tools",
+          "url": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30007/event"
+        }
+      ],
+      "transitionStages": [
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30007:bd1fd2612f28eda53c1f",
+          "sourceDigest": "sha256:1b91b8fed01dcfd0e16a34bd6a2dcc32ff6d8efbb071a56ac361318e7b0d7836",
+          "branchCoverage": "all-observed-option-result-positions",
+          "branches": [
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "unspecified",
+              "terminal": false,
+              "nextEventOrdinal": 3
+            },
+            {
+              "choiceOrdinal": 2,
+              "resultKind": "unspecified",
+              "terminal": true
+            }
+          ]
+        }
+      ],
+      "awardChecks": [
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30007:bd1fd2612f28eda53c1f",
+          "sourceDigest": "sha256:1b91b8fed01dcfd0e16a34bd6a2dcc32ff6d8efbb071a56ac361318e7b0d7836",
+          "choiceOrdinal": 2,
+          "resultKind": "unspecified",
+          "skillId": "200562",
+          "level": 1
+        },
+        {
+          "eventOrdinal": 3,
+          "sourceKey": "checker:30007:29d89e6a82392d4b0053",
+          "sourceDigest": "sha256:78d0cf52b92e411cb5fd6f5a7c4e8d4bbfa4ea2794f58900e178120c84bdf37e",
+          "choiceOrdinal": 1,
+          "resultKind": "unspecified",
+          "skillId": "200721",
+          "level": 2
+        }
+      ],
+      "unresolvedDifferences": []
+    },
+    {
+      "cardId": "30026",
+      "sourceCoverage": "selected-chain-stages-only",
+      "crossPublisherSources": [
+        {
+          "publisher": "Game8",
+          "url": "https://game8.jp/umamusume/375510"
+        },
+        {
+          "publisher": "U-tools",
+          "url": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30026/event"
+        }
+      ],
+      "transitionStages": [
+        {
+          "eventOrdinal": 1,
+          "sourceKey": "checker:30026:1fdb7772609e8b0d6d4e",
+          "sourceDigest": "sha256:435827341ab9d5eeae45d7c15e32c74df4f07594580b4619d458b4d6249d417f",
+          "branchCoverage": "all-observed-option-result-positions",
+          "branches": [
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "success",
+              "terminal": false,
+              "nextEventOrdinal": 2
+            },
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "failure",
+              "terminal": true
+            },
+            {
+              "choiceOrdinal": 2,
+              "resultKind": "unspecified",
+              "terminal": true
+            }
+          ]
+        },
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30026:bac38de41f2bc86772f4",
+          "sourceDigest": "sha256:7a924ae0d132e612011e83550d769daefa2c3624f89c9d7b3c7f007f9e6cc2f9",
+          "branchCoverage": "all-observed-option-result-positions",
+          "branches": [
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "success",
+              "terminal": false,
+              "nextEventOrdinal": 3
+            },
+            {
+              "choiceOrdinal": 1,
+              "resultKind": "failure",
+              "terminal": true
+            },
+            {
+              "choiceOrdinal": 2,
+              "resultKind": "unspecified",
+              "terminal": true
+            }
+          ]
+        }
+      ],
+      "awardChecks": [
+        {
+          "eventOrdinal": 2,
+          "sourceKey": "checker:30026:bac38de41f2bc86772f4",
+          "sourceDigest": "sha256:7a924ae0d132e612011e83550d769daefa2c3624f89c9d7b3c7f007f9e6cc2f9",
+          "choiceOrdinal": 1,
+          "resultKind": "success",
+          "skillId": "201272",
+          "level": 3
+        },
+        {
+          "eventOrdinal": 3,
+          "sourceKey": "checker:30026:66c9c7fd144f4bdc8269",
+          "sourceDigest": "sha256:5b1cca2c481c84ea94c26b139f83f1852750c88d30dd06006e87768f060736b0",
+          "choiceOrdinal": 1,
+          "resultKind": "success",
+          "skillId": "200531",
+          "level": 3
+        },
+        {
+          "eventOrdinal": 3,
+          "sourceKey": "checker:30026:66c9c7fd144f4bdc8269",
+          "sourceDigest": "sha256:5b1cca2c481c84ea94c26b139f83f1852750c88d30dd06006e87768f060736b0",
+          "choiceOrdinal": 1,
+          "resultKind": "failure",
+          "skillId": "200532",
+          "level": 3
+        }
+      ],
+      "unresolvedDifferences": [
+        {
+          "eventOrdinal": 2,
+          "choiceOrdinal": 2,
+          "kind": "SOURCE_EFFECT_VARIANCE",
+          "note": "The pinned Checker source reports a random hint absent from both cross-publisher event tables; reward unapproved"
+        },
+        {
+          "eventOrdinal": 3,
+          "choiceOrdinal": 2,
+          "kind": "HINT_LEVEL_CONFLICT",
+          "note": "U-tools level differs from Checker/Game8; do not validate this skill level"
+        }
+      ]
+    }
+  ],
+  "notes": "Facts are hand-checked against named publisher pages. No original event/choice/effect text, and no progression probabilities or game-master verification."
+}

@@ -12,7 +12,21 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
   if(!event||visiting.has(event.id))return {status:'blocked',conditions:[]};
   const next=new Set(visiting);next.add(event.id);
   const conditions=[];
+  const constraints=new Map();
   for(const r of prerequisites(event)){
+    // Protect direct callers that bypass schema.validateEvents: an AND
+    // requiring contradictory outcomes can never be merely "conditional".
+    if(r&&typeof r.eventId==='string'){
+      const prev=constraints.get(r.eventId);
+      if(prev&&
+        (prev.choiceId!==undefined&&r.choiceId!==undefined&&prev.choiceId!==r.choiceId||
+         prev.outcomeId!==undefined&&r.outcomeId!==undefined&&prev.outcomeId!==r.outcomeId))
+        return {status:'blocked',conditions:[]};
+      if(prev){
+        if(prev.choiceId===undefined)prev.choiceId=r.choiceId;
+        if(prev.outcomeId===undefined)prev.outcomeId=r.outcomeId;
+      }else constraints.set(r.eventId,{choiceId:r.choiceId,outcomeId:r.outcomeId});
+    }
     if(!r||typeof r.eventId!=='string'||!events)return {status:'blocked',conditions:[]};
     const parent=events.find(x=>x.id===r.eventId);
     const prev=reachability(parent,choices,events,outcomes,next);
