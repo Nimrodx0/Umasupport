@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "20043",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_20043_chain_01",
+          "name": "連続01（仮）",
+          "type": "auto"
+        },
+        {
+          "id": "draft_20043_chain_02",
+          "name": "連続02（仮）",
+          "type": "auto",
+          "requires": {
+            "all": [
+              {
+                "eventId": "draft_20043_chain_01"
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "id": "success",
+              "label": "成功",
+              "rewards": [
+                {
+                  "skillId": "skill:201902",
+                  "verifiedSkillName": "真っ向勝負",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "id": "failure",
+              "label": "失敗",
+              "rewards": []
+            }
+          ]
+        },
+        {
+          "id": "draft_20043_normal_01",
+          "name": "通常01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:別腹タンク",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        },
+        {
+          "id": "draft_20043_normal_02",
+          "name": "通常02（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
