@@ -48,3 +48,17 @@ test('never reproduce effects/choice titles in numeric output',()=>{
  a.equal(x.results[0].terminalObserved,true);
  a.ok(!JSON.stringify(x).includes('架空の効果文'));
 });
+
+test('both next-event-not-fired phrasings terminate the observed branch only',()=>{
+ const x=parseEffect('成功時：\n体力+10\n失敗時：\n体力-5\n※次回イベントが発生しない',
+  {observedHints:[]});
+ a.equal(x.structure,'explicit-result-headings');
+ a.deepEqual(x.results.map(r=>r.terminalObserved),[false,true]);
+ a.ok(x.diagnostics.includes('NEXT_EVENT_NOT_FIRED_STATEMENT'));
+ const y=parseEffect('体力+10\n※3連続目イベントが発生しない',
+  {observedHints:[]});
+ a.equal(y.results[0].terminalObserved,true);
+ a.ok(y.diagnostics.includes('NEXT_EVENT_NOT_FIRED_STATEMENT'));
+ const z=parseEffect('次回イベントが発生する\n体力+10',{observedHints:[]});
+ a.equal(z.results[0].terminalObserved,false);
+});
