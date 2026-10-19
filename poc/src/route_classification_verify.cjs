@@ -1,9 +1,16 @@
 /* Strictly verify stored route classification vs pinned candidate DB.
  * Historical title matches do not approve events or rewards. */
 'use strict';
-const assert=require('node:assert/strict');
+const crypto=require('node:crypto');
 const candidate=require('./checker_candidate_database.cjs');
 const SHA=/^[a-f0-9]{64}$/, story=/^[0-9]+$/;
+const MASTER_SHA='46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb';
+const MASTER_REV='5a8ec1356859a35e245edef0d40da740e652df68';
+function stable(x){
+ if(Array.isArray(x))return '['+x.map(stable).join(',')+']';
+ if(x&&typeof x==='object')return '{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}';
+ return JSON.stringify(x);
+}
 const TAGS=new Set(['strict-unique','typography-suggestion','ambiguous','no-match','no-2025-direct-story-rows']);
 function verify(db,classification){
  const d=candidate.validate(db);
@@ -14,8 +21,14 @@ function verify(db,classification){
   throw Error('Classification is missing provenance or unreviewed release gate');
  if(classification.sourcePins.checkerRevision!==db.sourcePins.checker.revision)
   throw Error('Classification Checker pin differs from database');
+ if(classification.sourcePins.historicalMaster.sha256!==MASTER_SHA||
+   classification.sourcePins.historicalMaster.revision!==MASTER_REV)
+  throw Error('Unpinned historical story dataset');
+ const canonical=crypto.createHash('sha256').update(stable(db)).digest('hex');
+ if(classification.candidateInputSha256!==canonical)
+  throw Error('Classification was not built from the exact current candidate database');
  if(classification.cards.length!==db.cards.length)throw Error('Candidate classification card count differs');
- const seen=new Set(),links=new Map(),cardMap=new Map(db.cards.map(x=>[x.cardId,x]));
+ const seen=new Set(),cardMap=new Map(db.cards.map(x=>[x.cardId,x]));
  const counts={events:0,strict:0,loose:0};
  for(const card of classification.cards){
   if(!card||seen.has(card.cardId)||!cardMap.has(card.cardId)||!Array.isArray(card.events))
@@ -57,7 +70,7 @@ function verify(db,classification){
     classification.totals.historicalProvisionalLinks['typography-suggestion']!==counts.loose||
     classification.totals.historicalDirectRowsWithoutStrictTitleLink!==classification.historicalPossibleGaps.length)
   throw Error('Historical classification coverage or release status inconsistent');
- const known=new Set(),historicalRows=new Set();
+ const historicalRows=new Set();
  for(const row of classification.historicalPossibleGaps){
   if(!row||!cardMap.has(row.cardId)||!story.test(row.historicalStoryId)||
      row.confirmedMissingIn2026!==false||row.reason!=='historical-direct-title-not-strictly-matched')
