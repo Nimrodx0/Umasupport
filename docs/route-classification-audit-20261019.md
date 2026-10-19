@@ -24,7 +24,7 @@ PR #100で保存した `poc/data/candidates/checker_event_hints.v1.json`（SSR/S
 - `typography-suggestion`：句読点などの違いを無視すればそれぞれ1件だけ一致。イベントIDを確定せず `possibleStoryId` のみ保存。
 - `ambiguous`：同名が複数あり、数値IDの一意な結合ができない。
 - `no-match`：旧版の同カードに厳密・緩い一致なし。2026年新規イベント／単なる表記変更／粒度差などを含む。
-- `not-in-2025-master`：該当カードが旧マスター直結に見当たらない。**現行ゲームで存在しない**の意味ではない。
+- `no-2025-direct-story-rows`：旧マスターの**カード直結ストーリーが0件**。カード自体が2025年のマスターに未収録の場合と、同版にカードはあるがキャラクター共通のストーリーしか存在しない場合を含む。カードが現行ゲームに存在しないことは意味しない。
 
 旧マスター直結でCheckerに一対一の厳密一致がないIDは `historicalPossibleGaps` に記録し、常に `confirmedMissingIn2026:false` とする。古いゲームタイトル差・別名・共通キャラ関連・時代差を欠損確定として扱わない。
 
