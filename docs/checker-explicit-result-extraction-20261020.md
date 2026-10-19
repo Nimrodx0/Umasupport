@@ -43,3 +43,13 @@
 明示的に元資料から再抽出する場合だけ、GitHub Actionsの手動ワークフロー Verify pinned Checker result extraction (manual) を実行する。固定GitHubコミットの3資料を一時取得してSHAを照合し、生成JSONとのバイト一致を検査する。GameWith.jpの一括GETは行わない。
 
 今後は結果分岐を既存の旧story ID段階照合と接続し、GameWith・Wiki等の独立資料からP0の打ち切り／後続分岐を優先検証する。R146枚・全カード期待イベント一覧の独立照合と実機検証は未達。
+
+## 優先レビューの旧story ID仮照合
+
+レビューキューのsourceKeyを既存563枚索引へ全件突合。P0の185イベントのうち、2025年旧ゲームマスターに厳密仮一致165、表記差候補6、未対応14。P1は厳密96、表記差2、その他79。P2は厳密693、表記差21、その他1,033。
+
+node poc/tools/query_checker_result_review.cjs --summary
+node poc/tools/query_checker_result_review.cjs --priority P0 --limit 30
+node poc/tools/query_checker_result_review.cjs 30003
+
+この照合は2025年版に限定。現行ゲーム正式ID、結果条件、イベント継続を承認する証拠ではない。
