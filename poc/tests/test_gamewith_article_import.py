@@ -364,5 +364,70 @@ class ImportTests(unittest.TestCase):
                          "conditional-outcomes-need-human-review")
 
 
+    def test_real_page_style_ssr_performance_heading_and_epithet(self):
+        ssr = {"name": "架空ウマ", "rarity": "SSR",
+               "title": "[夢は大きく]架空ウマ"}
+        html = """<html>
+<h2>架空ウマ(SSRスピード)の評価</h2>
+<h3>架空ウマ(SSR)の性能</h3>
+<table><tr><th>レア</th><td>SSR</td></tr>
+<tr><th>二つ名</th><td>夢は大きく</td></tr></table>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>連続イベント</h3><h4>第1段</h4>
+<table><tr><td>選択肢なし</td><td>体力+5</td></tr></table>
+<h3>通常イベント</h3><h4>別の時間</h4>
+<table><tr><td>進む</td><td>『別の技』のヒントLv+2</td></tr>
+<tr><td>戻る</td><td>パワー+5</td></tr></table>
+<h2>終了</h2></html>"""
+        result = article_to_facts(html, "30099", ssr, self.skills)
+        self.assertEqual(result["observedEventHeadings"], 2)
+        self.assertEqual(result["proposedEvents"], 1)
+        self.assertEqual(result["manualCandidates"][0]["eventKind"], "auto")
+        self.assertEqual(result["proposal"]["cards"][0]["events"][0]["choices"][0]["rewards"][0]["skillId"],
+                         "skill:201012")
+        for bad in (
+            html.replace("夢は大きく", "別の夢"),
+            html.replace("<td>SSR</td>", "<td>SR</td>"),
+            html.replace("架空ウマ(SSR)の性能", "架空ウマ(SR)の性能"),
+            html.replace("<tr><th>レア</th><td>SSR</td></tr>", ""),
+            html.replace("<tr><th>二つ名</th><td>夢は大きく</td></tr>", ""),
+        ):
+            with self.subTest(source=bad[:140]):
+                with self.assertRaises(ValueError):
+                    article_to_facts(bad, "30099", ssr, self.skills)
+
+    def test_event_reward_sr_uses_performance_identity_not_article_slug(self):
+        sr = {"name": "架空ウマ", "rarity": "SR",
+              "title": "[小さな思い出]架空ウマ"}
+        html = """<html>
+<h2>架空ウマ(イベント配布報酬)の評価</h2>
+<h3>架空ウマ(SR)の性能</h3>
+<table><tr><th>レア</th><td>SR</td></tr>
+<tr><th>二つ名</th><td>小さな思い出</td></tr></table>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>連続イベント</h3><h4>最終段</h4>
+<table><tr><td>選択肢なし</td>
+<td>成功時：<br>『特別スキル◯』のヒントLv+3<br>
+失敗時：<br>体力+5</td></tr></table>
+<h2>終了</h2></html>"""
+        r = article_to_facts(html, "20099", sr, self.skills)
+        self.assertEqual(r["observedEventHeadings"], 1)
+        self.assertEqual(r["proposedEvents"], 0)
+        self.assertEqual(r["manualCandidates"][0]["facts"]["outcomes"][0]["rewards"][0]["level"], 3)
+        # Same character + SR is not enough to accept a different support card.
+        with self.assertRaises(ValueError):
+            article_to_facts(html, "20099", {**sr, "title": "[別の思い出]架空ウマ"},
+                             self.skills)
+
+    def test_legacy_abbreviated_article_must_reject_conflicting_identity(self):
+        self.assertEqual(article_to_facts(SOURCE, "10099", CARD, self.skills)["proposedEvents"], 2)
+        with self.assertRaises(ValueError):
+            article_to_facts(SOURCE.replace("レア | R", "レア | SSR"),
+                             "10099", CARD, self.skills)
+        with self.assertRaises(ValueError):
+            article_to_facts(SOURCE.replace("架空ウマ(Rサポート)", "架空ウマ2(Rサポート)"),
+                             "10099", CARD, self.skills)
+
+
 if __name__ == "__main__":
     unittest.main()
