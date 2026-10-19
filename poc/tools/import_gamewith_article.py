@@ -188,13 +188,15 @@ def candidate_choice(fragments: list[str], number: int, skills: dict) -> tuple[d
             outcome_lines[current].append(line)
     answer = {"id": f"option{number}", "label": f"選択肢{number}"}
     if outcome_lines:
-        if set(outcome_lines) != {"success", "great"}:
+        outcomes = set(outcome_lines)
+        if outcomes not in ({"success", "great"}, {"success", "failure"}, {"success", "great", "failure"}):
             raise ValueError("incomplete-or-unsupported-results")
+        ordered = [key for key in ("success", "great", "failure") if key in outcomes]
         answer["outcomes"] = [
-            {"id": key, "label": "成功" if key == "success" else "大成功",
+            {"id": key, "label": {"success":"成功","great":"大成功","failure":"失敗"}[key],
              **facts_from_text("\n".join(outcome_lines[key]), skills),
              # The outcome tree requires rewards arrays even if none are seen.
-             } for key in ("success", "great")
+             } for key in ordered
         ]
         for outcome in answer["outcomes"]:
             outcome.setdefault("rewards", [])
@@ -258,7 +260,7 @@ def article_to_facts(text: str, card_id: str, card: dict,
                 continue
             if heading == 4 and mode is not None:
                 finish()
-                current = {"mode": mode, "rows": [], "raw": []}
+                current = {"mode": mode, "rows": [], "raw": [], "noChoice": False}
                 continue
         if not entered or current is None:
             continue
@@ -269,6 +271,8 @@ def article_to_facts(text: str, card_id: str, card: dict,
         if c and c.group(1).strip():
             if row is not None:
                 current["rows"].append(row)
+            if c.group(1).strip() == "選択肢なし":
+                current["noChoice"] = True
             row = [c.group(2)]
         elif row is not None:
             row.append(line)
@@ -283,7 +287,23 @@ def article_to_facts(text: str, card_id: str, card: dict,
         mode = event["mode"]
         count_by_category[mode] += 1
         category_index = count_by_category[mode]
-        if len(event["rows"]) < 2:
+        if len(event["rows"]) == 1 and event["noChoice"]:
+            reason = "nonchoice-event-needs-manual-reachability"
+            fact = {}
+            try:
+                # Preserve no-choice numeric rewards and success/failure trees.
+                # A single row does NOT establish any automatic guarantee.
+                entry, _ = candidate_choice(event["rows"][0], 1, skills)
+                fact = {key:value for key,value in entry.items()
+                        if key not in ("id", "label")}
+            except ValueError:
+                reason = "nonchoice-results-need-human-review"
+            reviews.append({"eventOrdinal": ordinal, "reason": reason})
+            manual.append({"eventOrdinal": ordinal, "category": mode,
+                           "categoryOrdinal": category_index, "eventKind": "auto",
+                           "facts": fact, "reason": reason})
+            continue
+        if len(event["rows"]) < 2 or event["noChoice"]:
             reviews.append({"eventOrdinal": ordinal, "reason": "missing-or-ambiguous-choices"})
             manual.append({"eventOrdinal": ordinal, "category": mode,
                            "categoryOrdinal": category_index, "choices": [],
