@@ -9,11 +9,12 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const index=read('poc/data/curation/source_index.v1.json');
 const SKILLS=require('../src/efforia30311_review_preview.cjs').SKILLS;
 const indexed={
- '10001':'R','10002':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
+ '10001':'R','10002':'R','10003':'R','10004':'R','10005':'R','10006':'R','10007':'R','10008':'R','10009':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
  '20023':'SR','20029':'SR','30311':'SSR'
 };
 const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付','前列狙い','ペースアップ',
- 'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み','別腹タンク','軽い足取り'];
+ 'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み','別腹タンク','軽い足取り',
+ '先行直線○','先駆け','中山レース場○','阪神レース場○','垂れウマ回避','抜け出し準備','先行駆け引き','徹底マーク○'];
 function input(){
  const active=Object.entries(indexed).map(([id,rarity])=>({
   id,name:'カード'+id,rarity,hints:[],events:[]
@@ -29,7 +30,7 @@ function input(){
   ...Object.entries(SKILLS).map(([id,name],i)=>({
    id,name,rarity:'normal',group:50000+i
   })),
-  ...hintNames.filter(name=>name!=='後方釘付').map((name,i)=>({id:String(900001+i),name,
+  ...hintNames.filter(name=>!['後方釘付','先行駆け引き'].includes(name)).map((name,i)=>({id:String(900001+i),name,
     rarity:'normal',group:92000+i})),
   {id:'202992',name:'直線コース○',rarity:'normal',group:20299},
   ...Array.from({length:110},(_,i)=>({
@@ -41,23 +42,23 @@ function input(){
   publicCatalog:read('poc/data/reviewed_events.v1.json'),
   supplementalSkills:read('poc/data/curation/supplemental_skills.v1.json')};
 }
-test('13 direct GameWith article-linked card drafts, 33 events / 563 full-card test roster, 0 released',()=>{
+test('20 direct GameWith article-linked card drafts, 47 events / 563 full-card test roster, 0 released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
- assert.equal(report.sourceIndexedCards,13);
- assert.equal(report.draftCards,13);
- assert.equal(report.draftEventRecords,33);
+ assert.equal(report.sourceIndexedCards,20);
+ assert.equal(report.draftCards,20);
+ assert.equal(report.draftEventRecords,47);
  assert.equal(report.draftNamedUnresolvedRows,1);
  assert.equal(report.namedRewardsMatchedFromFullRegistry,0);
  assert.equal(report.namedRewardsMatchedFromSupplement,1);
- assert.equal(report.supplementalSkillIdsAdded,1);
+ assert.equal(report.supplementalSkillIdsAdded,2);
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.stillPendingSkillEvents,0);
  assert.ok(report.normalHintRewardIdsMatched>=12);
- assert.equal(report.untrackedCards,550);
+ assert.equal(report.untrackedCards,543);
  assert.equal(report.releasedEventRecords,0);
- assert.deepEqual(report.indexedByRarity,{R:10,SR:2,SSR:1});
+ assert.deepEqual(report.indexedByRarity,{R:17,SR:2,SSR:1});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
 test('SR Pearl restores event-only skill with actual resolved numeric ID',()=>{
@@ -118,6 +119,13 @@ test('R card article-derived event choices retain skill, choice ordinal, hint le
  const expected={
   '10001':[[0,0,'別腹タンク',1]],
   '10002':[[1,1,'左回り○',1]],
+  '10003':[[0,1,'先行直線○',1]],
+  '10004':[[0,0,'先駆け',1]],
+  '10005':[[1,1,'中山レース場○',1]],
+  '10006':[[1,1,'阪神レース場○',1]],
+  '10007':[[1,0,'垂れウマ回避',1]],
+  '10008':[[1,0,'skill:202992',1],[1,1,'抜け出し準備',1]],
+  '10009':[[1,0,'skill:200801',1],[1,1,'徹底マーク○',1]],
   '10016':[[0,0,'差しコーナー○',1]],
   '10047':[[1,0,'ペースアップ',1]],
   '10050':[],
@@ -154,9 +162,9 @@ test('one unresolved reward survives an absent full numeric registry without inv
  const inputData=input();
  const p=inputData.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0];
  const pre=JSON.stringify(p);
- inputData.supplementalSkills={schemaVersion:1,skills:[]};
+ inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const report=inventory.audit(inputData);
- assert.equal(report.draftEventRecords,33);
+ assert.equal(report.draftEventRecords,47);
  assert.equal(report.stillPendingSkillRows,1);
  assert.equal(report.stillPendingSkillEvents,1);
  assert.deepEqual(report.pendingSkillDetails.map(x=>[x.skillName,x.level,x.reason]),
@@ -165,7 +173,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
 });
 test('multiple same-name registry records quarantine the reward instead of choosing one',()=>{
  const inputData=input();
- inputData.supplementalSkills={schemaVersion:1,skills:[]};
+ inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const dict=JSON.parse(inputData.skillText);
  dict.push({id:'201012',name:'後方釘付',rarity:'normal',group:99876});
  dict.push({id:'999999',name:'後方釘付',rarity:'normal',group:99876});
@@ -196,7 +204,7 @@ test('resolved draft validation has exact full numeric ID and does not publish i
   skillId:'skill:201012',verifiedSkillName:'後方釘付',level:1
  }]);
  assert.equal(output.releaseEligible,false);
- assert.equal(output.supplementalAdded,1);
+ assert.equal(output.supplementalAdded,2);
  assert.equal(output.resolvedNames[0].source,'supplemental');
  assert.ok(output.matchedHintRewards===0);
  assert.deepEqual(raw.cards[0].events[1].choices[1].unresolvedRewards,
@@ -248,4 +256,14 @@ test('unreviewed wiki-only supplemental data never edits original skill registry
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.releasedEventRecords,0);
  assert.equal(JSON.stringify(arg),before);
+});
+
+test('missing second supplemental 200801 invalidates its numeric draft, never silently drops reward',()=>{
+ const x=input();
+ x.supplementalSkills={schemaVersion:1,skills:x.supplementalSkills.skills.filter(v=>v.id!=='200801')};
+ assert.throws(()=>inventory.audit(x),/数値スキルIDが未照合/);
+ assert.deepEqual(x.draftCatalogs['poc/data/curation/drafts/10009.v1.json']
+ .cards[0].events[1].choices[0].rewards,[{
+  skillId:'skill:200801',verifiedSkillName:'先行駆け引き',level:1
+ }]);
 });

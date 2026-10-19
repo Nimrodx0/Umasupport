@@ -207,3 +207,9 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-19：イベント専用スキル数値ID補完とR収録バッチ（PR #84）
 
 GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game:Skills/201012に数値IDがあり、固定UmaSim全辞書に名称がないため`poc/data/curation/supplemental_skills.v1.json`へ草稿専用補完として収録。 `poc/src/curated_skill_resolution.cjs`が補完台帳を検証、`curated_event_inventory.cjs`が`mergedSkillText`で検査するときのみ利用。実行時スキルDB・承認済みイベントJSONには追加しない。元辞書とのID/名称衝突、補完根拠URLの改竄を拒否。R10001/10050/10061/10087各2件の独自草稿を追加し計13枚33件、未着手550枚。通常ヒント提供スキル名にあるからといって全辞書にあると仮定しない。利用者画面に監査バッジは追加しない。
+
+## 2026-10-19：GameWith-first初回20枚バッチ（PR #85）
+
+新規RカードID10003,10004,10005,10006,10007,10008,10009の通常イベント各2件、計14件を一次記事から選択肢順に記録。合計20枚47イベント、R17/SR2/SSR1、未着手543枚。新規イベントスキルの上/下、ヒントLvを`poc/tests/curated_event_inventory.test.cjs`に固定し、外部全スキル辞書との構造監査を継続。記事文言・画像の転載はしない。承認本番0、補完ID201012は草稿監査のみ。閲覧者向け未確認ラベルの追加は禁止。
+
+**初回20枚バッチでの補完ID追加：** Rグラスワンダー（10009）の通常2上にある「先行駆け引き」は固定UmaSim全数値辞書の名称で未照合だったため、公開Wiki <https://umamusu.wiki/Game:Skills/200801> のID`200801`、GameWith <https://gamewith.jp/uma-musume/article/show/257960> の名称・効果を別資料として確認。草稿専用補完台帳へ数値ID `200801` を追加、R10009の対象枝も `skill:200801` で記録。現在の編集用補完はID`200801`と`201012`の2件。公開本番スキルDBはまだ拡張していない。オフライン監査での未解決スキル数を0へ戻し、補完を外したら数値ID未照合として検査失敗させる。
