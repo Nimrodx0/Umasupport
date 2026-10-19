@@ -10,7 +10,7 @@ const index=read('poc/data/curation/source_index.v1.json');
 const SKILLS=require('../src/efforia30311_review_preview.cjs').SKILLS;
 const indexed={
  '10001':'R','10002':'R','10003':'R','10004':'R','10005':'R','10006':'R','10007':'R','10008':'R','10009':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
- '20023':'SR','20029':'SR','30311':'SSR'
+ '20023':'SR','20029':'SR','20043':'SR','30003':'SSR','30311':'SSR'
 };
 const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付','前列狙い','ペースアップ',
  'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み','別腹タンク','軽い足取り',
@@ -33,6 +33,8 @@ function input(){
   ...hintNames.filter(name=>!['後方釘付','先行駆け引き'].includes(name)).map((name,i)=>({id:String(900001+i),name,
     rarity:'normal',group:92000+i})),
   {id:'202992',name:'直線コース○',rarity:'normal',group:20299},
+  {id:'200371',name:'一陣の風',rarity:'rare',group:20037},
+  {id:'201902',name:'真っ向勝負',rarity:'normal',group:20190},
   ...Array.from({length:110},(_,i)=>({
    id:String(700000+i),name:'架空辞書'+i,rarity:'normal',group:70000+i
   }))
@@ -42,13 +44,13 @@ function input(){
   publicCatalog:read('poc/data/reviewed_events.v1.json'),
   supplementalSkills:read('poc/data/curation/supplemental_skills.v1.json')};
 }
-test('20 direct GameWith article-linked card drafts, 47 events / 563 full-card test roster, 0 released',()=>{
+test('22 direct GameWith article-linked card drafts, 56 events / 563 full-card test roster, 0 released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
- assert.equal(report.sourceIndexedCards,20);
- assert.equal(report.draftCards,20);
- assert.equal(report.draftEventRecords,47);
+ assert.equal(report.sourceIndexedCards,22);
+ assert.equal(report.draftCards,22);
+ assert.equal(report.draftEventRecords,56);
  assert.equal(report.draftNamedUnresolvedRows,1);
  assert.equal(report.namedRewardsMatchedFromFullRegistry,0);
  assert.equal(report.namedRewardsMatchedFromSupplement,1);
@@ -56,9 +58,9 @@ test('20 direct GameWith article-linked card drafts, 47 events / 563 full-card t
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.stillPendingSkillEvents,0);
  assert.ok(report.normalHintRewardIdsMatched>=12);
- assert.equal(report.untrackedCards,543);
+ assert.equal(report.untrackedCards,541);
  assert.equal(report.releasedEventRecords,0);
- assert.deepEqual(report.indexedByRarity,{R:17,SR:2,SSR:1});
+ assert.deepEqual(report.indexedByRarity,{R:17,SR:3,SSR:2});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
 test('SR Pearl restores event-only skill with actual resolved numeric ID',()=>{
@@ -164,7 +166,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
  const pre=JSON.stringify(p);
  inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const report=inventory.audit(inputData);
- assert.equal(report.draftEventRecords,47);
+ assert.equal(report.draftEventRecords,56);
  assert.equal(report.stillPendingSkillRows,1);
  assert.equal(report.stillPendingSkillEvents,1);
  assert.deepEqual(report.pendingSkillDetails.map(x=>[x.skillName,x.level,x.reason]),
@@ -266,4 +268,29 @@ test('missing second supplemental 200801 invalidates its numeric draft, never si
  .cards[0].events[1].choices[0].rewards,[{
   skillId:'skill:200801',verifiedSkillName:'先行駆け引き',level:1
  }]);
+});
+
+test('SSR Teio non-choice chained events advance only in sequence and keep numeric rare skill',()=>{
+ const e=input().draftCatalogs['poc/data/curation/drafts/30003.v1.json'].cards[0].events;
+ assert.equal(e.length,5);
+ assert.deepEqual(e.slice(0,3).map(x=>x.type),['auto','auto','auto']);
+ assert.equal(e[0].requires,undefined);
+ assert.deepEqual(e[1].requires,{all:[{eventId:e[0].id}]});
+ assert.deepEqual(e[2].requires,{all:[{eventId:e[1].id}]});
+ assert.deepEqual(e[2].rewards,[{skillId:'skill:200371',verifiedSkillName:'一陣の風',level:1}]);
+ assert.equal(e[3].choices[1].rewards[0].skillId,'hint:先行直線○');
+ assert.equal(e[4].choices.every(c=>c.rewards===undefined),true);
+});
+test('SR Special Week no-choice chain success branch must never become guaranteed reward',()=>{
+ const e=input().draftCatalogs['poc/data/curation/drafts/20043.v1.json'].cards[0].events;
+ assert.equal(e.length,4);
+ assert.deepEqual(e.slice(0,2).map(x=>x.type),['auto','auto']);
+ assert.deepEqual(e[1].requires,{all:[{eventId:e[0].id}]});
+ assert.equal(e[1].rewards,undefined);
+ assert.deepEqual(e[1].outcomes,[
+  {id:'success',label:'成功',rewards:[{skillId:'skill:201902',verifiedSkillName:'真っ向勝負',level:3}]},
+  {id:'failure',label:'失敗',rewards:[]}
+ ]);
+ assert.deepEqual(e[2].choices[0].rewards,[{skillId:'hint:別腹タンク',level:1}]);
+ assert.equal(e[3].choices[0].rewards,undefined);
 });
