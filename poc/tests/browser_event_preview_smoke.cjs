@@ -115,6 +115,49 @@ async function main(){
   assert.match(await badPage.locator('.notice').last().innerText(),/試用イベントは適用されませんでした/);
   await bad.close();
 
+  // Expanded mode: independently generated 126 candidate input records, used
+  // only in tests. The actual runtime uses pinned SHA-256 raw GitHub fetch.
+  const expandedContext=await browser.newContext(),expandedPage=await expandedContext.newPage();
+  await mock(expandedPage);
+  const sample=require('./community_candidate_preview.test.cjs').fixture();
+  await expandedPage.unroute('**/data/skill_data.txt');
+  await expandedPage.route('**/data/skill_data.txt',r=>r.fulfill({
+   status:200,contentType:'text/plain',body:sample.dict
+  }));
+  const communityJs=await fs.readFile(path.resolve(ROOT,'poc/src/community_candidate_preview.js'),'utf8');
+  await expandedPage.route('**/src/community_candidate_preview.js',r=>r.fulfill({
+   status:200,contentType:'text/javascript',
+   body:communityJs+'\\nwindow.UmaCommunityCandidatePreview.load=async()=>'+JSON.stringify(sample.source)+';'
+  }));
+  await boot(expandedPage,origin+'/poc/live.html?eventPreview=expanded');
+  assert.equal(await expandedPage.evaluate(()=>window.UmaPreviewActive),true);
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.meta.previewEvents.cards),45);
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.meta.previewEvents.records),124);
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30311'].events.length),5);
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30201'].events.length>0),true);
+  await expandedPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await expandedPage.locator('#picker-route').selectOption('event');
+  await expandedPage.locator('#picker-search').fill('サポカ200');
+  await expandedPage.locator('button[data-action="set-card"][data-id="30201"]').click();
+  await expandedPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  const candidateEvent=expandedPage.locator('.modal-body .event').first();
+  assert.match(await candidateEvent.innerText(),/候補1/);
+  const eventId=await candidateEvent.locator('input[data-event-choice][value="option1"]').getAttribute('data-event');
+  await candidateEvent.locator('input[data-event-choice][value="option1"]').click();
+  const routes=await expandedPage.evaluate((id)=>{
+   const slot=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview-expanded'))
+      .decks.main[0].slots[0];
+   const c=window.UmaDemoData.cardById[slot.cardId];
+   return window.UmaCore.directRoutes(c,slot).map(x=>x.skillId);
+  },eventId);
+  assert.ok(routes.includes('skill:700002')||routes.includes('skill:700001'));
+  assert.equal(await expandedPage.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview')),null);
+  assert.equal(await expandedPage.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),null);
+  await boot(expandedPage,origin+'/poc/live.html');
+  assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30201'].events.length),0);
+  assert.equal(await expandedPage.locator('#candidate-preview-warning').count(),0);
+  await expandedContext.close();
   console.log('PASS: opt-in SSR30311 candidate loads, choices affect skill routes, normal storage and release count isolated');
  }finally{
   await browser?.close();
