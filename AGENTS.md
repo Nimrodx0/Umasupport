@@ -203,3 +203,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 **要点**：サポカ通常ヒント名が存在しない≠ゲームにスキルが存在しない。草稿用の `poc/src/curated_skill_resolution.cjs` で固定UmaSim `skill_data.txt` 全normal/rare数値IDを照合。 `hint:名前` も完全辞書にある正確な単一IDへ変換してから `skill_bridge.prepare` へ渡す。「○」「◯」は検索時のみ同一視。欠損や同名ID複数は推定せず原稿の `unresolvedRewards:[{skillName,level}]` を保持し、CLIでpending件数と場所を報告。一般用イベントスキーマと公開SHAゲートは未照合報酬の公開を拒否する。20029通常1選択肢2を復旧して**9枚25候補**、本番イベントDB0件。IDを手作業で創作しない。今後も通常ヒントリストだけで存在判定しない。
 
 **実監査による更新:** SR20029の未照合は固定UmaSim全辞書 `202992` で解決したので、元草稿にも正規数値IDを保存済み。R10073「後方釘付」が固定全辞書で未解決のため、イベントと選択肢を残し `unresolvedRewards` で保持中。実草稿9枚25イベント・未解決報酬1件、公開0件。最新の固定UmaSim 2,139件にないことはゲームに存在しない証明にならない。
+
+## 2026-10-19：イベント専用スキル数値ID補完とR収録バッチ（PR #84）
+
+GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game:Skills/201012に数値IDがあり、固定UmaSim全辞書に名称がないため`poc/data/curation/supplemental_skills.v1.json`へ草稿専用補完として収録。 `poc/src/curated_skill_resolution.cjs`が補完台帳を検証、`curated_event_inventory.cjs`が`mergedSkillText`で検査するときのみ利用。実行時スキルDB・承認済みイベントJSONには追加しない。元辞書とのID/名称衝突、補完根拠URLの改竄を拒否。R10001/10050/10061/10087各2件の独自草稿を追加し計13枚33件、未着手550枚。通常ヒント提供スキル名にあるからといって全辞書にあると仮定しない。利用者画面に監査バッジは追加しない。
