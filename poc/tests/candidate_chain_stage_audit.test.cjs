@@ -11,6 +11,11 @@ test('exact 954 pinned historical title links partition to numeric chain stages 
  assert.equal(audit.forSkillGrant,false);
  assert.equal(s.strictProvisionalEvents,954);
  assert.equal(s.stageGroups,349);
+ assert.deepEqual(s.reviewBands,{
+  readyForIndependentRouteReview:171,noObservedHints:3,
+  needsConditionalOutcomeReview:97,needsSkillIdReview:22,
+  needsBothReviews:19,structuralDiscrepancy:37
+ });
  assert.equal(s.stageCompleteUnique,312);
  assert.equal(s.stageIncomplete,33);
  assert.equal(s.stageAmbiguous,4);
@@ -23,6 +28,11 @@ test('exact 954 pinned historical title links partition to numeric chain stages 
  assert.equal(audit.unsequencedStrictEvents.length,44);
  assert.equal(s.stageCompleteUnique+s.stageIncomplete+s.stageAmbiguous,s.stageGroups);
  assert.ok(audit.chainGroups.every(g=>g.needsCurrentGameReview&&g.needsChoiceOutcomeReview));
+ assert.equal(audit.chainGroups.filter(g=>g.reviewBand==='readyForIndependentRouteReview').length,171);
+ assert.ok(audit.chainGroups.filter(g=>g.reviewBand==='readyForIndependentRouteReview')
+  .every(g=>g.structuralStatus==='stage-complete-unique'&&
+   g.events.some(e=>e.hintMentions>0)&&
+   g.events.every(e=>e.flaggedChoices===0&&e.unresolvedHintMentions===0)));
  assert.ok(audit.chainGroups.every(g=>g.events.every(e=>/^checker:\d{5}:/.test(e.sourceKey)&&
   /^\d{9}$/.test(e.provisionalStoryId))));
  assert.ok(audit.chainGroups.some(g=>g.cardId==='30001'&&g.chainMax===3&&
