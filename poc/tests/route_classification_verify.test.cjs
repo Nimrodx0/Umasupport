@@ -11,6 +11,7 @@ test('all 2109 saved events have corresponding immutable provisional status reco
  assert.equal(s.strictProvisionalLinks,954);
  assert.equal(s.typographySuggestions,29);
  assert.equal(s.historicalGapHypotheses,63);
+ assert.equal(s.historicalUnlinkedAfterTypography,34);
  assert.equal(s.verifiedRoutes,0);
  assert.equal(s.emptySourceCards,3);
 });
