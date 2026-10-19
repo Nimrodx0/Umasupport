@@ -7,6 +7,11 @@ on:
       - poc/tools/audit_expanded_candidate_preview.cjs
       - poc/src/community_candidate_preview.js
       - poc/src/event_preview_loader.js
+      - poc/src/curated_event_inventory.cjs
+      - poc/tools/report_curated_event_inventory.cjs
+      - poc/tests/curated_event_inventory.test.cjs
+      - 'poc/data/curation/**'
+      - poc/data/preview/efforia30311.v1.json
       - poc/tests/community_candidate_preview.test.cjs
       - poc/tools/audit_efforia30311_wiki_title_links.py
       - poc/tests/test_efforia30311_wiki_title_links.py
@@ -76,6 +81,9 @@ jobs:
 
       - name: Crosscheck all SSR30311 preview skill numbers and names against pinned full UmaSim dictionary
         run: node poc/tools/audit_efforia30311_preview_skills.cjs "$RUNNER_TEMP/umasim-skill-data.txt"
+
+      - name: Audit original GameWith-first event drafts vs all 563 pinned UmaSim support cards
+        run: node poc/tools/report_curated_event_inventory.cjs "$RUNNER_TEMP/umasim-support-card.txt" "$RUNNER_TEMP/umasim-skill-data.txt"
 
       - name: Verify actual pinned expanded-preview conversion (no event prose output)
         run: |
