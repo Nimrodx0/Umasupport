@@ -15,3 +15,7 @@ A 機構: `node --test poc/tests/outcome_dependent_branches.test.cjs poc/tests/e
 B データ: 固定版563（R146/SR101/SSR316）・Checker417枚2,109候補の突合と、母数外・重複の拒否。実ゲーム全イベントの存在・到達分岐は未確認。別資料を用いて期待イベントID一覧とカード固有／キャラクター共通の区別を追加することが次工程。
 
 C UI/端末: 自動CIと実ブラウザの結果を区別し、物理端末操作は未検証のまま保留。
+
+## 2025年ゲームマスターの暫定数値照合 (追加工程)
+
+旧ストーリーIDの厳密タイトル仮リンク954件、表記差の補助提案29件、旧側だけの仮残差63件を全563枚索引の対応カードへ統合した。段階グループ349組（完備312・欠落33・段階競合4）も、元のsourceKeyに沿って仮リンクし、カード単位で監査できる。`historical2025.currentGameVerified:false` と `historicalPotentialGaps.confirmedMissingIn2026:false` を維持する。旧マスターは2025年の固定版で、2026年の期待イベント一覧や分岐報酬の独立検証にはならない。データ整合性は `poc/src/event_coverage_historical.cjs` の全件検査と人工テストで追跡。
