@@ -24,6 +24,8 @@ EVENT_TYPES = {"通常イベント": "normal", "連続イベント": "chain"}
 UNSAFE = re.compile(r"大成功|成功|失敗|ランダム|確率|打ち切り|進行しない|次に進|継続する|継続しない")
 CARD_TITLE = re.compile(r"ウマ娘.*\((R|SR|SSR)[^)]*サポート\)")
 MAX_BYTES = 450_000
+# Internal sentinel; malformed source rows never reach any proposal JSON.
+UNPARSED_HTML_ROW = "[unparsed-html-table-row]"
 
 
 class ArticleBlocks(HTMLParser):
@@ -52,6 +54,8 @@ class ArticleBlocks(HTMLParser):
             self.capture = tag
             self.chunks = []
         elif tag == "tr":
+            if self.row and self.cells:
+                self.blocks.append(UNPARSED_HTML_ROW)
             self.row = True
             self.cells = []
         elif tag in ("th", "td") and self.row:
@@ -80,6 +84,13 @@ class ArticleBlocks(HTMLParser):
         elif tag == "tr" and self.row:
             if len(self.cells) == 2:
                 self.blocks.append(" | ".join(self.cells))
+            elif self.cells:
+                # A 1-/3+-cell row can hide a choice. Never silently discard
+                # it and then accept the remaining rows as a complete event.
+                self.blocks.append(UNPARSED_HTML_ROW)
+            self.row = False
+        elif tag == "table" and self.row:
+            self.blocks.append(UNPARSED_HTML_ROW)
             self.row = False
 
     def text(self):
@@ -318,6 +329,9 @@ def article_to_facts(text: str, card_id: str, card: dict,
     if "<html" in text[:1000].lower() or "<h2" in text[:15000].lower():
         parser = ArticleBlocks()
         parser.feed(text)
+        parser.close()
+        if parser.row:
+            parser.blocks.append(UNPARSED_HTML_ROW)
         text = parser.text()
     lines = text.replace("\r\n", "\n").split("\n")
     validate_article_identity(lines, card)
@@ -358,6 +372,8 @@ def article_to_facts(text: str, card_id: str, card: dict,
                 finish()
                 current = {"mode": mode, "rows": [], "raw": [], "noChoice": False}
                 continue
+        if entered and line.strip() == UNPARSED_HTML_ROW:
+            raise ValueError("unparsed HTML table row in event section")
         if not entered or current is None:
             continue
         if line.strip() == "詳細を見る":
