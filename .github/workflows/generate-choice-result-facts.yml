@@ -1,0 +1,58 @@
+name: Persist all candidate choice / unspecified-result skill facts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/generate-choice-result-facts.yml
+      - poc/src/choice_result_facts.cjs
+      - poc/tools/build_choice_result_facts.cjs
+      - poc/src/checker_choice_fact_preview.js
+      - poc/tests/choice_result_facts.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compile-facts:
+    if: >-
+      github.repository == 'Nimrodx0/Umasupport' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'Nimrodx0' &&
+      github.event.pull_request.head.ref == 'feat/choice-results-catalog-preview-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check strict full-population, numeric ID and explicit outcome-unknown tests
+        run: node --test poc/tests/choice_result_facts.test.cjs
+      - name: Regenerate only derived first-party numeric facts, no network source reads
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f poc/data/candidates/checker_choice_results.v1.json
+          node poc/tools/build_choice_result_facts.cjs
+          node poc/tools/build_choice_result_facts.cjs --verify
+          node --test poc/tests/choice_result_facts.test.cjs
+          node poc/tools/verify_event_release.cjs
+      - name: Commit derived choice/result facts on authorized first-party branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- poc/data/candidates/checker_choice_results.v1.json
+          if git diff --cached --quiet; then
+            echo 'Pinned choice/result fact database unchanged'
+          else
+            git commit -m 'data: persist 2109-choice-event source facts with unspecified outcomes'
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
