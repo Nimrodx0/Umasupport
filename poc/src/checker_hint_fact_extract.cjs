@@ -47,7 +47,8 @@ function extract({source,model,skillText,aliases={}}){
  const catalog=pipeline.inventory({source,model,aliases:activeAliases});
  const byName=buildRegistry(skillText);
  const results=[],stats={
-  staleAliasRecords:staleAliasIds.length,\n  cardsWithCandidates:0,eventsObserved:0,choiceRowsObserved:0,
+  staleAliasRecords:staleAliasIds.length,
+  cardsWithCandidates:0,eventsObserved:0,choiceRowsObserved:0,
   extractedHintRows:0,matchedNumericHints:0,
   unresolvedHints:0,ambiguousHints:0,
   conditionalChoiceRows:0,unparsedHintChoiceRows:0
