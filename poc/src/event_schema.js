@@ -10,7 +10,7 @@
    const r=e.requires;
    if(!obj(r))fail(e.id+': requiresが不正');
    if(Array.isArray(r.all)&&Object.keys(r).length===1)return r.all;
-   if(id(r.eventId)&&Object.keys(r).every(k=>['eventId','choiceId'].includes(k)))return [r]; // old artificial fixtures
+   if(id(r.eventId)&&Object.keys(r).every(k=>['eventId','choiceId','outcomeId'].includes(k)))return [r]; // old artificial fixtures
    fail(e.id+': requiresは{all:[...]}で指定する');
  }
  function checkRewards(part,model,where){
@@ -33,7 +33,8 @@
      if(!Array.isArray(part.outcomes)||part.outcomes.length<2)fail(where+': outcomesは2種類以上必要');
      const seen=new Set();
      for(const out of part.outcomes){
-       if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||!Array.isArray(out.rewards))fail(where+': 結果が不正');
+       if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||!Array.isArray(out.rewards)||
+          out.terminal!==undefined&&typeof out.terminal!=='boolean')fail(where+': 結果が不正');
        seen.add(out.id);
        checkRewards({rewards:out.rewards},model,where+'/'+out.id);
      }
@@ -58,23 +59,44 @@
        checkRewards(e,model,e.id);
      }
    }
+   function validateRequirement(r,e){
+     if(!obj(r)||!id(r.eventId)||r.choiceId!==undefined&&!id(r.choiceId)||
+        r.outcomeId!==undefined&&!id(r.outcomeId)||
+        Object.keys(r).some(k=>!['eventId','choiceId','outcomeId'].includes(k)))
+       fail(e.id+': 到達条件が不正');
+     const parent=byId.get(r.eventId);
+     if(!parent)fail(e.id+': 親イベントが未登録');
+     let parts;
+     if(parent.type==='choice'){
+       if(r.choiceId===undefined){
+         if(r.outcomeId!==undefined)fail(e.id+': 選択式の結果条件にはchoiceIdが必要');
+         parts=parent.choices.filter(c=>c.terminal!==true);
+         if(!parts.length)fail(e.id+': 全分岐打ち切りの親からは継続できません');
+       }else{
+         const picked=parent.choices.find(c=>c.id===r.choiceId);
+         if(!picked)fail(e.id+': 親選択肢が未登録');
+         if(picked.terminal)fail(e.id+': 打ち切りルートに後続イベント');
+         parts=[picked];
+       }
+     }else{
+       if(r.choiceId!==undefined)fail(e.id+': autoイベントにchoiceIdが指定されている');
+       parts=[parent];
+     }
+     if(r.outcomeId!==undefined){
+       const found=parts[0].outcomes?.find(o=>o.id===r.outcomeId);
+       if(!found)fail(e.id+': 到達条件が不正（親結果IDが未登録）');
+       if(found.terminal)fail(e.id+': 打ち切り結果に後続イベント');
+     }else if(parts.every(p=>p.outcomes?.length&&p.outcomes.every(o=>o.terminal===true))){
+       fail(e.id+': 全結果打ち切りの親からは継続できません');
+     }
+   }
    for(const e of events){
-     for(const r of prerequisites(e)){
-       if(!obj(r)||!id(r.eventId)||r.choiceId!==undefined&&!id(r.choiceId)||r.outcomeId!==undefined||Object.keys(r).some(k=>!['eventId','choiceId'].includes(k)))
-         fail(e.id+': 到達条件が不正（結果分岐の依存は未対応）');
-       const parent=byId.get(r.eventId);
-       if(!parent)fail(e.id+': 親イベントが未登録');
-       if(parent.type==='choice'){
-         // No choiceId means any *selected non-terminal* choice can advance.
-         // The runtime reachability evaluator independently requires a selection.
-         if(r.choiceId===undefined){
-           if(parent.choices.every(c=>c.terminal===true))fail(e.id+': 全分岐打ち切りの親からは継続できません');
-         }else{
-           const picked=parent.choices.find(c=>c.id===r.choiceId);
-           if(!picked)fail(e.id+': 親選択肢が未登録');
-           if(picked.terminal)fail(e.id+': 打ち切りルートに後続イベント');
-         }
-       }else if(r.choiceId!==undefined)fail(e.id+': autoイベントにchoiceIdが指定されている');
+     for(const r of prerequisites(e))validateRequirement(r,e);
+     if(e.type==='choice')for(const c of e.choices){
+       for(const r of prerequisites(c)){
+         if(r.eventId===e.id)fail(e.id+'/'+c.id+': 選択肢の依存が自己参照');
+         validateRequirement(r,e);
+       }
      }
    }
    const visiting=new Set(),done=new Set();
@@ -83,6 +105,8 @@
      if(done.has(e.id))return;
      visiting.add(e.id);
      for(const r of prerequisites(e))visit(byId.get(r.eventId));
+     if(e.type==='choice')for(const c of e.choices)
+       for(const r of prerequisites(c))visit(byId.get(r.eventId));
      visiting.delete(e.id);done.add(e.id);
    }
    for(const e of events)visit(e);

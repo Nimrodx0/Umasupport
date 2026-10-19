@@ -6,8 +6,8 @@ const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
  (window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':
    window.UmaPreviewRequested==='facts'?'-event-preview-facts':
    window.UmaPreviewRequested?'-event-preview':'');
-const blank=()=>({cardId:null,stage:4,choices:{}});
-const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{}}:blank())});
+const blank=()=>({cardId:null,stage:4,choices:{},outcomes:{}});
+const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{},outcomes:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
 let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,skillTier:'all',skillRoute:'all',skillCoverage:'all',skillSort:'name',reverseOnlyOwned:false,reverseRoute:'all',pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0,eventFilter:'all',importCandidate:null,importPreview:null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
@@ -148,7 +148,41 @@ function eventCandidateHTML(part){
  const alternatives=(part.outcomes||[]).map(o=>`<span class="tag condition">${esc(o.label)}時</span> ${eventRewardHTML(o.rewards)}`).join(' / ');
  return [guaranteed,alternatives].filter(Boolean).join(' / ')||'<span class="muted">スキル獲得なし</span>';
 }
-function eventHTML(card,slot,k,i,onlyEventId=null){return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{const reachable=core.isReachable(e,slot.choices,card.events);const selected=e.type==='choice'?slot.choices[e.id]:null;return `<div class="event ${reachable?'':'dim'}"><div class="event-head"><h3>${esc(e.name)}</h3><span class="${e.type==='auto'?'auto':'slot-badge'}">${!reachable?'到達不可':e.type==='auto'?'自動集計':selected?'設定済み':'未設定'}</span></div>${e.requires?`<div class="tiny-note">必要条件：${(e.requires.all||[e.requires]).map(r=>esc(r.eventId)+(r.choiceId?' → '+esc(r.choiceId):'（自動発生）')).join(' ＋ ')}</div>`:''}${e.type==='auto'?`<div class="help" style="margin-top:7px">獲得候補：${eventCandidateHTML(e)}</div>`:`<div class="event-options"><label class="option"><input type="radio" data-event-choice data-deck="${k}" data-index="${i}" data-event="${e.id}" value="" ${!selected?'checked':''} ${!reachable?'disabled':''}><span>未設定<small>このイベント由来のスキルは集計しません</small></span></label>${e.choices.map(opt=>`<label class="option"><input type="radio" data-event-choice data-deck="${k}" data-index="${i}" data-event="${e.id}" value="${opt.id}" ${selected===opt.id?'checked':''} ${!reachable?'disabled':''}><span>${esc(opt.label)}<small>獲得候補：${eventCandidateHTML(opt)}${opt.terminal?'（ここで連続イベント終了）':''}</small></span></label>`).join('')}</div>`}</div>`}).join('');}
+function resultSelector(part,slot,k,i,event,active){
+ if(!part||!Array.isArray(part.outcomes))return '';
+ const current=slot.outcomes?.[event.id]||'';
+ return '<label class="tiny-note">結果を指定： <select class="field" data-event-outcome data-deck="'+k+
+  '" data-index="'+i+'" data-event="'+esc(event.id)+'" '+(!active?'disabled':'')+'>'+
+  '<option value="" '+(!current?'selected':'')+'>結果未確定（候補）</option>'+
+  part.outcomes.map(o=>'<option value="'+esc(o.id)+'" '+(current===o.id?'selected':'')+'>'+esc(o.label)+(o.terminal?'（連続終了）':'')+'</option>').join('')+
+  '</select></label>';
+}
+function eventHTML(card,slot,k,i,onlyEventId=null){
+ return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
+  const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
+  const blocked=progress.status==='blocked',conditional=progress.status==='conditional';
+  const selected=e.type==='choice'?slot.choices[e.id]:null;
+  const selectedPart=e.type==='auto'?e:e.choices.find(c=>c.id===selected);
+  const status=blocked?'到達不可':conditional?'条件付き到達':e.type==='auto'?'自動集計':selected?'設定済み':'未設定';
+  const requirements=e.requires?(e.requires.all||[e.requires]).map(r=>esc(r.eventId)+
+   (r.choiceId?' → '+esc(r.choiceId):'')+(r.outcomeId?' / '+esc(r.outcomeId)+'時':'')).join(' ＋ '):'';
+  const intro='<div class="event '+(blocked?'dim':'')+'"><div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>'+
+    (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
+    (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
+  if(e.type==='auto')return intro+'<div class="help" style="margin-top:7px">獲得候補：'+eventCandidateHTML(e)+'</div>'+
+    resultSelector(e,slot,k,i,e,!blocked)+'</div>';
+  const unknown='<label class="option"><input type="radio" data-event-choice data-deck="'+k+'" data-index="'+i+'" data-event="'+esc(e.id)+'" value="" '+(!selected?'checked':'')+(blocked?' disabled':'')+'><span>未設定<small>このイベント由来のスキルは集計しません</small></span></label>';
+  const options=e.choices.filter(opt=>core.choiceReachability(opt,e,slot.choices,card.events,slot.outcomes||{}).status!=='blocked')
+   .map(opt=>{
+    const availability=core.choiceReachability(opt,e,slot.choices,card.events,slot.outcomes||{});
+    const note=availability.status==='conditional'?'（前段結果によって選択可能）':'';
+    return '<label class="option"><input type="radio" data-event-choice data-deck="'+k+'" data-index="'+i+'" data-event="'+esc(e.id)+'" value="'+esc(opt.id)+'" '+(selected===opt.id?'checked':'')+(blocked?' disabled':'')+'><span>'+
+     esc(opt.label)+note+'<small>獲得候補：'+eventCandidateHTML(opt)+(opt.terminal?'（ここで連続イベント終了）':'')+'</small></span></label>';
+   }).join('');
+  return intro+'<div class="event-options">'+unknown+options+'</div>'+
+   resultSelector(selectedPart,slot,k,i,e,!blocked)+'</div>';
+ }).join('');
+}
 function hintPerformanceHTML(card,slot){
  const p=card.hintPerformanceByStage?.[String(slot.stage)];
  if(!p)return '<div class="info-item"><strong>ヒント関連性能</strong><div class="sub">未収録・不明</div></div>';
@@ -161,17 +195,17 @@ function deckEventsModal(){
  const k=ui.modal.deckKey,deck=activeDeck(k);
  const {cards,totals}=window.UmaDeckEvents.summarize(deck,data,core);
  const filter=ui.eventFilter||'all';
- const countChoices=deck.slots.reduce((a,s)=>a+Object.keys(s.choices||{}).length,0);
- const chooser=[['all','すべて'],['pending','未設定'],['configured','設定済み'],['blocked','到達不可'],['automatic','自動候補'],['unknown','イベント未収録']];
- const bar=`<div class="event-overview-stats"><span>選択肢の未設定 <b>${totals.pending}</b></span><span>設定済み <b>${totals.configured}</b></span><span>到達不可 <b>${totals.blocked}</b></span><span>自動候補 <b>${totals.automatic}</b></span><span>イベント未収録のカード <b>${totals.unknown}</b></span><span>条件付きの報酬経路 <b>${totals.conditionalRoutes}</b></span></div>`;
+ const countChoices=deck.slots.reduce((a,s)=>a+Object.keys(s.choices||{}).length+Object.keys(s.outcomes||{}).length,0);
+ const chooser=[['all','すべて'],['pending','未設定'],['configured','設定済み'],['conditional','条件付き到達'],['blocked','到達不可'],['automatic','自動候補'],['unknown','イベント未収録']];
+ const bar=`<div class="event-overview-stats"><span>選択肢の未設定 <b>${totals.pending}</b></span><span>設定済み <b>${totals.configured}</b></span><span>条件付き到達 <b>${totals.conditional}</b></span><span>到達不可 <b>${totals.blocked}</b></span><span>自動候補 <b>${totals.automatic}</b></span><span>イベント未収録のカード <b>${totals.unknown}</b></span><span>条件付きの報酬経路 <b>${totals.conditionalRoutes}</b></span></div>`;
  const controls=`<div class="event-overview-controls"><label>表示 <select id="event-status-filter" class="field" aria-label="イベント状態の絞り込み">${chooser.map(([v,n])=>`<option value="${v}" ${filter===v?'selected':''}>${n}</option>`).join('')}</select></label><button class="btn tiny danger" data-action="deck-events-reset" data-deck="${k}" ${countChoices===0?'disabled':''}>このデッキの選択を全解除（${countChoices}件）</button></div>`;
  const content=cards.flatMap(info=>{
   const i=info.index,sl=deck.slots[i],c=sl.cardId&&data.cardById[sl.cardId];
   if(!c){return filter==='all'?['<div class="info-item"><strong>スロット'+(i+1)+'：空</strong></div>']:[];}
   if(filter==='unknown'&&!info.unknown||filter!=='unknown'&&filter!=='all'&&!info[filter])return [];
-  const chosen=Object.keys(sl.choices||{}).length;
+  const chosen=Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length;
   const infoLine=info.unknown?'イベント未収録（存在しないという意味ではありません）':
-    '選択未設定 '+info.pending+' / 設定済み '+info.configured+' / 到達不可 '+info.blocked+' / 自動 '+info.automatic;
+    '選択未設定 '+info.pending+' / 設定済み '+info.configured+' / 条件付き到達 '+info.conditional+' / 到達不可 '+info.blocked+' / 自動 '+info.automatic;
   const events=info.unknown?'<p class="help">このカードに公開承認済みイベントの記録はありません。ゲーム内イベントが無いという意味ではありません。</p>':
     c.events.filter(e=>filter==='all'||filter==='unknown'||info.events.some(x=>x.id===e.id&&x.status===filter)).map(e=>eventHTML(c,sl,k,i,e.id)).join('');
   // Always evaluate reachability against the FULL card graph, including hidden prerequisites.
@@ -232,7 +266,24 @@ function importPreviewModal(){
  titleModal('JSON読込：方法を選択','決定するまで保存内容は変わりません',summary+help+explanation,foot);
 }
 function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'source-health':sourceHealthModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;case 'import-preview':importPreviewModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
-function changeSelection(el){const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];if(!sl?.cardId)return;const card=data.cardById[sl.cardId];let choice=el.value;let next=core.clearDescendants(card,sl.choices,eid);if(choice)next[eid]=choice;else delete next[eid];sl.choices=next;const oldScroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();const body=document.querySelector('.modal-body');if(body)body.scrollTop=oldScroll;}
+function changeSelection(el){
+ const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
+ if(!sl?.cardId)return;
+ const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
+ if(el.value)next.choices[eid]=el.value;else delete next.choices[eid];
+ sl.choices=next.choices;sl.outcomes=next.outcomes;
+ const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
+ const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+}
+function changeOutcome(el){
+ const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
+ if(!sl?.cardId)return;
+ const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
+ if(el.value)next.outcomes[eid]=el.value;
+ sl.choices=next.choices;sl.outcomes=next.outcomes;
+ const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
+ const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+}
 function handleAction(el){const a=el.dataset.action,k=el.dataset.deck,i=Number(el.dataset.index);switch(a){
 case 'owned-manage':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;ui.modal={kind:'owned-manager'};renderModal();break;
  case 'owned-status':window.UmaSettings.setOwnedCard(state,data,el.dataset.id,el.dataset.status,state.ownedCards[el.dataset.id]?.stage??0);store();refreshOwnedGrid();break;
@@ -246,14 +297,14 @@ case 'close':ui.modal=null;renderModal();break;
 case 'pick':ui.pickerSearch='';ui.pickerSkillQuery='';ui.pickerRarity='all';ui.pickerType='all';ui.pickerRoute='all';ui.pickerPage=0;ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
 case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
 case 'deck-events':ui.eventFilter='all';ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
- case 'deck-event-slot-reset':{const d=activeDeck(k),choices=d.slots[i]?.choices||{},count=Object.keys(choices).length;if(count&&confirm(scopeLabel[k]+'のスロット'+(i+1)+'のイベント選択'+count+'件を解除しますか？')){window.UmaDeckEvents.clearSlot(d,i);store();render();}break;}
- case 'deck-events-reset':{const d=activeDeck(k),count=d.slots.reduce((n,sl)=>n+Object.keys(sl.choices||{}).length,0);if(count&&confirm(scopeLabel[k]+'の「'+d.name+'」にあるイベント選択'+count+'件をすべて解除しますか？他の保存デッキには影響しません。')){window.UmaDeckEvents.clearDeck(d);store();render();}break;}
+ case 'deck-event-slot-reset':{const d=activeDeck(k),slot=d.slots[i],count=Object.keys(slot?.choices||{}).length+Object.keys(slot?.outcomes||{}).length;if(count&&confirm(scopeLabel[k]+'のスロット'+(i+1)+'のイベント選択'+count+'件を解除しますか？')){window.UmaDeckEvents.clearSlot(d,i);store();render();}break;}
+ case 'deck-events-reset':{const d=activeDeck(k),count=d.slots.reduce((n,sl)=>n+Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length,0);if(count&&confirm(scopeLabel[k]+'の「'+d.name+'」にあるイベント選択'+count+'件をすべて解除しますか？他の保存デッキには影響しません。')){window.UmaDeckEvents.clearDeck(d);store();render();}break;}
  case 'deck-manage':ui.modal={kind:'deck-manager',deckKey:k};renderModal();break;
  case 'deck-new':
  case 'deck-copy':try{window.UmaSettings.addDeck(state,k,a==='deck-copy');saveRender();}catch(e){alert(e.message)}break;
  case 'deck-rename':try{window.UmaSettings.renameDeck(state,k,document.getElementById('deck-name').value);saveRender();}catch(e){alert(e.message)}break;
  case 'deck-delete':if(state.decks[k].length>1&&confirm('「'+activeDeck(k).name+'」を削除しますか？このデッキのスロットとイベント設定も消えます。')){window.UmaSettings.deleteDeck(state,k);saveRender();}break;
-case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};ui.modal=null;saveRender();break;}
+case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};sl.outcomes={};ui.modal=null;saveRender();break;}
 case 'remove-card':activeDeck(k).slots[i]=blank();ui.modal=null;saveRender();break;
 case 'view':state.view=el.dataset.value;saveRender();break;
 case 'density':state.density=el.dataset.value;saveRender();break;
@@ -276,7 +327,7 @@ case 'reset':if(confirm('すべての設定を初期状態に戻しますか？'
 }}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;handleAction(el)});
 document.addEventListener('input',e=>{if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='picker-skill-search'){ui.pickerSkillQuery=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}if(e.target.id==='owned-skill-search'){ui.ownedSkillQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
-document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;ui.pickerPage=0;pickerRefresh();return}if(['picker-rarity','picker-type','picker-route'].includes(el.id)){ui[{'picker-rarity':'pickerRarity','picker-type':'pickerType','picker-route':'pickerRoute'}[el.id]]=el.value;ui.pickerPage=0;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter','owned-route'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter','owned-route':'ownedRoute'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(['skill-tier','skill-route','skill-coverage','skill-sort'].includes(el.id)){ui[{'skill-tier':'skillTier','skill-route':'skillRoute','skill-coverage':'skillCoverage','skill-sort':'skillSort'}[el.id]]=el.value;refreshTable();return}if(el.id==='event-status-filter'){ui.eventFilter=el.value;renderModal(true);return}if(el.id==='reverse-only-owned'){ui.reverseOnlyOwned=el.checked;renderModal(true);return}if(el.id==='reverse-route'){ui.reverseRoute=el.value;renderModal(true);return}if(el.id==='goals-modal-select'){if(state.goalSets.some(g=>g.id===el.value)){state.currentGoalSet=el.value;store();render();}return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
+document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-event-outcome')){changeOutcome(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;ui.pickerPage=0;pickerRefresh();return}if(['picker-rarity','picker-type','picker-route'].includes(el.id)){ui[{'picker-rarity':'pickerRarity','picker-type':'pickerType','picker-route':'pickerRoute'}[el.id]]=el.value;ui.pickerPage=0;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter','owned-route'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter','owned-route':'ownedRoute'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(['skill-tier','skill-route','skill-coverage','skill-sort'].includes(el.id)){ui[{'skill-tier':'skillTier','skill-route':'skillRoute','skill-coverage':'skillCoverage','skill-sort':'skillSort'}[el.id]]=el.value;refreshTable();return}if(el.id==='event-status-filter'){ui.eventFilter=el.value;renderModal(true);return}if(el.id==='reverse-only-owned'){ui.reverseOnlyOwned=el.checked;renderModal(true);return}if(el.id==='reverse-route'){ui.reverseRoute=el.value;renderModal(true);return}if(el.id==='goals-modal-select'){if(state.goalSets.some(g=>g.id===el.value)){state.currentGoalSet=el.value;store();render();}return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
  const f=el.files?.[0];if(!f)return;el.value='';f.text().then(t=>{let obj;try{obj=JSON.parse(t)}catch(e){alert('JSONを読み取れませんでした。');return}let parsed;try{parsed=window.UmaSettings.parse(obj,data)}catch(e){alert('設定JSONの構造を読み取れませんでした。'+String(e.message||e));return}ui.importCandidate=parsed;try{ui.importPreview={report:window.UmaSettings.merge(state,parsed,data).report}}catch(e){ui.importPreview={error:e.message}}ui.modal={kind:'import-preview'};renderModal();}).catch(()=>alert('ファイルの読み込みに失敗しました。'));
  }});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;renderModal();}});
