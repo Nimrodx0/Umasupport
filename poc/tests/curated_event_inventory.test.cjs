@@ -101,3 +101,34 @@ test('non-indexed cards are not allowed in production catalog',()=>{
  const arg=input();arg.publicCatalog.cards=[{cardId:'60000',coverageStatus:'partial',events:[]}];
  assert.throws(()=>inventory.audit(arg),/公開DBのカードが独自出典索引/);
 });
+
+test('six R card article-derived event choices have fixed ordinal skill and hint level positions',()=>{
+ const arg=input();
+ const expected={
+  '10002':[[1,1,'左回り○',1]],
+  '10016':[[0,0,'差しコーナー○',1]],
+  '10047':[[1,0,'ペースアップ',1]],
+  '10073':[[1,1,'後方釘付',1]],
+  '10125':[[0,1,'前列狙い',1]],
+  '10132':[[0,0,'直線巧者',1]]
+ };
+ for(const [cardId,positions] of Object.entries(expected)){
+  const events=arg.draftCatalogs['poc/data/curation/drafts/'+cardId+'.v1.json'].cards[0].events;
+  assert.equal(events.length,2,cardId);
+  assert.ok(events.every(e=>e.type==='choice'&&e.choices.length===2),cardId);
+  const facts=events.flatMap((e,i)=>e.choices.flatMap((c,j)=>(c.rewards||[])
+    .map(x=>[i,j,x.skillId.slice(5),x.level])));
+  assert.deepEqual(facts,positions,cardId);
+ }
+});
+test('two SR event branches preserve nontrivial multi-step rules and distinct hint levels',()=>{
+ const arg=input(),sweep=arg.draftCatalogs['poc/data/curation/drafts/20023.v1.json'].cards[0].events;
+ assert.deepEqual(sweep[0].choices.map(c=>(c.rewards||[]).map(x=>[x.skillId,x.level])),[
+  [['hint:ラッキーセブン',1]],[['hint:おひとり様○',5]]
+ ]);
+ assert.deepEqual(sweep[1].choices.map(c=>(c.rewards||[]).map(x=>[x.skillId,x.level])),[
+  [['hint:冷静',1]],[['hint:一匹狼',1]]
+ ]);
+ const pearl=arg.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events;
+ assert.deepEqual(pearl[2].choices[1].rewards,[{skillId:'hint:ウマ好み',level:3}]);
+});
