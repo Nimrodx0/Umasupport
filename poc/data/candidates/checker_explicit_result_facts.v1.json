@@ -1181,7 +1181,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -4362,7 +4363,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -20067,7 +20069,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -21628,7 +21631,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -24317,7 +24321,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -25920,7 +25925,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -38024,7 +38030,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -45145,7 +45152,8 @@
                 }
               ],
               "diagnostics": [
-                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -47884,7 +47892,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -48062,7 +48071,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -48689,7 +48699,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -48862,7 +48873,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -48907,7 +48919,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -50605,7 +50618,8 @@
               ],
               "diagnostics": [
                 "NEXT_EVENT_NOT_FIRED_STATEMENT",
-                "RESULT_LABELS_UNRESOLVED"
+                "RESULT_LABELS_UNRESOLVED",
+                "CHOICE_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -51502,7 +51516,8 @@
                 }
               ],
               "diagnostics": [
-                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
+                "OUTCOME_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
@@ -51537,7 +51552,8 @@
                 }
               ],
               "diagnostics": [
-                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
+                "OUTCOME_TERMINAL_STATEMENT"
               ],
               "routeReviewRequired": true
             }
