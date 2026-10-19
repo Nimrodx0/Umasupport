@@ -119,7 +119,7 @@ async function main(){
   // only in tests. The actual runtime uses pinned SHA-256 raw GitHub fetch.
   const expandedContext=await browser.newContext(),expandedPage=await expandedContext.newPage();
   await mock(expandedPage);
-  const sample=require('./community_candidate_preview.test.cjs').fixture();
+  const sample=require('./community_candidate_fixture.cjs').fixture();
   await expandedPage.unroute('**/data/skill_data.txt');
   await expandedPage.route('**/data/skill_data.txt',r=>r.fulfill({
    status:200,contentType:'text/plain',body:sample.dict
