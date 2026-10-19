@@ -67,3 +67,55 @@ test('automatic event can gate its successor on its own outcome',()=>{
  a.deepEqual(core.directRoutes(c,{choices:{},outcomes:{roll:'bad'}}).map(r=>r.skillId),[]);
  a.deepEqual(core.directRoutes(c,{choices:{},outcomes:{roll:'good'}}).map(r=>r.skillId),['tail']);
 });
+
+
+test('same downstream event can expose different selectable options based on preceding choice',()=>{
+ const xs=[
+  {id:'first',name:'選択1',type:'choice',choices:[{id:'A',label:'A'},{id:'B',label:'B'}]},
+  {id:'shared',name:'共有される後続',type:'choice',requires:{all:[{eventId:'first'}]},choices:[
+   {id:'aOnly',label:'Aだけ',requires:{all:[{eventId:'first',choiceId:'A'}]},rewards:[reward('tail')]},
+   {id:'bOnly',label:'Bだけ',requires:{all:[{eventId:'first',choiceId:'B'}]},rewards:[reward('kunrin')]}
+  ]}
+ ];
+ validate(xs);
+ const c={...card,events:xs},opt=xs[1].choices;
+ a.equal(core.choiceReachability(opt[0],xs[1],{first:'A'},xs).status,'reachable');
+ a.equal(core.choiceReachability(opt[1],xs[1],{first:'A'},xs).status,'blocked');
+ a.equal(core.choiceReachability(opt[0],xs[1],{first:'B'},xs).status,'blocked');
+ a.deepEqual(core.directRoutes(c,{choices:{first:'B',shared:'aOnly'}}).map(r=>r.skillId),[]);
+ a.deepEqual(core.directRoutes(c,{choices:{first:'B',shared:'bOnly'}}).map(r=>r.skillId),['kunrin']);
+ const changed=core.clearDependentState(c,{first:'A',shared:'aOnly'}, {},'first');
+ a.deepEqual(changed.choices,{first:'A'});
+});
+
+test('same-event option conditional on previous result cannot be guaranteed',()=>{
+ const xs=[
+  {id:'roll',name:'前段',type:'auto',outcomes:[
+   {id:'good',label:'成功',rewards:[]},{id:'bad',label:'失敗',rewards:[]}]},
+  {id:'shared',name:'後段',type:'choice',requires:{all:[{eventId:'roll'}]},choices:[
+   {id:'best',label:'成功専用',requires:{all:[{eventId:'roll',outcomeId:'good'}]},rewards:[reward('tail')]},
+   {id:'ordinary',label:'共通',rewards:[reward('step')]}
+  ]}
+ ];
+ validate(xs);
+ const c={...card,events:xs};
+ a.equal(core.choiceReachability(xs[1].choices[0],xs[1],{},xs).status,'conditional');
+ a.equal(core.choiceReachability(xs[1].choices[0],xs[1],{},xs,{roll:'bad'}).status,'blocked');
+ a.deepEqual(core.directRoutes(c,{choices:{shared:'best'}}).map(r=>[r.skillId,r.conditional]),[['tail',true]]);
+ a.deepEqual(core.directRoutes(c,{choices:{shared:'best'},outcomes:{roll:'bad'}}).map(r=>r.skillId),[]);
+ a.deepEqual(core.directRoutes(c,{choices:{shared:'ordinary'},outcomes:{roll:'bad'}}).map(r=>r.skillId),['step']);
+});
+test('choice option dependency cycles and self-reference reject entire catalog',()=>{
+ const x=[
+  {id:'first',name:'前',type:'choice',choices:[{id:'go',label:'go'}]},
+  {id:'other',name:'次',type:'choice',choices:[
+   {id:'a',label:'a',requires:{all:[{eventId:'first',choiceId:'go'}]}}]}
+ ];
+ validate(x);
+ const invalid=JSON.parse(JSON.stringify(x));
+ invalid[1].choices[0].requires.all[0].eventId='other';
+ a.throws(()=>validate(invalid),/自己参照/);
+ const cycle=JSON.parse(JSON.stringify(x));
+ cycle[0].choices[0].requires={all:[{eventId:'other',choiceId:'a'}]};
+ a.throws(()=>validate(cycle),/循環/);
+});

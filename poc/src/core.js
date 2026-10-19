@@ -26,7 +26,7 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
     }else if(parent.type!=='auto'||r.choiceId!==undefined){
       return {status:'blocked',conditions:[]};
     }
-    if(part.requires){
+    if(parent.type==='choice'&&part.requires){
       const gate=reachability({id:parent.id+'#'+part.id,requires:part.requires},choices,events,outcomes,next);
       if(gate.status==='blocked')return gate;
       conditions.push(...gate.conditions);
