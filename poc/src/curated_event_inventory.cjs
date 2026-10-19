@@ -33,7 +33,7 @@ function validateIndex(index){
  }
  return index.cards;
 }
-function audit({index,model,draftCatalogs,publicCatalog,skillText}){
+function audit({index,model,draftCatalogs,publicCatalog,skillText,supplementalSkills}){
  const sourceCards=validateIndex(index);
  if(!obj(model)||!Array.isArray(model.cards)||!obj(model.cardById)||
     !obj(model.skillById)||!Array.isArray(model.skills))
@@ -49,7 +49,8 @@ function audit({index,model,draftCatalogs,publicCatalog,skillText}){
   releasedEventRecords:publicCatalog.cards.reduce((n,c)=>n+(Array.isArray(c.events)?c.events.length:0),0),
   indexedByRarity:{R:0,SR:0,SSR:0},rosterByRarity:{R:0,SR:0,SSR:0},
   normalHintRewardIdsMatched:0,draftNamedUnresolvedRows:0,
-  namedRewardsMatchedFromFullRegistry:0,stillPendingSkillRows:0,
+  namedRewardsMatchedFromFullRegistry:0,namedRewardsMatchedFromSupplement:0,
+  supplementalSkillIdsAdded:0,stillPendingSkillRows:0,
   stillPendingSkillEvents:0,pendingSkillDetails:[]};
  for(const card of model.cards){
   if(!own(stats.rosterByRarity,card.rarity))fail('カードレアリティが不正: '+card.id);
@@ -84,12 +85,14 @@ function audit({index,model,draftCatalogs,publicCatalog,skillText}){
   try{
     // Draft-only transformation validates ALL names against skill_data.txt.
     // It never attaches to the real model or overwrites the editorial draft.
-    unresolved=names.prepareDraft(doc,skillText);
-    prepared=bridge.prepare(model,unresolved.catalog,skillText,{fullRegistry:false});
+    unresolved=names.prepareDraft(doc,skillText,{supplemental:supplementalSkills});
+    prepared=bridge.prepare(model,unresolved.catalog,unresolved.mergedSkillText,{fullRegistry:false});
   }catch(e){fail(row.cardId+': スキル照合失敗 '+e.message);}
   stats.normalHintRewardIdsMatched+=unresolved.matchedHintRewards;
   stats.draftNamedUnresolvedRows+=unresolved.resolvedNames.length+unresolved.pending.length;
-  stats.namedRewardsMatchedFromFullRegistry+=unresolved.resolvedNames.length;
+  stats.namedRewardsMatchedFromFullRegistry+=unresolved.resolvedNames.filter(x=>x.source==='umasim').length;
+  stats.namedRewardsMatchedFromSupplement+=unresolved.resolvedNames.filter(x=>x.source==='supplemental').length;
+  stats.supplementalSkillIdsAdded=Math.max(stats.supplementalSkillIdsAdded,unresolved.supplementalAdded);
   stats.stillPendingSkillRows+=unresolved.pending.length;
   const uniquePending=new Set(unresolved.pending.map(x=>x.location.split('/').slice(0,2).join('/')));
   stats.stillPendingSkillEvents+=uniquePending.size;
