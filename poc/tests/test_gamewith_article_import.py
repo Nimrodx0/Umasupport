@@ -84,6 +84,94 @@ class ImportTests(unittest.TestCase):
         ])
         self.assertEqual(result["observedEventHeadings"], 5)
 
+    def test_chain_candidates_keep_skill_rewards_without_claiming_reachability(self):
+        text = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### 第1段
+進む | 『特別スキル◯』のヒントLv+1
+引き返す | 体力+5
+#### 第2段
+進む | 『別の技』のヒントLv+2
+引き返す | スタミナ+4
+### 通常イベント""", 1)
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["observedEventHeadings"], 4)
+        self.assertEqual(result["proposedEvents"], 2)
+        self.assertEqual(len(result["manualCandidates"]), 2)
+        self.assertEqual([c["reason"] for c in result["manualCandidates"]],
+                         ["chain-needs-manual-requires-and-termination"] * 2)
+        c = result["manualCandidates"][0]
+        self.assertEqual(c["categoryOrdinal"], 1)
+        self.assertEqual(c["choices"][0]["rewards"],
+                         [{"skillId": "skill:202992", "verifiedSkillName": "特別スキル○",
+                           "level": 1}])
+        self.assertNotIn("requires", json.dumps(c))
+        self.assertEqual(result["proposal"]["cards"][0]["events"][0]["id"],
+                         "draft_10099_normal_01")
+        self.assertNotIn("進む", json.dumps(result, ensure_ascii=False))
+
+    def test_success_and_great_success_result_tree_preserved_but_not_published(self):
+        text = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### 第3段
+選択甲 | 大成功時：
+ステータス+5
+『特別スキル◯』のヒントLv+5
+『別の技』のヒントLv+2
+* * *
+成功時：
+『特別スキル◯』のヒントLv+1
+『別の技』のヒントLv+1
+選択乙 | 大成功時：
+『特別スキル◯』のヒントLv+2
+* * *
+成功時：
+『特別スキル◯』のヒントLv+1
+### 通常イベント""", 1)
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["proposedEvents"], 2)
+        self.assertEqual(result["manualCandidates"][0]["reason"],
+                         "chain-needs-manual-requires-and-termination")
+        choices = result["manualCandidates"][0]["choices"]
+        self.assertEqual(len(choices), 2)
+        self.assertEqual([o["id"] for o in choices[0]["outcomes"]],
+                         ["success", "great"])
+        self.assertEqual([r["level"] for r in choices[0]["outcomes"][0]["rewards"]],
+                         [1, 1])
+        self.assertEqual([r["level"] for r in choices[0]["outcomes"][1]["rewards"]],
+                         [5, 2])
+        self.assertEqual([r["level"] for r in choices[1]["outcomes"][1]["rewards"]],
+                         [2])
+        self.assertNotIn("選択甲", json.dumps(result, ensure_ascii=False))
+        self.assertNotIn("第3段", json.dumps(result, ensure_ascii=False))
+
+    def test_conditional_normal_event_also_goes_to_manual_tree(self):
+        text = SOURCE.replace("#### 架空の対話", """#### 結果の分岐""").replace(
+            "あちらを選ぶ | やる気アップ",
+            "あちらを選ぶ | 大成功時：\n『特別スキル◯』のヒントLv+3\n成功時：\n『特別スキル◯』のヒントLv+1")
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["proposedEvents"], 1)
+        self.assertEqual(result["proposal"]["cards"][0]["events"][0]["id"],
+                         "draft_10099_normal_02")
+        self.assertEqual(result["manualCandidates"][0]["categoryOrdinal"], 1)
+        self.assertEqual(result["manualCandidates"][0]["reason"],
+                         "conditional-outcomes-need-human-review")
+        first = result["manualCandidates"][0]["choices"][0]["outcomes"]
+        self.assertEqual([o["id"] for o in first], ["success", "great"])
+
+    def test_incomplete_success_data_never_flattens_or_discards_hints(self):
+        text = SOURCE.replace("あちらを選ぶ | やる気アップ",
+            "あちらを選ぶ | 大成功時：\n『特別スキル◯』のヒントLv+5")
+        result = article_to_facts(text, "10099", CARD, self.skills)
+        self.assertEqual(result["proposedEvents"], 1)
+        self.assertEqual(result["manualCandidates"][0]["reason"],
+                         "conditional-outcomes-need-human-review")
+        self.assertEqual(result["manualCandidates"][0]["choices"], [])
+
+    def test_same_reward_but_different_event_id_is_changed(self):
+        old = article_to_facts(SOURCE, "10099", CARD, self.skills)["proposal"]
+        changed = json.loads(json.dumps(old))
+        changed["cards"][0]["events"][0]["id"] = "draft_10099_normal_02"
+        self.assertEqual(compare(old, changed)["changedEventOrdinals"], [1])
+
     def test_wrong_character_and_wrong_card_rarity_rejected(self):
         for src, card in [
             (SOURCE.replace("架空ウマ", "別のウマ"), CARD),
