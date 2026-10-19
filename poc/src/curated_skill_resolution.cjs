@@ -7,15 +7,47 @@ const bridge=require('./skill_bridge.js');
 const obj=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const clean=v=>String(v).normalize('NFKC').replace(/[\u25ef\u3007]/g,'\u25cb').replace(/\s+/g,' ').trim();
 const fail=msg=>{throw Error('独自イベントのスキル照合: '+msg);};
-function indexSkills(skillText){
+function indexSkills(skillText,supplemental={schemaVersion:1,skills:[]}){
+ if(!obj(supplemental)||supplemental.schemaVersion!==1||!Array.isArray(supplemental.skills))
+  fail('補完スキル辞書の構造・版が不正');
  const source=bridge.parseSource(skillText);
  const names=new Map();
+ const supplementalRecords=[];
+ const used=new Set();
  for(const record of source.byId.values()){
   if(!['normal','rare'].includes(record.rarity))continue;
   const key=clean(record.name),list=names.get(key)||[];
   list.push(record);names.set(key,list);
  }
- return {source,names};
+ for(const candidate of supplemental.skills){
+  if(!obj(candidate)||typeof candidate.id!=='string'||!/^[1-9][0-9]*$/.test(candidate.id)||
+   !Number.isSafeInteger(Number(candidate.id))||typeof candidate.name!=='string'||
+   !clean(candidate.name)||candidate.rarity!=='normal'&&candidate.rarity!=='rare'||
+   candidate.scope!=='curation-only'||!/^20\\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])$/.test(candidate.checkedAt)||
+   !obj(candidate.evidence)||
+   candidate.evidence.numericId!=='https://umamusu.wiki/Game:Skills/'+candidate.id||
+   !/^https:\\/\\/gamewith\\.jp\\/uma-musume\\/article\\/show\\/[1-9][0-9]+$/.test(candidate.evidence.nameAndEffect)||
+   Object.keys(candidate).some(k=>!['id','name','rarity','checkedAt','scope','evidence'].includes(k))||
+   Object.keys(candidate.evidence).some(k=>!['numericId','nameAndEffect'].includes(k))||
+   used.has(candidate.id))fail('根拠不十分・重複・形式不正の補完スキル');
+  used.add(candidate.id);
+  const sourceRecord=source.byId.get(candidate.id);
+  if(sourceRecord){
+   if(clean(sourceRecord.name)!==clean(candidate.name)||sourceRecord.rarity!==candidate.rarity)
+    fail('元辞書のIDと補完辞書が矛盾: '+candidate.id);
+   continue; // upstream added the same ID/name; no duplicate insertion
+  }
+  const sameName=names.get(clean(candidate.name))||[];
+  if(sameName.length)fail('元辞書内の異なるIDと補完名称が衝突: '+candidate.name);
+  const record={id:candidate.id,name:candidate.name,rarity:candidate.rarity,
+   group:-Number(candidate.id)};
+  // The negative group is INTERNAL and must never be interpreted as a real
+  // game's skill hierarchy relationship.
+  names.set(clean(candidate.name),[record]);
+  supplementalRecords.push(record);
+ }
+ return {source,names,supplementalRecords,
+  mergedSkillText:JSON.stringify([...source.byId.values(),...supplementalRecords])};
 }
 function match(name,names){
  const arr=names.get(clean(name))||[];
@@ -23,10 +55,10 @@ function match(name,names){
  if(arr.length>1)return {status:'ambiguous',ids:arr.map(x=>x.id)};
  return {status:'missing'};
 }
-function prepareDraft(catalog,skillText){
+function prepareDraft(catalog,skillText,{supplemental}={}){
  if(!obj(catalog)||catalog.schemaVersion!==1||!Array.isArray(catalog.cards))
   fail('草稿カタログの形式が不正');
- const {source,names}=indexSkills(skillText);
+ const {source,names,mergedSkillText,supplementalRecords}=indexSkills(skillText,supplemental);
  const converted=JSON.parse(JSON.stringify(catalog));
  const pending=[],resolvedNames=[],mappedRegular= {count:0};
  const numeric=(record,reward)=>({skillId:'skill:'+record.id,
@@ -105,6 +137,7 @@ function prepareDraft(catalog,skillText){
   }
  }
  return {catalog:converted,registryCount:source.count,pending,resolvedNames,
+  mergedSkillText,supplementalAdded:supplementalRecords.length,
   matchedHintRewards:mappedRegular.count,
   // This transformed result is for checking only. A publisher must use the
   // original draft and must reject ANY unresolvedRewards before release.
