@@ -14,6 +14,8 @@
    fail(e.id+': requiresは{all:[...]}で指定する');
  }
  function checkRewards(part,model,where){
+   // Editorial pending rewards must NEVER enter published/runtime catalogs.
+   if(part.unresolvedRewards!==undefined)fail(where+': 未照合報酬は公開イベントに登録できません');
    // A verified result tree is exclusive: alongside unconditional rewards,
    // the same skills could be falsely counted as guaranteed and conditional.
    // Shared rewards must be placed explicitly in each reviewed outcome.
