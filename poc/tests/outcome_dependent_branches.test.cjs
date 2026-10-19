@@ -119,3 +119,25 @@ test('choice option dependency cycles and self-reference reject entire catalog',
  cycle[0].choices[0].requires={all:[{eventId:'other',choiceId:'a'}]};
  a.throws(()=>validate(cycle),/循環/);
 });
+
+test('contradictory requirements for exclusive results are never conditional routes',()=>{
+ const xs=[
+  {id:'first',name:'前段',type:'choice',choices:[
+   {id:'upper',label:'上',outcomes:[
+    {id:'success',label:'成功',rewards:[]},
+    {id:'failure',label:'失敗',rewards:[]}
+   ]},
+   {id:'lower',label:'下',rewards:[]}
+  ]},
+  {id:'impossible',name:'成立しない後段',type:'auto',requires:{all:[
+   {eventId:'first',choiceId:'upper',outcomeId:'success'},
+   {eventId:'first',choiceId:'upper',outcomeId:'failure'}
+  ]},rewards:[]}
+ ];
+ a.throws(()=>validate(xs),/両立しない/);
+ a.equal(core.reachability(xs[1],{first:'upper'},xs).status,'blocked');
+ const next=JSON.parse(JSON.stringify(xs));
+ next[1].requires.all[1]={eventId:'first',choiceId:'lower'};
+ a.throws(()=>validate(next),/両立しない/);
+ a.equal(core.reachability(next[1],{first:'upper'},next).status,'blocked');
+});
