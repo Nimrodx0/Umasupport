@@ -83,5 +83,5 @@ test('rejects draft without matching card, unrelated event ID, missing skill and
 test('released entries cannot bypass curation index even when structurally legal',()=>{
  const input=env();
  input.publicCatalog.cards=[{cardId:'20001',coverageStatus:'partial',events:[]}];
- assert.throws(()=>inv.audit(input.publicCatalog?input:null),/公開DBのカードが独自出典索引/);
+ assert.throws(()=>inv.audit(input),/公開DBのカードが独自出典索引/);
 });
