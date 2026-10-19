@@ -50,7 +50,14 @@ async function mock(page){
 }
 async function boot(page,url){
  await page.goto(url,{waitUntil:'load'});
- await page.locator('#app main.app').waitFor({timeout:25000});
+ try {
+  await page.locator('#app main.app').waitFor({timeout:12000});
+ }catch(e){
+  console.error('BOOT FAILURE URL',url);
+  console.error('BOOT STATUS',await page.locator('#bootstrap-status').innerText().catch(()=>'<missing>'));
+  console.error('BOOT BODY',((await page.locator('body').innerText().catch(()=>''))||'').slice(0,450));
+  throw e;
+ }
  assert.notEqual(await page.locator('#bootstrap-status').getAttribute('data-mode'),'error');
 }
 async function main(){
@@ -118,6 +125,10 @@ async function main(){
   // Expanded mode: independently generated 126 candidate input records, used
   // only in tests. The actual runtime uses pinned SHA-256 raw GitHub fetch.
   const expandedContext=await browser.newContext(),expandedPage=await expandedContext.newPage();
+  expandedPage.on('pageerror',error=>console.error('EXPANDED SCRIPT ERROR',error.message));
+  expandedPage.on('console',message=>{
+   if(message.type()==='error')console.error('EXPANDED CONSOLE ERROR',message.text());
+  });
   await mock(expandedPage);
   const sample=require('./community_candidate_fixture.cjs').fixture();
   await expandedPage.unroute('**/data/skill_data.txt');
