@@ -24,6 +24,14 @@
     "stageCompleteGroupsWithoutFlaggedChoices": 196,
     "matchedHintMentionsInStageEvents": 749,
     "unresolvedHintMentionsInStageEvents": 50,
+    "reviewBands": {
+      "readyForIndependentRouteReview": 171,
+      "noObservedHints": 3,
+      "needsConditionalOutcomeReview": 97,
+      "needsSkillIdReview": 22,
+      "needsBothReviews": 19,
+      "structuralDiscrepancy": 37
+    },
     "strictProvisionalEvents": 954,
     "verifiedGameChains": 0,
     "verifiedRewards": 0
@@ -34,6 +42,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -69,6 +78,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -104,6 +114,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -129,6 +140,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -164,6 +176,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -199,6 +212,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -234,6 +248,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -269,6 +284,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -304,6 +320,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -339,6 +356,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -374,6 +392,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "noObservedHints",
       "missingStages": [],
       "events": [
         {
@@ -409,6 +428,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -444,6 +464,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -479,6 +500,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -514,6 +536,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "noObservedHints",
       "missingStages": [],
       "events": [
         {
@@ -549,6 +572,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -584,6 +608,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -619,6 +644,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -654,6 +680,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -679,6 +706,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "noObservedHints",
       "missingStages": [],
       "events": [
         {
@@ -714,6 +742,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -749,6 +778,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -784,6 +814,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -809,6 +840,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -844,6 +876,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -879,6 +912,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -914,6 +948,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -949,6 +984,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -984,6 +1020,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1019,6 +1056,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1054,6 +1092,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1089,6 +1128,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1124,6 +1164,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1159,6 +1200,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1194,6 +1236,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1229,6 +1272,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1264,6 +1308,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1299,6 +1344,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1334,6 +1380,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1369,6 +1416,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1404,6 +1452,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1439,6 +1488,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1474,6 +1524,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1509,6 +1560,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1544,6 +1596,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -1579,6 +1632,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1614,6 +1668,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1649,6 +1704,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1684,6 +1740,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -1719,6 +1776,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1754,6 +1812,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -1789,6 +1848,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1824,6 +1884,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1859,6 +1920,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -1894,6 +1956,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1929,6 +1992,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -1954,6 +2018,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -1989,6 +2054,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2024,6 +2090,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2059,6 +2126,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2094,6 +2162,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2129,6 +2198,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2164,6 +2234,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -2199,6 +2270,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2234,6 +2306,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -2269,6 +2342,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2304,6 +2378,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2339,6 +2414,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2374,6 +2450,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2409,6 +2486,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2444,6 +2522,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2479,6 +2558,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -2514,6 +2594,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2549,6 +2630,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2584,6 +2666,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2619,6 +2702,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1
       ],
@@ -2644,6 +2728,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2679,6 +2764,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2714,6 +2800,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2749,6 +2836,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2784,6 +2872,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2819,6 +2908,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2854,6 +2944,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2889,6 +2980,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -2924,6 +3016,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -2959,6 +3052,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -2984,6 +3078,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3019,6 +3114,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3054,6 +3150,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -3101,6 +3198,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -3148,6 +3246,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3195,6 +3294,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1,
         3
@@ -3221,6 +3321,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3268,6 +3369,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -3315,6 +3417,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3362,6 +3465,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -3409,6 +3513,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3456,6 +3561,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3503,6 +3609,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -3550,6 +3657,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3597,6 +3705,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -3644,6 +3753,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3691,6 +3801,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3738,6 +3849,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3785,6 +3897,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -3832,6 +3945,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -3879,6 +3993,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3926,6 +4041,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -3973,6 +4089,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4020,6 +4137,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -4057,6 +4175,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4104,6 +4223,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4151,6 +4271,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4198,6 +4319,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -4245,6 +4367,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4292,6 +4415,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4339,6 +4463,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -4376,6 +4501,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4423,6 +4549,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -4470,6 +4597,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4517,6 +4645,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4564,6 +4693,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4611,6 +4741,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4658,6 +4789,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -4705,6 +4837,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -4752,6 +4885,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -4799,6 +4933,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -4846,6 +4981,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -4883,6 +5019,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -4930,6 +5067,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -4977,6 +5115,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5024,6 +5163,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -5071,6 +5211,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5118,6 +5259,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -5165,6 +5307,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5212,6 +5355,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -5259,6 +5403,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -5306,6 +5451,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5353,6 +5499,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5400,6 +5547,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5447,6 +5595,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -5484,6 +5633,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -5531,6 +5681,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5578,6 +5729,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -5625,6 +5777,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5672,6 +5825,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5719,6 +5873,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5766,6 +5921,7 @@
       "chainMax": 1,
       "isGroupChain": true,
       "structuralStatus": "stage-ambiguous",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [],
       "events": [
         {
@@ -5801,6 +5957,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -5836,6 +5993,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -5883,6 +6041,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -5930,6 +6089,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -5967,6 +6127,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6014,6 +6175,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6061,6 +6223,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6108,6 +6271,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6155,6 +6319,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6202,6 +6367,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -6249,6 +6415,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6296,6 +6463,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6343,6 +6511,7 @@
       "chainMax": 1,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6366,6 +6535,7 @@
       "chainMax": 1,
       "isGroupChain": true,
       "structuralStatus": "stage-ambiguous",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [],
       "events": [
         {
@@ -6437,6 +6607,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6484,6 +6655,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6531,6 +6703,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6578,6 +6751,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6625,6 +6799,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6672,6 +6847,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6719,6 +6895,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6766,6 +6943,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6813,6 +6991,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6860,6 +7039,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -6907,6 +7087,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -6954,6 +7135,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7001,6 +7183,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7048,6 +7231,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7095,6 +7279,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -7132,6 +7317,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -7179,6 +7365,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7226,6 +7413,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7273,6 +7461,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7320,6 +7509,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -7367,6 +7557,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7414,6 +7605,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -7461,6 +7653,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -7498,6 +7691,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7545,6 +7739,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7592,6 +7787,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7639,6 +7835,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -7676,6 +7873,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7723,6 +7921,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7770,6 +7969,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7817,6 +8017,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -7864,6 +8065,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -7911,6 +8113,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -7958,6 +8161,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8005,6 +8209,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8052,6 +8257,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8099,6 +8305,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8146,6 +8353,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8193,6 +8401,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8240,6 +8449,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8287,6 +8497,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8334,6 +8545,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8381,6 +8593,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -8428,6 +8641,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8475,6 +8689,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8522,6 +8737,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8569,6 +8785,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -8616,6 +8833,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8663,6 +8881,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8710,6 +8929,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1
       ],
@@ -8747,6 +8967,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -8794,6 +9015,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8841,6 +9063,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -8888,6 +9111,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -8935,6 +9159,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -8982,6 +9207,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9017,6 +9243,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9064,6 +9291,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -9101,6 +9329,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9148,6 +9377,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9195,6 +9425,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9242,6 +9473,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -9279,6 +9511,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9326,6 +9559,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9373,6 +9607,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9420,6 +9655,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9467,6 +9703,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -9514,6 +9751,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -9561,6 +9799,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9608,6 +9847,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9655,6 +9895,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9702,6 +9943,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9749,6 +9991,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9796,6 +10039,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9843,6 +10087,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9890,6 +10135,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -9937,6 +10183,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -9984,6 +10231,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10031,6 +10279,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10078,6 +10327,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10125,6 +10375,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10172,6 +10423,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10219,6 +10471,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10266,6 +10519,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10313,6 +10567,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10360,6 +10615,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10407,6 +10663,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10454,6 +10711,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -10501,6 +10759,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10548,6 +10807,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10595,6 +10855,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -10632,6 +10893,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10679,6 +10941,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10726,6 +10989,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10773,6 +11037,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10820,6 +11085,7 @@
       "chainMax": 1,
       "isGroupChain": true,
       "structuralStatus": "stage-ambiguous",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [],
       "events": [
         {
@@ -10867,6 +11133,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -10902,6 +11169,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10949,6 +11217,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -10996,6 +11265,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -11043,6 +11313,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11090,6 +11361,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -11127,6 +11399,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11174,6 +11447,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -11221,6 +11495,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11268,6 +11543,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11315,6 +11591,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -11362,6 +11639,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11409,6 +11687,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -11456,6 +11735,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11503,6 +11783,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -11540,6 +11821,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11587,6 +11869,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11634,6 +11917,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1,
         2
@@ -11660,6 +11944,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -11707,6 +11992,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11754,6 +12040,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11801,6 +12088,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -11848,6 +12136,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -11885,6 +12174,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -11932,6 +12222,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -11969,6 +12260,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12016,6 +12308,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12063,6 +12356,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12110,6 +12404,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12157,6 +12452,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12204,6 +12500,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12251,6 +12548,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -12288,6 +12586,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12335,6 +12634,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12382,6 +12682,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12429,6 +12730,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12476,6 +12778,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12523,6 +12826,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12570,6 +12874,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12617,6 +12922,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12664,6 +12970,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -12711,6 +13018,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12758,6 +13066,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12805,6 +13114,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12852,6 +13162,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12899,6 +13210,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -12946,6 +13258,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -12993,6 +13306,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -13040,6 +13354,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -13087,6 +13402,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13134,6 +13450,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         3
       ],
@@ -13171,6 +13488,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1
       ],
@@ -13208,6 +13526,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13255,6 +13574,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13302,6 +13622,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13349,6 +13670,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13396,6 +13718,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13443,6 +13766,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13490,6 +13814,7 @@
       "chainMax": 1,
       "isGroupChain": true,
       "structuralStatus": "stage-ambiguous",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [],
       "events": [
         {
@@ -13537,6 +13862,7 @@
       "chainMax": 2,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -13562,6 +13888,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsBothReviews",
       "missingStages": [],
       "events": [
         {
@@ -13609,6 +13936,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13656,6 +13984,7 @@
       "chainMax": 1,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13679,6 +14008,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -13716,6 +14046,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13763,6 +14094,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13810,6 +14142,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13857,6 +14190,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13904,6 +14238,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -13951,6 +14286,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -13998,6 +14334,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -14035,6 +14372,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14082,6 +14420,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsConditionalOutcomeReview",
       "missingStages": [],
       "events": [
         {
@@ -14129,6 +14468,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14176,6 +14516,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14223,6 +14564,7 @@
       "chainMax": 1,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14246,6 +14588,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1
       ],
@@ -14283,6 +14626,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14330,6 +14674,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14377,6 +14722,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -14424,6 +14770,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14471,6 +14818,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         2
       ],
@@ -14508,6 +14856,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14555,6 +14904,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14602,6 +14952,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-incomplete",
+      "reviewBand": "structuralDiscrepancy",
       "missingStages": [
         1,
         2
@@ -14628,6 +14979,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14675,6 +15027,7 @@
       "chainMax": 1,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14698,6 +15051,7 @@
       "chainMax": 1,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14721,6 +15075,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
@@ -14768,6 +15123,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "needsSkillIdReview",
       "missingStages": [],
       "events": [
         {
@@ -14815,6 +15171,7 @@
       "chainMax": 3,
       "isGroupChain": false,
       "structuralStatus": "stage-complete-unique",
+      "reviewBand": "readyForIndependentRouteReview",
       "missingStages": [],
       "events": [
         {
