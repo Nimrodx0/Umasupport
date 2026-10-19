@@ -9,10 +9,10 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const index=read('poc/data/curation/source_index.v1.json');
 const SKILLS=require('../src/efforia30311_review_preview.cjs').SKILLS;
 const indexed={
- '10002':'R','10016':'R','10073':'R','10132':'R',
+ '10002':'R','10016':'R','10047':'R','10073':'R','10125':'R','10132':'R',
  '20023':'SR','20029':'SR','30311':'SSR'
 };
-const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付',
+const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付','前列狙い','ペースアップ',
  'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み'];
 function input(){
  const active=Object.entries(indexed).map(([id,rarity])=>({
@@ -37,16 +37,16 @@ function input(){
   draftCatalogs:Object.fromEntries(index.cards.map(c=>[c.draftFile,read(c.draftFile)])),
   publicCatalog:read('poc/data/reviewed_events.v1.json')};
 }
-test('7 direct GameWith article-linked card drafts, 20 events / 563 full-card test roster, 0 released',()=>{
+test('9 direct GameWith article-linked card drafts, 24 events / 563 full-card test roster, 0 released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
- assert.equal(report.sourceIndexedCards,7);
- assert.equal(report.draftCards,7);
- assert.equal(report.draftEventRecords,20);
- assert.equal(report.untrackedCards,556);
+ assert.equal(report.sourceIndexedCards,9);
+ assert.equal(report.draftCards,9);
+ assert.equal(report.draftEventRecords,24);
+ assert.equal(report.untrackedCards,554);
  assert.equal(report.releasedEventRecords,0);
- assert.deepEqual(report.indexedByRarity,{R:4,SR:2,SSR:1});
+ assert.deepEqual(report.indexedByRarity,{R:6,SR:2,SSR:1});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
 test('SR Pearl terminal choice blocks chained unconditional event and no unknown-skill event is silently included',()=>{
