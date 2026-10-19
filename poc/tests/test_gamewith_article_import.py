@@ -104,7 +104,7 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(c["choices"][0]["rewards"],
                          [{"skillId": "skill:202992", "verifiedSkillName": "特別スキル○",
                            "level": 1}])
-        self.assertNotIn("requires", json.dumps(c))
+        self.assertNotIn("requires", c)
         self.assertEqual(result["proposal"]["cards"][0]["events"][0]["id"],
                          "draft_10099_normal_01")
         self.assertNotIn("進む", json.dumps(result, ensure_ascii=False))
