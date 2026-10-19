@@ -30,7 +30,7 @@ function input(){
   ...Object.entries(SKILLS).map(([id,name],i)=>({
    id,name,rarity:'normal',group:50000+i
   })),
-  ...hintNames.filter(name=>name!=='後方釘付').map((name,i)=>({id:String(900001+i),name,
+  ...hintNames.filter(name=>!['後方釘付','先行駆け引き'].includes(name)).map((name,i)=>({id:String(900001+i),name,
     rarity:'normal',group:92000+i})),
   {id:'202992',name:'直線コース○',rarity:'normal',group:20299},
   ...Array.from({length:110},(_,i)=>({
@@ -52,7 +52,7 @@ test('20 direct GameWith article-linked card drafts, 47 events / 563 full-card t
  assert.equal(report.draftNamedUnresolvedRows,1);
  assert.equal(report.namedRewardsMatchedFromFullRegistry,0);
  assert.equal(report.namedRewardsMatchedFromSupplement,1);
- assert.equal(report.supplementalSkillIdsAdded,1);
+ assert.equal(report.supplementalSkillIdsAdded,2);
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.stillPendingSkillEvents,0);
  assert.ok(report.normalHintRewardIdsMatched>=12);
@@ -125,7 +125,7 @@ test('R card article-derived event choices retain skill, choice ordinal, hint le
   '10006':[[1,1,'阪神レース場○',1]],
   '10007':[[1,0,'垂れウマ回避',1]],
   '10008':[[1,0,'skill:202992',1],[1,1,'抜け出し準備',1]],
-  '10009':[[1,0,'先行駆け引き',1],[1,1,'徹底マーク○',1]],
+  '10009':[[1,0,'skill:200801',1],[1,1,'徹底マーク○',1]],
   '10016':[[0,0,'差しコーナー○',1]],
   '10047':[[1,0,'ペースアップ',1]],
   '10050':[],
@@ -162,7 +162,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
  const inputData=input();
  const p=inputData.draftCatalogs['poc/data/curation/drafts/10073.v1.json'].cards[0];
  const pre=JSON.stringify(p);
- inputData.supplementalSkills={schemaVersion:1,skills:[]};
+ inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const report=inventory.audit(inputData);
  assert.equal(report.draftEventRecords,47);
  assert.equal(report.stillPendingSkillRows,1);
@@ -173,7 +173,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
 });
 test('multiple same-name registry records quarantine the reward instead of choosing one',()=>{
  const inputData=input();
- inputData.supplementalSkills={schemaVersion:1,skills:[]};
+ inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const dict=JSON.parse(inputData.skillText);
  dict.push({id:'201012',name:'後方釘付',rarity:'normal',group:99876});
  dict.push({id:'999999',name:'後方釘付',rarity:'normal',group:99876});
@@ -204,7 +204,7 @@ test('resolved draft validation has exact full numeric ID and does not publish i
   skillId:'skill:201012',verifiedSkillName:'後方釘付',level:1
  }]);
  assert.equal(output.releaseEligible,false);
- assert.equal(output.supplementalAdded,1);
+ assert.equal(output.supplementalAdded,2);
  assert.equal(output.resolvedNames[0].source,'supplemental');
  assert.ok(output.matchedHintRewards===0);
  assert.deepEqual(raw.cards[0].events[1].choices[1].unresolvedRewards,
@@ -256,4 +256,14 @@ test('unreviewed wiki-only supplemental data never edits original skill registry
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.releasedEventRecords,0);
  assert.equal(JSON.stringify(arg),before);
+});
+
+test('missing second supplemental 200801 invalidates its numeric draft, never silently drops reward',()=>{
+ const x=input();
+ x.supplementalSkills={schemaVersion:1,skills:x.supplementalSkills.skills.filter(v=>v.id!=='200801')};
+ assert.throws(()=>inventory.audit(x),/数値スキルIDが未照合/);
+ assert.deepEqual(x.draftCatalogs['poc/data/curation/drafts/10009.v1.json']
+ .cards[0].events[1].choices[0].rewards,[{
+  skillId:'skill:200801',verifiedSkillName:'先行駆け引き',level:1
+ }]);
 });
