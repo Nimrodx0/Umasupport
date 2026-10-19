@@ -61,8 +61,6 @@ def plan_and_import(cards, index, skills, input_dir: Path, output_dir: Path,
             decoded = raw.decode("utf-8-sig")
             result = article_to_facts(decoded, cid, card, skills)
             rel = by_card[cid]["draftFile"]
-            if not re.fullmatch(r"poc/data/(?:curation/drafts|preview)/[a-zA-Z0-9_.-]+\.json", rel):
-                raise ValueError("invalid indexed draft path")
             old = draft_root / rel
             existing = json.loads(old.read_text("utf-8")) if old.is_file() else None
             result["comparison"] = compare(existing, result["proposal"])
