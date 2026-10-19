@@ -32,7 +32,7 @@ function env(){
  ]);
  const drafts=Object.fromEntries(index.cards.map(c=>[c.draftFile,read(c.draftFile)]));
  const released=read('poc/data/reviewed_events.v1.json');
- return {model,drafts,publicCatalog:released,skillText:dictionary,
+ return {model,draftCatalogs:drafts,publicCatalog:released,skillText:dictionary,
   index:JSON.parse(JSON.stringify(index))};
 }
 test('2 GameWith-first draft cards / 7 candidate events among 563 roster; zero publication',()=>{
@@ -67,13 +67,13 @@ test('editorial source index rejects duplicate IDs, wrong URL, invalid date, com
 });
 test('rejects draft without matching card, unrelated event ID, missing skill and made-up branches',()=>{
  for(const change of [
-  v=>v.drafts[index.cards[0].draftFile].cards[0].cardId='90001',
-  v=>v.drafts[index.cards[0].draftFile].cards[0].coverageStatus='complete',
-  v=>v.drafts[index.cards[0].draftFile].cards[0].events[0].id='draft_30001_wrong',
-  v=>v.drafts[index.cards[0].draftFile].cards[0].events[0].choices[0].rewards[0].skillId='hint:未確認のスキル',
-  v=>v.drafts[index.cards[1].draftFile].cards[0].events[0].choices.push({id:'option1',label:'重複'}),
+  v=>v.draftCatalogs[index.cards[0].draftFile].cards[0].cardId='90001',
+  v=>v.draftCatalogs[index.cards[0].draftFile].cards[0].coverageStatus='complete',
+  v=>v.draftCatalogs[index.cards[0].draftFile].cards[0].events[0].id='draft_30001_wrong',
+  v=>v.draftCatalogs[index.cards[0].draftFile].cards[0].events[0].choices[0].rewards[0].skillId='hint:未確認のスキル',
+  v=>v.draftCatalogs[index.cards[1].draftFile].cards[0].events[0].choices.push({id:'option1',label:'重複'}),
   v=>v.index.cards[0].cardId='99999',
-  v=>v.drafts[index.cards[0].draftFile]={schemaVersion:1,cards:[]},
+  v=>v.draftCatalogs[index.cards[0].draftFile]={schemaVersion:1,cards:[]},
   v=>v.skillText='[]'
  ]){
   const input=env();change(input);
