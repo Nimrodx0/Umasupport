@@ -171,8 +171,7 @@ test('invalid guessed hint name and malformed unresolved reward refuse all draft
  for(const modify of [
   x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards[0].level=0,
   x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards[0].skillId='skill:000000',
-  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards=[],
-  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[3].choices[1].rewards[0].skillId='hint:不存在の通常ヒント'
+  x=>x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0].events[2].choices[1].unresolvedRewards=[]
  ]){
   const x=input();modify(x);
   assert.throws(()=>inventory.audit(x));
@@ -192,4 +191,17 @@ test('resolved draft validation has exact full numeric ID and does not publish i
  assert.ok(output.matchedHintRewards>=3);
  assert.deepEqual(raw.cards[0].events[2].choices[1].unresolvedRewards,
   [{skillName:'直線コース◯',level:1}]);
+});
+
+test('legacy unverified hint-name reward is preserved in source but quarantined for validation',()=>{
+ const x=input();
+ const row=x.draftCatalogs['poc/data/curation/drafts/20029.v1.json'].cards[0]
+  .events[3].choices[1].rewards[0];
+ row.skillId='hint:不存在の通常ヒント';
+ const report=inventory.audit(x);
+ assert.equal(report.stillPendingSkillRows,1);
+ assert.equal(report.stillPendingSkillEvents,1);
+ assert.equal(report.pendingSkillDetails[0].inputKind,'legacy-hint-name');
+ assert.equal(report.pendingSkillDetails[0].skillName,'不存在の通常ヒント');
+ assert.equal(row.skillId,'hint:不存在の通常ヒント');
 });
