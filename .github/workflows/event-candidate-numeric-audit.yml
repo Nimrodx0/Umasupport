@@ -13,6 +13,10 @@ on:
       - poc/src/event_schema.js
       - poc/src/event_release_gate.cjs
       - poc/tools/report_curated_event_inventory.cjs
+      - poc/tools/import_gamewith_article.py
+      - poc/tools/batch_gamewith_import.py
+      - poc/tests/test_gamewith_article_import.py
+      - poc/tests/test_gamewith_batch_import.py
       - poc/tests/curated_event_inventory.test.cjs
       - 'poc/data/curation/**'
       - poc/data/preview/efforia30311.v1.json
@@ -88,6 +92,28 @@ jobs:
 
       - name: Audit original GameWith-first event drafts vs all 563 pinned UmaSim support cards
         run: node poc/tools/report_curated_event_inventory.cjs "$RUNNER_TEMP/umasim-support-card.txt" "$RUNNER_TEMP/umasim-skill-data.txt"
+
+      - name: Dry-run all 563 pinned support cards through offline article-ingest planning (NO GameWith traffic)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/gamewith-empty-inputs"
+          python3 poc/tools/batch_gamewith_import.py \
+            --support-card "$RUNNER_TEMP/umasim-support-card.txt" \
+            --skill-data "$RUNNER_TEMP/umasim-skill-data.txt" \
+            --input-dir "$RUNNER_TEMP/gamewith-empty-inputs" \
+            --out-dir "$RUNNER_TEMP/gamewith-audit"
+          python3 - <<'PY'
+          import json,os,pathlib
+          f=pathlib.Path(os.environ["RUNNER_TEMP"])/"gamewith-audit"/"batch-report.json"
+          d=json.loads(f.read_text("utf-8"))
+          s=d["summary"]
+          assert s["rosterCards"]==563 and s["indexedCards"]==20
+          assert s["withoutIndexedSource"]==543 and s["no-local-article"]==20
+          assert s["no-source-link"]==543
+          assert d["releaseStatus"]=="all proposals, no automatic promotion"
+          print("Pinned 563-card intake roster completeness and authorization-neutral no-article mode: PASS")
+          PY
 
       - name: Verify actual pinned expanded-preview conversion (no event prose output)
         run: |
