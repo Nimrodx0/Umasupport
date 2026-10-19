@@ -53,3 +53,27 @@ node poc/tools/query_checker_result_review.cjs --priority P0 --limit 30
 node poc/tools/query_checker_result_review.cjs 30003
 
 この照合は2025年版に限定。現行ゲーム正式ID、結果条件、イベント継続を承認する証拠ではない。
+
+## Phase 2④：最初の複数出版社による実経路照合（2026-10-20）
+
+CheckerのP0イベントからカード30001・30007・30026を選び、Game8とU-tools、それに30001ではGameWithを人手で照合。元のイベント文章や効果文章を保存しない独自の条件レコードを poc/data/candidates/editorial_branch_crosscheck.v1.json に追加した。
+
+| カードID | 監査した遷移元 | 対応する分岐数 |
+| --- | --- | ---: |
+| 30001 | 連続2（継続／終了） | 2 |
+| 30007 | 連続2（継続／終了） | 2 |
+| 30026 | 連続1・2（上選択の成功／失敗、下選択終了） | 6 |
+| **合計** | **4イベント** | **10** |
+
+結果に応じた報酬事実8件も数値スキルID・Lvで照合。ツインターボの連続2段階・下選択には、Checker側に記載されたランダムなスキルヒントが別2サイトの記事の選択肢表に出ない差異がある。連続3段階・下選択にも資料間でヒントLv差がある。これら2選択肢の報酬は **未承認としてゼロ件の照合済み報酬** とし、欠損を埋める推測は禁止。
+
+出典リンク：
+- 30001: https://game8.jp/umamusume/372298 と https://xn--gck1f423k.xn--1bvt37a.tools/supports/30001/event
+- 30007: https://game8.jp/umamusume/372303 と https://xn--gck1f423k.xn--1bvt37a.tools/supports/30007/event
+- 30026: https://game8.jp/umamusume/375510 と https://xn--gck1f423k.xn--1bvt37a.tools/supports/30026/event
+
+異なる出版社のページで一致することは、データ採録経路の完全な独立性や2026年実機の再現性を保証しない。実機検証が終わるまでactualGamePlayVerified:false／publicationApproval:false。先行イベント結果が未選択の場合、下流は条件付きとし、失敗／終了なら下流の報酬を遮断する。
+
+検証：node --test poc/tests/editorial_branch_crosscheck.test.cjs。レビューモデルは poc/src/editorial_branch_crosscheck.cjs の auditFixture 関数だけから取得でき、正式イベントカタログには結合していない。出典指紋・全分岐の対応・数値IDとLv・出版社URL・不一致報酬の未承認を検査し、実際の core.reachability と directRoutes に全10経路を適用。
+
+同時に core.reachability と event_schema.js で同一前段イベントに排他的な結果条件をAND指定したとき blocked／検証拒否とするガードを追加した。
