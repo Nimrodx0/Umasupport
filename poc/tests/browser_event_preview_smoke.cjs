@@ -138,7 +138,7 @@ async function main(){
   const communityJs=await fs.readFile(path.resolve(ROOT,'poc/src/community_candidate_preview.js'),'utf8');
   await expandedPage.route('**/src/community_candidate_preview.js',r=>r.fulfill({
    status:200,contentType:'text/javascript',
-   body:communityJs+'\nwindow.UmaCommunityCandidatePreview.load=async()=>'+JSON.stringify(sample.source)+';'
+   body:communityJs+'\nwindow.UmaCommunityCandidatePreview.load=async()=>('+JSON.stringify(sample.source)+');'
   }));
   await boot(expandedPage,origin+'/poc/live.html?eventPreview=expanded');
   assert.equal(await expandedPage.evaluate(()=>window.UmaPreviewActive),true);
