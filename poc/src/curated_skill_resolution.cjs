@@ -38,19 +38,25 @@ function prepareDraft(catalog,skillText){
    fail(context+': 結果別の未照合報酬はoutcomes各結果に記録する');
   if(part.rewards!==undefined){
    if(!Array.isArray(part.rewards))fail(context+': rewards配列が不正');
-   part.rewards=part.rewards.map(r=>{
+   const convertedRewards=[];
+   for(const r of part.rewards){
     if(!obj(r)||typeof r.skillId!=='string')fail(context+': スキル報酬が不正');
-    if(!r.skillId.startsWith('hint:'))return r;
+    if(!r.skillId.startsWith('hint:')){convertedRewards.push(r);continue;}
     const name=r.skillId.slice(5);
     if(!name||!Number.isInteger(r.level)||r.level<1)fail(context+': ヒントLvが不正');
     const result=match(name,names);
-    if(result.status!=='matched')
-     fail(context+': '+name+'が全スキル辞書で'+
-      (result.status==='ambiguous'?'複数IDに該当':'見つからない')+
-      '。出典のスキル名とLvをunresolvedRewardsに保存する');
+    if(result.status!=='matched'){
+     // Preserve original named entry in the source draft, but never silently
+     // treat it as an identified skill in the ephemeral validator model.
+     pending.push({location:context,skillName:name,level:r.level,
+      reason:result.status,inputKind:'legacy-hint-name',
+      ...result.status==='ambiguous'?{candidateIds:result.ids}:{}});
+     continue;
+    }
     mappedRegular.count++;
-    return numeric(result.record,r);
-   });
+    convertedRewards.push(numeric(result.record,r));
+   }
+   part.rewards=convertedRewards;
   }
   if(part.unresolvedRewards!==undefined){
    if(!Array.isArray(part.unresolvedRewards)||!part.unresolvedRewards.length)
