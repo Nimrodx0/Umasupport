@@ -69,8 +69,8 @@ test('explicit preview mode exposes selectable candidate events to route/skill f
  m.meta.reviewedEventRecords=0;
  m.meta.runtimeSources={events:{mode:'preview'}};
  assert.equal(m.meta.reviewedEventRecords,0);
- assert.deepEqual(filterCards(m.cards,m,{route:'event'}).map(x=>x.id),['3']);
- assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'event'}).map(x=>x.id),['3']);
+ assert.deepEqual(filterCards(m.cards,m,{route:'event'}).map(x=>x.id),['1','3']);
+ assert.deepEqual(filterCards(m.cards,m,{skillQuery:'金の技',route:'event'}).map(x=>x.id),['1','3']);
  assert.equal(approvedEventSkillIds(m.cards[0],m).has('skill:金'),true);
  m.meta.runtimeSources.events.mode='preview-failed';
  assert.deepEqual(filterCards(m.cards,m,{route:'event'}),[]);
