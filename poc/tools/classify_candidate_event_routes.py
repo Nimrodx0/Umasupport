@@ -113,6 +113,7 @@ def classify(candidate_db, checker_index, historical, master_sha):
         src_strict = Counter(e.get("titleFingerprint") for e in source_events)
         src_loose = Counter(e.get("typographicFingerprint") for e in source_events)
         matched_master_ids = set()
+        loose_only_master_ids = set()
         events = []
         for e, source in zip(model_events, source_events):
             key, digest = e.get("sourceKey"), e.get("sourceDigest")
@@ -144,6 +145,7 @@ def classify(candidate_db, checker_index, historical, master_sha):
                 kind = "typography-suggestion"
                 hit = loose_list[0]
                 detail = {"possibleStoryId": hit["storyId"]}
+                loose_only_master_ids.add(hit["storyId"])
                 # Only strict matches clear the historical title-gap tally.
             elif loose_list:
                 kind = "ambiguous"
@@ -187,6 +189,8 @@ def classify(candidate_db, checker_index, historical, master_sha):
             if row["storyId"] not in matched_master_ids:
                 possible_gaps.append({"cardId": cid, "historicalStoryId": row["storyId"],
                                       "reason": "historical-direct-title-not-strictly-matched",
+                                      "diagnostic": ("typography-only-title-suggestion" if row["storyId"] in loose_only_master_ids
+                                                     else "no-provisional-title-link"),
                                       "confirmedMissingIn2026": False})
     if len(all_keys) != candidate_db.get("stats", {}).get("eventsObserved"):
         fail("candidate total does not match persisted database")
@@ -213,6 +217,10 @@ def classify(candidate_db, checker_index, historical, master_sha):
             "cardsWithEmptyCandidateSource": summary["cardsWithSourceEmptyEvents"],
             "historicalProvisionalLinks": dict(sorted(link_counts.items())),
             "historicalDirectRowsWithoutStrictTitleLink": len(possible_gaps),
+            "historicalDirectRowsWithTypographySuggestion": sum(
+                x["diagnostic"] == "typography-only-title-suggestion" for x in possible_gaps),
+            "historicalDirectRowsWithNoTitleLink": sum(
+                x["diagnostic"] == "no-provisional-title-link" for x in possible_gaps),
             "choiceAndHintMarkers": dict(sorted(flags.items())),
         },
         "cards": result_cards,
