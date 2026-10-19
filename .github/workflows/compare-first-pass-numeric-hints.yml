@@ -1,0 +1,77 @@
+name: Crosscheck 171 priority chains vs pinned 45-card numeric events
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/compare-first-pass-numeric-hints.yml
+      - poc/src/candidate_numeric_outcome_crosscheck.cjs
+      - poc/tools/build_candidate_numeric_outcome_crosscheck.cjs
+      - poc/tests/candidate_numeric_outcome_crosscheck.test.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  crosscheck-and-commit:
+    if: >-
+      github.repository == 'Nimrodx0/Umasupport' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'Nimrodx0' &&
+      github.event.pull_request.head.ref == 'feat/candidate-outcome-crosscheck-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test synthetic event-option and outcome non-approval rules
+        run: node --test poc/tests/candidate_numeric_outcome_crosscheck.test.cjs
+      - name: Download three fixed GitHub-origin files only into temp
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/umi-numeric-outcome"
+          for name in manifest.json supports.json events.json; do
+            case "$name" in
+              manifest.json) subpath=manifest.json ;;
+              supports.json) subpath=data/supports.json ;;
+              events.json) subpath=data/events.json ;;
+            esac
+            curl --silent --show-error --fail --location --retry 1 --max-time 100 \
+              --output "$RUNNER_TEMP/umi-numeric-outcome/$name" \
+              "https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/$subpath"
+          done
+          echo "7b6e119a007a64bc494ba5b65dada7700c856993f02dba35319bc0d8aa437f5b  $RUNNER_TEMP/umi-numeric-outcome/supports.json" | sha256sum -c -
+          echo "ac3febaad945b4046a137ff6d1d650b6b6def9ae02a891be936e30735956bfd4  $RUNNER_TEMP/umi-numeric-outcome/events.json" | sha256sum -c -
+      - name: Compare all 171 first-pass groups without publishing source expressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$RUNNER_TEMP/umi-numeric-outcome"
+          rm -f poc/data/candidates/checker_first_pass_numeric_crosscheck.v1.json
+          node poc/tools/build_candidate_numeric_outcome_crosscheck.cjs \
+            "$base/manifest.json" "$base/supports.json" "$base/events.json"
+          node poc/tools/build_candidate_numeric_outcome_crosscheck.cjs --verify
+          node --test poc/tests/candidate_numeric_outcome_crosscheck.test.cjs
+          node poc/tools/verify_event_release.cjs
+          # The original source files are intentionally not retained or uploaded.
+      - name: Commit only numeric-derived factual comparison on owner's PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- poc/data/candidates/checker_first_pass_numeric_crosscheck.v1.json
+          if git diff --cached --quiet; then
+            echo 'Unchanged pinned numerical cross-source comparison'
+          else
+            git commit -m 'data: persist 171-chain factual hint source comparison'
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
