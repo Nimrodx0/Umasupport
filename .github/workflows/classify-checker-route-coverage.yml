@@ -1,0 +1,88 @@
+name: Classify all persisted candidate routes (2025 master provisional)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/classify-checker-route-coverage.yml
+      - poc/tools/classify_candidate_event_routes.py
+      - poc/tools/build_checker_fingerprint_inventory.cjs
+      - poc/tests/test_classify_candidate_event_routes.py
+      - poc/src/route_classification_verify.cjs
+      - poc/tools/verify_route_classification.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  historical-provisional-classification:
+    if: >-
+      github.repository == 'Nimrodx0/Umasupport' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'Nimrodx0' &&
+      github.event.pull_request.head.ref == 'feat/whole-event-route-classification-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic exact/loose story mapping, ambiguous identities, and no automatic approval
+        run: python3 -m unittest discover -s poc/tests -p 'test_classify_candidate_event_routes.py' -v
+      - name: Download only pinned UmaSim and 2025 game master sources into runner temp
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/classify-routes"
+          mkdir -p "$dir"
+          curl --fail --silent --show-error --location --retry 1 --max-time 120 \
+            --output "$dir/support_card.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/support_card.txt"
+          curl --fail --silent --show-error --location --retry 1 --max-time 120 \
+            --output "$dir/checker.json" \
+            "https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json"
+          curl --fail --silent --show-error --location --retry 1 --max-time 240 \
+            --output "$dir/master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          echo "153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424  $dir/support_card.txt" | sha256sum -c -
+          echo "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb  $dir/master.mdb" | sha256sum -c -
+          node - "$dir/checker.json" <<'NODE'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const db=require('./poc/data/candidates/checker_event_hints.v1.json');
+          const got=crypto.createHash('sha256').update(fs.readFileSync(process.argv[2])).digest('hex');
+          if(got!==db.sourcePins.checker.sha256)throw Error('Checker revision differs from the persisted candidate database');
+          console.log('Checker pinned candidate source validated; no article scraping');
+          NODE
+      - name: Build full provenance-only classification and reject unreviewed route promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/classify-routes"
+          node poc/tools/build_checker_fingerprint_inventory.cjs \
+            "$dir/support_card.txt" "$dir/checker.json" "$dir/fingerprints.json"
+          python3 poc/tools/classify_candidate_event_routes.py \
+            --db poc/data/candidates/checker_event_hints.v1.json \
+            --inventory "$dir/fingerprints.json" --master "$dir/master.mdb" \
+            --out poc/data/candidates/checker_route_classification.v1.json
+          node poc/tools/verify_route_classification.cjs
+          node poc/tools/verify_event_release.cjs
+          # Do not distribute the historical master or third-party source JSON.
+      - name: Commit only the derived classification sidecar on the author branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- poc/data/candidates/checker_route_classification.v1.json
+          if git diff --cached --quiet; then
+            echo "No classification file change"
+          else
+            git commit -m "data: classify 2109 candidate events by provisional historical story links"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
