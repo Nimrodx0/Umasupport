@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "10016",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_10016_normal_01",
+          "name": "通常イベント1（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:差しコーナー○",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        },
+        {
+          "id": "draft_10016_normal_02",
+          "name": "通常イベント2（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
