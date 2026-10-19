@@ -302,5 +302,67 @@ class ImportTests(unittest.TestCase):
             roster(line("10099", "0") + "\n" + line("10099", "0"))
 
 
+    def test_html_cell_breaks_keep_success_failure_rewards_separate(self):
+        html = """<html><h2>架空ウマ(Rサポート)の評価</h2>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>連続イベント</h3><h4>最終段</h4>
+<table><tr><td>選択肢なし</td><td>
+<div>成功時：</div><div>『特別スキル◯』のヒントLv+3</div>
+<div>失敗時：</div><div>体力+5</div>
+</td></tr></table><h2>まとめ</h2></html>"""
+        r = article_to_facts(html, "10099", CARD, self.skills)
+        self.assertEqual(r["proposedEvents"], 0)
+        self.assertEqual(r["observedEventHeadings"], 1)
+        event = r["manualCandidates"][0]
+        self.assertEqual(event["eventKind"], "auto")
+        self.assertEqual([x["id"] for x in event["facts"]["outcomes"]],
+                         ["success", "failure"])
+        self.assertEqual(event["facts"]["outcomes"][0]["rewards"],
+                         [{"skillId": "skill:202992",
+                           "verifiedSkillName": "特別スキル○", "level": 3}])
+        self.assertEqual(event["facts"]["outcomes"][1]["rewards"], [])
+
+    def test_html_br_breaks_keep_both_hints_in_one_choice(self):
+        html = """<html><h2>架空ウマ(Rサポート)の評価</h2>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>通常イベント</h3><h4>遭遇</h4>
+<table><tr><td>行く</td><td>『特別スキル◯』のヒントLv+2<br>
+『別の技』のヒントLv+1</td></tr>
+<tr><td>戻る</td><td>スピード+5</td></tr></table>
+<h2>まとめ</h2></html>"""
+        r = article_to_facts(html, "10099", CARD, self.skills)
+        hints = r["proposal"]["cards"][0]["events"][0]["choices"][0]["rewards"]
+        self.assertEqual([(x["skillId"], x["level"]) for x in hints],
+                         [("skill:202992", 2), ("skill:201012", 1)])
+
+    def test_mixed_valid_and_invalid_hint_does_not_partially_publish(self):
+        html = """<html><h2>架空ウマ(Rサポート)の評価</h2>
+<h2>発生イベントと選択肢一覧</h2>
+<h3>通常イベント</h3><h4>遭遇</h4>
+<table><tr><td>行く</td><td>『特別スキル◯』のヒントLv+2<br>
+『別の技』のヒントLv不明</td></tr>
+<tr><td>戻る</td><td>スピード+5</td></tr></table>
+<h2>まとめ</h2></html>"""
+        r = article_to_facts(html, "10099", CARD, self.skills)
+        self.assertEqual(r["proposedEvents"], 0)
+        self.assertEqual(r["reviewRequired"][0]["reason"], "unparsed-hint-reward")
+        self.assertEqual(r["manualCandidates"][0]["choices"], [])
+
+    def test_pre_result_skill_is_not_silently_dropped_from_outcomes(self):
+        src = SOURCE.replace("### 通常イベント", """### 連続イベント
+#### 分岐
+進む | 『別の技』のヒントLv+2
+成功時：『特別スキル◯』のヒントLv+3
+失敗時：体力+5
+戻る | 根性+5
+### 通常イベント""", 1)
+        r = article_to_facts(src, "10099", CARD, self.skills)
+        self.assertEqual(r["observedEventHeadings"], 3)
+        self.assertEqual(r["proposedEvents"], 2)
+        self.assertEqual(r["manualCandidates"][0]["choices"], [])
+        self.assertEqual(r["manualCandidates"][0]["reason"],
+                         "conditional-outcomes-need-human-review")
+
+
 if __name__ == "__main__":
     unittest.main()
