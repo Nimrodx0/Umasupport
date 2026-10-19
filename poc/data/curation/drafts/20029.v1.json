@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "20029",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_20029_chain_01",
+          "name": "連続01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:ラッキーセブン",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            },
+            {
+              "id": "option3",
+              "label": "選択肢3",
+              "terminal": true
+            }
+          ]
+        },
+        {
+          "id": "draft_20029_chain_02",
+          "name": "連続02（仮）",
+          "type": "auto",
+          "requires": {
+            "all": [
+              {
+                "eventId": "draft_20029_chain_01"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "hint:ギアシフト",
+              "level": 1
+            }
+          ]
+        },
+        {
+          "id": "draft_20029_normal_02",
+          "name": "通常02（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2",
+              "rewards": [
+                {
+                  "skillId": "hint:ウマ好み",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

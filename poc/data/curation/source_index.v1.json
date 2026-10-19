@@ -2,10 +2,66 @@
   "schemaVersion": 1,
   "cards": [
     {
+      "cardId": "10002",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257601",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10002.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
       "cardId": "10016",
       "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257587",
       "articleCheckedAt": "2026-10-19",
       "draftFile": "poc/data/curation/drafts/10016.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10047",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257556",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10047.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10073",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/302571",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10073.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10125",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/495653",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10125.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "10132",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/514551",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/10132.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "20023",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/259506",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/20023.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "20029",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/277327",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/20029.v1.json",
       "recordStatus": "draft",
       "coverageStatus": "partial"
     },

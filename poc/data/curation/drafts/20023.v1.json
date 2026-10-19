@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "cardId": "20023",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "draft_20023_chain_01",
+          "name": "連続01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:ラッキーセブン",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2",
+              "rewards": [
+                {
+                  "skillId": "hint:おひとり様○",
+                  "level": 5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "draft_20023_chain_02",
+          "name": "連続02（仮）",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "draft_20023_chain_01"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1",
+              "rewards": [
+                {
+                  "skillId": "hint:冷静",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2",
+              "rewards": [
+                {
+                  "skillId": "hint:一匹狼",
+                  "level": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "draft_20023_normal_01",
+          "name": "通常01（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        },
+        {
+          "id": "draft_20023_normal_02",
+          "name": "通常02（仮）",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "option1",
+              "label": "選択肢1"
+            },
+            {
+              "id": "option2",
+              "label": "選択肢2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

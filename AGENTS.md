@@ -193,3 +193,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-19：イベント正本をGameWith-firstの独自DBへ移行（PR #81）
 
 最優先は[カード単位の独自収録工程](docs/curated-event-intake.md)。外部Tsuyuchan45枚124候補の試用は参照実験として維持するが、本番イベントデータの網羅率に加算**禁止**。新規のpoc/data/curation/source_index.v1.jsonはカードIDとGameWith記事URL・調査日・JSON草稿の索引。poc/src/curated_event_inventory.cjsとCLIが全カード母集団・数値スキル辞書・個別草稿の整合と未入力数を監査する。SSR30311 5件に加えR10016 2件の原稿を新規入力、正式ゲームイベントIDが未確認ならdraft_ IDを使い本番に自動昇格させない。公開JSONは0件。GameWith.jp利用条件の確認なく大量クローリング・記事や画像の再配布を開始しない。画面への検証ラベル追加も行わない。UmaSim通常ヒント・スキル辞書の直接取得は従来どおり。
+
+## 2026-10-19：R/SRの第一独自イベントデータ収録バッチ（PR #82）
+
+[出典と既知の欠損](docs/curated-event-intake.md)を参照。GameWith個別記事に直接当たり、固定UmaSimサポカIDに照合して、独自JSON草稿9枚24イベント。内訳 R6枚12、SR2枚7、SSR1枚5。GameWith原文は同梱しない。SR20029の通常イベント1件（「直線コース◯」）はID照合未完なので**草稿に入っていない**。ないことがゲームにない証明ではない。Rの取得選択肢位置とLv、SR打ち切り・連続進行は回帰テストで固定し、今後もGameWith・UmaSimと照合する。通常版のイベント公開0件と、外部候補45枚の試用は変更しない。新しい草稿は`poc/data/curation/source_index.v1.json`と各`drafts/*.json`へ入力し、CIの実ソース監査を合格させる。
