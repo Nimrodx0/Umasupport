@@ -33,6 +33,8 @@ function fixture(){
  const dict=JSON.stringify([
   {id:'700001',name:'通常候補',rarity:'normal',group:70000},
   {id:'700002',name:'希少候補',rarity:'rare',group:70001},
+  ...Object.entries(require('../src/efforia30311_review_preview.cjs').SKILLS)
+   .map(([id,name],i)=>({id,name,rarity:'normal',group:75000+i})),
   ...Array.from({length:110},(_,i)=>({id:String(800000+i),name:'関係なし'+i,rarity:'normal',group:80000+i}))
  ]);
  const cards=[...ids,'30311'].map(id=>({id,events:[],hints:[]}));
