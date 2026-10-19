@@ -111,7 +111,9 @@ function generate({checkerText,rosterText,skillText,candidates,aliases}){
    let explicit=0;
    const choices=e.choices.map((ch,j)=>{
     const previous=src.choices[j];
-    if(ch.ordinal!==previous.ordinal||JSON.stringify(ch.observedHints)!==JSON.stringify(previous.observedHints))
+    if(ch.ordinal!==previous.ordinal||ch.observedHints.length!==previous.observedHints.length||
+       ch.observedHints.some((h,k)=>JSON.stringify([h.skillId,h.skillName,h.resolution,h.level])!==
+        JSON.stringify([previous.observedHints[k].skillId,previous.observedHints[k].skillName,previous.observedHints[k].resolution,previous.observedHints[k].level])))
      fail('元数値ヒントの再抽出結果が不一致');
     const res=parseEffect(rawChoices[j].Effect,ch);
     if(res.structure==='explicit-result-headings'){explicit++;count.explicitOutcomeChoices++;count.explicitOutcomeResults+=res.results.length;}
@@ -144,7 +146,7 @@ function generate({checkerText,rosterText,skillText,candidates,aliases}){
  return {schemaVersion:1,dataKind:'umasupport-explicit-result-facts',
   approval:'UNREVIEWED_NOT_FOR_PUBLICATION',forSkillGrant:false,
   sourcePins:{checkerRevision:pins.checker.revision,checkerSha256:pins.checker.sha256,
-   candidateSha256:fingerprint(JSON.stringify(candidates))},
+   candidateCardSha256:pins.umasimCards.sha256},
   stats:count,cards,
   semantics:{resultCoverage:'Only explicit source labels; cannot assume full game branch enumeration',
    terminalObserved:'Only exact source termination phrase, not independently confirmed game behavior',
@@ -156,7 +158,7 @@ function verifyDerived(candidates,derived){
     derived.approval!=='UNREVIEWED_NOT_FOR_PUBLICATION'||derived.forSkillGrant!==false||
     !Array.isArray(derived.cards)||derived.cards.length!==candidates.cards.length||
     derived.sourcePins?.checkerSha256!==candidates.sourcePins.checker.sha256||
-    derived.sourcePins?.candidateSha256!==fingerprint(JSON.stringify(candidates)))
+    derived.sourcePins?.candidateCardSha256!==candidates.sourcePins.umasimCards.sha256)
    fail('構造化候補の版・非公開状態・元データSHAが不正');
  const counters={cards:0,events:0,choicePositions:0,explicitOutcomeChoices:0,explicitOutcomeResults:0,
   explicitOutcomeEvents:0,observedTerminations:0,choiceTerminations:0,outcomeTerminations:0,
