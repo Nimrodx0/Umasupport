@@ -45,7 +45,7 @@ test('unresolved and conditional values cannot be promoted to unconditional fact
 function fakeRegistry(facts){
  const ids=[...new Set(facts.cards.flatMap(c=>c.events.flatMap(e=>
   e.choices.flatMap(ch=>ch.resultCandidates.flatMap(o=>o.skillHints.map(h=>h.skillId))))))];
- const rows=ids.map((id,i)=>({id,name:'数値スキル'+id,rarity:'normal',group:20000+i}));
+ const rows=ids.map((id,i)=>({id,name:'数値スキル'+id,rarity:'normal',group:300000+i}));
  // The bridge carries independently reviewed gold/white regression anchors.
  // Synthetic test dictionaries must honor any anchored IDs they include.
  for(const p of require('../src/skill_hierarchy.js').PAIRS){
