@@ -11,9 +11,9 @@
   "stats": {
     "eventCandidates": 2109,
     "priorityTotals": {
-      "P0": 185,
-      "P1": 177,
-      "P2": 1747
+      "P0": 199,
+      "P1": 164,
+      "P2": 1746
     },
     "reasonCounts": {
       "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE": 998,
@@ -22,9 +22,9 @@
       "OUTCOME_REWARD_DIFFERENCE": 126,
       "OUTCOME_LABEL_PARSING_GAP": 45,
       "SOURCE_CONDITIONAL_MARKER_UNRESOLVED": 39,
+      "OBSERVED_CHAIN_TERMINATION": 85,
       "HINT_LEVEL_RANGE": 4,
       "EXPLICIT_RESULT_LABELS_REQUIRE_ROUTE_REVIEW": 54,
-      "OBSERVED_CHAIN_TERMINATION": 70,
       "PRIOR_RESULT_CONTEXT_UNVERIFIED": 2
     }
   },
@@ -41,6 +41,24 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "OUTCOME_REWARD_DIFFERENCE"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "20009",
+      "sourceKey": "checker:20009:5096e6819ab7d87ee1d2",
+      "sourceDigest": "sha256:27623f864594aff2da513ebc249eb915720d8da48ccc29429118ca5ae1a8fae5",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP",
+        "SOURCE_CONDITIONAL_MARKER_UNRESOLVED"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -74,6 +92,23 @@
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE",
         "OBSERVED_CHAIN_TERMINATION"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "20029",
+      "sourceKey": "checker:20029:510e25b584d190913cb1",
+      "sourceDigest": "sha256:8e474abfa6c0bd74761dc2fedd47ad371ecab58541e56ebf9b3c2914fc39672d",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        3
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -439,6 +474,23 @@
     },
     {
       "priority": "P0",
+      "cardId": "30034",
+      "sourceKey": "checker:30034:43eb9460865a3b424d00",
+      "sourceDigest": "sha256:e1ac0a6590ca902f40f48efd8d13996c1ec0835f6f8c9c9ad5a876e4f4ec6598",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
       "cardId": "30036",
       "sourceKey": "checker:30036:d01a20d9dd863dd4f41e",
       "sourceDigest": "sha256:2550d259feaa38630e00dc14983daa6a9c8e2a73db8111c55e639066545c499e",
@@ -571,6 +623,23 @@
     },
     {
       "priority": "P0",
+      "cardId": "30048",
+      "sourceKey": "checker:30048:da52486f1b4a476035be",
+      "sourceDigest": "sha256:481b15922cea53fce238fa95893f3a840dd88042f3080494a8d3474d4daab210",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
       "cardId": "30052",
       "sourceKey": "checker:30052:16b64cd7c3e26a95a79c",
       "sourceDigest": "sha256:3b41e0138364340529e80a966a2c258b47ef405d469c0a7ee34b8be13024249a",
@@ -630,6 +699,24 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "OUTCOME_REWARD_DIFFERENCE"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30058",
+      "sourceKey": "checker:30058:70d623839c230aaf5abc",
+      "sourceDigest": "sha256:8c6768df1e2fc41a3c43e805c6e9f4330312a61ccf42a13b656d287ce260a396",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -1428,6 +1515,23 @@
     },
     {
       "priority": "P0",
+      "cardId": "30115",
+      "sourceKey": "checker:30115:0844abc159dfbbfc96b2",
+      "sourceDigest": "sha256:321ede6ad3adb496a2466c7ebbb5273c56169dc963e3a8477156e5ab5bc13bca",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
       "cardId": "30116",
       "sourceKey": "checker:30116:acb5109868c9f85506a9",
       "sourceDigest": "sha256:a5b55099cabd0a66b8518ff30e045c9294b374be7ef2bbda414f8d3eecaf351b",
@@ -1766,6 +1870,22 @@
     {
       "priority": "P0",
       "cardId": "30151",
+      "sourceKey": "checker:30151:e0ee042cb85e992ba1f3",
+      "sourceDigest": "sha256:b5705cb7bed6243ae4ea1e553b6326c94cbf035ed803a1e55d20f1568fef0a3a",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30151",
       "sourceKey": "checker:30151:a6e3469a249fa49c84b0",
       "sourceDigest": "sha256:3f49335424f78722b181f465438e7cb63f1423c5fd82ba914ac4ef8c8c6f21cd",
       "sourceEventOrdinal": 3,
@@ -1974,6 +2094,40 @@
     },
     {
       "priority": "P0",
+      "cardId": "30164",
+      "sourceKey": "checker:30164:3151e11b90c72a470d3b",
+      "sourceDigest": "sha256:ec24328a8ee95f41e8c1a90552a15f57a15048b7646879d0c38f0a55cfd7a050",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30165",
+      "sourceKey": "checker:30165:5e5779c1977f35f37179",
+      "sourceDigest": "sha256:3835b9eeaf13ba6c801fc72ccdfdb662444fbaabcf9e139a9702443009bb1bcd",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
       "cardId": "30166",
       "sourceKey": "checker:30166:954e36d73cc084e3bc01",
       "sourceDigest": "sha256:8190855ca98b12641d1c3ce0a65b24e659c177280af1c251784511d75bdb082e",
@@ -1991,6 +2145,23 @@
     {
       "priority": "P0",
       "cardId": "30168",
+      "sourceKey": "checker:30168:6365e90d7304cc99d51c",
+      "sourceDigest": "sha256:6c3c87896c7911ec06fdceac8c6e1c5f76c5ef125e8147da30bdc4b67f3d923b",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        3
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30168",
       "sourceKey": "checker:30168:db441cb1da03e3c5d416",
       "sourceDigest": "sha256:02023e8dc7d71d7b816b7ab2c1aef098a5ffd439f1d1ad01f467913a9da73476",
       "sourceEventOrdinal": 3,
@@ -2000,6 +2171,40 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "OUTCOME_REWARD_DIFFERENCE"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30169",
+      "sourceKey": "checker:30169:cc1dbf7d4f790225779e",
+      "sourceDigest": "sha256:e32b8449f726f32f29a6fee126f6ebafbc052fb3670ee3a0f88ef6af763c6031",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30169",
+      "sourceKey": "checker:30169:6cbd4e048f481e809f3a",
+      "sourceDigest": "sha256:74aaf6238862f7a022cabdb2c449d0a1bba9fa68105f3b0fecd35a4afd1381d3",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -2106,6 +2311,23 @@
     {
       "priority": "P0",
       "cardId": "30178",
+      "sourceKey": "checker:30178:fdd32e36e23c25d5d8e4",
+      "sourceDigest": "sha256:f7f935d4166d8da8cff4c6132791d37e1a278b0e8c39270085581833fea24728",
+      "sourceEventOrdinal": 2,
+      "flaggedChoiceOrdinals": [
+        2
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
+        "OUTCOME_LABEL_PARSING_GAP"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30178",
       "sourceKey": "checker:30178:115aa3776ab039b608a4",
       "sourceDigest": "sha256:5a10af0b5dfc0e0888a73f5730a72ab0296de67f11ee3bae06e5c8ef8ece3c8e",
       "sourceEventOrdinal": 3,
@@ -2122,6 +2344,24 @@
     {
       "priority": "P0",
       "cardId": "30181",
+      "sourceKey": "checker:30181:d44e868c2706c241a912",
+      "sourceDigest": "sha256:5e2c0e2f40aa3c83ea318312c71eeb227155f10eb9dbe2de52ffdd3a1ca1a3dc",
+      "sourceEventOrdinal": 1,
+      "flaggedChoiceOrdinals": [
+        1
+      ],
+      "reasonCodes": [
+        "CHAIN_TOPOLOGY_UNVERIFIED",
+        "EXPLICIT_RESULT_LABELS_REQUIRE_ROUTE_REVIEW",
+        "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE",
+        "OBSERVED_CHAIN_TERMINATION"
+      ],
+      "requiresIndependentReview": true,
+      "productionApproval": false
+    },
+    {
+      "priority": "P0",
+      "cardId": "30181",
       "sourceKey": "checker:30181:936b7ae079e14d22cde9",
       "sourceDigest": "sha256:49689c2a2a09236d41e8a927c79ab908f719da5c82a18d1f7fb8a32ecf16520b",
       "sourceEventOrdinal": 2,
@@ -2130,6 +2370,7 @@
       ],
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
+        "OBSERVED_CHAIN_TERMINATION",
         "OUTCOME_REWARD_DIFFERENCE"
       ],
       "requiresIndependentReview": true,
@@ -3131,23 +3372,6 @@
     },
     {
       "priority": "P1",
-      "cardId": "20009",
-      "sourceKey": "checker:20009:5096e6819ab7d87ee1d2",
-      "sourceDigest": "sha256:27623f864594aff2da513ebc249eb915720d8da48ccc29429118ca5ae1a8fae5",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP",
-        "SOURCE_CONDITIONAL_MARKER_UNRESOLVED"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
       "cardId": "20012",
       "sourceKey": "checker:20012:8a60929a7f2f8d25df30",
       "sourceDigest": "sha256:5149e56311419ebe9b197a61eb06e029eeac29b74803980bab85bfd915e9b780",
@@ -3361,22 +3585,6 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "SKILL_ID_UNRESOLVED"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "20029",
-      "sourceKey": "checker:20029:510e25b584d190913cb1",
-      "sourceDigest": "sha256:8e474abfa6c0bd74761dc2fedd47ad371ecab58541e56ebf9b3c2914fc39672d",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        3
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -4022,22 +4230,6 @@
     },
     {
       "priority": "P1",
-      "cardId": "30034",
-      "sourceKey": "checker:30034:43eb9460865a3b424d00",
-      "sourceDigest": "sha256:e1ac0a6590ca902f40f48efd8d13996c1ec0835f6f8c9c9ad5a876e4f4ec6598",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
       "cardId": "30036",
       "sourceKey": "checker:30036:24ced1d76fc452ba2415",
       "sourceDigest": "sha256:f92aa68d6565229eef41ec1099c25b3abb6dd1e4ccc62772c5f51397ec096ae7",
@@ -4189,22 +4381,6 @@
     },
     {
       "priority": "P1",
-      "cardId": "30048",
-      "sourceKey": "checker:30048:da52486f1b4a476035be",
-      "sourceDigest": "sha256:481b15922cea53fce238fa95893f3a840dd88042f3080494a8d3474d4daab210",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
       "cardId": "30052",
       "sourceKey": "checker:30052:6d5f33e06020561263d2",
       "sourceDigest": "sha256:efef8b22d23b495f67eabad044f6e3419d21e94356404618236e0e86f99a6f18",
@@ -4264,23 +4440,6 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "SKILL_ID_UNRESOLVED"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30058",
-      "sourceKey": "checker:30058:70d623839c230aaf5abc",
-      "sourceDigest": "sha256:8c6768df1e2fc41a3c43e805c6e9f4330312a61ccf42a13b656d287ce260a396",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE",
-        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -4809,22 +4968,6 @@
     {
       "priority": "P1",
       "cardId": "30115",
-      "sourceKey": "checker:30115:0844abc159dfbbfc96b2",
-      "sourceDigest": "sha256:321ede6ad3adb496a2466c7ebbb5273c56169dc963e3a8477156e5ab5bc13bca",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30115",
       "sourceKey": "checker:30115:88c4ad6dd7ad51b7531a",
       "sourceDigest": "sha256:e578a622dc04b2e130a6ce9da462e8eeef43176fed4c8d5dea86d0c33a20fa57",
       "sourceEventOrdinal": 3,
@@ -5322,22 +5465,6 @@
     {
       "priority": "P1",
       "cardId": "30164",
-      "sourceKey": "checker:30164:3151e11b90c72a470d3b",
-      "sourceDigest": "sha256:ec24328a8ee95f41e8c1a90552a15f57a15048b7646879d0c38f0a55cfd7a050",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30164",
       "sourceKey": "checker:30164:648df12ed8ea03379373",
       "sourceDigest": "sha256:aea2a9403bd90c93c443b86d10e24e8ddeae8598745d9f595f554e05b1f01a70",
       "sourceEventOrdinal": 5,
@@ -5347,70 +5474,6 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "SKILL_ID_UNRESOLVED"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30165",
-      "sourceKey": "checker:30165:5e5779c1977f35f37179",
-      "sourceDigest": "sha256:3835b9eeaf13ba6c801fc72ccdfdb662444fbaabcf9e139a9702443009bb1bcd",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30168",
-      "sourceKey": "checker:30168:6365e90d7304cc99d51c",
-      "sourceDigest": "sha256:6c3c87896c7911ec06fdceac8c6e1c5f76c5ef125e8147da30bdc4b67f3d923b",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [
-        3
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30169",
-      "sourceKey": "checker:30169:cc1dbf7d4f790225779e",
-      "sourceDigest": "sha256:e32b8449f726f32f29a6fee126f6ebafbc052fb3670ee3a0f88ef6af763c6031",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30169",
-      "sourceKey": "checker:30169:6cbd4e048f481e809f3a",
-      "sourceDigest": "sha256:74aaf6238862f7a022cabdb2c449d0a1bba9fa68105f3b0fecd35a4afd1381d3",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -5467,22 +5530,6 @@
     },
     {
       "priority": "P1",
-      "cardId": "30178",
-      "sourceKey": "checker:30178:fdd32e36e23c25d5d8e4",
-      "sourceDigest": "sha256:f7f935d4166d8da8cff4c6132791d37e1a278b0e8c39270085581833fea24728",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [
-        2
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
       "cardId": "30179",
       "sourceKey": "checker:30179:c517155d0c78b256523d",
       "sourceDigest": "sha256:62904aaf83516c249f96eb6502539d3d8e359e7e8b07fb405da1b27f21ef97e8",
@@ -5527,23 +5574,6 @@
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE",
         "OUTCOME_LABEL_PARSING_GAP"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P1",
-      "cardId": "30181",
-      "sourceKey": "checker:30181:d44e868c2706c241a912",
-      "sourceDigest": "sha256:5e2c0e2f40aa3c83ea318312c71eeb227155f10eb9dbe2de52ffdd3a1ca1a3dc",
-      "sourceEventOrdinal": 1,
-      "flaggedChoiceOrdinals": [
-        1
-      ],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED",
-        "EXPLICIT_RESULT_LABELS_REQUIRE_ROUTE_REVIEW",
-        "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false
@@ -19232,19 +19262,6 @@
       "reasonCodes": [
         "CHAIN_TOPOLOGY_UNVERIFIED",
         "NO_OBSERVED_SKILL_HINTS_NOT_PROOF_OF_ABSENCE"
-      ],
-      "requiresIndependentReview": true,
-      "productionApproval": false
-    },
-    {
-      "priority": "P2",
-      "cardId": "30151",
-      "sourceKey": "checker:30151:e0ee042cb85e992ba1f3",
-      "sourceDigest": "sha256:b5705cb7bed6243ae4ea1e553b6326c94cbf035ed803a1e55d20f1568fef0a3a",
-      "sourceEventOrdinal": 2,
-      "flaggedChoiceOrdinals": [],
-      "reasonCodes": [
-        "CHAIN_TOPOLOGY_UNVERIFIED"
       ],
       "requiresIndependentReview": true,
       "productionApproval": false

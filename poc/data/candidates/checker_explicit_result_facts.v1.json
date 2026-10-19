@@ -15,11 +15,12 @@
     "explicitOutcomeChoices": 203,
     "explicitOutcomeResults": 411,
     "explicitOutcomeEvents": 179,
-    "observedTerminations": 73,
-    "choiceTerminations": 63,
-    "outcomeTerminations": 10,
+    "observedTerminations": 89,
+    "choiceTerminations": 77,
+    "outcomeTerminations": 12,
     "unsegmentedChoices": 3255,
     "rangedHintChoices": 4,
+    "nextEventSuppressionObservations": 16,
     "numericHintMentions": 1406,
     "unresolvedHintMentions": 98
   },
@@ -1175,10 +1176,11 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -4355,10 +4357,11 @@
                 {
                   "resultKind": "unspecified",
                   "skillHints": [],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -20059,10 +20062,11 @@
                       "level": 3
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -21619,10 +21623,11 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -24307,10 +24312,11 @@
                       "level": 3
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -25909,10 +25915,11 @@
                 {
                   "resultKind": "unspecified",
                   "skillHints": [],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -38012,10 +38019,11 @@
                       "level": 2
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -45133,10 +45141,12 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
-              "diagnostics": [],
+              "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+              ],
               "routeReviewRequired": true
             }
           ]
@@ -47869,10 +47879,11 @@
                 {
                   "resultKind": "unspecified",
                   "skillHints": [],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -48046,10 +48057,11 @@
                       "level": 3
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -48672,10 +48684,11 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -48844,10 +48857,11 @@
                       "level": 5
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -48888,10 +48902,11 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -50585,10 +50600,11 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
               "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT",
                 "RESULT_LABELS_UNRESOLVED"
               ],
               "routeReviewRequired": true
@@ -51482,10 +51498,12 @@
                 {
                   "resultKind": "failure",
                   "skillHints": [],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
-              "diagnostics": [],
+              "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+              ],
               "routeReviewRequired": true
             }
           ]
@@ -51515,10 +51533,12 @@
                       "level": 1
                     }
                   ],
-                  "terminalObserved": false
+                  "terminalObserved": true
                 }
               ],
-              "diagnostics": [],
+              "diagnostics": [
+                "NEXT_EVENT_NOT_FIRED_STATEMENT"
+              ],
               "routeReviewRequired": true
             }
           ]
