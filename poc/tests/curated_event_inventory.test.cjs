@@ -9,12 +9,13 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const index=read('poc/data/curation/source_index.v1.json');
 const SKILLS=require('../src/efforia30311_review_preview.cjs').SKILLS;
 const indexed={
- '10001':'R','10002':'R','10003':'R','10004':'R','10005':'R','10006':'R','10007':'R','10008':'R','10009':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
+ '10001':'R','10002':'R','10003':'R','10004':'R','10005':'R','10006':'R','10007':'R','10008':'R','10009':'R','10010':'R','10011':'R','10012':'R','10013':'R','10014':'R','10015':'R','10016':'R','10047':'R','10050':'R','10061':'R','10073':'R','10087':'R','10125':'R','10132':'R',
  '20023':'SR','20029':'SR','20043':'SR','30003':'SSR','30311':'SSR'
 };
 const hintNames=['差しコーナー○','左回り○','直線巧者','後方釘付','前列狙い','ペースアップ',
  'ラッキーセブン','おひとり様○','冷静','一匹狼','ギアシフト','ウマ好み','別腹タンク','軽い足取り',
- '先行直線○','先駆け','中山レース場○','阪神レース場○','垂れウマ回避','抜け出し準備','先行駆け引き','徹底マーク○'];
+ '先行直線○','先駆け','中山レース場○','阪神レース場○','垂れウマ回避','抜け出し準備','先行駆け引き','徹底マーク○',
+ '晴れの日○','非根幹距離○','雨の日○','リードキープ','良バ場○'];
 function input(){
  const active=Object.entries(indexed).map(([id,rarity])=>({
   id,name:'カード'+id,rarity,hints:[],events:[]
@@ -44,23 +45,23 @@ function input(){
   publicCatalog:read('poc/data/reviewed_events.v1.json'),
   supplementalSkills:read('poc/data/curation/supplemental_skills.v1.json')};
 }
-test('22 direct GameWith article-linked card drafts, 56 events / 563 full-card test roster, 0 released',()=>{
+test('28 direct GameWith article-linked card drafts, 68 events / 563 full-card test roster, 0 released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
- assert.equal(report.sourceIndexedCards,22);
- assert.equal(report.draftCards,22);
- assert.equal(report.draftEventRecords,56);
+ assert.equal(report.sourceIndexedCards,28);
+ assert.equal(report.draftCards,28);
+ assert.equal(report.draftEventRecords,68);
  assert.equal(report.draftNamedUnresolvedRows,1);
  assert.equal(report.namedRewardsMatchedFromFullRegistry,0);
  assert.equal(report.namedRewardsMatchedFromSupplement,1);
  assert.equal(report.supplementalSkillIdsAdded,2);
  assert.equal(report.stillPendingSkillRows,0);
  assert.equal(report.stillPendingSkillEvents,0);
- assert.ok(report.normalHintRewardIdsMatched>=12);
- assert.equal(report.untrackedCards,541);
+ assert.ok(report.normalHintRewardIdsMatched>=18);
+ assert.equal(report.untrackedCards,535);
  assert.equal(report.releasedEventRecords,0);
- assert.deepEqual(report.indexedByRarity,{R:17,SR:3,SSR:2});
+ assert.deepEqual(report.indexedByRarity,{R:23,SR:3,SSR:2});
  assert.equal(JSON.stringify(arg.model),before,'an audit cannot mutate the live model');
 });
 test('SR Pearl restores event-only skill with actual resolved numeric ID',()=>{
@@ -128,6 +129,12 @@ test('R card article-derived event choices retain skill, choice ordinal, hint le
   '10007':[[1,0,'垂れウマ回避',1]],
   '10008':[[1,0,'skill:202992',1],[1,1,'抜け出し準備',1]],
   '10009':[[1,0,'skill:200801',1],[1,1,'徹底マーク○',1]],
+  '10010':[[1,1,'先駆け',1]],
+  '10011':[[0,1,'晴れの日○',1]],
+  '10012':[[0,1,'非根幹距離○',1]],
+  '10013':[[1,0,'雨の日○',1]],
+  '10014':[[0,1,'リードキープ',1]],
+  '10015':[[1,1,'良バ場○',1]],
   '10016':[[0,0,'差しコーナー○',1]],
   '10047':[[1,0,'ペースアップ',1]],
   '10050':[],
@@ -166,7 +173,7 @@ test('one unresolved reward survives an absent full numeric registry without inv
  const pre=JSON.stringify(p);
  inputData.supplementalSkills={schemaVersion:1,skills:inputData.supplementalSkills.skills.filter(x=>x.id!=='201012')};
  const report=inventory.audit(inputData);
- assert.equal(report.draftEventRecords,56);
+ assert.equal(report.draftEventRecords,68);
  assert.equal(report.stillPendingSkillRows,1);
  assert.equal(report.stillPendingSkillEvents,1);
  assert.deepEqual(report.pendingSkillDetails.map(x=>[x.skillName,x.level,x.reason]),
