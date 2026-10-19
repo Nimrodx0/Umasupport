@@ -79,7 +79,8 @@ test('conditional without unparsed hint stays P1',()=>{
   choice(1,[{skillId:'202992',level:1}],true)
  ];
  const r=build({candidates:c});
- assert.equal(r.reviewQueue.length,1);
- assert.equal(r.reviewQueue[0].priority,'P1');
- assert.deepEqual(r.reviewQueue[0].reasons,['conditional-result']);
+ assert.equal(r.reviewQueue.length,2); // plus the other card's empty-source review
+ const conditional=r.reviewQueue.find(item=>item.scope==='choice');
+ assert.equal(conditional.priority,'P1');
+ assert.deepEqual(conditional.reasons,['conditional-result']);
 });
