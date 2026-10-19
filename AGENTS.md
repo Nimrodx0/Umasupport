@@ -189,3 +189,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-19：45カード候補プレビュー導線（PR #80）
 
 開発用の複数カード試用URL：`poc/live.html?eventPreview=expanded`。 `poc/src/community_candidate_preview.js` は固定CommitのTsuyuchan `events.json` を**実行時直接GET**し、SHA256 `ac3febaad945b4046a137ff6d1d650b6b6def9ae02a891be936e30735956bfd4` を検証。本文・画像を同梱せず、正式story_idのない2件／辞書未登録報酬の2件を除外する。他44枚119候補は `type:choice` の**手動選択**に変換（外部 `selection=auto` はゲーム内自動獲得ではない）。SSR30311は旧版の5候補と置換し、計45枚124イベント候補。通常版0件、獲得正確性・GameWith各カード照合・再利用条件は未承認。ユーザー向けには監査分類を増やさない。
+
+## 2026-10-19：イベント正本をGameWith-firstの独自DBへ移行（PR #81）
+
+最優先は[カード単位の独自収録工程](docs/curated-event-intake.md)。外部Tsuyuchan45枚124候補の試用は参照実験として維持するが、本番イベントデータの網羅率に加算**禁止**。新規のpoc/data/curation/source_index.v1.jsonはカードIDとGameWith記事URL・調査日・JSON草稿の索引。poc/src/curated_event_inventory.cjsとCLIが全カード母集団・数値スキル辞書・個別草稿の整合と未入力数を監査する。SSR30311 5件に加えR10016 2件の原稿を新規入力、正式ゲームイベントIDが未確認ならdraft_ IDを使い本番に自動昇格させない。公開JSONは0件。GameWith.jp利用条件の確認なく大量クローリング・記事や画像の再配布を開始しない。画面への検証ラベル追加も行わない。UmaSim通常ヒント・スキル辞書の直接取得は従来どおり。
