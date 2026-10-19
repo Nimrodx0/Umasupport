@@ -46,6 +46,16 @@ function fakeRegistry(facts){
  const ids=[...new Set(facts.cards.flatMap(c=>c.events.flatMap(e=>
   e.choices.flatMap(ch=>ch.resultCandidates.flatMap(o=>o.skillHints.map(h=>h.skillId))))))];
  const rows=ids.map((id,i)=>({id,name:'数値スキル'+id,rarity:'normal',group:20000+i}));
+ // The bridge carries independently reviewed gold/white regression anchors.
+ // Synthetic test dictionaries must honor any anchored IDs they include.
+ for(const p of require('../src/skill_hierarchy.js').PAIRS){
+  if(!ids.includes(p.goldId)&&!ids.includes(p.whiteId))continue;
+  for(const [id,name,rarity] of [[p.goldId,p.goldName,'rare'],[p.whiteId,p.whiteName,'normal']]){
+   let row=rows.find(x=>x.id===id);
+   if(!row){row={id};rows.push(row);}
+   Object.assign(row,{name,rarity,group:p.group});
+  }
+ }
  while(rows.length<120)rows.push({id:String(900000+rows.length),
   name:'テストスキル'+rows.length,rarity:'normal',group:900000+rows.length});
  return JSON.stringify(rows);
