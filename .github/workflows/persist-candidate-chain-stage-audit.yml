@@ -37,6 +37,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Generated sidecar only: rebuild when the auditable schema changes.
+          rm -f poc/data/candidates/checker_chain_stage_audit.v1.json
           node poc/tools/build_candidate_chain_stage_audit.cjs
           node poc/tools/build_candidate_chain_stage_audit.cjs --verify
           node poc/tools/verify_route_classification.cjs
