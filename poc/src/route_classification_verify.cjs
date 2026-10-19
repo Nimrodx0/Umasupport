@@ -4,7 +4,7 @@
 const assert=require('node:assert/strict');
 const candidate=require('./checker_candidate_database.cjs');
 const SHA=/^[a-f0-9]{64}$/, story=/^[0-9]+$/;
-const TAGS=new Set(['strict-unique','typography-suggestion','ambiguous','no-match','not-in-2025-master']);
+const TAGS=new Set(['strict-unique','typography-suggestion','ambiguous','no-match','no-2025-direct-story-rows']);
 function verify(db,classification){
  const d=candidate.validate(db);
  if(!classification||classification.schemaVersion!==1||classification.dataKind!=='support-event-route-classification'||
