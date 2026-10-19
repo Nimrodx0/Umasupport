@@ -258,3 +258,6 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 
 GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に各2通常イベント・合計12草稿を追加。いずれも非スキル効果・選択肢原文・イベント見出しをコピーせず、選択肢順とスキルヒント1件/カード（Lv+1）のみ編集用JSONに記録。正本 `poc/data/curation/source_index.v1.json` に6 URL、草稿 `drafts/10010.v1.json`〜`10015.v1.json` と回帰を追加。総計28枚68イベント、未着手535枚（R23/SR3/SSR2）、公開0件。ヒント名は固定UmaSimの実データ監査で検証し、未確認IDを推定しない。事実の出典・限界は `docs/curated-event-intake.md`。未確認バッジなどUIの分類追加は行わない。
 
+## 2026-10-19：Checker候補のローカル数値ヒント全件抽出（PR #98）
+
+`poc/src/checker_hint_fact_extract.cjs` は既存の `checker_candidate_pipeline.inventory` のカード照合結果を再利用して、ローカル入力内の選択肢ごとの観測ヒント名・数値スキルID・ヒントLvのみを出力する（ゲームのスキル一覧との同一性を確認）。イベント見出し・選択肢文・効果文を出力しない。成功・失敗などの分岐は手動確認のまま。CLIの外部GETなし、出力はGit除外の `local-data` または外部一時領域のみ。限定CIは公開GitHub上のChecker候補ファイルを単発で読んで一時領域で集計し、GameWithへアクセスしない。**内部候補の大量抽出成功≠第三者データの公開再利用許可・ゲーム内正確性・正式公開。** 詳細は `docs/event-data-acquisition-rights-20261019.md`。本番イベントDBは引き続き0件。
