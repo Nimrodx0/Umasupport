@@ -225,3 +225,7 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 ## 2026-10-19：SSR30003／SR20043の条件分岐実例追加（PR #88）
 
 サポカ個別記事から選択肢原文を除いたスキル・ヒントLv情報を草稿へ登録。SSRトウカイテイオー30003は連続3段が自動イベントで、最終段にskill:200371、一方SRスペシャルウィーク20043は連続2段目の成功だけでskill:201902。報酬獲得保証やゲーム内部story IDは推定しない。全カードの編集草稿は22枚56件、未着手541枚、承認公開0件。主要複雑構造の検査をpoc/tests/curated_event_inventory.test.cjsで保証し、出典はpoc/data/curation/source_index.v1.jsonに登録。記事本文・画像の複製は禁止。
+
+## 2026-10-19：選択肢なし・成功/失敗を解析候補に残す（PR #89）
+
+ `poc/tools/import_gamewith_article.py` は、GameWith記事の「選択肢なし | ...」1行イベントを編集専用の `manualCandidates` に `eventKind:'auto', facts:{rewards/outcomes}` として保持する。成功＋失敗と成功＋大成功の結果区別をできるだけ完全に保ち、1種類のみの結果や未解析ヒントは要手動審査。到達条件を推測して `proposal` に移さない。人工テストは `test_gamewith_article_import.py`。カード草稿22枚56件／本番0件、実GameWithの大量GETは未実施。
