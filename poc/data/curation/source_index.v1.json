@@ -154,6 +154,22 @@
       "coverageStatus": "partial"
     },
     {
+      "cardId": "20043",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/320057",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/20043.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
+      "cardId": "30003",
+      "primaryArticle": "https://gamewith.jp/uma-musume/article/show/257458",
+      "articleCheckedAt": "2026-10-19",
+      "draftFile": "poc/data/curation/drafts/30003.v1.json",
+      "recordStatus": "draft",
+      "coverageStatus": "partial"
+    },
+    {
       "cardId": "30311",
       "primaryArticle": "https://gamewith.jp/uma-musume/article/show/573288",
       "articleCheckedAt": "2026-10-18",

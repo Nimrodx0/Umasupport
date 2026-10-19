@@ -108,9 +108,13 @@ jobs:
           f=pathlib.Path(os.environ["RUNNER_TEMP"])/"gamewith-audit"/"batch-report.json"
           d=json.loads(f.read_text("utf-8"))
           s=d["summary"]
-          assert s["rosterCards"]==563 and s["indexedCards"]==20
-          assert s["withoutIndexedSource"]==543 and s["no-local-article"]==20
-          assert s["no-source-link"]==543
+          index=json.loads(pathlib.Path("poc/data/curation/source_index.v1.json").read_text("utf-8"))
+          indexed={row["cardId"] for row in index["cards"]}
+          assert len(indexed)==len(index["cards"]), "duplicate indexed card IDs"
+          assert s["rosterCards"]==563 and s["indexedCards"]==len(indexed)
+          assert s["withoutIndexedSource"]==563-len(indexed)
+          assert s["no-local-article"]==len(indexed)
+          assert s["no-source-link"]==563-len(indexed)
           assert d["releaseStatus"]=="all proposals, no automatic promotion"
           print("Pinned 563-card intake roster completeness and authorization-neutral no-article mode: PASS")
           PY
