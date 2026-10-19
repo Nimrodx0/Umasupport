@@ -229,3 +229,7 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 ## 2026-10-19：選択肢なし・成功/失敗を解析候補に残す（PR #89）
 
  `poc/tools/import_gamewith_article.py` は、GameWith記事の「選択肢なし | ...」1行イベントを編集専用の `manualCandidates` に `eventKind:'auto', facts:{rewards/outcomes}` として保持する。成功＋失敗と成功＋大成功の結果区別をできるだけ完全に保ち、1種類のみの結果や未解析ヒントは要手動審査。到達条件を推測して `proposal` に移さない。人工テストは `test_gamewith_article_import.py`。カード草稿22枚56件／本番0件、実GameWithの大量GETは未実施。
+
+## 2026-10-19：GameWith HTML結果分岐の部分欠損防止
+
+オフライン記事解析ではHTML表セル内の `<br>`/`<div>` 等を結果境界の改行として保持する。複数のヒント記載があるセルで一部だけ正規表現に一致した場合は**候補を部分採用しない**。成功・失敗の最初のラベルより前に存在するヒントの適用先を推測しない。人工HTMLテストで検証。引き続きGameWithへHTTP取得を追加しない、未確認分岐を公開DBへ自動昇格しない。収録22カード56草稿・本番0件。
