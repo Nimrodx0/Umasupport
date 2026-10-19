@@ -63,7 +63,7 @@ test('preview rejects arbitrary IDs, actual-reviewed DBs, broken source and wron
 });
 
 test('expanded mode combines 44 external plans with the stronger five-event SSR30311 preview (45 cards / 124 events)',async()=>{
- const {fixture}=require('./community_candidate_preview.test.cjs');
+ const {fixture}=require('./community_candidate_fixture.cjs');
  const external=fixture();
  const community=require('../src/community_candidate_preview.js');
  const previous=community.load;
@@ -89,7 +89,7 @@ test('expanded mode combines 44 external plans with the stronger five-event SSR3
  }finally{community.load=previous;}
 });
 test('expanded preview failure does not leave partial candidates in card model',async()=>{
- const {fixture}=require('./community_candidate_preview.test.cjs');
+ const {fixture}=require('./community_candidate_fixture.cjs');
  const community=require('../src/community_candidate_preview.js');
  const previous=community.load;
  community.load=async()=>fixture().source;
