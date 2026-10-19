@@ -54,8 +54,9 @@ test('rank unparsed and unresolved skill rows before conditional and cross-sourc
 test('missing second source is unknown, never reported as agreement',()=>{
  const r=build({candidates:candidates()});
  assert.equal(r.comparisonScope,'not-provided');
- assert.equal(r.totals.queueEntries,2);
+ assert.equal(r.totals.queueEntries,3);
  assert.equal(r.totals.reasonEntries['cruise-only-title'],0);
+ assert.equal(r.totals.reasonEntries['checker-empty'],1);
 });
 test('reject premature approval, duplicates, unsafe source event identity and contradictory gap list',()=>{
  for(const mutate of [
