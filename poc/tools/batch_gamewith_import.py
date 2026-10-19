@@ -22,10 +22,10 @@ def validate_proposal_output(input_dir: Path, output_dir: Path, draft_root: Path
     destination = output_dir.resolve()
     sources = input_dir.resolve()
     published_data = (draft_root.resolve() / "poc" / "data").resolve()
-    if destination == sources or sources in destination.parents:
+    if destination == sources or sources in destination.parents or destination in sources.parents:
         raise ValueError("proposal output directory overlaps local article inputs")
-    if destination == published_data or published_data in destination.parents:
-        raise ValueError("proposal output directory is inside tracked poc/data")
+    if destination == published_data or published_data in destination.parents or destination in published_data.parents:
+        raise ValueError("proposal output directory overlaps tracked poc/data")
 
 
 def plan_and_import(cards, index, skills, input_dir: Path, output_dir: Path,
