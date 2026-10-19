@@ -145,6 +145,66 @@ def reward(name: str, level: int, skills: dict) -> dict:
     return {"skillName": name, "level": level}
 
 
+# Captures article-dependent outcomes as NON-PUBLISHABLE editorial candidates.
+# A GameWith reward fact does not establish reachability, probability or a
+# guaranteed acquisition route. Human review must bind chain prerequisites.
+RESULT = re.compile(r"^\s*(大成功|成功|失敗)時?\s*[:：]\s*(.*)$")
+EXTRA_CONDITIONS = re.compile(r"ランダム|確率|打ち切り|進行しない|次に進|継続する|継続しない")
+HINT_MENTION = re.compile(r"ヒント")
+
+
+def facts_from_text(content: str, skills: dict) -> dict:
+    found = SKILL.findall(content)
+    # "ヒントLv" may appear without an extractable skill name/level, a
+    # formatting drift that must never silently become a zero-reward choice.
+    if HINT_MENTION.search(content) and not found:
+        raise ValueError("unparsed-hint-reward")
+    resolved, unresolved = [], []
+    for name, level in found:
+        entry = reward(name, int(level), skills)
+        if "skillId" in entry:
+            resolved.append(entry)
+        else:
+            unresolved.append(entry)
+    return {**({"rewards": resolved} if resolved else {}),
+            **({"unresolvedRewards": unresolved} if unresolved else {})}
+
+
+def candidate_choice(fragments: list[str], number: int, skills: dict) -> tuple[dict, bool]:
+    lines = "\n".join(fragments).splitlines()
+    outcome_lines: dict[str, list[str]] = {}
+    current = None
+    for line in lines:
+        result = RESULT.match(line)
+        if result:
+            key = {"大成功": "great", "成功": "success", "失敗": "failure"}[result[1]]
+            if key in outcome_lines:
+                raise ValueError("repeated-result-label")
+            outcome_lines[key] = []
+            current = key
+            if result[2]:
+                outcome_lines[key].append(result[2])
+        elif current is not None:
+            outcome_lines[current].append(line)
+    answer = {"id": f"option{number}", "label": f"選択肢{number}"}
+    if outcome_lines:
+        if set(outcome_lines) != {"success", "great"}:
+            raise ValueError("incomplete-or-unsupported-results")
+        answer["outcomes"] = [
+            {"id": key, "label": "成功" if key == "success" else "大成功",
+             **facts_from_text("\n".join(outcome_lines[key]), skills),
+             # The outcome tree requires rewards arrays even if none are seen.
+             } for key in ("success", "great")
+        ]
+        for outcome in answer["outcomes"]:
+            outcome.setdefault("rewards", [])
+        return answer, True
+    if re.search(r"成功|失敗", "\n".join(lines)):
+        raise ValueError("unrecognized-result-condition")
+    answer.update(facts_from_text("\n".join(lines), skills))
+    return answer, False
+
+
 def article_to_facts(text: str, card_id: str, card: dict,
                      skills: dict) -> dict:
     if "<html" in text[:1000].lower() or "<h2" in text[:15000].lower():
@@ -217,44 +277,60 @@ def article_to_facts(text: str, card_id: str, card: dict,
     result = {"schemaVersion": 1, "cards": [{"cardId": card_id,
                "coverageStatus": "partial", "events": []}]}
     reviews = []
+    manual = []
+    count_by_category = {"normal": 0, "chain": 0}
     for ordinal, event in enumerate(events, start=1):
-        if event["mode"] == "chain":
-            reviews.append({"eventOrdinal": ordinal, "reason": "chain-needs-manual-requires-and-termination"})
-            continue
-        if UNSAFE.search("\n".join(event["raw"])):
-            reviews.append({"eventOrdinal": ordinal, "reason": "conditional-outcomes-need-human-review"})
-            continue
+        mode = event["mode"]
+        count_by_category[mode] += 1
+        category_index = count_by_category[mode]
         if len(event["rows"]) < 2:
             reviews.append({"eventOrdinal": ordinal, "reason": "missing-or-ambiguous-choices"})
+            manual.append({"eventOrdinal": ordinal, "category": mode,
+                           "categoryOrdinal": category_index, "choices": [],
+                           "reason": "missing-or-ambiguous-choices"})
             continue
-        choices = []
+
+        parsed = []
+        conditional = False
+        invalid = None
         for i, fragments in enumerate(event["rows"], start=1):
-            content = "\n".join(fragments)
-            hits = SKILL.findall(content)
-            if "ヒント" in content and not hits:
-                choices = []
-                reviews.append({"eventOrdinal": ordinal, "reason": "unparsed-hint-reward"})
+            try:
+                choice, has_result = candidate_choice(fragments, i, skills)
+                conditional = conditional or has_result
+                parsed.append(choice)
+            except ValueError as error:
+                invalid = str(error)
                 break
-            resolved, unresolved = [], []
-            for name, level in hits:
-                entry = reward(name, int(level), skills)
-                if "skillId" in entry:
-                    resolved.append(entry)
-                else:
-                    unresolved.append(entry)
-            choices.append({"id": f"option{i}", "label": f"選択肢{i}",
-                            **({"rewards": resolved} if resolved else {}),
-                            **({"unresolvedRewards": unresolved} if unresolved else {})})
-        if not choices:
+        special = bool(EXTRA_CONDITIONS.search("\n".join(event["raw"])))
+        if invalid:
+            why = invalid if invalid.startswith("unparsed-hint") else (
+                "conditional-outcomes-need-human-review")
+        elif mode == "chain":
+            why = "chain-needs-manual-requires-and-termination"
+        elif conditional or special:
+            why = "conditional-outcomes-need-human-review"
+        else:
+            why = None
+        if why:
+            reviews.append({"eventOrdinal": ordinal, "reason": why})
+            manual.append({"eventOrdinal": ordinal, "category": mode,
+                           "categoryOrdinal": category_index, "choices": parsed,
+                           "reason": why})
             continue
-        idx = 1 + sum(1 for e in result["cards"][0]["events"] if e["id"].startswith(f"draft_{card_id}_normal_"))
+
+        # The ordinal derives from *observed* headings, never from the number
+        # of accepted events. If an earlier event is quarantined, no route is
+        # silently renamed and a false equivalence with an old draft is avoided.
         result["cards"][0]["events"].append({
-            "id": f"draft_{card_id}_normal_{idx:02d}", "name": f"通常{idx:02d}（仮）",
-            "type": "choice", "choices": choices})
+            "id": f"draft_{card_id}_normal_{category_index:02d}",
+            "name": f"通常{category_index:02d}（仮）",
+            "type": "choice", "choices": parsed})
+
     if not events:
         reviews.append({"eventOrdinal": 0, "reason": "no-event-headings-recognized"})
     return {"proposal": result, "observedEventHeadings": len(events),
             "proposedEvents": len(result["cards"][0]["events"]),
+            "manualCandidates": manual,
             "reviewRequired": reviews}
 
 
@@ -264,10 +340,19 @@ def compare(existing: dict | None, proposed: dict) -> dict:
     current = existing["cards"][0]["events"]
     fresh = proposed["cards"][0]["events"]
     def signature(e):
-        return [[tuple(sorted((r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")),
-                               r["level"]) for r in c.get("rewards", []) +
-                                 c.get("unresolvedRewards", []))) for c in e["choices"]]
-               if e["type"] == "choice" else ["NONCHOICE"]][0]
+        if e["type"] != "choice":
+            return (e["id"], e["type"], "NONCHOICE")
+        return (e["id"], e["type"], tuple(
+            (c["id"], bool(c.get("terminal")), tuple(sorted(
+                (r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")), r["level"])
+                for r in c.get("rewards", []) + c.get("unresolvedRewards", [])
+            )), tuple(
+                (out["id"], tuple(sorted(
+                    (r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")), r["level"])
+                    for r in out.get("rewards", []) + out.get("unresolvedRewards", [])
+                ))) for out in c.get("outcomes", [])
+            )) for c in e["choices"]
+        ))
     mismatch = [n + 1 for n, (a, b) in enumerate(zip(current, fresh))
                 if signature(a) != signature(b)]
     if len(current) != len(fresh):
