@@ -6,29 +6,58 @@ function prerequisites(event){
   const r=event.requires;
   return Array.isArray(r.all)?r.all:[r];
 }
-function isReachable(event,choices,events,visiting=new Set()){
-  if(!event||visiting.has(event.id))return false;
+// A result that has not been chosen is a possible branch, NOT a guaranteed one.
+// Return one of reachable, conditional, blocked, with the unresolved assumptions.
+function reachability(event,choices,events,outcomes={},visiting=new Set()){
+  if(!event||visiting.has(event.id))return {status:'blocked',conditions:[]};
   const next=new Set(visiting);next.add(event.id);
+  const conditions=[];
   for(const r of prerequisites(event)){
-    if(!r||typeof r.eventId!=='string')return false;
-    if(!events){
-      if(typeof r.choiceId!=='string'||choices[r.eventId]!==r.choiceId)return false;
-      continue;
-    }
+    if(!r||typeof r.eventId!=='string'||!events)return {status:'blocked',conditions:[]};
     const parent=events.find(x=>x.id===r.eventId);
-    if(!parent||!isReachable(parent,choices,events,next))return false;
+    const prev=reachability(parent,choices,events,outcomes,next);
+    if(prev.status==='blocked')return prev;
+    conditions.push(...prev.conditions);
+    let part=parent;
     if(parent.type==='choice'){
-      const selected=(parent.choices||[]).find(c=>c.id===choices[parent.id]);
-      if(!selected||selected.terminal===true)return false;
-      if(r.choiceId!==undefined&&r.choiceId!==selected.id)return false;
-    }else if(parent.type==='auto'){
-      if(r.choiceId!==undefined)return false;
-    }else return false;
+      part=(parent.choices||[]).find(c=>c.id===choices[parent.id]);
+      if(!part||part.terminal===true||r.choiceId!==undefined&&r.choiceId!==part.id)
+        return {status:'blocked',conditions:[]};
+    }else if(parent.type!=='auto'||r.choiceId!==undefined){
+      return {status:'blocked',conditions:[]};
+    }
+    const variants=part.outcomes||[];
+    const chosen=outcomes[parent.id];
+    if(chosen!==undefined&&chosen!==''&&!variants.some(o=>o.id===chosen))
+      return {status:'blocked',conditions:[]};
+    if(r.outcomeId!==undefined){
+      const target=variants.find(o=>o.id===r.outcomeId);
+      if(!target||target.terminal===true||chosen&&chosen!==target.id)
+        return {status:'blocked',conditions:[]};
+      if(!chosen)conditions.push(parent.name+'・'+target.label+'時');
+    }else if(variants.length){
+      if(chosen){
+        if(variants.find(o=>o.id===chosen).terminal===true)
+          return {status:'blocked',conditions:[]};
+      }else{
+        if(variants.every(o=>o.terminal===true))
+          return {status:'blocked',conditions:[]};
+        if(variants.some(o=>o.terminal===true))
+          conditions.push(parent.name+'・継続する結果の場合');
+      }
+    }
   }
-  return true;
+  return {status:conditions.length?'conditional':'reachable',conditions:[...new Set(conditions)]};
+}
+function isReachable(event,choices,events,outcomes={}){
+  if(!events){
+    // Backwards compatibility for old callers that supply just a choice map.
+    return prerequisites(event).every(r=>typeof r.choiceId==='string'&&choices[r.eventId]===r.choiceId);
+  }
+  return reachability(event,choices,events,outcomes).status==='reachable';
 }
 function directRoutes(card,config){
-  const choices=(config&&config.choices)||{},routes=[];
+  const choices=(config&&config.choices)||{},outcomes=(config&&config.outcomes)||{},routes=[];
   const hintList=(card.hintsByStage&&Object.prototype.hasOwnProperty.call(card.hintsByStage,String(config?.stage??4)))
     ?card.hintsByStage[String(config.stage)]:card.hints||[];
   const perf=card.hintPerformanceByStage?.[String(config?.stage??4)];
@@ -37,25 +66,31 @@ function directRoutes(card,config){
   const hintLevel=validHintLevel?1+perf.levelBase+perf.levelUnique:null;
   for(const id of hintList)routes.push({skillId:id,source:'hint',eventId:null,eventName:'通常ヒント',level:hintLevel,conditional:false,condition:null});
   const events=card.events||[];
-  function add(rewards,event,choiceLabel,outcome){
+  function add(rewards,event,choiceLabel,outcome,priorConditions=[]){
     for(const r of rewards||[]){
-      const condition=[outcome,r.condition].filter(Boolean).join(' / ')||null;
+      const condition=[...priorConditions,outcome,r.condition].filter(Boolean).join(' / ')||null;
       routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,
         ...(choiceLabel?{choiceLabel}:{}),level:r.level??null,conditional:!!condition,condition});
     }
   }
-  function collect(part,event,choiceLabel){
-    add(part.rewards,event,choiceLabel,null);
-    for(const outcome of part.outcomes||[]){
-      add(outcome.rewards,event,choiceLabel,(outcome.label||outcome.id)+'時');
-    }
+  function collect(part,event,choiceLabel,conditions){
+    const variants=part.outcomes||[];
+    if(variants.length){
+      const chosen=outcomes[event.id];
+      if(chosen&& !variants.some(o=>o.id===chosen))return;
+      for(const outcome of variants){
+        if(chosen&&chosen!==outcome.id)continue;
+        add(outcome.rewards,event,choiceLabel,(outcome.label||outcome.id)+'時',conditions);
+      }
+    }else add(part.rewards,event,choiceLabel,null,conditions);
   }
   for(const event of events){
-    if(!isReachable(event,choices,events))continue;
+    const progress=reachability(event,choices,events,outcomes);
+    if(progress.status==='blocked')continue;
     if(event.type==='choice'){
       const selected=(event.choices||[]).find(c=>c.id===choices[event.id]);
-      if(selected)collect(selected,event,selected.label);
-    }else if(event.type==='auto')collect(event,event,null);
+      if(selected)collect(selected,event,selected.label,progress.conditions);
+    }else if(event.type==='auto')collect(event,event,null,progress.conditions);
   }
   return routes;
 }
@@ -149,22 +184,27 @@ function hierarchyRows(rows,data){
   groups.sort((a,b)=>a.name.localeCompare(b.name,'ja'));
   return groups.flatMap(g=>g.items);
 }
-function clearDescendants(card,choices,eventId){
-  const next={...choices},queue=[eventId],visited=new Set();
+function clearDependentState(card,choices,outcomes,eventId){
+  const nextChoices={...choices},nextOutcomes={...outcomes};
+  delete nextOutcomes[eventId]; // Changing a choice invalidates its own result.
+  const queue=[eventId],visited=new Set();
   while(queue.length){
     const parent=queue.shift();
     if(visited.has(parent))continue;
     visited.add(parent);
     for(const e of card.events||[]){
       if(prerequisites(e).some(r=>r.eventId===parent)){
-        delete next[e.id];
+        delete nextChoices[e.id];delete nextOutcomes[e.id];
         queue.push(e.id);
       }
     }
   }
-  return next;
+  return {choices:nextChoices,outcomes:nextOutcomes};
 }
-const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,isReachable};
+function clearDescendants(card,choices,eventId){
+  return clearDependentState(card,choices,{},eventId).choices;
+}
+const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability};
 if(typeof module!=='undefined'&&module.exports)module.exports=core;
 g.UmaCore=core;
 })(typeof globalThis!=='undefined'?globalThis:this);
