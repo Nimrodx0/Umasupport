@@ -340,10 +340,19 @@ def compare(existing: dict | None, proposed: dict) -> dict:
     current = existing["cards"][0]["events"]
     fresh = proposed["cards"][0]["events"]
     def signature(e):
-        return [[tuple(sorted((r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")),
-                               r["level"]) for r in c.get("rewards", []) +
-                                 c.get("unresolvedRewards", []))) for c in e["choices"]]
-               if e["type"] == "choice" else ["NONCHOICE"]][0]
+        if e["type"] != "choice":
+            return (e["id"], e["type"], "NONCHOICE")
+        return (e["id"], e["type"], tuple(
+            (c["id"], bool(c.get("terminal")), tuple(sorted(
+                (r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")), r["level"])
+                for r in c.get("rewards", []) + c.get("unresolvedRewards", [])
+            )), tuple(
+                (out["id"], tuple(sorted(
+                    (r.get("skillId", "UNRESOLVED:" + r.get("skillName", "")), r["level"])
+                    for r in out.get("rewards", []) + out.get("unresolvedRewards", [])
+                ))) for out in c.get("outcomes", [])
+            )) for c in e["choices"]
+        ))
     mismatch = [n + 1 for n, (a, b) in enumerate(zip(current, fresh))
                 if signature(a) != signature(b)]
     if len(current) != len(fresh):
