@@ -1,5 +1,12 @@
 # 開発支援AI向け引き継ぎ
 
+## 【2026-10-20】Phase 2④：複数資料で照合した連続分岐の監査用ケース
+
+Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_crosscheck.v1.json` と `poc/src/editorial_branch_crosscheck.cjs`。カード30001・30007・30026の4つのP0イベントから10個の選択×結果経路をGame8/U-tools等で別途照合。数値スキル・ヒントLvを8件再確認。30026には「他の情報サイトでは掲載されない報酬」「資料間Lv差」の未解決2件があり、この選択肢報酬は `auditFixture` でも採用しない。レビュー根拠とリンクは `docs/checker-explicit-result-extraction-20261020.md`。
+**分類：** `actualGamePlayVerified:false`、`publicationApproval:false`。複数出版社での一致はゲーム実機検証ではない。`auditFixture` は実行エンジンのテスト用であって通常カタログ公開やサポートカード収録率を増やさない。
+単体テスト：`node --test poc/tests/editorial_branch_crosscheck.test.cjs poc/tests/outcome_dependent_branches.test.cjs`。AND条件に同一親イベントの相容れない選択肢／結果が入れば `event_schema.js` で拒否し、`core.reachability` でも blocked とする。
+
+
 ## 【最優先・2026-10-20】Phase 2③ 結果別全件抽出（PR #110）
 
 正本は docs/checker-explicit-result-extraction-20261020.md。Checker固定版のSSR/SR417枚・2,109イベント候補・3,458選択位置を一括再照合し、明示結果分岐203選択位置/411結果、連続終了の明示73、Lv範囲4位置を元文章を含まない未承認JSONに保存した。
