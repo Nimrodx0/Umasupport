@@ -25,8 +25,11 @@ test('historical links and source digest are inseparable from exact saved candid
  wrongDigest.cards.find(x=>x.events.length).events[0].sourceDigest='sha256:'+'0'.repeat(64);
  assert.throws(()=>verify(db,wrongDigest),/invalid identity/);
  const wrongDb=copy(db);
- wrongDb.cards.find(x=>x.events.length).events[0].choices[0].observedHints.push({skillId:'123456',level:1});
- // The candidate index changed even though event title fingerprints did not.
+ const hint=wrongDb.cards.flatMap(x=>x.events).flatMap(e=>e.choices)
+  .flatMap(c=>c.observedHints).find(h=>h.skillId);
+ assert.ok(hint);
+ hint.level=hint.level===10?9:hint.level+1;
+ // The candidate index changed without changing source-key/ordinal or its row totals.
  assert.throws(()=>verify(wrongDb,classified),/exact current candidate database/);
 });
 test('historical source-only story is never classified as a confirmed modern game gap',()=>{
