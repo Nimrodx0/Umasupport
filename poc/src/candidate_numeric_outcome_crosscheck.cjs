@@ -171,4 +171,91 @@ function build({db,classification,stages,supplementManifest,supplementSupports,s
   counts:counters,firstPassGroups:groups,
   warning:'Matching numeric skill ID/Lv lists across derived source snapshots does NOT validate in-game choices, chronology, outcome tiers, termination, rewards, or republication rights. The auto selection mode is planning-only.'};
 }
-module.exports={build,compareEvent,FILE_HASH,REV};
+function validateStored({db,classification,stages,crosscheck}){
+ const stagesTotal=validateAudit(db,classification,stages);
+ if(!obj(crosscheck)||crosscheck.schemaVersion!==1||
+  crosscheck.dataKind!=='provisional-event-hint-cross-source-comparison'||
+  crosscheck.approvalState!=='UNREVIEWED_NOT_FOR_PUBLICATION'||crosscheck.forSkillGrant!==false||
+  !Array.isArray(crosscheck.firstPassGroups)||
+  crosscheck.sources?.supplementEventsSha256!==FILE_HASH.events||
+  crosscheck.sources?.supplementSupportsSha256!==FILE_HASH.supports||
+  crosscheck.sources?.supplementRevision!==REV||
+  crosscheck.sources?.candidateSha256!==db.sourcePins.checker.sha256||
+  crosscheck.sources?.candidateRevision!==db.sourcePins.checker.revision)
+  fail('stored derived comparison header or pin is unsafe');
+ const intended=stages.chainGroups.filter(g=>g.reviewBand==='readyForIndependentRouteReview');
+ if(intended.length!==crosscheck.firstPassGroups.length||
+   intended.length!==stagesTotal.reviewBands.readyForIndependentRouteReview)
+  fail('stored comparison did not cover all first-pass groups');
+ const got={firstPassGroups:0,firstPassEvents:0,groupsWithSupplementalEvents:0,
+  groupsWithoutSupplementalEvents:0,eventNumericIdOverlap:0,eventNotInSupplement:0,
+  samePairsSameCount:0,samePairsDifferentMultiplicity:0,differentNumericPairs:0,
+  ordinalPositionsEqual:0,ordinalPositionsDifferent:0,
+  supplementalSelectionAuto:0,supplementalSelectionSingle:0,
+  independentlyVerifiedGameRewards:0};
+ for(let i=0;i<intended.length;i++){
+  const expected=intended[i],group=crosscheck.firstPassGroups[i];
+  if(!obj(group)||group.cardId!==expected.cardId||
+    group.chainMax!==expected.chainMax||group.isGroupChain!==expected.isGroupChain||
+    group.sourceChainStatus!=='stage-complete-unique'||
+    group.evidenceStatus!=='unreviewed-cross-source-numeric-comparison'||
+    group.gameChainProgressVerified!==false||group.gameRewardsVerified!==false||
+    !Array.isArray(group.events)||group.events.length!==expected.events.length)
+   fail('group identity or approval changed');
+  got.firstPassGroups++;
+  let seen=0;
+  for(let j=0;j<expected.events.length;j++){
+   const old=expected.events[j],event=group.events[j];
+   if(!obj(event)||event.sourceKey!==old.sourceKey||
+      event.provisionalStoryId!==old.provisionalStoryId||
+      event.gameRewardVerified!==false)
+    fail('candidate event identity or evidence changed');
+   got.firstPassEvents++;
+   if(event.supplementalPresence==='not-in-45-card-snapshot'){
+    if(Object.keys(event).sort().join(',')!==
+      'gameRewardVerified,note,provisionalStoryId,sourceKey,supplementalPresence')
+      fail('source-absent event includes unsupported reward claim');
+    got.eventNotInSupplement++;
+    continue;
+   }
+   if(event.supplementalPresence!=='matching-numeric-story-key'||event.outcomeTiersVerified!==false||
+      event.conditionalChainProgressVerified!==false||
+      !['same-pairs-same-count','same-pairs-different-multiplicity','different-numeric-pairs'].includes(event.pairDifferenceClass)||
+      !['auto','single'].includes(event.supplementalSelection)||
+      !['not-comparable','numeric-pairs-positionally-equal','numeric-pairs-positionally-different'].includes(event.ordinalComparison))
+    fail('unsafe source comparison or route promotion');
+   if(Object.keys(event).sort().join(',')!==[
+    'candidateChoicePositions','candidateNumericHintMentions',
+    'comparedChoicePositions','conditionalChainProgressVerified','gameRewardVerified',
+    'ordinalComparison','outcomeTiersVerified','pairDifferenceClass',
+    'pairMultisetAgreement','pairSetAgreement','provisionalStoryId',
+    'sourceKey','supplementalChoicePositions','supplementalNumericHintMentions',
+    'supplementalPresence','supplementalSelection'
+   ].sort().join(','))fail('unexpected comparison content fields');
+   if((event.pairDifferenceClass==='same-pairs-same-count')!==event.pairMultisetAgreement||
+      (event.pairDifferenceClass!=='different-numeric-pairs')!==event.pairSetAgreement)
+    fail('numeric list comparison was mislabeled');
+   if(event.supplementalSelection==='auto'&&event.ordinalComparison!=='not-comparable')
+    fail('planning auto record cannot validate choice index');
+   if(event.ordinalComparison!=='not-comparable'&&
+      (event.supplementalSelection!=='single'||
+       event.comparedChoicePositions!==event.candidateChoicePositions||
+       event.candidateChoicePositions!==event.supplementalChoicePositions))
+    fail('positional comparison without two explicit choice sets');
+   got.eventNumericIdOverlap++;seen++;
+   got[event.pairDifferenceClass==='same-pairs-same-count'?'samePairsSameCount':
+     event.pairDifferenceClass==='same-pairs-different-multiplicity'?'samePairsDifferentMultiplicity':
+     'differentNumericPairs']++;
+   got[event.supplementalSelection==='auto'?'supplementalSelectionAuto':'supplementalSelectionSingle']++;
+   if(event.ordinalComparison==='numeric-pairs-positionally-equal')got.ordinalPositionsEqual++;
+   if(event.ordinalComparison==='numeric-pairs-positionally-different')got.ordinalPositionsDifferent++;
+  }
+  if(group.supplementalEventCount!==seen)fail('supplemental group count inconsistent');
+  got[seen?'groupsWithSupplementalEvents':'groupsWithoutSupplementalEvents']++;
+ }
+ if(Object.entries(got).some(([k,v])=>crosscheck.counts?.[k]!==v)||
+   Object.keys(crosscheck.counts).length!==Object.keys(got).length)
+  fail('stored aggregate comparison counts inconsistent');
+ return got;
+}
+module.exports={build,compareEvent,validateStored,FILE_HASH,REV};
