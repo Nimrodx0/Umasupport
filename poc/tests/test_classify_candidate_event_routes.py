@@ -67,7 +67,7 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(r["cards"][0]["events"][0]["historicalLink"]["provisionalStoryId"],"830001001")
         self.assertEqual(r["cards"][0]["events"][1]["historicalLink"]["status"],"typography-suggestion")
         self.assertEqual(r["cards"][0]["events"][1]["historicalLink"]["possibleStoryId"],"830001002")
-        self.assertEqual(r["cards"][2]["events"][0]["historicalLink"]["status"],"not-in-2025-master")
+        self.assertEqual(r["cards"][2]["events"][0]["historicalLink"]["status"],"no-2025-direct-story-rows")
         self.assertEqual(r["cards"][1]["sourceRecordStatus"],"source-gap")
         self.assertEqual(r["historicalPossibleGaps"][0]["cardId"],"30001")
         self.assertEqual(r["historicalPossibleGaps"][0]["confirmedMissingIn2026"],False)
