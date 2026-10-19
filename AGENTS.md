@@ -213,3 +213,7 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 新規RカードID10003,10004,10005,10006,10007,10008,10009の通常イベント各2件、計14件を一次記事から選択肢順に記録。合計20枚47イベント、R17/SR2/SSR1、未着手543枚。新規イベントスキルの上/下、ヒントLvを`poc/tests/curated_event_inventory.test.cjs`に固定し、外部全スキル辞書との構造監査を継続。記事文言・画像の転載はしない。承認本番0、補完ID201012は草稿監査のみ。閲覧者向け未確認ラベルの追加は禁止。
 
 **初回20枚バッチでの補完ID追加：** Rグラスワンダー（10009）の通常2上にある「先行駆け引き」は固定UmaSim全数値辞書の名称で未照合だったため、公開Wiki <https://umamusu.wiki/Game:Skills/200801> のID`200801`、GameWith <https://gamewith.jp/uma-musume/article/show/257960> の名称・効果を別資料として確認。草稿専用補完台帳へ数値ID `200801` を追加、R10009の対象枝も `skill:200801` で記録。現在の編集用補完はID`200801`と`201012`の2件。公開本番スキルDBはまだ拡張していない。オフライン監査での未解決スキル数を0へ戻し、補完を外したら数値ID未照合として検査失敗させる。
+
+## 2026-10-19：GameWithオフライン収録器（PR #86）
+
+詳細 [docs/gamewith-offline-ingest.md](docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` はユーザーが合法的に用意したMarkdown/HTML/可読テキストを**ローカルからのみ**解釈し、通常イベント枝を候補JSONとして提案。 `batch_gamewith_import.py` は固定UmaSim全563枚のカードごとにソース紐付け・欠損・解析状態の一覧を作る。GameWithへのHTTP取得は一切実装していない。記事タイトル／レアリティ／SR,SSR二つ名を照合し、報酬名を全数値スキル辞書・補完台帳と突き合わせ、結果依存や連続分岐は自動獲得にせず要手動へ。CIは架空例によるPythonテスト。生ページのHTMLでの正常率は未検証。 `poc/inputs/` と `local-data/` はGit除外。元JSONを上書きするコードは禁止、元記事原文も同梱禁止。GameWith日本語規約のWeb参照では大規模取得の権利を確認できていないため全件GET未実施。既存草稿20枚47件・承認0件。
