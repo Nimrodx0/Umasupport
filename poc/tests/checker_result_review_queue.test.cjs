@@ -14,7 +14,8 @@ test('entire committed result table and derived review queue match fixed numeric
  a.equal(source.stats.unresolvedHintMentions,98);
  a.equal(source.stats.rangedHintChoices,4);
  a.equal(source.stats.explicitOutcomeChoices,203);
- a.equal(source.stats.observedTerminations,73);
+ a.equal(source.stats.observedTerminations,89);
+ a.equal(source.stats.nextEventSuppressionObservations,16);
 });
 test('no outcome-annotated row is falsely approved to grant skills',()=>{
  a.equal(source.forSkillGrant,false);
