@@ -10,6 +10,10 @@
 
 [正本](docs/checker-persistent-candidate-database.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
 
+## 2026-10-19：全2,109イベント候補の経路状態と歴史マスター照合（PR #101）
+
+[経路分類の仕様・監査](docs/route-classification-audit-20261019.md)を正本とする。SSR/SR417枚2,109件を漏れなく `needs-review` 等で分類し、古い2025年マスターの数値story_idを同一カードのイベント見出しハッシュで一括**仮照合**する。`strict-unique` でもID・連続・選択・成功結果・報酬が2026年の実ゲームで認証されたという意味はない。Checker空カードはカード単位 `source-gap`、旧版だけのstory IDは `historicalPossibleGaps` で`confirmedMissingIn2026:false`。レビュー・本番承認0件を勝手に増やさない。生成先 `poc/data/candidates/checker_route_classification.v1.json`、検証 `poc/tools/verify_route_classification.cjs`。候補の原文章・ゲームマスターSQLiteはGitへ同梱しない。
+
 ## 最初に読む順序
 
 1. [README.md](README.md)：公開版・現在の状態と各文書の入口。
