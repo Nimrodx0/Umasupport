@@ -38,7 +38,7 @@ function summarize(model){
  const eventMode=src.events?.mode||
   (m.eventStatus==='reviewed-empty'||m.eventStatus==='reviewed-partial'?'reviewed':'unknown');
  const rows=model.cards;
- const eventsVerified=eventMode==='reviewed';
+ const eventsVerified=eventMode==='reviewed'||eventMode==='preview';
  const eventRecords=eventsVerified&&Number.isSafeInteger(m.reviewedEventRecords)?m.reviewedEventRecords:null;
  const eventCards=eventsVerified&&Number.isSafeInteger(m.reviewedEventCards)?m.reviewedEventCards:null;
  const hierarchy=m.skillHierarchy||null;
