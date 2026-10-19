@@ -23,6 +23,12 @@ function secureUrl(raw){
   return u.protocol==='https:'&&nonempty(u.hostname)&&!u.username&&!u.password;
  }catch{return false;}
 }
+function hasDraftOnlyFacts(value){
+ if(Array.isArray(value))return value.some(hasDraftOnlyFacts);
+ if(!obj(value))return false;
+ if(Object.prototype.hasOwnProperty.call(value,'unresolvedRewards'))return true;
+ return Object.values(value).some(hasDraftOnlyFacts);
+}
 function verifyRelease(catalog,approvals){
  if(!obj(catalog)||catalog.schemaVersion!==1||!Array.isArray(catalog.cards))
   fail('公開カタログが不正');
@@ -37,6 +43,7 @@ function verifyRelease(catalog,approvals){
   seenCards.add(card.cardId);
   for(const event of card.events){
    if(!obj(event)||!nonempty(event.id))fail('イベントIDが不正');
+   if(hasDraftOnlyFacts(event))fail('未照合報酬の草稿は公開できません');
    const key=JSON.stringify([card.cardId,event.id]);
    if(published.has(key))fail('公開イベントIDが重複');
    published.set(key,digest(event));
