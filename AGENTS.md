@@ -261,3 +261,7 @@ GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に�
 ## 2026-10-19：Checker候補のローカル数値ヒント全件抽出（PR #98）
 
 `poc/src/checker_hint_fact_extract.cjs` は既存の `checker_candidate_pipeline.inventory` のカード照合結果を再利用して、ローカル入力内の選択肢ごとの観測ヒント名・数値スキルID・ヒントLvのみを出力する（ゲームのスキル一覧との同一性を確認）。イベント見出し・選択肢文・効果文を出力しない。成功・失敗などの分岐は手動確認のまま。CLIの外部GETなし、出力はGit除外の `local-data` または外部一時領域のみ。限定CIは公開GitHub上のChecker候補ファイルを単発で読んで一時領域で集計し、GameWithへアクセスしない。**内部候補の大量抽出成功≠第三者データの公開再利用許可・ゲーム内正確性・正式公開。** 詳細は `docs/event-data-acquisition-rights-20261019.md`。本番イベントDBは引き続き0件。
+
+## 2026-10-19：一括候補の問題箇所だけを優先審査する（PR #99）
+
+`poc/src/checker_review_queue.cjs` は候補の**未解析・未照合IDをP0、条件付き報酬をP1、Checker／Cruiseのタイトル差と空カードをP2**に整理する。報告はイベント元文章に依存しない `cardId`、`sourceKey`、イベント・選択肢序数、診断原因だけで、全項目を `requiresIndependentReview:true` とする。カード単位の資料差を勝手に該当イベントへ紐付けない。2資料ともGameWith由来なので一致＝独立正確性の証明ではない。GitHub Actionsは一時領域の入力を使いログは集計のみ。GameWithへ自動GETしない。本番0件を維持。実施方法は `docs/event-data-acquisition-rights-20261019.md`。
