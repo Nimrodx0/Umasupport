@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "id": "201012",
+      "name": "後方釘付",
+      "rarity": "normal",
+      "checkedAt": "2026-10-19",
+      "scope": "curation-only",
+      "evidence": {
+        "numericId": "https://umamusu.wiki/Game:Skills/201012",
+        "nameAndEffect": "https://gamewith.jp/uma-musume/article/show/258049"
+      }
+    }
+  ]
+}
