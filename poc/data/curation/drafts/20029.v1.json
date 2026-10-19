@@ -61,9 +61,10 @@
             {
               "id": "option2",
               "label": "選択肢2",
-              "unresolvedRewards": [
+              "rewards": [
                 {
-                  "skillName": "直線コース◯",
+                  "skillId": "skill:202992",
+                  "verifiedSkillName": "直線コース○",
                   "level": 1
                 }
               ]
