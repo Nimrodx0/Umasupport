@@ -91,6 +91,7 @@ async function main(){
   assert.equal(snapshot.totalCards,563);
   assert.equal(snapshot.sourceMode,'preview');
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/未承認イベントの試用モード/);
+  assert.match(await page.locator('#candidate-preview-warning').innerText(),/連続イベントの選択による後続分岐・打ち切りをまだ復元していません/);
   const target=facts.cards.find(c=>c.events.some(e=>e.candidateStatus==='numeric-choice-candidate')).cardId;
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
   await page.locator('#picker-search').fill('サポカ'+target);
