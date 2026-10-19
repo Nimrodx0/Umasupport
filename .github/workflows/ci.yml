@@ -133,3 +133,5 @@ jobs:
         run: node poc/tests/browser_skill_smoke.cjs
       - name: Browser-test opt-in SSR30311 candidate routes and isolated settings
         run: node poc/tests/browser_event_preview_smoke.cjs
+      - name: Browser-test all pinned source choice facts in 398-card/879-event opt-in mode
+        run: node poc/tests/browser_checker_facts_smoke.cjs
