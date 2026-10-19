@@ -185,3 +185,7 @@ See [settings merge acceptance](docs/settings-import-merge-acceptance.md). Merge
 ## 2026-10-19：イベントの未確認事項をUIで細分化しない（利用者判断）
 
 **禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions.md`、`docs/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
+
+## 2026-10-19：45カード候補プレビュー導線（PR #80）
+
+開発用の複数カード試用URL：`poc/live.html?eventPreview=expanded`。 `poc/src/community_candidate_preview.js` は固定CommitのTsuyuchan `events.json` を**実行時直接GET**し、SHA256 `ac3febaad945b4046a137ff6d1d650b6b6def9ae02a891be936e30735956bfd4` を検証。本文・画像を同梱せず、正式story_idのない2件／辞書未登録報酬の2件を除外する。他44枚119候補は `type:choice` の**手動選択**に変換（外部 `selection=auto` はゲーム内自動獲得ではない）。SSR30311は旧版の5候補と置換し、計45枚124イベント候補。通常版0件、獲得正確性・GameWith各カード照合・再利用条件は未承認。ユーザー向けには監査分類を増やさない。

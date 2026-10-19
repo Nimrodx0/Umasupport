@@ -2,7 +2,8 @@
 'use strict';
 const data=window.UmaDemoData, core=window.UmaCore;
 // Preview event selections must not modify the normal-production saved decks.
-const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+(window.UmaPreviewRequested?'-event-preview':'');
+const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
+ (window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':window.UmaPreviewRequested?'-event-preview':'');
 const blank=()=>({cardId:null,stage:4,choices:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});

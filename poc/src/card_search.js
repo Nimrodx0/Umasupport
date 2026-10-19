@@ -7,9 +7,13 @@ const ids=x=>Array.isArray(x)?x.filter(s=>typeof s==='string'):[];
 const APPROVED_EVENT_TYPES=new Set(['auto','choice']);
 function approvedEventSkillIds(card,model){
  const out=new Set();
- // c.events is populated only through the reviewed public catalog loader.
+ // c.events comes from validated reviewed data or explicit opt-in preview.
  // When no event records have been validated, even a stray events property is untrusted.
- if(!model?.meta?.reviewedEventRecords||!Array.isArray(card?.events))return out;
+ // In explicit preview mode, the candidate catalog was schema-validated and
+ // the UI's event-route filter should reach those candidates without marking
+ // them approved. Normal mode still only exposes reviewed release data.
+ const preview=model?.meta?.runtimeSources?.events?.mode==='preview';
+ if(!(model?.meta?.reviewedEventRecords||preview)||!Array.isArray(card?.events))return out;
  function rewards(xs){
   if(!Array.isArray(xs))return;
   for(const r of xs)if(typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId))out.add(r.skillId);
