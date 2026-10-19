@@ -84,7 +84,7 @@
      }
      if(r.outcomeId!==undefined){
        const found=parts[0].outcomes?.find(o=>o.id===r.outcomeId);
-       if(!found)fail(e.id+': 親結果IDが未登録');
+       if(!found)fail(e.id+': 到達条件が不正（親結果IDが未登録）');
        if(found.terminal)fail(e.id+': 打ち切り結果に後続イベント');
      }else if(parts.every(p=>p.outcomes?.length&&p.outcomes.every(o=>o.terminal===true))){
        fail(e.id+': 全結果打ち切りの親からは継続できません');

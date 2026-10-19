@@ -54,6 +54,7 @@ function parse(raw,data){
    for(const slot of d.slots){
     if(!obj(slot)||!(slot.cardId===null||typeof slot.cardId==='string')||
       !Number.isInteger(slot.stage)||slot.stage<0||slot.stage>4||!obj(slot.choices)||
+      (slot.outcomes!==undefined&&(!obj(slot.outcomes)||Object.values(slot.outcomes).some(x=>typeof x!=='string')))||
       Object.values(slot.choices).some(x=>typeof x!=='string'))
       throw new Error('デッキのスロットが不正です');
     if(slot.cardId!==null&&!own(data.cardById,slot.cardId))
@@ -124,7 +125,7 @@ function addDeck(s,key,copy=false){
   if(!Number.isSafeInteger(s.nextDeckId))throw new Error('デッキ管理番号の上限に達しました');
  }while(allIds.has(id));
  const slots=copy?JSON.parse(JSON.stringify(current.slots)):
-  Array.from({length:6},()=>({cardId:null,stage:4,choices:{}}));
+  Array.from({length:6},()=>({cardId:null,stage:4,choices:{},outcomes:{}}));
  const created={id,name:baseName.slice(0,MAX_NAME_LENGTH),slots};
  s.decks[key].push(created);s.activeDecks[key]=id;
  return created;
