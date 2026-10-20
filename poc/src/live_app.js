@@ -148,15 +148,22 @@ function eventCandidateHTML(part){
  const alternatives=(part.outcomes||[]).map(o=>`<span class="tag condition">${esc(o.label)}時</span> ${eventRewardHTML(o.rewards)}`).join(' / ');
  return [guaranteed,alternatives].filter(Boolean).join(' / ')||'<span class="muted">スキル獲得なし</span>';
 }
-function resultSelector(part,slot,k,i,event,active){
+function resultSelector(part,slot,k,i,event,active,card){
  if(!part||!Array.isArray(part.outcomes))return '';
  const current=slot.outcomes?.[event.id]||'';
  return '<label class="tiny-note">結果を指定： <select class="field" data-event-outcome data-deck="'+k+
   '" data-index="'+i+'" data-event="'+esc(event.id)+'" '+(!active?'disabled':'')+'>'+
   '<option value="" '+(!current?'selected':'')+'>結果未確定（候補）</option>'+
-  part.outcomes.map(o=>'<option value="'+esc(o.id)+'" '+(current===o.id?'selected':'')+'>'+esc(o.label)+(o.terminal?'（連続終了）':'')+'</option>').join('')+
-  '</select></label>';
+  part.outcomes.map(o=>{
+   const state=core.outcomeReachability(o,event,slot.choices,card.events,slot.outcomes||{});
+   const disabled=state.status==='blocked';
+   return '<option value="'+esc(o.id)+'" '+(current===o.id&&!disabled?'selected':'')+
+    (disabled?' disabled':'')+'>'+esc(o.label)+
+    (disabled?'（前段結果と両立しません）':state.status==='conditional'?'（前段結果未確定）':'')+
+    (o.terminal?'（連続終了）':'')+'</option>';
+  }).join('')+'</select></label>';
 }
+
 function eventHTML(card,slot,k,i,onlyEventId=null){
  return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
   const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
@@ -170,7 +177,7 @@ function eventHTML(card,slot,k,i,onlyEventId=null){
     (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
     (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
   if(e.type==='auto')return intro+'<div class="help" style="margin-top:7px">獲得候補：'+eventCandidateHTML(e)+'</div>'+
-    resultSelector(e,slot,k,i,e,!blocked)+'</div>';
+    resultSelector(e,slot,k,i,e,!blocked,card)+'</div>';
   const unknown='<label class="option"><input type="radio" data-event-choice data-deck="'+k+'" data-index="'+i+'" data-event="'+esc(e.id)+'" value="" '+(!selected?'checked':'')+(blocked?' disabled':'')+'><span>未設定<small>このイベント由来のスキルは集計しません</small></span></label>';
   const options=e.choices.filter(opt=>core.choiceReachability(opt,e,slot.choices,card.events,slot.outcomes||{}).status!=='blocked')
    .map(opt=>{
@@ -180,7 +187,7 @@ function eventHTML(card,slot,k,i,onlyEventId=null){
      esc(opt.label)+note+'<small>獲得候補：'+eventCandidateHTML(opt)+(opt.terminal?'（ここで連続イベント終了）':'')+'</small></span></label>';
    }).join('');
   return intro+'<div class="event-options">'+unknown+options+'</div>'+
-   resultSelector(selectedPart,slot,k,i,e,!blocked)+'</div>';
+   resultSelector(selectedPart,slot,k,i,e,!blocked,card)+'</div>';
  }).join('');
 }
 function hintPerformanceHTML(card,slot){
