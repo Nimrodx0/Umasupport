@@ -136,6 +136,8 @@ async function main(){
   await page.locator('#picker-search').fill('サポカ'+resultInfo.target.cardId);
   await page.locator('button[data-action="set-card"][data-id="'+resultInfo.target.cardId+'"]').click();
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  // A source with no observed skill hints must not assert no in-game reward.
+  assert.equal((await page.locator('.modal-body').innerText()).includes('スキル獲得なし'),false);
   const selector='input[data-event-choice][data-event="'+resultInfo.target.eventId+
    '"][value="'+resultInfo.target.choiceId+'"]';
   await page.locator(selector).click();
