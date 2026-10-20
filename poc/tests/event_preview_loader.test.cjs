@@ -29,6 +29,8 @@ test('strict opt-in URL and no arbitrary preview URL construction',()=>{
  assert.equal(preview.requested('?eventPreview=30311'),'30311');
  assert.equal(preview.previewURL('30311'),'./data/preview/efforia30311.v1.json');
  assert.equal(preview.requested('?eventPreview=expanded'),'expanded');
+ assert.equal(preview.requested('?eventPreview=results'),'results');
+ assert.equal(preview.previewURL('results'),'./data/candidates/checker_explicit_result_facts.v1.json');
  assert.match(preview.previewURL('expanded'),/raw\.githubusercontent\.com/);
  assert.equal(preview.previewURL('../../reviewed_events.v1.json'),null);
  assert.equal(preview.previewURL('30001'),null);
