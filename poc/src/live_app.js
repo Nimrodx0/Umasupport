@@ -5,6 +5,7 @@ const data=window.UmaDemoData, core=window.UmaCore;
 const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
  (window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':
    window.UmaPreviewRequested==='facts'?'-event-preview-facts':
+   window.UmaPreviewRequested==='results'?'-event-preview-results':
    window.UmaPreviewRequested?'-event-preview':'');
 const blank=()=>({cardId:null,stage:4,choices:{},outcomes:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{},outcomes:{}}:blank())});
@@ -79,7 +80,7 @@ function render(){
       :data.meta.reviewedEventRecords
         ? '承認済み実イベント '+data.meta.reviewedEventRecords+'件（全件の収録は未確認）。'
         : '承認済み実イベントは0件です（公開JSONの検証成功時）。';
- const previewChainNotice=window.UmaPreviewRequested==='facts'
+ const previewChainNotice=['facts','results'].includes(window.UmaPreviewRequested)
   ? ' この試用DBでは連続イベントの選択による後続分岐・打ち切りをまだ復元していません。表示される全候補が同じ育成で選択可能とは限りません。'
   : '';
  const previewBanner=window.UmaPreviewRequested
