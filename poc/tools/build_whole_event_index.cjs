@@ -187,6 +187,14 @@ function main(args){
  const queue=require('../data/candidates/checker_explicit_result_review_queue.v1.json');
  const checkerRev='8cf9fcb3cc7239041161be75c84daf9f8f22d29f';
  const gtRev='6e38b54af4fad397ff4491e63007a90705a4fe67';
+ const pins=require('../data/candidates/checker_event_hints.v1.json').sourcePins;
+ for(const [key,file,revision] of [
+  ['checker',checkerPath,checkerRev],
+  ['umasimCards',rosterPath,'cf9366f6a487bd8f197b53d8a11981207beb9f6c']
+ ]){
+  if(pins[key]?.revision!==revision||sha256(fs.readFileSync(file))!==pins[key]?.sha256)
+   fail('pinned raw file checksum mismatch '+key);
+ }
  const result=build({checker:JSON.parse(fs.readFileSync(checkerPath,'utf8').replace(/^\uFEFF/,'')),
   rosterText:fs.readFileSync(rosterPath,'utf8'),
   aliases:require('../config/checker-name-aliases.json'),
