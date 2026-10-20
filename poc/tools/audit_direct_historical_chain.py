@@ -193,9 +193,11 @@ def build(old: dict[str, list[dict]], sources: dict[str, list[dict]], topology: 
                     rows.append(dict(cardId=cardid, firstOrdinal=st["sourceOrdinal"],
                                      nextOrdinal=candidate["sourceOrdinal"],
                                      oldCardHasDirectStories=bool(old.get(cardid)), reason=status))
-    if c["totalAdjacencyCandidates"] != 675 or c["historicalCheckerComplete"] != 523 or c["historicalCheckerPartial"] != 15 or c["previouslyNoHistoricalOrder"] != 137 or sum(kinds.values()) != 675 or
+    if (c["totalAdjacencyCandidates"] != 675 or c["historicalCheckerComplete"] != 523 or
+        c["historicalCheckerPartial"] != 15 or c["previouslyNoHistoricalOrder"] != 137 or
+        sum(kinds.values()) != 675 or
         c["directGapsNoOldCardStories"] + c["directGapsWithOldCardStories"] +
-        c["directSourceMasterOrderSupported"] + c["directSourceMasterOrderConflicted"] != 675:
+        c["directSourceMasterOrderSupported"] + c["directSourceMasterOrderConflicted"] != 675):
         raise ValueError("prior topology populations drift")
     return dict(schemaVersion=1, dataKind="umasupport-direct-2025-master-chain-audit",
                 sourcePins=dict(gameToraDerived=GT_REV, historicalMasterRevision=OLD_REV,
