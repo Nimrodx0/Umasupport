@@ -127,6 +127,8 @@ jobs:
 
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
+      - name: Validate targeted four-pair missing-master-stage diagnosis
+        run: python3 -m unittest discover -s poc/tests -p 'test_targeted_historical_gaps.py' -v
       - name: Verify direct 2025 master stage joins (synthetic SQLite only)
         run: python3 -m unittest discover -s poc/tests -p 'test_direct_historical_chain.py' -v
       - name: Check new independent audit scripts
