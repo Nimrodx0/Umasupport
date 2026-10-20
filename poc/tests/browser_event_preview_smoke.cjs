@@ -194,21 +194,9 @@ async function main(){
   const outcomeSelect=id=>cumulativePage.locator('select[data-event-outcome][data-event="'+id+'"]');
   await outcomeSelect(firstStage).selectOption('success');
   await outcomeSelect(secondStage).selectOption('failure');
-  console.log('CUMULATIVE-DEBUG',JSON.stringify(await cumulativePage.evaluate(()=>{
-    const saved=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview'));
-    const slot=saved.decks.main[0].slots[0],card=window.UmaDemoData.cardById['30103'];
-    const three=card.events[2];
-    return {selected:slot.outcomes,ids:card.events.map(e=>e.id),
-     conditions:three.outcomes.map(r=>({kind:r.id,
-      status:window.UmaCore.outcomeReachability(r,three,slot.choices,card.events,slot.outcomes)})),
-     options:[...document.querySelectorAll('select[data-event-outcome]')].map(sel=>({
-      event:sel.dataset.event,selected:sel.value,
-      opts:[...sel.options].map(o=>({value:o.value,disabled:o.disabled}))
-     }))};
-  })));
-  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').isDisabled(),true);
-  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').isDisabled(),false);
-  assert.equal(await outcomeSelect(thirdStage).locator('option[value="failure"]').isDisabled(),true);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').evaluate(opt=>opt.disabled),true);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').evaluate(opt=>opt.disabled),false);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="failure"]').evaluate(opt=>opt.disabled),true);
   await outcomeSelect(thirdStage).selectOption('success');
   const firstResult=await cumulativePage.evaluate(()=>{
     const settings=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview'));
@@ -219,8 +207,8 @@ async function main(){
   assert.deepEqual(firstResult,[2]);
   await outcomeSelect(secondStage).selectOption('success');
   assert.equal(await outcomeSelect(thirdStage).inputValue(),'');
-  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').isDisabled(),false);
-  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').isDisabled(),true);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').evaluate(opt=>opt.disabled),false);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').evaluate(opt=>opt.disabled),true);
   await outcomeSelect(thirdStage).selectOption('great');
   const secondResult=await cumulativePage.evaluate(()=>{
     const settings=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview'));
