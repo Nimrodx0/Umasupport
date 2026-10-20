@@ -31,6 +31,8 @@ test('analyze document: event-level and outcome-level stopping are distinct',()=
   assert.equal(a.terminalRoutes,2);
   assert.equal(a.choicesWithTerminal,2);
   assert.equal(a.eventsWithTerminal,1);
+  assert.deepEqual(a.reviewCandidates,[{chainOrdinal:1,sourceLocalEventId:null,
+    terminalOutcomes:[{choiceOrdinal:1,outcomeOrdinal:2},{choiceOrdinal:2,outcomeOrdinal:1}],priorMarkers:[]}]);
 });
 test('cumulative prior-success conditions are detected but NOT interpreted as three ready-made routes',()=>{
   const a=analyzeDocument(docs[2],30103);
@@ -38,6 +40,8 @@ test('cumulative prior-success conditions are detected but NOT interpreted as th
   assert.equal(a.eventsWithPriorDependence,1);
   assert.equal(a.expandedOutcomeRoutes,1);
   assert.equal(a.skillHintMentions,3);
+  assert.deepEqual(a.reviewCandidates[0].priorMarkers,
+    ['both_previous_chain_bad','both_previous_chain_good','one_previous_chain_good']);
 });
 test('conditional segments count guards and separate terminal branches',()=>{
  const choices=[{segments:[
@@ -58,6 +62,8 @@ test('audit joins by card ID only; reports missing/extra; never marks game or ev
   assert.equal(out.totals.p0EventsOnPresentCards,3);
   assert.equal(out.totals.p0EventsOnMissingCards,0);
   assert.equal(out.totals.terminalRoutes,3);
+  assert.equal(out.reviewCandidates.length,3);
+  assert.deepEqual(out.reviewCandidates.map(x=>x.cardId),['30001','30026','30103']);
   const q2={...queue,rows:queue.rows.map((r,i)=>({...r,
     reasonCodes:i===0?['OBSERVED_CHAIN_TERMINATION']:i===2?
       ['PRIOR_RESULT_CONTEXT_UNVERIFIED']:[]}))};
