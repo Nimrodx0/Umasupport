@@ -7,6 +7,9 @@ on:
       - 'poc/tests/whole_event_index.test.cjs'
       - 'poc/tools/audit_whole_event_rewards.cjs'
       - 'poc/tests/whole_event_reward_audit.test.cjs'
+      - 'poc/tools/audit_whole_chain_topology.cjs'
+      - 'poc/tests/whole_chain_topology.test.cjs'
+      - 'docs/phase2-whole-chain-topology-20261020.md'
       - '.github/workflows/whole-event-inventory.yml'
       - 'docs/phase2-whole-event-intake-plan-20261020.md'
   workflow_dispatch:
@@ -43,7 +46,7 @@ jobs:
             https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json \
             -o "$RUNNER_TEMP/event-inputs/Events.json"
       - name: Verify purely synthetic event matching regressions
-        run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs
+        run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs umasupport/poc/tests/whole_chain_topology.test.cjs
       - name: Generate first-party provisional union index, exclude source prose
         run: |
           node umasupport/poc/tools/build_whole_event_index.cjs \
@@ -59,6 +62,13 @@ jobs:
             "$RUNNER_TEMP/event-inputs/Events.json" \
             "$RUNNER_TEMP/event-inputs/support_card.txt" \
             whole-event-output/whole_event_rewards_audit.v1.json
+      - name: Audit all chain stages and conditional branch stops (no inferred links)
+        run: |
+          node umasupport/poc/tools/audit_whole_chain_topology.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            whole-event-output/whole_event_rewards_audit.v1.json \
+            gt-snapshot/server/data/events/gametora \
+            whole-event-output/whole_chain_topology_review.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
