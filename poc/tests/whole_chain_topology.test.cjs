@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {analyzeStage,compareCheckerStop}=require('../tools/audit_whole_chain_topology.cjs');
+const {analyzeStage,compareCheckerStop,historicalStageIndex,historicPairEvidence}=require('../tools/audit_whole_chain_topology.cjs');
 const ev=(choices)=>({section:'arrows',id:44,choices});
 const out=(effects)=>({effects});
 const p={sourceKey:'checker:30001:abc',choiceCountAgreement:true};
@@ -72,4 +72,19 @@ test('a missing Checker or conflicting choice cardinality is never cross-verifie
 test('malformed chain stage rejects untyped effects and missing choice array',()=>{
  assert.throws(()=>analyzeStage({section:'random',choices:[]},1,1),/invalid chain/);
  assert.throws(()=>analyzeStage(ev([out([{bad:1}])]),1,1),/malformed effect/);
+});
+
+test('2025 unique stage-order evidence distinguishes supported adjacency from mismatch',()=>{
+ const group=(events)=>({structuralStatus:'stage-complete-unique',chainMax:3,
+   events:events.map(([sourceKey,stage])=>({sourceKey,stage}))});
+ const historic={dataKind:'provisional-historical-chain-stage-audit',
+  approvalState:'UNREVIEWED_NOT_FOR_PUBLICATION',forSkillGrant:false,
+  totals:{stageGroups:2},
+  chainGroups:[group([['a',1],['b',2],['c',3]]),group([['d',1]])]};
+ const h=historicalStageIndex(historic);
+ assert.equal(historicPairEvidence('a','b',h),'2025-structural-stage-order-agrees');
+ assert.equal(historicPairEvidence('b','a',h),'2025-stage-order-disagrees');
+ assert.equal(historicPairEvidence('a','d',h),'2025-groups-differ-or-ambiguous');
+ assert.equal(historicPairEvidence('a','missing',h),'missing-2025-stage-evidence');
+ assert.throws(()=>historicalStageIndex({...historic,chainGroups:[group([['a',1]]),group([['a',1]])]}),/collision/);
 });
