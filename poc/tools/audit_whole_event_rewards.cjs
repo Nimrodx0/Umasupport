@@ -1,0 +1,191 @@
+'use strict';
+/*
+ * Phase 2②: compare numeric skill-hint statements of two editorial data families.
+ * The report is not a game-skill grant table or proof of outcome identity.
+ * Do not export raw event titles, effect prose, source JSON or choice labels.
+ */
+const fs=require('node:fs');
+const path=require('node:path');
+const {flattenRoutes,readDocuments}=require('./audit_gametora_branches.cjs');
+const {verifyDerived}=require('../src/checker_explicit_result_extract.cjs');
+
+function fail(s){throw Error('Phase2 reward comparison: '+s);}
+function numericHint(h){
+ if(h.skillId===undefined||h.skillId===null)return {unresolved:true};
+ const id=String(h.skillId),level=h.level;
+ if(!/^\d+$/.test(id))fail('invalid Checker skill ID');
+ if(h.levelMin!==undefined||h.levelMax!==undefined)return {ranged:true};
+ if(!Number.isInteger(level)||level<1||level>10)fail('invalid Checker level');
+ return {token:id+':'+level};
+}
+function sourceHint(e){
+ if(e.type!=='skill_hint')return {unsupported:e.type==='skill_hint_or'||e.type==='obtain_skill'};
+ const id=String(e.skill_id??''),value=String(e.value??'');
+ if(!/^\d+$/.test(id)||!/^\+?[1-9]\d?$/.test(value))return {unresolved:true};
+ return {token:id+':'+Number(value)};
+}
+function bag(tokens){return tokens.slice().sort().join('|');}
+const PRIOR=new Set(['both_previous_chain_good','one_previous_chain_good','both_previous_chain_bad','result_good','result_bad','result_average','success','fail']);
+function analyzeChoice(checker,source){
+ if(!checker||!Array.isArray(checker.results)||!source||typeof source!=='object')
+  fail('malformed choice');
+ const checkerBranches=checker.results.map(result=>{
+  if(!Array.isArray(result.skillHints))fail('malformed Checker outcome');
+  return result.skillHints.map(numericHint);
+ });
+ const groups=flattenRoutes(source);
+ const sourceBranches=groups.map(group=>group.effects.map(sourceHint));
+ const checkerTokens=checkerBranches.flat().filter(x=>x.token).map(x=>x.token);
+ const sourceTokens=sourceBranches.flat().filter(x=>x.token).map(x=>x.token);
+ const checkerUnresolved=checkerBranches.flat().filter(x=>x.unresolved).length;
+ const checkerRanged=checkerBranches.flat().filter(x=>x.ranged).length;
+ const sourceUnresolved=sourceBranches.flat().filter(x=>x.unresolved).length;
+ const sourceUnsupported=sourceBranches.flat().filter(x=>x.unsupported).length;
+ const conditionalSource=groups.some(x=>x.when?.length||
+  x.effects.some(e=>PRIOR.has(e.type)));
+ const checkerConditional=checker.diagnostics?.includes('RESULT_REQUIRES_PRIOR_CONTEXT')||false;
+ // Presence of skill hints in one record is not proof of absence in the other.
+ const bothHaveHints=checkerTokens.length>0&&sourceTokens.length>0;
+ let status;
+ if(checkerRanged||checkerUnresolved||sourceUnresolved||sourceUnsupported)
+  status='unresolved-hint-representation';
+ else if(conditionalSource||checkerConditional)
+  status='prior-conditional-needs-review';
+ else if(!checkerTokens.length&&!sourceTokens.length)
+  status='no-numeric-hints-observed';
+ else if(!checkerTokens.length)
+  status='source-only-numeric-hints';
+ else if(!sourceTokens.length)
+  status='checker-only-numeric-hints';
+ else if(bag(checkerTokens)===bag(sourceTokens))
+  status='numeric-multiset-agreement';
+ else status='numeric-multiset-disagreement';
+ const explicit=checker.structure==='explicit-result-headings';
+ const sameBranches=checkerBranches.length===sourceBranches.length;
+ // Even equal unordered outcome signatures never prove success/failure labels map.
+ const sortedSignature=(results)=>results.map(part=>
+  bag(part.filter(x=>x.token).map(x=>x.token))).sort().join('||');
+ const outcomeEvidence=explicit&&sourceBranches.length>1&&sameBranches&&
+  !checkerUnresolved&&!checkerRanged&&!sourceUnresolved&&!sourceUnsupported&&
+  !conditionalSource&&!checkerConditional?
+  (sortedSignature(checkerBranches)===sortedSignature(sourceBranches)?
+   'unlabeled-outcome-signature-agreement':'unlabeled-outcome-signature-disagreement'):
+  'not-comparable';
+ return {status,outcomeEvidence,checkerOutcomeCount:checkerBranches.length,
+  sourceOutcomeCount:sourceBranches.length,checkerExplicit:explicit,
+  sourceMultipleOutcomes:sourceBranches.length>1,
+  checkerNumericHints:checkerTokens.length,sourceNumericHints:sourceTokens.length,
+  checkerUnresolved,checkerRanged,sourceUnresolved,sourceUnsupported,
+  conditionalSource,checkerConditional,
+  // Numerical mismatch identities stay as a pair of multisets for targeted review.
+  hintDifference:status==='numeric-multiset-disagreement'||
+    status==='checker-only-numeric-hints'||status==='source-only-numeric-hints'?
+    {checker:checkerTokens.slice().sort(),gameTora:sourceTokens.slice().sort()}:null};
+}
+function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
+ if(index?.dataKind!=='umasupport-whole-event-provisional-index'||
+   index.publicationApproval!==false||index.gameVerified!==false||
+   index.eventMatchesProvisionalOnly!==true||
+   checkerFacts?.dataKind!=='umasupport-explicit-result-facts'||
+   checkerFacts.forSkillGrant!==false||
+   !Array.isArray(index.cards)||!Array.isArray(checkerFacts.cards)||
+   !Array.isArray(gameToraDocuments)||
+   index.sourcePins?.checker!==checkerFacts.sourcePins?.checkerRevision)
+  fail('provenance/approval invariant');
+ verifyDerived(checkerCandidates,checkerFacts);
+ if(index.sourcePins.checker!==checkerCandidates.sourcePins.checker.revision)
+  fail('candidate version mismatch');
+ const source=new Map();
+ for(const doc of gameToraDocuments){
+  if(doc?.kind!=='support'||!Number.isSafeInteger(doc.id)||source.has(String(doc.id)))
+   fail('duplicate source card');
+  source.set(String(doc.id),doc.events_ja&&Object.keys(doc.events_ja).length?
+    Object.values(doc.events_ja):Object.values(doc.events||{}));
+ }
+ const facts=new Map(checkerFacts.cards.map(x=>[x.cardId,x]));
+ if(facts.size!==checkerFacts.cards.length)fail('Checker cards duplicate');
+ const counts={cards:563,matchedEvents:0,eventsWithChoiceCountMismatch:0,
+  choicesCompared:0,checkerChoicesWithExplicitResults:0,sourceChoicesWithMultipleOutcomes:0,
+  comparedNumericMentionsChecker:0,comparedNumericMentionsGameTora:0,
+  matchedP0Events:0,unpairedP0Events:0,
+  resultSignatureAgree:0,resultSignatureDisagree:0,
+  categoryCounts:{}};
+ const cases=[],nonComparable=[],sourcesReviewed=new Set();
+ for(const card of index.cards){
+  const src=source.get(card.cardId),record=facts.get(card.cardId),ref=(record?.events||[]);
+  if(card.sourceMissing!==(src===undefined))fail('source card missing drift '+card.cardId);
+  if(card.checkerObservedCount!==ref.length)fail('Checker count mismatch '+card.cardId);
+  if(src&&card.gameToraObservedCount!==src.length)fail('source event count mismatch '+card.cardId);
+  for(const pair of card.pairs){
+   counts.matchedEvents++;
+   const ev=ref[pair.checkerOrdinal-1],sourceEvent=src?.[pair.sourceOrdinal-1];
+   if(!ev||!sourceEvent||ev.sourceKey!==pair.sourceKey||
+      !Array.isArray(sourceEvent.choices)||ev.choices.length!==pair.checkerChoiceCount||
+      sourceEvent.choices.length!==pair.sourceChoiceCount)
+    fail('crosswalk event ordinal/sourceKey drift '+card.cardId);
+   if(pair.matchMethod!=='exact-name-provisional'&&pair.matchMethod!=='typography-provisional')
+    fail('not a provisional title match');
+   const key=card.cardId+':'+pair.sourceOrdinal;
+   if(sourcesReviewed.has(key))fail('source event reused by multiple checker events');
+   sourcesReviewed.add(key);
+   if(!pair.choiceCountAgreement){
+    counts.eventsWithChoiceCountMismatch++;
+    nonComparable.push({cardId:card.cardId,sourceKey:pair.sourceKey,
+      checkerOrdinal:pair.checkerOrdinal,sourceOrdinal:pair.sourceOrdinal,
+      reason:'choice-count-conflict'});
+    continue;
+   }
+   for(let i=0;i<ev.choices.length;i++){
+    const result=analyzeChoice(ev.choices[i],sourceEvent.choices[i]);
+    counts.choicesCompared++;
+    if(result.checkerExplicit)counts.checkerChoicesWithExplicitResults++;
+    if(result.sourceMultipleOutcomes)counts.sourceChoicesWithMultipleOutcomes++;
+    counts.comparedNumericMentionsChecker+=result.checkerNumericHints;
+    counts.comparedNumericMentionsGameTora+=result.sourceNumericHints;
+    if(result.outcomeEvidence==='unlabeled-outcome-signature-agreement')counts.resultSignatureAgree++;
+    if(result.outcomeEvidence==='unlabeled-outcome-signature-disagreement')counts.resultSignatureDisagree++;
+    counts.categoryCounts[result.status]=(counts.categoryCounts[result.status]||0)+1;
+    cases.push({cardId:card.cardId,sourceKey:pair.sourceKey,
+      checkerOrdinal:pair.checkerOrdinal,sourceOrdinal:pair.sourceOrdinal,
+      sourceSection:pair.sourceSection,choiceOrdinal:i+1,
+      matchMethod:pair.matchMethod,...result});
+   }
+  }
+  counts.matchedP0Events+=card.p0PairedCount;
+  counts.unpairedP0Events+=card.p0CandidateCount-card.p0PairedCount;
+ }
+ if(counts.matchedEvents!==index.stats.pairedExact+index.stats.pairedTypographic||
+   counts.matchedEvents+index.stats.checkerUnmatchedEvents!==2109||
+   counts.eventsWithChoiceCountMismatch!==index.stats.pairedChoiceCountConflict||
+   counts.choicesCompared!==cases.length||counts.matchedP0Events!==197||
+   counts.unpairedP0Events!==2||counts.cards!==index.stats.rosterCards)
+  fail('full-population conservation mismatch');
+ return {schemaVersion:1,dataKind:'umasupport-two-source-numeric-reward-audit',
+  sourcePins:{...index.sourcePins,checkerSha256:checkerFacts.sourcePins.checkerSha256},
+  forSkillGrant:false,releaseApproved:false,routeVerified:false,
+  gameVerified:false,eventTitleMatchesProvisional:true,
+  originalSourceProseIncluded:false,
+  semantics:{equalNumericHints:'Published source hint multiset equals at the same choice ordinal only; neither completeness nor result labels verified',
+    emptyHintSets:'No observed numeric hints, not proof of no skill reward',
+    outcomeSignatures:'Unordered branches; never proves success/failure ordering or probability'},
+  counts,nonComparable,cases};
+}
+function main(args){
+ if(args.length!==3)fail('usage: node poc/tools/audit_whole_event_rewards.cjs <whole-index.json> <snapshot-dir> <numeric-audit-output.json>');
+ const [indexPath,gtDir,out]=args;
+ const result=audit({
+  index:JSON.parse(fs.readFileSync(indexPath,'utf8')),
+  checkerFacts:require('../data/candidates/checker_explicit_result_facts.v1.json'),
+  checkerCandidates:require('../data/candidates/checker_event_hints.v1.json'),
+  gameToraDocuments:readDocuments(gtDir)});
+ fs.mkdirSync(path.dirname(out),{recursive:true});
+ fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n');
+ console.log('WHOLE_REWARD_AUDIT_COUNTS='+JSON.stringify(result.counts));
+ const focus=Object.entries(result.counts.categoryCounts).sort((a,b)=>b[1]-a[1]);
+ console.log('WHOLE_REWARD_STATUS_RANKS='+JSON.stringify(focus));
+ console.log('WHOLE_REWARD_MISMATCH_CARDS='+JSON.stringify(
+  [...new Set(result.cases.filter(x=>x.status==='numeric-multiset-disagreement')
+    .map(x=>x.cardId))].sort().slice(0,30)));
+}
+if(require.main===module)main(process.argv.slice(2));
+module.exports={numericHint,sourceHint,analyzeChoice,audit};
