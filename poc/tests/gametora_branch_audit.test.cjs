@@ -58,6 +58,14 @@ test('audit joins by card ID only; reports missing/extra; never marks game or ev
   assert.equal(out.totals.p0EventsOnPresentCards,3);
   assert.equal(out.totals.p0EventsOnMissingCards,0);
   assert.equal(out.totals.terminalRoutes,3);
+  const q2={...queue,rows:queue.rows.map((r,i)=>({...r,
+    reasonCodes:i===0?['OBSERVED_CHAIN_TERMINATION']:i===2?
+      ['PRIOR_RESULT_CONTEXT_UNVERIFIED']:[]}))};
+  const overlap=audit({index,queue:q2,documents:docs,sourceRevision:sha});
+  assert.equal(overlap.totals.checkerStopCards,1);
+  assert.equal(overlap.totals.checkerAndSourceStopCardOverlap,1);
+  assert.equal(overlap.totals.sourceOnlyStopCards,1);
+  assert.equal(overlap.totals.checkerAndSourcePriorCardOverlap,1);
   assert.equal(out.eventToCheckerCrosswalkVerified,false);
   assert.equal(out.releaseApproved,false);
   assert.equal(out.rawThirdPartyContentIncluded,false);
