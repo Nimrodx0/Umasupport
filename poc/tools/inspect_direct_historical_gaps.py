@@ -102,18 +102,46 @@ def inspect(direct: dict, old: dict, original: dict, source_docs: dict) -> dict:
                 key=lambda v: (-v[0], v[1])
             )
             best = ranked[0] if ranked else None
+            exact = [(sid, rec) for sid, rec in original[card].items()
+                     if rec["title"] == source_title]
+            exact_matching_stage = [(sid, rec) for sid, rec in exact
+                     if rec["stage"] == source_stage]
+            chain_positions = [i for i, x in enumerate(current_events,1)
+                               if x["section"] == "arrows"]
+            ix = chain_positions.index(ordinal)
+            adjacent = [chain_positions[t] for t in (ix-1,ix+1)
+                        if 0 <= t < len(chain_positions)]
+            anchor_keys = {(matches[p]["maximum"],matches[p]["flag"])
+                           for p in adjacent if p in matches}
+            compatible = [(sid, rec) for sid, rec in exact_matching_stage
+                          if not anchor_keys or
+                          (rec["maximum"],rec["flag"]) in anchor_keys]
+            if len(exact_matching_stage)>1:
+                reason = "historical-title-collision"
+            elif len(exact_matching_stage)==1:
+                reason = "historical-exact-name-left-unmatched"
+            elif best and best[0]>=850:
+                reason = "near-title-variant-needs-independent-confirmation"
+            elif not stage_candidates:
+                reason = "no-corresponding-2025-stage-number"
+            else:
+                reason = "old-stage-exists-title-identity-not-established"
             report.append({
                 "cardId": card, "sourceOrdinal": ordinal,
                 "sourceChainOrdinal": source_stage,
                 "historicalStageNumberSameAsSourceOrdinalPresent": bool(stage_candidates),
                 "historicalMatchingStageRows": len(stage_candidates),
                 "historicalUnmatchedStoryRows": len(unused),
+                "historicalExactSameTitleRows": len(exact),
+                "historicalExactSameTitleAndStageRows": len(exact_matching_stage),
+                "historicalExactTitleCandidateStoryIds": [sid for sid,_ in exact_matching_stage],
+                "anchoringNeighborStageGroups": len(anchor_keys),
+                "historicalExactTitleStageRowsCompatibleWithNeighbor": len(compatible),
                 "bestUnmatchedHistoricalStoryId": best[1] if best else None,
                 "titleSimilarityPermille": best[0] if best else None,
                 "bestOldStage": best[2]["stage"] if best else None,
                 "bestOldChainMax": best[2]["maximum"] if best else None,
-                "diagnosis": ("no-corresponding-2025-stage-number" if not stage_candidates else
-                              "old-stage-exists-title-identity-not-established"),
+                "diagnosis": reason,
                 "candidateAccepted": False
             })
     categories = dict(sorted(Counter(x["diagnosis"] for x in report).items()))
