@@ -183,6 +183,13 @@ function main(args){
  console.log('WHOLE_REWARD_AUDIT_COUNTS='+JSON.stringify(result.counts));
  const focus=Object.entries(result.counts.categoryCounts).sort((a,b)=>b[1]-a[1]);
  console.log('WHOLE_REWARD_STATUS_RANKS='+JSON.stringify(focus));
+ console.log('WHOLE_REWARD_EXCEPTION_CASES='+JSON.stringify(result.cases.filter(x=>
+  ['numeric-multiset-disagreement','source-only-numeric-hints',
+   'checker-only-numeric-hints','prior-conditional-needs-review'].includes(x.status)||
+   x.outcomeEvidence==='unlabeled-outcome-signature-disagreement'
+ ).map(x=>({cardId:x.cardId,checkerOrdinal:x.checkerOrdinal,
+   choiceOrdinal:x.choiceOrdinal,status:x.status,outcomeEvidence:x.outcomeEvidence,
+   checkerNumericHints:x.checkerNumericHints,sourceNumericHints:x.sourceNumericHints}))));
  console.log('WHOLE_REWARD_MISMATCH_CARDS='+JSON.stringify(
   [...new Set(result.cases.filter(x=>x.status==='numeric-multiset-disagreement')
     .map(x=>x.cardId))].sort().slice(0,30)));
