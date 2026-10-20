@@ -5,6 +5,7 @@ const data=window.UmaDemoData, core=window.UmaCore;
 const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
  (window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':
    window.UmaPreviewRequested==='facts'?'-event-preview-facts':
+   window.UmaPreviewRequested==='results'?'-event-preview-results':
    window.UmaPreviewRequested?'-event-preview':'');
 const blank=()=>({cardId:null,stage:4,choices:{},outcomes:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{},outcomes:{}}:blank())});
@@ -79,7 +80,7 @@ function render(){
       :data.meta.reviewedEventRecords
         ? '承認済み実イベント '+data.meta.reviewedEventRecords+'件（全件の収録は未確認）。'
         : '承認済み実イベントは0件です（公開JSONの検証成功時）。';
- const previewChainNotice=window.UmaPreviewRequested==='facts'
+ const previewChainNotice=['facts','results'].includes(window.UmaPreviewRequested)
   ? ' この試用DBでは連続イベントの選択による後続分岐・打ち切りをまだ復元していません。表示される全候補が同じ育成で選択可能とは限りません。'
   : '';
  const previewBanner=window.UmaPreviewRequested
@@ -142,11 +143,15 @@ function pickerCard(c){return `<button class="picker-card" data-action="set-card
 function pickerRefresh(){
  const el=document.getElementById('picker-cards');if(el)el.innerHTML=pickerCardsHtml();
 }
-function eventRewardHTML(rewards){if(!rewards||!rewards.length)return '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.level?`（Lv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
+function eventRewardHTML(rewards){if(!rewards||!rewards.length)return window.UmaPreviewActive
+ ? '<span class="muted">資料にヒント記載なし（実ゲームの獲得可否は不明）</span>'
+ : '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.level?`（Lv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
 function eventCandidateHTML(part){
  const guaranteed=(part.rewards||[]).length?eventRewardHTML(part.rewards):'';
  const alternatives=(part.outcomes||[]).map(o=>`<span class="tag condition">${esc(o.label)}時</span> ${eventRewardHTML(o.rewards)}`).join(' / ');
- return [guaranteed,alternatives].filter(Boolean).join(' / ')||'<span class="muted">スキル獲得なし</span>';
+ return [guaranteed,alternatives].filter(Boolean).join(' / ')||
+  (window.UmaPreviewActive?'<span class="muted">資料にヒント記載なし（実ゲームの獲得可否は不明）</span>':
+   '<span class="muted">スキル獲得なし</span>');
 }
 function resultSelector(part,slot,k,i,event,active,card){
  if(!part||!Array.isArray(part.outcomes))return '';
