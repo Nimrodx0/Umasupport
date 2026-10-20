@@ -85,7 +85,7 @@ test('2025 unique stage-order evidence distinguishes supported adjacency from mi
  assert.equal(historicPairEvidence('a','b',h),'2025-structural-stage-order-agrees');
  assert.equal(historicPairEvidence('b','a',h),'2025-stage-order-disagrees');
  assert.equal(historicPairEvidence('a','d',h),'2025-groups-differ-or-ambiguous');
- assert.equal(historicPairEvidence('a','missing',h),'missing-2025-stage-evidence');
+ assert.equal(historicPairEvidence('a','missing',h),'2025-next-endpoint-unmatched');
  assert.throws(()=>historicalStageIndex({...historic,chainGroups:[group([['a',1]]),group([['a',1]])]}),/collision/);
 });
 
