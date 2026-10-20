@@ -114,6 +114,47 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaPreviewActive),false);
   assert.equal(await page.evaluate(id=>window.UmaDemoData.cardById[id].events.length,target),0);
   assert.equal(await page.locator('#candidate-preview-warning').count(),0);
+  // A separate opt-in mode tests actual labeled success/failure variants.
+  await boot(page,origin+'/poc/live.html?eventPreview=results');
+  const resultInfo=await page.evaluate(()=>{
+   const m=window.UmaDemoData,meta=m.meta.previewEvents;
+   const rows=m.cards.flatMap(card=>(card.events||[]).flatMap(event=>
+    event.choices.flatMap(choice=>(choice.outcomes||[]).filter(out=>out.rewards.length)
+     .map(out=>({cardId:card.id,eventId:event.id,choiceId:choice.id,
+      outcomeId:out.id,rewardCount:out.rewards.length})))));
+   return {active:window.UmaPreviewActive,meta,approved:m.meta.reviewedEventRecords,
+    route:m.meta.runtimeSources.events.mode,target:rows[0]};
+  });
+  assert.equal(resultInfo.active,true);
+  assert.equal(resultInfo.approved,0);
+  assert.equal(resultInfo.route,'preview');
+  assert.ok(resultInfo.meta.records>0&&resultInfo.meta.records<=179);
+  assert.ok(resultInfo.target);
+  assert.match(await page.locator('#candidate-preview-warning').innerText(),
+   /連続イベントの選択による後続分岐・打ち切りをまだ復元していません/);
+  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await page.locator('#picker-search').fill('サポカ'+resultInfo.target.cardId);
+  await page.locator('button[data-action="set-card"][data-id="'+resultInfo.target.cardId+'"]').click();
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  const selector='input[data-event-choice][data-event="'+resultInfo.target.eventId+
+   '"][value="'+resultInfo.target.choiceId+'"]';
+  await page.locator(selector).click();
+  const select='select[data-event-outcome][data-event="'+resultInfo.target.eventId+'"]';
+  assert.ok(await page.locator(select+' option').count()>=3);
+  await page.locator(select).selectOption(resultInfo.target.outcomeId);
+  const resultRoutes=await page.evaluate(id=>{
+   const slot=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview-results'))
+     .decks.main[0].slots[0];
+   return window.UmaCore.directRoutes(window.UmaDemoData.cardById[slot.cardId],slot)
+    .filter(r=>r.eventId===id);
+  },resultInfo.target.eventId);
+  assert.equal(resultRoutes.length,resultInfo.target.rewardCount);
+  assert.ok(resultRoutes.every(r=>r.conditional&&r.condition.includes('未確認')));
+  assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview')),null);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),null);
+  await boot(page,origin+'/poc/live.html');
+  assert.equal(await page.evaluate(()=>window.UmaPreviewActive),false);
+  assert.equal(await page.evaluate(id=>window.UmaDemoData.cardById[id].events.length,resultInfo.target.cardId),0);
   await context.close();
   console.log('PASS: actual Chromium 398 card/879 event preview, conditional-only routes and isolated normal data');
  }finally{
