@@ -7,6 +7,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const {flattenRoutes,readDocuments}=require('./audit_gametora_branches.cjs');
+const {sourceInventory}=require('./build_whole_event_index.cjs');
 const {verifyDerived}=require('../src/checker_explicit_result_extract.cjs');
 
 function fail(s){throw Error('Phase2 reward comparison: '+s);}
@@ -25,6 +26,35 @@ function sourceHint(e){
  return {token:id+':'+Number(value)};
 }
 function bag(tokens){return tokens.slice().sort().join('|');}
+function compareChoiceLabel(a,b){
+ const norm=x=>String(x??'').normalize('NFKC').replace(/\s+/g,' ').trim();
+ const loose=x=>norm(x).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'');
+ const l=norm(a),r=norm(b);
+ if(!l||!r)return 'label-not-comparable';
+ if(l===r)return 'label-exact-provisional';
+ if(loose(l)===loose(r))return 'label-typographic-provisional';
+ return 'label-disagreement';
+}
+function buildCheckerLabelIndex({checkerRaw,rosterText,aliases}){
+ const {inventory,model,activeAliases}=sourceInventory({checker:checkerRaw,rosterText,aliases});
+ const byCard=new Map();
+ for(const card of inventory.cards){
+  const modelCard=model.cardById?.[card.cardId]||model.cards.find(x=>x.id===card.cardId);
+  if(!modelCard)fail('no canonical card '+card.cardId);
+  const target=card.join==='reviewed-name-alias'?activeAliases[card.cardId]:modelCard.name;
+  const normalized=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim();
+  const hits=Object.entries(checkerRaw.Skills[card.rarity]).filter(([name])=>normalized(name)===normalized(target));
+  if(hits.length!==1||hits[0][1].Events.length!==card.events.length)
+   fail('Checker identity mismatch '+card.cardId);
+  byCard.set(card.cardId,hits[0][1].Events.map((ev,i)=>{
+   const choices=Object.values(ev)[0];
+   if(!Array.isArray(choices)||choices.length!==card.events[i].optionCount)
+    fail('Checker choice count mismatch '+card.cardId+':'+i);
+   return choices.map(x=>x.Title);
+  }));
+ }
+ return byCard;
+}
 const PRIOR=new Set(['both_previous_chain_good','one_previous_chain_good','both_previous_chain_bad','result_good','result_bad','result_average','success','fail']);
 function analyzeChoice(checker,source){
  if(!checker||!Array.isArray(checker.results)||!source||typeof source!=='object')
@@ -82,7 +112,7 @@ function analyzeChoice(checker,source){
     status==='checker-only-numeric-hints'||status==='source-only-numeric-hints'?
     {checker:checkerTokens.slice().sort(),gameTora:sourceTokens.slice().sort()}:null};
 }
-function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
+function audit({index,checkerFacts,gameToraDocuments,checkerCandidates,checkerRaw,rosterText,aliases}){
  if(index?.dataKind!=='umasupport-whole-event-provisional-index'||
    index.publicationApproval!==false||index.gameVerified!==false||
    index.eventMatchesProvisionalOnly!==true||
@@ -102,6 +132,7 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
   source.set(String(doc.id),doc.events_ja&&Object.keys(doc.events_ja).length?
     Object.values(doc.events_ja):Object.values(doc.events||{}));
  }
+ const rawLabels=buildCheckerLabelIndex({checkerRaw,rosterText,aliases});
  const facts=new Map(checkerFacts.cards.map(x=>[x.cardId,x]));
  if(facts.size!==checkerFacts.cards.length)fail('Checker cards duplicate');
  const counts={cards:563,matchedEvents:0,eventsWithChoiceCountMismatch:0,
@@ -109,6 +140,7 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
   comparedNumericMentionsChecker:0,comparedNumericMentionsGameTora:0,
   matchedP0Events:0,unpairedP0Events:0,
   resultSignatureAgree:0,resultSignatureDisagree:0,
+  choiceLabelStatuses:{},numericAgreementsWithLabelSupport:0,
   categoryCounts:{}};
  const cases=[],nonComparable=[],sourcesReviewed=new Set();
  for(const card of index.cards){
@@ -136,8 +168,14 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
     continue;
    }
    for(let i=0;i<ev.choices.length;i++){
+    const labels=rawLabels.get(card.cardId)?.[pair.checkerOrdinal-1];
+    if(!labels||labels.length!==ev.choices.length)fail('Checker label index mismatch');
+    const choiceLabelStatus=compareChoiceLabel(labels[i],sourceEvent.choices[i].label);
     const result=analyzeChoice(ev.choices[i],sourceEvent.choices[i]);
     counts.choicesCompared++;
+    counts.choiceLabelStatuses[choiceLabelStatus]=(counts.choiceLabelStatuses[choiceLabelStatus]||0)+1;
+    if(result.status==='numeric-multiset-agreement'&&choiceLabelStatus!=='label-disagreement'&&
+       choiceLabelStatus!=='label-not-comparable')counts.numericAgreementsWithLabelSupport++;
     if(result.checkerExplicit)counts.checkerChoicesWithExplicitResults++;
     if(result.sourceMultipleOutcomes)counts.sourceChoicesWithMultipleOutcomes++;
     counts.comparedNumericMentionsChecker+=result.checkerNumericHints;
@@ -148,7 +186,7 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
     cases.push({cardId:card.cardId,sourceKey:pair.sourceKey,
       checkerOrdinal:pair.checkerOrdinal,sourceOrdinal:pair.sourceOrdinal,
       sourceSection:pair.sourceSection,choiceOrdinal:i+1,
-      matchMethod:pair.matchMethod,...result});
+      matchMethod:pair.matchMethod,choiceLabelStatus,...result});
    }
   }
   counts.matchedP0Events+=card.p0PairedCount;
@@ -171,12 +209,15 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates}){
   counts,nonComparable,cases};
 }
 function main(args){
- if(args.length!==3)fail('usage: node poc/tools/audit_whole_event_rewards.cjs <whole-index.json> <snapshot-dir> <numeric-audit-output.json>');
- const [indexPath,gtDir,out]=args;
+ if(args.length!==5)fail('usage: node poc/tools/audit_whole_event_rewards.cjs <whole-index.json> <snapshot-dir> <checker-Events.json> <support-card.txt> <numeric-audit-output.json>');
+ const [indexPath,gtDir,checkerPath,rosterPath,out]=args;
  const result=audit({
   index:JSON.parse(fs.readFileSync(indexPath,'utf8')),
   checkerFacts:require('../data/candidates/checker_explicit_result_facts.v1.json'),
   checkerCandidates:require('../data/candidates/checker_event_hints.v1.json'),
+  checkerRaw:JSON.parse(fs.readFileSync(checkerPath,'utf8').replace(/^\uFEFF/,'')),
+  rosterText:fs.readFileSync(rosterPath,'utf8'),
+  aliases:require('../config/checker-name-aliases.json'),
   gameToraDocuments:readDocuments(gtDir)});
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n');
@@ -195,4 +236,4 @@ function main(args){
     .map(x=>x.cardId))].sort().slice(0,30)));
 }
 if(require.main===module)main(process.argv.slice(2));
-module.exports={numericHint,sourceHint,analyzeChoice,audit};
+module.exports={numericHint,sourceHint,compareChoiceLabel,buildCheckerLabelIndex,analyzeChoice,audit};
