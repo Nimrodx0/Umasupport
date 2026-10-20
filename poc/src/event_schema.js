@@ -105,6 +105,25 @@
        }else constraints.set(r.eventId,{choiceId:r.choiceId,outcomeId:r.outcomeId});
      }
    }
+   // Individual result rewards can depend on several preceding result states.
+   // This is DNF: at least one "all" clause must hold. Each clause is
+   // validated independently because mutually exclusive results can be ORed.
+   function outcomeClauses(out,where){
+     if(out.requires===undefined)return [];
+     const gate=out.requires;
+     if(!obj(gate)||Object.keys(gate).length!==1||!Array.isArray(gate.any)||
+        gate.any.length<1)fail(where+': 結果の条件は{any:[{all:[...]}]}');
+     const clauses=[],seen=new Set();
+     for(const clause of gate.any){
+       if(!obj(clause)||Object.keys(clause).length!==1||!Array.isArray(clause.all)||
+          clause.all.length===0)fail(where+': 結果条件のOR要素が不正');
+       const key=JSON.stringify(clause.all);
+       if(seen.has(key))fail(where+': 重複する結果条件');
+       seen.add(key);checkCompatible(clause.all,where);
+       clauses.push(clause.all);
+     }
+     return clauses;
+   }
    for(const e of events){
      checkCompatible(prerequisites(e),e.id);
      for(const r of prerequisites(e))validateRequirement(r,e);
@@ -116,6 +135,16 @@
        }
      }
    }
+   for(const e of events){
+     const parts=e.type==='auto'?[e]:e.choices;
+     for(const part of parts)for(const out of part.outcomes||[]){
+       for(const clause of outcomeClauses(out,e.id+'/'+(part.id||'auto')+'/'+out.id))
+        for(const r of clause){
+          if(r.eventId===e.id)fail(e.id+': 結果条件が自己参照');
+          validateRequirement(r,e);
+        }
+     }
+   }
    const visiting=new Set(),done=new Set();
    function visit(e){
      if(visiting.has(e.id))fail(e.id+': 到達条件が循環');
@@ -124,6 +153,10 @@
      for(const r of prerequisites(e))visit(byId.get(r.eventId));
      if(e.type==='choice')for(const c of e.choices)
        for(const r of prerequisites(c))visit(byId.get(r.eventId));
+     for(const part of e.type==='auto'?[e]:e.choices)
+       for(const out of part.outcomes||[])
+         for(const clause of outcomeClauses(out,e.id+'/'+out.id))
+           for(const r of clause)visit(byId.get(r.eventId));
      visiting.delete(e.id);done.add(e.id);
    }
    for(const e of events)visit(e);
