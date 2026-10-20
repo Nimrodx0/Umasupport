@@ -15,7 +15,7 @@ class DirectHistoricalChainTests(unittest.TestCase):
                     exact=fingerprint(title), loose=fingerprint(title, True))
 
     def old(self, title, story_id, stage, maximum=3, flag=0):
-        return dict(storyId=str(story_id), exact=fingerprint(title),
+        return dict(storyId=str(story_id), method="title-exact", exact=fingerprint(title),
                     loose=fingerprint(title, True),
                     stage=stage, maximum=maximum, flag=flag)
 
