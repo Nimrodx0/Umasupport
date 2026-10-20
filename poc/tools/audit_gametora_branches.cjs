@@ -78,10 +78,12 @@ function audit({index,queue,documents,sourceRevision}){
      !/^[0-9a-f]{40}$/.test(sourceRevision))fail('invalid inputs/provenance');
   const roster=new Set(index.cards.map(x=>x.cardId));
   if(roster.size!==index.cards.length)fail('roster duplicates');
-  const reviewedCards=new Set(), p0EventCards=new Map();
+  const p0EventCards=new Map(),checkerStopCards=new Set(),checkerPriorCards=new Set();
   for(const r of queue.rows){
     if(!roster.has(r.cardId)||!['P0','P1','P2'].includes(r.priority))fail('review queue mismatch');
     if(r.priority==='P0')p0EventCards.set(r.cardId,(p0EventCards.get(r.cardId)||0)+1);
+    if(r.reasonCodes?.includes('OBSERVED_CHAIN_TERMINATION'))checkerStopCards.add(r.cardId);
+    if(r.reasonCodes?.includes('PRIOR_RESULT_CONTEXT_UNVERIFIED'))checkerPriorCards.add(r.cardId);
   }
   const found=new Map();
   for(const doc of documents){
@@ -92,7 +94,10 @@ function audit({index,queue,documents,sourceRevision}){
   const totals={sourceCardFiles:found.size,rosterCards:roster.size,reviewQueueEvents:queue.rows.length,
     presentRosterCards:0,missingRosterCards:0,extraneousSourceCards:0,
     cardsWithChain:0,cardsWithTerminations:0,cardsWithPriorDependence:0,
-    p0EventsOnPresentCards:0,p0EventsOnMissingCards:0,p0CardsOnPresentSource:0};
+    p0EventsOnPresentCards:0,p0EventsOnMissingCards:0,p0CardsOnPresentSource:0,
+    checkerStopCards:checkerStopCards.size,checkerPriorCards:checkerPriorCards.size,
+    checkerAndSourceStopCardOverlap:0,checkerOnlyStopCards:0,sourceOnlyStopCards:0,
+    checkerAndSourcePriorCardOverlap:0};
   const metricKeys=['chainEvents','chainChoices','expandedOutcomeRoutes','terminalRoutes',
     'eventsWithTerminal','choicesWithTerminal','eventsWithPriorDependence',
     'previousConditionMarkers','conditionalSegments','skillHintMentions',
@@ -107,12 +112,19 @@ function audit({index,queue,documents,sourceRevision}){
       if(item.chainEvents)totals.cardsWithChain++;
       if(item.terminalRoutes)totals.cardsWithTerminations++;
       if(item.eventsWithPriorDependence)totals.cardsWithPriorDependence++;
+      if(item.terminalRoutes&&checkerStopCards.has(id))totals.checkerAndSourceStopCardOverlap++;
+      if(item.terminalRoutes&&!checkerStopCards.has(id))totals.sourceOnlyStopCards++;
+      if(item.eventsWithPriorDependence&&checkerPriorCards.has(id))totals.checkerAndSourcePriorCardOverlap++;
       for(const key of metricKeys)totals[key]+=item[key];
-      cardRows.push({...item,p0CandidateEvents:p0});
+      cardRows.push({...item,p0CandidateEvents:p0,
+        checkerStopObserved:checkerStopCards.has(id),
+        checkerPriorObserved:checkerPriorCards.has(id)});
     }else{totals.missingRosterCards++;totals.p0EventsOnMissingCards+=p0;
+
       cardRows.push({cardId:id,sourceMissing:true,p0CandidateEvents:p0});}
   }
   totals.extraneousSourceCards=[...found.keys()].filter(id=>!roster.has(id)).length;
+  totals.checkerOnlyStopCards=checkerStopCards.size-totals.checkerAndSourceStopCardOverlap;
   // These figures compare CARD identity only. Do NOT claim GameTora's events are
   // linked to Checker sourceKeys or have independently verified story IDs.
   return {schemaVersion:1,dataKind:'game-tora-structural-audit',
