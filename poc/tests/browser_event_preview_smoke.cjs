@@ -169,6 +169,55 @@ async function main(){
   assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30201'].events.length),0);
   assert.equal(await expandedPage.locator('#candidate-preview-warning').count(),0);
   await expandedContext.close();
+  // Real Chromium acceptance for cumulative OR-of-AND result restrictions.
+  // This model is an isolated test injection, NOT public event publication.
+  const cumulativeCtx=await browser.newContext(),cumulativePage=await cumulativeCtx.newPage();
+  await mock(cumulativePage);
+  await boot(cumulativePage,origin+'/poc/live.html?eventPreview=30311');
+  const cumulativeFixture=require('../src/editorial_cumulative_result_30103.cjs').auditFixture({
+    candidate:require('../data/candidates/checker_event_hints.v1.json'),
+    facts:require('../data/candidates/checker_explicit_result_facts.v1.json'),
+    p0Queue:require('../data/candidates/checker_explicit_result_review_queue.v1.json'),
+    audit:require('../data/candidates/editorial_cumulative_result_30103.v1.json')
+  });
+  await cumulativePage.evaluate((events)=>{
+    const data=window.UmaDemoData,card=data.cardById['30103'];
+    card.events=events;
+    data.skillById['200461']={id:'200461',name:'獲得候補１'};
+    data.skillById['200462']={id:'200462',name:'獲得候補２'};
+  },cumulativeFixture.events);
+  await cumulativePage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await cumulativePage.locator('#picker-search').fill('サポカ102');
+  await cumulativePage.locator('button[data-action="set-card"][data-id="30103"]').click();
+  await cumulativePage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  const [firstStage,secondStage,thirdStage]=cumulativeFixture.events.map(e=>e.id);
+  const outcomeSelect=id=>cumulativePage.locator('select[data-event-outcome][data-event="'+id+'"]');
+  await outcomeSelect(firstStage).selectOption('success');
+  await outcomeSelect(secondStage).selectOption('failure');
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').isDisabled(),true);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').isDisabled(),false);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="failure"]').isDisabled(),true);
+  await outcomeSelect(thirdStage).selectOption('success');
+  const firstResult=await cumulativePage.evaluate(()=>{
+    const settings=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview'));
+    const slot=settings.decks.main[0].slots[0];
+    return window.UmaCore.directRoutes(window.UmaDemoData.cardById['30103'],slot)
+      .filter(r=>r.skillId==='200461').map(r=>r.level);
+  });
+  assert.deepEqual(firstResult,[2]);
+  await outcomeSelect(secondStage).selectOption('success');
+  assert.equal(await outcomeSelect(thirdStage).inputValue(),'');
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="great"]').isDisabled(),false);
+  assert.equal(await outcomeSelect(thirdStage).locator('option[value="success"]').isDisabled(),true);
+  await outcomeSelect(thirdStage).selectOption('great');
+  const secondResult=await cumulativePage.evaluate(()=>{
+    const settings=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview'));
+    return window.UmaCore.directRoutes(window.UmaDemoData.cardById['30103'],settings.decks.main[0].slots[0])
+      .filter(r=>r.skillId==='200461').map(r=>r.level);
+  });
+  assert.deepEqual(secondResult,[3]);
+  await cumulativeCtx.close();
+
   console.log('PASS: opt-in SSR30311 candidate loads, choices affect skill routes, normal storage and release count isolated');
  }finally{
   await browser?.close();
