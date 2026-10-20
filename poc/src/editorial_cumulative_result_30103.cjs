@@ -67,11 +67,9 @@ function validate({candidate,facts,p0Queue,audit}){
    observed[k]=r.resultKind;
   }
  }
- if(tested.size!==3||JSON.stringify(observed)!==JSON.stringify(expected))
-  // Stable ordering isn't expected from publishers; compare values per combination.
-  for(const k of Object.keys(expected))
-    if(observed[k]!==expected[k])fail('前2段の結果と最終報酬が一致しません');
- if(Object.keys(observed).length!==4)fail('全4通りを満たしません');
+ if(tested.size!==3||Object.keys(observed).length!==4||
+    Object.keys(expected).some(k=>observed[k]!==expected[k]))
+  fail('前2段の結果と最終報酬が一致しません');
  const available=new Map();
  for(const e of original.events.filter(x=>x.sourceEventOrdinal<=3))
   for(const result of e.choices[0].results)

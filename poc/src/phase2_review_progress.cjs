@@ -5,8 +5,9 @@
  */
 const {join}=require('./phase2_event_review_lookup.cjs');
 const {validate:validateEditorial}=require('./editorial_branch_crosscheck.cjs');
+const {validate:validateCumulative}=require('./editorial_cumulative_result_30103.cjs');
 const fail=s=>{throw Error('Phase2レビュー進捗台帳: '+s);};
-function build({queue,index,candidate,facts,audit}){
+function build({queue,index,candidate,facts,audit,cumulativeAudit=null}){
  const joined=join({queue,index});
  validateEditorial({candidate,facts,audit,p0Queue:queue});
  const links=new Map(),issues=new Map(),seen=new Set();
@@ -24,6 +25,16 @@ function build({queue,index,candidate,facts,audit}){
    const event=source.events.find(e=>e.sourceEventOrdinal===issue.eventOrdinal);
    if(!event)fail('資料間不一致が未知のイベントを参照');
    issues.set(event.sourceKey,(issues.get(event.sourceKey)||0)+1);
+  }
+ }
+ let cumulativeStats=null;
+ if(cumulativeAudit!==null){
+  cumulativeStats=validateCumulative({candidate,facts,p0Queue:queue,audit:cumulativeAudit});
+  for(const stage of cumulativeAudit.stages){
+   if(links.has(stage.sourceKey))fail('結果依存の独立照合が既存監査と重複');
+   links.set(stage.sourceKey,{branchCount:stage.resultKinds.length,
+    crossPublisherSourceCount:cumulativeAudit.sources.length,
+    actualGamePlayVerified:false,publicationApproval:false});
   }
  }
  const statusCounts={publisherCorroborated:0,sourceConflictOpen:0,awaitingReview:0};
@@ -46,14 +57,16 @@ function build({queue,index,candidate,facts,audit}){
  });
  const cardRows=index.cards.map(c=>cards.get(c.cardId)||{cardId:c.cardId,
    candidateEvents:0,P0:0,P1:0,P2:0,corroboratedEvents:0,eventsWithOpenSourceConflicts:0});
- if(rows.length!==2109||cardRows.length!==563||statusCounts.publisherCorroborated!==4||
+ if(rows.length!==2109||cardRows.length!==563||statusCounts.publisherCorroborated!==4+(cumulativeStats?.transitionEvents||0)||
     statusCounts.awaitingReview+statusCounts.sourceConflictOpen+statusCounts.publisherCorroborated!==2109)
   fail('全件候補母数または独立監査の照合不一致');
  return {schemaVersion:1,dataKind:'phase2-review-progress-ledger',
   publicationApproval:false,gamePlayVerificationComplete:false,
   totals:{populationCards:563,candidateCards:queue.stats.eventCandidates?facts.cards.length:0,
-   candidates:rows.length,corroboratedTransitions:audit.stats.transitionBranches,
-   recordedAwardChecks:audit.stats.awardChecks,openPublisherDisagreements:audit.stats.unresolvedDifferences,
+   candidates:rows.length,corroboratedTransitions:audit.stats.transitionBranches+(cumulativeStats?.sourceOutcomeStates||0),
+   recordedAwardChecks:audit.stats.awardChecks+(cumulativeStats?.numericAwardChecks||0),
+   unresolvedNumericSkillFacts:cumulativeStats?.unresolvedSkillFacts||0,
+   openPublisherDisagreements:audit.stats.unresolvedDifferences,
    ...statusCounts},cards:cardRows,rows};
 }
 function query(data,{priority=null,cardId=null,status=null,limit=30}={}){
