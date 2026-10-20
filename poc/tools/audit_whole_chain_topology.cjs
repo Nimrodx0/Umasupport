@@ -83,7 +83,42 @@ function compareCheckerStop(stage,linkedPairs,reviewCases,checkerEvent){
   choicesNotIdentityAligned:unverified,
   issues};
 }
-function build({index,sourceDocuments,checkerFacts,rewardAudit}){
+function historicalStageIndex(history){
+ if(history?.dataKind!=='provisional-historical-chain-stage-audit'||
+    history.approvalState!=='UNREVIEWED_NOT_FOR_PUBLICATION'||
+    history.forSkillGrant!==false||!Array.isArray(history.chainGroups)||
+    history.totals?.stageGroups!==history.chainGroups.length)
+  fail('historical stage snapshot/provenance invalid');
+ const bySource=new Map(),groups=[];
+ for(const group of history.chainGroups){
+  if(!Array.isArray(group.events)||!['stage-complete-unique','stage-incomplete',
+    'stage-ambiguous'].includes(group.structuralStatus))
+   fail('historical chain group shape');
+  const id=groups.length;
+  groups.push(group);
+  for(const e of group.events){
+   if(bySource.has(e.sourceKey)||!Number.isInteger(e.stage)||
+      e.stage<1||e.stage>group.chainMax)fail('historical chain stage collision');
+   bySource.set(e.sourceKey,{groupId:id,stage:e.stage,
+    structuralStatus:group.structuralStatus,
+    chainMax:group.chainMax});
+  }
+ }
+ return {bySource,groups};
+}
+function historicPairEvidence(firstKey,nextKey,historyIndex){
+ const a=historyIndex.bySource.get(firstKey),b=historyIndex.bySource.get(nextKey);
+ if(!a||!b)return 'missing-2025-stage-evidence';
+ if(a.groupId===b.groupId&&a.structuralStatus==='stage-complete-unique'&&
+    b.structuralStatus==='stage-complete-unique'&&b.stage===a.stage+1)
+  return '2025-structural-stage-order-agrees';
+ if(a.groupId===b.groupId&&b.stage!==a.stage+1)
+  return '2025-stage-order-disagrees';
+ if(a.groupId!==b.groupId)
+  return '2025-groups-differ-or-ambiguous';
+ return '2025-stage-evidence-incomplete';
+}
+function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit}){
  if(index?.dataKind!=='umasupport-whole-event-provisional-index'||
     index.publicationApproval!==false||index.routeTopologyVerified!==false||
     !Array.isArray(index.cards)||index.cards.length!==563||
@@ -100,6 +135,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
      docs.has(String(doc.id)))fail('duplicate/invalid support document');
   docs.set(String(doc.id),sourceEvents(doc));
  }
+ const historyIndex=historicalStageIndex(historicalAudit);
  const facts=new Map(checkerFacts.cards.map(x=>[x.cardId,new Map(x.events.map(e=>[e.sourceKey,e]))]));
  const caseBySource=new Map();
  for(const x of rewardAudit.cases){
@@ -112,6 +148,8 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
   stageEventsWithTerminal:0,stageEventsWithPrior:0,priorMarkers:0,guardedRoutes:0,
   mixedTerminationChoices:0,
   proposedAdjacentStageLinks:0,verifiedAdjacentStageLinks:0,
+  historicallyOrderCorroborated:0,historicallyOrderConflicted:0,
+  historicallyGroupsDiffer:0,historicallyEvidenceMissingOrIncomplete:0,
   stageEventsWithSourceSuccessor:0,stageEventsAtTail:0,
   nonTailStagesWithTerminal:0,nonTailStagesWithoutTerminal:0,
   nonTailStagesAllTerminal:0,nonTailStagesSomeTerminal:0,
@@ -143,6 +181,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
    const stage=analyzeStage(ev,sourceOrdinal,i+1);
    const hasNext=i<stageEvents.length-1;
    const nextStage=hasNext?stageEvents[i+1]:null;
+   const nextPair=nextStage?links.get(nextStage.sourceOrdinal):null;
    const paired=links.get(sourceOrdinal),c=paired?facts.get(cardId)?.get(paired.sourceKey):null;
    const crosswalk=paired?compareCheckerStop(stage,paired,
     caseBySource.get(cardId+':'+sourceOrdinal),c):{status:'source-only-event'};
@@ -150,7 +189,15 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
    const goodCrosswalk=paired&&paired.choiceCountAgreement===true;
    if(paired)totals.eventCrosswalkMatched++;else totals.eventCrosswalkUnmatched++;
    if(!paired)totals.sourceOnlyChainEvents++;
-   if(hasNext)totals.stageEventsWithSourceSuccessor++;
+   let historyStatus=null;
+   if(hasNext){
+    historyStatus=historicPairEvidence(paired?.sourceKey,nextPair?.sourceKey,historyIndex);
+    if(historyStatus==='2025-structural-stage-order-agrees')totals.historicallyOrderCorroborated++;
+    else if(historyStatus==='2025-stage-order-disagrees')totals.historicallyOrderConflicted++;
+    else if(historyStatus==='2025-groups-differ-or-ambiguous')totals.historicallyGroupsDiffer++;
+    else totals.historicallyEvidenceMissingOrIncomplete++;
+    totals.stageEventsWithSourceSuccessor++;
+   }
    else totals.stageEventsAtTail++;
    totals.sourceChainEvents++;totals.chainChoices+=stage.choiceCount;
    totals.chainOutcomeRoutes+=stage.routeCount;
@@ -185,13 +232,14 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
    if(crosswalk.choicesNotIdentityAligned)reasons.push('CHOICE_IDENTITY_UNKNOWN');
    // Proposed adjacency is presentation order, never a verified route.
    const candidateNext=nextStage?{sourceOrdinal:nextStage.sourceOrdinal,
-    chainOrdinal:i+2,status:'UNVERIFIED_SOURCE_ORDER_ADJACENCY'}:null;
+    chainOrdinal:i+2,status:'UNVERIFIED_SOURCE_ORDER_ADJACENCY',
+    historical2025OrderEvidence:historyStatus}:null;
    stages.push({
     ...stage,checkerSourceKey:paired?.sourceKey||null,
     checkerMatchMethod:paired?.matchMethod||null,
     checkerChoiceCountAgreement:paired?.choiceCountAgreement??null,
     nextCandidate:candidateNext,edgeVerified:false,
-    allRoutesKnown:stage.routeCount>0,
+    sourceRoutesEnumerated:stage.routeCount>0,gameRoutesVerified:false,
     crossSourceStopReview:crosswalk,reasons});
    reviewQueue.push({cardId,chainOrdinal:i+1,sourceOrdinal,
     checkerSourceKey:paired?.sourceKey||null,
@@ -212,13 +260,17 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit}){
     totals.proposedAdjacentStageLinks!==totals.sourceChainEvents-totals.cardsWithChain||
     totals.nonTailStagesWithTerminal+totals.nonTailStagesWithoutTerminal!==totals.proposedAdjacentStageLinks||
     totals.eventCrosswalkMatched+totals.eventCrosswalkUnmatched!==totals.sourceChainEvents||
+    totals.historicallyOrderCorroborated+totals.historicallyOrderConflicted+
+    totals.historicallyGroupsDiffer+totals.historicallyEvidenceMissingOrIncomplete!==
+     totals.proposedAdjacentStageLinks||
     totals.verifiedAdjacentStageLinks!==0||
     totals.chainEventsRequiringTopologyReview!==totals.sourceChainEvents)
   fail('chain population arithmetic or pinned snapshot drift');
  const priorityCounts={P0:0,P1:0,P2:0};
  for(const x of reviewQueue)priorityCounts[x.priority]++;
  return {schemaVersion:1,dataKind:'umasupport-whole-chain-topology-review',
-  sourcePins:{...index.sourcePins,checkerSha256:checkerFacts.sourcePins.checkerSha256},
+  sourcePins:{...index.sourcePins,checkerSha256:checkerFacts.sourcePins.checkerSha256,
+   historical2025Master:historicalAudit.sourcePins.historicalMasterSha256},
   forSkillGrant:false,releaseApproved:false,chainEdgesVerified:false,gameVerified:false,
   sourceOriginalTextIncluded:false,stats:{...totals,priorityCounts},
   semantics:{
@@ -234,6 +286,7 @@ function main(args){
  const x=build({index:JSON.parse(fs.readFileSync(indexPath,'utf8')),
   rewardAudit:JSON.parse(fs.readFileSync(rewardPath,'utf8')),
   checkerFacts:require('../data/candidates/checker_explicit_result_facts.v1.json'),
+  historicalAudit:require('../data/candidates/checker_chain_stage_audit.v1.json'),
   sourceDocuments:readDocuments(folder)});
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(x,null,2)+'\n');
@@ -242,4 +295,4 @@ function main(args){
   .filter(e=>e.priority==='P0').slice(0,70)));
 }
 if(require.main===module)main(process.argv.slice(2));
-module.exports={analyzeStage,compareCheckerStop,build};
+module.exports={analyzeStage,compareCheckerStop,historicalStageIndex,historicPairEvidence,build};
