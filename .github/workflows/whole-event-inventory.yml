@@ -11,6 +11,8 @@ on:
       - 'poc/tests/whole_chain_topology.test.cjs'
       - 'poc/tools/audit_direct_historical_chain.py'
       - 'poc/tests/test_direct_historical_chain.py'
+      - 'poc/tools/inspect_direct_historical_gaps.py'
+      - 'poc/tests/test_targeted_historical_gaps.py'
       - 'docs/phase2-whole-chain-topology-20261020.md'
       - '.github/workflows/whole-event-inventory.yml'
       - 'docs/phase2-whole-event-intake-plan-20261020.md'
@@ -89,6 +91,15 @@ jobs:
             --source-dir gt-snapshot/server/data/events/gametora \
             --topology whole-event-output/whole_chain_topology_review.v1.json \
             --output whole-event-output/whole_direct_2025_chain.v1.json
+      - name: Test zero-assumption historical gap diagnosis
+        run: python3 -m unittest discover -s umasupport/poc/tests -p 'test_targeted_historical_gaps.py' -v
+      - name: Determine if older stage records exist for four unmatched historical pairs
+        run: |
+          python3 umasupport/poc/tools/inspect_direct_historical_gaps.py \
+            --master "$RUNNER_TEMP/historical-master/master.mdb" \
+            --source-dir gt-snapshot/server/data/events/gametora \
+            --direct-audit whole-event-output/whole_direct_2025_chain.v1.json \
+            --output whole-event-output/whole_targeted_2025_story_gaps.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
