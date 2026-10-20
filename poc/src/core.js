@@ -49,6 +49,14 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
     const chosen=outcomes[parent.id];
     if(chosen!==undefined&&chosen!==''&&!variants.some(o=>o.id===chosen))
       return {status:'blocked',conditions:[]};
+    // A recorded outcome can be impossible after earlier selections.
+    if(chosen){
+      const selected=variants.find(o=>o.id===chosen);
+      if(!selected)return {status:'blocked',conditions:[]};
+      const selectedGate=outcomeReachability(selected,parent,choices,events,outcomes);
+      if(selectedGate.status==='blocked')return selectedGate;
+      conditions.push(...selectedGate.conditions);
+    }
     if(r.outcomeId!==undefined){
       const target=variants.find(o=>o.id===r.outcomeId);
       if(!target||target.terminal===true||chosen&&chosen!==target.id)
@@ -67,6 +75,25 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
     }
   }
   return {status:conditions.length?'conditional':'reachable',conditions:[...new Set(conditions)]};
+}
+// Restrict an outcome by a disjunction of conjunctions on earlier events.
+// An unresolved parent can make a reward conditional, never guaranteed.
+function outcomeReachability(outcome,event,choices,events,outcomes={}){
+  const base=reachability(event,choices,events,outcomes);
+  if(base.status==='blocked'||!outcome)return {status:'blocked',conditions:[]};
+  if(!outcome.requires)return base;
+  const clauses=outcome.requires.any||[];
+  if(!clauses.length)return {status:'blocked',conditions:[]};
+  let possible=[];
+  for(let i=0;i<clauses.length;i++){
+    const gate=reachability({id:event.id+'#outcome#'+outcome.id+'#'+i,
+      requires:{all:clauses[i].all||[]}},choices,events,outcomes);
+    if(gate.status==='reachable')return base;
+    if(gate.status==='conditional')possible.push(gate.conditions);
+  }
+  if(!possible.length)return {status:'blocked',conditions:[]};
+  return {status:'conditional',conditions:[...new Set([...base.conditions,
+    '前段イベントの結果の組合せによる条件'])]};
 }
 function choiceReachability(choice,event,choices,events,outcomes={}){
   const base=reachability(event,choices,events,outcomes);
@@ -108,7 +135,10 @@ function directRoutes(card,config){
       if(chosen&& !variants.some(o=>o.id===chosen))return;
       for(const outcome of variants){
         if(chosen&&chosen!==outcome.id)continue;
-        add(outcome.rewards,event,choiceLabel,(outcome.label||outcome.id)+'時',conditions);
+        const gate=outcomeReachability(outcome,event,choices,events,outcomes);
+        if(gate.status==='blocked')continue;
+        add(outcome.rewards,event,choiceLabel,(outcome.label||outcome.id)+'時',
+          [...conditions,...gate.conditions]);
       }
     }else add(part.rewards,event,choiceLabel,null,conditions);
   }
@@ -226,7 +256,10 @@ function clearDependentState(card,choices,outcomes,eventId){
     for(const e of card.events||[]){
       const selected=(e.choices||[]).find(c=>c.id===nextChoices[e.id]);
       const affectedChoice=selected&&prerequisites(selected).some(r=>r.eventId===parent);
-      if(prerequisites(e).some(r=>r.eventId===parent)||affectedChoice){
+      const affectedResult=(e.type==='auto'?[e]:e.choices||[]).some(part=>
+        (part.outcomes||[]).some(out=>(out.requires?.any||[]).some(clause=>
+          (clause.all||[]).some(r=>r.eventId===parent))));
+      if(prerequisites(e).some(r=>r.eventId===parent)||affectedChoice||affectedResult){
         delete nextChoices[e.id];delete nextOutcomes[e.id];
         queue.push(e.id);
       }
@@ -237,7 +270,7 @@ function clearDependentState(card,choices,outcomes,eventId){
 function clearDescendants(card,choices,eventId){
   return clearDependentState(card,choices,{},eventId).choices;
 }
-const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability};
+const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability,outcomeReachability};
 if(typeof module!=='undefined'&&module.exports)module.exports=core;
 g.UmaCore=core;
 })(typeof globalThis!=='undefined'?globalThis:this);

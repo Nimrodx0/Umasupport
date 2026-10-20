@@ -35,3 +35,17 @@ test('corrupt publisher audit cannot elevate unreviewed evidence',()=>{
  mismatch.cards[0].transitionStages[0].branches.pop();
  a.throws(()=>build({...args,audit:mismatch}),/網羅/);
 });
+
+test('cumulative evidence adds three separate P0 events without upgrading publication or source conflicts',()=>{
+ const extra=require('../data/candidates/editorial_cumulative_result_30103.v1.json');
+ const x=build({...args,cumulativeAudit:extra});
+ a.equal(x.totals.publisherCorroborated,7);
+ a.equal(x.totals.corroboratedTransitions,17);
+ a.equal(x.totals.recordedAwardChecks,12);
+ a.equal(x.totals.unresolvedNumericSkillFacts,1);
+ a.equal(x.totals.openPublisherDisagreements,2);
+ const rows=query(x,{cardId:'30103',status:'publisher-corroborated'});
+ a.equal(rows.total,3);
+ a.ok(rows.rows.every(r=>r.priority==='P0'&&!r.approvedForProduction&&!r.routeVerifiedInGame));
+ a.equal(x.totals.awaitingReview+x.totals.publisherCorroborated+x.totals.sourceConflictOpen,2109);
+});

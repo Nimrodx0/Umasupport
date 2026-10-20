@@ -6,7 +6,8 @@ const args={
  index:require('../data/candidates/event_coverage_index.v1.json'),
  candidate:require('../data/candidates/checker_event_hints.v1.json'),
  facts:require('../data/candidates/checker_explicit_result_facts.v1.json'),
- audit:require('../data/candidates/editorial_branch_crosscheck.v1.json')
+ audit:require('../data/candidates/editorial_branch_crosscheck.v1.json'),
+ cumulativeAudit:require('../data/candidates/editorial_cumulative_result_30103.v1.json')
 };
 function main(){
  const ledger=build(args),argv=process.argv.slice(2);

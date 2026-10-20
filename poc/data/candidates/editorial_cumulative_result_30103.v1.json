@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "umasupport-cumulative-result-editorial-audit",
+  "cardId": "30103",
+  "sourceCoverage": "three-observed-chain-stages-only",
+  "actualGamePlayVerified": false,
+  "publicationApproval": false,
+  "forSkillGrant": false,
+  "corroboration": "cross-publisher published event tables; underlying sources may overlap",
+  "sources": [
+    {
+      "publisher": "Famitsu",
+      "url": "https://www.famitsu.com/news/202206/29266681.html"
+    },
+    {
+      "publisher": "Dengeki Online",
+      "url": "https://dengekionline.com/articles/138788/"
+    },
+    {
+      "publisher": "U-tools",
+      "url": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30103/event"
+    }
+  ],
+  "stages": [
+    {
+      "eventOrdinal": 1,
+      "sourceKey": "checker:30103:f2193dd94241571f0730",
+      "sourceDigest": "sha256:875638991c88c2b4ffa4f495cd9fa9c69e40cc345ee2a5ad9cf60981afe17a9f",
+      "resultKinds": [
+        "success",
+        "failure"
+      ],
+      "continuation": "both-results-advance"
+    },
+    {
+      "eventOrdinal": 2,
+      "sourceKey": "checker:30103:50f0d03b085ec2822e90",
+      "sourceDigest": "sha256:e2f7db25b1dad25544aa30f329e76e77e2f518ef992a22c310fc8126a4a3681c",
+      "resultKinds": [
+        "success",
+        "failure"
+      ],
+      "continuation": "both-results-advance"
+    },
+    {
+      "eventOrdinal": 3,
+      "sourceKey": "checker:30103:6b4bfe51f06803004b7f",
+      "sourceDigest": "sha256:bdef50fe3c17ecb2e8872a265ecb7f510c0d42fc4f2d943abef3af2f9888237e",
+      "resultKinds": [
+        "great",
+        "success",
+        "failure"
+      ],
+      "continuation": "final-stage",
+      "resultConditions": [
+        {
+          "resultKind": "great",
+          "any": [
+            [
+              {
+                "eventOrdinal": 1,
+                "resultKind": "success"
+              },
+              {
+                "eventOrdinal": 2,
+                "resultKind": "success"
+              }
+            ]
+          ]
+        },
+        {
+          "resultKind": "success",
+          "any": [
+            [
+              {
+                "eventOrdinal": 1,
+                "resultKind": "success"
+              },
+              {
+                "eventOrdinal": 2,
+                "resultKind": "failure"
+              }
+            ],
+            [
+              {
+                "eventOrdinal": 1,
+                "resultKind": "failure"
+              },
+              {
+                "eventOrdinal": 2,
+                "resultKind": "success"
+              }
+            ]
+          ]
+        },
+        {
+          "resultKind": "failure",
+          "any": [
+            [
+              {
+                "eventOrdinal": 1,
+                "resultKind": "failure"
+              },
+              {
+                "eventOrdinal": 2,
+                "resultKind": "failure"
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "numericAwardChecks": [
+    {
+      "eventOrdinal": 1,
+      "resultKind": "success",
+      "skillId": "200462",
+      "level": 1
+    },
+    {
+      "eventOrdinal": 3,
+      "resultKind": "great",
+      "skillId": "200461",
+      "level": 3
+    },
+    {
+      "eventOrdinal": 3,
+      "resultKind": "success",
+      "skillId": "200461",
+      "level": 2
+    },
+    {
+      "eventOrdinal": 3,
+      "resultKind": "failure",
+      "skillId": "200461",
+      "level": 1
+    }
+  ],
+  "unresolvedSkillFacts": [
+    {
+      "eventOrdinal": 2,
+      "resultKind": "success",
+      "skillName": "差し焦り",
+      "level": 1,
+      "resolution": "missing-from-pinned-umasim-skill-dictionary"
+    }
+  ],
+  "observation": "All four prior-result combinations yield a unique final outcome; no standalone 2026 gameplay confirmation. Missing skill numeric ID must not be invented."
+}
