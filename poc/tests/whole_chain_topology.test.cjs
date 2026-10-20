@@ -59,7 +59,10 @@ test('Checker/GameTora stop presence comparison requires label-aligned choice',(
  const aligned=compareCheckerStop(stage,p,rows(['label-exact-provisional','label-typographic-provisional']),c([true,true]));
  assert.equal(aligned.choiceStopPresenceAgree,1);
  assert.equal(aligned.choiceStopPresenceDisagree,1);
- assert.deepEqual(aligned.issues,[{choiceOrdinal:2,checkerObservedStop:true,sourceObservedStop:false}]);
+ assert.deepEqual(aligned.issues,[{choiceOrdinal:2,checkerObservedStop:true,sourceObservedStop:false,status:'ONE_SIDED_MARKER_NOT_PROVEN_CONTRADICTION'}]);
+ assert.equal(aligned.explicitStopMarkerBothSources,1);
+ assert.equal(aligned.stopMarkerCheckerOnly,1);
+ assert.equal(aligned.stopMarkerGameToraOnly,0);
  const unknown=compareCheckerStop(stage,p,rows(['label-not-comparable','label-disagreement']),c([true,true]));
  assert.equal(unknown.choicesNotIdentityAligned,2);
  assert.equal(unknown.choiceStopPresenceDisagree,0);
@@ -105,4 +108,19 @@ test('incomplete 2025 groups support only local adjacent labels, never complete 
  assert.equal(historicPairEvidence('none','none2',index),'2025-neither-endpoint-matched');
  assert.equal(historicPairEvidence('none','a',index),'2025-first-endpoint-unmatched');
  assert.equal(historicPairEvidence('a','none',index),'2025-next-endpoint-unmatched');
+});
+
+test('two missing stop markers do not prove nontermination; one-sided source stop is unresolved',()=>{
+ const p={sourceKey:'checker:30004:xyz',choiceCountAgreement:true};
+ const stage=analyzeStage(ev([out([{type:'speed'}]),out([{type:'chain_end'}])]),3,1);
+ const cases=rows(['label-exact-provisional','label-exact-provisional'])
+  .map(x=>({...x,sourceKey:p.sourceKey}));
+ const checker={sourceKey:p.sourceKey,choices:[
+  {results:[{terminalObserved:false}]},{results:[{terminalObserved:false}]}]};
+ const result=compareCheckerStop(stage,p,cases,checker);
+ assert.equal(result.bothSourcesNoStopMarker,1);
+ assert.equal(result.stopMarkerGameToraOnly,1);
+ assert.equal(result.explicitStopMarkerBothSources,0);
+ assert.deepEqual(result.issues,[{choiceOrdinal:2,checkerObservedStop:false,
+  sourceObservedStop:true,status:'ONE_SIDED_MARKER_NOT_PROVEN_CONTRADICTION'}]);
 });

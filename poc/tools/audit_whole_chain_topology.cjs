@@ -63,6 +63,7 @@ function compareCheckerStop(stage,linkedPairs,reviewCases,checkerEvent){
  const c=checkerEvent.choices;
  if(c.length!==stage.choices.length)fail('checker choice count drift');
  let agree=0,disagree=0,unverified=0;
+ let stopBothPresent=0,stopCheckerOnly=0,stopGameToraOnly=0,stopBothUnmarked=0;
  const issues=[];
  for(let i=0;i<c.length;i++){
   const result=c[i];
@@ -73,13 +74,23 @@ function compareCheckerStop(stage,linkedPairs,reviewCases,checkerEvent){
   const positionSupported=aligned&&['label-exact-provisional','label-typographic-provisional']
     .includes(aligned.choiceLabelStatus);
   if(!positionSupported){unverified++;continue;}
-  if(checkStop===sourceStop)agree++;
-  else {disagree++;issues.push({
-   choiceOrdinal:i+1,checkerObservedStop:checkStop,sourceObservedStop:sourceStop
-  });}
+  if(checkStop&&sourceStop){agree++;stopBothPresent++;}
+  else if(!checkStop&&!sourceStop){agree++;stopBothUnmarked++;}
+  else {
+   // One article omitting a marker is NOT a verified negative.
+   // These are one-sided statements, not logically contradictory evidence.
+   disagree++;
+   if(checkStop)stopCheckerOnly++;else stopGameToraOnly++;
+   issues.push({choiceOrdinal:i+1,checkerObservedStop:checkStop,
+    sourceObservedStop:sourceStop,status:'ONE_SIDED_MARKER_NOT_PROVEN_CONTRADICTION'});
+  }
  }
  return {status:'provisionally-paired',
   choiceStopPresenceAgree:agree,choiceStopPresenceDisagree:disagree,
+  explicitStopMarkerBothSources:stopBothPresent,
+  stopMarkerCheckerOnly:stopCheckerOnly,
+  stopMarkerGameToraOnly:stopGameToraOnly,
+  bothSourcesNoStopMarker:stopBothUnmarked,
   choicesNotIdentityAligned:unverified,
   issues};
 }
@@ -172,6 +183,8 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
   nonTailStagesOnlyNoTerminalMarker:0,
   eventCrosswalkMatched:0,eventCrosswalkUnmatched:0,
   matchedChoiceStopPresenceAgree:0,matchedChoiceStopPresenceDisagree:0,
+  explicitlyReportedStopByBoth:0,stopMarkerOnlyChecker:0,
+  stopMarkerOnlyGameTora:0,neitherSourceReportsStop:0,
   matchedChoicesIdentityUnknown:0,sourceOnlyChainEvents:0,
   sourceEventsWithUnknownChoiceIdentity:0,
   chainEventsRequiringTopologyReview:0,
@@ -240,6 +253,10 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
       totals.nonTailStagesOnlyNoTerminalMarker++;}
    }
    totals.matchedChoiceStopPresenceAgree+=crosswalk.choiceStopPresenceAgree||0;
+   totals.explicitlyReportedStopByBoth+=crosswalk.explicitStopMarkerBothSources||0;
+   totals.stopMarkerOnlyChecker+=crosswalk.stopMarkerCheckerOnly||0;
+   totals.stopMarkerOnlyGameTora+=crosswalk.stopMarkerGameToraOnly||0;
+   totals.neitherSourceReportsStop+=crosswalk.bothSourcesNoStopMarker||0;
    totals.matchedChoiceStopPresenceDisagree+=crosswalk.choiceStopPresenceDisagree||0;
    totals.matchedChoicesIdentityUnknown+=crosswalk.choicesNotIdentityAligned||0;
    if(crosswalk.choicesNotIdentityAligned||paired&&!goodCrosswalk)
@@ -252,7 +269,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
    if(stage.guardedRouteCount)reasons.push('GUARDED_OUTCOME');
    if(!paired)reasons.push('UNPAIRED_CHECKER_EVENT');
    else if(!goodCrosswalk)reasons.push('CHOICE_COUNT_CONFLICT');
-   if(crosswalk.choiceStopPresenceDisagree)reasons.push('CHECKER_SOURCE_STOP_DISAGREEMENT');
+   if(crosswalk.choiceStopPresenceDisagree)reasons.push('ONE_SIDED_STOP_MARKER_NEEDS_VERIFICATION');
    if(crosswalk.choicesNotIdentityAligned)reasons.push('CHOICE_IDENTITY_UNKNOWN');
    // Proposed adjacency is presentation order, never a verified route.
    const candidateNext=nextStage?{sourceOrdinal:nextStage.sourceOrdinal,
@@ -290,6 +307,9 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
     totals.historicallyPartialStageOrderSupported>totals.historicallyEvidenceMissingOrIncomplete||
     historicalGaps.length!==totals.historicallyEvidenceMissingOrIncomplete||
     Object.values(totals.historicalGapReasons).reduce((a,b)=>a+b,0)!==historicalGaps.length||
+    totals.explicitlyReportedStopByBoth+totals.stopMarkerOnlyChecker+
+    totals.stopMarkerOnlyGameTora+totals.neitherSourceReportsStop!==
+      totals.matchedChoiceStopPresenceAgree+totals.matchedChoiceStopPresenceDisagree||
     totals.verifiedAdjacentStageLinks!==0||
     totals.chainEventsRequiringTopologyReview!==totals.sourceChainEvents)
   fail('chain population arithmetic or pinned snapshot drift');
@@ -304,7 +324,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
    adjacency:'Events ordered in the third-party snapshot, not verified next-event pointers',
    terminal:'A chain_end marker is source evidence only; lack of marker never establishes continuation',
    prior:'A previous-result marker may select a reward segment rather than gate event access',
-   stopCrosscheck:'Only provisionally aligned Japanese choice labels are compared; result branches remain unordered'
+   stopCrosscheck:'Only aligned choice-label positions: both-positive is source corroboration; both missing is unknown; one-sided marker is NOT a logical contradiction'
   },reviewQueue,historicalGaps,cards};
 }
 function main(args){
