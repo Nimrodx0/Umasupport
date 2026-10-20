@@ -107,7 +107,7 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   if(seen.has(card.cardId))fail('roster duplicate '+card.cardId);
   seen.add(card.cardId);
   const ci=byChecker.get(card.cardId),gi=byGameTora.get(card.cardId);
-  const ce=ci?.events||[],ge=gi?.events||[];
+  const ce=(ci?.events||[]).map(e=>({...e,strict:e.titleFingerprint,soft:e.typographicFingerprint})),ge=gi?.events||[];
   if(ce.length!==card.observedCandidateCount||
      ce.some((e,i)=>e.sourceKey!==card.observedCandidates[i].sourceKey))
    fail('first-party Checker sourceKey/ordinal drift '+card.cardId);
