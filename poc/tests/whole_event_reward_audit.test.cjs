@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {analyzeChoice,numericHint,sourceHint}=require('../tools/audit_whole_event_rewards.cjs');
+const {analyzeChoice,numericHint,sourceHint,compareChoiceLabel}=require('../tools/audit_whole_event_rewards.cjs');
 const ch=(parts,structure='unspecified',diagnostics=[])=>
  ({structure,diagnostics,results:parts.map((skillHints,i)=>({
   resultKind:structure==='unspecified'?'unspecified':i===0?'success':'failure',
@@ -68,4 +68,13 @@ test('malformed numeric facts fail closed',()=>{
  assert.throws(()=>numericHint({skillId:'not-number',level:2}));
  assert.throws(()=>numericHint({skillId:'234',level:0}));
  assert.deepEqual(sourceHint({type:'skill_hint',value:'non-numeric',skill_id:20}),{unresolved:true});
+});
+
+test('choice label concordance requires text rather than matching mere ordinals',()=>{
+ assert.equal(compareChoiceLabel('同じ選択肢','同じ選択肢'),'label-exact-provisional');
+ assert.equal(compareChoiceLabel('  全力！','全力!'),'label-exact-provisional');
+ assert.equal(compareChoiceLabel('全力！','全力'),'label-typographic-provisional');
+ assert.equal(compareChoiceLabel('左へ進む','右へ進む'),'label-disagreement');
+ assert.equal(compareChoiceLabel('',''), 'label-not-comparable');
+ assert.equal(compareChoiceLabel('左へ進む',''), 'label-not-comparable');
 });
