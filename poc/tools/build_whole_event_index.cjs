@@ -99,8 +99,10 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   checkerUnmatchedEvents:0,gameToraUnmatchedEvents:0,
   gameToraOnlyCardsR:0,languageFallbackCards:0,ambiguousTitleCards:0,
   cardsWithUnmatchedEvents:0,unionObservedEventRecords:0,
-  p0SourceEventsPaired:0,p0SourceEventsUnpaired:0};
+  p0SourceEventsPaired:0,p0SourceEventsUnpaired:0,
+  gameToraUnmatchedR:0,gameToraUnmatchedNonR:0};
  const rows=[],seen=new Set();
+ const attention={p0Unmatched:[],choiceCountConflicts:[],cardsWithCheckerOnly:[]};
  const p0Keys=new Set(queue.rows.filter(x=>x.priority==='P0').map(x=>x.sourceKey));
  if(queue.rows.length!==2109||p0Keys.size!==199)fail('unexpected review queue');
  for(const card of coverageIndex.cards){
@@ -131,6 +133,10 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
    const choiceCountAgreement=a.optionCount===b.choiceCount;
    stats[choiceCountAgreement?'pairedChoiceCountAgree':'pairedChoiceCountConflict']++;
    if(p0Keys.has(a.sourceKey)){p0Paired++;stats.p0SourceEventsPaired++;}
+   if(!choiceCountAgreement)attention.choiceCountConflicts.push({
+    cardId:card.cardId,sourceKey:a.sourceKey,checkerOrdinal:a.sourceIndex+1,
+    checkerChoices:a.optionCount,gameToraChoices:b.choiceCount,
+    sourceOrdinal:b.sourceOrdinal,matchMethod:status});
    return {sourceKey:a.sourceKey,checkerOrdinal:a.sourceIndex+1,
     sourceOrdinal:b.sourceOrdinal,sourceLocalEventId:b.sourceLocalEventId,
     sourceSection:b.section,sourceChainOrdinal:b.chainOrdinal,
@@ -140,8 +146,12 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   }).sort((a,b)=>a.checkerOrdinal-b.checkerOrdinal);
   const p0InCard=ce.filter(e=>p0Keys.has(e.sourceKey)).length;
   stats.p0SourceEventsUnpaired+=p0InCard-p0Paired;
+  for(const i of unmatchedC)if(p0Keys.has(ce[i].sourceKey))attention.p0Unmatched.push({
+   cardId:card.cardId,sourceKey:ce[i].sourceKey,checkerOrdinal:ce[i].sourceIndex+1});
+  if(!gi&&ce.length)attention.cardsWithCheckerOnly.push({cardId:card.cardId,count:ce.length});
   stats.checkerUnmatchedEvents+=unmatchedC.length;
   stats.gameToraUnmatchedEvents+=unmatchedG.length;
+  stats[card.rarity==='R'?'gameToraUnmatchedR':'gameToraUnmatchedNonR']+=unmatchedG.length;
   if(unmatchedC.length||unmatchedG.length)stats.cardsWithUnmatchedEvents++;
   const ambiguity=(arr,key)=>{
    const count=new Map();for(const x of arr){if(!x[key])continue;count.set(x[key],(count.get(x[key])||0)+1);}
@@ -178,7 +188,7 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   publicationApproval:false,gameVerified:false,allActualEventsVerified:false,
   routeTopologyVerified:false,choiceSemanticsVerified:false,
   eventMatchesProvisionalOnly:true,rawSourceContentIncluded:false,
-  stats,cards:rows};
+  stats,attention,cards:rows};
 }
 function main(args){
  if(args.length!==4)fail('usage: node poc/tools/build_whole_event_index.cjs <umasim-support.txt> <checker-Events.json> <gametora-dir> <output.json>');
@@ -204,6 +214,7 @@ function main(args){
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n');
  console.log('WHOLE_EVENT_INDEX_STATS='+JSON.stringify(result.stats));
+ console.log('WHOLE_EVENT_ATTENTION='+JSON.stringify(result.attention));
  console.log('Top event discrepancies: '+JSON.stringify(result.cards.filter(c=>
   c.unmatchedCheckerCount||c.unmatchedGameToraCount)
    .sort((a,b)=>b.unmatchedCheckerCount+b.unmatchedGameToraCount-
