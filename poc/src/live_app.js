@@ -143,11 +143,15 @@ function pickerCard(c){return `<button class="picker-card" data-action="set-card
 function pickerRefresh(){
  const el=document.getElementById('picker-cards');if(el)el.innerHTML=pickerCardsHtml();
 }
-function eventRewardHTML(rewards){if(!rewards||!rewards.length)return '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.level?`（Lv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
+function eventRewardHTML(rewards){if(!rewards||!rewards.length)return window.UmaPreviewActive
+ ? '<span class="muted">資料にヒント記載なし（実ゲームの獲得可否は不明）</span>'
+ : '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.level?`（Lv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
 function eventCandidateHTML(part){
  const guaranteed=(part.rewards||[]).length?eventRewardHTML(part.rewards):'';
  const alternatives=(part.outcomes||[]).map(o=>`<span class="tag condition">${esc(o.label)}時</span> ${eventRewardHTML(o.rewards)}`).join(' / ');
- return [guaranteed,alternatives].filter(Boolean).join(' / ')||'<span class="muted">スキル獲得なし</span>';
+ return [guaranteed,alternatives].filter(Boolean).join(' / ')||
+  (window.UmaPreviewActive?'<span class="muted">資料にヒント記載なし（実ゲームの獲得可否は不明）</span>':
+   '<span class="muted">スキル獲得なし</span>');
 }
 function resultSelector(part,slot,k,i,event,active,card){
  if(!part||!Array.isArray(part.outcomes))return '';
