@@ -127,6 +127,8 @@ jobs:
 
       - name: Run historical game-display-order schema regression (synthetic SQLite)
         run: python3 -m unittest discover -s poc/tests -p 'test_historical_disp_order.py' -v
+      - name: Verify direct 2025 master stage joins (synthetic SQLite only)
+        run: python3 -m unittest discover -s poc/tests -p 'test_direct_historical_chain.py' -v
       - name: Check new independent audit scripts
         run: node --check poc/tools/audit_card_coverage.cjs && node --check poc/tools/audit_independent_card_hints.cjs && node --check poc/tools/audit_deckbuilder_cards.cjs && node --check poc/tools/audit_legacy_raw_hints.cjs && node --check poc/tools/probe_gametora_hint_page.cjs && node --check poc/tools/audit_stage_hint_integrity.cjs
 

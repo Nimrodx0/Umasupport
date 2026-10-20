@@ -9,6 +9,8 @@ on:
       - 'poc/tests/whole_event_reward_audit.test.cjs'
       - 'poc/tools/audit_whole_chain_topology.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'
+      - 'poc/tools/audit_direct_historical_chain.py'
+      - 'poc/tests/test_direct_historical_chain.py'
       - 'docs/phase2-whole-chain-topology-20261020.md'
       - '.github/workflows/whole-event-inventory.yml'
       - 'docs/phase2-whole-event-intake-plan-20261020.md'
@@ -47,6 +49,17 @@ jobs:
             -o "$RUNNER_TEMP/event-inputs/Events.json"
       - name: Verify purely synthetic event matching regressions
         run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs umasupport/poc/tests/whole_chain_topology.test.cjs
+      - name: Validate direct old-master crosswalk with synthetic SQLite
+        run: python3 -m unittest discover -s umasupport/poc/tests -p 'test_direct_historical_chain.py' -v
+      - name: Download pinned historical 2025 master for local title join only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/historical-master"
+          curl --fail --silent --show-error --location --retry 1 --max-time 240 \
+            --output "$RUNNER_TEMP/historical-master/master.mdb" \
+            "https://raw.githubusercontent.com/SimpleSandman/UmaMusumeMetaMasterMDB/5a8ec1356859a35e245edef0d40da740e652df68/master/master.mdb"
+          echo "46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb  $RUNNER_TEMP/historical-master/master.mdb" | sha256sum -c -
       - name: Generate first-party provisional union index, exclude source prose
         run: |
           node umasupport/poc/tools/build_whole_event_index.cjs \
@@ -69,6 +82,13 @@ jobs:
             whole-event-output/whole_event_rewards_audit.v1.json \
             gt-snapshot/server/data/events/gametora \
             whole-event-output/whole_chain_topology_review.v1.json
+      - name: Directly cross-join GameTora and 2025 master names without Checker mediation
+        run: |
+          python3 umasupport/poc/tools/audit_direct_historical_chain.py \
+            --master "$RUNNER_TEMP/historical-master/master.mdb" \
+            --source-dir gt-snapshot/server/data/events/gametora \
+            --topology whole-event-output/whole_chain_topology_review.v1.json \
+            --output whole-event-output/whole_direct_2025_chain.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
