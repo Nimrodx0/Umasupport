@@ -85,6 +85,24 @@ test('2025 unique stage-order evidence distinguishes supported adjacency from mi
  assert.equal(historicPairEvidence('a','b',h),'2025-structural-stage-order-agrees');
  assert.equal(historicPairEvidence('b','a',h),'2025-stage-order-disagrees');
  assert.equal(historicPairEvidence('a','d',h),'2025-groups-differ-or-ambiguous');
- assert.equal(historicPairEvidence('a','missing',h),'missing-2025-stage-evidence');
+ assert.equal(historicPairEvidence('a','missing',h),'2025-next-endpoint-unmatched');
  assert.throws(()=>historicalStageIndex({...historic,chainGroups:[group([['a',1]]),group([['a',1]])]}),/collision/);
+});
+
+test('incomplete 2025 groups support only local adjacent labels, never complete chains',()=>{
+ const h={dataKind:'provisional-historical-chain-stage-audit',
+  approvalState:'UNREVIEWED_NOT_FOR_PUBLICATION',forSkillGrant:false,
+  totals:{stageGroups:2},chainGroups:[
+   {structuralStatus:'stage-incomplete',chainMax:4,events:[
+    {sourceKey:'a',stage:1},{sourceKey:'b',stage:2},{sourceKey:'d',stage:4}]},
+   {structuralStatus:'stage-ambiguous',chainMax:3,events:[
+    {sourceKey:'x',stage:1},{sourceKey:'y',stage:1},{sourceKey:'z',stage:2}]}
+  ]};
+ const index=historicalStageIndex(h);
+ assert.equal(historicPairEvidence('a','b',index),'2025-partial-stage-order-agrees');
+ assert.equal(historicPairEvidence('b','d',index),'2025-stage-order-disagrees');
+ assert.equal(historicPairEvidence('x','z',index),'2025-duplicate-stage-ambiguous');
+ assert.equal(historicPairEvidence('none','none2',index),'2025-neither-endpoint-matched');
+ assert.equal(historicPairEvidence('none','a',index),'2025-first-endpoint-unmatched');
+ assert.equal(historicPairEvidence('a','none',index),'2025-next-endpoint-unmatched');
 });

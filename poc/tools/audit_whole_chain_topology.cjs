@@ -104,14 +104,29 @@ function historicalStageIndex(history){
     chainMax:group.chainMax});
   }
  }
- return {bySource,groups};
+ return {bySource,groups,stageMultiplicities:groups.map(g=>{
+  const m=new Map();for(const x of g.events)m.set(x.stage,(m.get(x.stage)||0)+1);
+  return m;
+ })};
 }
 function historicPairEvidence(firstKey,nextKey,historyIndex){
  const a=historyIndex.bySource.get(firstKey),b=historyIndex.bySource.get(nextKey);
- if(!a||!b)return 'missing-2025-stage-evidence';
- if(a.groupId===b.groupId&&a.structuralStatus==='stage-complete-unique'&&
-    b.structuralStatus==='stage-complete-unique'&&b.stage===a.stage+1)
-  return '2025-structural-stage-order-agrees';
+ if(!a&&!b)return '2025-neither-endpoint-matched';
+ if(!a)return '2025-first-endpoint-unmatched';
+ if(!b)return '2025-next-endpoint-unmatched';
+ if(a.groupId===b.groupId&&b.stage===a.stage+1){
+  const mult=historyIndex.stageMultiplicities?.[a.groupId];
+  if(!mult||mult.get(a.stage)!==1||mult.get(b.stage)!==1)
+   return '2025-duplicate-stage-ambiguous';
+  if(a.structuralStatus==='stage-complete-unique'&&
+     b.structuralStatus==='stage-complete-unique')
+   return '2025-structural-stage-order-agrees';
+  // Consecutive stage labels are still useful even if OTHER stages are absent.
+  // An incomplete 2025 group cannot be promoted to a complete 2026 route.
+  if(a.structuralStatus==='stage-incomplete')
+   return '2025-partial-stage-order-agrees';
+  return '2025-stage-group-ambiguous';
+ }
  if(a.groupId===b.groupId&&b.stage!==a.stage+1)
   return '2025-stage-order-disagrees';
  if(a.groupId!==b.groupId)
@@ -150,6 +165,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
   proposedAdjacentStageLinks:0,verifiedAdjacentStageLinks:0,
   historicallyOrderCorroborated:0,historicallyOrderConflicted:0,
   historicallyGroupsDiffer:0,historicallyEvidenceMissingOrIncomplete:0,
+  historicallyPartialStageOrderSupported:0,historicalGapReasons:{},
   stageEventsWithSourceSuccessor:0,stageEventsAtTail:0,
   nonTailStagesWithTerminal:0,nonTailStagesWithoutTerminal:0,
   nonTailStagesAllTerminal:0,nonTailStagesSomeTerminal:0,
@@ -161,7 +177,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
   chainEventsRequiringTopologyReview:0,
   cardsWithNonTailStop:0,cardsWithPrior:0,
   singleStageCards:0,multipleStageCards:0};
- const cards=[],seen=new Set(),reviewQueue=[];
+ const cards=[],seen=new Set(),reviewQueue=[],historicalGaps=[];
  for(const record of index.cards){
   const cardId=record.cardId,events=docs.get(cardId)||[];
   if(seen.has(cardId))fail('duplicate roster');seen.add(cardId);totals.rosterCards++;
@@ -195,7 +211,15 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
     if(historyStatus==='2025-structural-stage-order-agrees')totals.historicallyOrderCorroborated++;
     else if(historyStatus==='2025-stage-order-disagrees')totals.historicallyOrderConflicted++;
     else if(historyStatus==='2025-groups-differ-or-ambiguous')totals.historicallyGroupsDiffer++;
-    else totals.historicallyEvidenceMissingOrIncomplete++;
+    else{
+     totals.historicallyEvidenceMissingOrIncomplete++;
+     if(historyStatus==='2025-partial-stage-order-agrees')
+      totals.historicallyPartialStageOrderSupported++;
+     totals.historicalGapReasons[historyStatus]=(totals.historicalGapReasons[historyStatus]||0)+1;
+     historicalGaps.push({cardId,sourceOrdinal,chainOrdinal:i+1,
+      nextSourceOrdinal:nextStage.sourceOrdinal,checkerSourceKey:paired?.sourceKey||null,
+      nextCheckerSourceKey:nextPair?.sourceKey||null,reason:historyStatus});
+    }
     totals.stageEventsWithSourceSuccessor++;
    }
    else totals.stageEventsAtTail++;
@@ -263,6 +287,9 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
     totals.historicallyOrderCorroborated+totals.historicallyOrderConflicted+
     totals.historicallyGroupsDiffer+totals.historicallyEvidenceMissingOrIncomplete!==
      totals.proposedAdjacentStageLinks||
+    totals.historicallyPartialStageOrderSupported>totals.historicallyEvidenceMissingOrIncomplete||
+    historicalGaps.length!==totals.historicallyEvidenceMissingOrIncomplete||
+    Object.values(totals.historicalGapReasons).reduce((a,b)=>a+b,0)!==historicalGaps.length||
     totals.verifiedAdjacentStageLinks!==0||
     totals.chainEventsRequiringTopologyReview!==totals.sourceChainEvents)
   fail('chain population arithmetic or pinned snapshot drift');
@@ -278,7 +305,7 @@ function build({index,sourceDocuments,checkerFacts,rewardAudit,historicalAudit})
    terminal:'A chain_end marker is source evidence only; lack of marker never establishes continuation',
    prior:'A previous-result marker may select a reward segment rather than gate event access',
    stopCrosscheck:'Only provisionally aligned Japanese choice labels are compared; result branches remain unordered'
-  },reviewQueue,cards};
+  },reviewQueue,historicalGaps,cards};
 }
 function main(args){
  if(args.length!==4)fail('usage: node poc/tools/audit_whole_chain_topology.cjs <whole-index.json> <rewards-audit.json> <gametora-dir> <output.json>');
@@ -291,6 +318,8 @@ function main(args){
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(x,null,2)+'\n');
  console.log('WHOLE_CHAIN_TOPOLOGY_STATS='+JSON.stringify(x.stats));
+ console.log('WHOLE_CHAIN_HISTORICAL_GAPS='+JSON.stringify({
+  breakdown:x.stats.historicalGapReasons,priorityCases:x.historicalGaps.slice(0,30)}));
  console.log('WHOLE_CHAIN_REVIEW_FOCUS='+JSON.stringify(x.reviewQueue
   .filter(e=>e.priority==='P0').slice(0,70)));
 }
