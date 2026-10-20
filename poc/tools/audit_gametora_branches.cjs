@@ -36,29 +36,32 @@ function analyzeDocument(doc,expectedId){
     chainEvents:0,chainChoices:0,expandedOutcomeRoutes:0,terminalRoutes:0,
     eventsWithTerminal:0,choicesWithTerminal:0,eventsWithPriorDependence:0,
     previousConditionMarkers:0,conditionalSegments:0,skillHintMentions:0,
-    eventsWithBranchFlag:0,chainEventsWithNoChoices:0};
+    eventsWithBranchFlag:0,chainEventsWithNoChoices:0,reviewCandidates:[]};
   for(const ev of Object.values(events)){
     if(ev?.section!=='arrows')continue;
     result.chainEvents++;
     if(!Array.isArray(ev.choices))fail('chain event choices absent '+expectedId);
     if(!ev.choices.length)result.chainEventsWithNoChoices++;
-    let eventEnds=false,eventPrior=false,eventFlag=false;
+    let eventEnds=false,eventPrior=false,eventFlag=false,choiceOrdinal=0;
+    const branchStops=[],priorMarkerKinds=new Set();
     for(const choice of ev.choices){
-      result.chainChoices++;
-      let choiceEnds=false;
+      result.chainChoices++;choiceOrdinal++;
+      let choiceEnds=false,outcomeOrdinal=0;
       for(const group of flattenRoutes(choice)){
-        result.expandedOutcomeRoutes++;
+        result.expandedOutcomeRoutes++;outcomeOrdinal++;
         if(group.when.length)result.conditionalSegments++;
         const guards=group.when.map(x=>x&&typeof x==='object'?x.kind:null);
         const types=group.effects.map(x=>x&&typeof x==='object'?x.type:null);
         if([...types,...guards].some(v=>v===null))fail('invalid effects/guards '+expectedId);
         if(types.includes('chain_end')){
           result.terminalRoutes++;eventEnds=true;choiceEnds=true;
+          branchStops.push({choiceOrdinal,outcomeOrdinal});
         }
         if(types.includes('branch_flag'))eventFlag=true;
         const count=[...types,...guards].filter(x=>PRIOR.has(x)).length;
         result.previousConditionMarkers+=count;
         if(count)eventPrior=true;
+        for(const marker of [...types,...guards])if(PRIOR.has(marker))priorMarkerKinds.add(marker);
         result.skillHintMentions+=group.effects.filter(x=>x.type==='skill_hint'||x.type==='skill_hint_or').length;
       }
       if(choiceEnds)result.choicesWithTerminal++;
@@ -66,6 +69,12 @@ function analyzeDocument(doc,expectedId){
     if(eventEnds)result.eventsWithTerminal++;
     if(eventPrior)result.eventsWithPriorDependence++;
     if(eventFlag)result.eventsWithBranchFlag++;
+    if(branchStops.length||priorMarkerKinds.size)result.reviewCandidates.push({
+      chainOrdinal:result.chainEvents,
+      sourceLocalEventId:Number.isInteger(ev.id)?ev.id:null,
+      terminalOutcomes:branchStops,
+      priorMarkers:[...priorMarkerKinds].sort()
+    });
   }
   return result;
 }
@@ -103,7 +112,7 @@ function audit({index,queue,documents,sourceRevision}){
     'previousConditionMarkers','conditionalSegments','skillHintMentions',
     'eventsWithBranchFlag','chainEventsWithNoChoices'];
   for(const key of metricKeys)totals[key]=0;
-  const cardRows=[];
+  const cardRows=[],reviewCandidates=[];
   for(const id of [...roster].sort()){
     const item=found.get(id),p0=p0EventCards.get(id)||0;
     if(item){
@@ -116,7 +125,10 @@ function audit({index,queue,documents,sourceRevision}){
       if(item.terminalRoutes&&!checkerStopCards.has(id))totals.sourceOnlyStopCards++;
       if(item.eventsWithPriorDependence&&checkerPriorCards.has(id))totals.checkerAndSourcePriorCardOverlap++;
       for(const key of metricKeys)totals[key]+=item[key];
-      cardRows.push({...item,p0CandidateEvents:p0,
+      for(const candidate of item.reviewCandidates)
+        reviewCandidates.push({cardId:id,...candidate});
+      const {reviewCandidates:excludedSourceDetail,...metrics}=item;
+      cardRows.push({...metrics,p0CandidateEvents:p0,
         checkerStopObserved:checkerStopCards.has(id),
         checkerPriorObserved:checkerPriorCards.has(id)});
     }else{totals.missingRosterCards++;totals.p0EventsOnMissingCards+=p0;
@@ -146,7 +158,7 @@ function audit({index,queue,documents,sourceRevision}){
     rawThirdPartyContentIncluded:false,totals,
     missingCardIds:cardRows.filter(x=>x.sourceMissing).map(x=>x.cardId),
     extraCardIds:[...found.keys()].filter(id=>!roster.has(id)).sort(),
-    discrepancies,cards:cardRows};
+    discrepancies,reviewCandidates,cards:cardRows};
 }
 function readDocuments(folder){
   if(!fs.statSync(folder).isDirectory())fail('snapshot path is not a directory');
@@ -170,6 +182,7 @@ function main(argv){
   console.log('MISSING_CARD_IDS='+result.missingCardIds.join(','));
   console.log('EXTRA_CARD_IDS='+result.extraCardIds.join(','));
   console.log('BRANCH_DISCREPANCY_CARD_IDS='+JSON.stringify(result.discrepancies));
+  console.log('STRUCTURED_REVIEW_CANDIDATES='+result.reviewCandidates.length);
   console.log('No raw third-party event text, copyrighted choice prose or event DB has been committed.');
 }
 if(require.main===module)main(process.argv.slice(2));
