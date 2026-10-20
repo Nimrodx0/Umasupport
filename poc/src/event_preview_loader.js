@@ -8,8 +8,10 @@ const COMMUNITY=typeof module!=='undefined'&&module.exports
  ?require('./community_candidate_preview.js'):g.UmaCommunityCandidatePreview;
 const FACTS=typeof module!=='undefined'&&module.exports
  ?require('./checker_choice_fact_preview.js'):g.UmaCheckerChoiceFactPreview;
+const RESULTS=typeof module!=='undefined'&&module.exports
+ ?require('./checker_result_preview.js'):g.UmaCheckerResultPreview;
 const PREVIEWS=Object.freeze({'30311':'./data/preview/efforia30311.v1.json',
- 'expanded':COMMUNITY.URL,'facts':FACTS.URL});
+ 'expanded':COMMUNITY.URL,'facts':FACTS.URL,'results':RESULTS.URL});
 function requested(search){
  const params=new URLSearchParams(String(search||''));
  return params.get('eventPreview')||null;
@@ -24,8 +26,12 @@ async function activate(model,{cardId,skillText,fetchImpl=g.fetch?.bind(g)}={}){
  if(typeof skillText!=='string'||!skillText.trim())
   throw Error('数値スキル辞書の検証済みデータが必要です');
  if(!fetchImpl)throw Error('試用データの取得機能がありません');
- let catalog,communityResult=null,factResult=null;
- if(cardId==='facts'){
+ let catalog,communityResult=null,factResult=null,resultResult=null;
+ if(cardId==='results'){
+   const raw=await RESULTS.load({fetchImpl});
+   resultResult=RESULTS.fromSource(raw,model,skillText);
+   catalog=resultResult.catalog;
+ }else if(cardId==='facts'){
    // This locally versioned, 417-card numeric FACT DB is the only source here.
    // The adapter skips result-ambiguous or missing-skill events. Every included
    // route still carries an explicit unknown-result condition.
@@ -64,10 +70,11 @@ async function activate(model,{cardId,skillText,fetchImpl=g.fetch?.bind(g)}={}){
  model.meta.eventStatus='preview-only';
  model.meta.previewEvents={cardId,records:summary.eventsWithRecords,
    cards:summary.cardsWithRecords,
-   source:factResult?'Umasupport numeric source-position facts; all displayed routes have unknown outcome':
+   source:resultResult?'Umasupport explicit outcome source facts; unreviewed and no verified chain topology':
+    factResult?'Umasupport numeric source-position facts; all displayed routes have unknown outcome':
     communityResult?'Pinned external numeric planning candidates + SSR30311 GameWith-first':'GameWith-first + Wiki ID',
-   excluded:factResult?.summary.omitted||communityResult?.omitted||null,
-   numericSourceFacts:factResult?.summary||null};
+   excluded:resultResult?.summary.omitted||factResult?.summary.omitted||communityResult?.omitted||null,
+   numericSourceFacts:resultResult?.summary||factResult?.summary||null};
  model.meta.runtimeSources.events={...model.meta.runtimeSources.events,
    mode:'preview',previewUrl:url};
  return {cardId,url,records:summary.eventsWithRecords,
