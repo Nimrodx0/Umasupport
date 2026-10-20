@@ -66,6 +66,9 @@ test('audit joins by card ID only; reports missing/extra; never marks game or ev
   assert.equal(overlap.totals.checkerAndSourceStopCardOverlap,1);
   assert.equal(overlap.totals.sourceOnlyStopCards,1);
   assert.equal(overlap.totals.checkerAndSourcePriorCardOverlap,1);
+  assert.deepEqual(overlap.discrepancies.checkerOnlyStop,[]);
+  assert.deepEqual(overlap.discrepancies.sourceOnlyStop,['30026']);
+  assert.deepEqual(overlap.discrepancies.checkerOnlyPrior,[]);
   assert.equal(out.eventToCheckerCrosswalkVerified,false);
   assert.equal(out.releaseApproved,false);
   assert.equal(out.rawThirdPartyContentIncluded,false);
