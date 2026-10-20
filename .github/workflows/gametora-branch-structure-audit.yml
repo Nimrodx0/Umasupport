@@ -1,0 +1,44 @@
+name: Audit pinned GameTora-derived event branches
+
+on:
+  pull_request:
+    paths:
+      - 'poc/tools/audit_gametora_branches.cjs'
+      - 'poc/tests/gametora_branch_audit.test.cjs'
+      - '.github/workflows/gametora-branch-structure-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structural-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: umasupport
+      - uses: actions/checkout@v4
+        with:
+          repository: systemless10/UmamusumePS
+          ref: 6e38b54af4fad397ff4491e63007a90705a4fe67
+          path: source-snapshot
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test audit logic without third-party files
+        run: node --test umasupport/poc/tests/gametora_branch_audit.test.cjs
+      - name: Audit 563-card roster vs. pinned snapshot (NO publishing)
+        run: |
+          node umasupport/poc/tools/audit_gametora_branches.cjs \
+            source-snapshot/server/data/events/gametora \
+            6e38b54af4fad397ff4491e63007a90705a4fe67 \
+            audit-results/gametora_branch_audit.v1.json
+      - name: Upload only first-party structural counts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametora-branch-structural-audit
+          path: audit-results/gametora_branch_audit.v1.json
+          retention-days: 30
