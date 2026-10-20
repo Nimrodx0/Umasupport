@@ -86,6 +86,27 @@ class GapDiagnosisTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"drifted"):
             inspect(doc, old, raw, sources)
 
+    def test_duplicate_old_titles_are_identified_without_accepting_story_id(self):
+        direct, old, original, source = self.inputs()
+        card = "30043"
+        # Two 2025 story IDs have exactly the same Japanese event title and stage.
+        # Neither is a defensible unique mapping to the current source.
+        old[card] = old[card][:2]
+        original[card] = {k:v for k,v in original[card].items()
+                          if v["stage"] != 3}
+        for i in (1,2):
+            sid = "8300430"+str(10+i)
+            original[card][sid] = dict(stage=3, maximum=3, flag=0, title="A3")
+            old[card].append(dict(storyId=sid, stage=3, maximum=3, flag=0,
+                                  exact=fingerprint("A3"),
+                                  loose=fingerprint("A3", True)))
+        result = inspect(direct, old, original, source)
+        match = next(x for x in result["cases"] if x["cardId"] == card)
+        self.assertEqual(match["diagnosis"],"historical-title-collision")
+        self.assertEqual(match["historicalExactSameTitleAndStageRows"],2)
+        self.assertEqual(match["historicalExactTitleStageRowsCompatibleWithNeighbor"],2)
+        self.assertFalse(match["candidateAccepted"])
+
 
 if __name__ == "__main__":
     unittest.main()
