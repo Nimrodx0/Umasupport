@@ -4,6 +4,10 @@
 
 **状態：開発中のPoC。試験公開中であり完成版ではありません。** アプリ：[GitHub Pages](https://nimrodx0.github.io/Umasupport/)（入口 `index.html` → `poc/live.html`）。
 
+## 結果別イベントの開発用試用（2026-10-20）
+
+[**成功・大成功・失敗の結果別ヒント候補を比較する**](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=results) を追加しました。固定Checker資料に明示された結果だけを区分し、数値ID・ヒントLvを条件付きで表示します。打ち切り・前段結果条件・未解決スキル等がある候補は除外し、実ゲームでの獲得を保証しません。従来の `?eventPreview=facts` と通常アプリの保存設定は独立です。[対象・除外基準・テスト](docs/phase2-result-preview-20261020.md)。**公開承認イベントは0件のまま**です。
+
 ## GameWith記事のオフライン収録ツール（2026-10-19）
 
 [全417枚・2,109イベントの選択肢／結果／ヒント独自DB](docs/choice-result-facts-20261019.md)を追加しました。ヒント数値と選択肢位置まで揃った**879イベント（398カード）を試用する [全カード候補プレビュー](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=facts)**も導入。スキル取得の結果は全て未区分・条件付きの候補として表示し、通常公開イベント0件のまま分離します。
