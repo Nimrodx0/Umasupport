@@ -149,7 +149,8 @@ def build(old: dict[str, list[dict]], sources: dict[str, list[dict]], topology: 
              directExactTitleStages=0, directTypographyStages=0,
              historicalCheckerComplete=0, historicalCheckerPartial=0,
              previouslyNoHistoricalOrder=0, directLocalOrderForPreviouslyUnverified=0,
-             directSourceMasterOrderSupported=0, directSourceMasterOrderConflicted=0)
+             directSourceMasterOrderSupported=0, directSourceMasterOrderConflicted=0,
+             directGapsNoOldCardStories=0, directGapsWithOldCardStories=0)
     for card in cards:
         cardid = card["cardId"]
         stages = source_event_index_map = sources.get(cardid, [])
@@ -178,6 +179,8 @@ def build(old: dict[str, list[dict]], sources: dict[str, list[dict]], topology: 
                 c["directSourceMasterOrderSupported"] += 1
             if status == "old-master-stage-order-conflicts":
                 c["directSourceMasterOrderConflicted"] += 1
+            if not evidence:
+                c["directGapsWithOldCardStories" if old.get(cardid) else "directGapsNoOldCardStories"] += 1
             if h not in ("2025-structural-stage-order-agrees", "2025-partial-stage-order-agrees"):
                 if evidence:
                     c["directLocalOrderForPreviouslyUnverified"] += 1
@@ -189,8 +192,10 @@ def build(old: dict[str, list[dict]], sources: dict[str, list[dict]], topology: 
                 else:
                     rows.append(dict(cardId=cardid, firstOrdinal=st["sourceOrdinal"],
                                      nextOrdinal=candidate["sourceOrdinal"],
-                                     reason=status))
-    if c["totalAdjacencyCandidates"] != 675 or c["historicalCheckerComplete"] != 523 or c["historicalCheckerPartial"] != 15 or c["previouslyNoHistoricalOrder"] != 137 or sum(kinds.values()) != 675:
+                                     oldCardHasDirectStories=bool(old.get(cardid)), reason=status))
+    if c["totalAdjacencyCandidates"] != 675 or c["historicalCheckerComplete"] != 523 or c["historicalCheckerPartial"] != 15 or c["previouslyNoHistoricalOrder"] != 137 or sum(kinds.values()) != 675 or
+        c["directGapsNoOldCardStories"] + c["directGapsWithOldCardStories"] +
+        c["directSourceMasterOrderSupported"] + c["directSourceMasterOrderConflicted"] != 675:
         raise ValueError("prior topology populations drift")
     return dict(schemaVersion=1, dataKind="umasupport-direct-2025-master-chain-audit",
                 sourcePins=dict(gameToraDerived=GT_REV, historicalMasterRevision=OLD_REV,
