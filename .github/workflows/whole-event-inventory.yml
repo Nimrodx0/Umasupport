@@ -5,6 +5,8 @@ on:
     paths:
       - 'poc/tools/build_whole_event_index.cjs'
       - 'poc/tests/whole_event_index.test.cjs'
+      - 'poc/tools/audit_whole_event_rewards.cjs'
+      - 'poc/tests/whole_event_reward_audit.test.cjs'
       - '.github/workflows/whole-event-inventory.yml'
       - 'docs/phase2-whole-event-intake-plan-20261020.md'
   workflow_dispatch:
@@ -41,7 +43,7 @@ jobs:
             https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json \
             -o "$RUNNER_TEMP/event-inputs/Events.json"
       - name: Verify purely synthetic event matching regressions
-        run: node --test umasupport/poc/tests/whole_event_index.test.cjs
+        run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs
       - name: Generate first-party provisional union index, exclude source prose
         run: |
           node umasupport/poc/tools/build_whole_event_index.cjs \
@@ -49,9 +51,17 @@ jobs:
             "$RUNNER_TEMP/event-inputs/Events.json" \
             gt-snapshot/server/data/events/gametora \
             whole-event-output/whole_event_provisional.v1.json
+      - name: Audit matched choices, reward hint levels and unordered outcomes (no publication)
+        run: |
+          node umasupport/poc/tools/audit_whole_event_rewards.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            gt-snapshot/server/data/events/gametora \
+            "$RUNNER_TEMP/event-inputs/Events.json" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            whole-event-output/whole_event_rewards_audit.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
           name: whole-event-provisional-index
-          path: whole-event-output/whole_event_provisional.v1.json
+          path: whole-event-output/*.json
           retention-days: 30
