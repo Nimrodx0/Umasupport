@@ -237,6 +237,7 @@ def main() -> None:
     a.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("DIRECT_2025_CHAIN_STATS=" + json.dumps(result["stats"], ensure_ascii=False, sort_keys=True))
     print("DIRECT_2025_NEW_LINKS=" + json.dumps(result["provisionalAdditionalHistoricalLinks"][:30], ensure_ascii=False))
+    print("DIRECT_2025_OLD_CARD_TITLE_GAPS=" + json.dumps([x for x in result["stillUnlinkedHistoricalOrders"] if x["oldCardHasDirectStories"]], ensure_ascii=False))
 
 
 if __name__ == "__main__":
