@@ -125,6 +125,17 @@ function audit({index,queue,documents,sourceRevision}){
   }
   totals.extraneousSourceCards=[...found.keys()].filter(id=>!roster.has(id)).length;
   totals.checkerOnlyStopCards=checkerStopCards.size-totals.checkerAndSourceStopCardOverlap;
+  const sourceStopCards=new Set(cardRows.filter(x=>x.terminalRoutes>0).map(x=>x.cardId));
+  const sourcePriorCards=new Set(cardRows.filter(x=>x.eventsWithPriorDependence>0).map(x=>x.cardId));
+  const discrepancies={
+    checkerOnlyStop:[...checkerStopCards].filter(id=>!sourceStopCards.has(id)).sort(),
+    sourceOnlyStop:[...sourceStopCards].filter(id=>!checkerStopCards.has(id)).sort(),
+    checkerOnlyPrior:[...checkerPriorCards].filter(id=>!sourcePriorCards.has(id)).sort(),
+    sourceOnlyPrior:[...sourcePriorCards].filter(id=>!checkerPriorCards.has(id)).sort()
+  };
+  if(discrepancies.checkerOnlyStop.length!==totals.checkerOnlyStopCards||
+     discrepancies.sourceOnlyStop.length!==totals.sourceOnlyStopCards)
+    fail('source discrepancy counts diverged');
   // These figures compare CARD identity only. Do NOT claim GameTora's events are
   // linked to Checker sourceKeys or have independently verified story IDs.
   return {schemaVersion:1,dataKind:'game-tora-structural-audit',
@@ -135,7 +146,7 @@ function audit({index,queue,documents,sourceRevision}){
     rawThirdPartyContentIncluded:false,totals,
     missingCardIds:cardRows.filter(x=>x.sourceMissing).map(x=>x.cardId),
     extraCardIds:[...found.keys()].filter(id=>!roster.has(id)).sort(),
-    cards:cardRows};
+    discrepancies,cards:cardRows};
 }
 function readDocuments(folder){
   if(!fs.statSync(folder).isDirectory())fail('snapshot path is not a directory');
@@ -158,6 +169,7 @@ function main(argv){
   console.log('GAMETORA_BRANCH_AUDIT_TOTALS='+JSON.stringify(result.totals));
   console.log('MISSING_CARD_IDS='+result.missingCardIds.join(','));
   console.log('EXTRA_CARD_IDS='+result.extraCardIds.join(','));
+  console.log('BRANCH_DISCREPANCY_CARD_IDS='+JSON.stringify(result.discrepancies));
   console.log('No raw third-party event text, copyrighted choice prose or event DB has been committed.');
 }
 if(require.main===module)main(process.argv.slice(2));
