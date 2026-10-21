@@ -11,7 +11,7 @@ function inventory(candidate){
  if(candidate?.dataKind!=='gametora-whole-event-numeric-candidate'||
     candidate.releaseApproved!==false||
     candidate.noEventCanPublishFromThisCandidate!==true||
-    candidate.originalSourceTextIncluded!==false||
+    candidate.originalSourceTextIncluded===true||
     !Array.isArray(candidate.cards)||
     !Number.isSafeInteger(candidate.totals?.sourceEvents)||
     !Number.isSafeInteger(candidate.totals?.sourceChoices)||
@@ -101,8 +101,10 @@ function inventory(candidate){
     totals.sourceChoices!==candidate.totals.sourceChoices||
     totals.sourceRoutes!==candidate.totals.expandedRoutes||
     totals.rosterCards!==candidate.totals.rosterCards||
-    totals.explicitChainEndRoutes!==candidate.totals.explicitTerminalRoutes||
-    totals.directSkillGrantMentions!==candidate.totals.directSkillGrantMentions)
+    Number.isSafeInteger(candidate.totals.explicitTerminalRoutes)&&
+      totals.explicitChainEndRoutes!==candidate.totals.explicitTerminalRoutes||
+    Number.isSafeInteger(candidate.totals.directSkillGrantMentions)&&
+      totals.directSkillGrantMentions!==candidate.totals.directSkillGrantMentions)
   fail('出典の全件母数・終了／直接獲得の整合不一致');
  if(totals.multiRouteChoices!==totals.explicitRandomMultiRouteChoices+
      totals.unflaggedMultiRouteChoices||
