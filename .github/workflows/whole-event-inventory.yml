@@ -17,6 +17,8 @@ on:
       - 'poc/src/gametora_event_skill_crosswalk.cjs'
       - 'poc/tools/audit_gametora_event_skill_crosswalk.cjs'
       - 'poc/tests/gametora_event_skill_crosswalk.test.cjs'
+      - 'poc/tools/crosscheck_missing_event_skills_2025.py'
+      - 'poc/tests/test_historical_missing_event_skills.py'
       - 'poc/src/gametora_app_schema_dry_run.cjs'
       - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
       - 'poc/tests/gametora_app_schema_dry_run.test.cjs'
@@ -144,6 +146,14 @@ jobs:
             "$RUNNER_TEMP/event-inputs/skill_data.txt" \
             "$RUNNER_TEMP/event-inputs/support_card.txt" \
             whole-event-output/gametora_event_skill_crosswalk.v1.json
+      - name: Verify 2025 master skill gap crosscheck with synthetic SQLite
+        run: python3 -m unittest discover -s umasupport/poc/tests -p 'test_historical_missing_event_skills.py' -v
+      - name: Check unresolved GT hint IDs against pinned 2025 master (NOT 2026 adoption)
+        run: |
+          python3 umasupport/poc/tools/crosscheck_missing_event_skills_2025.py \
+            --master "$RUNNER_TEMP/historical-master/master.mdb" \
+            --crosswalk whole-event-output/gametora_event_skill_crosswalk.v1.json \
+            --output whole-event-output/historical_missing_skill_id_review.v1.json
       - name: Verify synthetic source-to-runtime app schema conversion
         run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
       - name: Dry-run runtime schema for GT events with all required facts resolved
