@@ -102,5 +102,6 @@ test('duplicate name should NOT merge with current hint and invalid rarity rejec
  assert.equal(rare.status,'unsupported-rarity');
  assert.equal(rare.runtimeSkillId,null);
  assert.equal(out.stats.unsupportedSkillRarities,1);
- assert.equal(out.stats.directSkillIdsMissingFromPinnedRegistry,1);
+ assert.equal(out.stats.directSkillIdsMissingFromPinnedRegistry,0);
+ assert.equal(out.stats.directSkillIdsUnsupportedRarity,1);
 });
