@@ -34,7 +34,7 @@ function transformDocument(document){
  const entries=Object.entries(original);
  const events=[],reviewQueue=[];
  let chainOrdinal=0,random=0,others=0,choiceCount=0,resultCount=0,
-  hintCount=0,unsupportedHint=0,terminal=0,chainTerminal=0,conditional=0;
+  hintCount=0,unsupportedHint=0,skillGrants=0,terminal=0,chainTerminal=0,conditional=0;
  const eventCounts=new Map(),allEffectTypes=new Map();
  const chainPositions=entries.map(([_,e],i)=>e?.section==='arrows'?i+1:null).filter(Boolean);
  const issues=(record,code,context={})=>{
@@ -81,7 +81,7 @@ function transformDocument(document){
    for(let ri=0;ri<branches.length;ri++){
     const route=branches[ri],reasonCodes=new Set();
     if(!Array.isArray(route.effects)||!Array.isArray(route.when))fail('flatten結果が不正');
-    const effects=[],hints=[],guards=[];
+    const effects=[],hints=[],obtainedSkills=[],guards=[];
     for(const g of route.when){
      if(!obj(g)||typeof g.kind!=='string')fail('特殊結果ガード不正');
      guards.push(g.kind);
@@ -105,6 +105,13 @@ function transformDocument(document){
       if(resolved)hintCount++;
       else{unsupportedHint++;reasonCodes.add('SKILL_HINT_EFFECT_UNRESOLVED');}
      }
+     if(type==='obtain_skill'){
+      // A direct skill award is NOT a hint level. Never silently omit it.
+      skillGrants++;
+      obtainedSkills.push({skillNumericId:positive(effect.skill_id)?String(effect.skill_id):null,
+       awardSemanticsReviewed:false});
+      reasonCodes.add('DIRECT_SKILL_GRANT_REQUIRES_REVIEW');
+     }
      if(prior.has(type))reasonCodes.add('PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW');
     }
     for(const marker of guards)if(prior.has(marker))
@@ -121,7 +128,7 @@ function transformDocument(document){
        :'NOT_A_CHAIN',
       // A sequence gap is independently audited; never a verified game edge.
       nextSourceOrdinalCandidate:isChain&&!terminalHere?nextOrdinal:null,
-      numericHintFacts:hints,effects,guardKinds:guards,
+      numericHintFacts:hints,directSkillGrantFacts:obtainedSkills,effects,guardKinds:guards,
       conditionsRequiringReview:[...reasonCodes].sort()};
     normalizedChoice.routes.push(routeResult);resultCount++;
     for(const reason of reasonCodes)issues(record,reason,{choiceOrdinal:ci+1,routeOrdinal:ri+1});
@@ -136,7 +143,8 @@ function transformDocument(document){
   sourceEventCount:events.length,sourceChoiceCount:choiceCount,
   sourceExpandedRoutes:resultCount,sourceChainCount:chainOrdinal,
   sourceRandomCount:random,sourceOtherCount:others,numericParsedHintMentions:hintCount,
-  unresolvedHintMentions:unsupportedHint,explicitChainEndRoutes:terminal,
+  unresolvedHintMentions:unsupportedHint,directSkillGrantMentions:skillGrants,
+  explicitChainEndRoutes:terminal,
   explicitChainTerminalRoutes:chainTerminal,
   conditionalRoutes:conditional,events,reviewQueue,
   sectionCounts:Object.fromEntries([...eventCounts].sort()),
@@ -162,6 +170,7 @@ function build({documents,index,revision=POLICY.baselineRevision}){
   sourceRandomEvents:0,sourceOtherEvents:0,
   explicitTerminalRoutes:0,explicitChainTerminalRoutes:0,
   explicitNonchainTerminalRoutes:0,numericHintMentions:0,unresolvedHintMentions:0,
+  directSkillGrantMentions:0,
   conditionalRoutes:0,reviewQueueEntries:0};
  const cards=[],reviewQueue=[],types={};
  for(const roster of index.cards){
@@ -188,6 +197,7 @@ function build({documents,index,revision=POLICY.baselineRevision}){
   totals.explicitNonchainTerminalRoutes+=row.explicitChainEndRoutes-row.explicitChainTerminalRoutes;
   totals.numericHintMentions+=row.numericParsedHintMentions;
   totals.unresolvedHintMentions+=row.unresolvedHintMentions;
+  totals.directSkillGrantMentions+=row.directSkillGrantMentions;
   totals.conditionalRoutes+=row.conditionalRoutes;
   reviewQueue.push(...row.reviewQueue);
   for(const [kind,count] of Object.entries(row.effectTypeCounts))
