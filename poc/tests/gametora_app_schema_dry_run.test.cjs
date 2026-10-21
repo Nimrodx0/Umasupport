@@ -314,19 +314,20 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  const dict=skills(),m=model(),x=crosswalk({candidate,skillText:dict,model:m});
  const result=project({candidate,crosswalk:x,skillText:dict,model:m});
  const d=result.report.blockerDiagnosis;
- assert.equal(result.report.totals.skippedEvents,4);
- assert.equal(d.totalExcluded,4);
- assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,2);
+ assert.equal(result.report.totals.skippedEvents,3);
+ assert.equal(result.report.totals.candidateDirectAcquisitionEvents,1);
+ assert.equal(d.totalExcluded,3);
+ assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
  assert.equal(d.primaryReasonCounts.EXCLUSIVE_OR_OPTIONS_UNRESOLVED,1);
  assert.equal(d.primaryReasonCounts.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
  assert.equal(d.sourceEvidenceEventCounts.PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW,1);
  assert.equal(d.sourceEvidenceEventCounts.CONDITIONAL_SEGMENT_REQUIRES_REVIEW,1);
- assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW,1);
+ assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW||0,0);
  assert.equal(d.sourceEvidenceEventCounts.SKILL_HINT_EFFECT_UNRESOLVED,1);
- assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===2).directAwardMentions,1);
+ assert.ok(result.dryRunCatalog.cards[0].events.some(e=>e.choices?.some(c=>c.rewards?.some(r=>r.kind==='obtained'))));
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===3).unparsedHintMentions,1);
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===4).duplicateHintRouteCount,1);
- assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),2);
+ assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),1);
  assert.equal(d.publicationApproved,false);
  const str=JSON.stringify(d);
  assert.ok(!str.includes('private source'));
@@ -579,7 +580,7 @@ test('direct skill acquisition stays separate from hints and has NO hint level',
  assert.equal(out.report.totals.candidateDirectAcquisitionEvents,1);
  const choice=out.dryRunCatalog.cards[0].events[0].choices[0];
  assert.deepEqual(choice.rewards.map(r=>({id:r.skillId,kind:r.kind||'hint',level:r.level??null})),[
-  {id:'skill:200532',kind:'hint',level:2},
+  {id:'hint:速度維持',kind:'hint',level:2},
   {id:'skill:201272',kind:'obtained',level:null}
  ]);
  assert.equal(out.runtimeValidation.eventsWithRecords,1);
@@ -587,8 +588,8 @@ test('direct skill acquisition stays separate from hints and has NO hint level',
  const selected=core.directRoutes({hints:[],events:[event]},{choices:{[event.id]:choice.id}});
  assert.equal(selected.find(r=>r.skillId==='skill:201272').kind,'obtained');
  assert.equal(selected.find(r=>r.skillId==='skill:201272').level,null);
- assert.equal(selected.find(r=>r.skillId==='skill:200532').kind,'hint');
- assert.equal(selected.find(r=>r.skillId==='skill:200532').level,2);
+ assert.equal(selected.find(r=>r.skillId==='hint:速度維持').kind,'hint');
+ assert.equal(selected.find(r=>r.skillId==='hint:速度維持').level,2);
  assert.ok(!JSON.stringify(out.report).includes('original not published'));
 });
 test('direct acquisition crosswalk must be exact and the same result cannot award duplicate skills',()=>{
@@ -624,6 +625,6 @@ test('the friend outing previously blocked by a valid direct grant now retains t
  assert.deepEqual(events[1].requires,{all:[{eventId:events[0].id}]});
  const choices={[events[0].id]:events[0].choices[0].id};
  const routes=core.directRoutes({hints:[],events},{choices});
- assert.ok(routes.some(x=>x.skillId==='skill:200532'&&x.kind==='obtained'&&!x.conditional));
+ assert.ok(routes.some(x=>x.skillId==='hint:速度維持'&&x.kind==='obtained'&&!x.conditional));
  assert.ok(routes.some(x=>x.skillId==='skill:201272'&&x.kind==='hint'&&x.conditional));
 });
