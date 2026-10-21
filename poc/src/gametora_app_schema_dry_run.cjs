@@ -13,6 +13,31 @@ const curated=require('./curated_skill_resolution.cjs');
 const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
 const {diagnose}=require('./gametora_schema_blocker_diagnostics.cjs');
 const {inventory}=require('./gametora_branch_semantics_inventory.cjs');
+// Only for skill-projection, never for a full event-stat outcome simulator.
+// A guarded event is provably skill-invariant iff EVERY source branch is
+// devoid of hints, direct grants, terminal/flag effects and ambiguous types.
+// Preserve a separate count of ignored stat branches for audit scrutiny.
+function skillInvariantScriptedSpecial(e){
+ const c=e?.choices?.[0];
+ const safeEffects=new Set(['bond','mood','speed','guts']);
+ return e.section==='special'&&e.choices.length===1&&
+  c.sourceLabelWasEmpty===true&&c.reportedRandomAlternative===false&&
+  Array.isArray(c.routes)&&c.routes.length>=2&&
+  Array.isArray(e.reviewReasons)&&e.reviewReasons.length===1&&
+  e.reviewReasons[0]==='CONDITIONAL_SEGMENT_REQUIRES_REVIEW'&&
+  c.routes.every(r=>
+   r.explicitChainEnd===false&&
+   Array.isArray(r.guardKinds)&&r.guardKinds.length===1&&
+   r.guardKinds[0]==='scripted'&&
+   Array.isArray(r.conditionsRequiringReview)&&
+   r.conditionsRequiringReview.length===1&&
+   r.conditionsRequiringReview[0]==='CONDITIONAL_SEGMENT_REQUIRES_REVIEW'&&
+   Array.isArray(r.numericHintFacts)&&r.numericHintFacts.length===0&&
+   Array.isArray(r.directSkillGrantFacts)&&r.directSkillGrantFacts.length===0&&
+   Array.isArray(r.effects)&&r.effects.length>0&&
+   r.effects.every(x=>safeEffects.has(x.type)));
+}
+
 const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
@@ -77,6 +102,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateRewardMentions:0,candidateTerminalPaths:0,
   candidateDirectAcquisitionMentions:0,candidateDirectAcquisitionEvents:0,
   candidateNegativeSkillMentions:0,candidateNegativeSkillEvents:0,
+  candidateSkillInvariantScriptedEvents:0,candidateUnmodeledNonSkillBranches:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
   candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
@@ -146,6 +172,18 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     reason='OUTING_UNLOCK_SEMANTICS_REQUIRES_REVIEW';
    if(!Array.isArray(e.choices)||!e.choices.length)
     reason='INVALID_SOURCE_CHOICES';
+   // Narrow, lossless-to-SKILL-catalog projection. The three separate
+   // source stat/bond reward branches remain unmodeled and auditable.
+   if(!reason&&skillInvariantScriptedSpecial(e)){
+    converted.push({id:e.eventId,name:e.displayName,type:'auto',
+     rewards:[],availabilityKind:'special-trigger'});
+    counts.candidateSkillInvariantScriptedEvents++;
+    counts.candidateUnmodeledNonSkillBranches+=e.choices[0].routes.length;
+    counts.candidateSpecialTriggerEvents++;
+    counts.candidateConditionalAvailabilityEvents++;
+    counts.candidateAutoEvents++;
+    continue;
+   }
    const sourceChain=e.section==='arrows',priorId=sourceChain&&e.sourceChainOrdinal>1?
     chainByOrdinal.get(e.sourceChainOrdinal-1):null;
    if(sourceChain&&e.sourceChainOrdinal>1&&!priorId)
