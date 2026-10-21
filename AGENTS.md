@@ -336,3 +336,7 @@ GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に�
 
 GameTora固定版の全559カード・2,488イベント・4,129選択肢・4,376結果経路を`poc/src/gametora_whole_event_normalize.cjs`で**一件も省略せず**数値事実・条件記載と連番に変換する。GitHub Actionsの`whole-event-inventory.yml`が生成する`gametora_whole_event_numeric_candidate.v1.json`は配信用ではなく**一時アーティファクト**。コード内で本番`poc/data`への上書きを禁止する。原文・選択肢文を含まず、番号とsource title SHA、選択肢／結果位置／効果型／数値skill_idを保持。独自アプリのスキルIDは`hint:スキル名`なので**数値IDとの未検証な名寄せ禁止**。未解決のヒント13、直接獲得7、前段条件8経路、通常外の終了18経路を別レビュー。通常の後続候補が掲載順で並ぶことはGameToraのデフォルト解釈であり、全部を疑義としてGameWith確認する必要はない。例外だけGameWithへ。現時点では本番DB0件。詳細：[全件中間DBレポート](docs/phase2-gametora-whole-event-normalization-20261021.md)。
 
+
+## 2026-10-21：GameTora数値イベントスキル全件照合（PR #124）
+
+GameTora中間DBと固定UmaSimスキル辞書を`poc/src/gametora_event_skill_crosswalk.cjs`で全件厳密照合。合計数値ヒント1,681件のうち1,591件が固定辞書とID一致、1,035件は既存`hint:名前`に一意結合、556件は`skill:ID`を維持。79件の辞書未収録、11件の補完データのみ、13件の未解釈ヒント、7件の特殊区分直接獲得は**未承認**として別管理。通常・イベント金白の名称一致だけで異なる数値IDを混同しない。詳細：[Phase 2数値スキルID全件照合](docs/phase2-gametora-event-skill-crosswalk-20261021.md)。既存の`skill_bridge.prepare`へ合成イベントを投入する回帰を追加済み。第三者記事全文／スキル辞書をリポジトリへコピーせず、本番公開DBは自動変更しない。
