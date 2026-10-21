@@ -35,10 +35,11 @@ function crosswalk({candidate,skillText,model,supplemental}){
  const supplementalByName=new Map(supplementalIndex.supplementalRecords.map(r=>[norm(r.name),r.id]));
  if(raw.count<100)fail('スキル辞書が短すぎます');
  const expected={...candidate.totals};
- const seenCards=new Set(),locations=[],alternativeLocations=[],unresolved=[],counts={
+ const seenCards=new Set(),locations=[],alternativeLocations=[],rangeLocations=[],unresolved=[],counts={
   cards:0,sourceEvents:0,sourceChoices:0,sourceRoutes:0,
   numericHintMentions:0,exclusiveOrHintEffects:0,exclusiveOrOptions:0,
-  exclusiveOrOptionsParsed:0,matchedPinnedSkillIds:0,
+  exclusiveOrOptionsParsed:0,exclusiveOrOptionsWithRange:0,
+  rangedHintEffects:0,matchedPinnedSkillIds:0,
   matchedAppNormalHintIds:0,matchedAppRegisteredNumericIds:0,
   ambiguousSkillNamesSafelyKeptNumeric:0,missingPinnedSkillIds:0,
   unsupportedSkillRarities:0,unresolvedInputHints:0,
@@ -105,17 +106,29 @@ function crosswalk({candidate,skillText,model,supplemental}){
          counts.exclusiveOrOptions++;
          const parsed=option?.numericFactParsed===true;
          if(parsed)counts.exclusiveOrOptionsParsed++;
-         const matching=parsed?classify(option.skillNumericId,'exclusive-or-hint'):
+         const ranged=option?.levelRangeParsed===true&&
+          Array.isArray(option.levelRange)&&option.levelRange.length===2&&
+          option.levelRange.every(x=>Number.isInteger(x)&&x>=1&&x<=20);
+         if(ranged)counts.exclusiveOrOptionsWithRange++;
+         const matching=parsed||ranged?classify(option.skillNumericId,'exclusive-or-hint'):
           {status:'unresolved-exclusive-or-option',runtimeSkillId:null};
          alternativeLocations.push({...context,kind:'exclusive-or-hint',
           hintOrdinal:i+1,alternativeOrdinal:ai+1,
           numericId:option?.skillNumericId||null,level:option?.level??null,
-          numericFactParsed:parsed,status:matching.status,
+          numericFactParsed:parsed,levelRangeParsed:ranged,
+          ...(ranged?{levelRange:option.levelRange}:{}),status:matching.status,
           runtimeSkillId:matching.runtimeSkillId,
           ...(matching.rarity?{rarity:matching.rarity}:{}),
           ...(matching.nameFingerprint?{nameFingerprint:matching.nameFingerprint}:{}),
           ...(matching.nameAmbiguous?{nameAmbiguous:true}:{})});
         }
+       }
+       if(h.originType==='skill_hint'&&Array.isArray(h.levelRange)){
+        counts.rangedHintEffects++;
+        const classified=classify(h.skillNumericId,'correlated-range-hint');
+        rangeLocations.push({...context,kind:'correlated-range-hint',hintOrdinal:i+1,
+         numericId:h.skillNumericId,levelRange:h.levelRange,status:classified.status,
+         runtimeSkillId:classified.runtimeSkillId});
        }
        counts.unresolvedInputHints++;
        unresolved.push({...context,kind:'hint',hintOrdinal:i+1,
@@ -191,6 +204,6 @@ function crosswalk({candidate,skillText,model,supplemental}){
   sourceSkillRegistryCount:raw.count,sourceProseIncluded:false,
   crosswalkDoesNotVerifyRouteConditions:true,requiresSeparatePublicationReview:true,
   releaseApproved:false,gameVerified:false,
-  stats:counts,locations,alternativeLocations,unresolved};
+  stats:counts,locations,alternativeLocations,rangeLocations,unresolved};
 }
 module.exports={crosswalk,CANONICAL_SOURCE_SHA,CANONICAL_SOURCE_REV};

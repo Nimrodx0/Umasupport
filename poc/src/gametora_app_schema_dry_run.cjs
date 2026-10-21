@@ -55,6 +55,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   if(orLocator.has(k))fail('OR候補位置の重複');
   orLocator.set(k,x);
  }
+ const rangeLocator=new Map();
+ for(const x of crosswalk.rangeLocations||[]){
+  if(x.kind!=='correlated-range-hint')fail('段階別ヒント候補の種別不正');
+  const k=f(x.cardId,x.sourceOrdinal,x.choiceOrdinal,x.routeOrdinal,x.hintOrdinal);
+  if(rangeLocator.has(k))fail('段階別ヒント候補の重複');
+  rangeLocator.set(k,x);
+ }
  const visited=new Set(),reject=[],accepted=[],perCard=[],counts={
   sourceCards:candidate.cards.length,sourceEvents:0,sourceChoices:0,sourceRoutes:0,
   candidateSchemaEvents:0,candidateSchemaCards:0,
@@ -62,6 +69,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateRewardMentions:0,candidateTerminalPaths:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
+  candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
+  candidateRangeOutcomeEvents:0,
   candidateCurationOnlyHintMentions:0,candidateCurationOnlyEvents:0,
   candidateHistorical2025HintMentions:0,candidateHistorical2025Events:0,
   candidateConditionalAvailabilityEvents:0,
@@ -115,7 +124,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       r!=='SKILL_HINT_EFFECT_UNRESOLVED'))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
    const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
-    eventOrGroups=0,eventOrOptions=0;
+    eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -137,7 +146,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      if(!Array.isArray(route.numericHintFacts)){
       reason='INVALID_ROUTE_HINTS';break;
      }
-     const rewards=[],unique=new Set(),exclusiveGroups=[];
+     const rewards=[],unique=new Set(),exclusiveGroups=[],rangedRewards=[];
      for(let hi=0;hi<route.numericHintFacts.length;hi++){
       const h=route.numericHintFacts[hi];
       const k=f(c.cardId,e.sourceOrdinal,ch.choiceOrdinal,route.routeOrdinal,hi+1);
@@ -152,10 +161,17 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
          supplementalIds.has(option.skillNumericId);
         const isHistorical=loc?.status==='not-in-pinned-umasim-registry'&&
          historicalIds.has(option.skillNumericId);
-        if(option.numericFactParsed!==true||!loc||loc.numericFactParsed!==true||
+        const ranged=option.levelRangeParsed===true&&
+         Array.isArray(option.levelRange)&&option.levelRange.length===2&&
+         option.levelRange.every(l=>Number.isInteger(l)&&l>=1&&l<=20);
+        const exact=option.numericFactParsed===true;
+        if(!loc||!(exact||ranged)||loc.numericFactParsed!==exact||
+           loc.levelRangeParsed!==ranged||
            !(loc.status==='mapped-existing-normal-hint'||loc.status==='mapped-numeric-event-skill'||
              isSupplement||isHistorical)||
-           loc.numericId!==option.skillNumericId||loc.level!==option.level){
+           loc.numericId!==option.skillNumericId||
+           (exact&&loc.level!==option.level)||
+           (ranged&&JSON.stringify(loc.levelRange)!==JSON.stringify(option.levelRange))){
          reason='EXCLUSIVE_OR_OPTIONS_UNRESOLVED';break;
         }
         const source=registry.byId.get(option.skillNumericId);
@@ -164,8 +180,11 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         }
         seenOptions.add(source.id);
         group.push({id:source.id,key:k+':'+(ai+1),
-         reward:{skillId:'skill:'+source.id,verifiedSkillName:source.name,level:option.level},
+         reward:{skillId:'skill:'+source.id,verifiedSkillName:source.name,
+          ...(exact?{level:option.level}:{})},
+         ...(ranged?{levelRange:option.levelRange}:{}),
          isSupplement,isHistorical});
+        if(ranged)eventRangedOrOptions++;
        }
        if(reason)break;
        exclusiveGroups.push(group);
@@ -176,6 +195,34 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         if(option.isSupplement)eventCurationCount++;
         if(option.isHistorical)eventHistoricalCount++;
        }
+       continue;
+      }
+      if(h.originType==='skill_hint'&&h.numericFactParsed===false&&
+         Array.isArray(h.levelRange)){
+       const pair=rangeLocator.get(k);
+       const isSupplement=pair?.status==='curation-only-not-in-runtime-registry'&&
+        supplementalIds.has(h.skillNumericId);
+       const isHistorical=pair?.status==='not-in-pinned-umasim-registry'&&
+        historicalIds.has(h.skillNumericId);
+       if(!pair||!(['mapped-existing-normal-hint','mapped-numeric-event-skill'].includes(pair.status)||
+           isSupplement||isHistorical)||
+          pair.numericId!==h.skillNumericId||
+          !Array.isArray(pair.levelRange)||pair.levelRange.length!==2||
+          !h.levelRange.every(v=>Number.isInteger(v)&&v>=1&&v<=20)||
+          JSON.stringify(pair.levelRange)!==JSON.stringify(h.levelRange)){
+        reason='RANGED_HINT_EFFECT_PENDING';break;
+       }
+       const source=registry.byId.get(h.skillNumericId);
+       if(!source||!['normal','rare'].includes(source.rarity)||unique.has(source.id)){
+        reason='MISSING_OR_DUPLICATE_RESULT_SKILL';break;
+       }
+       unique.add(source.id);
+       rangedRewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,
+        levelRange:h.levelRange});
+       eventRangedHints++;
+       if(isSupplement)eventCurationCount++;
+       if(isHistorical)eventHistoricalCount++;
+       eventHintKeys.push(k);
        continue;
       }
       const verified=locator.get(k);
@@ -203,7 +250,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      // Each source "skill_hint_or" is an EXCLUSIVE choice of one hint.
      // Construct outcome alternatives; never put sibling OR skills together.
      // Keep bounded even for multiple independent OR sets in one source path.
-     let variants=[{rewards,ids:unique}];
+     const anyRange=rangedRewards.length>0||
+      exclusiveGroups.some(g=>g.some(option=>option.levelRange));
+     let variants=(anyRange?[0,1]:[null]).map(tier=>({
+      tier,ids:new Set(unique),
+      rewards:[...rewards,...rangedRewards.map(h=>({
+       skillId:h.skillId,verifiedSkillName:h.verifiedSkillName,
+       level:h.levelRange[tier]}))]}));
      for(const group of exclusiveGroups){
       const next=[];
       for(const variant of variants){
@@ -211,8 +264,10 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         if(variant.ids.has(option.id)){
          reason='EXCLUSIVE_OR_DUPLICATES_FIXED_REWARD';break;
         }
-        next.push({rewards:[...variant.rewards,option.reward],
-         ids:new Set([...variant.ids,option.id])});
+        const reward={...option.reward,
+         ...(option.levelRange?{level:option.levelRange[variant.tier]}:{})};
+        next.push({rewards:[...variant.rewards,reward],
+         tier:variant.tier,ids:new Set([...variant.ids,option.id])});
         if(next.length>32){reason='EXCLUSIVE_OR_COMBINATIONS_TOO_LARGE';break;}
        }
        if(reason)break;
@@ -231,7 +286,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        label:'結果'+route.routeOrdinal+(suffix?'・候補'+(vi+1):'')+'（仮）',
        rewards:variant.rewards,...(terminal?{terminal:true}:{})});
      }
-     eventHintCount+=rewards.length+exclusiveGroups.reduce((n,g)=>n+g.length,0);
+     eventHintCount+=rewards.length+rangedRewards.length+
+      exclusiveGroups.reduce((n,g)=>n+g.length,0);
     }
     if(reason)break;
     // If originally a no-choice support event, do NOT fabricate an option.
@@ -299,6 +355,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     counts.candidateExclusiveOrOptionMentions+=eventOrOptions;
     counts.candidateExclusiveOrEvents++;
    }
+   if(eventRangedHints||eventRangedOrOptions)counts.candidateRangeOutcomeEvents++;
+   counts.candidateRangedHintEffects+=eventRangedHints;
+   counts.candidateExclusiveOrRangedOptions+=eventRangedOrOptions;
    if(isAuto)counts.candidateAutoEvents++;
    else counts.candidateChoiceEvents++;
   }
