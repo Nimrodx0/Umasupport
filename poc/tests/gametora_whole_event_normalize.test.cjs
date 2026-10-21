@@ -21,10 +21,10 @@ test('normalizes every original event, choice, branch and skill without source p
  const original=doc(),out=transformDocument(original);
  assert.equal(out.sourceEventCount,3);
  assert.equal(out.sourceChainCount,2);
- assert.equal(out.sourceChoiceCount,4);
- assert.equal(out.sourceExpandedRoutes,5);
+ assert.equal(out.sourceChoiceCount,5);
+ assert.equal(out.sourceExpandedRoutes,6);
  assert.equal(out.explicitChainEndRoutes,2);
- assert.equal(out.numericParsedHintMentions,3);
+ assert.equal(out.numericParsedHintMentions,4);
  assert.equal(out.unresolvedHintMentions,1);
  assert.equal(out.events[0].choices[0].routes[0].numericHintFacts[0].skillNumericId,'200532');
  assert.equal(out.events[0].choices[0].routes[0].numericHintFacts[0].appSkillIdVerified,false);
