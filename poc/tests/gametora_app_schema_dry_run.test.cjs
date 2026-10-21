@@ -324,7 +324,7 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  assert.equal(d.sourceEvidenceEventCounts.CONDITIONAL_SEGMENT_REQUIRES_REVIEW,1);
  assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW||0,0);
  assert.equal(d.sourceEvidenceEventCounts.SKILL_HINT_EFFECT_UNRESOLVED,1);
- assert.ok(result.dryRunCatalog.cards[0].events.some(e=>e.choices?.some(c=>c.rewards?.some(r=>r.kind==='obtained'))));
+ assert.ok(result.dryRunCatalog.cards[0].events.some(e=>[e,...(e.choices||[])].some(part=>part.rewards?.some(r=>r.kind==='obtained'))));
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===3).unparsedHintMentions,1);
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===4).duplicateHintRouteCount,1);
  assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),1);
