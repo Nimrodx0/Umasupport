@@ -663,3 +663,55 @@ test('source obtain_skill with pinned minus rarity stays visible as a negative e
  tampered.crosswalk.locations.find(x=>x.kind==='direct-skill-award').rarity='rare';
  assert.equal(project(tampered).report.excludedReasons.DIRECT_SKILL_GRANT_ID_PENDING,1);
 });
+
+
+function scriptedSource(effectSets,section='special'){
+ return {kind:'support',id:30026,events_ja:{sample:{
+  id:1433,section,name:'unpublished source title',
+  choices:[{label:'',segments:effectSets.map((effects,i)=>({
+   when:[{kind:'scripted',value:['class',i+1]}],effects
+  }))}]
+ }}};
+}
+test('a scripted event with different stats but NO skills in any class is skill-invariant only',()=>{
+ const req=outingCandidate(scriptedSource([
+  [{type:'bond',value:'+3'},{type:'mood',value:'+1'}],
+  [{type:'speed',value:'+12'},{type:'mood',value:'+1'}],
+  [{type:'guts',value:'+12'},{type:'bond',value:'+5'}]
+ ]));
+ const result=project(req);
+ assert.equal(result.report.totals.candidateSchemaEvents,1);
+ assert.equal(result.report.totals.skippedEvents,0);
+ assert.equal(result.report.totals.candidateSkillInvariantScriptedEvents,1);
+ assert.equal(result.report.totals.candidateUnmodeledNonSkillBranches,3);
+ const event=result.dryRunCatalog.cards[0].events[0];
+ assert.deepEqual({type:event.type,rewards:event.rewards,availabilityKind:event.availabilityKind},
+  {type:'auto',rewards:[],availabilityKind:'special-trigger'});
+ assert.deepEqual(core.directRoutes({events:[event],hints:[]},{choices:{}}),[]);
+ assert.equal(result.report.publicationApproved,false);
+ assert.equal(result.report.gameVerified,false);
+ assert.ok(!JSON.stringify(result.report).includes('unpublished source title'));
+});
+test('scripted condition with any skill reward, direct grant, termination or unknown effect is NOT skill invariant',()=>{
+ const innocent=[
+  [{type:'bond',value:'+3'}],
+  [{type:'mood',value:'+1'}],
+  [{type:'speed',value:'+12'}]
+ ];
+ const changed=[
+  [...innocent[0]],
+  [{type:'skill_hint',skill_id:200532,value:'+1'}],
+  [...innocent[2]]
+ ];
+ for(const [cases,section] of [
+  [changed,'special'],
+  [[innocent[0],[{type:'obtain_skill',skill_id:200283}],innocent[2]],'special'],
+  [[innocent[0],[{type:'chain_end'}],innocent[2]],'special'],
+  [[innocent[0],[{type:'branch_flag'}],innocent[2]],'special'],
+  [innocent,'arrows']]){
+  const result=project(outingCandidate(scriptedSource(cases,section)));
+  assert.equal(result.report.totals.candidateSkillInvariantScriptedEvents,0);
+  assert.equal(result.report.totals.candidateSchemaEvents,0);
+  assert.equal(result.report.totals.skippedEvents,1);
+ }
+});
