@@ -11,6 +11,9 @@ on:
       - 'poc/src/gametora_event_resolution.cjs'
       - 'poc/tests/gametora_event_resolution.test.cjs'
       - 'poc/tools/report_gametora_baseline.cjs'
+      - 'poc/src/gametora_whole_event_normalize.cjs'
+      - 'poc/tools/generate_gametora_whole_event_candidate.cjs'
+      - 'poc/tests/gametora_whole_event_normalize.test.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'
       - 'poc/tools/audit_direct_historical_chain.py'
       - 'poc/tests/test_direct_historical_chain.py'
@@ -110,6 +113,14 @@ jobs:
           node umasupport/poc/tools/report_gametora_baseline.cjs \
             gt-snapshot/server/data/events/gametora \
             whole-event-output/gametora_canonical_baseline.v1.json
+      - name: Verify GameTora all-events candidate normalization on synthetic cases
+        run: node --test umasupport/poc/tests/gametora_whole_event_normalize.test.cjs
+      - name: Normalize ALL pinned GameTora event/choice/outcome positions into numeric-only draft
+        run: |
+          node umasupport/poc/tools/generate_gametora_whole_event_candidate.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            gt-snapshot/server/data/events/gametora \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
