@@ -41,17 +41,20 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2347||
-      result.report.totals.skippedEvents!==141||
+      result.report.totals.candidateSchemaEvents!==2349||
+      result.report.totals.skippedEvents!==139||
       result.report.totals.blockedDependentStages!==36))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2449||
-      result.report.totals.skippedEvents!==39||
+      result.report.totals.candidateSchemaEvents!==2451||
+      result.report.totals.skippedEvents!==37||
       result.report.totals.blockedDependentStages!==4||
       result.report.totals.candidateHistorical2025HintMentions!==77||
       result.report.totals.candidateHistorical2025Events!==73||
-      result.report.totals.candidateRewardMentions!==1638||
+      result.report.totals.candidateRewardMentions!==1643||
       result.report.totals.candidateTerminalPaths!==90))||
+    result.report.totals.candidateExclusiveOrEvents!==2||
+    result.report.totals.candidateExclusiveOrHintEffects!==2||
+    result.report.totals.candidateExclusiveOrOptionMentions!==4||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
     result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?251:249)||
