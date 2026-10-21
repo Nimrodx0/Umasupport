@@ -12,6 +12,7 @@ import argparse
 from collections import Counter, defaultdict
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sqlite3
@@ -154,11 +155,48 @@ def review_gaps(crosswalk: dict, old: dict[str, dict]) -> dict:
     }
 
 
+
+def private_historical_preview(report: dict, old: dict[str, dict]) -> dict:
+    """A short-lived runner-only aid, never an uploaded artifact.
+
+    Japanese names are permitted in this ephemeral runner memory/file ONLY.
+    Historical review status and fingerprints remain available as nonpublic
+    metadata and are rechecked by the JS schema dry-run.
+    """
+    if report.get("game2026Verified") is not False or (
+            report.get("dataKind") != "2025-historical-master-missing-2026-umasim-skill-ids"):
+        raise ValueError("historical-only evidence required")
+    skills = []
+    for row in report["rows"]:
+        if row["historicalStatus"] != "2025-ID-and-rarity-with-unique-JP-name":
+            continue
+        src = old.get(row["numericId"])
+        if src is None or len(src["nameCandidates"]) != 1:
+            raise ValueError("missing historical source skill name")
+        name = src["nameCandidates"][0]
+        fingerprint = "sha256:" + hashlib.sha256(name.encode("utf-8")).hexdigest()
+        if fingerprint != row["historicalNameFingerprint"]:
+            raise ValueError("historical name fingerprint changed")
+        skills.append({"id": row["numericId"], "name": name,
+                       "rarity": "normal" if row["historicalRarity"] == 1 else "rare",
+                       "historicalNameFingerprint": fingerprint})
+    return {
+        "schemaVersion": 1,
+        "dataKind": "historical-2025-skill-preview-private-runner-only",
+        "historicalMasterSha256": MASTER_SHA,
+        "historicalMasterRevision": MASTER_REV,
+        "game2026Verified": False,
+        "publicationAllowed": False,
+        "skills": skills,
+    }
+
+
 def run(args: list[str] | None = None) -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument("--master", type=Path, required=True)
     parser.add_argument("--crosswalk", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--private-preview-output", type=Path)
     opts = parser.parse_args(args)
     if opts.output.resolve() == opts.crosswalk.resolve() or (
             "poc" in opts.output.parts and "data" in opts.output.parts):
@@ -171,6 +209,21 @@ def run(args: list[str] | None = None) -> dict:
     opts.output.parent.mkdir(parents=True, exist_ok=True)
     opts.output.write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n",
                            encoding="utf-8")
+    if opts.private_preview_output is not None:
+        scratch = os.environ.get("RUNNER_TEMP")
+        if not scratch:
+            raise ValueError("private historical names require GitHub runner temporary directory")
+        resolved = opts.private_preview_output.resolve()
+        parent = (Path(scratch).resolve() / "historical-master").resolve()
+        if not resolved.is_relative_to(parent) or resolved == opts.output.resolve():
+            raise ValueError("historical raw names must never enter uploaded/public paths")
+        payload = private_historical_preview(report, old)
+        resolved.parent.mkdir(parents=True, exist_ok=True)
+        resolved.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        # Only the independent numeric record COUNT may be printed.
+        print("HISTORICAL_2025_PRIVATE_PREVIEW_RECORD_COUNT=" +
+              str(len(payload["skills"])))
+
     print("HISTORICAL_2025_MISSING_SKILL_CROSSCHECK=" +
           json.dumps({"missingOccurrences": report["crosswalkMissingOccurrences"],
                       "missingUniqueIds": report["crosswalkMissingDistinctIds"],

@@ -10,11 +10,12 @@
 const bridge=require('./skill_bridge.js');
 const schema=require('./event_schema.js');
 const curated=require('./curated_skill_resolution.cjs');
+const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
 const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
 const f=(c,e,o,r,i)=>JSON.stringify([c,e,o,r,i]);
-function project({candidate,crosswalk,skillText,model,supplemental}){
+function project({candidate,crosswalk,skillText,model,supplemental,historicalPreview}){
  if(candidate?.dataKind!=='gametora-whole-event-numeric-candidate'||
     candidate.releaseApproved!==false||candidate.noEventCanPublishFromThisCandidate!==true||
     candidate.sourcePins?.gameToraDerived!==POLICY.baselineRevision||
@@ -29,8 +30,16 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
  // passed the existing strict supplement verifier. Do not promote it to the
  // pinned UmaSim registry or silently suppress its provenance.
  const supplementation=curated.indexSkills(skillText,supplemental);
- const mergedSkillText=supplementation.mergedSkillText;
+ let mergedSkillText=supplementation.mergedSkillText;
  const supplementalIds=new Set(supplementation.supplementalRecords.map(x=>x.id));
+ let historicalIds=new Set();
+ if(historicalPreview!==undefined){
+  const older=buildHistoricalPreview({
+   mergedSkillText,report:historicalPreview.report,
+   privateRecords:historicalPreview.privateRecords,crosswalk});
+  mergedSkillText=older.mergedSkillText;
+  historicalIds=older.historicalIds;
+ }
  const registry=bridge.parseSource(mergedSkillText),locator=new Map();
  for(const x of crosswalk.locations){
   if(x.kind!=='hint')continue;
@@ -44,6 +53,7 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
   candidateAutoEvents:0,candidateChoiceEvents:0,
   candidateRewardMentions:0,candidateTerminalPaths:0,
   candidateCurationOnlyHintMentions:0,candidateCurationOnlyEvents:0,
+  candidateHistorical2025HintMentions:0,candidateHistorical2025Events:0,
   candidateConditionalAvailabilityEvents:0,
   candidateSpecialTriggerEvents:0,candidateOutingSequenceEvents:0,
   candidateOutingRandomEvents:0,
@@ -93,7 +103,7 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
     reason='CHAIN_PREDECESSOR_NOT_PROJECTED';
    if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
-   const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0;
+   const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -122,9 +132,11 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
       const verified=locator.get(k);
       const isSupplement=verified?.status==='curation-only-not-in-runtime-registry'&&
         supplementalIds.has(h.skillNumericId);
+      const isHistorical=verified?.status==='not-in-pinned-umasim-registry'&&
+        historicalIds.has(h.skillNumericId);
       if(!h.numericFactParsed||!verified||
          !(['mapped-existing-normal-hint','mapped-numeric-event-skill'].includes(verified.status)||
-           isSupplement)||
+           isSupplement||isHistorical)||
          verified.numericId!==h.skillNumericId||verified.level!==h.level){
        reason='SKILL_ID_OR_HINT_EFFECT_PENDING';break;
       }
@@ -134,6 +146,7 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
       }
       unique.add(source.id);
       if(isSupplement)eventCurationCount++;
+      if(isHistorical)eventHistoricalCount++;
       eventHintKeys.push(k);
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,level:h.level});
      }
@@ -203,6 +216,10 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
     counts.candidateCurationOnlyHintMentions+=eventCurationCount;
     counts.candidateCurationOnlyEvents++;
    }
+   if(eventHistoricalCount){
+    counts.candidateHistorical2025HintMentions+=eventHistoricalCount;
+    counts.candidateHistorical2025Events++;
+   }
    if(isAuto)counts.candidateAutoEvents++;
    else counts.candidateChoiceEvents++;
   }
@@ -248,6 +265,8 @@ function project({candidate,crosswalk,skillText,model,supplemental}){
    sourceOrderAdjacencyVerified:false,
    allPublishedNamesAreUnreviewedPlaceholders:true,
    curatedIdsAreSeparateFromPinnedUmaSim:true,
+   historical2025OnlyIdsAreNot2026Verified:true,
+   historicalSkillPreviewUsed:historicalPreview!==undefined,
    totals:counts,excludedReasons:Object.fromEntries(Object.entries(reasons).sort()),
    perCard,excludedSourcePositions:reject},
   // Memory-only for schema/UI regression; CLI refuses to serialize this.
