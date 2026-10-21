@@ -30,11 +30,18 @@
      msg+='。金白対応データは未取得（通常ヒントは利用できます）';
    }
    try {
-     const catalog=await UmaPublicEventCatalog.load();
-     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,catalog,
+     const source=await UmaPublicEventCatalog.loadVerified({
+       model:window.UmaDemoData,skillText});
+     const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,source.catalog,
        {skillText,fullRegistry:!!skillText});
-     window.UmaDemoData.meta.runtimeSources.events.mode='reviewed';
-     msg+='。レビュー済みイベント '+summary.eventsWithRecords+'件';
+     window.UmaDemoData.meta.runtimeSources.events={
+       mode:source.mode==='cached'?'cached':'reviewed',
+       url:UmaPublicEventCatalog.URL,
+       fetchedAt:source.fetchedAt||null,checkedAt:source.checkedAt||null
+     };
+     msg+=source.mode==='cached'?'。レビュー済みイベントは保存済み検証版を使用':
+       '。レビュー済みイベントを公開JSONから取得';
+     msg+=' '+summary.eventsWithRecords+'件';
      const hierarchy=window.UmaDemoData.meta.skillHierarchy;
      if(hierarchy)msg+='。金白構造候補 '+hierarchy.linked+'/'+hierarchy.totalRare+'組（白なし '+hierarchy.withoutLower+'、未確定 '+hierarchy.unresolved+'）';
    } catch(eventError) {
