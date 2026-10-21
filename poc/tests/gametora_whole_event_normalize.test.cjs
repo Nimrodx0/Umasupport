@@ -91,3 +91,15 @@ test('event title is only a one-way fingerprint, never copied as original text',
  assert.equal(x.events[0].displayName,'イベント001（仮）');
  assert.equal(x.events[1].choices[0].displayLabel,'選択肢1（仮）');
 });
+
+test('direct obtain_skill effects are preserved separately, never passed off as hint Lv',()=>{
+ const d={kind:'support',id:30026,events_ja:{one:{
+  name:'One',section:'other',choices:[{label:'only',
+   effects:[{type:'obtain_skill',skill_id:201272}]}]}}};
+ const row=transformDocument(d);
+ assert.equal(row.directSkillGrantMentions,1);
+ assert.equal(row.numericParsedHintMentions,0);
+ assert.deepEqual(row.events[0].choices[0].routes[0].directSkillGrantFacts,
+  [{skillNumericId:'201272',awardSemanticsReviewed:false}]);
+ assert.ok(row.reviewQueue.some(x=>x.reason==='DIRECT_SKILL_GRANT_REQUIRES_REVIEW'));
+});
