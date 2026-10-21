@@ -105,6 +105,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateNegativeSkillMentions:0,candidateNegativeSkillEvents:0,
   candidateSkillInvariantScriptedEvents:0,candidateUnmodeledNonSkillBranches:0,
   candidateSourceReviewedConditionalEvents:0,candidateSourceReviewedDuplicateEvents:0,
+  candidateSourceReviewedPriorChoiceEvents:0,
   candidateCollapsedDuplicatedSourceHints:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
@@ -178,7 +179,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    // Source-shape-locked and independently corroborated SKILL semantics
    // for two tricky final chain stages. Their stat differences are NOT
    // reconstructed. Never accept if any numeric ID or predecessor changed.
-   if(!reason&&(c.cardId==='30103'||c.cardId==='30253')){
+   if(!reason&&(['30102','30103','30253'].includes(c.cardId))){
     const reviewed=reviewedCases.tryProject({
      card:c,event:e,chainByOrdinal,locator,registry,supplementalIds,historicalIds});
     if(reviewed){
@@ -188,7 +189,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      localHints+=reviewed.beneficialRewards;
      for(const key of reviewed.sourceKeys)visited.add(key);
      counts.candidateCollapsedDuplicatedSourceHints+=reviewed.collapsedSourceMentions;
-     if(reviewed.kind==='matitan')counts.candidateSourceReviewedConditionalEvents++;
+     if(reviewed.kind==='matitan'||reviewed.kind==='elcondor')
+      counts.candidateSourceReviewedConditionalEvents++;
+     if(reviewed.kind==='elcondor')counts.candidateSourceReviewedPriorChoiceEvents++;
      if(reviewed.kind==='rheinkraft')counts.candidateSourceReviewedDuplicateEvents++;
      if(reviewed.supplementalMentions){
       counts.candidateCurationOnlyHintMentions+=reviewed.supplementalMentions;
