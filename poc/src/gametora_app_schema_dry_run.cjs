@@ -76,6 +76,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateAutoEvents:0,candidateChoiceEvents:0,
   candidateRewardMentions:0,candidateTerminalPaths:0,
   candidateDirectAcquisitionMentions:0,candidateDirectAcquisitionEvents:0,
+  candidateNegativeSkillMentions:0,candidateNegativeSkillEvents:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
   candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
@@ -157,7 +158,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
    const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
     eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0,
-    eventDirectAcquisitions=0;
+    eventDirectAcquisitions=0,eventNegativeSkills=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -247,7 +248,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         reason='RANGED_HINT_EFFECT_PENDING';break;
        }
        const source=registry.byId.get(h.skillNumericId);
-       if(!source||!['normal','rare'].includes(source.rarity)||unique.has(source.id)){
+       if(!source||!['normal','rare','minus'].includes(source.rarity)||unique.has(source.id)){
         reason='MISSING_OR_DUPLICATE_RESULT_SKILL';break;
        }
        unique.add(source.id);
@@ -295,7 +296,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
          award.awardSemanticsReviewed!==false||
          proof.awardSemanticsReviewed!==false||
          !(proof.status==='mapped-existing-normal-hint'||
-           proof.status==='mapped-numeric-event-skill'||isSupplement||isHistorical)){
+           proof.status==='mapped-numeric-event-skill'||isSupplement||isHistorical||
+           (proof.status==='unsupported-rarity'&&proof.rarity==='minus'))){
        reason='DIRECT_SKILL_GRANT_ID_PENDING';break;
       }
       const source=registry.byId.get(award.skillNumericId);
@@ -304,8 +306,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       }
       unique.add(source.id);
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,
-       kind:'obtained'});
-      eventDirectAcquisitions++;
+       kind:source.rarity==='minus'?'negative':'obtained'});
+      if(source.rarity==='minus')eventNegativeSkills++;
+      else eventDirectAcquisitions++;
       eventHintKeys.push('direct:'+key);
       if(isSupplement)eventCurationCount++;
       if(isHistorical)eventHistoricalCount++;
@@ -350,7 +353,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        label:'結果'+route.routeOrdinal+(suffix?'・候補'+(vi+1):'')+'（仮）',
        rewards:variant.rewards,...(terminal?{terminal:true}:{})});
      }
-     eventHintCount+=rewards.length+rangedRewards.length+
+     eventHintCount+=rewards.filter(r=>r.kind!=='negative').length+rangedRewards.length+
       exclusiveGroups.reduce((n,g)=>n+g.length,0);
     }
     if(reason)break;
@@ -422,6 +425,10 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     counts.candidateDirectAcquisitionMentions+=eventDirectAcquisitions;
     counts.candidateDirectAcquisitionEvents++;
    }
+   if(eventNegativeSkills){
+    counts.candidateNegativeSkillMentions+=eventNegativeSkills;
+    counts.candidateNegativeSkillEvents++;
+   }
    if(eventOrGroups){
     counts.candidateExclusiveOrHintEffects+=eventOrGroups;
     counts.candidateExclusiveOrOptionMentions+=eventOrOptions;
@@ -465,7 +472,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   {...model,skillById:sourceSkills});
  if(validated.eventsWithRecords!==counts.candidateSchemaEvents)
   fail('独立スキーマ検証のイベント件数が不一致');
- if(visited.size!==counts.candidateRewardMentions)
+ if(visited.size!==counts.candidateRewardMentions+counts.candidateNegativeSkillMentions)
   fail('スキルの一対一対応件数が不一致');
  const reasons={};
  for(const x of reject)reasons[x.reason]=(reasons[x.reason]||0)+1;
