@@ -26,3 +26,23 @@ GameTora固定559枚・2,488イベントから、2025年旧マスター限定の
 ## 後続工程
 
 全件実行の `specialCaseEvidenceCombinations` と `numericOnlyPositions` を用い、34件のうち条件付き結果・直接取得・スキルヒントの未解決が単独か複合かを先に整理する。4件の後続遮断は元イベントの原因が解消されたときだけ再試験する。独立した現行版ソースの数値ID照合、公開表示文面、公開権限、物理Windows/Android端末の確認は別ゲートであり、診断成功だけでは完了にならない。
+
+## 固定版を使用した実測結果
+
+[全件GitHub Actions #39569456600](https://github.com/Nimrodx0/Umasupport/actions/runs/39569456600) が成功。2025年版旧マスターをメモリ内でのみ使った前提で、**全2,488件・適合2,449件・保留39件の固定ゲートは維持**した。
+
+`sourceSectionCounts` は連続17件、通常16件、特殊6件。`specialCaseEvidenceCombinations` によって特殊保留34件が次の**排他的な組み合わせ**に分かれた。
+
+| 診断された根拠コードの組み合わせ | 件数 |
+| --- | ---: |
+| `SKILL_HINT_EFFECT_UNRESOLVED` | 13 |
+| `TERMINATION_OUTSIDE_CHAIN` | 12 |
+| `DIRECT_SKILL_GRANT_REQUIRES_REVIEW` | 3 |
+| `DIRECT_SKILL_GRANT_REQUIRES_REVIEW` ＋ `TERMINATION_OUTSIDE_CHAIN` | 2 |
+| `CONDITIONAL_SEGMENT_REQUIRES_REVIEW` | 3 |
+| `PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW` | 1 |
+| **特殊ケース合計** | **34** |
+
+そのほか、連続前段未変換4件、同一結果の重複スキル等1件。原文・元スキル名・選択肢文章はこの診断に含まれない。
+
+**実装優先度の暫定判断：** 特に13件の未解析 `skill_hint_or` 系効果は、報酬が確定か選択的かを調べるまでは通常ヒントとして扱わない。14件に含まれる「連続以外での終了」マーカーは、自動で除去したり無条件の継続に変えたりしない。直接獲得5件はヒントLvとは別の取得意味論が必要。3件の条件付き分岐と1件の前段フラグは条件がゲーム進行に依存するかを確認する。いずれもGameTora原構造から特定の疑義位置だけGameWith等で比較する。
