@@ -328,8 +328,6 @@ GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に�
 
 `poc/src/checker_review_queue.cjs` は候補の**未解析・未照合IDをP0、条件付き報酬をP1、Checker／Cruiseのタイトル差と空カードをP2**に整理する。報告はイベント元文章に依存しない `cardId`、`sourceKey`、イベント・選択肢序数、診断原因だけで、全項目を `requiresIndependentReview:true` とする。カード単位の資料差を勝手に該当イベントへ紐付けない。2資料ともGameWith由来なので一致＝独立正確性の証明ではない。GitHub Actionsは一時領域の入力を使いログは集計のみ。GameWithへ自動GETしない。本番0件を維持。実施方法は `docs/event-data-acquisition-rights-20261019.md`。
 
-## 2026-10-21：GameWithを正本とする通常継続＋明示例外方式（PR #121）
+## 2026-10-21：GameTora基準DB・GameWith例外裁定（旧PR #121方針訂正）
 
-ゲームイベントの編集上の正本はGameWith。カード別イベント一覧・選択肢・結果・スキル報酬・途中打ち切り／到達条件まで対象とする。**GameWith個別記事を完全に確認した**場合、非最終段階で途中終了が明記されない選択肢／結果は通常継続。GameTora・Checkerなどの欠落フィールドだけではこの条件を満たさない。特別な進行／分岐と記事未取得・結果未解析は別レビュー。詳細：[採用方針](docs/gamewith-canonical-event-policy-20261021.md)、設定`poc/config/event-source-priority.v1.json`。
-
-`poc/src/gamewith_chain_adoption.cjs`と`poc/tools/prepare_gamewith_chain_draft.cjs`を使用し、確認済みGameWith記事から既存オフラインインポーターが生成した連続候補を`requires`・choice/outcome別`terminal`へ変換できる。**変換先は`local-data`内の未承認草稿のみ**。GameWithの大量無許可クロールや自動公開を行わず、別途`event_release_gate`・スキルID/公開表現/利用条件レビューを通す。旧2025年の段階順裏付け585組は現行の継続証拠ではなく、新方針を既存675候補へ無条件適用しない。通常公開イベントは承認済み0のまま。
+イベントDBの基礎は固定GameTora由来JSONとする。すべてのGameWith記事を取得してDBを作り直したり、通常継続の確認に全GameWith記事の手動確認を要求することは**しない**。GameToraの連続イベント非最終段階は、`chain_end`の明記がなければ通常継続、明記がある選択肢・結果は打ち切り。ただし連続チェーンの所属・後続の対応が曖昧な場合は別途疑義として分離する。Checker・ゲームエイト・旧マスターなどで異常を発見した最小単位のみGameWithで裁定。GitHub上の配置方針と現在の制約：[Gam​​eTora基準のイベント方針](docs/gametora-baseline-event-policy-20261021.md)。公開イベントDBはゲームデータ使用条件・独自表現・スキルID・審査記録の既存ゲートを満たすまで自動変更しない。
