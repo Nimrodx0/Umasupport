@@ -29,6 +29,8 @@ function main(args){
  const result=project({candidate:JSON.parse(fs.readFileSync(candidateFile,'utf8')),
   crosswalk:JSON.parse(fs.readFileSync(crosswalkFile,'utf8')),
   skillText:raw.toString('utf8'),model,supplemental,historicalPreview});
+ console.log('GAMETORA_HISTORICAL_PRECHECK_TOTALS='+JSON.stringify(result.report.totals));
+ console.log('GAMETORA_HISTORICAL_PRECHECK_REASONS='+JSON.stringify(result.report.excludedReasons));
  if(result.report.totals.sourceEvents!==2488||
     result.report.totals.sourceChoices!==4129||
     result.report.totals.sourceRoutes!==4376||
