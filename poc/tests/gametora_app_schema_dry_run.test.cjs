@@ -769,7 +769,13 @@ test('source pinned Matitan: two earlier outcome results yield EXACTLY one of th
    {type:'both_previous_chain_bad'},
    {type:'energy',value:'+10'},{type:'skill_hint',skill_id:200461,value:'+1'}
   ]}]},30103);
- const out=project(specialCaseCandidate(source)),events=out.dryRunCatalog.cards[0].events;
+ const arg=specialCaseCandidate(source);
+ const out=project(arg),events=out.dryRunCatalog.cards[0].events;
+ if(out.report.totals.skippedEvents)console.error('MAT_SOURCE_DEBUG '+JSON.stringify({
+  excluded:out.report.excludedReasons,stage:arg.candidate.cards[0].events.find(e=>e.sourceOrdinal===5),
+  locations:arg.crosswalk.locations.filter(x=>x.cardId==='30103'&&x.sourceOrdinal===5),
+  accepted:events.map(e=>e.id)
+ }).slice(0,8500));
  assert.equal(out.report.totals.skippedEvents,0);
  assert.equal(out.report.totals.candidateSourceReviewedConditionalEvents,1);
  assert.equal(out.report.totals.candidateRewardMentions,5); // 2 upstream + 3 alternatives
