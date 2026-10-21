@@ -25,7 +25,13 @@
      if(!Array.isArray(part.rewards))fail(where+': rewardsが不正');
      for(const r of part.rewards){
        if(!obj(r)||!id(r.skillId)||!own(model.skillById,r.skillId))fail(where+': 未収録スキルID');
-       if(r.level!==undefined&&(!Number.isInteger(r.level)||r.level<1))fail(where+': ヒントLvが不正');
+       // Omitted kind means a hint; a direct award has no hint level.
+       if(r.kind!==undefined&&!['hint','obtained'].includes(r.kind))
+         fail(where+': 報酬種別が不正');
+       if(r.kind==='obtained'&&r.level!==undefined)
+         fail(where+': 直接習得報酬にはヒントLvを設定できません');
+       if(r.level!==undefined&&(!Number.isInteger(r.level)||r.level<1))
+         fail(where+': ヒントLvが不正');
        if(r.condition!==undefined&&r.condition!==null&&!id(r.condition))fail(where+': 条件が不正');
      }
    }
