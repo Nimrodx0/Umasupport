@@ -61,7 +61,8 @@ function input(){
  return {candidate,cross,skillText:skills(),model:m};
 }
 test('projection actually validates auto, selectable, branching and chained events using production schema',()=>{
- const result=project(input());
+ const {cross,...rest}=input();
+ const result=project({...rest,crosswalk:cross});
  assert.equal(result.report.totals.sourceCards,3);
  assert.equal(result.report.totals.sourceEvents,6);
  assert.equal(result.report.totals.candidateSchemaEvents,4);
@@ -89,23 +90,19 @@ test('projection actually validates auto, selectable, branching and chained even
  assert.equal(JSON.stringify(result.report).includes('Original'),false);
  assert.equal(result.report.publicationApproved,false);
 });
-test('a special prior-state or direct-grant route is quarantined, never rewritten as unconditional hint',()=>{
- const doc={kind:'support',id:30026,events_ja:{a:{
-  section:'random',name:'not copied',choices:[{label:'',effects:[
-   {type:'both_previous_chain_good'},{type:'skill_hint',skill_id:200532,value:'+3'}]}]}}};
- const row=transformDocument(doc);
- const {candidate,cross,skillText,model:m}=input();
- candidate.cards[0]={...row,reviewQueue:undefined};
- candidate.totals.sourceEvents=4;
- candidate.totals.sourceChoices=5;
- candidate.totals.expandedRoutes=5;
- candidate.totals.numericHintMentions=3;
- assert.throws(()=>project({candidate,crosswalk:cross,skillText,model:m}),/全件|固定/);
+test('a special prior-state marker is quarantined without dropping other sound events',()=>{
+ const {cross,...rest}=input();
+ const first=rest.candidate.cards[0].events[0];
+ first.reviewReasons.push('PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW');
+ const result=project({...rest,crosswalk:cross});
+ assert.equal(result.report.totals.candidateSchemaEvents,3);
+ assert.equal(result.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
+ assert.equal(result.report.totals.candidateRewardMentions,3);
 });
 test('invalid source types and mismatch crosswalk lineage cannot enter runtime projection',()=>{
  const req=input();
  req.cross.sourcePins.gameToraDerived='0'.repeat(40);
- assert.throws(()=>project(req),/出典/);
+ assert.throws(()=>project({...req,crosswalk:req.cross}),/出典/);
  const req2=input();req2.candidate.releaseApproved=true;
- assert.throws(()=>project(req2),/出典/);
+ assert.throws(()=>project({...req2,crosswalk:req2.cross}),/出典/);
 });
