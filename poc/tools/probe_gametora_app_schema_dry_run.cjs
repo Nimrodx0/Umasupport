@@ -33,9 +33,11 @@ function main(args){
       result.report.totals.candidateSpecialTriggerEvents+
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
-    result.report.totals.candidateSchemaEvents<2333||
-    result.report.totals.skippedEvents>155||
-    result.report.totals.candidateCurationOnlyHintMentions>11||
+    result.report.totals.candidateSchemaEvents!==2347||
+    result.report.totals.skippedEvents!==141||
+    result.report.totals.candidateCurationOnlyHintMentions!==11||
+    result.report.totals.candidateCurationOnlyEvents!==11||
+    result.report.totals.blockedDependentStages!==36||
     result.report.totals.candidateConditionalAvailabilityEvents!==249||
     result.report.totals.candidateSpecialTriggerEvents!==113||
     result.report.totals.candidateOutingSequenceEvents!==109||
