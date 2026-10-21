@@ -27,7 +27,8 @@ function main(args){
   report:JSON.parse(fs.readFileSync(historicalReportFile,'utf8')),
   privateRecords:JSON.parse(fs.readFileSync(privateRecordsFile,'utf8'))}:undefined;
  const crosswalkRecord=JSON.parse(fs.readFileSync(crosswalkFile,'utf8'));
- const result=project({candidate:JSON.parse(fs.readFileSync(candidateFile,'utf8')),
+ const candidateAudit=JSON.parse(fs.readFileSync(candidateFile,'utf8'));
+ const result=project({candidate:candidateAudit,
   crosswalk:crosswalkRecord,
   skillText:raw.toString('utf8'),model,supplemental,historicalPreview});
  // Exact source numeric IDs and positions only; no scraped words, names,
@@ -105,6 +106,24 @@ function main(args){
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_TOTALS='+JSON.stringify(report.totals));
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_REASONS='+JSON.stringify(report.excludedReasons));
  console.log('GAMETORA_BLOCKER_DIAGNOSIS='+JSON.stringify({totalExcluded:report.blockerDiagnosis.totalExcluded,sourceSectionCounts:report.blockerDiagnosis.sourceSectionCounts,sourceEvidenceEventCounts:report.blockerDiagnosis.sourceEvidenceEventCounts,specialCaseEvidenceCombinations:report.blockerDiagnosis.specialCaseEvidenceCombinations}));
+ console.log('GAMETORA_FINAL_BLOCKER_LOCATIONS='+JSON.stringify(
+  report.blockerDiagnosis.numericOnlyPositions.map(pos=>{
+   const card=candidateAudit.cards.find(c=>c.cardId===pos.cardId);
+   const event=card?.events.find(e=>e.sourceOrdinal===pos.sourceOrdinal);
+   return {...pos,
+    choices:(event?.choices||[]).map(choice=>({
+     ordinal:choice.choiceOrdinal,random:choice.reportedRandomAlternative,
+     routes:choice.routes.map(route=>({
+      ordinal:route.routeOrdinal,terminal:route.explicitChainEnd,
+      guarded:route.guardKinds,
+      review:route.conditionsRequiringReview,
+      hintIds:route.numericHintFacts.map(h=>h.skillNumericId),
+      hintKinds:route.numericHintFacts.map(h=>h.originType),
+      directSkillIds:route.directSkillGrantFacts.map(a=>a.skillNumericId)
+     }))
+    }))
+   };
+  })));
  console.log('GAMETORA_BRANCH_SEMANTICS='+JSON.stringify({totals:report.branchSemanticsInventory.totals,sourceSectionEvents:report.branchSemanticsInventory.sourceSectionEvents,terminalRoutesBySection:report.branchSemanticsInventory.terminalRoutesBySection}));
  console.log('GAMETORA_NONCHAIN_TERMINALS='+JSON.stringify(
   report.branchSemanticsInventory.numericOnlyReviewPositions
