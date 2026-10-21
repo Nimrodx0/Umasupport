@@ -133,6 +133,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     converted.find(x=>x.id===candidateUnlock.eventId):null;
    if(sourceOuting&&outingOrdinal===1&&candidateUnlock&&!unlockParent)
     reason='OUTING_UNLOCK_PREDECESSOR_NOT_PROJECTED';
+   if(sourceOuting&&outingOrdinal===1&&randomEnders.length&&!candidateUnlock)
+    reason='OUTING_UNLOCK_SEMANTICS_REQUIRES_REVIEW';
    if(!Array.isArray(e.choices)||!e.choices.length)
     reason='INVALID_SOURCE_CHOICES';
    const sourceChain=e.section==='arrows',priorId=sourceChain&&e.sourceChainOrdinal>1?
