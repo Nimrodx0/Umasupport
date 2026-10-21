@@ -105,3 +105,31 @@ test('duplicate name should NOT merge with current hint and invalid rarity rejec
  assert.equal(out.stats.directSkillIdsMissingFromPinnedRegistry,0);
  assert.equal(out.stats.directSkillIdsUnsupportedRarity,1);
 });
+
+test('crosswalk IDs agree with the existing production runtime skill bridge and catalog validator',()=>{
+ const bridge=require('../src/skill_bridge.js');
+ const publicEvents=require('../src/public_event_catalog.js');
+ const counts=crosswalk({candidate:candidate(),skillText:skills(),model:model()});
+ const hint=counts.locations.find(x=>x.numericId==='200532'&&x.kind==='hint');
+ const rare=counts.locations.find(x=>x.numericId==='201272'&&x.kind==='hint');
+ const card={id:'30026',name:'Synthetic',hints:['hint:速度維持'],events:[]};
+ const regular={id:'hint:速度維持',name:'速度維持',tier:'unknown',lowerId:null};
+ const live={cards:[card],cardById:{'30026':card},
+  skills:[regular],skillById:{'hint:速度維持':regular},meta:{}};
+ const catalog={schemaVersion:1,cards:[{cardId:'30026',events:[{
+  id:'synthetic-event',name:'Synthetic event',type:'choice',choices:[
+   {id:'a',label:'Option A',rewards:[
+    {skillId:'skill:200532',verifiedSkillName:'速度維持',level:1},
+    {skillId:'skill:201272',verifiedSkillName:'架空の金スキル',level:3}]}
+  ]
+ }]}]};
+ const result=publicEvents.attach(live,catalog,{skillText:skills()});
+ assert.equal(result.eventsWithRecords,1);
+ const rewards=live.cardById['30026'].events[0].choices[0].rewards;
+ assert.equal(rewards[0].skillId,hint.runtimeSkillId);
+ assert.equal(rewards[1].skillId,rare.runtimeSkillId);
+ assert.equal(rewards[0].level,1);
+ assert.equal(rewards[1].level,3);
+ assert.equal(live.skillById[rare.runtimeSkillId].tier,'gold');
+ assert.equal(live.cardById['30026'].eventCoverage,'partial');
+});
