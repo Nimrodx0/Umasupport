@@ -18,7 +18,7 @@ function triage(index,{expectedRoster=563,expectedGameTora=559,expectedMissing=4
     !/^[0-9a-f]{40}$/.test(index.sourcePins.checker)||
     !/^[0-9a-f]{40}$/.test(index.sourcePins.gameToraDerived))
   fail('未承認の固定クロスソース索引が必要');
- const ids=new Set(),missing=[],present=[],sum={roster:0,gt:0,missing:0,checker:0,neither:0,candidateEvents:0};
+ const ids=new Set(),missing=[],sum={roster:0,gt:0,missing:0,checker:0,neither:0,candidateEvents:0};
  for(const c of index.cards){
   if(!/^[1-9]\d*$/.test(c.cardId||'')||ids.has(c.cardId)||
      !['R','SR','SSR'].includes(c.rarity)||
@@ -26,14 +26,14 @@ function triage(index,{expectedRoster=563,expectedGameTora=559,expectedMissing=4
      typeof c.checkerMissing!=='boolean'||
      !validCount(c.gameToraObservedCount)||
      !validCount(c.checkerObservedCount)||
-     c.sourceMissing!==(c.gameToraObservedCount===0)||
-     c.checkerMissing!==(c.checkerObservedCount===0)||
+     (c.sourceMissing&&c.gameToraObservedCount!==0)||
+     (c.checkerMissing&&c.checkerObservedCount!==0)||
      !Array.isArray(c.pairs)||!Array.isArray(c.checkerOnly)||
      !Array.isArray(c.gameToraOnly))
    fail('個別カード索引のID・件数・欠損分類が不正');
   ids.add(c.cardId);sum.roster++;
   if(!c.sourceMissing){
-   sum.gt++;present.push(c.cardId);continue;
+   sum.gt++;continue;
   }
   if(c.pairs.length!==0||c.gameToraOnly.length!==0||
      c.checkerOnly.length!==c.checkerObservedCount||
@@ -43,7 +43,8 @@ function triage(index,{expectedRoster=563,expectedGameTora=559,expectedMissing=4
   if(c.checkerMissing)sum.neither++;else sum.checker++;
   missing.push({cardId:c.cardId,rarity:c.rarity,
    sourceAbsence:'MISSING_FROM_PINNED_GAMETORA_SNAPSHOT',
-   alternateStatus:c.checkerMissing?'NO_CHECKER_CANDIDATE':'CHECKER_PROVISIONAL_ONLY',
+   alternateStatus:c.checkerMissing?'NO_CHECKER_SOURCE_RECORD':
+    c.checkerObservedCount===0?'CHECKER_RECORD_WITHOUT_EVENTS':'CHECKER_PROVISIONAL_ONLY',
    checkerCandidateCount:c.checkerObservedCount,
    checkerCandidateOrdinals:c.checkerOnly.map(x=>x.checkerOrdinal).sort((a,b)=>a-b),
    gameEventAbsenceProven:false,checkedAgainstCurrentGame:false,
