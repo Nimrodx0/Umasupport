@@ -21,10 +21,18 @@ function main(args){
  const result=audit({historical,skills:records});
  if(result.independentRecordCount!==2194||
     result.totals.distinctIds!==28||
-    result.totals.occurrences!==79)
+    result.totals.occurrences!==79||
+    result.totals.presentIds!==28||
+    result.totals.absentIds!==0||
+    result.totals.nameFingerprintMatches!==28||
+    result.totals.nameFingerprintMismatches!==0||
+    result.totals.historicalNameUnavailable!==0)
   fail('固定の2025-ID不足と2026外部スキルの母集団が変化した');
  result.sourcePins.independentJsonSha256=
   crypto.createHash('sha256').update(bytes).digest('hex');
+ if(result.sourcePins.independentJsonSha256!==
+    '11bf7aa86d611047f5052b48059cf77d6aa9b4a7ad8e25ba2f7f901dcd267e62')
+  fail('2026年10月4日版の独立JSON SHA-256が変更された');
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n');
  console.log('INDEPENDENT_2026_SKILL_NAME_FINGERPRINT_TOTALS='+JSON.stringify({
