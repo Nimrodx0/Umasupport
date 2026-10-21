@@ -145,7 +145,7 @@ function pickerRefresh(){
 }
 function eventRewardHTML(rewards){if(!rewards||!rewards.length)return window.UmaPreviewActive
  ? '<span class="muted">資料にヒント記載なし（実ゲームの獲得可否は不明）</span>'
- : '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.kind==='obtained'?'（スキル直接習得）':r.level?`（ヒントLv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
+ : '<span class="muted">スキル獲得なし</span>';return rewards.map(r=>`${esc(data.skillById[r.skillId]?.name||r.skillId)}${r.kind==='negative'?'（マイナススキル付与）':r.kind==='obtained'?'（スキル直接習得）':r.level?`（ヒントLv.${r.level}）`:''}${r.condition?` <span class="tag condition">${esc(r.condition)}</span>`:''}`).join(' / ');}
 function eventCandidateHTML(part){
  const guaranteed=(part.rewards||[]).length?eventRewardHTML(part.rewards):'';
  const alternatives=(part.outcomes||[]).map(o=>`<span class="tag condition">${esc(o.label)}時</span> ${eventRewardHTML(o.rewards)}`).join(' / ');
