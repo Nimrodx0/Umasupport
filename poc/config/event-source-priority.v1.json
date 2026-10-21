@@ -1,9 +1,17 @@
 {
   "schemaVersion": 1,
-  "scope": "support-event-effect-values",
+  "scope": "support-event-list-choices-results-and-transitions",
   "eventEffectPrimary": "GameWith",
   "missingPrimary": "unresolved",
   "automaticPublicationAllowed": false,
   "sourceArticleExample": "https://gamewith.jp/uma-musume/article/show/573288",
-  "rationale": "User-selected pragmatic default for conflicting guide-site values; no assertion of independently demonstrated accuracy or republication rights."
+  "rationale": "GameWith is the editorial reference for event listing, results, rewards and non-final default continuation. Missing special notes are interpreted as ordinary only when a reviewer confirms complete page, choices, outcomes and exception coverage. This does not certify live gameplay, completeness outside GameWith or republication rights.",
+  "eventListPrimary": "GameWith",
+  "eventChoicePrimary": "GameWith",
+  "eventResultPrimary": "GameWith",
+  "eventContinuationPrimary": "GameWith",
+  "unmarkedNonFinalChainRule": "ordinary-continuation-only-after-complete-human-reviewed-article-and-branch-coverage",
+  "singleSourceProvisionalAccepted": true,
+  "sourceDisagreementBehavior": "prefer-GameWith-and-record-exceptions",
+  "humanReviewedCompletenessRequired": true
 }
