@@ -91,7 +91,7 @@ function matitan({card,event,chainByOrdinal,locator,registry,supplementalIds,his
  }
  if(current)groups.push(current);
  if(groups.length!==3||groups.some((g,i)=>g.flag!==flags[i]||
-    g.hints.length!==1||g.hints[0].skillNumericId!=='200461'||
+    g.hints.length!==1||String(g.hints[0].skillNumericId)!=='200461'||
     g.hints[0].numericValue!==3-i))return null;
  const proofs=facts.map((fact,i)=>hint({
   cardId:c.cardId,ordinal:e.sourceOrdinal,index:i+1,fact,locator,registry,
