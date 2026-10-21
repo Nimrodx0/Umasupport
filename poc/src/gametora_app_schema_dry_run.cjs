@@ -52,7 +52,7 @@ function project({candidate,crosswalk,skillText,model}){
    continue;
   }
   const converted=[],chainByOrdinal=new Map();
-  let excluded=0,localHints=0,localRoutes=0;
+  let excluded=0,localHints=0;
   for(const e of c.events){
    counts.sourceEvents++;
    counts.sourceChoices+=e.choices?.length||0;
@@ -68,7 +68,7 @@ function project({candidate,crosswalk,skillText,model}){
     reason='CHAIN_PREDECESSOR_NOT_PROJECTED';
    if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
-   const choices=[];
+   const choices=[],eventHintKeys=[];let eventHintCount=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -104,7 +104,7 @@ function project({candidate,crosswalk,skillText,model}){
        reason='MISSING_OR_DUPLICATE_RESULT_SKILL';break;
       }
       unique.add(source.id);
-      visited.add(k);
+      eventHintKeys.push(k);
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,level:h.level});
      }
      if(reason)break;
@@ -113,9 +113,8 @@ function project({candidate,crosswalk,skillText,model}){
       reason='NONCHAIN_TERMINAL_REQUIRES_REVIEW';break;
      }
      out.push({id:route.routeId,label:'結果'+route.routeOrdinal+'（仮）',
-       rewards,...terminal?{terminal:true}:{}});
-     localHints+=rewards.length;
-     localRoutes++;
+       rewards,...(terminal?{terminal:true}:{})});
+     eventHintCount+=rewards.length;
     }
     if(reason)break;
     // If originally a no-choice support event, do NOT fabricate an option.
@@ -125,7 +124,7 @@ function project({candidate,crosswalk,skillText,model}){
     }
     choices.push({id:ch.choiceId,label:ch.displayLabel,
       ...(out.length===1?{rewards:out[0].rewards,
-        ...out[0].terminal?{terminal:true}:{}}:{outcomes:out})});
+        ...(out[0].terminal?{terminal:true}:{})}:{outcomes:out})});
    }
    if(!reason&&!choices.length)reason='NO_CHOICES_RENDERED';
    if(reason){
@@ -140,11 +139,21 @@ function project({candidate,crosswalk,skillText,model}){
       ...(src.outcomes?{outcomes:src.outcomes}:{rewards:src.rewards})};
    }else convertedEvent={id:e.eventId,name:e.displayName,type:'choice',choices};
    if(sourceChain&&priorId){
+    const parent=converted.find(x=>x.id===priorId);
+    const branches=parent.type==='choice'?parent.choices:[parent];
+    const allTerminal=branches.every(p=>p.terminal===true||
+      p.outcomes?.length&&p.outcomes.every(o=>o.terminal===true));
+    if(allTerminal){
+     rejectEvent(c.cardId,e.eventId,e.sourceOrdinal,'CHAIN_PREDECESSOR_ALL_PATHS_END');
+     excluded++;continue;
+    }
     convertedEvent.requires={all:[{eventId:priorId}]};
    }
    // A last stage with no following edge is not a premature terminal.
    if(sourceChain)chainByOrdinal.set(e.sourceChainOrdinal,convertedEvent.id);
    converted.push(convertedEvent);
+   for(const key of eventHintKeys)visited.add(key);
+   localHints+=eventHintCount;
    if(isAuto)counts.candidateAutoEvents++;
    else counts.candidateChoiceEvents++;
   }
