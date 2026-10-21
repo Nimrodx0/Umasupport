@@ -344,3 +344,7 @@ GameTora中間DBと固定UmaSimスキル辞書を`poc/src/gametora_event_skill_c
 ## 2026-10-21：GameTora全イベントのアプリ標準スキーマ変換（PR #125）
 
 `poc/src/gametora_app_schema_dry_run.cjs` はGameTora数値候補とIDクロスウォークを結合し、イベントの`auto`／`choice`／`outcomes`／`terminal`／`requires`を生成し、既存の`skill_bridge.prepare`と`event_schema.validateCatalog`へ実際に渡す。**技術的に変換できたのは2,084/2,488イベント（83.8%）**。404イベントは、分類257、スキル未対応80、特殊条件27、前段がない連続39、重複結果スキル等1。実行形式の未承認データは**メモリ内だけ**で、GitHub Actionsへ保存するのは数値統計と位置番号のみ。元イベント・選択肢原文を配信せず、**GameTora基準＋GameWith例外裁定**を維持。出典や権利、ユーザー向け独自表記、公開承認は未完であり本番イベントDBは0件。[全件変換報告](docs/phase2-gametora-app-schema-dry-run-20261021.md)を参照。
+
+## Phase 2：特殊・お出かけ条件付き収録（PR #126）
+
+2026-10-21：GameTora由来の特殊／お出かけイベント分類を収録。従来404件保留のうち257件は`special`119、`dates`111、`dates_random`27と判明したため、実行時に`availabilityKind`（特殊発生・順次お出かけ・ランダムお出かけ）の**条件付き**として扱う。249件が新たにスキーマ適合となり、**2,333/2,488イベントを技術的に変換可能、保留155件**（スキルID82、連続前段欠損39、特殊分岐33、重複等1）。変換された条件付き249件は**無条件取得のスキルとして表示・集計されない**。残り8件も非標準分類を理由に永久除外せず、個別の未解決効果として引き続き対応。GameToraを基礎、GameWithは例外裁定、ゲーム実測・本番公開は0件のまま。[全件検証報告](docs/phase2-friend-availability-integration-20261021.md)。
