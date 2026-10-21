@@ -34,7 +34,7 @@ function transformDocument(document){
  const entries=Object.entries(original);
  const events=[],reviewQueue=[];
  let chainOrdinal=0,random=0,others=0,choiceCount=0,resultCount=0,
-  hintCount=0,unsupportedHint=0,terminal=0,conditional=0;
+  hintCount=0,unsupportedHint=0,terminal=0,chainTerminal=0,conditional=0;
  const eventCounts=new Map(),allEffectTypes=new Map();
  const chainPositions=entries.map(([_,e],i)=>e?.section==='arrows'?i+1:null).filter(Boolean);
  const issues=(record,code,context={})=>{
@@ -110,7 +110,7 @@ function transformDocument(document){
     for(const marker of guards)if(prior.has(marker))
      reasonCodes.add('PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW');
     const terminalHere=effects.some(x=>x.type==='chain_end');
-    if(terminalHere)terminal++;
+    if(terminalHere){terminal++;if(isChain)chainTerminal++;}
     if(reasonCodes.has('PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW')||
        reasonCodes.has('CONDITIONAL_SEGMENT_REQUIRES_REVIEW'))conditional++;
     if(terminalHere&&section!=='arrows')reasonCodes.add('TERMINATION_OUTSIDE_CHAIN');
@@ -129,10 +129,6 @@ function transformDocument(document){
    choiceCount++;
    record.choices.push(normalizedChoice);
   }
-  if(isChain&&nextOrdinal){
-   // Cannot infer exact chain grouping from source presentation alone.
-   issues(record,'CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY',{nextSourceOrdinalCandidate:nextOrdinal});
-  }
   events.push({...record,reviewReasons:[...record.reviewReasons].sort()});
   eventCounts.set(section,(eventCounts.get(section)||0)+1);
  }
@@ -141,6 +137,7 @@ function transformDocument(document){
   sourceExpandedRoutes:resultCount,sourceChainCount:chainOrdinal,
   sourceRandomCount:random,sourceOtherCount:others,numericParsedHintMentions:hintCount,
   unresolvedHintMentions:unsupportedHint,explicitChainEndRoutes:terminal,
+  explicitChainTerminalRoutes:chainTerminal,
   conditionalRoutes:conditional,events,reviewQueue,
   sectionCounts:Object.fromEntries([...eventCounts].sort()),
   effectTypeCounts:Object.fromEntries([...allEffectTypes].sort())};
@@ -163,7 +160,8 @@ function build({documents,index,revision=POLICY.baselineRevision}){
  const totals={rosterCards:index.cards.length,baselineCards:docs.size,missingBaselineCards:0,
   sourceEvents:0,sourceChoices:0,expandedRoutes:0,sourceChainEvents:0,
   sourceRandomEvents:0,sourceOtherEvents:0,
-  explicitTerminalRoutes:0,numericHintMentions:0,unresolvedHintMentions:0,
+  explicitTerminalRoutes:0,explicitChainTerminalRoutes:0,
+  explicitNonchainTerminalRoutes:0,numericHintMentions:0,unresolvedHintMentions:0,
   conditionalRoutes:0,reviewQueueEntries:0};
  const cards=[],reviewQueue=[],types={};
  for(const roster of index.cards){
@@ -186,6 +184,8 @@ function build({documents,index,revision=POLICY.baselineRevision}){
   totals.sourceRandomEvents+=row.sourceRandomCount;
   totals.sourceOtherEvents+=row.sourceOtherCount;
   totals.explicitTerminalRoutes+=row.explicitChainEndRoutes;
+  totals.explicitChainTerminalRoutes+=row.explicitChainTerminalRoutes;
+  totals.explicitNonchainTerminalRoutes+=row.explicitChainEndRoutes-row.explicitChainTerminalRoutes;
   totals.numericHintMentions+=row.numericParsedHintMentions;
   totals.unresolvedHintMentions+=row.unresolvedHintMentions;
   totals.conditionalRoutes+=row.conditionalRoutes;
@@ -198,7 +198,8 @@ function build({documents,index,revision=POLICY.baselineRevision}){
  if(totals.sourceEvents!==index.stats.gameToraEventRecords||
     totals.rosterCards!==totals.baselineCards+totals.missingBaselineCards||
     totals.sourceChainEvents+totals.sourceRandomEvents+totals.sourceOtherEvents!==totals.sourceEvents||
-    totals.expandedRoutes<totals.sourceChoices)
+    totals.expandedRoutes<totals.sourceChoices||
+    totals.explicitTerminalRoutes!==totals.explicitChainTerminalRoutes+totals.explicitNonchainTerminalRoutes)
   fail('全件変換の前後の件数が保存されていません');
  totals.reviewQueueEntries=reviewQueue.length;
  return {schemaVersion:1,dataKind:'gametora-whole-event-numeric-candidate',
