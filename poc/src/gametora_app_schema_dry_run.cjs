@@ -11,6 +11,7 @@ const bridge=require('./skill_bridge.js');
 const schema=require('./event_schema.js');
 const curated=require('./curated_skill_resolution.cjs');
 const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
+const {diagnose}=require('./gametora_schema_blocker_diagnostics.cjs');
 const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
@@ -259,8 +260,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   fail('スキルの一対一対応件数が不一致');
  const reasons={};
  for(const x of reject)reasons[x.reason]=(reasons[x.reason]||0)+1;
- return {
-  report:{schemaVersion:1,dataKind:'gametora-app-schema-dry-run',
+ const report={schemaVersion:1,dataKind:'gametora-app-schema-dry-run',
    sourceProseIncluded:false,publicationApproved:false,gameVerified:false,
    sourceOrderAdjacencyVerified:false,
    allPublishedNamesAreUnreviewedPlaceholders:true,
@@ -268,7 +268,10 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    historical2025OnlyIdsAreNot2026Verified:true,
    historicalSkillPreviewUsed:historicalPreview!==undefined,
    totals:counts,excludedReasons:Object.fromEntries(Object.entries(reasons).sort()),
-   perCard,excludedSourcePositions:reject},
+   perCard,excludedSourcePositions:reject};
+ report.blockerDiagnosis=diagnose(candidate,report);
+ return {
+  report,
   // Memory-only for schema/UI regression; CLI refuses to serialize this.
   dryRunCatalog:prepared.catalog,
   runtimeValidation:validated};
