@@ -52,19 +52,20 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2377||
-      result.report.totals.skippedEvents!==111||
+      result.report.totals.candidateSchemaEvents!==2378||
+      result.report.totals.skippedEvents!==010||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2487||
+      result.report.totals.candidateSchemaEvents!==2488||
       result.report.totals.skippedEvents!==1||
       result.report.totals.blockedDependentStages!==0||
       result.report.totals.candidateHistorical2025HintMentions!==81||
       result.report.totals.candidateHistorical2025Events!==77||
-      result.report.totals.candidateRewardMentions!==1694||
+      result.report.totals.candidateRewardMentions!==1696||
       result.report.totals.candidateTerminalPaths!==109))||
-    result.report.totals.candidateSourceReviewedConditionalEvents!==(historicalPreview?1:0)||
+    result.report.totals.candidateSourceReviewedConditionalEvents!==(historicalPreview?2:1)||
     result.report.totals.candidateSourceReviewedDuplicateEvents!==1||
+    result.report.totals.candidateSourceReviewedPriorChoiceEvents!==1||
     result.report.totals.candidateCollapsedDuplicatedSourceHints!==2||
     result.report.totals.candidateSkillInvariantScriptedEvents!==2||
     result.report.totals.candidateUnmodeledNonSkillBranches!==6||
