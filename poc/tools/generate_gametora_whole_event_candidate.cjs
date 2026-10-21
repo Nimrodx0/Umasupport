@@ -18,6 +18,7 @@ function main(args){
   fail('未承認の第三者データを公開DB・poc/dataへ書き込めません');
  const idx=JSON.parse(fs.readFileSync(indexPath,'utf8'));
  const report=build({index:idx,documents:readDocuments(sourceDir)});
+ console.log('GAMETORA_WHOLE_EVENT_PRECHECK_TOTALS='+JSON.stringify(report.totals));
  if(report.totals.rosterCards!==563||report.totals.baselineCards!==559||
     report.totals.missingBaselineCards!==4||report.totals.sourceEvents!==2488||
     report.totals.sourceChainEvents!==1069||report.totals.explicitTerminalRoutes!==91)
