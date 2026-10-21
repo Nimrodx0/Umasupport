@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const {applyGameWithChainReview}=require('../src/gamewith_chain_adoption.cjs');
 const schema=require('../src/event_schema.js');
 const core=require('../src/core.js');
+const {extractImporterChainEvents}=require('../tools/prepare_gamewith_chain_draft.cjs');
 const articleUrl='https://gamewith.jp/uma-musume/article/show/261695';
 const digest='sha256:'+'a'.repeat(64);
 const fullCoverage=()=>({
@@ -118,4 +119,38 @@ test('identical page stage must not participate in two chains or refer to missin
  assert.throws(()=>run(r),/一意/);
  r.chains.pop();r.chains[0].stages[2].eventId='other';
  assert.throws(()=>run(r),/対象イベント|後続イベント/);
+});
+
+test('existing offline GameWith importer manual chain candidates can enter canonical flow',()=>{
+ const from={observedEventHeadings:3,
+  proposal:{cards:[{cardId:'30026',events:[]}]},reviewRequired:[
+   {eventOrdinal:1,reason:'chain-needs-manual-requires-and-termination'},
+   {eventOrdinal:2,reason:'chain-needs-manual-requires-and-termination'},
+   {eventOrdinal:3,reason:'chain-needs-manual-requires-and-termination'}
+  ],manualCandidates:[1,2,3].map((number)=>({
+   category:'chain',categoryOrdinal:number,eventOrdinal:number,
+   reason:'chain-needs-manual-requires-and-termination',
+   choices:[{id:'option1',label:'選択肢1',rewards:[]},
+    {id:'option2',label:'選択肢2',rewards:[]}]}))};
+ const stageEvents=extractImporterChainEvents(from,'30026');
+ assert.deepEqual(stageEvents.map(x=>x.id),[
+  'draft_30026_chain_01','draft_30026_chain_02','draft_30026_chain_03']);
+ const notes=review();
+ notes.chains[0].stages=stageEvents.map((e,i)=>({
+  eventId:e.id,stageNumber:i+1,choices:e.choices.map(x=>({
+   choiceId:x.id,outcomeIds:[]})),exceptions:[]}));
+ const out=applyGameWithChainReview({cardId:'30026',review:notes,events:stageEvents});
+ assert.equal(out.reviewSummary.implicitContinuationRoutes,4);
+ assert.equal(out.reviewSummary.sourceOrderAdjacentPairs,2);
+ assert.equal(core.isReachable(out.events[1],{[stageEvents[0].id]:'option2'},out.events),true);
+ from.manualCandidates[1].choices=[];
+ assert.throws(()=>extractImporterChainEvents(from,'30026'),/選択肢未解析/);
+});
+test('partial offline article importer output must never become complete by default',()=>{
+ const from={observedEventHeadings:1,proposal:{cards:[{cardId:'30026',events:[]}]},
+  manualCandidates:[{category:'chain',categoryOrdinal:1,reason:'missing-or-ambiguous-choices',choices:[]}],
+  reviewRequired:[]};
+ assert.throws(()=>extractImporterChainEvents(from,'30026'),/未解析/);
+ from.manualCandidates[0].reason='chain-needs-manual-requires-and-termination';
+ assert.throws(()=>extractImporterChainEvents(from,'30026'),/選択肢未解析/);
 });
