@@ -11,6 +11,7 @@ const bridge=require('./skill_bridge.js');
 const schema=require('./event_schema.js');
 const curated=require('./curated_skill_resolution.cjs');
 const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
+const {buildIndependentPreview}=require('./independent_2026_skill_dry_run.cjs');
 const {diagnose}=require('./gametora_schema_blocker_diagnostics.cjs');
 const {inventory}=require('./gametora_branch_semantics_inventory.cjs');
 const reviewedCases=require('./gametora_reviewed_skill_cases.cjs');
@@ -43,7 +44,7 @@ const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
 const f=(c,e,o,r,i)=>JSON.stringify([c,e,o,r,i]);
-function project({candidate,crosswalk,skillText,model,supplemental,historicalPreview}){
+function project({candidate,crosswalk,skillText,model,supplemental,historicalPreview,independent2026Preview}){
  if(candidate?.dataKind!=='gametora-whole-event-numeric-candidate'||
     candidate.releaseApproved!==false||candidate.noEventCanPublishFromThisCandidate!==true||
     candidate.sourcePins?.gameToraDerived!==POLICY.baselineRevision||
@@ -61,12 +62,23 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
  let mergedSkillText=supplementation.mergedSkillText;
  const supplementalIds=new Set(supplementation.supplementalRecords.map(x=>x.id));
  let historicalIds=new Set();
+ if(historicalPreview!==undefined&&independent2026Preview!==undefined)
+  fail('旧マスター名と2026独立名を同時注入できません');
  if(historicalPreview!==undefined){
   const older=buildHistoricalPreview({
    mergedSkillText,report:historicalPreview.report,
    privateRecords:historicalPreview.privateRecords,crosswalk});
   mergedSkillText=older.mergedSkillText;
   historicalIds=older.historicalIds;
+ }
+ if(independent2026Preview!==undefined){
+  // No names from the old MDB enter this preview; its numeric-only,
+  // hashed 2025 report still gates rarity and the source occurrence counts.
+  const newer=buildIndependentPreview({
+   mergedSkillText,historicalReport:independent2026Preview.historicalReport,
+   independentSkills:independent2026Preview.skills,crosswalk});
+  mergedSkillText=newer.mergedSkillText;
+  historicalIds=newer.previewIds;
  }
  const registry=bridge.parseSource(mergedSkillText),locator=new Map();
  for(const x of crosswalk.locations){
@@ -113,6 +125,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateRangeOutcomeEvents:0,
   candidateCurationOnlyHintMentions:0,candidateCurationOnlyEvents:0,
   candidateHistorical2025HintMentions:0,candidateHistorical2025Events:0,
+  candidateIndependent2026NameHintMentions:0,candidateIndependent2026NameEvents:0,
   candidateConditionalAvailabilityEvents:0,
   candidateSpecialTriggerEvents:0,candidateOutingSequenceEvents:0,
   candidateOutingRandomEvents:0,
@@ -547,6 +560,10 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   fail('スキルの一対一対応件数が不一致');
  const reasons={};
  for(const x of reject)reasons[x.reason]=(reasons[x.reason]||0)+1;
+ if(independent2026Preview!==undefined){
+  counts.candidateIndependent2026NameHintMentions=counts.candidateHistorical2025HintMentions;
+  counts.candidateIndependent2026NameEvents=counts.candidateHistorical2025Events;
+ }
  const report={schemaVersion:1,dataKind:'gametora-app-schema-dry-run',
    sourceProseIncluded:false,publicationApproved:false,gameVerified:false,
    sourceOrderAdjacencyVerified:false,
@@ -554,6 +571,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    curatedIdsAreSeparateFromPinnedUmaSim:true,
    historical2025OnlyIdsAreNot2026Verified:true,
    historicalSkillPreviewUsed:historicalPreview!==undefined,
+   independent2026NamePreviewUsed:independent2026Preview!==undefined,
+   independent2026NamePreviewRetains2025NumericRarityEvidence:independent2026Preview!==undefined,
    totals:counts,excludedReasons:Object.fromEntries(Object.entries(reasons).sort()),
    perCard,excludedSourcePositions:reject};
  report.blockerDiagnosis=diagnose(candidate,report);
