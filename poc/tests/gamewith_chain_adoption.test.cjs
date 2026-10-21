@@ -154,3 +154,15 @@ test('partial offline article importer output must never become complete by defa
  from.manualCandidates[0].reason='chain-needs-manual-requires-and-termination';
  assert.throws(()=>extractImporterChainEvents(from,'30026'),/選択肢未解析/);
 });
+
+test('automatic-stage unconditional terminal cannot be silently translated to unsupported runtime flag',()=>{
+ const r=review();
+ r.chains[0].stages=[
+  {eventId:'a',stageNumber:1,choices:[{choiceId:'$auto',outcomeIds:[]}],
+   exceptions:[{kind:'terminal',choiceId:'$auto'}]},
+  {eventId:'b',stageNumber:2,choices:[{choiceId:'continue',outcomeIds:[]},
+   {choiceId:'exit',outcomeIds:[]}],exceptions:[]}
+ ];
+ const list=[{id:'a',name:'auto',type:'auto',rewards:[]},c2()];
+ assert.throws(()=>run(r,list),/選択肢なしイベント/);
+});
