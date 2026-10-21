@@ -9,6 +9,9 @@ const policy=require('../config/event-source-priority.v1.json');
 function skills(){return JSON.stringify([
  {id:'200532',name:'速度維持',rarity:'normal',group:20053},
  {id:'201272',name:'金の加速',rarity:'rare',group:20127},
+ {id:'200283',name:'架空のマイナススキルA',rarity:'minus',group:20028},
+ {id:'200353',name:'架空のマイナススキルB',rarity:'minus',group:20035},
+ {id:'200521',name:'架空のマイナススキルC',rarity:'minus',group:20052},
  ...Array.from({length:120},(_,i)=>({id:String(400000+i),name:'Other '+i,
   rarity:'normal',group:40000+i}))
 ]);}
@@ -627,4 +630,36 @@ test('the friend outing previously blocked by a valid direct grant now retains t
  const routes=core.directRoutes({hints:[],events},{choices});
  assert.ok(routes.some(x=>x.skillId==='hint:速度維持'&&x.kind==='obtained'&&!x.conditional));
  assert.ok(routes.some(x=>x.skillId==='skill:201272'&&x.kind==='hint'&&x.conditional));
+});
+
+
+test('source obtain_skill with pinned minus rarity stays visible as a negative event effect but never skill coverage',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  risk:{id:7,section:'random',name:'unpublished minus reward',choices:[
+   {label:'bad',effects:[{type:'obtain_skill',skill_id:200521},
+    {type:'skill_hint',skill_id:200532,value:'+2'}]}]}
+ }});
+ const proof=req.crosswalk.locations.find(r=>r.kind==='direct-skill-award');
+ assert.equal(proof.status,'unsupported-rarity');
+ assert.equal(proof.rarity,'minus');
+ const result=project(req);
+ assert.equal(result.report.totals.candidateSchemaEvents,1);
+ assert.equal(result.report.totals.candidateNegativeSkillMentions,1);
+ assert.equal(result.report.totals.candidateNegativeSkillEvents,1);
+ assert.equal(result.report.totals.candidateDirectAcquisitionMentions,0);
+ const ev=result.dryRunCatalog.cards[0].events[0];
+ const bad=ev.choices[0].rewards.find(x=>x.kind==='negative');
+ assert.deepEqual({skillId:bad.skillId,kind:bad.kind,level:bad.level??null},
+  {skillId:'skill:200521',kind:'negative',level:null});
+ const paths=core.directRoutes({hints:[],events:[ev]},
+  {choices:{[ev.id]:ev.choices[0].id}});
+ assert.equal(paths.length,1);
+ assert.equal(paths[0].skillId,'hint:速度維持');
+ assert.ok(!paths.some(x=>x.skillId==='skill:200521'));
+ const tampered=outingCandidate({kind:'support',id:30026,events_ja:{
+  risk:{section:'random',name:'unpublished',choices:[{label:'',effects:[
+   {type:'obtain_skill',skill_id:200521}]}]}
+ }});
+ tampered.crosswalk.locations.find(x=>x.kind==='direct-skill-award').rarity='rare';
+ assert.equal(project(tampered).report.excludedReasons.DIRECT_SKILL_GRANT_ID_PENDING,1);
 });
