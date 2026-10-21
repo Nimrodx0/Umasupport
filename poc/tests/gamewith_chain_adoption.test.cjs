@@ -117,5 +117,5 @@ test('identical page stage must not participate in two chains or refer to missin
  r.chains.push({chainKey:'duplicate',stages:[r.chains[0].stages[0]]});
  assert.throws(()=>run(r),/一意/);
  r.chains.pop();r.chains[0].stages[2].eventId='other';
- assert.throws(()=>run(r),/対象イベント/);
+ assert.throws(()=>run(r),/対象イベント|後続イベント/);
 });
