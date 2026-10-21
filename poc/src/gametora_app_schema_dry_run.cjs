@@ -48,11 +48,20 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   if(locator.has(k))fail('数値ヒント位置の重複');
   locator.set(k,x);
  }
+ const orLocator=new Map();
+ for(const x of crosswalk.alternativeLocations||[]){
+  if(x.kind!=='exclusive-or-hint')fail('OR候補の種別不正');
+  const k=f(x.cardId,x.sourceOrdinal,x.choiceOrdinal,x.routeOrdinal,x.hintOrdinal)+':'+x.alternativeOrdinal;
+  if(orLocator.has(k))fail('OR候補位置の重複');
+  orLocator.set(k,x);
+ }
  const visited=new Set(),reject=[],accepted=[],perCard=[],counts={
   sourceCards:candidate.cards.length,sourceEvents:0,sourceChoices:0,sourceRoutes:0,
   candidateSchemaEvents:0,candidateSchemaCards:0,
   candidateAutoEvents:0,candidateChoiceEvents:0,
   candidateRewardMentions:0,candidateTerminalPaths:0,
+  candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
+  candidateExclusiveOrEvents:0,
   candidateCurationOnlyHintMentions:0,candidateCurationOnlyEvents:0,
   candidateHistorical2025HintMentions:0,candidateHistorical2025Events:0,
   candidateConditionalAvailabilityEvents:0,
@@ -102,9 +111,11 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     chainByOrdinal.get(e.sourceChainOrdinal-1):null;
    if(sourceChain&&e.sourceChainOrdinal>1&&!priorId)
     reason='CHAIN_PREDECESSOR_NOT_PROJECTED';
-   if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'))
+   if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'&&
+      r!=='SKILL_HINT_EFFECT_UNRESOLVED'))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
-   const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0;
+   const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
+    eventOrGroups=0,eventOrOptions=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -118,7 +129,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     for(const route of ch.routes){
      if(!Array.isArray(route.guardKinds)||route.guardKinds.length||
         !Array.isArray(route.conditionsRequiringReview)||
-        route.conditionsRequiringReview.length||
+        route.conditionsRequiringReview.some(x=>x!=='SKILL_HINT_EFFECT_UNRESOLVED')||
         !Array.isArray(route.directSkillGrantFacts)||
         route.directSkillGrantFacts.length){
       reason='SPECIAL_ROUTE_OR_DIRECT_GRANT';break;
@@ -126,10 +137,47 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      if(!Array.isArray(route.numericHintFacts)){
       reason='INVALID_ROUTE_HINTS';break;
      }
-     const rewards=[],unique=new Set();
+     const rewards=[],unique=new Set(),exclusiveGroups=[];
      for(let hi=0;hi<route.numericHintFacts.length;hi++){
       const h=route.numericHintFacts[hi];
       const k=f(c.cardId,e.sourceOrdinal,ch.choiceOrdinal,route.routeOrdinal,hi+1);
+      if(h.originType==='skill_hint_or'){
+       if(!Array.isArray(h.alternatives)||h.alternatives.length<2||h.alternatives.length>16){
+        reason='EXCLUSIVE_OR_OPTIONS_UNRESOLVED';break;
+       }
+       const group=[],seenOptions=new Set();
+       for(let ai=0;ai<h.alternatives.length;ai++){
+        const option=h.alternatives[ai],loc=orLocator.get(k+':'+(ai+1));
+        const isSupplement=loc?.status==='curation-only-not-in-runtime-registry'&&
+         supplementalIds.has(option.skillNumericId);
+        const isHistorical=loc?.status==='not-in-pinned-umasim-registry'&&
+         historicalIds.has(option.skillNumericId);
+        if(option.numericFactParsed!==true||!loc||loc.numericFactParsed!==true||
+           !(loc.status==='mapped-existing-normal-hint'||loc.status==='mapped-numeric-event-skill'||
+             isSupplement||isHistorical)||
+           loc.numericId!==option.skillNumericId||loc.level!==option.level){
+         reason='EXCLUSIVE_OR_OPTIONS_UNRESOLVED';break;
+        }
+        const source=registry.byId.get(option.skillNumericId);
+        if(!source||!['normal','rare'].includes(source.rarity)||seenOptions.has(source.id)){
+         reason='EXCLUSIVE_OR_OPTIONS_UNRESOLVED';break;
+        }
+        seenOptions.add(source.id);
+        group.push({id:source.id,key:k+':'+(ai+1),
+         reward:{skillId:'skill:'+source.id,verifiedSkillName:source.name,level:option.level},
+         isSupplement,isHistorical});
+       }
+       if(reason)break;
+       exclusiveGroups.push(group);
+       eventOrGroups++;
+       eventOrOptions+=group.length;
+       for(const option of group){
+        eventHintKeys.push(option.key);
+        if(option.isSupplement)eventCurationCount++;
+        if(option.isHistorical)eventHistoricalCount++;
+       }
+       continue;
+      }
       const verified=locator.get(k);
       const isSupplement=verified?.status==='curation-only-not-in-runtime-registry'&&
         supplementalIds.has(h.skillNumericId);
@@ -152,13 +200,38 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,level:h.level});
      }
      if(reason)break;
+     // Each source "skill_hint_or" is an EXCLUSIVE choice of one hint.
+     // Construct outcome alternatives; never put sibling OR skills together.
+     // Keep bounded even for multiple independent OR sets in one source path.
+     let variants=[{rewards,ids:unique}];
+     for(const group of exclusiveGroups){
+      const next=[];
+      for(const variant of variants){
+       for(const option of group){
+        if(variant.ids.has(option.id)){
+         reason='EXCLUSIVE_OR_DUPLICATES_FIXED_REWARD';break;
+        }
+        next.push({rewards:[...variant.rewards,option.reward],
+         ids:new Set([...variant.ids,option.id])});
+        if(next.length>32){reason='EXCLUSIVE_OR_COMBINATIONS_TOO_LARGE';break;}
+       }
+       if(reason)break;
+      }
+      if(reason)break;
+      variants=next;
+     }
+     if(reason)break;
      const terminal=route.explicitChainEnd===true;
      if(terminal&&e.section!=='arrows'){
       reason='NONCHAIN_TERMINAL_REQUIRES_REVIEW';break;
      }
-     out.push({id:route.routeId,label:'結果'+route.routeOrdinal+'（仮）',
-       rewards,...(terminal?{terminal:true}:{})});
-     eventHintCount+=rewards.length;
+     for(let vi=0;vi<variants.length;vi++){
+      const variant=variants[vi],suffix=variants.length>1?'-or-'+(vi+1):'';
+      out.push({id:route.routeId+suffix,
+       label:'結果'+route.routeOrdinal+(suffix?'・候補'+(vi+1):'')+'（仮）',
+       rewards:variant.rewards,...(terminal?{terminal:true}:{})});
+     }
+     eventHintCount+=rewards.length+exclusiveGroups.reduce((n,g)=>n+g.length,0);
     }
     if(reason)break;
     // If originally a no-choice support event, do NOT fabricate an option.
@@ -220,6 +293,11 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    if(eventHistoricalCount){
     counts.candidateHistorical2025HintMentions+=eventHistoricalCount;
     counts.candidateHistorical2025Events++;
+   }
+   if(eventOrGroups){
+    counts.candidateExclusiveOrHintEffects+=eventOrGroups;
+    counts.candidateExclusiveOrOptionMentions+=eventOrOptions;
+    counts.candidateExclusiveOrEvents++;
    }
    if(isAuto)counts.candidateAutoEvents++;
    else counts.candidateChoiceEvents++;
