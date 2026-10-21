@@ -129,3 +129,23 @@ test('editorial unresolvedRewards never enter runtime or reviewed event catalogs
   unresolvedRewards:[{skillName:'未確認スキル',level:1}]}];
  assert.throws(()=>validate(auto),/未照合報酬は公開イベントに登録できません/);
 });
+
+
+test('typed direct acquisition is not a hint level; legacy rewards stay hints',()=>{
+ const events=[{id:'typed',name:'typed reward',type:'choice',choices:[
+  {id:'go',label:'continue',rewards:[
+   {skillId:'kunrin',kind:'obtained'}, {skillId:'tail',level:2}]}
+ ]}];
+ validate(events);
+ const routes=core.directRoutes(card(events),config({typed:'go'}));
+ assert.deepEqual(routes.map(r=>({skill:r.skillId,kind:r.kind,level:r.level})),[
+  {skill:'kunrin',kind:'obtained',level:null},
+  {skill:'tail',kind:'hint',level:2}
+ ]);
+ const wrong=structuredClone(events);
+ wrong[0].choices[0].rewards[0].level=1;
+ assert.throws(()=>validate(wrong),/直接習得報酬にはヒントLv/);
+ wrong[0].choices[0].rewards[0].level=undefined;
+ wrong[0].choices[0].rewards[0].kind='unknown-kind';
+ assert.throws(()=>validate(wrong),/報酬種別が不正/);
+});
