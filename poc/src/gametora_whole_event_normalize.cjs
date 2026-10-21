@@ -100,8 +100,19 @@ function transformDocument(document){
       const skillId=positive(effect.skill_id)?String(effect.skill_id):null;
       const level=number!==null&&number>=1&&number<=20?number:null;
       const resolved=type==='skill_hint'&&skillId!==null&&level!==null;
+      // GameTora "sr" means exactly ONE of several hint alternatives.
+      // Preserve each numeric option; never turn them into simultaneous hints.
+      // Variable levels (e.g. "+1/+3") remain unresolved rather than guessed.
+      const alternatives=type==='skill_hint_or'&&Array.isArray(effect.options)?
+       effect.options.map(o=>{
+        const id=positive(o?.skill_id)?String(o.skill_id):null;
+        const value=numeric(o?.value);
+        const level=value!==null&&value>=1&&value<=20?value:null;
+        return {skillNumericId:id,level,numericFactParsed:id!==null&&level!==null};
+       }):null;
       hints.push({skillNumericId:skillId,level,
        originType:type,numericFactParsed:resolved,
+       ...(alternatives!==null?{alternatives}:{}),
        appSkillIdVerified:false});
       if(resolved)hintCount++;
       else{unsupportedHint++;reasonCodes.add('SKILL_HINT_EFFECT_UNRESOLVED');}

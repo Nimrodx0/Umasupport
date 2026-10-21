@@ -159,6 +159,14 @@ jobs:
             --private-preview-output "$RUNNER_TEMP/historical-master/private_historical_skill_names.json"
       - name: Verify synthetic source-to-runtime app schema conversion
         run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
+      - name: Independently freeze current UmaSim and curated IDs without 2025 historical preview
+        run: |
+          node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            whole-event-output/gametora_event_skill_crosswalk.v1.json \
+            "$RUNNER_TEMP/event-inputs/skill_data.txt" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            whole-event-output/gametora_app_schema_no_historical.v1.json
       - name: Dry-run runtime schema for GT events with all required facts resolved
         run: |
           node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \

@@ -35,9 +35,10 @@ function crosswalk({candidate,skillText,model,supplemental}){
  const supplementalByName=new Map(supplementalIndex.supplementalRecords.map(r=>[norm(r.name),r.id]));
  if(raw.count<100)fail('スキル辞書が短すぎます');
  const expected={...candidate.totals};
- const seenCards=new Set(),locations=[],unresolved=[],counts={
+ const seenCards=new Set(),locations=[],alternativeLocations=[],unresolved=[],counts={
   cards:0,sourceEvents:0,sourceChoices:0,sourceRoutes:0,
-  numericHintMentions:0,matchedPinnedSkillIds:0,
+  numericHintMentions:0,exclusiveOrHintEffects:0,exclusiveOrOptions:0,
+  exclusiveOrOptionsParsed:0,matchedPinnedSkillIds:0,
   matchedAppNormalHintIds:0,matchedAppRegisteredNumericIds:0,
   ambiguousSkillNamesSafelyKeptNumeric:0,missingPinnedSkillIds:0,
   unsupportedSkillRarities:0,unresolvedInputHints:0,
@@ -97,6 +98,25 @@ function crosswalk({candidate,skillText,model,supplemental}){
       if(!obj(h)||!['skill_hint','skill_hint_or'].includes(h.originType))
        fail('ヒント構造が不正');
       if(h.numericFactParsed!==true){
+       if(h.originType==='skill_hint_or'){
+        counts.exclusiveOrHintEffects++;
+        for(let ai=0;ai<(h.alternatives||[]).length;ai++){
+         const option=h.alternatives[ai];
+         counts.exclusiveOrOptions++;
+         const parsed=option?.numericFactParsed===true;
+         if(parsed)counts.exclusiveOrOptionsParsed++;
+         const matching=parsed?classify(option.skillNumericId,'exclusive-or-hint'):
+          {status:'unresolved-exclusive-or-option',runtimeSkillId:null};
+         alternativeLocations.push({...context,kind:'exclusive-or-hint',
+          hintOrdinal:i+1,alternativeOrdinal:ai+1,
+          numericId:option?.skillNumericId||null,level:option?.level??null,
+          numericFactParsed:parsed,status:matching.status,
+          runtimeSkillId:matching.runtimeSkillId,
+          ...(matching.rarity?{rarity:matching.rarity}:{}),
+          ...(matching.nameFingerprint?{nameFingerprint:matching.nameFingerprint}:{}),
+          ...(matching.nameAmbiguous?{nameAmbiguous:true}:{})});
+        }
+       }
        counts.unresolvedInputHints++;
        unresolved.push({...context,kind:'hint',hintOrdinal:i+1,
         numericId:h.skillNumericId||null,reason:'SOURCE_HINT_EFFECT_NOT_NUMERIC_OR_AMBIGUOUS'});
@@ -171,6 +191,6 @@ function crosswalk({candidate,skillText,model,supplemental}){
   sourceSkillRegistryCount:raw.count,sourceProseIncluded:false,
   crosswalkDoesNotVerifyRouteConditions:true,requiresSeparatePublicationReview:true,
   releaseApproved:false,gameVerified:false,
-  stats:counts,locations,unresolved};
+  stats:counts,locations,alternativeLocations,unresolved};
 }
 module.exports={crosswalk,CANONICAL_SOURCE_SHA,CANONICAL_SOURCE_REV};
