@@ -45,14 +45,14 @@ test('cross-source numeric pairs and option ordinals are immutable and tied to s
   const d=clone(base);mutate(d);assert.throws(()=>run(d));
  }
 });
-test('known bond gauge conflict retains both publishers and GameWith-first provisional value',()=>{
+test('known bond gauge conflict retains both publishers and GameWith exception adjudication value',()=>{
  const d=clone(base);
  d.records[0].nonSkillSourceDifferences[0].chosenProvisional=5;
- assert.throws(()=>run(d),/GameWith-first/);
+ assert.throws(()=>run(d),/GameWith/);
  const a=clone(base);
  a.records[0].nonSkillSourceDifferences[0].game8=7;
- assert.throws(()=>run(a),/GameWith-first/);
+ assert.throws(()=>run(a),/GameWith/);
  const b=clone(base);
  b.records[0].nonSkillSourceDifferences[0].quantity='gameplaySuccessChance';
- assert.throws(()=>run(b),/GameWith-first/);
+ assert.throws(()=>run(b),/GameWith/);
 });
