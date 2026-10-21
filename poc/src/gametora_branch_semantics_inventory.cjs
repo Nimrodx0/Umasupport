@@ -23,6 +23,7 @@ function inventory(candidate){
   unflaggedMultiRouteChoices:0,randomFlagSingleRouteChoices:0,
   multiRouteEvents:0,eventsWithSkillHintOr:0,
   skillHintOrEffectMentions:0,skillHintOrOptions:0,
+  unresolvedOrEffectStructure:0,
   rangeLevelHintMentions:0,rangeLevelOrOptions:0,eventsWithRangeLevels:0,
   explicitChainEndRoutes:0,nonChainEndRoutes:0,
   guardedRoutes:0,eventsWithGuards:0,directSkillGrantMentions:0,
@@ -71,11 +72,16 @@ function inventory(candidate){
      totals.directSkillGrantMentions+=r.directSkillGrantFacts.length;
      for(const h of r.numericHintFacts){
       if(h.originType==='skill_hint_or'){
-       if(!Array.isArray(h.alternatives))fail('OR候補の配列が欠損');
        or++;totals.skillHintOrEffectMentions++;
-       totals.skillHintOrOptions+=h.alternatives.length;
-       for(const o of h.alternatives){
-        if(Array.isArray(o.levelRange)){range++;totals.rangeLevelOrOptions++;}
+       // A malformed OR effect is a valid *quarantined* source case.
+       // Count it as unresolved rather than discarding the whole audit.
+       if(!Array.isArray(h.alternatives)){
+        totals.unresolvedOrEffectStructure++;
+       }else{
+        totals.skillHintOrOptions+=h.alternatives.length;
+        for(const o of h.alternatives){
+         if(Array.isArray(o.levelRange)){range++;totals.rangeLevelOrOptions++;}
+        }
        }
       }else if(h.originType==='skill_hint'){
        if(Array.isArray(h.levelRange)){range++;totals.rangeLevelHintMentions++;}
