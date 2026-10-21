@@ -132,7 +132,8 @@ function elCondor({card,event,chainByOrdinal,locator,registry,supplementalIds,hi
     parent.choices[1].routes?.length!==1)return null;
  const [good,bad]=e.choices[0].routes;
  const safeEffects=new Set(['brg','speed','guts','skill_points','skill_hint','bond']);
- if(!good||!bad||!uncheckedRoute(good)||!uncheckedRoute(bad)||
+ if(!good||!bad||!uncheckedRoute(good)||
+    bad.explicitChainEnd!==false||bad.directSkillGrantFacts?.length!==0||
     good.guardKinds.length!==0||
     bad.guardKinds.length!==1||bad.guardKinds[0]!=='otherwise'||
     good.conditionsRequiringReview?.length!==0||
