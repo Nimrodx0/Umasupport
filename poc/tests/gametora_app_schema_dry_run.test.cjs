@@ -106,3 +106,55 @@ test('invalid source types and mismatch crosswalk lineage cannot enter runtime p
  const req2=input();req2.candidate.releaseApproved=true;
  assert.throws(()=>project({...req2,crosswalk:req2.cross}),/出典/);
 });
+
+test('special/outing/outing-random events remain conditional and outing order is preserved',()=>{
+ const doc={kind:'support',id:30026,events_ja:{
+  s:{id:1,section:'special',name:'not redistributed',choices:[
+   {label:'',effects:[{type:'skill_hint',skill_id:200532,value:'+1'}]}]},
+  d1:{id:2,section:'dates',name:'outing one',choices:[
+   {label:'',effects:[{type:'energy',value:'+10'}]}]},
+  d2:{id:3,section:'dates',name:'outing two',choices:[
+   {label:'',effects:[{type:'skill_hint',skill_id:200532,value:'+2'}]}]},
+  dr:{id:4,section:'dates_random',name:'random outing',choices:[
+   {label:'',effects:[{type:'skill_hint',skill_id:201272,value:'+3'}]}]}
+ }};
+ const row=transformDocument(doc);
+ const {reviewQueue,effectTypeCounts,...card}=row;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:row.sourceEventCount,
+   sourceChoices:row.sourceChoiceCount,expandedRoutes:row.sourceExpandedRoutes,
+   numericHintMentions:row.numericParsedHintMentions,
+   unresolvedHintMentions:row.unresolvedHintMentions,
+   directSkillGrantMentions:row.directSkillGrantMentions
+  }};
+ const m=model();
+ const link=crosswalk({candidate,skillText:skills(),model:m});
+ const out=project({candidate,crosswalk:link,skillText:skills(),model:m});
+ assert.equal(out.report.totals.candidateSchemaEvents,4);
+ assert.equal(out.report.totals.candidateConditionalAvailabilityEvents,4);
+ assert.equal(out.report.totals.candidateSpecialTriggerEvents,1);
+ assert.equal(out.report.totals.candidateOutingSequenceEvents,2);
+ assert.equal(out.report.totals.candidateOutingRandomEvents,1);
+ assert.equal(out.report.totals.skippedEvents,0);
+ const events=out.dryRunCatalog.cards[0].events;
+ assert.deepEqual(events.map(x=>x.availabilityKind),[
+  'special-trigger','outing-sequence','outing-sequence','outing-random']);
+ assert.deepEqual(events[2].requires,{all:[{eventId:events[1].id}]});
+ assert.equal(core.reachability(events[0],{},events).status,'conditional');
+ assert.equal(core.reachability(events[1],{},events).status,'conditional');
+ assert.equal(core.reachability(events[2],{},events).status,'conditional');
+ assert.equal(core.reachability(events[3],{},events).status,'conditional');
+ assert.equal(core.isReachable(events[0],{},events),false);
+ assert.equal(core.isReachable(events[2],{},events),false);
+ const routes=core.directRoutes({hints:[],events},{choices:{}});
+ assert.equal(routes.length,3);
+ assert.ok(routes.every(x=>x.conditional===true));
+ assert.ok(routes.every(x=>/イベント|お出かけ/.test(x.condition)));
+ const schema=require('../src/event_schema.js');
+ assert.throws(()=>schema.validateEvents([
+  {...events[0],availabilityKind:'made-up-unconditional'}
+ ],{skillById:{'skill:200532':{}}},'30026'),/特殊イベント発生条件/);
+});
