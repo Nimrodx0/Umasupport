@@ -77,6 +77,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateConditionalAvailabilityEvents:0,
   candidateSpecialTriggerEvents:0,candidateOutingSequenceEvents:0,
   candidateOutingRandomEvents:0,
+  candidateOutingUnlockEvents:0,candidateOutingFirstStagesGated:0,
+  blockedOutingUnlockStarts:0,
   skippedEvents:0,skippedSourceMissingCards:0,blockedDependentStages:0,
   blockedDependentOutings:0
  };
@@ -85,6 +87,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   counts.skippedEvents++;
   if(reason==='CHAIN_PREDECESSOR_NOT_PROJECTED')counts.blockedDependentStages++;
   if(reason==='OUTING_PREDECESSOR_NOT_PROJECTED')counts.blockedDependentOutings++;
+  if(reason==='OUTING_UNLOCK_PREDECESSOR_NOT_PROJECTED')counts.blockedOutingUnlockStarts++;
  }
  for(const c of candidate.cards){
   if(!obj(c)||typeof c.cardId!=='string'||!Array.isArray(c.events))
@@ -96,6 +99,16 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    continue;
   }
   const converted=[],chainByOrdinal=new Map(),outingByOrdinal=new Map();
+  // This is a provisional *outing* unlock, never a normal arrow-chain
+  // terminal. Do not infer an unlock if a card has ambiguous chains.
+  const randomEnders=c.events.filter(ev=>ev.section==='random'&&
+   ev.choices?.some(ch=>ch.routes?.some(r=>r.explicitChainEnd===true)));
+  const hasOutings=c.events.some(ev=>ev.section==='dates');
+  const hasArrows=c.events.some(ev=>ev.section==='arrows');
+  const ender=randomEnders.length===1?randomEnders[0]:null;
+  const candidateUnlock=hasOutings&&!hasArrows&&ender&&
+   ender.choices.length>1&&
+   ender.choices.some(ch=>ch.routes?.some(r=>r.explicitChainEnd===false))?ender:null;
   let excluded=0,localHints=0,outingOrdinal=0;
   for(const e of c.events){
    counts.sourceEvents++;
@@ -110,11 +123,16 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    if(!['random','arrows','special','dates','dates_random'].includes(e.section))
     reason='UNKNOWN_SUPPORT_EVENT_SECTION';
    const sourceOuting=e.section==='dates';
+   const sourceUnlock=candidateUnlock?.eventId===e.eventId;
    if(sourceOuting)outingOrdinal++;
    const priorOuting=sourceOuting&&outingOrdinal>1?
     outingByOrdinal.get(outingOrdinal-1):null;
    if(sourceOuting&&outingOrdinal>1&&!priorOuting)
     reason='OUTING_PREDECESSOR_NOT_PROJECTED';
+   const unlockParent=sourceOuting&&outingOrdinal===1&&candidateUnlock?
+    converted.find(x=>x.id===candidateUnlock.eventId):null;
+   if(sourceOuting&&outingOrdinal===1&&candidateUnlock&&!unlockParent)
+    reason='OUTING_UNLOCK_PREDECESSOR_NOT_PROJECTED';
    if(!Array.isArray(e.choices)||!e.choices.length)
     reason='INVALID_SOURCE_CHOICES';
    const sourceChain=e.section==='arrows',priorId=sourceChain&&e.sourceChainOrdinal>1?
@@ -122,7 +140,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    if(sourceChain&&e.sourceChainOrdinal>1&&!priorId)
     reason='CHAIN_PREDECESSOR_NOT_PROJECTED';
    if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'&&
-      r!=='SKILL_HINT_EFFECT_UNRESOLVED'))
+      r!=='SKILL_HINT_EFFECT_UNRESOLVED'&&
+      !(sourceUnlock&&r==='TERMINATION_OUTSIDE_CHAIN')))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
    const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
     eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0;
@@ -139,7 +158,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     for(const route of ch.routes){
      if(!Array.isArray(route.guardKinds)||route.guardKinds.length||
         !Array.isArray(route.conditionsRequiringReview)||
-        route.conditionsRequiringReview.some(x=>x!=='SKILL_HINT_EFFECT_UNRESOLVED')||
+        route.conditionsRequiringReview.some(x=>x!=='SKILL_HINT_EFFECT_UNRESOLVED'&&
+          !(sourceUnlock&&x==='TERMINATION_OUTSIDE_CHAIN'))||
         !Array.isArray(route.directSkillGrantFacts)||
         route.directSkillGrantFacts.length){
       reason='SPECIAL_ROUTE_OR_DIRECT_GRANT';break;
@@ -278,7 +298,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      }
      if(reason)break;
      const terminal=route.explicitChainEnd===true;
-     if(terminal&&e.section!=='arrows'){
+     if(terminal&&e.section!=='arrows'&&!sourceUnlock){
       reason='NONCHAIN_TERMINAL_REQUIRES_REVIEW';break;
      }
      for(let vi=0;vi<variants.length;vi++){
@@ -316,6 +336,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     convertedEvent.availabilityKind=triggerKinds[e.section];
    if(sourceOuting&&priorOuting)
     convertedEvent.requires={all:[{eventId:priorOuting}]};
+   else if(sourceOuting&&unlockParent)
+    convertedEvent.requires={all:[{eventId:unlockParent.id}]};
    if(sourceChain&&priorId){
     const parent=converted.find(x=>x.id===priorId);
     const branches=parent.type==='choice'?parent.choices:[parent];
@@ -331,6 +353,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    if(sourceChain)chainByOrdinal.set(e.sourceChainOrdinal,convertedEvent.id);
    if(sourceOuting)outingByOrdinal.set(outingOrdinal,convertedEvent.id);
    converted.push(convertedEvent);
+   if(sourceUnlock)counts.candidateOutingUnlockEvents++;
+   if(sourceOuting&&unlockParent)counts.candidateOutingFirstStagesGated++;
    if(sourceOuting){
     counts.candidateOutingSequenceEvents++;
     counts.candidateConditionalAvailabilityEvents++;
