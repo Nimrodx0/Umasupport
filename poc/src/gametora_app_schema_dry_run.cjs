@@ -306,6 +306,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,
        kind:'obtained'});
       eventDirectAcquisitions++;
+      eventHintCount++;
+      eventHintKeys.push('direct:'+key);
       if(isSupplement)eventCurationCount++;
       if(isHistorical)eventHistoricalCount++;
      }
