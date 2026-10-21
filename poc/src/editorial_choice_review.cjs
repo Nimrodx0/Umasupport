@@ -41,7 +41,8 @@ function verify(db,classification,stages,crosscheck,review){
   eventRouteApproved:0,choiceResultTierApproved:0,gameRewardClaimsApproved:0,
   externalTextIncluded:false,manualEditorialSpotCheck:true
  }))fail('publisher lineage and release gate required');
- if(sourcePriority.eventEffectPrimary!=='GameWith'||
+ if(sourcePriority.schemaVersion!==2||sourcePriority.baselineSource!=='GameTora-derived'||
+    sourcePriority.canonicalExceptionSource!=='GameWith'||
     sourcePriority.automaticPublicationAllowed!==false)fail('source priority policy mismatch');
  const byCard=new Map(db.cards.map(c=>[c.cardId,new Map(c.events.map(e=>[e.sourceKey,e]))]));
  const chainMap=new Map(stages.chainGroups.filter(g=>g.reviewBand==='readyForIndependentRouteReview')
@@ -88,7 +89,7 @@ function verify(db,classification,stages,crosscheck,review){
       diff.choiceOrdinal>src.choices.length||diff.quantity!=='bondGauge'||
       !Number.isSafeInteger(diff.gameWith)||!Number.isSafeInteger(diff.game8)||
       diff.gameWith===diff.game8||diff.chosenProvisional!==diff.gameWith)
-    fail('unreviewed effect conflict or invalid GameWith-first provisional value');
+    fail('unreviewed effect conflict or invalid GameWith adjudication provisional value');
    const key=diff.choiceOrdinal+':'+diff.quantity;
    if(used.has(key))fail('duplicate conflict row');
    used.add(key);
