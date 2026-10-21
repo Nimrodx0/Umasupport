@@ -21,6 +21,7 @@ on:
       - 'poc/tests/test_historical_missing_event_skills.py'
       - 'poc/src/historical_skill_dry_run.cjs'
       - 'poc/src/gametora_app_schema_dry_run.cjs'
+      - 'poc/src/gametora_schema_blocker_diagnostics.cjs'
       - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
       - 'poc/tests/gametora_app_schema_dry_run.test.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'

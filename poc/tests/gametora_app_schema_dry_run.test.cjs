@@ -250,3 +250,85 @@ test('historical-2025-only ID corroboration unlocks a blocked stage and later li
  assert.throws(()=>project({...req,crosswalk:req.cross,historicalPreview:{
   report:falsePresent,privateRecords}}),/件数/);
 });
+
+
+test('every excluded event has a numeric-only diagnostic and linked predecessor',()=>{
+ const {cross,...rest}=input();
+ const out=project({...rest,crosswalk:cross});
+ const diagnosis=out.report.blockerDiagnosis;
+ assert.equal(diagnosis.totalExcluded,2);
+ assert.deepEqual(diagnosis.primaryReasonCounts,out.report.excludedReasons);
+ assert.equal(diagnosis.publicationApproved,false);
+ assert.equal(diagnosis.gameVerified,false);
+ assert.equal(diagnosis.sourceProseIncluded,false);
+ assert.equal(diagnosis.sourceEvidenceEventCounts.SKILL_HINT_EFFECT_UNRESOLVED,undefined);
+ const blocked=diagnosis.numericOnlyPositions.find(x=>
+  x.primaryReason==='CHAIN_PREDECESSOR_NOT_PROJECTED');
+ assert.equal(blocked.cardId,'30080');
+ assert.equal(blocked.sourceOrdinal,2);
+ assert.equal(blocked.predecessorSourceOrdinal,1);
+ assert.equal(blocked.predecessorBlocked,true);
+ assert.equal(blocked.predecessorPrimaryReason,'SKILL_ID_OR_HINT_EFFECT_PENDING');
+ assert.ok(!JSON.stringify(diagnosis).includes('Original'));
+ assert.ok(!JSON.stringify(diagnosis).includes('速度維持'));
+ // A changed source ID must never be accepted as a genuine blocker position.
+ const fake=structuredClone(out.report);
+ fake.excludedSourcePositions[0].eventId='fabricated';
+ const {diagnose}=require('../src/gametora_schema_blocker_diagnostics.cjs');
+ assert.throws(()=>diagnose(rest.candidate,fake),/一致しない/);
+});
+
+test('special-case blockers are split by guarded route, direct grant, unresolved hint and duplicate',()=>{
+ const doc={kind:'support',id:30026,events_ja:{
+  guarded:{id:1,section:'arrows',name:'private source title A',choices:[{
+   label:'private choice text',
+   random_either:true,
+   segments:[
+    {when:[{kind:'both_previous_chain_good'}],
+     effects:[{type:'skill_hint',skill_id:200532,value:'+1'}]},
+    {when:[{kind:'both_previous_chain_bad'}],
+     effects:[{type:'speed',value:'+5'}]}
+   ]}]},
+  award:{id:2,section:'random',name:'private source title B',choices:[{
+   label:'',effects:[{type:'obtain_skill',skill_id:200532}]}]},
+  unresolved:{id:3,section:'random',name:'private source title C',choices:[{
+   label:'',effects:[{type:'skill_hint_or',skill_id:200532,value:'+1'}]}]},
+  duplicated:{id:4,section:'random',name:'private source title D',choices:[{
+   label:'',effects:[
+    {type:'skill_hint',skill_id:200532,value:'+1'},
+    {type:'skill_hint',skill_id:200532,value:'+1'}
+   ]}]}
+ }};
+ const row=transformDocument(doc);
+ const {reviewQueue,effectTypeCounts,...card}=row;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:row.sourceEventCount,
+   sourceChoices:row.sourceChoiceCount,expandedRoutes:row.sourceExpandedRoutes,
+   numericHintMentions:row.numericParsedHintMentions,
+   unresolvedHintMentions:row.unresolvedHintMentions,
+   directSkillGrantMentions:row.directSkillGrantMentions
+  }};
+ const dict=skills(),m=model(),x=crosswalk({candidate,skillText:dict,model:m});
+ const result=project({candidate,crosswalk:x,skillText:dict,model:m});
+ const d=result.report.blockerDiagnosis;
+ assert.equal(result.report.totals.skippedEvents,4);
+ assert.equal(d.totalExcluded,4);
+ assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,3);
+ assert.equal(d.primaryReasonCounts.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
+ assert.equal(d.sourceEvidenceEventCounts.PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW,1);
+ assert.equal(d.sourceEvidenceEventCounts.CONDITIONAL_SEGMENT_REQUIRES_REVIEW,1);
+ assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW,1);
+ assert.equal(d.sourceEvidenceEventCounts.SKILL_HINT_EFFECT_UNRESOLVED,1);
+ assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===2).directAwardMentions,1);
+ assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===3).unparsedHintMentions,1);
+ assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===4).duplicateHintRouteCount,1);
+ assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),3);
+ assert.equal(d.publicationApproved,false);
+ const str=JSON.stringify(d);
+ assert.ok(!str.includes('private source'));
+ assert.ok(!str.includes('private choice'));
+ assert.ok(!str.includes('速度維持'));
+});
