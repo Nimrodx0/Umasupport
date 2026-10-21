@@ -316,7 +316,8 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  const d=result.report.blockerDiagnosis;
  assert.equal(result.report.totals.skippedEvents,4);
  assert.equal(d.totalExcluded,4);
- assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,3);
+ assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,2);
+ assert.equal(d.primaryReasonCounts.EXCLUSIVE_OR_OPTIONS_UNRESOLVED,1);
  assert.equal(d.primaryReasonCounts.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
  assert.equal(d.sourceEvidenceEventCounts.PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW,1);
  assert.equal(d.sourceEvidenceEventCounts.CONDITIONAL_SEGMENT_REQUIRES_REVIEW,1);
@@ -325,7 +326,7 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===2).directAwardMentions,1);
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===3).unparsedHintMentions,1);
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===4).duplicateHintRouteCount,1);
- assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),3);
+ assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),2);
  assert.equal(d.publicationApproved,false);
  const str=JSON.stringify(d);
  assert.ok(!str.includes('private source'));
@@ -381,8 +382,8 @@ test('GameTora OR skill hints create exclusive conditional outcomes with shared 
  assert.equal(event.outcomes.length,2);
  assert.equal(event.rewards,undefined);
  assert.deepEqual(event.outcomes.map(o=>o.rewards.map(r=>r.skillId)),[
-  ['skill:200532','skill:201272'],
-  ['skill:200532','skill:400000']]);
+  ['hint:速度維持','skill:201272'],
+  ['hint:速度維持','skill:400000']]);
  const routes=core.directRoutes({hints:[],events:[event]},{choices:{}});
  assert.equal(routes.length,4);
  assert.ok(routes.every(x=>x.conditional));
