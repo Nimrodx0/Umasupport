@@ -9,6 +9,12 @@ const policy=require('../config/event-source-priority.v1.json');
 function skills(){return JSON.stringify([
  {id:'200532',name:'速度維持',rarity:'normal',group:20053},
  {id:'201272',name:'金の加速',rarity:'rare',group:20127},
+ {id:'200461',name:'三段階ヒント',rarity:'rare',group:20046},
+ {id:'200581',name:'高低ヒント',rarity:'rare',group:20058},
+ {id:'200462',name:'先行結果スキルA',rarity:'normal',group:20046},
+ {id:'200901',name:'先行結果スキルB',rarity:'normal',group:20090},
+ {id:'201051',name:'分岐共通ヒントA',rarity:'normal',group:20105},
+ {id:'202671',name:'分岐共通ヒントB',rarity:'rare',group:20267},
  {id:'200283',name:'架空のマイナススキルA',rarity:'minus',group:20028},
  {id:'200353',name:'架空のマイナススキルB',rarity:'minus',group:20035},
  {id:'200521',name:'架空のマイナススキルC',rarity:'minus',group:20052},
@@ -714,4 +720,179 @@ test('scripted condition with any skill reward, direct grant, termination or unk
   assert.equal(result.report.totals.candidateSchemaEvents,0);
   assert.equal(result.report.totals.skippedEvents,1);
  }
+});
+
+
+function specialCaseCandidate(raw){
+ const norm=transformDocument(raw);
+ const {reviewQueue,effectTypeCounts,...card}=norm;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:norm.sourceEventCount,
+   sourceChoices:norm.sourceChoiceCount,expandedRoutes:norm.sourceExpandedRoutes,
+   numericHintMentions:norm.numericParsedHintMentions,
+   unresolvedHintMentions:norm.unresolvedHintMentions,
+   directSkillGrantMentions:norm.directSkillGrantMentions
+  }};
+ const m=model(),id=String(raw.id);
+ if(!m.cardById[id]){
+  const next={id,hints:[],events:[]};m.cards.push(next);m.cardById[id]=next;
+ }
+ const skillText=skills(),x=crosswalk({candidate,skillText,model:m});
+ return {candidate,crosswalk:x,skillText,model:m};
+}
+function baseSpecialSeries(last,id){
+ return {kind:'support',id,events_ja:{
+  prep1:{id:1,section:'random',name:'source omitted',choices:[{label:'option A',effects:[]}]},
+  prep2:{id:2,section:'random',name:'source omitted',choices:[{label:'option A',effects:[]}]},
+  chain1:{id:3,section:'arrows',name:'stage1',choices:[{label:'',
+   random_either:true,outcomes:[
+    [{type:'skill_hint',skill_id:200462,value:'+1'},{type:'skill_points',value:'+25'}],
+    [{type:'skill_points',value:'+15'}]
+   ]}]},
+  chain2:{id:4,section:'arrows',name:'stage2',choices:[{label:'',
+   random_either:true,outcomes:[
+    [{type:'skill_hint',skill_id:200901,value:'+1'},{type:'skill_points',value:'+25'}],
+    [{type:'skill_points',value:'+15'}]
+   ]}]},
+  chain3:last
+ }};
+}
+test('source pinned Matitan: two earlier outcome results yield EXACTLY one of three hint levels',()=>{
+ const source=baseSpecialSeries({id:5,section:'arrows',name:'unpublished 3',choices:[{label:'',
+  effects:[
+   {type:'both_previous_chain_good'},
+   {type:'speed',value:'+7'},{type:'skill_hint',skill_id:200461,value:'+3'},
+   {type:'one_previous_chain_good'},
+   {type:'power',value:'+7'},{type:'skill_hint',skill_id:200461,value:'+2'},
+   {type:'both_previous_chain_bad'},
+   {type:'energy',value:'+10'},{type:'skill_hint',skill_id:200461,value:'+1'}
+  ]}]},30103);
+ const out=project(specialCaseCandidate(source)),events=out.dryRunCatalog.cards[0].events;
+ assert.equal(out.report.totals.skippedEvents,0);
+ assert.equal(out.report.totals.candidateSourceReviewedConditionalEvents,1);
+ assert.equal(out.report.totals.candidateRewardMentions,5); // 2 upstream + 3 alternatives
+ const final=events.find(e=>e.id.endsWith('005'));
+ assert.equal(final.outcomes.length,3);
+ assert.deepEqual(final.outcomes.map(o=>o.rewards[0].level),[3,2,1]);
+ const first=events.find(e=>e.id.endsWith('003')),second=events.find(e=>e.id.endsWith('004'));
+ const cases=[
+  [['route-01','route-01'],0],
+  [['route-01','route-02'],1],
+  [['route-02','route-01'],1],
+  [['route-02','route-02'],2]
+ ];
+ for(const [[a,b],expected] of cases){
+  const chosen={[first.id]:a,[second.id]:b};
+  const states=final.outcomes.map(o=>core.outcomeReachability(o,final,{},events,chosen).status);
+  assert.deepEqual(states.map(x=>x!=='blocked'),[0,1,2].map(x=>x===expected));
+ }
+ assert.ok(!JSON.stringify(out.report).includes('unpublished'));
+ assert.equal(out.report.publicationApproved,false);
+});
+test('Matitan source marker drift / ambiguous predecessor is quarantined, not flattened to three concurrent hints',()=>{
+ const raw=baseSpecialSeries({id:5,section:'arrows',name:'not published',choices:[{label:'',
+  effects:[{type:'both_previous_chain_good'},{type:'skill_hint',skill_id:200461,value:'+3'},
+   {type:'one_previous_chain_good'},{type:'skill_hint',skill_id:200461,value:'+2'},
+   {type:'both_previous_chain_bad'},{type:'skill_hint',skill_id:200461,value:'+1'}]}]},30103);
+ raw.events_ja.chain1.choices[0].outcomes[0]=[{type:'speed',value:'+5'}];
+ const result=project(specialCaseCandidate(raw));
+ assert.equal(result.report.totals.candidateSourceReviewedConditionalEvents,0);
+ assert.equal(result.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
+});
+function rheinSeries(mutate){
+ const block=[
+  {type:'speed',value:'+25'},
+  {type:'skill_hint',skill_id:201051,value:'+1'},
+  {type:'skill_hint',skill_id:202671,value:'+1'},
+  {type:'bond',value:'+5'}
+ ];
+ const copy=structuredClone(block);
+ if(mutate)copy[1].value='+2';
+ return {kind:'support',id:30253,events_ja:{
+  prep1:{id:1,section:'random',name:'prep',choices:[{label:'',effects:[]}]},
+  prep2:{id:2,section:'random',name:'prep',choices:[{label:'',effects:[]}]},
+  first:{id:3,section:'arrows',name:'first',choices:[{label:'',effects:[]}]},
+  second:{id:4,section:'arrows',name:'second',choices:[
+   {label:'option A',effects:[]},{label:'option B',effects:[]}]},
+  final:{id:5,section:'arrows',name:'unpublished final',choices:[{label:'',
+   effects:[...block,...copy]}]}
+ }};
+}
+test('two identical source copies of Rhein hints are NOT double-awarded; preserve source provenance',()=>{
+ const out=project(specialCaseCandidate(rheinSeries(false)));
+ assert.equal(out.report.totals.skippedEvents,0);
+ assert.equal(out.report.totals.candidateSourceReviewedDuplicateEvents,1);
+ assert.equal(out.report.totals.candidateCollapsedDuplicatedSourceHints,2);
+ const events=out.dryRunCatalog.cards[0].events;
+ const ev=events.find(e=>e.id.endsWith('005'));
+ assert.deepEqual(ev.rewards.map(x=>x.level),[1,1]);
+ assert.equal(ev.rewards.length,2);
+ assert.ok(!ev.outcomes);
+ assert.equal(out.report.publicationApproved,false);
+ assert.equal(out.report.gameVerified,false);
+});
+test('source copy is not identical: do not silently deduplicate or infer the previous choice reward',()=>{
+ const out=project(specialCaseCandidate(rheinSeries(true)));
+ assert.equal(out.report.totals.candidateSourceReviewedDuplicateEvents,0);
+ assert.equal(out.report.excludedReasons.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
+});
+
+
+function elCondorSeries(omitMarker=false){
+ const raw=baseSpecialSeries({id:5,section:'arrows',name:'unpublished final',choices:[{
+  label:'',segments:[
+   {when:[],effects:[
+    ...(omitMarker?[]:[{type:'brg'}]),
+    {type:'speed',value:'+5'},{type:'guts',value:'+15'},
+    {type:'skill_points',value:'+30'},
+    {type:'skill_hint',skill_id:200581,value:'+3'},
+    {type:'bond',value:'+5'}]},
+   {when:[{kind:'otherwise'}],effects:[
+    {type:'speed',value:'+5'},{type:'guts',value:'+15'},
+    {type:'skill_hint',skill_id:200581,value:'+1'},
+    {type:'bond',value:'+5'}]}
+  ]
+ }]},30102);
+ raw.events_ja.chain2={id:4,section:'arrows',name:'unpublished preceding',
+  choices:[
+   {label:'upper',random_either:true,outcomes:[
+    [{type:'mood',value:'+1'},{type:'skill_points',value:'+30'}],
+    [{type:'energy',value:'-10'},{type:'skill_points',value:'+5'}]
+   ]},
+   {label:'lower',effects:[{type:'speed',value:'+7'}]}
+  ]};
+ return raw;
+}
+test('El Condor final stage: Lv3 iff previous upper choice succeeds, else Lv1',()=>{
+ const res=project(specialCaseCandidate(elCondorSeries()));
+ assert.equal(res.report.totals.skippedEvents,0);
+ assert.equal(res.report.totals.candidateSourceReviewedPriorChoiceEvents,1);
+ const events=res.dryRunCatalog.cards[0].events;
+ const parent=events.find(x=>x.id.endsWith('004'));
+ const final=events.find(x=>x.id.endsWith('005'));
+ assert.equal(parent.choices.length,2);
+ assert.equal(final.outcomes.length,2);
+ assert.deepEqual(final.outcomes.map(x=>x.rewards[0].level),[3,1]);
+ const trials=[
+  ['choice-01','route-01',0],
+  ['choice-01','route-02',1],
+  ['choice-02',null,1]
+ ];
+ for(const [choice,outcome,correct]of trials){
+  const state={...(outcome?{[parent.id]:outcome}:{})};
+  const selections={[parent.id]:choice};
+  const status=final.outcomes.map(o=>core.outcomeReachability(
+   o,final,selections,events,state).status);
+  assert.deepEqual(status.map(x=>x!=='blocked'),[0,1].map(i=>i===correct));
+ }
+ assert.equal(res.report.publicationApproved,false);
+});
+test('El Condor pinned source brg branch marker is required, not guessed',()=>{
+ const result=project(specialCaseCandidate(elCondorSeries(true)));
+ assert.equal(result.report.totals.candidateSourceReviewedPriorChoiceEvents,0);
+ assert.equal(result.report.totals.skippedEvents,1);
+ assert.equal(result.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
 });

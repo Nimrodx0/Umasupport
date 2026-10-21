@@ -13,6 +13,7 @@ const curated=require('./curated_skill_resolution.cjs');
 const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
 const {diagnose}=require('./gametora_schema_blocker_diagnostics.cjs');
 const {inventory}=require('./gametora_branch_semantics_inventory.cjs');
+const reviewedCases=require('./gametora_reviewed_skill_cases.cjs');
 // Only for skill-projection, never for a full event-stat outcome simulator.
 // A guarded event is provably skill-invariant iff EVERY source branch is
 // devoid of hints, direct grants, terminal/flag effects and ambiguous types.
@@ -103,6 +104,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateDirectAcquisitionMentions:0,candidateDirectAcquisitionEvents:0,
   candidateNegativeSkillMentions:0,candidateNegativeSkillEvents:0,
   candidateSkillInvariantScriptedEvents:0,candidateUnmodeledNonSkillBranches:0,
+  candidateSourceReviewedConditionalEvents:0,candidateSourceReviewedDuplicateEvents:0,
+  candidateSourceReviewedPriorChoiceEvents:0,
+  candidateCollapsedDuplicatedSourceHints:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
   candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
@@ -172,6 +176,34 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     reason='OUTING_UNLOCK_SEMANTICS_REQUIRES_REVIEW';
    if(!Array.isArray(e.choices)||!e.choices.length)
     reason='INVALID_SOURCE_CHOICES';
+   // Source-shape-locked and independently corroborated SKILL semantics
+   // for two tricky final chain stages. Their stat differences are NOT
+   // reconstructed. Never accept if any numeric ID or predecessor changed.
+   if(!reason&&(['30102','30103','30253'].includes(c.cardId))){
+    const reviewed=reviewedCases.tryProject({
+     card:c,event:e,chainByOrdinal,locator,registry,supplementalIds,historicalIds});
+    if(reviewed){
+     converted.push(reviewed.event);
+     chainByOrdinal.set(e.sourceChainOrdinal,e.eventId);
+     counts.candidateAutoEvents++;
+     localHints+=reviewed.beneficialRewards;
+     for(const key of reviewed.sourceKeys)visited.add(key);
+     counts.candidateCollapsedDuplicatedSourceHints+=reviewed.collapsedSourceMentions;
+     if(reviewed.kind==='matitan'||reviewed.kind==='elcondor')
+      counts.candidateSourceReviewedConditionalEvents++;
+     if(reviewed.kind==='elcondor')counts.candidateSourceReviewedPriorChoiceEvents++;
+     if(reviewed.kind==='rheinkraft')counts.candidateSourceReviewedDuplicateEvents++;
+     if(reviewed.supplementalMentions){
+      counts.candidateCurationOnlyHintMentions+=reviewed.supplementalMentions;
+      counts.candidateCurationOnlyEvents++;
+     }
+     if(reviewed.historicalMentions){
+      counts.candidateHistorical2025HintMentions+=reviewed.historicalMentions;
+      counts.candidateHistorical2025Events++;
+     }
+     continue;
+    }
+   }
    // Narrow, lossless-to-SKILL-catalog projection. The three separate
    // source stat/bond reward branches remain unmodeled and auditable.
    if(!reason&&skillInvariantScriptedSpecial(e)){
@@ -510,7 +542,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   {...model,skillById:sourceSkills});
  if(validated.eventsWithRecords!==counts.candidateSchemaEvents)
   fail('独立スキーマ検証のイベント件数が不一致');
- if(visited.size!==counts.candidateRewardMentions+counts.candidateNegativeSkillMentions)
+ if(visited.size!==counts.candidateRewardMentions+counts.candidateNegativeSkillMentions+
+    counts.candidateCollapsedDuplicatedSourceHints)
   fail('スキルの一対一対応件数が不一致');
  const reasons={};
  for(const x of reject)reasons[x.reason]=(reasons[x.reason]||0)+1;

@@ -52,17 +52,21 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2376||
-      result.report.totals.skippedEvents!==112||
+      result.report.totals.candidateSchemaEvents!==2378||
+      result.report.totals.skippedEvents!==110||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2485||
-      result.report.totals.skippedEvents!==3||
+      result.report.totals.candidateSchemaEvents!==2488||
+      result.report.totals.skippedEvents!==0||
       result.report.totals.blockedDependentStages!==0||
       result.report.totals.candidateHistorical2025HintMentions!==81||
       result.report.totals.candidateHistorical2025Events!==77||
-      result.report.totals.candidateRewardMentions!==1689||
+      result.report.totals.candidateRewardMentions!==1696||
       result.report.totals.candidateTerminalPaths!==109))||
+    result.report.totals.candidateSourceReviewedConditionalEvents!==(historicalPreview?2:1)||
+    result.report.totals.candidateSourceReviewedDuplicateEvents!==1||
+    result.report.totals.candidateSourceReviewedPriorChoiceEvents!==1||
+    result.report.totals.candidateCollapsedDuplicatedSourceHints!==2||
     result.report.totals.candidateSkillInvariantScriptedEvents!==2||
     result.report.totals.candidateUnmodeledNonSkillBranches!==6||
     result.report.totals.candidateDirectAcquisitionMentions!==0||
