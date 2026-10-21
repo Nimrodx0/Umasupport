@@ -27,7 +27,8 @@ function main(args){
   report:JSON.parse(fs.readFileSync(historicalReportFile,'utf8')),
   privateRecords:JSON.parse(fs.readFileSync(privateRecordsFile,'utf8'))}:undefined;
  const crosswalkRecord=JSON.parse(fs.readFileSync(crosswalkFile,'utf8'));
- const result=project({candidate:JSON.parse(fs.readFileSync(candidateFile,'utf8')),
+ const candidateAudit=JSON.parse(fs.readFileSync(candidateFile,'utf8'));
+ const result=project({candidate:candidateAudit,
   crosswalk:crosswalkRecord,
   skillText:raw.toString('utf8'),model,supplemental,historicalPreview});
  // Exact source numeric IDs and positions only; no scraped words, names,
@@ -51,17 +52,19 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2374||
-      result.report.totals.skippedEvents!==114||
+      result.report.totals.candidateSchemaEvents!==2376||
+      result.report.totals.skippedEvents!==112||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2483||
-      result.report.totals.skippedEvents!==5||
+      result.report.totals.candidateSchemaEvents!==2485||
+      result.report.totals.skippedEvents!==3||
       result.report.totals.blockedDependentStages!==0||
       result.report.totals.candidateHistorical2025HintMentions!==81||
       result.report.totals.candidateHistorical2025Events!==77||
       result.report.totals.candidateRewardMentions!==1689||
       result.report.totals.candidateTerminalPaths!==109))||
+    result.report.totals.candidateSkillInvariantScriptedEvents!==2||
+    result.report.totals.candidateUnmodeledNonSkillBranches!==6||
     result.report.totals.candidateDirectAcquisitionMentions!==0||
     result.report.totals.candidateNegativeSkillMentions!==(historicalPreview?7:6)||
     result.report.totals.candidateNegativeSkillEvents!==(historicalPreview?5:4)||
@@ -77,8 +80,8 @@ function main(args){
     result.report.totals.candidateRangeOutcomeEvents!==(historicalPreview?11:8)||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?255:251)||
-    result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?117:115)||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?257:253)||
+    result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?119:117)||
     result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
@@ -105,6 +108,24 @@ function main(args){
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_TOTALS='+JSON.stringify(report.totals));
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_REASONS='+JSON.stringify(report.excludedReasons));
  console.log('GAMETORA_BLOCKER_DIAGNOSIS='+JSON.stringify({totalExcluded:report.blockerDiagnosis.totalExcluded,sourceSectionCounts:report.blockerDiagnosis.sourceSectionCounts,sourceEvidenceEventCounts:report.blockerDiagnosis.sourceEvidenceEventCounts,specialCaseEvidenceCombinations:report.blockerDiagnosis.specialCaseEvidenceCombinations}));
+ console.log('GAMETORA_FINAL_BLOCKER_LOCATIONS='+JSON.stringify(
+  report.blockerDiagnosis.numericOnlyPositions.map(pos=>{
+   const card=candidateAudit.cards.find(c=>c.cardId===pos.cardId);
+   const event=card?.events.find(e=>e.sourceOrdinal===pos.sourceOrdinal);
+   return {...pos,
+    choices:(event?.choices||[]).map(choice=>({
+     ordinal:choice.choiceOrdinal,random:choice.reportedRandomAlternative,
+     routes:choice.routes.map(route=>({
+      ordinal:route.routeOrdinal,terminal:route.explicitChainEnd,
+      guarded:route.guardKinds,
+      review:route.conditionsRequiringReview,
+      hintIds:route.numericHintFacts.map(h=>h.skillNumericId),
+      hintKinds:route.numericHintFacts.map(h=>h.originType),
+      directSkillIds:route.directSkillGrantFacts.map(a=>a.skillNumericId)
+     }))
+    }))
+   };
+  })));
  console.log('GAMETORA_BRANCH_SEMANTICS='+JSON.stringify({totals:report.branchSemanticsInventory.totals,sourceSectionEvents:report.branchSemanticsInventory.sourceSectionEvents,terminalRoutesBySection:report.branchSemanticsInventory.terminalRoutesBySection}));
  console.log('GAMETORA_NONCHAIN_TERMINALS='+JSON.stringify(
   report.branchSemanticsInventory.numericOnlyReviewPositions
