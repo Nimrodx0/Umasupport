@@ -69,6 +69,7 @@ function transformDocument(document){
    if(!branches.length)fail(cardId+': 結果経路なし');
    const normalizedChoice={
     choiceOrdinal:ci+1,choiceId:'choice-'+String(ci+1).padStart(2,'0'),
+    sourceLabelWasEmpty:choice.label.trim().length===0,
     displayLabel:'選択肢'+(ci+1)+'（仮）',
     reportedRandomAlternative:choice.random_either===true,
     // Raw probabilities may be unknown; NEVER assert a success rate.
