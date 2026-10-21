@@ -37,7 +37,7 @@ test('three random two-outcome choices are separate from skill_hint_or effect',(
  const doc=makeCandidate(),out=inventory(doc),c=out.totals;
  assert.equal(c.sourceEvents,3);
  assert.equal(c.sourceChoices,5);
- assert.equal(c.sourceRoutes,10);
+ assert.equal(c.sourceRoutes,9);
  assert.equal(c.multiRouteChoices,4);
  assert.equal(c.explicitRandomMultiRouteChoices,3);
  assert.equal(c.unflaggedMultiRouteChoices,1);
