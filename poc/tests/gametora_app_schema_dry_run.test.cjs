@@ -197,3 +197,56 @@ test('two independently evidenced curation-only skill IDs can unlock nonpublic s
  const fakeLink={...x,locations:x.locations.map(l=>({...l,status:'curation-only-not-in-runtime-registry'}))};
  assert.equal(project({candidate,crosswalk:fakeLink,skillText:dict,model:m}).report.totals.candidateSchemaEvents,0);
 });
+
+test('historical-2025-only ID corroboration unlocks a blocked stage and later linked stage in memory',()=>{
+ const crypto=require('node:crypto');
+ const {MASTER_REV,MASTER_SHA}=(()=>{
+  return {MASTER_REV:'5a8ec1356859a35e245edef0d40da740e652df68',
+   MASTER_SHA:'46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb'};
+ })();
+ const req=input();
+ const sha='sha256:'+crypto.createHash('sha256').update('架空の旧版スキル').digest('hex');
+ const report={
+  schemaVersion:1,
+  dataKind:'2025-historical-master-missing-2026-umasim-skill-ids',
+  historicalMasterRevision:MASTER_REV,
+  sourceGameToraRevision:policy.baselineRevision,
+  sourceUmaSimSkillRevision:require('../src/gametora_event_skill_crosswalk.cjs').CANONICAL_SOURCE_REV,
+  game2026Verified:false,automaticAdoptionAllowed:false,
+  crosswalkMissingOccurrences:1,
+  rows:[{numericId:'999999',occurrences:1,
+   historicalStatus:'2025-ID-and-rarity-with-unique-JP-name',
+   historicalRarity:1,historicalNameFingerprint:sha}]
+ };
+ const privateRecords={
+  schemaVersion:1,dataKind:'historical-2025-skill-preview-private-runner-only',
+  historicalMasterSha256:MASTER_SHA,historicalMasterRevision:MASTER_REV,
+  game2026Verified:false,publicationAllowed:false,
+  skills:[{id:'999999',name:'架空の旧版スキル',rarity:'normal',
+   historicalNameFingerprint:sha}]
+ };
+ const baseline=project({...req,crosswalk:req.cross});
+ assert.equal(baseline.report.totals.candidateSchemaEvents,4);
+ const history=project({...req,crosswalk:req.cross,historicalPreview:{report,privateRecords}});
+ assert.equal(history.report.totals.candidateSchemaEvents,6);
+ assert.equal(history.report.totals.skippedEvents,0);
+ assert.equal(history.report.totals.candidateHistorical2025HintMentions,1);
+ assert.equal(history.report.totals.candidateHistorical2025Events,1);
+ assert.equal(history.report.historical2025OnlyIdsAreNot2026Verified,true);
+ assert.equal(history.report.publicationApproved,false);
+ const card=history.dryRunCatalog.cards.find(c=>c.cardId==='30080');
+ assert.equal(card.events.length,2);
+ assert.deepEqual(card.events[1].requires,{all:[{eventId:card.events[0].id}]});
+ const altered=JSON.parse(JSON.stringify(privateRecords));
+ altered.skills[0].name='架空の別の名前';
+ assert.throws(()=>project({...req,crosswalk:req.cross,historicalPreview:{
+  report,privateRecords:altered}}),/ハッシュ/);
+ const wrongMaster=JSON.parse(JSON.stringify(privateRecords));
+ wrongMaster.historicalMasterSha256='0'.repeat(64);
+ assert.throws(()=>project({...req,crosswalk:req.cross,historicalPreview:{
+  report,privateRecords:wrongMaster}}),/出典/);
+ const falsePresent=JSON.parse(JSON.stringify(report));
+ falsePresent.rows[0].occurrences=2;
+ assert.throws(()=>project({...req,crosswalk:req.cross,historicalPreview:{
+  report:falsePresent,privateRecords}}),/件数/);
+});
