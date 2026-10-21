@@ -17,6 +17,9 @@ on:
       - 'poc/src/gametora_event_skill_crosswalk.cjs'
       - 'poc/tools/audit_gametora_event_skill_crosswalk.cjs'
       - 'poc/tests/gametora_event_skill_crosswalk.test.cjs'
+      - 'poc/src/gametora_app_schema_dry_run.cjs'
+      - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
+      - 'poc/tests/gametora_app_schema_dry_run.test.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'
       - 'poc/tools/audit_direct_historical_chain.py'
       - 'poc/tests/test_direct_historical_chain.py'
@@ -141,6 +144,16 @@ jobs:
             "$RUNNER_TEMP/event-inputs/skill_data.txt" \
             "$RUNNER_TEMP/event-inputs/support_card.txt" \
             whole-event-output/gametora_event_skill_crosswalk.v1.json
+      - name: Verify synthetic source-to-runtime app schema conversion
+        run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
+      - name: Dry-run runtime schema for GT events with all required facts resolved
+        run: |
+          node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            whole-event-output/gametora_event_skill_crosswalk.v1.json \
+            "$RUNNER_TEMP/event-inputs/skill_data.txt" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            whole-event-output/gametora_app_schema_dry_run_summary.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
