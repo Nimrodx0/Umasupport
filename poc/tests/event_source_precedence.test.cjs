@@ -1,42 +1,53 @@
+'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {decideNumericEffect}=require('../src/event_source_precedence.cjs');
+const POLICY=require('../config/event-source-priority.v1.json');
 const withUrl='https://gamewith.jp/uma-musume/article/show/573288';
 const eightUrl='https://game8.jp/umamusume/811059';
+const gt=value=>({source:'GameTora-derived',revision:POLICY.baselineRevision,value});
 const withClaim=value=>({source:'GameWith',value,url:withUrl});
 const eightClaim=value=>({source:'Game8',value,url:eightUrl});
-test('three localized SSR30311 discrepancies resolve to the requested GameWith default',()=>{
- // Numbers only, never ingest/copied event prose. These are guide-site
- // values, not independently confirmed official game effects.
- for(const [withValue,eightValue] of [[10,5],[10,5],[10,15]]){
-  const x=decideNumericEffect([eightClaim(eightValue),withClaim(withValue)]);
-  assert.equal(x.status,'provisional');
-  assert.equal(x.selected.source,'GameWith');
-  assert.equal(x.selected.value,10);
-  assert.equal(x.disagreements.length,1);
-  assert.equal(x.disagreements[0].value,eightValue);
-  assert.equal(x.gameVerified,false);
-  assert.equal(x.publicationApproved,false);
- }
+test('baseline GameTora value is chosen without requiring complete GameWith article',()=>{
+ const r=decideNumericEffect([gt(3)]);
+ assert.equal(r.status,'baseline-accepted');
+ assert.equal(r.selected.source,'GameTora-derived');
+ assert.equal(r.selected.value,3);
+ assert.equal(r.publicationApproved,false);
+ assert.equal(r.gameVerified,false);
 });
-test('agreeing sites do not independently certify a result',()=>{
- const x=decideNumericEffect([withClaim(5),eightClaim(5)]);
- assert.equal(x.selected.value,5);
- assert.deepEqual(x.disagreements,[]);
- assert.equal(x.gameVerified,false);
+test('GameWith adjudicates numeric disagreements, never rebuilds baseline wholesale',()=>{
+ const r=decideNumericEffect([gt(1),eightClaim(3),withClaim(2)]);
+ assert.equal(r.status,'adjudicated-by-gamewith');
+ assert.equal(r.selected.source,'GameWith');
+ assert.equal(r.selected.value,2);
+ assert.equal(r.baseline.value,1);
+ assert.deepEqual(r.disagreements.map(x=>x.source).sort(),['Game8','GameWith']);
 });
-test('absence of primary source stays unresolved, never silently falls back',()=>{
- const x=decideNumericEffect([eightClaim(15)]);
- assert.equal(x.status,'unresolved-primary-missing');
- assert.equal(x.selected,null);
- assert.equal(x.gameVerified,false);
- assert.equal(x.publicationApproved,false);
+test('GameWith corroboration does not replace accepted identical GameTora baseline',()=>{
+ const r=decideNumericEffect([withClaim(3),gt(3)]);
+ assert.equal(r.status,'baseline-corroborated-by-gamewith');
+ assert.equal(r.selected.source,'GameTora-derived');
 });
-test('duplicate contradictory source values and forged domains are rejected',()=>{
- assert.throws(()=>decideNumericEffect([withClaim(10),withClaim(5)]),/矛盾/);
- assert.throws(()=>decideNumericEffect([withClaim(10),{source:'GameWith',value:3,
-  url:'https://gamewith.jp.attacker.test/fake'}]),/不正/);
- assert.throws(()=>decideNumericEffect([{...withClaim(10),value:NaN}]),/不正/);
- assert.throws(()=>decideNumericEffect([]),/必要/);
- assert.throws(()=>decideNumericEffect([{...withClaim(10),source:'unknown'}]),/不正/);
+test('a discrepancy without GameWith remains localized, never auto-picks Game8',()=>{
+ const a=decideNumericEffect([gt(2),eightClaim(5)]);
+ assert.equal(a.status,'pending-gamewith-adjudication');
+ assert.equal(a.selected,null);
+ assert.equal(a.baseline.value,2);
+ const b=decideNumericEffect([gt(2)],{suspected:true});
+ assert.equal(b.status,'pending-gamewith-adjudication');
+ assert.equal(b.selected,null);
+});
+test('GameWith or Game8 alone must not silently replace missing GameTora baseline',()=>{
+ const a=decideNumericEffect([withClaim(2),eightClaim(2)]);
+ assert.equal(a.status,'unresolved-baseline-missing');
+ assert.equal(a.selected,null);
+});
+test('invalid urls, duplicate contradictory sources, unpinned GT or invalid numeric claim fail closed',()=>{
+ assert.throws(()=>decideNumericEffect([]),/数値出典/);
+ assert.throws(()=>decideNumericEffect([gt(1),gt(2)]),/矛盾/);
+ assert.throws(()=>decideNumericEffect([{...gt(1),revision:'0'.repeat(40)}]),/基準版/);
+ assert.throws(()=>decideNumericEffect([gt(1),{...withClaim(3),url:'https://gamewith.jp.evil.test/a'}]),/出典URL/);
+ assert.throws(()=>decideNumericEffect([gt(1),{...eightClaim(2),value:NaN}]),/数値/);
+ assert.throws(()=>decideNumericEffect([gt(1)],{suspected:'yes'}),/疑義/);
 });
