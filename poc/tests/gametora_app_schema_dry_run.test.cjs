@@ -465,3 +465,100 @@ test('range in OR options follows same low/high tier and does not grant both alt
   ['skill:201272','skill:400000','skill:201272','skill:400000']);
  assert.ok(o.every(x=>x.rewards.length===2));
 });
+
+
+function outingCandidate(raw){
+ const norm=transformDocument(raw);
+ const {reviewQueue,effectTypeCounts,...card}=norm;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:norm.sourceEventCount,
+   sourceChoices:norm.sourceChoiceCount,
+   expandedRoutes:norm.sourceExpandedRoutes,
+   numericHintMentions:norm.numericParsedHintMentions,
+   unresolvedHintMentions:norm.unresolvedHintMentions,
+   directSkillGrantMentions:norm.directSkillGrantMentions
+  }};
+ const m=model(),skillText=skills(),x=crosswalk({candidate,skillText,model:m});
+ return {candidate,crosswalk:x,skillText,model:m};
+}
+test('a random choice declining a friend outing blocks its first and later dates, not random skill rewards',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  start:{section:'random',name:'source prose withheld',choices:[
+   {label:'accept',effects:[{type:'skill_hint',skill_id:200532,value:'+1'}]},
+   {label:'decline',effects:[{type:'chain_end'},{type:'energy',value:'+3'}]}]},
+  outing1:{section:'dates',name:'outing 1',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:201272,value:'+1'}]}]},
+  outing2:{section:'dates',name:'outing 2',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:200532,value:'+2'}]}]}
+ }});
+ const out=project(req),events=out.dryRunCatalog.cards[0].events;
+ assert.equal(out.report.totals.candidateSchemaEvents,3);
+ assert.equal(out.report.totals.candidateOutingUnlockEvents,1);
+ assert.equal(out.report.totals.candidateOutingFirstStagesGated,1);
+ assert.equal(out.report.totals.skippedEvents,0);
+ assert.deepEqual(events[1].requires,{all:[{eventId:events[0].id}]});
+ assert.deepEqual(events[2].requires,{all:[{eventId:events[1].id}]});
+ assert.equal(events[0].choices[1].terminal,true);
+ assert.equal(core.reachability(events[1],{},events).status,'blocked');
+ const accept={[events[0].id]:events[0].choices[0].id};
+ const decline={[events[0].id]:events[0].choices[1].id};
+ assert.equal(core.reachability(events[1],accept,events).status,'conditional');
+ assert.equal(core.reachability(events[1],decline,events).status,'blocked');
+ assert.equal(core.reachability(events[2],decline,events).status,'blocked');
+ const selected=core.directRoutes({events,hints:[]},{choices:accept});
+ assert.ok(selected.some(r=>r.skillId==='skill:201272'&&r.conditional));
+ const stopped=core.directRoutes({events,hints:[]},{choices:decline});
+ assert.ok(!stopped.some(r=>r.skillId==='skill:201272'));
+ assert.ok(!JSON.stringify(out.report).includes('source prose'));
+ assert.equal(out.report.publicationApproved,false);
+});
+test('random unlock terminal is conditional on its actual result, not the choice label alone',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  start:{section:'random',name:'unpublished event title',choices:[
+   {label:'gamble',random_either:true,outcomes:[
+    [{type:'skill_hint',skill_id:200532,value:'+1'}],
+    [{type:'chain_end'}]]},
+   {label:'safe',effects:[{type:'speed',value:'+5'}]}]},
+  outing:{section:'dates',name:'unpublished outing',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:201272,value:'+2'}]}]}
+ }});
+ const out=project(req),events=out.dryRunCatalog.cards[0].events;
+ const [start,outing]=events;
+ const gamble={[start.id]:'choice-01'};
+ const safe={[start.id]:'choice-02'};
+ assert.equal(out.report.totals.candidateOutingUnlockEvents,1);
+ assert.equal(start.choices[0].outcomes[1].terminal,true);
+ assert.equal(core.reachability(outing,gamble,events).status,'conditional');
+ assert.equal(core.reachability(outing,gamble,events,{[start.id]:'route-02'}).status,'blocked');
+ assert.equal(core.reachability(outing,gamble,events,{[start.id]:'route-01'}).status,'conditional');
+ assert.equal(core.reachability(outing,safe,events).status,'conditional');
+});
+test('unknown outing unlock semantics or unresolved skill award blocks dates without guessing',()=>{
+ const unknown=outingCandidate({kind:'support',id:30026,events_ja:{
+  start:{section:'random',name:'unknown',choices:[{label:'',effects:[
+   {type:'chain_end'}]}]},
+  outing:{section:'dates',name:'outing',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:200532,value:'+1'}]}]}
+ }});
+ const a=project(unknown);
+ assert.equal(a.report.totals.candidateSchemaEvents,0);
+ assert.equal(a.report.excludedReasons.OUTING_UNLOCK_SEMANTICS_REQUIRES_REVIEW,1);
+ const award=outingCandidate({kind:'support',id:30026,events_ja:{
+  start:{section:'random',name:'mixed skill reward',choices:[
+   {label:'take',effects:[{type:'obtain_skill',skill_id:200532}]},
+   {label:'decline',effects:[{type:'chain_end'}]}]},
+  outing1:{section:'dates',name:'outing1',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:201272,value:'+1'}]}]},
+  outing2:{section:'dates',name:'outing2',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:200532,value:'+1'}]}]}
+ }});
+ const b=project(award);
+ assert.equal(b.report.totals.candidateSchemaEvents,0);
+ assert.equal(b.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
+ assert.equal(b.report.excludedReasons.OUTING_UNLOCK_PREDECESSOR_NOT_PROJECTED,1);
+ assert.equal(b.report.excludedReasons.OUTING_PREDECESSOR_NOT_PROJECTED,1);
+ assert.equal(b.report.totals.blockedOutingUnlockStarts,1);
+});

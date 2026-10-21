@@ -36,7 +36,10 @@ test('public entry and roadmap have stable headings and current source precedenc
 test('dated evidence and old complete texts are preserved in dedicated documents',()=>{
  const status=read('docs/status.md');
  assert.match(status,/測定日：2026-10-21/);
- assert.match(status,/2,465/);
+ // The exact measured count must be allowed to progress without failing
+ // documentation governance. The full-population audit pins numeric gates.
+ assert.match(status,/技術変換/);
+ assert.match(status,/\*\*\d[\d,]*件\*\*/);
  assert.match(status,/旧マスター/);
  const agents=read('docs/archive/agents-handoff-20261021.md');
  assert.match(agents,/PR #132/);
