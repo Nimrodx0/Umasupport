@@ -26,9 +26,19 @@ function main(args){
  const historicalPreview=historicalReportFile?{
   report:JSON.parse(fs.readFileSync(historicalReportFile,'utf8')),
   privateRecords:JSON.parse(fs.readFileSync(privateRecordsFile,'utf8'))}:undefined;
+ const crosswalkRecord=JSON.parse(fs.readFileSync(crosswalkFile,'utf8'));
  const result=project({candidate:JSON.parse(fs.readFileSync(candidateFile,'utf8')),
-  crosswalk:JSON.parse(fs.readFileSync(crosswalkFile,'utf8')),
+  crosswalk:crosswalkRecord,
   skillText:raw.toString('utf8'),model,supplemental,historicalPreview});
+ // Exact source numeric IDs and positions only; no scraped words, names,
+ // outcome prose or unpublished runtime catalog leave the temporary runner.
+ const directAwardRecords=crosswalkRecord.locations.filter(x=>x.kind==='direct-skill-award');
+ console.log('GAMETORA_DIRECT_AWARD_STATUS='+JSON.stringify(directAwardRecords.map(x=>({
+  cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
+  choiceOrdinal:x.choiceOrdinal,routeOrdinal:x.routeOrdinal,
+  awardOrdinal:x.awardOrdinal,numericId:x.numericId,status:x.status,
+  rarity:x.rarity||null
+ }))));
  console.log('GAMETORA_HISTORICAL_PRECHECK_TOTALS='+JSON.stringify(result.report.totals));
  console.log('GAMETORA_HISTORICAL_PRECHECK_REASONS='+JSON.stringify(result.report.excludedReasons));
  if(result.report.totals.sourceEvents!==2488||
