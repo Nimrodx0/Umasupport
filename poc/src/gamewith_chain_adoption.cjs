@@ -54,12 +54,13 @@ function applyGameWithChainReview({cardId,review,events}){
   return structuredClone(e);
  });
  const writable=new Map(revised.map(x=>[x.id,x]));
- const seenStages=new Set();
+ const seenStages=new Set(),chainKeys=new Set();
  let implicitContinuationRoutes=0,explicitTerminals=0,chainPairs=0,checkedChoices=0,checkedOutcomes=0;
  for(const chain of review.chains){
-  if(!obj(chain)||!word(chain.chainKey)||!Array.isArray(chain.stages)||
+  if(!obj(chain)||!word(chain.chainKey)||chainKeys.has(chain.chainKey)||!Array.isArray(chain.stages)||
      !chain.stages.length||chain.stages.some((x,i)=>x.stageNumber!==i+1))
    fail('正本の段階順が不完全・不連続');
+  chainKeys.add(chain.chainKey);
   for(let si=0;si<chain.stages.length;si++){
    const stage=chain.stages[si],event=writable.get(stage.eventId);
    if(!event||seenStages.has(stage.eventId))fail('GameWith段階が対象イベントへ一意に対応しない');
@@ -110,6 +111,7 @@ function applyGameWithChainReview({cardId,review,events}){
        fail('選択肢全体と結果別の打ち切りが重複');
       o.terminal=true;
     }else{
+      if(event.type==='auto')fail('選択肢なしイベントの無条件打ち切りは別の手動審査が必要');
       if(part.outcomes?.some(o=>terminalKeys.has(resultKey(ex.choiceId,o.id))))
        fail('選択肢全体と結果別の打ち切りが重複');
       part.terminal=true;
