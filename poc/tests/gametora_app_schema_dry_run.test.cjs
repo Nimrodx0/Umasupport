@@ -867,14 +867,7 @@ function elCondorSeries(omitMarker=false){
  return raw;
 }
 test('El Condor final stage: Lv3 iff previous upper choice succeeds, else Lv1',()=>{
- const req=specialCaseCandidate(elCondorSeries());
- const res=project(req);
- if(res.report.totals.skippedEvents)console.error('EL_SOURCE_DEBUG '+JSON.stringify({
-  excluded:res.report.excludedReasons,
-  event:req.candidate.cards[0].events.find(x=>x.sourceOrdinal===5),
-  parent:req.candidate.cards[0].events.find(x=>x.sourceOrdinal===4),
-  locations:req.crosswalk.locations.filter(x=>x.cardId==='30102'&&x.sourceOrdinal===5)
- }).slice(0,9000));
+ const res=project(specialCaseCandidate(elCondorSeries()));
  assert.equal(res.report.totals.skippedEvents,0);
  assert.equal(res.report.totals.candidateSourceReviewedPriorChoiceEvents,1);
  const events=res.dryRunCatalog.cards[0].events;
