@@ -197,6 +197,34 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        }
        continue;
       }
+      if(h.originType==='skill_hint'&&h.numericFactParsed===false&&
+         Array.isArray(h.levelRange)){
+       const pair=rangeLocator.get(k);
+       const isSupplement=pair?.status==='curation-only-not-in-runtime-registry'&&
+        supplementalIds.has(h.skillNumericId);
+       const isHistorical=pair?.status==='not-in-pinned-umasim-registry'&&
+        historicalIds.has(h.skillNumericId);
+       if(!pair||!(['mapped-existing-normal-hint','mapped-numeric-event-skill'].includes(pair.status)||
+           isSupplement||isHistorical)||
+          pair.numericId!==h.skillNumericId||
+          !Array.isArray(pair.levelRange)||pair.levelRange.length!==2||
+          !h.levelRange.every(v=>Number.isInteger(v)&&v>=1&&v<=20)||
+          JSON.stringify(pair.levelRange)!==JSON.stringify(h.levelRange)){
+        reason='RANGED_HINT_EFFECT_PENDING';break;
+       }
+       const source=registry.byId.get(h.skillNumericId);
+       if(!source||!['normal','rare'].includes(source.rarity)||unique.has(source.id)){
+        reason='MISSING_OR_DUPLICATE_RESULT_SKILL';break;
+       }
+       unique.add(source.id);
+       rangedRewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,
+        levelRange:h.levelRange});
+       eventRangedHints++;
+       if(isSupplement)eventCurationCount++;
+       if(isHistorical)eventHistoricalCount++;
+       eventHintKeys.push(k);
+       continue;
+      }
       const verified=locator.get(k);
       const isSupplement=verified?.status==='curation-only-not-in-runtime-registry'&&
         supplementalIds.has(h.skillNumericId);
