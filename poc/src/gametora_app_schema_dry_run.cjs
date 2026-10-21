@@ -7,6 +7,7 @@
  * placeholders are not editorially reviewed labels, and no data has been
  * approved for redistribution. Its draft catalog remains memory-only.
  */
+const crypto=require('node:crypto');
 const bridge=require('./skill_bridge.js');
 const schema=require('./event_schema.js');
 const curated=require('./curated_skill_resolution.cjs');
@@ -564,7 +565,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   counts.candidateIndependent2026NameHintMentions=counts.candidateHistorical2025HintMentions;
   counts.candidateIndependent2026NameEvents=counts.candidateHistorical2025Events;
  }
+ // The complete unapproved runtime candidate catalog remains memory-only.
+ // Publish only a SHA256 digest so both private source/name routes can be
+ // compared byte-for-byte without uploading names or branch labels.
+ const runtimeSkillProjectionSha256=crypto.createHash('sha256')
+  .update(JSON.stringify(prepared.catalog),'utf8').digest('hex');
  const report={schemaVersion:1,dataKind:'gametora-app-schema-dry-run',
+   runtimeSkillProjectionSha256,
    sourceProseIncluded:false,publicationApproved:false,gameVerified:false,
    sourceOrderAdjacencyVerified:false,
    allPublishedNamesAreUnreviewedPlaceholders:true,
