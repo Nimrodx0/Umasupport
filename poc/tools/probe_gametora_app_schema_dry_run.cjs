@@ -73,6 +73,7 @@ function main(args){
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_TOTALS='+JSON.stringify(report.totals));
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_REASONS='+JSON.stringify(report.excludedReasons));
  console.log('GAMETORA_BLOCKER_DIAGNOSIS='+JSON.stringify({totalExcluded:report.blockerDiagnosis.totalExcluded,sourceSectionCounts:report.blockerDiagnosis.sourceSectionCounts,sourceEvidenceEventCounts:report.blockerDiagnosis.sourceEvidenceEventCounts,specialCaseEvidenceCombinations:report.blockerDiagnosis.specialCaseEvidenceCombinations}));
+ console.log('GAMETORA_BRANCH_SEMANTICS='+JSON.stringify({totals:report.branchSemanticsInventory.totals,sourceSectionEvents:report.branchSemanticsInventory.sourceSectionEvents,terminalRoutesBySection:report.branchSemanticsInventory.terminalRoutesBySection}));
  console.log('Publication remains disabled. Runtime-compatible catalog is ephemeral and discarded.');
 }
 if(require.main===module){
