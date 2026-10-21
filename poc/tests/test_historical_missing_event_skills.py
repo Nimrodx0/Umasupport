@@ -84,6 +84,28 @@ class HistoricCrosscheckTest(unittest.TestCase):
         report["sourcePins"]["gameToraDerived"] = "fake"
         with self.assertRaisesRegex(ValueError, "untrusted"):
             mod.review_gaps(report, old)
+    def test_private_runner_preview_contains_only_historically_proven_names(self):
+        with fake_db() as db:
+            old = mod.read_old_master(db)
+        report = mod.review_gaps(synthetic_crosswalk(), old)
+        private = mod.private_historical_preview(report, old)
+        self.assertEqual(private["dataKind"],
+                         "historical-2025-skill-preview-private-runner-only")
+        self.assertFalse(private["publicationAllowed"])
+        self.assertFalse(private["game2026Verified"])
+        self.assertEqual(len(private["skills"]), 2)
+        self.assertEqual({x["id"] for x in private["skills"]}, {"200831", "200861"})
+        self.assertIn("特定の第三者名を公開しない",
+                      json.dumps(private, ensure_ascii=False))
+        # The publicly uploaded numeric report MUST remain a hash-only record.
+        self.assertNotIn("特定の第三者名を公開しない",
+                         json.dumps(report, ensure_ascii=False))
+        broken = dict(report)
+        broken["rows"] = [dict(x) for x in report["rows"]]
+        broken["rows"][0]["historicalNameFingerprint"] = "sha256:" + "0" * 64
+        with self.assertRaisesRegex(ValueError, "fingerprint"):
+            mod.private_historical_preview(broken, old)
+
     def test_broken_historical_sqlite_schema_rejected(self):
         db = sqlite3.connect(":memory:")
         db.execute("CREATE TABLE skill_data(id INTEGER)")
