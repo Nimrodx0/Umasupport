@@ -1,5 +1,7 @@
 # 開発履歴（PoC v1〜v8.1）
 
+**履歴文書です。** PR別の作業と当時の判断の記録を保持します。現在の工程優先度は [roadmap.md](roadmap.md)、現時点の測定値は [status.md](status.md)、文書の更新先は [documentation-policy.md](documentation-policy.md) を参照してください。
+
 最終更新：2026-10-17。前半は旧PoCの経緯を再構成した履歴であり正確なGitコミット履歴ではない。GitHub移管後の作業はPRとActionsを参照する。
 
 | 版 | 変更内容 | 検証・課題 |
