@@ -8,6 +8,9 @@ on:
       - 'poc/tools/audit_whole_event_rewards.cjs'
       - 'poc/tests/whole_event_reward_audit.test.cjs'
       - 'poc/tools/audit_whole_chain_topology.cjs'
+      - 'poc/src/gametora_event_resolution.cjs'
+      - 'poc/tests/gametora_event_resolution.test.cjs'
+      - 'poc/tools/report_gametora_baseline.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'
       - 'poc/tools/audit_direct_historical_chain.py'
       - 'poc/tests/test_direct_historical_chain.py'
@@ -100,6 +103,13 @@ jobs:
             --source-dir gt-snapshot/server/data/events/gametora \
             --direct-audit whole-event-output/whole_direct_2025_chain.v1.json \
             --output whole-event-output/whole_targeted_2025_story_gaps.v1.json
+      - name: Verify GameTora baseline route / exception tests
+        run: node --test umasupport/poc/tests/gametora_event_resolution.test.cjs umasupport/poc/tests/event_source_precedence.test.cjs
+      - name: Aggregate GameTora base for all chain stages (no GameWith reimport)
+        run: |
+          node umasupport/poc/tools/report_gametora_baseline.cjs \
+            gt-snapshot/server/data/events/gametora \
+            whole-event-output/gametora_canonical_baseline.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
