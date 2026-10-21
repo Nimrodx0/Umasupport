@@ -144,7 +144,7 @@ test('typed direct acquisition is not a hint level; legacy rewards stay hints',(
  ]);
  const wrong=structuredClone(events);
  wrong[0].choices[0].rewards[0].level=1;
- assert.throws(()=>validate(wrong),/直接習得報酬にはヒントLv/);
+ assert.throws(()=>validate(wrong),/直接習得・マイナススキル付与にはヒントLv/);
  wrong[0].choices[0].rewards[0].level=undefined;
  wrong[0].choices[0].rewards[0].kind='unknown-kind';
  assert.throws(()=>validate(wrong),/報酬種別が不正/);
