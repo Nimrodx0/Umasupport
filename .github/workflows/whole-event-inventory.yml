@@ -14,6 +14,9 @@ on:
       - 'poc/src/gametora_whole_event_normalize.cjs'
       - 'poc/tools/generate_gametora_whole_event_candidate.cjs'
       - 'poc/tests/gametora_whole_event_normalize.test.cjs'
+      - 'poc/src/gametora_event_skill_crosswalk.cjs'
+      - 'poc/tools/audit_gametora_event_skill_crosswalk.cjs'
+      - 'poc/tests/gametora_event_skill_crosswalk.test.cjs'
       - 'poc/tests/whole_chain_topology.test.cjs'
       - 'poc/tools/audit_direct_historical_chain.py'
       - 'poc/tests/test_direct_historical_chain.py'
@@ -121,6 +124,23 @@ jobs:
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora \
             whole-event-output/gametora_whole_event_numeric_candidate.v1.json
+      - name: Fetch version-pinned UmaSim skill dictionary and verify checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 2 --max-time 120 \
+            --output "$RUNNER_TEMP/event-inputs/skill_data.txt" \
+            "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt"
+          echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $RUNNER_TEMP/event-inputs/skill_data.txt" | sha256sum --check
+      - name: Verify synthetic GameTora skill crosswalk tests
+        run: node --test umasupport/poc/tests/gametora_event_skill_crosswalk.test.cjs
+      - name: Crosswalk all 1681 numeric event hints with pinned 2139 skill registry records
+        run: |
+          node umasupport/poc/tools/audit_gametora_event_skill_crosswalk.cjs \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            "$RUNNER_TEMP/event-inputs/skill_data.txt" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            whole-event-output/gametora_event_skill_crosswalk.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
