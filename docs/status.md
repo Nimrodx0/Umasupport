@@ -26,6 +26,12 @@
 
 **SSRエフフォーリア30311** の最終段階は `skill_hint_or` ではなく3選択肢それぞれに2結果の `outcomes` + `random_either` として表現される。[固定元の当該カード](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30311.json)。
 
+## 構造分岐の固定全件監査（2026-10-21）
+
+[分類の定義と固定出典](phase2-branch-semantics-full-inventory-20261021.md)、[実行記録](https://github.com/Nimrodx0/Umasupport/actions/runs/39586166665)。**複数結果経路を持つイベント220件・選択肢236件（うち`random_either`明示233件）**で、`skill_hint_or` は別軸として4効果・8候補。ヒントLv幅11イベント、`chain_end`109経路（連続91、通常イベント18）を区別して計測した。これは固定元の構造記載数であり、最新ゲームでの検証済み件数や公開採用数ではない。
+
+通常イベントに付く`chain_end`は、元実行器ではそのカードの連続イベント全体を止めるため、既存の親子連続イベント用`terminal`に単純に変えるのは不十分。保留23件は推測で解除していない。
+
 ## 合格と未実施
 
 - A **機構**：PR #131/#132の合成データ回帰、および[マージ後PoC CI](https://github.com/Nimrodx0/Umasupport/actions/runs/39577800835)は成功。

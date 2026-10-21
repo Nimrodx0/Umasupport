@@ -65,6 +65,21 @@ function main(args){
     result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
+ const branchTotals=result.report.branchSemanticsInventory.totals;
+ if(branchTotals.multiRouteEvents!==220||
+    branchTotals.multiRouteChoices!==236||
+    branchTotals.explicitRandomMultiRouteChoices!==233||
+    branchTotals.unflaggedMultiRouteChoices!==3||
+    branchTotals.skillHintOrEffectMentions!==4||
+    branchTotals.skillHintOrOptions!==8||
+    branchTotals.eventsWithRangeLevels!==11||
+    branchTotals.explicitChainEndRoutes!==109||
+    branchTotals.nonChainEndRoutes!==18||
+    branchTotals.guardedRoutes!==7||
+    branchTotals.directSkillGrantMentions!==7||
+    result.report.branchSemanticsInventory.terminalRoutesBySection.arrows!==91||
+    result.report.branchSemanticsInventory.terminalRoutesBySection.random!==18)
+  fail('分岐の分類別固定全件数が変化しました');
  // WARNING: The derived app catalog contains unreviewed placeholders,
  // numeric skills and conditional routes. Never write it to disk or upload it.
  const report=result.report;
@@ -73,6 +88,7 @@ function main(args){
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_TOTALS='+JSON.stringify(report.totals));
  console.log('GAMETORA_APP_SCHEMA_DRY_RUN_REASONS='+JSON.stringify(report.excludedReasons));
  console.log('GAMETORA_BLOCKER_DIAGNOSIS='+JSON.stringify({totalExcluded:report.blockerDiagnosis.totalExcluded,sourceSectionCounts:report.blockerDiagnosis.sourceSectionCounts,sourceEvidenceEventCounts:report.blockerDiagnosis.sourceEvidenceEventCounts,specialCaseEvidenceCombinations:report.blockerDiagnosis.specialCaseEvidenceCombinations}));
+ console.log('GAMETORA_BRANCH_SEMANTICS='+JSON.stringify({totals:report.branchSemanticsInventory.totals,sourceSectionEvents:report.branchSemanticsInventory.sourceSectionEvents,terminalRoutesBySection:report.branchSemanticsInventory.terminalRoutesBySection}));
  console.log('Publication remains disabled. Runtime-compatible catalog is ephemeral and discarded.');
 }
 if(require.main===module){

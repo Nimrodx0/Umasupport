@@ -12,6 +12,7 @@ const schema=require('./event_schema.js');
 const curated=require('./curated_skill_resolution.cjs');
 const {buildHistoricalPreview}=require('./historical_skill_dry_run.cjs');
 const {diagnose}=require('./gametora_schema_blocker_diagnostics.cjs');
+const {inventory}=require('./gametora_branch_semantics_inventory.cjs');
 const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
@@ -407,6 +408,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
    totals:counts,excludedReasons:Object.fromEntries(Object.entries(reasons).sort()),
    perCard,excludedSourcePositions:reject};
  report.blockerDiagnosis=diagnose(candidate,report);
+ report.branchSemanticsInventory=inventory(candidate);
  return {
   report,
   // Memory-only for schema/UI regression; CLI refuses to serialize this.
