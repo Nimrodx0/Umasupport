@@ -22,7 +22,10 @@ function main(args){
  if(report.totals.rosterCards!==563||report.totals.baselineCards!==559||
     report.totals.missingBaselineCards!==4||report.totals.sourceEvents!==2488||
     report.totals.sourceChainEvents!==1069||
-    report.totals.explicitChainTerminalRoutes!==91||report.totals.explicitNonchainTerminalRoutes!==18)
+    report.totals.explicitChainTerminalRoutes!==91||report.totals.explicitNonchainTerminalRoutes!==18||
+    report.totals.sourceChoices!==4129||report.totals.expandedRoutes!==4376||
+    report.totals.numericHintMentions!==1681||report.totals.unresolvedHintMentions!==13||
+    report.totals.directSkillGrantMentions!==7||report.totals.conditionalRoutes!==8)
   fail('固定母数に変更がありました。全件手動レビューのうえ別バージョンに更新してください');
  fs.mkdirSync(path.dirname(out),{recursive:true});
  fs.writeFileSync(out,JSON.stringify(report,null,2)+'\n');
