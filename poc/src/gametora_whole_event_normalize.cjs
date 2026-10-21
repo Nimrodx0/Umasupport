@@ -19,6 +19,13 @@ const positive=x=>Number.isSafeInteger(x)&&x>0;
 const prior=new Set(['both_previous_chain_good','one_previous_chain_good',
  'both_previous_chain_bad','one_previous_chain_bad','result_good','result_bad',
  'result_average','success','fail','branch_flag']);
+const scalarRange=x=>{
+ if(typeof x!=='string')return null;
+ const m=/^\s*([+-]?\d+)\s*\/\s*([+-]?\d+)\s*$/.exec(x);
+ if(!m)return null;
+ const values=[Number(m[1]),Number(m[2])];
+ return values.every(Number.isSafeInteger)?values:null;
+};
 const numeric=x=>{
  if(typeof x!=='string'&&typeof x!=='number')return null;
  const s=String(x);
@@ -94,7 +101,9 @@ function transformDocument(document){
      const type=effect.type;
      allEffectTypes.set(type,(allEffectTypes.get(type)||0)+1);
      const number=numeric(effect.value);
+     const levelPair=scalarRange(effect.value);
      effects.push({type,numericValue:number,
+      ...(levelPair?{numericRange:levelPair}:{}),
       skillNumericId:positive(effect.skill_id)?effect.skill_id:null});
      if(type==='skill_hint'||type==='skill_hint_or'){
       const skillId=positive(effect.skill_id)?String(effect.skill_id):null;
@@ -103,15 +112,22 @@ function transformDocument(document){
       // GameTora "sr" means exactly ONE of several hint alternatives.
       // Preserve each numeric option; never turn them into simultaneous hints.
       // Variable levels (e.g. "+1/+3") remain unresolved rather than guessed.
+      const ownRange=scalarRange(effect.value);
+      const levelRange=ownRange&&ownRange.every(v=>v>=1&&v<=20)?ownRange:null;
       const alternatives=type==='skill_hint_or'&&Array.isArray(effect.options)?
        effect.options.map(o=>{
         const id=positive(o?.skill_id)?String(o.skill_id):null;
         const value=numeric(o?.value);
         const level=value!==null&&value>=1&&value<=20?value:null;
-        return {skillNumericId:id,level,numericFactParsed:id!==null&&level!==null};
+        const pair=scalarRange(o?.value);
+        const levelRange=pair&&pair.every(v=>v>=1&&v<=20)?pair:null;
+        return {skillNumericId:id,level,numericFactParsed:id!==null&&level!==null,
+         ...(levelRange?{levelRange}:{}),
+         levelRangeParsed:id!==null&&levelRange!==null};
        }):null;
       hints.push({skillNumericId:skillId,level,
        originType:type,numericFactParsed:resolved,
+       ...(levelRange?{levelRange}:{}),
        ...(alternatives!==null?{alternatives}:{}),
        appSkillIdVerified:false});
       if(resolved)hintCount++;
