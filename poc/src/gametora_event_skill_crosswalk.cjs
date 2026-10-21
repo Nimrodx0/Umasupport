@@ -43,7 +43,7 @@ function crosswalk({candidate,skillText,model,supplemental}){
   unsupportedSkillRarities:0,unresolvedInputHints:0,
   curationOnlySkillIds:0,directSkillGrantMentions:0,
   directSkillIdsInPinnedRegistry:0,directSkillIdsMissingFromPinnedRegistry:0,
-  directSkillIdsOnlyInSupplement:0
+  directSkillIdsOnlyInSupplement:0,directSkillIdsUnsupportedRarity:0
  };
  const mapped=new Map(),missing=new Map();
  const classify=(id,kind,info)=>{
@@ -134,10 +134,13 @@ function crosswalk({candidate,skillText,model,supplemental}){
        counts.directSkillIdsInPinnedRegistry++;
       else if(result.status==='curation-only-not-in-runtime-registry')
        counts.directSkillIdsOnlyInSupplement++;
+      else if(result.status==='unsupported-rarity')
+       counts.directSkillIdsUnsupportedRarity++;
       else counts.directSkillIdsMissingFromPinnedRegistry++;
       locations.push({...context,kind:'direct-skill-award',awardOrdinal:i+1,
        numericId:d.skillNumericId||null,status:result.status,
        runtimeSkillId:result.runtimeSkillId,
+       ...(result.rarity?{rarity:result.rarity}:{}),
        awardSemanticsReviewed:false});
       unresolved.push({...context,kind:'direct-skill-award',awardOrdinal:i+1,
        numericId:d.skillNumericId||null,reason:'DIRECT_SKILL_GRANT_NEEDS_SEPARATE_SEMANTICS'});
@@ -157,7 +160,8 @@ function crosswalk({candidate,skillText,model,supplemental}){
    counts.missingPinnedSkillIds+counts.unsupportedSkillRarities+counts.curationOnlySkillIds)
   fail('数値IDの分類が不足');
  if(counts.directSkillGrantMentions!==counts.directSkillIdsInPinnedRegistry+
-   counts.directSkillIdsMissingFromPinnedRegistry+counts.directSkillIdsOnlyInSupplement)
+   counts.directSkillIdsMissingFromPinnedRegistry+counts.directSkillIdsOnlyInSupplement+
+   counts.directSkillIdsUnsupportedRarity)
   fail('直接獲得IDの分類が不足');
  if(locations.length!==counts.numericHintMentions+counts.directSkillGrantMentions)
   fail('全報酬位置を保持できていません');
