@@ -9,6 +9,9 @@ const policy=require('../config/event-source-priority.v1.json');
 function skills(){return JSON.stringify([
  {id:'200532',name:'速度維持',rarity:'normal',group:20053},
  {id:'201272',name:'金の加速',rarity:'rare',group:20127},
+ {id:'200283',name:'架空のマイナススキルA',rarity:'minus',group:20028},
+ {id:'200353',name:'架空のマイナススキルB',rarity:'minus',group:20035},
+ {id:'200521',name:'架空のマイナススキルC',rarity:'minus',group:20052},
  ...Array.from({length:120},(_,i)=>({id:String(400000+i),name:'Other '+i,
   rarity:'normal',group:40000+i}))
 ]);}
@@ -314,19 +317,20 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  const dict=skills(),m=model(),x=crosswalk({candidate,skillText:dict,model:m});
  const result=project({candidate,crosswalk:x,skillText:dict,model:m});
  const d=result.report.blockerDiagnosis;
- assert.equal(result.report.totals.skippedEvents,4);
- assert.equal(d.totalExcluded,4);
- assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,2);
+ assert.equal(result.report.totals.skippedEvents,3);
+ assert.equal(result.report.totals.candidateDirectAcquisitionEvents,1);
+ assert.equal(d.totalExcluded,3);
+ assert.equal(d.primaryReasonCounts.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
  assert.equal(d.primaryReasonCounts.EXCLUSIVE_OR_OPTIONS_UNRESOLVED,1);
  assert.equal(d.primaryReasonCounts.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
  assert.equal(d.sourceEvidenceEventCounts.PRIOR_RESULT_OR_BRANCH_FLAG_REQUIRES_REVIEW,1);
  assert.equal(d.sourceEvidenceEventCounts.CONDITIONAL_SEGMENT_REQUIRES_REVIEW,1);
- assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW,1);
+ assert.equal(d.sourceEvidenceEventCounts.DIRECT_SKILL_GRANT_REQUIRES_REVIEW||0,0);
  assert.equal(d.sourceEvidenceEventCounts.SKILL_HINT_EFFECT_UNRESOLVED,1);
- assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===2).directAwardMentions,1);
+ assert.ok(result.dryRunCatalog.cards[0].events.some(e=>[e,...(e.choices||[])].some(part=>part.rewards?.some(r=>r.kind==='obtained'))));
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===3).unparsedHintMentions,1);
  assert.equal(d.numericOnlyPositions.find(x=>x.sourceOrdinal===4).duplicateHintRouteCount,1);
- assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),2);
+ assert.equal(Object.values(d.specialCaseEvidenceCombinations).reduce((a,b)=>a+b,0),1);
  assert.equal(d.publicationApproved,false);
  const str=JSON.stringify(d);
  assert.ok(!str.includes('private source'));
@@ -548,7 +552,7 @@ test('unknown outing unlock semantics or unresolved skill award blocks dates wit
  assert.equal(a.report.excludedReasons.OUTING_UNLOCK_SEMANTICS_REQUIRES_REVIEW,1);
  const award=outingCandidate({kind:'support',id:30026,events_ja:{
   start:{section:'random',name:'mixed skill reward',choices:[
-   {label:'take',effects:[{type:'obtain_skill',skill_id:200532}]},
+   {label:'take',effects:[{type:'obtain_skill',skill_id:999999}]},
    {label:'decline',effects:[{type:'chain_end'}]}]},
   outing1:{section:'dates',name:'outing1',choices:[{label:'',effects:[
    {type:'skill_hint',skill_id:201272,value:'+1'}]}]},
@@ -557,8 +561,105 @@ test('unknown outing unlock semantics or unresolved skill award blocks dates wit
  }});
  const b=project(award);
  assert.equal(b.report.totals.candidateSchemaEvents,0);
- assert.equal(b.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
+ assert.equal(b.report.excludedReasons.DIRECT_SKILL_GRANT_ID_PENDING,1);
  assert.equal(b.report.excludedReasons.OUTING_UNLOCK_PREDECESSOR_NOT_PROJECTED,1);
  assert.equal(b.report.excludedReasons.OUTING_PREDECESSOR_NOT_PROJECTED,1);
  assert.equal(b.report.totals.blockedOutingUnlockStarts,1);
+});
+
+
+test('direct skill acquisition stays separate from hints and has NO hint level',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  event:{id:89,section:'random',name:'original not published',choices:[
+   {label:'A',effects:[
+    {type:'obtain_skill',skill_id:201272},
+    {type:'skill_hint',skill_id:200532,value:'+2'}]},
+   {label:'B',effects:[{type:'speed',value:'+5'}]}]}
+ }});
+ assert.equal(req.crosswalk.stats.directSkillGrantMentions,1);
+ const out=project(req);
+ assert.equal(out.report.totals.candidateSchemaEvents,1);
+ assert.equal(out.report.totals.candidateDirectAcquisitionMentions,1);
+ assert.equal(out.report.totals.candidateDirectAcquisitionEvents,1);
+ const choice=out.dryRunCatalog.cards[0].events[0].choices[0];
+ assert.deepEqual(choice.rewards.map(r=>({id:r.skillId,kind:r.kind||'hint',level:r.level??null})),[
+  {id:'hint:速度維持',kind:'hint',level:2},
+  {id:'skill:201272',kind:'obtained',level:null}
+ ]);
+ assert.equal(out.runtimeValidation.eventsWithRecords,1);
+ const event=out.dryRunCatalog.cards[0].events[0];
+ const selected=core.directRoutes({hints:[],events:[event]},{choices:{[event.id]:choice.id}});
+ assert.equal(selected.find(r=>r.skillId==='skill:201272').kind,'obtained');
+ assert.equal(selected.find(r=>r.skillId==='skill:201272').level,null);
+ assert.equal(selected.find(r=>r.skillId==='hint:速度維持').kind,'hint');
+ assert.equal(selected.find(r=>r.skillId==='hint:速度維持').level,2);
+ assert.ok(!JSON.stringify(out.report).includes('original not published'));
+});
+test('direct acquisition crosswalk must be exact and the same result cannot award duplicate skills',()=>{
+ const base={kind:'support',id:30026,events_ja:{
+  event:{id:1,section:'random',name:'no external text',choices:[
+   {label:'A',effects:[{type:'obtain_skill',skill_id:201272}]}]}
+ }};
+ const ok=outingCandidate(base);
+ const loc=ok.crosswalk.locations.find(x=>x.kind==='direct-skill-award');
+ assert.ok(loc);
+ loc.numericId='200532';
+ assert.equal(project(ok).report.excludedReasons.DIRECT_SKILL_GRANT_ID_PENDING,1);
+ const duplicate=outingCandidate({kind:'support',id:30026,events_ja:{
+  event:{id:1,section:'random',name:'no text',choices:[
+   {label:'A',effects:[{type:'skill_hint',skill_id:200532,value:'+1'},
+    {type:'obtain_skill',skill_id:200532}]}]}
+ }});
+ assert.equal(project(duplicate).report.excludedReasons.DIRECT_SKILL_GRANT_DUPLICATE_OR_RARITY,1);
+});
+test('the friend outing previously blocked by a valid direct grant now retains the reward and unlock gate',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  start:{section:'random',name:'not published',choices:[
+   {label:'go',effects:[{type:'obtain_skill',skill_id:200532}]},
+   {label:'stop',effects:[{type:'chain_end'}]}]},
+  date1:{section:'dates',name:'unpublished 1',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:201272,value:'+1'}]}]},
+  date2:{section:'dates',name:'unpublished 2',choices:[{label:'',effects:[
+   {type:'skill_hint',skill_id:200532,value:'+2'}]}]}
+ }});
+ const out=project(req),events=out.dryRunCatalog.cards[0].events;
+ assert.equal(out.report.totals.candidateSchemaEvents,3);
+ assert.equal(out.report.totals.candidateDirectAcquisitionMentions,1);
+ assert.deepEqual(events[1].requires,{all:[{eventId:events[0].id}]});
+ const choices={[events[0].id]:events[0].choices[0].id};
+ const routes=core.directRoutes({hints:[],events},{choices});
+ assert.ok(routes.some(x=>x.skillId==='hint:速度維持'&&x.kind==='obtained'&&!x.conditional));
+ assert.ok(routes.some(x=>x.skillId==='skill:201272'&&x.kind==='hint'&&x.conditional));
+});
+
+
+test('source obtain_skill with pinned minus rarity stays visible as a negative event effect but never skill coverage',()=>{
+ const req=outingCandidate({kind:'support',id:30026,events_ja:{
+  risk:{id:7,section:'random',name:'unpublished minus reward',choices:[
+   {label:'bad',effects:[{type:'obtain_skill',skill_id:200521},
+    {type:'skill_hint',skill_id:200532,value:'+2'}]}]}
+ }});
+ const proof=req.crosswalk.locations.find(r=>r.kind==='direct-skill-award');
+ assert.equal(proof.status,'unsupported-rarity');
+ assert.equal(proof.rarity,'minus');
+ const result=project(req);
+ assert.equal(result.report.totals.candidateSchemaEvents,1);
+ assert.equal(result.report.totals.candidateNegativeSkillMentions,1);
+ assert.equal(result.report.totals.candidateNegativeSkillEvents,1);
+ assert.equal(result.report.totals.candidateDirectAcquisitionMentions,0);
+ const ev=result.dryRunCatalog.cards[0].events[0];
+ const bad=ev.choices[0].rewards.find(x=>x.kind==='negative');
+ assert.deepEqual({skillId:bad.skillId,kind:bad.kind,level:bad.level??null},
+  {skillId:'skill:200521',kind:'negative',level:null});
+ const paths=core.directRoutes({hints:[],events:[ev]},
+  {choices:{[ev.id]:ev.choices[0].id}});
+ assert.equal(paths.length,1);
+ assert.equal(paths[0].skillId,'hint:速度維持');
+ assert.ok(!paths.some(x=>x.skillId==='skill:200521'));
+ const tampered=outingCandidate({kind:'support',id:30026,events_ja:{
+  risk:{section:'random',name:'unpublished',choices:[{label:'',effects:[
+   {type:'obtain_skill',skill_id:200521}]}]}
+ }});
+ tampered.crosswalk.locations.find(x=>x.kind==='direct-skill-award').rarity='rare';
+ assert.equal(project(tampered).report.excludedReasons.DIRECT_SKILL_GRANT_ID_PENDING,1);
 });

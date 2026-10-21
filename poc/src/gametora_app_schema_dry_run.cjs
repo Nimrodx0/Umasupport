@@ -56,6 +56,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   if(orLocator.has(k))fail('OR候補位置の重複');
   orLocator.set(k,x);
  }
+ const directAwardLocator=new Map();
+ for(const x of crosswalk.locations){
+  if(x.kind!=='direct-skill-award')continue;
+  const key=f(x.cardId,x.sourceOrdinal,x.choiceOrdinal,x.routeOrdinal,x.awardOrdinal);
+  if(directAwardLocator.has(key))fail('直接習得報酬の出典位置が重複');
+  directAwardLocator.set(key,x);
+ }
  const rangeLocator=new Map();
  for(const x of crosswalk.rangeLocations||[]){
   if(x.kind!=='correlated-range-hint')fail('段階別ヒント候補の種別不正');
@@ -68,6 +75,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateSchemaEvents:0,candidateSchemaCards:0,
   candidateAutoEvents:0,candidateChoiceEvents:0,
   candidateRewardMentions:0,candidateTerminalPaths:0,
+  candidateDirectAcquisitionMentions:0,candidateDirectAcquisitionEvents:0,
+  candidateNegativeSkillMentions:0,candidateNegativeSkillEvents:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
   candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
@@ -143,10 +152,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     reason='CHAIN_PREDECESSOR_NOT_PROJECTED';
    if(!reason&&e.reviewReasons?.some(r=>r!=='CHAIN_ADJACENCY_IS_SOURCE_ORDER_ONLY'&&
       r!=='SKILL_HINT_EFFECT_UNRESOLVED'&&
+      !(r==='DIRECT_SKILL_GRANT_REQUIRES_REVIEW'&&
+        e.choices?.some(ch=>ch.routes?.some(rt=>rt.directSkillGrantFacts?.length)))&&
       !(sourceUnlock&&r==='TERMINATION_OUTSIDE_CHAIN')))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
    const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
-    eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0;
+    eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0,
+    eventDirectAcquisitions=0,eventNegativeSkills=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -161,9 +173,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      if(!Array.isArray(route.guardKinds)||route.guardKinds.length||
         !Array.isArray(route.conditionsRequiringReview)||
         route.conditionsRequiringReview.some(x=>x!=='SKILL_HINT_EFFECT_UNRESOLVED'&&
+          !(x==='DIRECT_SKILL_GRANT_REQUIRES_REVIEW'&&route.directSkillGrantFacts?.length)&&
           !(sourceUnlock&&x==='TERMINATION_OUTSIDE_CHAIN'))||
-        !Array.isArray(route.directSkillGrantFacts)||
-        route.directSkillGrantFacts.length){
+        !Array.isArray(route.directSkillGrantFacts)){
       reason='SPECIAL_ROUTE_OR_DIRECT_GRANT';break;
      }
      if(!Array.isArray(route.numericHintFacts)){
@@ -270,6 +282,38 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,level:h.level});
      }
      if(reason)break;
+     // "obtain_skill" is direct acquisition, NOT a hint level.
+     // Crosswalk by source position and reject unknown / duplicate skill IDs.
+     for(let ai=0;ai<route.directSkillGrantFacts.length;ai++){
+      const award=route.directSkillGrantFacts[ai];
+      const key=f(c.cardId,e.sourceOrdinal,ch.choiceOrdinal,route.routeOrdinal,ai+1);
+      const proof=directAwardLocator.get(key);
+      const isSupplement=proof?.status==='curation-only-not-in-runtime-registry'&&
+       supplementalIds.has(award.skillNumericId);
+      const isHistorical=proof?.status==='not-in-pinned-umasim-registry'&&
+       historicalIds.has(award.skillNumericId);
+      if(!proof||proof.numericId!==award.skillNumericId||
+         award.awardSemanticsReviewed!==false||
+         proof.awardSemanticsReviewed!==false||
+         !(proof.status==='mapped-existing-normal-hint'||
+           proof.status==='mapped-numeric-event-skill'||isSupplement||isHistorical||
+           (proof.status==='unsupported-rarity'&&proof.rarity==='minus'))){
+       reason='DIRECT_SKILL_GRANT_ID_PENDING';break;
+      }
+      const source=registry.byId.get(award.skillNumericId);
+      if(!source||!['normal','rare','minus'].includes(source.rarity)||unique.has(source.id)){
+       reason='DIRECT_SKILL_GRANT_DUPLICATE_OR_RARITY';break;
+      }
+      unique.add(source.id);
+      rewards.push({skillId:'skill:'+source.id,verifiedSkillName:source.name,
+       kind:source.rarity==='minus'?'negative':'obtained'});
+      if(source.rarity==='minus')eventNegativeSkills++;
+      else eventDirectAcquisitions++;
+      eventHintKeys.push('direct:'+key);
+      if(isSupplement)eventCurationCount++;
+      if(isHistorical)eventHistoricalCount++;
+     }
+     if(reason)break;
      // Each source "skill_hint_or" is an EXCLUSIVE choice of one hint.
      // Construct outcome alternatives; never put sibling OR skills together.
      // Keep bounded even for multiple independent OR sets in one source path.
@@ -309,7 +353,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        label:'結果'+route.routeOrdinal+(suffix?'・候補'+(vi+1):'')+'（仮）',
        rewards:variant.rewards,...(terminal?{terminal:true}:{})});
      }
-     eventHintCount+=rewards.length+rangedRewards.length+
+     eventHintCount+=rewards.filter(r=>r.kind!=='negative').length+rangedRewards.length+
       exclusiveGroups.reduce((n,g)=>n+g.length,0);
     }
     if(reason)break;
@@ -377,6 +421,14 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     counts.candidateHistorical2025HintMentions+=eventHistoricalCount;
     counts.candidateHistorical2025Events++;
    }
+   if(eventDirectAcquisitions){
+    counts.candidateDirectAcquisitionMentions+=eventDirectAcquisitions;
+    counts.candidateDirectAcquisitionEvents++;
+   }
+   if(eventNegativeSkills){
+    counts.candidateNegativeSkillMentions+=eventNegativeSkills;
+    counts.candidateNegativeSkillEvents++;
+   }
    if(eventOrGroups){
     counts.candidateExclusiveOrHintEffects+=eventOrGroups;
     counts.candidateExclusiveOrOptionMentions+=eventOrOptions;
@@ -420,7 +472,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   {...model,skillById:sourceSkills});
  if(validated.eventsWithRecords!==counts.candidateSchemaEvents)
   fail('独立スキーマ検証のイベント件数が不一致');
- if(visited.size!==counts.candidateRewardMentions)
+ if(visited.size!==counts.candidateRewardMentions+counts.candidateNegativeSkillMentions)
   fail('スキルの一対一対応件数が不一致');
  const reasons={};
  for(const x of reject)reasons[x.reason]=(reasons[x.reason]||0)+1;

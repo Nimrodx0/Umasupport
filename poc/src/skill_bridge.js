@@ -42,13 +42,16 @@ function prepare(model,catalog,text,{fullRegistry=false}={}){
       source=parseSource(text);
     }
     const record=source.byId.get(match[1]);
-    if(!record||!['normal','rare'].includes(record.rarity))throw Error('数値スキルIDが未照合: '+reward.skillId);
+    if(!record)throw Error('数値スキルIDが未照合: '+reward.skillId);
+     if(reward.kind==='negative'?record.rarity!=='minus':
+        !['normal','rare'].includes(record.rarity))
+       throw Error('報酬種別と数値スキル分類が不一致: '+reward.skillId);
     // Prevent a changed upstream ID from silently redirecting a reviewed reward.
     if(typeof reward.verifiedSkillName!=='string'||normalize(reward.verifiedSkillName)!==record.name)
       throw Error('数値スキルIDの名称照合が失敗: '+reward.skillId);
     delete reward.verifiedSkillName;
     const hintId='hint:'+record.name;
-    if(source.byName.get(record.name).length===1&&Object.hasOwn(model.skillById,hintId)){
+    if(reward.kind!=='negative'&&source.byName.get(record.name).length===1&&Object.hasOwn(model.skillById,hintId)){
       reward.skillId=hintId;
       matchedHints++;
     } else {
@@ -56,7 +59,7 @@ function prepare(model,catalog,text,{fullRegistry=false}={}){
       if(Object.hasOwn(model.skillById,key)){
         if(normalize(model.skillById[key].name)!==record.name)
           throw Error('既存スキルのIDと名称に矛盾: '+key);
-      }else skills.set(key,{id:key,name:record.name,tier:record.rarity==='rare'?'gold':'white',
+      }else skills.set(key,{id:key,name:record.name,tier:record.rarity==='minus'?'negative':record.rarity==='rare'?'gold':'white',
         lowerId:null,sourceNumericId:record.id,sourceStatus:'umasim-id-matched'});
       reward.skillId=key;
     }
