@@ -136,6 +136,8 @@ function directRoutes(card,config){
   const events=card.events||[];
   function add(rewards,event,choiceLabel,outcome,priorConditions=[]){
     for(const r of rewards||[]){
+      // A minus skill is an adverse effect, never a skill provider.
+      if(r.kind==='negative')continue;
       const condition=[...priorConditions,outcome,r.condition].filter(Boolean).join(' / ')||null;
       routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,
         ...(choiceLabel?{choiceLabel}:{}),kind:r.kind==='obtained'?'obtained':'hint',
