@@ -29,7 +29,11 @@ function fixture(){
    historicalRarity:x.rarity,
    historicalNameFingerprint:fingerprint(x.name)}))};
  const independentSkills=items.map(x=>({id:Number(x.id),name:x.name,rarity:1}));
- return {mergedSkillText:JSON.stringify([{id:'200532',name:'既存',rarity:'normal',group:20053}]),
+ return {mergedSkillText:JSON.stringify([
+  {id:'200532',name:'既存',rarity:'normal',group:20053},
+  ...Array.from({length:100},(_,i)=>({id:String(400000+i),name:'fixture '+i,
+   rarity:'normal',group:40000+i}))
+ ]),
   historicalReport,independentSkills,crosswalk};
 }
 test('private 2026 names independently fingerprint verified; 2025 numeric rarity stays explicit',()=>{
@@ -37,8 +41,8 @@ test('private 2026 names independently fingerprint verified; 2025 numeric rarity
  const x=buildIndependentPreview(input);
  const names=JSON.parse(x.mergedSkillText);
  assert.equal(x.previewIds.size,28);
- assert.equal(names.length,29);
- assert.equal(names.filter(x=>x.rarity==='normal').length,15);
+ assert.equal(names.length,129);
+ assert.equal(names.filter(x=>x.rarity==='normal').length,115);
  assert.equal(names.filter(x=>x.rarity==='rare').length,14);
  assert.equal(x.historicalNumericClassificationOnly,true);
  assert.equal(x.independent2026MetadataIsNotGameVerification,true);
