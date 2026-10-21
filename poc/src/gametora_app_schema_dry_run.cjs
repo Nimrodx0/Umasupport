@@ -248,7 +248,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         reason='RANGED_HINT_EFFECT_PENDING';break;
        }
        const source=registry.byId.get(h.skillNumericId);
-       if(!source||!['normal','rare','minus'].includes(source.rarity)||unique.has(source.id)){
+       if(!source||!['normal','rare'].includes(source.rarity)||unique.has(source.id)){
         reason='MISSING_OR_DUPLICATE_RESULT_SKILL';break;
        }
        unique.add(source.id);
@@ -301,7 +301,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        reason='DIRECT_SKILL_GRANT_ID_PENDING';break;
       }
       const source=registry.byId.get(award.skillNumericId);
-      if(!source||!['normal','rare'].includes(source.rarity)||unique.has(source.id)){
+      if(!source||!['normal','rare','minus'].includes(source.rarity)||unique.has(source.id)){
        reason='DIRECT_SKILL_GRANT_DUPLICATE_OR_RARITY';break;
       }
       unique.add(source.id);
