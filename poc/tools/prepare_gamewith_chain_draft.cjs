@@ -53,6 +53,14 @@ function main(argv){
   fail('手動記録の形式が不正');
  const sourceEvents=Array.isArray(req.events)?req.events:
   extractImporterChainEvents(req.importerProposal,req.cardId);
+ if(req.importerProposal!==undefined){
+  // The offline importer knows exactly which chain headings it recognized.
+  // A partial review cannot claim full article coverage by omitting some.
+  const ids=req.review?.chains?.flatMap(c=>c.stages?.map(s=>s.eventId)||[])||[];
+  if(ids.length!==sourceEvents.length||new Set(ids).size!==ids.length||
+     sourceEvents.some(e=>!ids.includes(e.id)))
+   fail('GameWithの全連続イベント候補をレビュー対象に含めてください');
+ }
  const {events,reviewSummary}=applyGameWithChainReview({
   cardId:req.cardId,review:req.review,events:sourceEvents
  });
