@@ -331,3 +331,8 @@ GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に�
 ## 2026-10-21：GameTora基準DB・GameWith例外裁定（旧PR #121方針訂正）
 
 イベントDBの基礎は固定GameTora由来JSONとする。すべてのGameWith記事を取得してDBを作り直したり、通常継続の確認に全GameWith記事の手動確認を要求することは**しない**。GameToraの連続イベント非最終段階は、`chain_end`の明記がなければ通常継続、明記がある選択肢・結果は打ち切り。ただし連続チェーンの所属・後続の対応が曖昧な場合は別途疑義として分離する。Checker・ゲームエイト・旧マスターなどで異常を発見した最小単位のみGameWithで裁定。GitHub上の配置方針と現在の制約：[Gam​​eTora基準のイベント方針](docs/gametora-baseline-event-policy-20261021.md)。公開イベントDBはゲームデータ使用条件・独自表現・スキルID・審査記録の既存ゲートを満たすまで自動変更しない。
+
+## 2026-10-21：GameTora由来全イベントの数値中間DB化（PR #123）
+
+GameTora固定版の全559カード・2,488イベント・4,129選択肢・4,376結果経路を`poc/src/gametora_whole_event_normalize.cjs`で**一件も省略せず**数値事実・条件記載と連番に変換する。GitHub Actionsの`whole-event-inventory.yml`が生成する`gametora_whole_event_numeric_candidate.v1.json`は配信用ではなく**一時アーティファクト**。コード内で本番`poc/data`への上書きを禁止する。原文・選択肢文を含まず、番号とsource title SHA、選択肢／結果位置／効果型／数値skill_idを保持。独自アプリのスキルIDは`hint:スキル名`なので**数値IDとの未検証な名寄せ禁止**。未解決のヒント13、直接獲得7、前段条件8経路、通常外の終了18経路を別レビュー。通常の後続候補が掲載順で並ぶことはGameToraのデフォルト解釈であり、全部を疑義としてGameWith確認する必要はない。例外だけGameWithへ。現時点では本番DB0件。詳細：[全件中間DBレポート](docs/phase2-gametora-whole-event-normalization-20261021.md)。
+
