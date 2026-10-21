@@ -138,7 +138,8 @@ function directRoutes(card,config){
     for(const r of rewards||[]){
       const condition=[...priorConditions,outcome,r.condition].filter(Boolean).join(' / ')||null;
       routes.push({skillId:r.skillId,source:'event',eventId:event.id,eventName:event.name,
-        ...(choiceLabel?{choiceLabel}:{}),level:r.level??null,conditional:!!condition,condition});
+        ...(choiceLabel?{choiceLabel}:{}),kind:r.kind==='obtained'?'obtained':'hint',
+        level:r.kind==='obtained'?null:r.level??null,conditional:!!condition,condition});
     }
   }
   function collect(part,event,choiceLabel,conditions){
