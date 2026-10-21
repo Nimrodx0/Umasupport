@@ -52,17 +52,19 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2374||
-      result.report.totals.skippedEvents!==114||
+      result.report.totals.candidateSchemaEvents!==2376||
+      result.report.totals.skippedEvents!==112||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2483||
-      result.report.totals.skippedEvents!==5||
+      result.report.totals.candidateSchemaEvents!==2485||
+      result.report.totals.skippedEvents!==3||
       result.report.totals.blockedDependentStages!==0||
       result.report.totals.candidateHistorical2025HintMentions!==81||
       result.report.totals.candidateHistorical2025Events!==77||
       result.report.totals.candidateRewardMentions!==1689||
       result.report.totals.candidateTerminalPaths!==109))||
+    result.report.totals.candidateSkillInvariantScriptedEvents!==2||
+    result.report.totals.candidateUnmodeledNonSkillBranches!==6||
     result.report.totals.candidateDirectAcquisitionMentions!==0||
     result.report.totals.candidateNegativeSkillMentions!==(historicalPreview?7:6)||
     result.report.totals.candidateNegativeSkillEvents!==(historicalPreview?5:4)||
@@ -78,8 +80,8 @@ function main(args){
     result.report.totals.candidateRangeOutcomeEvents!==(historicalPreview?11:8)||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?255:251)||
-    result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?117:115)||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?257:253)||
+    result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?119:117)||
     result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
