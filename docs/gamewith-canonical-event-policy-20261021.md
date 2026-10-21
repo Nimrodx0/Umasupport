@@ -113,6 +113,18 @@ node poc/tools/prepare_gamewith_chain_draft.cjs \
 
 結果は `events`（既存`requires`/`terminal`/`outcomes[].terminal` に対応する暫定グラフ）と、`gameVerified:false`、`publicationApproved:false` の審査集計。**直接 `poc/data/reviewed_events.v1.json` へ書き出したり、公開承認を偽装しない。**
 
+### 既存のオフラインGameWith記事インポーターからの接続
+
+既に実装済みの`poc/tools/import_gamewith_article.py`および`batch_gamewith_import.py`は、合法・正当に用意されたローカル記事から、連続イベント候補を`manualCandidates`として生成できる。今回の草稿変換器は**同インポーターの出力をそのまま`importerProposal`に渡す入口**も用意した。
+
+- `manualCandidates`内の連続イベントは、種別・連番・選択肢が正常解析できたものだけを仮IDへ正規化する。報酬の未解決項目は自動で削除しない。
+- レビュー記録`review.chains[].stages[].eventId`は、`draft_<cardId>_chain_01`など、インポーターが生成した同一IDに対応させる。これがGameWith上の**正式story_idだという意味ではない**。
+- 入力総見出し数が合わない、連続段階が欠ける、条件解析に失敗した段階が含まれる場合は拒否する。
+- 元記事をパーサーが誤認していないか、記事・イベント欄・分岐・例外を確認した`review.coverage`は引き続き必須。インポーターの出力だけで自動的に記事確認済みとしない。
+- 結果はローカル草稿であり、別途スキルID／継続の特殊条件／利用条件／公開ゲートを通さない限り本番へ接続しない。
+
+これにより、既に実装済みの**記事解析 → 候補データ → GameWith正本による通常継続解釈 → 暫定イベントグラフ**を一つのオフラインワークフローに接続できる。全563枚へ展開する際も、記事の大量取得許可とは独立してこの変換器を再利用できる。
+
 ## 全カード展開と完了の分母
 
 1. **カード分母：** 対象版の採用全サポカID集合。現行採用版は563枚だが、将来のゲーム全カード枚数を意味しない。
