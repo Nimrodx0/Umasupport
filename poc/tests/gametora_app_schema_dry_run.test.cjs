@@ -158,3 +158,42 @@ test('special/outing/outing-random events remain conditional and outing order is
   {...events[0],availabilityKind:'made-up-unconditional'}
  ],{skillById:{'skill:200532':{}}},'30026'),/特殊イベント発生条件/);
 });
+
+test('two independently evidenced curation-only skill IDs can unlock nonpublic schema positions',()=>{
+ const curated=require('../data/curation/supplemental_skills.v1.json');
+ const raw={kind:'support',id:30026,events_ja:{
+  a:{id:1,section:'random',name:'copyrighted event, no export',choices:[
+   {label:'Option one',effects:[
+    {type:'skill_hint',skill_id:200801,value:'+1'}]},
+   {label:'Option two',effects:[
+    {type:'skill_hint',skill_id:201012,value:'+2'}]}]}
+ }};
+ const normalized=transformDocument(raw);
+ const {reviewQueue,effectTypeCounts,...card}=normalized;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{rosterCards:1,sourceEvents:1,sourceChoices:2,
+   expandedRoutes:2,numericHintMentions:2,unresolvedHintMentions:0,
+   directSkillGrantMentions:0}};
+ const m=model(),dict=skills();
+ const x=crosswalk({candidate,skillText:dict,model:m,supplemental:curated});
+ assert.equal(x.stats.curationOnlySkillIds,2);
+ const noSupplement=project({candidate,crosswalk:x,skillText:dict,model:m});
+ assert.equal(noSupplement.report.totals.candidateSchemaEvents,0);
+ assert.equal(noSupplement.report.totals.skippedEvents,1);
+ const yes=project({candidate,crosswalk:x,skillText:dict,model:m,supplemental:curated});
+ assert.equal(yes.report.totals.candidateSchemaEvents,1);
+ assert.equal(yes.report.totals.candidateCurationOnlyEvents,1);
+ assert.equal(yes.report.totals.candidateCurationOnlyHintMentions,2);
+ assert.equal(yes.report.totals.candidateRewardMentions,2);
+ assert.equal(yes.report.publicationApproved,false);
+ const rewards=yes.dryRunCatalog.cards[0].events[0].choices.flatMap(c=>c.rewards);
+ assert.deepEqual(rewards.map(x=>x.skillId),['skill:200801','skill:201012']);
+ const corrupt=JSON.parse(JSON.stringify(curated));
+ corrupt.skills[0].evidence.numericId='https://umamusu.wiki/Game:Skills/999999';
+ assert.throws(()=>project({candidate,crosswalk:x,skillText:dict,model:m,supplemental:corrupt}),
+  /根拠不十分/);
+ const fakeLink={...x,locations:x.locations.map(l=>({...l,status:'curation-only-not-in-runtime-registry'}))};
+ assert.equal(project({candidate,crosswalk:fakeLink,skillText:dict,model:m}).report.totals.candidateSchemaEvents,0);
+});

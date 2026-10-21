@@ -6,6 +6,7 @@ const crypto=require('node:crypto');
 const {project}=require('../src/gametora_app_schema_dry_run.cjs');
 const loader=require('../src/live_loader.js');
 const {CANONICAL_SOURCE_SHA}=require('../src/gametora_event_skill_crosswalk.cjs');
+const supplemental=require('../data/curation/supplemental_skills.v1.json');
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
 const fail=x=>{throw Error('GameToraイベント実行スキーマ検証: '+x);};
 function main(args){
@@ -22,7 +23,7 @@ function main(args){
  if(model.cards.length!==563)fail('サポカカード数が変化');
  const result=project({candidate:JSON.parse(fs.readFileSync(candidateFile,'utf8')),
   crosswalk:JSON.parse(fs.readFileSync(crosswalkFile,'utf8')),
-  skillText:raw.toString('utf8'),model});
+  skillText:raw.toString('utf8'),model,supplemental});
  if(result.report.totals.sourceEvents!==2488||
     result.report.totals.sourceChoices!==4129||
     result.report.totals.sourceRoutes!==4376||
@@ -32,8 +33,11 @@ function main(args){
       result.report.totals.candidateSpecialTriggerEvents+
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
-    result.report.totals.candidateSchemaEvents!==2333||
-    result.report.totals.skippedEvents!==155||
+    result.report.totals.candidateSchemaEvents!==2347||
+    result.report.totals.skippedEvents!==141||
+    result.report.totals.candidateCurationOnlyHintMentions!==11||
+    result.report.totals.candidateCurationOnlyEvents!==11||
+    result.report.totals.blockedDependentStages!==36||
     result.report.totals.candidateConditionalAvailabilityEvents!==249||
     result.report.totals.candidateSpecialTriggerEvents!==113||
     result.report.totals.candidateOutingSequenceEvents!==109||
