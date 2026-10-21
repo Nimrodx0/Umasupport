@@ -35,12 +35,17 @@ function project({candidate,crosswalk,skillText,model}){
   candidateSchemaEvents:0,candidateSchemaCards:0,
   candidateAutoEvents:0,candidateChoiceEvents:0,
   candidateRewardMentions:0,candidateTerminalPaths:0,
-  skippedEvents:0,skippedSourceMissingCards:0,blockedDependentStages:0
+  candidateConditionalAvailabilityEvents:0,
+  candidateSpecialTriggerEvents:0,candidateOutingSequenceEvents:0,
+  candidateOutingRandomEvents:0,
+  skippedEvents:0,skippedSourceMissingCards:0,blockedDependentStages:0,
+  blockedDependentOutings:0
  };
  function rejectEvent(cardId,eventId,ordinal,reason){
   reject.push({cardId,eventId,sourceOrdinal:ordinal,reason});
   counts.skippedEvents++;
   if(reason==='CHAIN_PREDECESSOR_NOT_PROJECTED')counts.blockedDependentStages++;
+  if(reason==='OUTING_PREDECESSOR_NOT_PROJECTED')counts.blockedDependentOutings++;
  }
  for(const c of candidate.cards){
   if(!obj(c)||typeof c.cardId!=='string'||!Array.isArray(c.events))
@@ -51,15 +56,26 @@ function project({candidate,crosswalk,skillText,model}){
    perCard.push({cardId:c.cardId,eligible:0,excluded:0,sourceMissing:true});
    continue;
   }
-  const converted=[],chainByOrdinal=new Map();
-  let excluded=0,localHints=0;
+  const converted=[],chainByOrdinal=new Map(),outingByOrdinal=new Map();
+  let excluded=0,localHints=0,outingOrdinal=0;
   for(const e of c.events){
    counts.sourceEvents++;
    counts.sourceChoices+=e.choices?.length||0;
    counts.sourceRoutes+=(e.choices||[]).reduce((n,x)=>n+(x.routes?.length||0),0);
    let reason=null;
-   if(!['random','arrows'].includes(e.section))
-    reason='NONSTANDARD_SUPPORT_SECTION_NEEDS_REVIEW';
+   const triggerKinds={
+    special:'special-trigger',
+    dates:'outing-sequence',
+    dates_random:'outing-random'
+   };
+   if(!['random','arrows','special','dates','dates_random'].includes(e.section))
+    reason='UNKNOWN_SUPPORT_EVENT_SECTION';
+   const sourceOuting=e.section==='dates';
+   if(sourceOuting)outingOrdinal++;
+   const priorOuting=sourceOuting&&outingOrdinal>1?
+    outingByOrdinal.get(outingOrdinal-1):null;
+   if(sourceOuting&&outingOrdinal>1&&!priorOuting)
+    reason='OUTING_PREDECESSOR_NOT_PROJECTED';
    if(!Array.isArray(e.choices)||!e.choices.length)
     reason='INVALID_SOURCE_CHOICES';
    const sourceChain=e.section==='arrows',priorId=sourceChain&&e.sourceChainOrdinal>1?
@@ -138,6 +154,10 @@ function project({candidate,crosswalk,skillText,model}){
     convertedEvent={id:e.eventId,name:e.displayName,type:'auto',
       ...(src.outcomes?{outcomes:src.outcomes}:{rewards:src.rewards})};
    }else convertedEvent={id:e.eventId,name:e.displayName,type:'choice',choices};
+   if(triggerKinds[e.section])
+    convertedEvent.availabilityKind=triggerKinds[e.section];
+   if(sourceOuting&&priorOuting)
+    convertedEvent.requires={all:[{eventId:priorOuting}]};
    if(sourceChain&&priorId){
     const parent=converted.find(x=>x.id===priorId);
     const branches=parent.type==='choice'?parent.choices:[parent];
@@ -151,7 +171,18 @@ function project({candidate,crosswalk,skillText,model}){
    }
    // A last stage with no following edge is not a premature terminal.
    if(sourceChain)chainByOrdinal.set(e.sourceChainOrdinal,convertedEvent.id);
+   if(sourceOuting)outingByOrdinal.set(outingOrdinal,convertedEvent.id);
    converted.push(convertedEvent);
+   if(sourceOuting){
+    counts.candidateOutingSequenceEvents++;
+    counts.candidateConditionalAvailabilityEvents++;
+   }else if(e.section==='special'){
+    counts.candidateSpecialTriggerEvents++;
+    counts.candidateConditionalAvailabilityEvents++;
+   }else if(e.section==='dates_random'){
+    counts.candidateOutingRandomEvents++;
+    counts.candidateConditionalAvailabilityEvents++;
+   }
    for(const key of eventHintKeys)visited.add(key);
    localHints+=eventHintCount;
    if(isAuto)counts.candidateAutoEvents++;

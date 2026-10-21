@@ -12,6 +12,19 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
   if(!event||visiting.has(event.id))return {status:'blocked',conditions:[]};
   const next=new Set(visiting);next.add(event.id);
   const conditions=[];
+  // Support friend/special/outing events require contextual activation, not
+  // an invented player option. The planner must keep their skill rewards
+  // conditional even when no earlier support-chain stage is required.
+  const availabilityLabels={
+    'special-trigger':'特殊イベントの発生時',
+    'outing-sequence':'お出かけイベントの発生時',
+    'outing-random':'お出かけ中のランダムイベント発生時'
+  };
+  if(event.availabilityKind!==undefined){
+    if(!Object.prototype.hasOwnProperty.call(availabilityLabels,event.availabilityKind))
+      return {status:'blocked',conditions:[]};
+    conditions.push(availabilityLabels[event.availabilityKind]);
+  }
   const constraints=new Map();
   for(const r of prerequisites(event)){
     // Protect direct callers that bypass schema.validateEvents: an AND

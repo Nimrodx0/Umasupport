@@ -45,6 +45,11 @@
    const byId=new Map();
    for(const e of events){
      if(!obj(e)||!id(e.id)||!id(e.name)||!['auto','choice'].includes(e.type)||byId.has(e.id))fail(cardId+': イベントID・形式が不正または重複');
+     // Availability is distinct from prior event choices/results: trigger
+     // types must not appear as unconditional guaranteed skill paths.
+     if(e.availabilityKind!==undefined&&
+        !['special-trigger','outing-sequence','outing-random'].includes(e.availabilityKind))
+       fail(e.id+': 特殊イベント発生条件が不正');
      byId.set(e.id,e);
      if(e.type==='choice'){
        if(e.rewards!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
