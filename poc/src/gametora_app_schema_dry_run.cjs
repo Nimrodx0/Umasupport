@@ -55,6 +55,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   if(orLocator.has(k))fail('OR候補位置の重複');
   orLocator.set(k,x);
  }
+ const rangeLocator=new Map();
+ for(const x of crosswalk.rangeLocations||[]){
+  if(x.kind!=='correlated-range-hint')fail('段階別ヒント候補の種別不正');
+  const k=f(x.cardId,x.sourceOrdinal,x.choiceOrdinal,x.routeOrdinal,x.hintOrdinal);
+  if(rangeLocator.has(k))fail('段階別ヒント候補の重複');
+  rangeLocator.set(k,x);
+ }
  const visited=new Set(),reject=[],accepted=[],perCard=[],counts={
   sourceCards:candidate.cards.length,sourceEvents:0,sourceChoices:0,sourceRoutes:0,
   candidateSchemaEvents:0,candidateSchemaCards:0,
@@ -62,6 +69,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   candidateRewardMentions:0,candidateTerminalPaths:0,
   candidateExclusiveOrHintEffects:0,candidateExclusiveOrOptionMentions:0,
   candidateExclusiveOrEvents:0,
+  candidateRangedHintEffects:0,candidateExclusiveOrRangedOptions:0,
+  candidateRangeOutcomeEvents:0,
   candidateCurationOnlyHintMentions:0,candidateCurationOnlyEvents:0,
   candidateHistorical2025HintMentions:0,candidateHistorical2025Events:0,
   candidateConditionalAvailabilityEvents:0,
@@ -115,7 +124,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
       r!=='SKILL_HINT_EFFECT_UNRESOLVED'))
     reason='SOURCE_SPECIAL_CASE_REQUIRES_REVIEW';
    const choices=[],eventHintKeys=[];let eventHintCount=0,eventCurationCount=0,eventHistoricalCount=0,
-    eventOrGroups=0,eventOrOptions=0;
+    eventOrGroups=0,eventOrOptions=0,eventRangedHints=0,eventRangedOrOptions=0;
    for(const ch of e.choices||[]){
     if(reason)break;
     if(!Array.isArray(ch.routes)||!ch.routes.length){
@@ -137,7 +146,7 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      if(!Array.isArray(route.numericHintFacts)){
       reason='INVALID_ROUTE_HINTS';break;
      }
-     const rewards=[],unique=new Set(),exclusiveGroups=[];
+     const rewards=[],unique=new Set(),exclusiveGroups=[],rangedRewards=[];
      for(let hi=0;hi<route.numericHintFacts.length;hi++){
       const h=route.numericHintFacts[hi];
       const k=f(c.cardId,e.sourceOrdinal,ch.choiceOrdinal,route.routeOrdinal,hi+1);
@@ -152,10 +161,17 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
          supplementalIds.has(option.skillNumericId);
         const isHistorical=loc?.status==='not-in-pinned-umasim-registry'&&
          historicalIds.has(option.skillNumericId);
-        if(option.numericFactParsed!==true||!loc||loc.numericFactParsed!==true||
+        const ranged=option.levelRangeParsed===true&&
+         Array.isArray(option.levelRange)&&option.levelRange.length===2&&
+         option.levelRange.every(l=>Number.isInteger(l)&&l>=1&&l<=20);
+        const exact=option.numericFactParsed===true;
+        if(!loc||!(exact||ranged)||loc.numericFactParsed!==exact||
+           loc.levelRangeParsed!==ranged||
            !(loc.status==='mapped-existing-normal-hint'||loc.status==='mapped-numeric-event-skill'||
              isSupplement||isHistorical)||
-           loc.numericId!==option.skillNumericId||loc.level!==option.level){
+           loc.numericId!==option.skillNumericId||
+           (exact&&loc.level!==option.level)||
+           (ranged&&JSON.stringify(loc.levelRange)!==JSON.stringify(option.levelRange))){
          reason='EXCLUSIVE_OR_OPTIONS_UNRESOLVED';break;
         }
         const source=registry.byId.get(option.skillNumericId);
@@ -164,8 +180,11 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         }
         seenOptions.add(source.id);
         group.push({id:source.id,key:k+':'+(ai+1),
-         reward:{skillId:'skill:'+source.id,verifiedSkillName:source.name,level:option.level},
+         reward:{skillId:'skill:'+source.id,verifiedSkillName:source.name,
+          ...(exact?{level:option.level}:{})},
+         ...(ranged?{levelRange:option.levelRange}:{}),
          isSupplement,isHistorical});
+        if(ranged)eventRangedOrOptions++;
        }
        if(reason)break;
        exclusiveGroups.push(group);
