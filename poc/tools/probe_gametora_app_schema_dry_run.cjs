@@ -31,7 +31,13 @@ function main(args){
     result.report.totals.candidateConditionalAvailabilityEvents!==
       result.report.totals.candidateSpecialTriggerEvents+
       result.report.totals.candidateOutingSequenceEvents+
-      result.report.totals.candidateOutingRandomEvents)
+      result.report.totals.candidateOutingRandomEvents||
+    result.report.totals.candidateSchemaEvents!==2333||
+    result.report.totals.skippedEvents!==155||
+    result.report.totals.candidateConditionalAvailabilityEvents!==249||
+    result.report.totals.candidateSpecialTriggerEvents!==113||
+    result.report.totals.candidateOutingSequenceEvents!==109||
+    result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
  // WARNING: The derived app catalog contains unreviewed placeholders,
  // numeric skills and conditional routes. Never write it to disk or upload it.
