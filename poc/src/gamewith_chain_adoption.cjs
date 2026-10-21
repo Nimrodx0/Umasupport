@@ -9,12 +9,21 @@
  * fail closed. No network GET, raw source article prose, or auto-publication.
  */
 const {URL}=require('node:url');
+const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const word=x=>typeof x==='string'&&x.trim().length>0;
 const fail=x=>{throw Error('GameWith正本イベント審査: '+x);};
 const COVERAGE=['allEventHeadingsReviewed','allStageOrderReviewed',
  'allChoicesReviewed','allResultsReviewed','allExceptionsReviewed'];
 function sourceReview(review,cardId){
+ if(POLICY.schemaVersion!==1||POLICY.eventListPrimary!=='GameWith'||
+    POLICY.eventChoicePrimary!=='GameWith'||POLICY.eventResultPrimary!=='GameWith'||
+    POLICY.eventContinuationPrimary!=='GameWith'||
+    POLICY.unmarkedNonFinalChainRule!==
+      'ordinary-continuation-only-after-complete-human-reviewed-article-and-branch-coverage'||
+    POLICY.humanReviewedCompletenessRequired!==true||
+    POLICY.automaticPublicationAllowed!==false)
+  fail('正本の設定が無効・不一致');
  if(!obj(review)||review.schemaVersion!==1||review.source!=='GameWith'||
     review.cardId!==cardId||!word(review.reviewer)||
     !/^\d{4}-\d{2}-\d{2}$/.test(review.reviewedAt||'')||
@@ -58,6 +67,7 @@ function applyGameWithChainReview({cardId,review,events}){
    if(!obj(stage)||!Array.isArray(stage.choices)||!stage.choices.length||
       !Array.isArray(stage.exceptions))fail('全選択肢と明示例外のレビューが必要');
    if(event.type!=='choice'&&event.type!=='auto')fail('未対応イベント形式');
+   if(si===0&&event.requires!==undefined)fail('最初の段階に未確認の到達条件が存在します');
    const parts=event.type==='choice'?event.choices:[event];
    if(!Array.isArray(parts)||parts.length!==stage.choices.length)
     fail('GameWith記事と候補の選択肢数が異なります');
