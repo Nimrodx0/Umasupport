@@ -45,13 +45,17 @@ function main(args){
       result.report.totals.skippedEvents!==124||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2465||
-      result.report.totals.skippedEvents!==23||
+      result.report.totals.candidateSchemaEvents!==2471||
+      result.report.totals.skippedEvents!==17||
       result.report.totals.blockedDependentStages!==1||
       result.report.totals.candidateHistorical2025HintMentions!==80||
       result.report.totals.candidateHistorical2025Events!==76||
-      result.report.totals.candidateRewardMentions!==1667||
-      result.report.totals.candidateTerminalPaths!==90))||
+      result.report.totals.candidateRewardMentions!==1677||
+      result.report.totals.candidateTerminalPaths!==106))||
+    result.report.totals.candidateOutingUnlockEvents!==12||
+    result.report.totals.candidateOutingFirstStagesGated!==12||
+    result.report.totals.blockedOutingUnlockStarts!==2||
+    result.report.totals.blockedDependentOutings!==4||
     result.report.totals.candidateExclusiveOrEvents!==4||
     result.report.totals.candidateExclusiveOrHintEffects!==4||
     result.report.totals.candidateExclusiveOrOptionMentions!==8||
@@ -60,9 +64,9 @@ function main(args){
     result.report.totals.candidateRangeOutcomeEvents!==(historicalPreview?11:8)||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?255:245)||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?249:245)||
     result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?117:115)||
-    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:103)||
+    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?105:103)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
  const branchTotals=result.report.branchSemanticsInventory.totals;
