@@ -113,7 +113,62 @@ function matitan({card,event,chainByOrdinal,locator,registry,supplementalIds,his
   supplementalMentions:proofs.filter(x=>x.fromSupplement).length,
   historicalMentions:proofs.filter(x=>x.fromHistorical).length};
 }
+
+function elCondor({card,event,chainByOrdinal,locator,registry,supplementalIds,historicalIds}){
+ const e=event,c=card;
+ if(c.cardId!=='30102'||e.sourceOrdinal!==5||e.sourceChainOrdinal!==3||
+    e.section!=='arrows'||e.choices?.length!==1||
+    e.choices[0].sourceLabelWasEmpty!==true||
+    e.choices[0].reportedRandomAlternative!==false||
+    e.choices[0].routes?.length!==2||
+    JSON.stringify(e.reviewReasons)!==
+     JSON.stringify(['CONDITIONAL_SEGMENT_REQUIRES_REVIEW']))return null;
+ const parentId=chainByOrdinal.get(2);
+ const parent=c.events.find(x=>x.section==='arrows'&&x.sourceChainOrdinal===2);
+ if(!parentId||!parent||parent.choices?.length!==2||
+    parent.choices[0].reportedRandomAlternative!==true||
+    parent.choices[0].routes?.length!==2||
+    parent.choices[1].reportedRandomAlternative!==false||
+    parent.choices[1].routes?.length!==1)return null;
+ const [good,bad]=e.choices[0].routes;
+ const safeEffects=new Set(['brg','speed','guts','skill_points','skill_hint','bond']);
+ if(!good||!bad||!uncheckedRoute(good)||!uncheckedRoute(bad)||
+    good.guardKinds.length!==0||
+    bad.guardKinds.length!==1||bad.guardKinds[0]!=='otherwise'||
+    good.conditionsRequiringReview?.length!==0||
+    JSON.stringify(bad.conditionsRequiringReview)!==
+     JSON.stringify(['CONDITIONAL_SEGMENT_REQUIRES_REVIEW'])||
+    good.numericHintFacts?.length!==1||bad.numericHintFacts?.length!==1||
+    good.numericHintFacts[0].skillNumericId!=='200581'||
+    bad.numericHintFacts[0].skillNumericId!=='200581'||
+    good.numericHintFacts[0].level!==3||bad.numericHintFacts[0].level!==1||
+    good.effects?.[0]?.type!=='brg'||
+    bad.effects?.some(x=>x.type==='brg')||
+    !good.effects?.every(x=>safeEffects.has(x.type))||
+    !bad.effects?.every(x=>safeEffects.has(x.type)))return null;
+ const proofs=[good,bad].map((r,i)=>hint({
+  cardId:c.cardId,ordinal:e.sourceOrdinal,index:1,route:i+1,
+  fact:r.numericHintFacts[0],locator,registry,supplementalIds,historicalIds}));
+ if(proofs.some(x=>!x)||proofs[0].id!==proofs[1].id)return null;
+ const routes=[
+  {id:'upper-success',label:'前段で上選択して成功（仮）',
+   rewards:[proofs[0].reward],requires:{any:[{all:[{
+    eventId:parentId,choiceId:'choice-01',outcomeId:'route-01'}]}]}},
+  {id:'otherwise',label:'上選択で失敗・下選択時（仮）',
+   rewards:[proofs[1].reward],requires:{any:[
+    {all:[{eventId:parentId,choiceId:'choice-01',outcomeId:'route-02'}]},
+    {all:[{eventId:parentId,choiceId:'choice-02'}]}
+   ]}}
+ ];
+ return {kind:'elcondor',event:{id:e.eventId,name:e.displayName,type:'auto',
+  outcomes:routes,requires:{all:[{eventId:parentId}]}},
+  sourceKeys:proofs.map(x=>x.key),beneficialRewards:2,
+  collapsedSourceMentions:0,
+  supplementalMentions:proofs.filter(x=>x.fromSupplement).length,
+  historicalMentions:proofs.filter(x=>x.fromHistorical).length};
+}
 function tryProject(args){
+ if(args.card.cardId==='30102')return elCondor(args);
  if(args.card.cardId==='30103')return matitan(args);
  if(args.card.cardId==='30253')return rhein(args);
  return null;
