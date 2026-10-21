@@ -64,3 +64,72 @@ test('mixed unconditional and result-dependent rewards reject atomically',()=>{
  assert.equal(model.cards[0].events[0].id,'old');
  assert.equal(JSON.stringify(model.meta),oldMeta);
 });
+
+
+test('F-08: validated online event catalog is saved then restored after outage',async()=>{
+ const model=fixture();
+ let stored=null,writes=0;
+ const store={get:async()=>stored,put:async x=>{stored=x;writes++;}};
+ const payload={schemaVersion:1,cards:[{cardId:'30001',events:[
+  {id:'approved:1',name:'独自の架空イベント',type:'auto',rewards:[{skillId:'hint:架空',level:1}]}
+ ]}]};
+ const now=()=> '2026-10-22T00:00:00.000Z';
+ const online=await publicCatalog.loadVerified({model,store,now,
+  fetchImpl:async()=>({ok:true,text:async()=>JSON.stringify(payload)})});
+ assert.equal(online.mode,'online');assert.equal(writes,1);
+ assert.equal(stored.sourceUrl,publicCatalog.URL);
+ assert.equal(stored.fetchedAt,now());
+ assert.deepEqual(online.catalog,payload);
+ const cached=await publicCatalog.loadVerified({model,store,now,
+  fetchImpl:async()=>{throw Error('network offline');}});
+ assert.equal(cached.mode,'cached');
+ assert.deepEqual(cached.catalog,payload);
+ assert.equal(writes,1,'cache recovery must never overwrite the stored verified payload');
+ assert.match(cached.reason,/offline/);
+ const result=publicCatalog.attach(model,cached.catalog);
+ assert.equal(result.eventsWithRecords,1);
+ assert.equal(model.cardById['30001'].events[0].id,'approved:1');
+});
+test('F-08: malformed or semantically invalid network update never poisons last good cache',async()=>{
+ const model=fixture();
+ let stored=null,writes=0;
+ const store={get:async()=>stored,put:async x=>{stored=x;writes++;}};
+ const clean={schemaVersion:1,cards:[{cardId:'30001',events:[{
+  id:'original',name:'独自架空',type:'auto',rewards:[{skillId:'hint:架空'}]
+ }]}]};
+ await publicCatalog.loadVerified({model,store,fetchImpl:async()=>({ok:true,text:async()=>JSON.stringify(clean)})});
+ const unchanged=JSON.stringify(stored);
+ for(const text of ['{ invalid json',
+  JSON.stringify({schemaVersion:1,cards:[{cardId:'wrong-card',events:[]}]}),
+  JSON.stringify({schemaVersion:1,cards:[{cardId:'30001',events:[{
+   id:'bad',name:'無承認の不正スキル',type:'auto',rewards:[{skillId:'hint:unmapped'}]
+  }]}]})]){
+  const recovery=await publicCatalog.loadVerified({model,store,
+   fetchImpl:async()=>({ok:true,text:async()=>text})});
+  assert.equal(recovery.mode,'cached');
+  assert.deepEqual(recovery.catalog,clean);
+  assert.equal(JSON.stringify(stored),unchanged);
+ }
+ assert.equal(writes,1);
+});
+test('F-08: cached malformed, mismatched publisher, and missing cache fail closed',async()=>{
+ const model=fixture(),valid={schemaVersion:1,cards:[]};
+ for(const item of [null,
+  {text:JSON.stringify(valid),sourceUrl:'https://hostile.invalid/catalog'},
+  {text:'{}',sourceUrl:publicCatalog.URL},
+  {text:JSON.stringify({schemaVersion:1,cards:[{cardId:'not-model',events:[]}]}),sourceUrl:publicCatalog.URL}]){
+  await assert.rejects(()=>publicCatalog.loadVerified({
+   model,store:{get:async()=>item,put:async()=>{}},
+   fetchImpl:async()=>({ok:false,status:503})
+  }),/検証済みキャッシュもありません/);
+ }
+});
+test('F-08: online valid catalog works without private-mode IndexedDB',async()=>{
+ const model=fixture();
+ const got=await publicCatalog.loadVerified({model,store:{
+  get:async()=>{throw Error('storage denied');},
+  put:async()=>{throw Error('storage denied');}
+ },fetchImpl:async()=>({ok:true,text:async()=>JSON.stringify({schemaVersion:1,cards:[]})})});
+ assert.equal(got.mode,'online');
+ assert.equal(got.catalog.cards.length,0);
+});
