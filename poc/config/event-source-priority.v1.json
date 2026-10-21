@@ -1,17 +1,19 @@
 {
-  "schemaVersion": 1,
-  "scope": "support-event-list-choices-results-and-transitions",
-  "eventEffectPrimary": "GameWith",
-  "missingPrimary": "unresolved",
+  "schemaVersion": 2,
+  "scope": "support-event-baseline-and-exception-adjudication",
+  "baselineSource": "GameTora-derived",
+  "baselineRepository": "systemless10/UmamusumePS",
+  "baselineRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "canonicalExceptionSource": "GameWith",
+  "defaultUnmarkedNonfinalChain": "ordinary-continuation-in-GameTora-baseline",
+  "flaggedCasePolicy": "use-GameWith-to-adjudicate-confirmed-discrepancies-or-ambiguities",
+  "baselineMissingPolicy": "explicit-gap-queue-not-silent-GameWith-first-rebuild",
+  "corroborationSources": [
+    "UmaUmaChecker",
+    "Game8",
+    "2025-master",
+    "U-tools"
+  ],
   "automaticPublicationAllowed": false,
-  "sourceArticleExample": "https://gamewith.jp/uma-musume/article/show/573288",
-  "rationale": "GameWith is the editorial reference for event listing, results, rewards and non-final default continuation. Missing special notes are interpreted as ordinary only when a reviewer confirms complete page, choices, outcomes and exception coverage. This does not certify live gameplay, completeness outside GameWith or republication rights.",
-  "eventListPrimary": "GameWith",
-  "eventChoicePrimary": "GameWith",
-  "eventResultPrimary": "GameWith",
-  "eventContinuationPrimary": "GameWith",
-  "unmarkedNonFinalChainRule": "ordinary-continuation-only-after-complete-human-reviewed-article-and-branch-coverage",
-  "singleSourceProvisionalAccepted": true,
-  "sourceDisagreementBehavior": "prefer-GameWith-and-record-exceptions",
-  "humanReviewedCompletenessRequired": true
+  "rationale": "GameTora-derived support JSON is the database baseline. Accept its ordinary continuation when no explicit chain_end exists for a nonfinal stage whose next stage is identifiable; preserve flagged exceptions and use GameWith as adjudicator, not as source for wholesale reconstruction. Publication, complete game population, rights, and live game verification remain separate."
 }
