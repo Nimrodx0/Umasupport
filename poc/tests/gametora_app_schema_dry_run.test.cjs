@@ -10,6 +10,7 @@ function skills(){return JSON.stringify([
  {id:'200532',name:'速度維持',rarity:'normal',group:20053},
  {id:'201272',name:'金の加速',rarity:'rare',group:20127},
  {id:'200461',name:'三段階ヒント',rarity:'rare',group:20046},
+ {id:'200581',name:'高低ヒント',rarity:'rare',group:20058},
  {id:'200462',name:'先行結果スキルA',rarity:'normal',group:20046},
  {id:'200901',name:'先行結果スキルB',rarity:'normal',group:20090},
  {id:'201051',name:'分岐共通ヒントA',rarity:'normal',group:20105},
@@ -837,4 +838,61 @@ test('source copy is not identical: do not silently deduplicate or infer the pre
  const out=project(specialCaseCandidate(rheinSeries(true)));
  assert.equal(out.report.totals.candidateSourceReviewedDuplicateEvents,0);
  assert.equal(out.report.excludedReasons.MISSING_OR_DUPLICATE_RESULT_SKILL,1);
+});
+
+
+function elCondorSeries(omitMarker=false){
+ const raw=baseSpecialSeries({id:5,section:'arrows',name:'unpublished final',choices:[{
+  label:'',segments:[
+   {when:[],effects:[
+    ...(omitMarker?[]:[{type:'brg'}]),
+    {type:'speed',value:'+5'},{type:'guts',value:'+15'},
+    {type:'skill_points',value:'+30'},
+    {type:'skill_hint',skill_id:200581,value:'+3'},
+    {type:'bond',value:'+5'}]},
+   {when:[{kind:'otherwise'}],effects:[
+    {type:'speed',value:'+5'},{type:'guts',value:'+15'},
+    {type:'skill_hint',skill_id:200581,value:'+1'},
+    {type:'bond',value:'+5'}]}
+  ]
+ }]},30102);
+ raw.events_ja.chain2={id:4,section:'arrows',name:'unpublished preceding',
+  choices:[
+   {label:'upper',random_either:true,outcomes:[
+    [{type:'mood',value:'+1'},{type:'skill_points',value:'+30'}],
+    [{type:'energy',value:'-10'},{type:'skill_points',value:'+5'}]
+   ]},
+   {label:'lower',effects:[{type:'speed',value:'+7'}]}
+  ]};
+ return raw;
+}
+test('El Condor final stage: Lv3 iff previous upper choice succeeds, else Lv1',()=>{
+ const res=project(specialCaseCandidate(elCondorSeries()));
+ assert.equal(res.report.totals.skippedEvents,0);
+ assert.equal(res.report.totals.candidateSourceReviewedPriorChoiceEvents,1);
+ const events=res.dryRunCatalog.cards[0].events;
+ const parent=events.find(x=>x.id.endsWith('004'));
+ const final=events.find(x=>x.id.endsWith('005'));
+ assert.equal(parent.choices.length,2);
+ assert.equal(final.outcomes.length,2);
+ assert.deepEqual(final.outcomes.map(x=>x.rewards[0].level),[3,1]);
+ const trials=[
+  ['choice-01','route-01',0],
+  ['choice-01','route-02',1],
+  ['choice-02',null,1]
+ ];
+ for(const [choice,outcome,correct]of trials){
+  const state={...(outcome?{[parent.id]:outcome}:{})};
+  const selections={[parent.id]:choice};
+  const status=final.outcomes.map(o=>core.outcomeReachability(
+   o,final,selections,events,state).status);
+  assert.deepEqual(status.map(x=>x!=='blocked'),[0,1].map(i=>i===correct));
+ }
+ assert.equal(res.report.publicationApproved,false);
+});
+test('El Condor pinned source brg branch marker is required, not guessed',()=>{
+ const result=project(specialCaseCandidate(elCondorSeries(true)));
+ assert.equal(result.report.totals.candidateSourceReviewedPriorChoiceEvents,0);
+ assert.equal(result.report.totals.skippedEvents,1);
+ assert.equal(result.report.excludedReasons.SOURCE_SPECIAL_CASE_REQUIRES_REVIEW,1);
 });
