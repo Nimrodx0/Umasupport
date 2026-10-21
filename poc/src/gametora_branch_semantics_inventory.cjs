@@ -33,7 +33,9 @@ function inventory(candidate){
  const cardIds=new Set();
  for(const card of candidate.cards){
   if(!card||typeof card.cardId!=='string'||cardIds.has(card.cardId)||
-     !Array.isArray(card.events)||typeof card.sourceMissing!=='boolean')
+     !Array.isArray(card.events)||
+     card.sourceMissing!==undefined&&typeof card.sourceMissing!=='boolean'||
+     card.sourceMissing===true&&card.events.length!==0)
    fail('サポカ集合の重複・構造不正');
   cardIds.add(card.cardId);totals.rosterCards++;
   const ordinals=new Set();
