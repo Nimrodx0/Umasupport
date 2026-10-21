@@ -250,7 +250,13 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
      // Each source "skill_hint_or" is an EXCLUSIVE choice of one hint.
      // Construct outcome alternatives; never put sibling OR skills together.
      // Keep bounded even for multiple independent OR sets in one source path.
-     let variants=[{rewards,ids:unique}];
+     const anyRange=rangedRewards.length>0||
+      exclusiveGroups.some(g=>g.some(option=>option.levelRange));
+     let variants=(anyRange?[0,1]:[null]).map(tier=>({
+      tier,ids:new Set(unique),
+      rewards:[...rewards,...rangedRewards.map(h=>({
+       skillId:h.skillId,verifiedSkillName:h.verifiedSkillName,
+       level:h.levelRange[tier]}))]}));
      for(const group of exclusiveGroups){
       const next=[];
       for(const variant of variants){
@@ -258,8 +264,10 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
         if(variant.ids.has(option.id)){
          reason='EXCLUSIVE_OR_DUPLICATES_FIXED_REWARD';break;
         }
-        next.push({rewards:[...variant.rewards,option.reward],
-         ids:new Set([...variant.ids,option.id])});
+        const reward={...option.reward,
+         ...(option.levelRange?{level:option.levelRange[variant.tier]}:{})};
+        next.push({rewards:[...variant.rewards,reward],
+         tier:variant.tier,ids:new Set([...variant.ids,option.id])});
         if(next.length>32){reason='EXCLUSIVE_OR_COMBINATIONS_TOO_LARGE';break;}
        }
        if(reason)break;
@@ -278,7 +286,8 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
        label:'結果'+route.routeOrdinal+(suffix?'・候補'+(vi+1):'')+'（仮）',
        rewards:variant.rewards,...(terminal?{terminal:true}:{})});
      }
-     eventHintCount+=rewards.length+exclusiveGroups.reduce((n,g)=>n+g.length,0);
+     eventHintCount+=rewards.length+rangedRewards.length+
+      exclusiveGroups.reduce((n,g)=>n+g.length,0);
     }
     if(reason)break;
     // If originally a no-choice support event, do NOT fabricate an option.
@@ -346,6 +355,9 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
     counts.candidateExclusiveOrOptionMentions+=eventOrOptions;
     counts.candidateExclusiveOrEvents++;
    }
+   if(eventRangedHints||eventRangedOrOptions)counts.candidateRangeOutcomeEvents++;
+   counts.candidateRangedHintEffects+=eventRangedHints;
+   counts.candidateExclusiveOrRangedOptions+=eventRangedOrOptions;
    if(isAuto)counts.candidateAutoEvents++;
    else counts.candidateChoiceEvents++;
   }
