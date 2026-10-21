@@ -42,9 +42,9 @@ function prepare(model,catalog,text,{fullRegistry=false}={}){
       source=parseSource(text);
     }
     const record=source.byId.get(match[1]);
-    if(!record||
-        (reward.kind==='negative'?record.rarity!=='minus':
-         !['normal','rare'].includes(record.rarity)))
+    if(!record)throw Error('数値スキルIDが未照合: '+reward.skillId);
+     if(reward.kind==='negative'?record.rarity!=='minus':
+        !['normal','rare'].includes(record.rarity))
        throw Error('報酬種別と数値スキル分類が不一致: '+reward.skillId);
     // Prevent a changed upstream ID from silently redirecting a reviewed reward.
     if(typeof reward.verifiedSkillName!=='string'||normalize(reward.verifiedSkillName)!==record.name)
