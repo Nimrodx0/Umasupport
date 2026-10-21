@@ -44,11 +44,19 @@ function main(args){
       result.report.totals.candidateSchemaEvents!==2347||
       result.report.totals.skippedEvents!==141||
       result.report.totals.blockedDependentStages!==36))||
+    (historicalPreview&&(
+      result.report.totals.candidateSchemaEvents!==2449||
+      result.report.totals.skippedEvents!==39||
+      result.report.totals.blockedDependentStages!==4||
+      result.report.totals.candidateHistorical2025HintMentions!==77||
+      result.report.totals.candidateHistorical2025Events!==73||
+      result.report.totals.candidateRewardMentions!==1638||
+      result.report.totals.candidateTerminalPaths!==90))||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==249||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?251:249)||
     result.report.totals.candidateSpecialTriggerEvents!==113||
-    result.report.totals.candidateOutingSequenceEvents!==109||
+    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
  // WARNING: The derived app catalog contains unreviewed placeholders,
