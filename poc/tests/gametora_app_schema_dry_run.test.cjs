@@ -332,3 +332,81 @@ test('special-case blockers are split by guarded route, direct grant, unresolved
  assert.ok(!str.includes('private choice'));
  assert.ok(!str.includes('速度維持'));
 });
+
+
+function orCandidate(options,fixedId=200532){
+ const effects=[
+  ...(fixedId?[{type:'skill_hint',skill_id:fixedId,value:'+1'}]:[]),
+  {type:'skill_hint_or',options}
+ ];
+ const normalized=transformDocument({kind:'support',id:30026,events_ja:{
+  a:{id:1,section:'random',name:'not for publication',choices:[
+   {label:'',effects}]}
+ }});
+ const {reviewQueue,effectTypeCounts,...card}=normalized;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:normalized.sourceEventCount,
+   sourceChoices:normalized.sourceChoiceCount,
+   expandedRoutes:normalized.sourceExpandedRoutes,
+   numericHintMentions:normalized.numericParsedHintMentions,
+   unresolvedHintMentions:normalized.unresolvedHintMentions,
+   directSkillGrantMentions:normalized.directSkillGrantMentions
+  }};
+ const dict=skills(),m=model();
+ const x=crosswalk({candidate,skillText:dict,model:m});
+ return {candidate,crosswalk:x,skillText:dict,model:m};
+}
+test('GameTora OR skill hints create exclusive conditional outcomes with shared fixed reward',()=>{
+ const req=orCandidate([
+  {skill_id:201272,value:'+3'},
+  {skill_id:400000,value:'+1'}
+ ]);
+ const raw=req.candidate.cards[0].events[0].choices[0].routes[0].numericHintFacts;
+ assert.equal(raw.length,2);
+ assert.deepEqual(raw[1].alternatives.map(x=>x.skillNumericId),['201272','400000']);
+ assert.equal(req.crosswalk.stats.exclusiveOrHintEffects,1);
+ assert.equal(req.crosswalk.stats.exclusiveOrOptionsParsed,2);
+ assert.equal(req.crosswalk.alternativeLocations.length,2);
+ const result=project(req),counts=result.report.totals;
+ assert.equal(counts.candidateSchemaEvents,1);
+ assert.equal(counts.candidateExclusiveOrEvents,1);
+ assert.equal(counts.candidateExclusiveOrHintEffects,1);
+ assert.equal(counts.candidateExclusiveOrOptionMentions,2);
+ assert.equal(counts.candidateRewardMentions,3);
+ const event=result.dryRunCatalog.cards[0].events[0];
+ assert.equal(event.type,'auto');
+ assert.equal(event.outcomes.length,2);
+ assert.equal(event.rewards,undefined);
+ assert.deepEqual(event.outcomes.map(o=>o.rewards.map(r=>r.skillId)),[
+  ['skill:200532','skill:201272'],
+  ['skill:200532','skill:400000']]);
+ const routes=core.directRoutes({hints:[],events:[event]},{choices:{}});
+ assert.equal(routes.length,4);
+ assert.ok(routes.every(x=>x.conditional));
+ assert.ok(!JSON.stringify(result.report).includes('not for publication'));
+ assert.equal(result.report.publicationApproved,false);
+});
+test('OR alternatives require every numeric ID and exact level; no partial source rewards',()=>{
+ const malformed=orCandidate([
+  {skill_id:201272,value:'+1/+3'},
+  {skill_id:400000,value:'+1'}
+ ]);
+ assert.equal(malformed.crosswalk.stats.exclusiveOrOptionsParsed,1);
+ const blocked=project(malformed);
+ assert.equal(blocked.report.totals.candidateSchemaEvents,0);
+ assert.equal(blocked.report.excludedReasons.EXCLUSIVE_OR_OPTIONS_UNRESOLVED,1);
+ const mismatch=orCandidate([
+  {skill_id:201272,value:'+3'},{skill_id:400000,value:'+1'}
+ ]);
+ mismatch.crosswalk.alternativeLocations[0].level=99;
+ assert.equal(project(mismatch).report.excludedReasons.EXCLUSIVE_OR_OPTIONS_UNRESOLVED,1);
+ const duplicate=orCandidate([
+  {skill_id:200532,value:'+3'},{skill_id:201272,value:'+1'}
+ ]);
+ assert.equal(project(duplicate).report.excludedReasons.EXCLUSIVE_OR_DUPLICATES_FIXED_REWARD,1);
+ const withoutOptions=orCandidate(undefined);
+ assert.equal(project(withoutOptions).report.totals.candidateSchemaEvents,0);
+});
