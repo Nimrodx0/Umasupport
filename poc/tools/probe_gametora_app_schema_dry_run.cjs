@@ -6,14 +6,16 @@ const crypto=require('node:crypto');
 const {project}=require('../src/gametora_app_schema_dry_run.cjs');
 const loader=require('../src/live_loader.js');
 const {CANONICAL_SOURCE_SHA}=require('../src/gametora_event_skill_crosswalk.cjs');
+const {gitBlobSha,INDEPENDENT_SKILLS_BLOB}=
+ require('../src/independent_skill_fingerprint_audit.cjs');
 const supplemental=require('../data/curation/supplemental_skills.v1.json');
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
 const fail=x=>{throw Error('GameToraイベント実行スキーマ検証: '+x);};
 function main(args){
- if(![5,7].includes(args.length))
-  fail('usage: <numeric-candidate> <crosswalk> <skill_data.txt> <support_card.txt> <numeric-summary-output> [historical-report.json private-historical-records.json]');
+ if(![5,7,8].includes(args.length))
+  fail('usage: <numeric-candidate> <crosswalk> <skill_data.txt> <support_card.txt> <numeric-summary-output> [historical-report.json private-historical-records.json] OR [numeric-historical-report.json pinned-2026-skills.json independent-fingerprint-report.json]');
  const [candidateFile,crosswalkFile,skillFile,rosterFile,out,
-   historicalReportFile,privateRecordsFile]=args.map(x=>path.resolve(x));
+   historicalReportFile,privateRecordsFile,independentAuditFile]=args.map(x=>path.resolve(x));
  if(out.startsWith(path.resolve(__dirname,'../data')+path.sep)||
     [candidateFile,crosswalkFile,skillFile,rosterFile].includes(out))
   fail('未承認データを公開領域に書き込めません');
@@ -23,16 +25,41 @@ function main(args){
   fail('独立ソースのSHA-256検証に失敗');
  const model=loader.buildModel(roster.toString('utf8'),{mode:'audit'});
  if(model.cards.length!==563)fail('サポカカード数が変化');
- const historicalPreview=historicalReportFile?{
-  report:JSON.parse(fs.readFileSync(historicalReportFile,'utf8')),
+ const historicalReport=historicalReportFile?
+  JSON.parse(fs.readFileSync(historicalReportFile,'utf8')):undefined;
+ const historicalPreview=args.length===7?{
+  report:historicalReport,
   privateRecords:JSON.parse(fs.readFileSync(privateRecordsFile,'utf8'))}:undefined;
+ let independent2026Preview;
+ if(args.length===8){
+  const skillBytes=fs.readFileSync(privateRecordsFile);
+  if(gitBlobSha(skillBytes)!==INDEPENDENT_SKILLS_BLOB||
+     hash(skillBytes)!=='11bf7aa86d611047f5052b48059cf77d6aa9b4a7ad8e25ba2f7f901dcd267e62')
+   fail('2026年別資料の固定ファイルと異なります');
+  const audit=JSON.parse(fs.readFileSync(independentAuditFile,'utf8'));
+  if(audit.dataKind!=='independent-2026-metadata-skill-name-fingerprint-audit'||
+     audit.sourcePins?.independentSkillBlob!==INDEPENDENT_SKILLS_BLOB||
+     audit.sourcePins?.independentJsonSha256!==hash(skillBytes)||
+     audit.totals?.nameFingerprintMatches!==28||
+     audit.automaticAdoptionAllowed!==false||
+     audit.publicationApproved!==false)
+   fail('2026年別資料の名称照合記録と不一致');
+  independent2026Preview={historicalReport,skills:JSON.parse(skillBytes.toString('utf8'))};
+ }
  const crosswalkRecord=JSON.parse(fs.readFileSync(crosswalkFile,'utf8'));
  const candidateAudit=JSON.parse(fs.readFileSync(candidateFile,'utf8'));
  const result=project({candidate:candidateAudit,
   crosswalk:crosswalkRecord,
-  skillText:raw.toString('utf8'),model,supplemental,historicalPreview});
+  skillText:raw.toString('utf8'),model,supplemental,historicalPreview,independent2026Preview});
  // Exact source numeric IDs and positions only; no scraped words, names,
  // outcome prose or unpublished runtime catalog leave the temporary runner.
+ const augmented=historicalPreview!==undefined||independent2026Preview!==undefined;
+ if(independent2026Preview!==undefined){
+  console.log('GAMETORA_INDEPENDENT_2026_NAME_PREVIEW='+JSON.stringify({
+   metadataRevision:'0cacbb1aaf9dca10283d5b9ea20b205b9d204535',
+   namesConfirmed:28,adoptedForPublication:false,
+   historical2025NumericRarityStillUsed:true}));
+ }
  const directAwardRecords=crosswalkRecord.locations.filter(x=>x.kind==='direct-skill-award');
  console.log('GAMETORA_DIRECT_AWARD_STATUS='+JSON.stringify(directAwardRecords.map(x=>({
   cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
@@ -51,11 +78,11 @@ function main(args){
       result.report.totals.candidateSpecialTriggerEvents+
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
-    (!historicalPreview&&(
+    (!augmented&&(
       result.report.totals.candidateSchemaEvents!==2378||
       result.report.totals.skippedEvents!==110||
       result.report.totals.blockedDependentStages!==35))||
-    (historicalPreview&&(
+    (augmented&&(
       result.report.totals.candidateSchemaEvents!==2488||
       result.report.totals.skippedEvents!==0||
       result.report.totals.blockedDependentStages!==0||
@@ -63,15 +90,18 @@ function main(args){
       result.report.totals.candidateHistorical2025Events!==77||
       result.report.totals.candidateRewardMentions!==1696||
       result.report.totals.candidateTerminalPaths!==109))||
-    result.report.totals.candidateSourceReviewedConditionalEvents!==(historicalPreview?2:1)||
+    result.report.totals.candidateIndependent2026NameHintMentions!==(independent2026Preview?81:0)||
+    result.report.totals.candidateIndependent2026NameEvents!==(independent2026Preview?77:0)||
+    result.report.independent2026NamePreviewUsed!==(independent2026Preview!==undefined)||
+    result.report.totals.candidateSourceReviewedConditionalEvents!==(augmented?2:1)||
     result.report.totals.candidateSourceReviewedDuplicateEvents!==1||
     result.report.totals.candidateSourceReviewedPriorChoiceEvents!==1||
     result.report.totals.candidateCollapsedDuplicatedSourceHints!==2||
     result.report.totals.candidateSkillInvariantScriptedEvents!==2||
     result.report.totals.candidateUnmodeledNonSkillBranches!==6||
     result.report.totals.candidateDirectAcquisitionMentions!==0||
-    result.report.totals.candidateNegativeSkillMentions!==(historicalPreview?7:6)||
-    result.report.totals.candidateNegativeSkillEvents!==(historicalPreview?5:4)||
+    result.report.totals.candidateNegativeSkillMentions!==(augmented?7:6)||
+    result.report.totals.candidateNegativeSkillEvents!==(augmented?5:4)||
     result.report.totals.candidateOutingUnlockEvents!==14||
     result.report.totals.candidateOutingFirstStagesGated!==14||
     result.report.totals.blockedOutingUnlockStarts!==0||
@@ -80,13 +110,13 @@ function main(args){
     result.report.totals.candidateExclusiveOrHintEffects!==4||
     result.report.totals.candidateExclusiveOrOptionMentions!==8||
     result.report.totals.candidateExclusiveOrRangedOptions!==2||
-    result.report.totals.candidateRangedHintEffects!==(historicalPreview?9:6)||
-    result.report.totals.candidateRangeOutcomeEvents!==(historicalPreview?11:8)||
+    result.report.totals.candidateRangedHintEffects!==(augmented?9:6)||
+    result.report.totals.candidateRangeOutcomeEvents!==(augmented?11:8)||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?257:253)||
-    result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?119:117)||
-    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(augmented?257:253)||
+    result.report.totals.candidateSpecialTriggerEvents!==(augmented?119:117)||
+    result.report.totals.candidateOutingSequenceEvents!==(augmented?111:109)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
  const branchTotals=result.report.branchSemanticsInventory.totals;

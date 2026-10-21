@@ -24,6 +24,11 @@ on:
       - 'poc/tests/test_historical_missing_event_skills.py'
       - 'poc/src/historical_skill_dry_run.cjs'
       - 'poc/src/independent_skill_fingerprint_audit.cjs'
+      - 'poc/src/independent_2026_skill_dry_run.cjs'
+      - 'poc/tests/independent_2026_skill_dry_run.test.cjs'
+      - 'poc/src/private_schema_digest_parity.cjs'
+      - 'poc/tools/check_private_schema_digest_parity.cjs'
+      - 'poc/tests/private_schema_digest_parity.test.cjs'
       - 'poc/tools/audit_independent_2026_skill_fingerprints.cjs'
       - 'poc/tests/independent_skill_fingerprint_audit.test.cjs'
       - 'poc/src/gametora_app_schema_dry_run.cjs'
@@ -178,6 +183,10 @@ jobs:
           set -euo pipefail
           curl --fail --silent --show-error --location --retry 2 --max-time 120             "https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/skills.json"             -o "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json"
           node umasupport/poc/tools/audit_independent_2026_skill_fingerprints.cjs             whole-event-output/historical_missing_skill_id_review.v1.json             "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json"             whole-event-output/independent_2026_skill_fingerprints.v1.json
+      - name: Verify synthetic 2026 external-name private registry preview
+        run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
+      - name: Verify full private catalog digest parity comparison on synthetic fixtures
+        run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
       - name: Verify synthetic source-to-runtime app schema conversion
         run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
       - name: Independently freeze current UmaSim and curated IDs without 2025 historical preview
@@ -198,6 +207,22 @@ jobs:
             whole-event-output/gametora_app_schema_dry_run_summary.v1.json \
             whole-event-output/historical_missing_skill_id_review.v1.json \
             "$RUNNER_TEMP/historical-master/private_historical_skill_names.json"
+      - name: Dry-run complete fixed event catalog with 2026 names and 2025 hashed numeric evidence
+        run: |
+          node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            whole-event-output/gametora_event_skill_crosswalk.v1.json \
+            "$RUNNER_TEMP/event-inputs/skill_data.txt" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            whole-event-output/gametora_app_schema_private_2026_name_preview_summary.v1.json \
+            whole-event-output/historical_missing_skill_id_review.v1.json \
+            "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json" \
+            whole-event-output/independent_2026_skill_fingerprints.v1.json
+      - name: Verify 2025 and 2026-name full 2488-event private catalogs are byte-identical
+        run: |
+          node umasupport/poc/tools/check_private_schema_digest_parity.cjs \
+            whole-event-output/gametora_app_schema_dry_run_summary.v1.json \
+            whole-event-output/gametora_app_schema_private_2026_name_preview_summary.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
