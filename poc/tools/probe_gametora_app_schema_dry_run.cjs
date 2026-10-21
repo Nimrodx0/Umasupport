@@ -52,17 +52,20 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2376||
-      result.report.totals.skippedEvents!==112||
+      result.report.totals.candidateSchemaEvents!==2377||
+      result.report.totals.skippedEvents!==111||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2485||
-      result.report.totals.skippedEvents!==3||
+      result.report.totals.candidateSchemaEvents!==2487||
+      result.report.totals.skippedEvents!==1||
       result.report.totals.blockedDependentStages!==0||
       result.report.totals.candidateHistorical2025HintMentions!==81||
       result.report.totals.candidateHistorical2025Events!==77||
-      result.report.totals.candidateRewardMentions!==1689||
+      result.report.totals.candidateRewardMentions!==1694||
       result.report.totals.candidateTerminalPaths!==109))||
+    result.report.totals.candidateSourceReviewedConditionalEvents!==(historicalPreview?1:0)||
+    result.report.totals.candidateSourceReviewedDuplicateEvents!==1||
+    result.report.totals.candidateCollapsedDuplicatedSourceHints!==2||
     result.report.totals.candidateSkillInvariantScriptedEvents!==2||
     result.report.totals.candidateUnmodeledNonSkillBranches!==6||
     result.report.totals.candidateDirectAcquisitionMentions!==0||
