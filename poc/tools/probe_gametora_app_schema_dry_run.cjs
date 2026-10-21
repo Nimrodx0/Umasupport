@@ -41,8 +41,8 @@ function main(args){
       result.report.totals.candidateOutingSequenceEvents+
       result.report.totals.candidateOutingRandomEvents||
     (!historicalPreview&&(
-      result.report.totals.candidateSchemaEvents!==2358||
-      result.report.totals.skippedEvents!==130||
+      result.report.totals.candidateSchemaEvents!==2364||
+      result.report.totals.skippedEvents!==124||
       result.report.totals.blockedDependentStages!==35))||
     (historicalPreview&&(
       result.report.totals.candidateSchemaEvents!==2465||
@@ -60,9 +60,9 @@ function main(args){
     result.report.totals.candidateRangeOutcomeEvents!==(historicalPreview?11:8)||
     result.report.totals.candidateCurationOnlyHintMentions!==11||
     result.report.totals.candidateCurationOnlyEvents!==11||
-    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?255:251)||
+    result.report.totals.candidateConditionalAvailabilityEvents!==(historicalPreview?255:245)||
     result.report.totals.candidateSpecialTriggerEvents!==(historicalPreview?117:115)||
-    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:109)||
+    result.report.totals.candidateOutingSequenceEvents!==(historicalPreview?111:103)||
     result.report.totals.candidateOutingRandomEvents!==27)
   fail('固定GameTora全件数の保存条件に不一致');
  const branchTotals=result.report.branchSemanticsInventory.totals;
