@@ -392,7 +392,7 @@ test('GameTora OR skill hints create exclusive conditional outcomes with shared 
 });
 test('OR alternatives require every numeric ID and exact level; no partial source rewards',()=>{
  const malformed=orCandidate([
-  {skill_id:201272,value:'+1/+3'},
+  {skill_id:201272,value:'unknown'},
   {skill_id:400000,value:'+1'}
  ]);
  assert.equal(malformed.crosswalk.stats.exclusiveOrOptionsParsed,1);
@@ -410,4 +410,58 @@ test('OR alternatives require every numeric ID and exact level; no partial sourc
  assert.equal(project(duplicate).report.excludedReasons.EXCLUSIVE_OR_DUPLICATES_FIXED_REWARD,1);
  const withoutOptions=orCandidate(undefined);
  assert.equal(project(withoutOptions).report.totals.candidateSchemaEvents,0);
+});
+
+
+test('correlated slash levels are two alternatives, not an unconditional low hint',()=>{
+ const raw={kind:'support',id:30026,events_ja:{one:{
+  name:'unpublished range event',section:'random',choices:[{label:'',
+   effects:[
+    {type:'skill_hint',skill_id:201272,value:'+1/+3'},
+    {type:'skill_hint',skill_id:200532,value:'+1'},
+    {type:'speed',value:'+5/+10'}
+   ]}]}}};
+ const row=transformDocument(raw),{reviewQueue,effectTypeCounts,...card}=row;
+ const candidate={dataKind:'gametora-whole-event-numeric-candidate',
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  sourcePins:{gameToraDerived:policy.baselineRevision},
+  cards:[card],totals:{
+   rosterCards:1,sourceEvents:row.sourceEventCount,
+   sourceChoices:row.sourceChoiceCount,expandedRoutes:row.sourceExpandedRoutes,
+   numericHintMentions:row.numericParsedHintMentions,
+   unresolvedHintMentions:row.unresolvedHintMentions,
+   directSkillGrantMentions:row.directSkillGrantMentions
+  }};
+ const m=model(),dict=skills(),link=crosswalk({candidate,model:m,skillText:dict});
+ assert.equal(row.unresolvedHintMentions,1);
+ assert.equal(link.stats.rangedHintEffects,1);
+ assert.equal(link.rangeLocations.length,1);
+ assert.deepEqual(card.events[0].choices[0].routes[0].effects[2].numericRange,[5,10]);
+ const out=project({candidate,crosswalk:link,skillText:dict,model:m});
+ assert.equal(out.report.totals.candidateSchemaEvents,1);
+ assert.equal(out.report.totals.candidateRangedHintEffects,1);
+ assert.equal(out.report.totals.candidateRangeOutcomeEvents,1);
+ const event=out.dryRunCatalog.cards[0].events[0];
+ assert.deepEqual(event.outcomes.map(x=>x.rewards.find(r=>r.skillId==='skill:201272').level),[1,3]);
+ assert.ok(core.directRoutes({events:[event],hints:[]},{choices:{}}).every(x=>x.conditional));
+ const forged=structuredClone(link);
+ forged.rangeLocations[0].levelRange=[1,4];
+ assert.equal(project({candidate,crosswalk:forged,skillText:dict,model:m}).report.excludedReasons.RANGED_HINT_EFFECT_PENDING,1);
+});
+test('range in OR options follows same low/high tier and does not grant both alternatives',()=>{
+ const req=orCandidate([
+  {skill_id:201272,value:'+1/+3'},
+  {skill_id:400000,value:'+1'}
+ ]);
+ assert.equal(req.crosswalk.stats.exclusiveOrOptionsWithRange,1);
+ const out=project(req);
+ assert.equal(out.report.totals.candidateSchemaEvents,1);
+ assert.equal(out.report.totals.candidateExclusiveOrRangedOptions,1);
+ assert.equal(out.report.totals.candidateRangeOutcomeEvents,1);
+ const o=out.dryRunCatalog.cards[0].events[0].outcomes;
+ assert.equal(o.length,4);
+ assert.deepEqual(o.map(x=>x.rewards.at(-1).level),[1,1,3,1]);
+ assert.deepEqual(o.map(x=>x.rewards.at(-1).skillId),
+  ['skill:201272','skill:400000','skill:201272','skill:400000']);
+ assert.ok(o.every(x=>x.rewards.length===2));
 });
