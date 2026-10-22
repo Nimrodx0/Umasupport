@@ -21,7 +21,13 @@ const REVIEW=Object.freeze([
    game8:'https://game8.jp/umamusume/818871'},
   liveGameToraEvidence:'EVENT_LIST_3_CHAIN_2_RANDOM'},
  {cardId:'30319',optionRows:[2,2,1,2,2],
-  eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','EDITORIAL_PRESENTATION_UNRESOLVED'],
+  eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','EDITORIAL_TWO_CHOICES_CORROBORATED'],
+  sharedEventEvidence:{checkerOrdinal:5,
+   independentGameWithEvent:'https://gamewith.jp/uma-musume/article/show/289111',
+   independentEditor:'https://game8.jp/umamusume/818831',
+   playerChoiceCountReported:2,
+   hintOnReportedChoiceOrdinal:2,
+   hintSkillNumericId:201641,hintLevel:1},
   hints:[as(2,1,204412,1),as(3,1,202371,1),as(3,1,204151,2),as(5,2,201641,1)],
   references:{gameTora:'https://gametora.com/ja/umamusume/supports/30319-narita-brian',
    gameWith:'https://gamewith.jp/uma-musume/article/show/578819',
@@ -62,7 +68,7 @@ function review(candidate,{strict=true}={}){
  }
  const totals={reviewedCards:0,reviewedCandidateEvents:0,reviewedSourceRows:0,
   checkedNumericHintMentions:0,editorialShapeAlignedEvents:0,
-  presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
+  editorialTwoChoiceCorroboratedEvents:0,presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
   reviewedRandomPositionCandidates:0,gameToraLiveEventListCards:0,
   gameToraLiveDetailMetadataOnlyCards:0,
   gameToraLiveRosterOnlyCards:0};
@@ -98,6 +104,16 @@ function review(candidate,{strict=true}={}){
    const shape=expected.eventShape[i];
    if(shape==='EDITORIAL_PRESENTATION_UNRESOLVED')totals.presentationUnresolvedEvents++;
    else totals.editorialShapeAlignedEvents++;
+   if(shape==='EDITORIAL_TWO_CHOICES_CORROBORATED'){
+    if(i+1!==expected.sharedEventEvidence?.checkerOrdinal||
+       e.checkerChoiceRows!==expected.sharedEventEvidence.playerChoiceCountReported||
+       !e.hintMentions.some(m=>
+        m.checkerOptionOrdinal===expected.sharedEventEvidence.hintOnReportedChoiceOrdinal&&
+        m.skillNumericId===expected.sharedEventEvidence.hintSkillNumericId&&
+        m.hintLevel===expected.sharedEventEvidence.hintLevel))
+     fail('30319通常イベントの限定的2択資料とヒント配置が不一致');
+    totals.editorialTwoChoiceCorroboratedEvents++;
+   }
    for(const m of e.hintMentions){
     if(!Number.isSafeInteger(m.checkerOptionOrdinal)||m.checkerOptionOrdinal<1||
        m.checkerOptionOrdinal>e.checkerChoiceRows||
@@ -114,6 +130,15 @@ function review(candidate,{strict=true}={}){
     sourceEffectRows:e.checkerChoiceRows,
     sourceSectionHypothesis:i<3?'CHAIN_STAGE':'RANDOM',
     editorialPresentation:shape,
+    ...(shape==='EDITORIAL_TWO_CHOICES_CORROBORATED'?{
+      editorialTwoChoiceEvidence:{
+       reportCount:expected.sharedEventEvidence.playerChoiceCountReported,
+       referenceUrls:[expected.sharedEventEvidence.independentGameWithEvent,
+        expected.sharedEventEvidence.independentEditor],
+       sourceLabelAmbiguityResolvedForEditorialUse:true,
+       evidenceIsIndependentGameplayVerification:false
+      }
+     }:{}),
     actualChoiceSemanticsVerified:false,
     hintGrantConditionVerified:false,
     game2026Verified:false,publicationApproved:false};
@@ -127,7 +152,9 @@ function review(candidate,{strict=true}={}){
  }
  if(strict&&(totals.reviewedCards!==4||totals.reviewedCandidateEvents!==20||
     totals.reviewedSourceRows!==35||totals.checkedNumericHintMentions!==12||
-    totals.editorialShapeAlignedEvents!==17||totals.presentationUnresolvedEvents!==3||
+    totals.editorialShapeAlignedEvents!==18||
+    totals.editorialTwoChoiceCorroboratedEvents!==1||
+    totals.presentationUnresolvedEvents!==2||
     totals.reviewedChainPositionCandidates!==12||
     totals.reviewedRandomPositionCandidates!==8||
     totals.gameToraLiveEventListCards!==3||
