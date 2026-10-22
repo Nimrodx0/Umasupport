@@ -120,8 +120,8 @@ function build(index,docs,{strict=true}={}){
       url:signature.sourceUrl,reviewedOn:signature.reviewedOn,
       conclusion:'ONE_UNSELECTABLE_EVENT_WITH_TWO_RESULT_ROUTES',
       gameToraResultRoutes:signature.gameToraOutcomes}}:{}),
-    sourceIndependentlyVerified:illustrative,
-    gameVerified:false,publicationApproved:false});
+    gameWithEditorialCorroborated:illustrative,
+    sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
    if(illustrative)proof.push({cardId:card.cardId,sourceOrdinal:paired.sourceOrdinal,
      evidenceUrl:signature.sourceUrl});
   }
