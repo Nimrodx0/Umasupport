@@ -35,7 +35,19 @@ const FOCAL={
   referenceUrls:['https://game8.jp/umamusume/675743']},
  '30286':{kind:'EDITORIAL_SINGLE_STAGE_INTENTIONAL',
   gtLastStageId:1255,
-  referenceUrls:['https://game8.jp/umamusume/758987']}
+  referenceUrls:['https://game8.jp/umamusume/758987']},
+ '30258':{kind:'EDITORIAL_SINGLE_STAGE_INTENTIONAL',
+  gtLastStageId:1183,
+  referenceUrls:['https://game8.jp/umamusume/705748']},
+ '30270':{kind:'EDITORIAL_SINGLE_STAGE_INTENTIONAL',
+  gtLastStageId:1214,
+  referenceUrls:['https://game8.jp/umamusume/717557']},
+ '30271':{kind:'EDITORIAL_SINGLE_STAGE_INTENTIONAL',
+  gtLastStageId:1215,
+  referenceUrls:['https://game8.jp/umamusume/723596']},
+ '30300':{kind:'EDITORIAL_SINGLE_STAGE_INTENTIONAL',
+  gtLastStageId:1292,
+  referenceUrls:['https://game8.jp/umamusume/783895']}
 };
 const TIER={SOURCE_MISSING:1,PLAIN_ZERO_CHAIN:0,
  SHORT_CHAIN:2,NONSTANDARD_ZERO_CHAIN:3,
@@ -193,12 +205,12 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
     counts.SOURCE_MISSING!==4||counts.PLAIN_ZERO_CHAIN!==2||
     counts.NONSTANDARD_ZERO_CHAIN!==17||counts.SHORT_CHAIN!==7||
     counts.NORMAL_CHAIN_SHAPE!==387||
-    counts.editorialShortChainCorroborated!==2||
-    counts.pendingShortChainCards!==4||
+    counts.editorialShortChainCorroborated!==6||
+    counts.pendingShortChainCards!==0||
     counts.editorialMissingChainStageCandidates!==7||
     counts.editorialMissingStagesAlreadyCheckerOnly!==4||
     counts.editorialMissingStagesOutsideBothFixedSources!==3||
-    counts.priorityReviewCards!==11))
+    counts.priorityReviewCards!==7))
    fail('固定母集団の段階別集計が想定と異なります');
  return {schemaVersion:1,dataKind:'nonpublishing-cross-source-independent-event-coverage-triage',
   sourcePins:{...PINS},cardTotal:cards.length,summary:counts,
