@@ -4,11 +4,12 @@ const assert=require('node:assert/strict');
 const {validate}=require('../src/phase2_adjudicated_fact_intake.cjs');
 const original=require('../data/curation/adjudicated_event_facts.v1.json');
 const copy=()=>structuredClone(original);
-test('fixed 4-SSR register adopts exactly two GameWith facts, never a public event',()=>{
+test('fixed 4-SSR register adopts five GameWith facts, preserves fifteen pending positions',()=>{
  assert.deepEqual(validate(copy()),{
-  sourceCards:4,sourcePositions:20,adoptedNumericalEvents:2,
-  pendingRoutePositions:18,adoptedSkillHintFacts:1,
-  adoptedNonSkillEffectFacts:5,pendingSkillHintMentions:11,publishedEvents:0
+  sourceCards:4,sourcePositions:20,adoptedNumericalEvents:5,
+  pendingRoutePositions:15,adoptedSkillHintFacts:2,
+  adoptedNonSkillEffectFacts:17,pendingSkillHintMentions:10,
+  adoptedSelectableAlternatives:6,publishedEvents:0
  });
 });
 test('inferred player choices and invented result branches cannot be adopted',()=>{
@@ -35,6 +36,8 @@ test('a pending event cannot silently become an unconditional skill grant',()=>{
  for(const mutate of [
   c=>{c.cards[0].events[0].decision='GAMEWITH_NUMERIC_FACTS_ADOPTED';},
   c=>{c.cards[2].events[3].skillHints=[{skillNumericId:1,hintLevel:5}];},
+  c=>{c.cards[3].events[0].alternatives[0].effects[0].value++;},
+  c=>{c.cards[3].events[4].alternatives[1].skillHints[0].hintLevel=2;},
   c=>{c.cards[3].events[2].decision='PENDING_ROUTE_REVIEW';},
   c=>{c.cards[3].events[2].priorStageDependenceVerified=true;}
  ]){

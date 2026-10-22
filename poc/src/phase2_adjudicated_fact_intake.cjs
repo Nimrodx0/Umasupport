@@ -8,6 +8,8 @@
  */
 const {REVIEW}=require('./phase2_four_ssr_editorial_review.cjs');
 const {evaluateException}=require('./event_exception_adjudication.cjs');
+const {build:review30321}=require('./phase2_editorial_intake.cjs');
+const DETAILS=require('../data/curation/adjudicated/30321.v1.json');
 const fail=s=>{throw Error('GameWith例外の編集採用台帳: '+s);};
 const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -21,6 +23,10 @@ const ADOPTED_FIELDS=['sourceOrdinal','decision','playerSelectableChoiceCount',
  'gameWithArticle','checkedAt','priorStageDependenceVerified',
  'game2026Verified','publicationApproved'];
 const PENDING_FIELDS=['sourceOrdinal','decision','missing','publicationApproved'];
+const ADOPTED_CHOICE_FIELDS=['sourceOrdinal','decision','playerSelectableChoiceCount',
+ 'reportedSingleResultPerChoice','alternatives','gameToraLivePage',
+ 'gameWithArticle','checkedAt','priorStageDependenceVerified',
+ 'game2026Verified','publicationApproved'];
 function exactKeys(o,keys,where){
  if(!object(o)||!same(Object.keys(o).sort(),[...keys].sort()))
   fail(where+': 追加・欠落フィールドは禁止');
@@ -33,10 +39,16 @@ function validate(doc){
     doc.noAutomaticRuntimeAdoption!==true||!Array.isArray(doc.cards)||
     doc.cards.length!==REVIEW.length)
   fail('固定版・未公開・4枚の境界が不正');
+ const scoped=review30321(DETAILS);
+ if(scoped.summary.editoriallyAdoptedEvents!==5||
+    scoped.summary.blockedChainEvents!==3||
+    scoped.summary.publicationApproved!==false)
+  fail('SSR30321の追加GameWith採用元と未検証条件が不正');
  const expected=new Map(REVIEW.map(c=>[c.cardId,c])),seen=new Set();
  const totals={sourceCards:0,sourcePositions:0,adoptedNumericalEvents:0,
   pendingRoutePositions:0,adoptedSkillHintFacts:0,
-  adoptedNonSkillEffectFacts:0,pendingSkillHintMentions:0,publishedEvents:0};
+  adoptedNonSkillEffectFacts:0,pendingSkillHintMentions:0,
+  adoptedSelectableAlternatives:0,publishedEvents:0};
  for(const card of doc.cards){
   exactKeys(card,['cardId','events'],'card');
   const ref=expected.get(card.cardId);
@@ -83,6 +95,37 @@ function validate(doc){
     totals.adoptedNumericalEvents++;
     totals.adoptedSkillHintFacts+=event.skillHints.length;
     totals.adoptedNonSkillEffectFacts+=event.numericEffects.length;
+   }else if(card.cardId==='30321'&&[1,4,5].includes(ordinal)){
+    exactKeys(event,ADOPTED_CHOICE_FIELDS,card.cardId+'/'+ordinal);
+    const detail=DETAILS.events[ordinal-1];
+    if(event.decision!=='GAMEWITH_CHOICE_FACTS_ADOPTED'||
+       event.playerSelectableChoiceCount!==2||
+       event.reportedSingleResultPerChoice!==true||
+       event.priorStageDependenceVerified!==false||
+       event.game2026Verified!==false||
+       event.publicationApproved!==false||
+       event.gameToraLivePage!==DETAILS.gameToraWebsite.url||
+       event.gameWithArticle!==DETAILS.gameWith.url||
+       event.checkedAt!==DETAILS.gameWith.checkedAt||
+       !same(event.alternatives,detail.alternatives))
+     fail('30321/'+ordinal+': 選択別GameWith採用値が異なる');
+    const effects=event.alternatives.flatMap(a=>a.effects);
+    const hints=event.alternatives.flatMap(a=>a.skillHints.map(h=>({
+     skillNumericId:h.skillNumericId,hintLevel:h.hintLevel})));
+    const verified=evaluateException({
+     cardId:card.cardId,sourceEventOrdinal:ordinal,baseline:'MISSING',
+     gtWebsite:DETAILS.gameToraWebsite,
+     gameWith:{...DETAILS.gameWith,factStatus:'EXPLICIT',facts:{
+      playerSelectableChoiceCount:2,reportedEffects:effects,
+      reportedSkillHints:hints
+     }},proposedDecision:'ADOPT'
+    });
+    if(!verified.editorialDecisionComplete||verified.publicationApproved!==false)
+     fail('30321/'+ordinal+': 未承認事実を公開へ自動昇格');
+    totals.adoptedNumericalEvents++;
+    totals.adoptedSelectableAlternatives+=event.alternatives.length;
+    totals.adoptedSkillHintFacts+=hints.length;
+    totals.adoptedNonSkillEffectFacts+=effects.length;
    }else{
     exactKeys(event,PENDING_FIELDS,card.cardId+'/'+ordinal);
     if(event.decision!=='PENDING_ROUTE_REVIEW'||
@@ -95,11 +138,12 @@ function validate(doc){
   }
  }
  if(seen.size!==4||totals.sourcePositions!==20||
-    totals.adoptedNumericalEvents!==2||
-    totals.pendingRoutePositions!==18||
-    totals.adoptedSkillHintFacts!==1||
-    totals.pendingSkillHintMentions!==11||
-    totals.adoptedNonSkillEffectFacts!==5)
+    totals.adoptedNumericalEvents!==5||
+    totals.pendingRoutePositions!==15||
+    totals.adoptedSkillHintFacts!==2||
+    totals.pendingSkillHintMentions!==10||
+    totals.adoptedNonSkillEffectFacts!==17||
+    totals.adoptedSelectableAlternatives!==6)
   fail('既存SSR20イベント・12ヒントの保存則が不一致');
  return totals;
 }

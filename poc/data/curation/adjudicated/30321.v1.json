@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "gamewith-adjudicated-numeric-event-intake",
+  "cardId": "30321",
+  "baseline": "MISSING",
+  "baselineRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "gameToraWebsite": {
+    "url": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+    "checkedAt": "2026-10-22",
+    "status": "EVENT_LIST"
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/578817",
+    "checkedAt": "2026-10-22"
+  },
+  "currentGameplayVerified": false,
+  "publicationApproved": false,
+  "noAutomaticRuntimeAdoption": true,
+  "sourceProseIncluded": false,
+  "events": [
+    {
+      "ordinal": 1,
+      "section": "CHAIN",
+      "choiceCount": 2,
+      "chainPrerequisitesVerified": false,
+      "alternatives": [
+        {
+          "ordinal": 1,
+          "effects": [
+            {
+              "kind": "power",
+              "value": 15
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        },
+        {
+          "ordinal": 2,
+          "effects": [
+            {
+              "kind": "energy",
+              "value": 15
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        }
+      ]
+    },
+    {
+      "ordinal": 2,
+      "section": "CHAIN",
+      "choiceCount": 0,
+      "chainPrerequisitesVerified": false,
+      "alternatives": [
+        {
+          "ordinal": 1,
+          "effects": [
+            {
+              "kind": "mood",
+              "value": 1
+            },
+            {
+              "kind": "power",
+              "value": 10
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        }
+      ]
+    },
+    {
+      "ordinal": 3,
+      "section": "CHAIN",
+      "choiceCount": 0,
+      "chainPrerequisitesVerified": false,
+      "alternatives": [
+        {
+          "ordinal": 1,
+          "effects": [
+            {
+              "kind": "power",
+              "value": 15
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": [
+            {
+              "skillNumericId": 201463,
+              "hintLevel": 1,
+              "verifiedSkillName": "月影円刃"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ordinal": 4,
+      "section": "RANDOM",
+      "choiceCount": 2,
+      "alternatives": [
+        {
+          "ordinal": 1,
+          "effects": [
+            {
+              "kind": "speed",
+              "value": 10
+            },
+            {
+              "kind": "guts",
+              "value": 10
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        },
+        {
+          "ordinal": 2,
+          "effects": [
+            {
+              "kind": "energy",
+              "value": 25
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        }
+      ]
+    },
+    {
+      "ordinal": 5,
+      "section": "RANDOM",
+      "choiceCount": 2,
+      "alternatives": [
+        {
+          "ordinal": 1,
+          "effects": [
+            {
+              "kind": "stamina",
+              "value": 15
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": []
+        },
+        {
+          "ordinal": 2,
+          "effects": [
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": [
+            {
+              "skillNumericId": 202602,
+              "hintLevel": 1,
+              "verifiedSkillName": "イグニッション"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

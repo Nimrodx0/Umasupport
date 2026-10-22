@@ -121,8 +121,44 @@
       "events": [
         {
           "sourceOrdinal": 1,
-          "decision": "PENDING_ROUTE_REVIEW",
-          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "power",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "energy",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
           "publicationApproved": false
         },
         {
@@ -182,14 +218,92 @@
         },
         {
           "sourceOrdinal": 4,
-          "decision": "PENDING_ROUTE_REVIEW",
-          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "speed",
+                  "value": 10
+                },
+                {
+                  "kind": "guts",
+                  "value": 10
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "energy",
+                  "value": 25
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
           "publicationApproved": false
         },
         {
           "sourceOrdinal": 5,
-          "decision": "PENDING_ROUTE_REVIEW",
-          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": [
+                {
+                  "skillNumericId": 202602,
+                  "hintLevel": 1,
+                  "verifiedSkillName": "イグニッション"
+                }
+              ]
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
           "publicationApproved": false
         }
       ]
