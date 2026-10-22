@@ -56,6 +56,7 @@ on:
       - 'poc/tests/independent_skill_fingerprint_audit.test.cjs'
       - 'poc/src/gametora_app_schema_dry_run.cjs'
       - 'poc/src/gametora_full_runtime_integration.cjs'
+      - 'poc/src/public_event_catalog.js'
       - 'poc/tests/gametora_full_runtime_integration.test.cjs'
       - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
       - 'poc/src/gametora_branch_semantics_inventory.cjs'
