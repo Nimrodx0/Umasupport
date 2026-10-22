@@ -497,6 +497,76 @@ async function main(){
   assert.equal(duplicateSaved.decks.main[0].slots[1].stage,0);
   await eventContext.close();
 
+  // F-08: real Chromium IndexedDB, verified published JSON and network
+  // recovery. Synthetic 563 cards and synthetic review events ONLY.
+  const recoveredContext=await browser.newContext();
+  const recoveredPage=await recoveredContext.newPage();
+  await mockSources(recoveredPage);
+  const emptyOnline=await boot(recoveredPage,base);
+  assert.match(emptyOnline,/レビュー済みイベントを公開JSONから取得 0件/);
+  const eventCacheRecord=await recoveredPage.evaluate(async key=>{
+   const req=indexedDB.open('uma-support-lab-runtime-data',1);
+   const db=await new Promise((resolve,reject)=>{
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+   });
+   try{
+    const t=db.transaction('sources','readonly'),r=t.objectStore('sources').get(key);
+    return await new Promise((resolve,reject)=>{
+     r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+    });
+   }finally{db.close();}
+  },'umasupport/public/reviewed_events.v1.json/v1');
+  assert.equal(eventCacheRecord.sourceUrl,'./data/reviewed_events.v1.json');
+  assert.equal(JSON.parse(eventCacheRecord.text).schemaVersion,1);
+  await recoveredPage.route('**/reviewed_events.v1.json',r=>r.abort());
+  const emptyCached=await boot(recoveredPage,base);
+  assert.match(emptyCached,/レビュー済みイベントは保存済み検証版を使用 0件/);
+  await recoveredPage.locator('button[data-action="source-health"]').click();
+  assert.match(await recoveredPage.locator('#source-status-events').innerText(),/保存済みの検証済み公開イベントJSONを利用/);
+  assert.match(await recoveredPage.locator('#source-status-events').innerText(),/検証済みイベント\s+0件/);
+  await recoveredPage.locator('button[data-action="close"]').click();
+  await recoveredPage.unroute('**/reviewed_events.v1.json');
+  await recoveredPage.route('**/reviewed_events.v1.json',r=>r.fulfill({
+   status:200,contentType:'application/json',body:'{"schemaVersion":1,"cards":[{"cardId":"99999","events":[]}]}'
+  }));
+  const invalidOnline=await boot(recoveredPage,base);
+  assert.match(invalidOnline,/レビュー済みイベントは保存済み検証版を使用 0件/);
+  const stillCached=await recoveredPage.evaluate(async key=>{
+   const req=indexedDB.open('uma-support-lab-runtime-data',1);
+   const db=await new Promise((resolve,reject)=>{
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+   });
+   try{
+    const t=db.transaction('sources','readonly'),r=t.objectStore('sources').get(key);
+    return await new Promise((resolve,reject)=>{
+     r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+    });
+   }finally{db.close();}
+  },'umasupport/public/reviewed_events.v1.json/v1');
+  assert.deepEqual(stillCached,eventCacheRecord,'Invalid new event catalog must not poison verified cache');
+  await recoveredPage.unroute('**/reviewed_events.v1.json');
+  await recoveredPage.route('**/reviewed_events.v1.json',r=>r.abort());
+  await recoveredPage.evaluate(async key=>{
+   const req=indexedDB.open('uma-support-lab-runtime-data',1);
+   const db=await new Promise((resolve,reject)=>{
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+   });
+   try{
+    await new Promise((resolve,reject)=>{
+     const t=db.transaction('sources','readwrite');
+     t.objectStore('sources').put({
+      text:'{"schemaVersion":1,"cards":[{"cardId":"99999","events":[]}]}',
+      sourceUrl:'./data/reviewed_events.v1.json',fetchedAt:'2026-10-22T00:00:00.000Z'
+     },key);
+     t.oncomplete=resolve;t.onerror=()=>reject(t.error);
+    });
+   }finally{db.close();}
+  },'umasupport/public/reviewed_events.v1.json/v1');
+  const damagedCache=await boot(recoveredPage,base);
+  assert.match(damagedCache,/イベントデータの検証に失敗/);
+  assert.equal(await recoveredPage.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'failed');
+  await recoveredContext.close();
+
   const failureContext=await browser.newContext(),failurePage=await failureContext.newPage();
   await mockSources(failurePage,{eventFailure:true});
   status=await boot(failurePage,base);

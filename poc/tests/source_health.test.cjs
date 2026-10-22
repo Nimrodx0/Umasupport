@@ -77,3 +77,17 @@ test('invalid model cannot silently become empty verified data',()=>{
  assert.equal(health.modeLabel('impossible'),'取得状態不明');
  assert.equal(health.modeLabel('impossible','event'),'検証状況不明');
 });
+
+test('verified cached event source is counted, not confused with an unavailable empty catalog',()=>{
+ const m=model();
+ m.meta.runtimeSources.events={mode:'cached',url:'./data/reviewed_events.v1.json',
+  fetchedAt:'2026-10-19T02:00:00Z',checkedAt:'2026-10-22T02:00:00Z'};
+ m.meta.reviewedEventRecords=1;m.meta.reviewedEventCards=1;
+ const r=health.summarize(m);
+ assert.equal(r.events.mode,'cached');
+ assert.equal(r.events.records,1);
+ assert.equal(r.events.cards,1);
+ assert.match(r.events.label,/保存済みの検証済み公開イベントJSON/);
+ assert.equal(r.events.fetchedAt,'2026-10-19T02:00:00Z');
+ assert.equal(r.events.checkedAt,'2026-10-22T02:00:00Z');
+});

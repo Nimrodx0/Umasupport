@@ -17,6 +17,7 @@ function perfStageComplete(c){
 function modeLabel(mode,kind){
  if(kind==='event'){
   if(mode==='reviewed')return '公開JSONの検証成功';
+  if(mode==='cached')return '保存済みの検証済み公開イベントJSONを利用';
   if(mode==='preview')return '未承認イベント試用中（公開承認0件）';
   if(mode==='preview-failed')return '公開JSONは正常・試用データ検証失敗';
   if(mode==='failed')return '公開JSONの検証失敗・未反映';
@@ -38,7 +39,7 @@ function summarize(model){
  const eventMode=src.events?.mode||
   (m.eventStatus==='reviewed-empty'||m.eventStatus==='reviewed-partial'?'reviewed':'unknown');
  const rows=model.cards;
- const eventsVerified=eventMode==='reviewed'||eventMode==='preview';
+ const eventsVerified=eventMode==='reviewed'||eventMode==='cached'||eventMode==='preview';
  const eventRecords=eventsVerified&&Number.isSafeInteger(m.reviewedEventRecords)?m.reviewedEventRecords:null;
  const eventCards=eventsVerified&&Number.isSafeInteger(m.reviewedEventCards)?m.reviewedEventCards:null;
  const hierarchy=m.skillHierarchy||null;
@@ -56,7 +57,10 @@ function summarize(model){
    hierarchyPairs:hierarchy&&Number.isSafeInteger(hierarchy.linked)?hierarchy.linked:null,
    hierarchyTotal:hierarchy&&Number.isSafeInteger(hierarchy.totalRare)?hierarchy.totalRare:null},
   events:{mode:eventMode,label:modeLabel(eventMode,'event'),
-   sourceUrl:src.events?.url||null,records:eventRecords,cards:eventCards,
+   sourceUrl:src.events?.url||null,
+   fetchedAt:src.events?.fetchedAt||null,
+   checkedAt:src.events?.checkedAt||null,
+   records:eventRecords,cards:eventCards,
    attachedRecords:rows.reduce((total,c)=>total+(Array.isArray(c.events)?c.events.length:0),0)},
   disclaimer:'取得日時はブラウザが元データを受信した日時で、ゲームでの更新日・現行ゲーム全件の網羅率ではありません。公開済みイベント0件と、公開JSONを検証できなかった状態は別です。ヒントの5段階構造が揃っていても独立資料で全ゲームデータを照合した意味ではありません。'
  };
