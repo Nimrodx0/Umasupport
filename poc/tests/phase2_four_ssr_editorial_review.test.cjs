@@ -39,7 +39,8 @@ test('all 20 pinned events, 35 source rows, 12 exact numeric hints verified as e
   checkedNumericHintMentions:12,editorialShapeAlignedEvents:17,
   presentationUnresolvedEvents:3,
   reviewedChainPositionCandidates:12,reviewedRandomPositionCandidates:8,
-  gameToraLiveEventListCards:3,gameToraLiveRosterOnlyCards:1
+  gameToraLiveEventListCards:3,gameToraLiveDetailMetadataOnlyCards:1,
+  gameToraLiveRosterOnlyCards:0
  });
  assert.deepEqual(out.cards.flatMap(c=>c.events.filter(e=>
   e.editorialPresentation==='EDITORIAL_PRESENTATION_UNRESOLVED').map(e=>
@@ -80,5 +81,9 @@ test('avoid converting a third-party presentation discrepancy into fake selectab
  assert.equal(r.cards.find(c=>c.cardId==='30318').liveGameToraCoverage,
   'EVENT_LIST_3_CHAIN_2_RANDOM');
  assert.equal(r.cards.find(c=>c.cardId==='30320').liveGameToraCoverage,
-  'ROSTER_LIST_ONLY');
+  'CARD_DETAIL_METADATA_ONLY');
+ assert.match(r.cards.find(c=>c.cardId==='30320').referenceUrls.gameTora,
+  /\/supports\/30320-admire-groove$/);
+ assert.equal(r.totals.gameToraLiveRosterOnlyCards,0);
+ assert.equal(r.allGameEventsVerified,false);
 });
