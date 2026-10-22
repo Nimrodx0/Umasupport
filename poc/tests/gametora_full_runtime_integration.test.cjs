@@ -78,3 +78,59 @@ test('terminal choice blocks a dependent stage rather than counting its reward',
  assert.equal(closed.some(y=>y.eventId==='event-a'),true);
  assert.equal(exercise(x).totals.checkedBlockedByTerminal,1);
 });
+
+function attachFixture(){
+ const x=source();
+ // The full normalizer's ORIGINAL pre-bridge catalog carries numeric IDs
+ // with independently checked names; the projected version does not.
+ const raw=JSON.parse(JSON.stringify(x.catalog));
+ const names={'200532':'速度維持','201272':'金の加速'};
+ for(const card of raw.cards)for(const e of card.events){
+  const parts=e.type==='choice'?e.choices:[e];
+  for(const part of parts)for(const obj of [part,...(part.outcomes||[])]){
+   for(const reward of obj.rewards||[]){
+    if(reward.skillId.startsWith('skill:'))
+     reward.verifiedSkillName=names[reward.skillId.slice(6)];
+   }
+  }
+ }
+ const dictionary=[
+  {id:'200532',name:'速度維持',rarity:'normal',group:20053},
+  {id:'201272',name:'金の加速',rarity:'rare',group:20127},
+  ...Array.from({length:120},(_,i)=>({
+   id:String(400000+i),name:'補助試験用'+i,
+   rarity:'normal',group:40000+i
+  }))
+ ];
+ const common={id:'hint:手動の通常ヒント',name:'手動の通常ヒント',
+  lowerId:null,tier:'unknown'};
+ x.model.meta={};
+ x.model.skills=[common];
+ x.model.skillById={[common.id]:common};
+ x.report.runtimeSkillProjectionSha256=require('node:crypto')
+  .createHash('sha256').update(JSON.stringify(x.catalog)).digest('hex');
+ return {...x,rawCatalog:raw,mergedSkillText:JSON.stringify(dictionary)};
+}
+test('the real production catalog attach loads every ephemeral projected event with byte-equivalent route graph',()=>{
+ const x=attachFixture(),before=JSON.stringify(x.model);
+ const result=exercise(x);
+ assert.equal(result.actualProductionCatalogAttachExercised,true);
+ assert.equal(result.attachedOnlyToTemporaryModel,true);
+ assert.equal(result.totals.projectedEvents,3);
+ assert.equal(result.totals.checkedDuplicateCardAggregations,1);
+ assert.equal(JSON.stringify(x.model),before);
+ assert.deepEqual(x.model.cardById['30026'].events,[]);
+ assert.equal(x.model.meta.eventStatus,undefined);
+ assert.equal(result.eventTextOrPrivateCatalogReturned,false);
+});
+test('the production loader cannot silently relabel or remap a numeric skill in unpublished GT proof',()=>{
+ const wrong=attachFixture();
+ wrong.rawCatalog.cards[0].events[0].rewards[0].verifiedSkillName='他の名前';
+ assert.throws(()=>exercise(wrong),/数値スキルIDの名称照合が失敗/);
+ const bad=attachFixture();
+ bad.rawCatalog.cards[0].events[0].rewards[0].level=7;
+ assert.throws(()=>exercise(bad),/GT全イベント集計統合試験/);
+ const missing=attachFixture();
+ delete missing.report.runtimeSkillProjectionSha256;
+ assert.throws(()=>exercise(missing),/GT全イベント集計統合試験/);
+});
