@@ -40,6 +40,9 @@ function exercise({catalog,report,model,rawCatalog=null,mergedSkillText=null},{s
   // catalog "reviewed". NEVER call it on the real model or deploy this catalog.
   // A throwaway clone guarantees those runtime metadata cannot escape.
   const cloned=JSON.parse(JSON.stringify(model));
+  // JSON cloning breaks the shared card identity between cards[] and
+  // cardById. Restore it before invoking the actual attachment path.
+  cloned.cards=cloned.cards.map(c=>cloned.cardById[c.id]||c);
   const summary=publicCatalog.attach(cloned,rawCatalog,{
    skillText:mergedSkillText,fullRegistry:false});
   if(summary.cardsWithRecords!==catalog.cards.length||
