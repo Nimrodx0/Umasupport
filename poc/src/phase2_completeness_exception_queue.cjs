@@ -48,7 +48,10 @@ const sourceChoiceGaps=[{
  sourceSection:'special',hintSkillId:201591,hintValue:'+3',
  sourceUrl:'https://gamewith.jp/uma-musume/article/show/315701',
  independentEditorialUrl:'https://game8.jp/umamusume/421771',
- conclusion:'THREE_REAL_PLAYER_CHOICES_COLLAPSED_IN_FIXED_GT'
+ conclusion:'THREE_REAL_PLAYER_CHOICES_COLLAPSED_IN_FIXED_GT',
+ // These are three separately selectable paths in the editorial reports,
+ // not one source option with 3 random outcomes. Preserve positions only.
+ editorialNumericChoices:[[1,201591,3],[2,201591,3],[3,201591,3]]
 }];
 // Three apparently missing Checker rows are NOT evidence for deleting GT choices.
 // Independently rendered event pages show two selectable options for each.
@@ -84,6 +87,32 @@ function checkerPartialMatches(sourceEvent,paired,signature){
   .map(e=>[e.skill_id,e.value]));
  return JSON.stringify(types)===JSON.stringify(signature.effectKinds)&&
     JSON.stringify(hints)===JSON.stringify(signature.hints);
+}
+function makePrivateChoiceRepairDraft(signature, sourceEvent){
+ // No text, probabilities, art, or unverified game behavior can be exported.
+ const paths=signature.editorialNumericChoices;
+ if(paths.length!==signature.checkerChoices||
+    paths.some((entry,i)=>!Array.isArray(entry)||entry.length!==3||
+      entry[0]!==i+1||entry[1]!==signature.hintSkillId||
+      entry[2]!==3)||sourceEvent.choices.length!==1)
+   fail('未承認3択の事実候補が固定資料と合わない');
+ return {
+  dataKind:'nonpublishing-conditional-choice-numeric-repair-draft',
+  cardId:signature.cardId,sourceEventOrdinal:signature.sourceOrdinal,
+  checkerEventOrdinal:signature.checkerOrdinal,
+  gameToraSourceLocalEventId:signature.gameToraLocalEventId,
+  sourceGameToraStoredChoiceCount:sourceEvent.choices.length,
+  editorialSelectablePathCount:paths.length,
+  choiceNumericCandidates:paths.map(([ordinal,skillNumericId,hintLevel])=>({
+    sourceEditorialChoiceOrdinal:ordinal,skillNumericId,hintLevel,
+    outcomeConditionVerified:false,game2026Verified:false,
+    publicationApproved:false
+  })),
+  editorialProofUrls:[signature.sourceUrl,signature.independentEditorialUrl],
+  sourceOptionTextIncluded:false,game2026Verified:false,
+  exactGameSelectionWordingVerified:false,publicationApproved:false,
+  noAutomaticRuntimeAdoption:true
+ };
 }
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
@@ -253,7 +282,8 @@ function build(index,docs,{strict=true}={}){
     ...(sourceGap?{sourceChoiceGapEvidence:{
       sourceUrl:sourceGap.sourceUrl,independentEditorialUrl:sourceGap.independentEditorialUrl,
       conclusion:sourceGap.conclusion,expectedPlayerChoiceCount:sourceGap.checkerChoices,
-      missingSelectableChoicesRequireRepair:true,game2026Verified:false}}:{}),
+      missingSelectableChoicesRequireRepair:true,game2026Verified:false,
+      privateNumericRepairDraft:makePrivateChoiceRepairDraft(sourceGap,g)}}:{}),
     gameWithEditorialCorroborated:illustrative||!!sourceGap,
     otherEditorialCorroborated:!!checkerPartial,
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
