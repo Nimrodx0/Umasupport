@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-missing-gt-chain-editorial-numeric-adoption",
+  "cardId": "30221",
+  "cardTitleIdentity": "今日もたのしく、おいしく。",
+  "gameToraBaselineRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "gameToraBaselineEventIds": [
+    107,
+    108
+  ],
+  "gameToraBaselineChainStages": 0,
+  "checkerRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+  "checkerOnlySourceKeys": [
+    "checker:30221:96a9b18141d8cf7ce729",
+    "checker:30221:142abc4e048db36f56b9",
+    "checker:30221:c56290b839ef7bbc1c85"
+  ],
+  "gameToraWebsite": {
+    "url": "https://gametora.com/ja/umamusume/supports/30221-satono-diamond",
+    "checkedAt": "2026-10-22",
+    "status": "CARD_ONLY"
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/461418",
+    "checkedAt": "2026-10-22"
+  },
+  "skillIdentityEvidence": {
+    "skillNumericId": 201351,
+    "skillName": "食いしん坊",
+    "url": "https://xn--gck1f423k.xn--1bvt37a.tools/skills/201351"
+  },
+  "events": [
+    {
+      "checkerOrdinal": 1,
+      "chainStageOrdinal": 1,
+      "playerSelectableChoices": 0,
+      "numericEffects": [
+        {
+          "kind": "energy",
+          "value": 5
+        },
+        {
+          "kind": "stamina",
+          "value": 5
+        },
+        {
+          "kind": "bond",
+          "value": 5
+        }
+      ],
+      "skillHints": [],
+      "continuationDecision": "NOT_ESTABLISHED_BY_SOURCE"
+    },
+    {
+      "checkerOrdinal": 2,
+      "chainStageOrdinal": 2,
+      "playerSelectableChoices": 0,
+      "numericEffects": [
+        {
+          "kind": "energy",
+          "value": 10
+        },
+        {
+          "kind": "stamina",
+          "value": 5
+        },
+        {
+          "kind": "bond",
+          "value": 5
+        }
+      ],
+      "skillHints": [],
+      "continuationDecision": "NOT_ESTABLISHED_BY_SOURCE"
+    },
+    {
+      "checkerOrdinal": 3,
+      "chainStageOrdinal": 3,
+      "playerSelectableChoices": 0,
+      "numericEffects": [
+        {
+          "kind": "energy",
+          "value": 10
+        },
+        {
+          "kind": "stamina",
+          "value": 5
+        },
+        {
+          "kind": "bond",
+          "value": 5
+        }
+      ],
+      "skillHints": [
+        {
+          "skillNumericId": 201351,
+          "hintLevel": 1
+        }
+      ],
+      "continuationDecision": "FINAL_REPORTED_STAGE_NO_NEXT_STAGE"
+    }
+  ],
+  "game2026Verified": false,
+  "chainRouteVerified": false,
+  "publicationApproved": false,
+  "noAutomaticRuntimeAdoption": true,
+  "sourceProseIncluded": false
+}
