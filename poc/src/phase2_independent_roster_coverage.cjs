@@ -158,7 +158,8 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
   if(classification==='SHORT_CHAIN'&&!proof)counts.pendingShortChainCards++;
   const tier=TIER[classification];
   const priority=(reviewerStatus==='EDITORIAL_MISSING_FIRST_SR_STAGE'||
-   classification==='PLAIN_ZERO_CHAIN')?0:tier;
+   classification==='PLAIN_ZERO_CHAIN')?0:
+   reviewerStatus==='EDITORIAL_SINGLE_STAGE_INTENTIONAL'?4:tier;
   if(priority<=2)counts.priorityReviewCards++;
   cards.push({cardId:c.cardId,rarity:c.rarity,
    gtObservedEventCount:ev,checkerObservedEventCount:c.checkerObservedCount,
@@ -197,7 +198,7 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
     counts.editorialMissingChainStageCandidates!==7||
     counts.editorialMissingStagesAlreadyCheckerOnly!==4||
     counts.editorialMissingStagesOutsideBothFixedSources!==3||
-    counts.priorityReviewCards!==13))
+    counts.priorityReviewCards!==11))
    fail('固定母集団の段階別集計が想定と異なります');
  return {schemaVersion:1,dataKind:'nonpublishing-cross-source-independent-event-coverage-triage',
   sourcePins:{...PINS},cardTotal:cards.length,summary:counts,
