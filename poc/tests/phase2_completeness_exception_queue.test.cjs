@@ -328,3 +328,66 @@ test('30301 data-drift rejects optimistic equivalence and accidental lost choice
   assert.throws(()=>build(x.index,x.docs,{strict:false}),/完全性例外台帳/);
  }
 });
+
+for(const rule of [
+ {cardId:'30269',ids:[205,206,1211,1212,1213],
+  sections:['random','random','arrows','arrows','arrows'],
+  counts:[2,2,2,2,1]},
+ {cardId:'30295',ids:[233,234,1277,1278,1279],
+  sections:['random','random','arrows','arrows','arrows'],
+  counts:[2,2,1,2,1]}
+]){
+ function fixture(){
+  const {index,docs}=make({cardId:rule.cardId});
+  const c=index.cards[0];
+  c.checkerObservedCount=0;c.checkerMissing=true;c.sourceMissing=false;
+  c.unmatchedCheckerCount=0;c.unmatchedGameToraCount=5;
+  c.checkerOnly=[];c.pairs=[];
+  c.gameToraOnly=rule.ids.map((id,i)=>({
+   sourceOrdinal:i+1,sourceLocalEventId:id,section:rule.sections[i]
+  }));
+  docs[0].events_ja=Object.fromEntries(rule.ids.map((id,i)=>[
+   'ev'+i,{id,section:rule.sections[i],
+    choices:Array.from({length:rule.counts[i]},(_,j)=>({
+     label:'synthetic option'+j,effects:[{type:'bond',value:'+5'}]
+    }))}
+  ]));
+  index.attention.choiceCountConflicts=[];
+  index.attention.p0Unmatched=[];
+  index.stats.checkerUnmatchedEvents=0;
+  index.stats.gameToraUnmatchedEvents=5;
+  index.stats.pairedChoiceCountConflict=0;
+  return {index,docs};
+ }
+ test(rule.cardId+' has 5 GT events but 0 Checker events; keep all five outstanding',()=>{
+  const {index,docs}=fixture();
+  const result=build(index,docs,{strict:false});
+  assert.equal(result.stats.checkerEmptyFullCardReviews,1);
+  assert.equal(result.stats.checkerEmptyCardGTEvents,5);
+  assert.equal(result.stats.gameToraOnlyNonR,5);
+  assert.equal(result.stats.checkerOnlyEvents,0);
+  assert.equal(result.stats.needsTargetedSourceReview,5);
+  assert.equal(result.queue.length,5);
+  assert.ok(result.queue.every(row=>
+   row.type==='GAMETORA_ONLY'&&row.priority==='P1'&&
+   row.reason==='CHECKER_ENTIRE_CARD_EVENT_LIST_EMPTY'&&
+   row.checkerCoverageEvidence.status==='CHECKER_ZERO_EVENT_CARD_GT_FIVE_PRESENT'&&
+   row.checkerCoverageEvidence.noAutomaticRuntimeAdoption===true&&
+   row.gameVerified===false&&row.publicationApproved===false));
+  assert.deepEqual(result.queue.map(x=>x.sourceLocalEventId).sort((a,b)=>a-b),
+   [...rule.ids].sort((a,b)=>a-b));
+ });
+ test(rule.cardId+' rejects pretending one of five source events does not exist',()=>{
+  for(const mutate of [
+   x=>{x.index.cards[0].checkerMissing=false;},
+   x=>{x.index.cards[0].checkerObservedCount=1;},
+   x=>{x.docs[0].events_ja.ev2.id++;},
+   x=>{x.docs[0].events_ja.ev1.section='random';},
+   x=>{x.docs[0].events_ja.ev0.choices.pop();},
+   x=>{x.index.cards[0].gameToraOnly.pop();}
+  ]){
+   const x=fixture();mutate(x);
+   assert.throws(()=>build(x.index,x.docs,{strict:false}),/完全性例外台帳/);
+  }
+ });
+}
