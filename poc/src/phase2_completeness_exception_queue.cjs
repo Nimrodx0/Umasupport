@@ -177,6 +177,46 @@ function sourceIdentityWarning30301(){
   publicationApproved:false
  };
 }
+// These two SSR cards have a complete fixed GT five-event set but zero
+// Checker card events. Don't treat this as five unrelated name mismatches.
+const checkerEmptyCards=[
+ {cardId:'30269',ids:[205,206,1211,1212,1213],
+  sections:['random','random','arrows','arrows','arrows'],
+  counts:[2,2,2,2,1],
+  referenceUrls:['https://game8.jp/umamusume/715262',
+   'https://xn--gck1f423k.xn--1bvt37a.tools/supports/30269/event']},
+ {cardId:'30295',ids:[233,234,1277,1278,1279],
+  sections:['random','random','arrows','arrows','arrows'],
+  counts:[2,2,1,2,1],
+  referenceUrls:['https://kamigame.jp/umamusume/page/390808863516940741.html',
+   'https://gametora.com/ja/umamusume/supports/30295-curren-bouquetdor']}
+];
+function checkerEmptyCardReview(card,gt){
+ const r=checkerEmptyCards.find(x=>x.cardId===card.cardId);
+ if(!r)return null;
+ if(card.rarity!=='SSR'||!gt||gt.length!==5||
+    card.gameToraObservedCount!==5||card.checkerObservedCount!==0||
+    card.checkerMissing!==false||card.sourceMissing!==false||
+    card.checkerOnly.length!==0||card.pairs.length!==0||
+    card.gameToraOnly.length!==5||
+    gt.some((e,i)=>e.id!==r.ids[i]||e.section!==r.sections[i]||
+      e.choices?.length!==r.counts[i])||
+    card.gameToraOnly.some((e,i)=>e.sourceOrdinal!==i+1||
+      e.sourceLocalEventId!==r.ids[i]||e.section!==r.sections[i]))
+  fail('Checker全カード収録欠損の固定GT原位置が変化: '+card.cardId);
+ return r;
+}
+function checkerEmptyCardEvidence(rule){
+ return {status:'CHECKER_ZERO_EVENT_CARD_GT_FIVE_PRESENT',
+  sourceEventCount:rule.ids.length,
+  fixedSourceEventIds:[...rule.ids],
+  sourceSections:[...rule.sections],
+  fixedGameToraChoiceCounts:[...rule.counts],
+  editorialReferences:rule.referenceUrls,
+  missingFromCheckerSource:true,
+  game2026Verified:false,publicationApproved:false,
+  noAutomaticRuntimeAdoption:true};
+}
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
     index.dataKind!=='umasupport-whole-event-provisional-index'||
@@ -203,6 +243,7 @@ function build(index,docs,{strict=true}={}){
   choiceCountDisagreements:0,choiceCountExplainedRepresentations:0,
   choiceCountConfirmedSourceGaps:0,choiceCountCheckerPartial:0,choiceCountPending:0,
   identityConflictsReviewedWithoutPairing:0,
+  checkerEmptyFullCardReviews:0,checkerEmptyCardGTEvents:0,
   unresolvedItems:0,needsTargetedSourceReview:0
  };
  const keySet=new Set();
@@ -226,6 +267,11 @@ function build(index,docs,{strict=true}={}){
   if(gt)stats.gameToraCards++;else stats.missingGameToraCards++;
   const is30301Conflict=check30301Conflict(card,gt);
   if(is30301Conflict)stats.identityConflictsReviewedWithoutPairing++;
+  const emptyCard=checkerEmptyCardReview(card,gt);
+  if(emptyCard){
+   stats.checkerEmptyFullCardReviews++;
+   stats.checkerEmptyCardGTEvents+=emptyCard.ids.length;
+  }
   for(const event of card.checkerOnly){
    if(typeof event.sourceKey!=='string'||
       !Number.isSafeInteger(event.checkerOrdinal)||event.checkerOrdinal<1)
@@ -251,12 +297,14 @@ function build(index,docs,{strict=true}={}){
     fail('GameTora候補位置／ローカルID／セクションの整合不良');
    if(card.rarity==='R')stats.gameToraOnlyR++;else stats.gameToraOnlyNonR++;
    add({cardId:card.cardId,rarity:card.rarity,type:'GAMETORA_ONLY',
-    priority:card.rarity==='R'?'P3':is30301Conflict?'P1':'P2',
+    priority:card.rarity==='R'?'P3':is30301Conflict||emptyCard?'P1':'P2',
     reason:card.rarity==='R'?'CHECKER_R_COVERAGE_ABSENT':is30301Conflict?
-      'MISSING_CHECKER_CHAIN_STAGE_TWO_CHOICES':'EVENT_IDENTITY_NOT_PAIRED',
+      'MISSING_CHECKER_CHAIN_STAGE_TWO_CHOICES':emptyCard?
+      'CHECKER_ENTIRE_CARD_EVENT_LIST_EMPTY':'EVENT_IDENTITY_NOT_PAIRED',
     sourceOrdinal:event.sourceOrdinal,sourceLocalEventId:event.sourceLocalEventId,
     section:event.section,sourceChainOrdinal:event.sourceChainOrdinal,
     ...(is30301Conflict?{identityConflictEvidence:sourceIdentityWarning30301()}:{}),
+    ...(emptyCard?{checkerCoverageEvidence:checkerEmptyCardEvidence(emptyCard)}:{}),
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
   }
   for(const paired of card.pairs){
@@ -390,6 +438,8 @@ function build(index,docs,{strict=true}={}){
     stats.choiceCountCheckerPartial!==3||
     stats.choiceCountConfirmedSourceGaps!==1||
     stats.identityConflictsReviewedWithoutPairing!==1||
+    stats.checkerEmptyFullCardReviews!==2||
+    stats.checkerEmptyCardGTEvents!==10||
     stats.choiceCountPending!==0||stats.unresolvedItems!==460||
     stats.needsTargetedSourceReview!==65))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
