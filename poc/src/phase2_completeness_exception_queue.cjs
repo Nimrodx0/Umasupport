@@ -7,14 +7,26 @@
 const fail=s=>{throw Error('Phase2完全性例外台帳: '+s);};
 const gtRev='6e38b54af4fad397ff4491e63007a90705a4fe67';
 const checkerRev='8cf9fcb3cc7239041161be75c84daf9f8f22d29f';
-const verifiedIllustration={
- cardId:'30006',sourceOrdinal:5,checkerOrdinal:3,
- checkerChoices:2,gameToraChoices:1,gameToraOutcomes:2,
- sourceSection:'arrows',
- sourceUrl:'https://gamewith.jp/uma-musume/article/show/257455',
- reviewedOn:'2026-10-22',
- reason:'independent article describes no selection and two alternative results'
-};
+// Fixed, narrowly scoped independent editorial source checks.
+// Checker can itself derive from GameWith: this is NOT a third independent
+// evidence family and never promotes in-game correctness or publication.
+const editorialEvidence=[
+ {cardId:'30006',sourceOrdinal:5,checkerOrdinal:3,
+  checkerChoices:2,gameToraChoices:1,sourceSection:'arrows',
+  sourceEvidenceKind:'TWO_RANDOM_OUTCOMES',expectedRows:2,
+  sourceUrl:'https://gamewith.jp/uma-musume/article/show/257455',
+  conclusion:'ONE_UNSELECTABLE_EVENT_WITH_TWO_RESULT_ROUTES'},
+ {cardId:'30108',sourceOrdinal:5,checkerOrdinal:3,
+  checkerChoices:2,gameToraChoices:1,sourceSection:'arrows',
+  sourceEvidenceKind:'FOUR_OUTCOMES_BY_PRIOR_STAGE',expectedRows:4,
+  sourceUrl:'https://gamewith.jp/uma-musume/article/show/353830',
+  conclusion:'CURRENT_STAGE_HAS_NO_CHOICES_PRIOR_STAGE_TWO_CHOICES'},
+ {cardId:'30207',sourceOrdinal:2,checkerOrdinal:9,
+  checkerChoices:3,gameToraChoices:1,sourceSection:'special',
+  sourceEvidenceKind:'THREE_YEAR_CLASS_CONDITIONS',expectedRows:3,
+  sourceUrl:'https://gamewith.jp/uma-musume/article/show/454997',
+  conclusion:'YEAR_CLASS_CONDITIONS_NOT_USER_CHOICES'}
+];
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
     index.dataKind!=='umasupport-whole-event-provisional-index'||
@@ -92,17 +104,30 @@ function build(index,docs,{strict=true}={}){
    if(!g||!Array.isArray(g.choices)||g.choices.length!==paired.sourceChoiceCount||
       paired.checkerChoiceCount===paired.sourceChoiceCount)
     fail('同名イベントの選択肢数差分が固定ソースと不一致');
-   const signature=verifiedIllustration;
-   const illustrative=card.cardId===signature.cardId&&
-     paired.sourceOrdinal===signature.sourceOrdinal&&
-     paired.checkerOrdinal===signature.checkerOrdinal&&
-     paired.checkerChoiceCount===signature.checkerChoices&&
-     paired.sourceChoiceCount===signature.gameToraChoices;
-   if(illustrative && !(g.section===signature.sourceSection&&
-      g.choices.length===1&&g.choices[0]?.label===''&&
-      g.choices[0].random_either===true&&
-      g.choices[0].outcomes?.length===signature.gameToraOutcomes))
-    fail('承認済み選択肢と結果の区別の基準データが変化');
+   const signature=editorialEvidence.find(x=>card.cardId===x.cardId&&
+     paired.sourceOrdinal===x.sourceOrdinal&&
+     paired.checkerOrdinal===x.checkerOrdinal);
+   const illustrative=!!signature;
+   if(illustrative){
+    const first=g.choices[0];
+    const common=g.section===signature.sourceSection&&
+      g.choices.length===signature.gameToraChoices&&
+      paired.checkerChoiceCount===signature.checkerChoices&&
+      first?.label==='';
+    const shape=signature.sourceEvidenceKind==='TWO_RANDOM_OUTCOMES'?
+       first.random_either===true&&first.outcomes?.length===2:
+      signature.sourceEvidenceKind==='FOUR_OUTCOMES_BY_PRIOR_STAGE'?
+       first.random_either===true&&first.outcomes?.length===4&&
+       gt[paired.sourceOrdinal-2]?.choices?.length===2:
+      signature.sourceEvidenceKind==='THREE_YEAR_CLASS_CONDITIONS'?
+       first.segments?.length===3&&first.segments.every((segment,i)=>
+        segment.when?.length===1&&
+        segment.when[0]?.kind==='scripted'&&
+        segment.when[0]?.value?.[0]==='class'&&
+        segment.when[0].value[1]===i+1):false;
+    if(!common||!shape)
+     fail('個別照合済みの選択肢／結果の基準条件が変化');
+   }
    stats.choiceCountDisagreements++;
    if(illustrative)stats.choiceCountExplainedRepresentations++;
    else stats.choiceCountPending++;
@@ -118,8 +143,9 @@ function build(index,docs,{strict=true}={}){
     status:illustrative?'SOURCE_REPRESENTATION_EXPLAINED':'NEEDS_TARGETED_REVIEW',
     ...(illustrative?{reviewEvidence:{
       url:signature.sourceUrl,reviewedOn:signature.reviewedOn,
-      conclusion:'ONE_UNSELECTABLE_EVENT_WITH_TWO_RESULT_ROUTES',
-      gameToraResultRoutes:signature.gameToraOutcomes}}:{}),
+      conclusion:signature.conclusion,
+      gameToraEvidenceCategory:signature.sourceEvidenceKind,
+      conditionalOrOutcomeRows:signature.expectedRows}}:{}),
     gameWithEditorialCorroborated:illustrative,
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
    if(illustrative)proof.push({cardId:card.cardId,sourceOrdinal:paired.sourceOrdinal,
@@ -141,8 +167,8 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyWithGameToraCard!==50||
     stats.checkerOnlyP0!==2||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==54||stats.choiceCountDisagreements!==9||
-    stats.choiceCountExplainedRepresentations!==1||
-    stats.choiceCountPending!==8||stats.unresolvedItems!==527))
+    stats.choiceCountExplainedRepresentations!==3||
+    stats.choiceCountPending!==6||stats.unresolvedItems!==525))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
