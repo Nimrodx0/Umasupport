@@ -129,3 +129,26 @@ test('30010 stage 3 has no player choice: one pinned skill_hint_or effect, two e
  event.choices[0].label='fictional player selection';
  assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
 });
+
+test('30052 training-aftercare scenario rows are not player-selectable alternatives',()=>{
+ const {index,docs}=make({cardId:'30052',withResult:false});
+ const card=index.cards[0], pair=card.pairs[0];
+ pair.sourceOrdinal=2;pair.checkerOrdinal=9;
+ pair.sourceLocalEventId=1399;
+ card.gameToraOnly[0].sourceOrdinal=1;
+ card.gameToraOnly[0].sourceLocalEventId=484;
+ docs[0].events_ja.ev1={section:'special',id:1399,choices:[
+  {label:'',random_either:true,outcomes:[[],[]]}]};
+ const checked=build(index,docs,{strict:false});
+ const entry=checked.queue.find(x=>x.type==='CHOICE_COUNT_DIFFERENCE');
+ assert.equal(entry.status,'SOURCE_REPRESENTATION_EXPLAINED');
+ assert.equal(entry.reviewEvidence.conclusion,'SCENARIO_CONTEXT_ROWS_NOT_PLAYER_CHOICES');
+ assert.equal(checked.stats.choiceCountPending,0);
+ assert.equal(entry.gameVerified,false);
+ assert.equal(checked.publicationApproved,false);
+ docs[0].events_ja.ev1.choices[0].outcomes.pop();
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+ docs[0].events_ja.ev1.choices[0].outcomes=[[],[]];
+ docs[0].events_ja.ev1.choices[0].label='fake-selection';
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+});
