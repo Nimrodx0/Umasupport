@@ -9,6 +9,7 @@ const crypto=require('node:crypto');
 const loader=require('../src/live_loader.js');
 const pipeline=require('../src/checker_candidate_pipeline.cjs');
 const {readDocuments}=require('./audit_gametora_branches.cjs');
+const {CASES,applyReviewedAliases}=require('../src/phase2_reviewed_event_aliases.cjs');
 const sha256=s=>crypto.createHash('sha256').update(s).digest('hex');
 const normalized=s=>String(s||'').normalize('NFKC').replace(/\s+/g,' ').trim();
 const typographic=s=>normalized(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'');
@@ -85,24 +86,25 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   fail('input schema/provenance mismatch');
  const {inventory}=sourceInventory({checker,rosterText,aliases});
  const byChecker=new Map(inventory.cards.map(c=>[c.cardId,c]));
- const byGameTora=new Map();
+ const byGameTora=new Map(),rawGameTora=new Map();
  for(const doc of gameToraDocuments){
   if(!Number.isSafeInteger(doc?.id)||byGameTora.has(String(doc.id))||doc.kind!=='support')
    fail('duplicate or malformed GameTora card');
   byGameTora.set(String(doc.id),sourceEvents(doc));
+  rawGameTora.set(String(doc.id),Object.values(doc.events_ja&&Object.keys(doc.events_ja).length?doc.events_ja:doc.events));
  }
  const stats={rosterCards:coverageIndex.cards.length,checkerCards:inventory.cards.length,
   checkerEventRecords:0,gameToraCards:byGameTora.size,gameToraEventRecords:0,
   gameToraChainEvents:0,gameToraRandomEvents:0,gameToraOtherEvents:0,
   cardsBoth:0,cardsOnlyChecker:0,cardsOnlyGameTora:0,cardsNeither:0,
-  pairedExact:0,pairedTypographic:0,pairedChoiceCountAgree:0,pairedChoiceCountConflict:0,
+  pairedExact:0,pairedTypographic:0,pairedReviewedAliases:0,pairedChoiceCountAgree:0,pairedChoiceCountConflict:0,
   checkerUnmatchedEvents:0,gameToraUnmatchedEvents:0,
   gameToraOnlyCardsR:0,languageFallbackCards:0,ambiguousTitleCards:0,
   cardsWithUnmatchedEvents:0,unionObservedEventRecords:0,
   p0SourceEventsPaired:0,p0SourceEventsUnpaired:0,
   gameToraUnmatchedR:0,gameToraUnmatchedNonR:0};
  const rows=[],seen=new Set();
- const attention={p0Unmatched:[],choiceCountConflicts:[],cardsWithCheckerOnly:[]};
+ const attention={p0Unmatched:[],choiceCountConflicts:[],cardsWithCheckerOnly:[],reviewedAliases:[]};
  const p0Keys=new Set(queue.rows.filter(x=>x.priority==='P0').map(x=>x.sourceKey));
  if(queue.rows.length!==2109||p0Keys.size!==199)fail('unexpected review queue');
  for(const card of coverageIndex.cards){
@@ -124,12 +126,18 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
   else if(gi){stats.cardsOnlyGameTora++;if(card.rarity==='R')stats.gameToraOnlyCardsR++;}
   else stats.cardsNeither++;
   if(gi?.language==='fallback')stats.languageFallbackCards++;
-  const {selected,unmatchedC,unmatchedG}=pairEvents(ce,ge);
+  const adjudicated=applyReviewedAliases({cardId:card.cardId,
+   checkerEvents:ce,gtEvents:ge,rawGtEvents:rawGameTora.get(card.cardId),
+   paired:pairEvents(ce,ge)});
+  const {selected,unmatchedC,unmatchedG}=adjudicated.paired;
+  attention.reviewedAliases.push(...adjudicated.matched);
   let p0Paired=0;
-  const pairs=selected.map(({ci:cIdx,gi:gIdx,status})=>{
+  const pairs=selected.map(({ci:cIdx,gi:gIdx,status,reviewEvidence})=>{
    const a=ce[cIdx],b=ge[gIdx];
    if(status==='exact-name-provisional')stats.pairedExact++;
-   else stats.pairedTypographic++;
+   else if(status==='typography-provisional')stats.pairedTypographic++;
+   else if(status==='reviewed-alias-paired')stats.pairedReviewedAliases++;
+   else fail('unsupported event match method '+status);
    const choiceCountAgreement=a.optionCount===b.choiceCount;
    stats[choiceCountAgreement?'pairedChoiceCountAgree':'pairedChoiceCountConflict']++;
    if(p0Keys.has(a.sourceKey)){p0Paired++;stats.p0SourceEventsPaired++;}
@@ -141,6 +149,7 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
     sourceOrdinal:b.sourceOrdinal,sourceLocalEventId:b.sourceLocalEventId,
     sourceSection:b.section,sourceChainOrdinal:b.chainOrdinal,
     matchMethod:status,choiceCountAgreement,
+    ...(reviewEvidence?{reviewEvidence}:{}),
     checkerChoiceCount:a.optionCount,sourceChoiceCount:b.choiceCount,
     historical2025:card.observedCandidates[cIdx].historical2025?.provisionalStoryId||null};
   }).sort((a,b)=>a.checkerOrdinal-b.checkerOrdinal);
@@ -179,9 +188,10 @@ function build({checker,rosterText,aliases,coverageIndex,queue,gameToraDocuments
     stats.checkerEventRecords!==2109||stats.p0SourceEventsPaired+stats.p0SourceEventsUnpaired!==199)
   fail('incomplete frozen population');
  stats.unionObservedEventRecords=stats.checkerEventRecords+
-   stats.gameToraEventRecords-stats.pairedExact-stats.pairedTypographic;
- if(stats.checkerUnmatchedEvents+stats.pairedExact+stats.pairedTypographic!==stats.checkerEventRecords||
-    stats.gameToraUnmatchedEvents+stats.pairedExact+stats.pairedTypographic!==stats.gameToraEventRecords)
+   stats.gameToraEventRecords-stats.pairedExact-stats.pairedTypographic-stats.pairedReviewedAliases;
+ if(stats.pairedReviewedAliases!==CASES.length||
+    stats.checkerUnmatchedEvents+stats.pairedExact+stats.pairedTypographic+stats.pairedReviewedAliases!==stats.checkerEventRecords||
+    stats.gameToraUnmatchedEvents+stats.pairedExact+stats.pairedTypographic+stats.pairedReviewedAliases!==stats.gameToraEventRecords)
   fail('pairing conservation mismatch');
  return {schemaVersion:1,dataKind:'umasupport-whole-event-provisional-index',
   sourcePins:{checker:checkerRevision,gameToraDerived:sourceRevision},
