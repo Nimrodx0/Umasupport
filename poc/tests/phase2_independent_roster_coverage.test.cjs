@@ -114,6 +114,23 @@ test('full-roster taxonomy does not assume no-chain friend/scenario or one-stage
  assert.equal(out.summary.pendingShortChainCards,0);
  assert.equal(find('20075').reviewerStatus,'EDITORIAL_MISSING_FIRST_SR_STAGE');
  assert.equal(find('20075').numericRewardDisagreementUnresolved,true);
+ const reported=find('20075').editorialNumericOutcomeDraft;
+ assert.equal(reported.status,'TWO_UNLABELED_REPORTED_OUTCOME_FAMILIES');
+ assert.equal(reported.missingFixedGTEvent,true);
+ assert.equal(reported.checkerEventOrdinal,1);
+ assert.deepEqual(reported.reportedNumericEffects.map(x=>x.gains),
+  [{guts:15,bond:15},{guts:5,bond:5}]);
+ assert.equal(reported.reportCount,2);
+ assert.equal(reported.playerSelectableChoicesVerified,false);
+ assert.equal(reported.outcomesMutuallyExclusiveVerified,false);
+ assert.equal(reported.game2026Verified,false);
+ assert.equal(reported.publicationApproved,false);
+ assert.equal(reported.noAutomaticRuntimeAdoption,true);
+ assert.ok(reported.reportedNumericEffects.every(x=>
+  x.choiceTextStored===false&&x.routeProbabilityVerified===false&&
+  x.triggerConditionVerified===false&&x.publicationApproved===false));
+ assert.ok(!JSON.stringify(reported).includes('Sloppy Captain'));
+
  assert.equal(find('20075').alreadyCountedInCheckerOnly,1);
  assert.equal(find('30240').absentBothFixedSources,3);
  assert.equal(find('30221').alreadyCountedInCheckerOnly,3);
