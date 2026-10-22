@@ -196,7 +196,7 @@ function checkerEmptyCardReview(card,gt){
  if(!r)return null;
  if(card.rarity!=='SSR'||!gt||gt.length!==5||
     card.gameToraObservedCount!==5||card.checkerObservedCount!==0||
-    card.checkerMissing!==true||card.sourceMissing!==false||
+    card.checkerMissing!==false||card.sourceMissing!==false||
     card.checkerOnly.length!==0||card.pairs.length!==0||
     card.gameToraOnly.length!==5||
     gt.some((e,i)=>e.id!==r.ids[i]||e.section!==r.sections[i]||
