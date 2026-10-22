@@ -41,3 +41,5 @@
 - [SSR30240 GameWith未掲載の具体的保留とU-tools単独数値候補試験](phase2-30240-gamewith-gap-utools-only-replay-20261022.md)
 
 - [Phase 2・重点28イベントの公開受け入れブロッカー](phase2-priority-release-readiness-20261022.md)
+
+- [4SSRの通常8件・16択の公開前レビューと仮表示](phase2-eight-standalone-event-display-review-20261022.md)

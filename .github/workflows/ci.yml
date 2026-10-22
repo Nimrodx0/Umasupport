@@ -172,6 +172,14 @@ jobs:
       - name: Verify complete Phase-2 563-card coverage index and pinned 2025 historical evidence
         run: node poc/tools/verify_event_coverage_index.cjs
 
+      - name: Validate four SSR standalone eight-event independent Japanese review previews
+        run: |
+          node --check poc/src/phase2_eight_standalone_review_pack.cjs
+          node --check poc/tools/report_phase2_eight_standalone_review.cjs
+          node --test poc/tests/phase2_eight_standalone_review_pack.test.cjs
+          node poc/tools/report_phase2_eight_standalone_review.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Build Phase 2 focused per-event publication-blocker worklist (not approval)
         run: |
           node --check poc/src/phase2_publication_readiness.cjs
