@@ -8,6 +8,7 @@
 const source=require('../data/curation/adjudicated/30080_choice_repair.v1.json');
 const policy=require('./event_exception_adjudication.cjs');
 const schema=require('./event_schema.js');
+const {get30080SourceChoiceGap}=require('./phase2_completeness_exception_queue.cjs');
 const core=require('./core.js');
 const fail=s=>{throw Error('30080非公開3択構造補正: '+s);};
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -67,6 +68,18 @@ function validate(doc=source){
    row.publicationApproved!==false)
    fail('独立記事の選択位置・範囲数値・スキルID/Lvが異なる');
  }
+ const audited=get30080SourceChoiceGap();
+ if(audited.sourceOrdinal!==doc.sourceEventOrdinal||
+  audited.checkerOrdinal!==doc.checkerEventOrdinal||
+  audited.gameToraChoices!==doc.baselineStoredChoiceCount||
+  audited.checkerChoices!==doc.playerSelectableChoiceCount||
+  audited.gameToraLocalEventId!==doc.sourceEventLocalId||
+  audited.hintSkillId!==201591||audited.hintValue!=='+3'||
+  audited.sourceUrl!==doc.gameWith.url||
+  audited.independentEditorialUrl!==doc.corroboratingArticle||
+  !same(audited.editorialNumericChoices,doc.choices.map(c=>
+    [c.ordinal,c.skillHints[0].skillNumericId,c.skillHints[0].hintLevel])))
+  fail('既存GT・Checker例外の固定数値候補と不一致');
  const decision=policy.evaluateException({
   cardId:'30080',sourceEventOrdinal:6,baseline:'DISPUTED',
   // Page is checked, but its *specific event detail* is NOT asserted.
@@ -75,8 +88,7 @@ function validate(doc=source){
   gameWith:{url:doc.gameWith.url,checkedAt:doc.gameWith.checkedAt,
    factStatus:'EXPLICIT',facts:{
     playerSelectableChoiceCount:3,
-    reportedEffects:doc.choices.map(c=>({kind:'energy',
-      value:c.reportedVariableEffects.energyRange[0]})),
+    reportedEffects:[], // Reported values are ranges, not exact single-point rewards.
     reportedSkillHints:doc.choices.flatMap(c=>c.skillHints)
    }},proposedDecision:'ADOPT'
  });
@@ -88,7 +100,7 @@ function validate(doc=source){
 function build(doc=source,{model=null}={}){
  const checked=validate(doc);
  const id='editorial_30080_6_three_real_choices';
- const event={id,name:'通常イベントの独立3択候補',type:'choice',
+ const event={id,name:'イベントの独立3択候補',type:'choice',
   choices:doc.choices.map(c=>({
    id:'option'+c.ordinal,label:'選択位置'+c.ordinal,
    rewards:c.skillHints.map(h=>({

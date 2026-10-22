@@ -538,4 +538,9 @@ function build(index,docs,{strict=true}={}){
   stats,reviewedRepresentationExamples:proof,
   supplementalMissingGTChainReviews,queue};
 }
-module.exports={build};
+function get30080SourceChoiceGap(){
+ const x=sourceChoiceGaps.find(c=>c.cardId==='30080');
+ if(!x)fail('30080固定監査の例外根拠が欠落');
+ return structuredClone(x);
+}
+module.exports={build,get30080SourceChoiceGap};
