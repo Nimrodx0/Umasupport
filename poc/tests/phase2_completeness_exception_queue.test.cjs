@@ -382,7 +382,7 @@ for(const rule of [
    x=>{x.index.cards[0].checkerMissing=false;},
    x=>{x.index.cards[0].checkerObservedCount=1;},
    x=>{x.docs[0].events_ja.ev2.id++;},
-   x=>{x.docs[0].events_ja.ev1.section='random';},
+   x=>{x.docs[0].events_ja.ev1.section='unknown';},
    x=>{x.docs[0].events_ja.ev0.choices.pop();},
    x=>{x.index.cards[0].gameToraOnly.pop();}
   ]){
