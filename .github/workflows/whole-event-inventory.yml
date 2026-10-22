@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - 'poc/tools/build_whole_event_index.cjs'
+      - 'poc/src/phase2_completeness_exception_queue.cjs'
+      - 'poc/tools/build_phase2_completeness_exception_queue.cjs'
+      - 'poc/tests/phase2_completeness_exception_queue.test.cjs'
       - 'poc/src/gametora_missing_card_triage.cjs'
       - 'poc/tools/audit_missing_gametora_cards.cjs'
       - 'poc/tests/gametora_missing_card_triage.test.cjs'
@@ -79,7 +82,7 @@ jobs:
             https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json \
             -o "$RUNNER_TEMP/event-inputs/Events.json"
       - name: Verify purely synthetic event matching regressions
-        run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs umasupport/poc/tests/whole_chain_topology.test.cjs umasupport/poc/tests/gametora_missing_card_triage.test.cjs
+        run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs umasupport/poc/tests/whole_chain_topology.test.cjs umasupport/poc/tests/gametora_missing_card_triage.test.cjs umasupport/poc/tests/phase2_completeness_exception_queue.test.cjs
       - name: Validate direct old-master crosswalk with synthetic SQLite
         run: python3 -m unittest discover -s umasupport/poc/tests -p 'test_direct_historical_chain.py' -v
       - name: Download pinned historical 2025 master for local title join only
@@ -103,6 +106,12 @@ jobs:
           node umasupport/poc/tools/audit_missing_gametora_cards.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             whole-event-output/gametora_missing_card_triage.v1.json
+      - name: Freeze all unresolved source event identities and actual choice-count questions
+        run: |
+          node umasupport/poc/tools/build_phase2_completeness_exception_queue.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            gt-snapshot/server/data/events/gametora \
+            whole-event-output/phase2_completeness_exceptions.v1.json
       - name: Audit matched choices, reward hint levels and unordered outcomes (no publication)
         run: |
           node umasupport/poc/tools/audit_whole_event_rewards.cjs \
