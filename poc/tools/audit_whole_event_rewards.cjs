@@ -155,7 +155,10 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates,checkerRa
       !Array.isArray(sourceEvent.choices)||ev.choices.length!==pair.checkerChoiceCount||
       sourceEvent.choices.length!==pair.sourceChoiceCount)
     fail('crosswalk event ordinal/sourceKey drift '+card.cardId);
-   if(pair.matchMethod!=='exact-name-provisional'&&pair.matchMethod!=='typography-provisional')
+   if(!['exact-name-provisional','typography-provisional','reviewed-alias-paired'].includes(pair.matchMethod)||
+       (pair.matchMethod==='reviewed-alias-paired'&&
+        (!pair.reviewEvidence||pair.reviewEvidence.currentGameVerified!==false||
+         pair.reviewEvidence.publicationApproved!==false)))
     fail('not a provisional title match');
    const key=card.cardId+':'+pair.sourceOrdinal;
    if(sourcesReviewed.has(key))fail('source event reused by multiple checker events');
