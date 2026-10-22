@@ -136,6 +136,32 @@ test('eleven individually pinned title variants pair exactly one pre-existing ev
  }
 });
 
+// 30267 has two separately reviewed aliases on the same card. Build a complete
+// synthetic card for both tests rather than weakening production's all-case gate.
+function add30267Companion(fixture){
+ if(fixture.cardId!=='30267')return fixture;
+ for(const rule of CASES.filter(c=>c.cardId==='30267')){
+  const ci=rule.checkerOrdinal-1,gi=rule.sourceOrdinal-1;
+  if(fixture.checkerEvents[ci]?.sourceKey===rule.sourceKey)continue;
+  fixture.checkerEvents[ci]={sourceIndex:ci,sourceKey:rule.sourceKey,
+   strict:rule.checkerTitleSha,optionCount:rule.checkerChoices};
+  fixture.gtEvents[gi]={sourceOrdinal:rule.sourceOrdinal,
+   sourceLocalEventId:rule.gtLocalId,section:rule.section,
+   strict:rule.gtTitleSha,choiceCount:rule.gtChoices};
+  const choice=rule.decision==='SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED'?
+   {label:'',random_either:true,outcomes:[
+    [{type:'speed',value:'+30'},{type:'bond',value:'+15'}],
+    [{type:'speed',value:'+20'},{type:'bond',value:'+5'}]
+   ]}:
+   {label:'',random_either:false,effects:[
+    {type:'speed',value:'+25'},{type:'bond',value:'+5'}]};
+  fixture.rawGtEvents[gi]={id:rule.gtLocalId,section:rule.section,
+   choices:[choice]};
+  fixture.paired.unmatchedC.push(ci);
+  fixture.paired.unmatchedG.push(gi);
+ }
+ return fixture;
+}
 test('two independently reported title changes retain one actual event and pinned skill/result topology',()=>{
  const cases=CASES.filter(x=>x.decision==='SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED');
  assert.equal(cases.length,2);
@@ -167,13 +193,13 @@ test('two independently reported title changes retain one actual event and pinne
     [{type:'speed',value:'+20'},{type:'bond',value:'+5'}]]};
   raw[rule.sourceOrdinal-1]={id:rule.gtLocalId,section:rule.section,
    choices:[current]};
-  const make=()=>({
+  const make=()=>add30267Companion({
    cardId:rule.cardId,checkerEvents:ce,gtEvents:ge,rawGtEvents:raw,
    paired:{selected:[],unmatchedC:[rule.checkerOrdinal-1],
     unmatchedG:[rule.sourceOrdinal-1]}
   });
   let res=applyReviewedAliases(make());
-  assert.equal(res.matched.length,1);
+  assert.equal(res.matched.length,rule.cardId==='30267'?2:1);
   assert.equal(res.paired.unmatchedC.length,0);
   assert.equal(res.paired.unmatchedG.length,0);
   assert.equal(res.matched[0].publicationApproved,false);
@@ -226,12 +252,12 @@ test('15 newly source-pinned event identities match only the same card, ordinals
      })};
    })
   };
-  const make=()=>({cardId:rule.cardId,checkerEvents:ce,gtEvents:ge,
+  const make=()=>add30267Companion({cardId:rule.cardId,checkerEvents:ce,gtEvents:ge,
    rawGtEvents:raw,paired:{selected:[],unmatchedC:[rule.checkerOrdinal-1],
     unmatchedG:[rule.sourceOrdinal-1]}});
   const out=applyReviewedAliases(make());
-  assert.equal(out.matched.length,1,rule.cardId);
-  assert.equal(out.paired.selected.length,1,rule.cardId);
+  assert.equal(out.matched.length,rule.cardId==='30267'?2:1,rule.cardId);
+  assert.equal(out.paired.selected.length,rule.cardId==='30267'?2:1,rule.cardId);
   assert.deepEqual(out.paired.unmatchedC,[],rule.cardId);
   assert.deepEqual(out.paired.unmatchedG,[],rule.cardId);
   assert.equal(out.matched[0].currentGameVerified,false,rule.cardId);
