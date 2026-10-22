@@ -11,6 +11,10 @@ const make=()=>{
   ['30240','SSR',2,0,0,2,0],
   ['30244','SSR',3,3,1,2,0],
   ['30286','SSR',3,3,1,2,0],
+  ['30258','SSR',3,3,1,2,0],
+  ['30270','SSR',3,3,1,2,0],
+  ['30271','SSR',3,3,1,2,0],
+  ['30300','SSR',3,3,1,2,0],
   ['10001','R',2,0,0,2,0],
   ['30052','SSR',12,13,0,2,10],
   ['30318','SSR',0,5,0,0,0],
@@ -50,6 +54,9 @@ const make=()=>{
    chainOrdinal:1,sourceLocalEventId:1143}];
   if(id==='30286')stages=[{sourceOrdinal:3,
    chainOrdinal:1,sourceLocalEventId:1255}];
+  for(const [cardId,sourceLocalEventId] of [
+   ['30258',1183],['30270',1214],['30271',1215],['30300',1292]])
+   if(id===cardId)stages=[{sourceOrdinal:3,chainOrdinal:1,sourceLocalEventId}];
   c.unmatchedCheckerCount=c.checkerOnly.length;
   cards.push(c);
   topology.push({cardId:id,rarity,sourceMissing:missing,
@@ -84,14 +91,14 @@ const make=()=>{
 const run=x=>build(x.index,x.topology,x.numeric,x.exceptions,{strict:false});
 test('full-roster taxonomy does not assume no-chain friend/scenario or one-stage SSR is missing',()=>{
  const out=run(make()),find=id=>out.cards.find(c=>c.cardId===id);
- assert.equal(out.cardTotal,10);
+ assert.equal(out.cardTotal,14);
  assert.equal(out.summary.R_NOT_SUBJECT_TO_CHAIN,1);
  assert.equal(out.summary.NONSTANDARD_ZERO_CHAIN,1);
  assert.equal(out.summary.SOURCE_MISSING,1);
  assert.equal(out.summary.PLAIN_ZERO_CHAIN,2);
- assert.equal(out.summary.SHORT_CHAIN,3);
+ assert.equal(out.summary.SHORT_CHAIN,7);
  assert.equal(out.summary.NORMAL_CHAIN_SHAPE,2);
- assert.equal(out.summary.editorialShortChainCorroborated,2);
+ assert.equal(out.summary.editorialShortChainCorroborated,6);
  assert.equal(out.summary.editorialMissingChainStageCandidates,7);
  assert.equal(out.summary.editorialMissingStagesAlreadyCheckerOnly,4);
  assert.equal(out.summary.editorialMissingStagesOutsideBothFixedSources,3);
@@ -100,6 +107,11 @@ test('full-roster taxonomy does not assume no-chain friend/scenario or one-stage
  assert.equal(find('10001').classification,'R_NOT_SUBJECT_TO_CHAIN');
  assert.equal(find('30244').reviewerStatus,'EDITORIAL_SINGLE_STAGE_INTENTIONAL');
  assert.equal(find('30286').reviewerStatus,'EDITORIAL_SINGLE_STAGE_INTENTIONAL');
+ for(const id of ['30258','30270','30271','30300']){
+  assert.equal(find(id).reviewerStatus,'EDITORIAL_SINGLE_STAGE_INTENTIONAL',id);
+  assert.equal(find(id).reviewPriority,4,id);
+ }
+ assert.equal(out.summary.pendingShortChainCards,0);
  assert.equal(find('20075').reviewerStatus,'EDITORIAL_MISSING_FIRST_SR_STAGE');
  assert.equal(find('20075').numericRewardDisagreementUnresolved,true);
  assert.equal(find('20075').alreadyCountedInCheckerOnly,1);
