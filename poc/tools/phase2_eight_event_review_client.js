@@ -21,7 +21,7 @@
   function refreshOutput(card,ev,panel){
    const chosen=state.get(ev.id)||null;
    const pseudo={
-    id:ev.id,name:ev.proposedJapaneseHeading,
+    id:ev.id,name:ev.eventTitle,
     type:'choice',
     choices:ev.choices.map(ch=>({id:ch.id,label:'選択'+ch.ordinal,
      rewards:ch.hints.map(x=>({skillId:x.skillId,level:x.level}))}))
@@ -50,8 +50,8 @@
    group.append(el('h2',card.displayName+'（ID '+card.cardId+'）'));
    for(const ev of card.events){
     const block=el('article','', 'event');block.dataset.event=String(ev.editorialOrdinal);
-    block.append(el('h3','通常'+(ev.editorialOrdinal-3)+'：'+ev.proposedJapaneseHeading));
-    block.append(el('p','独自の仮見出し。実ゲームのイベント名・IDではありません。','sub'));
+    block.append(el('h3','通常'+(ev.editorialOrdinal-3)+'：'+ev.eventTitle));
+    block.append(el('p','GameWith掲載のイベント名。選択肢は出典採用済みの数値効果による表示です。','sub'));
     const options=el('div','', 'option-list');
     const clear=el('button','未選択', 'unselect');
     clear.type='button';clear.dataset.choice='';
