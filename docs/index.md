@@ -15,6 +15,7 @@
 | 公開時のイベント監査・権利 | [checker-public-catalog.md](checker-public-catalog.md) / [event-data-acquisition-rights-20261019.md](event-data-acquisition-rights-20261019.md) |
 | 実装コマンド | [poc/README.md](../poc/README.md) |
 | PR別の作業履歴 | [development-history.md](development-history.md) |
+| 仕様とコード／テストの整合性監査 | [初回スポット監査（2026-10-22）](decision-implementation-consistency-audit-20261022.md) |
 | 個別の数値・例外・出典検証 | `docs/phase2-*.md` や `docs/*-audit*.md` の該当文書 |
 | 整理前の全文保存 | [archive/](archive/) |
 
