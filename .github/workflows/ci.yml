@@ -72,6 +72,14 @@ jobs:
           node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
           node poc/tools/verify_adjudicated_event_facts.cjs
 
+      - name: Verify all four SSR chain stages with explicit manual reachability (not publication)
+        run: |
+          node --check poc/src/phase2_chain_manual_replay.cjs
+          node --check poc/tools/report_phase2_chain_manual_replay.cjs
+          node --test poc/tests/phase2_chain_manual_replay.test.cjs
+          node poc/tools/report_phase2_chain_manual_replay.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs
 
