@@ -14,12 +14,6 @@ function sourceStore(){
  return g.UmaLiveLoader?.indexedDbStore(g.indexedDB,CACHE_KEY);
 }
 function preflight(model,catalog,{skillText=null,fullRegistry=false}={}){
- const {prepared,summary}=preflight(model,catalog,{skillText,fullRegistry});
- return {prepared,summary};
-}
-
-function attach(model,catalog,{skillText=null,fullRegistry=false}={}){
- // Resolve numeric rewards before validation, but do not modify model if any check fails.
  const prepared=bridge.prepare(model,catalog,skillText,{fullRegistry});
  const candidateSkills={...model.skillById,
    ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))};
@@ -30,6 +24,12 @@ function attach(model,catalog,{skillText=null,fullRegistry=false}={}){
  }
  const candidateModel={...model,skillById:candidateSkills};
  const summary=schema.validateCatalog(prepared.catalog,candidateModel);
+ return {prepared,summary};
+}
+
+function attach(model,catalog,{skillText=null,fullRegistry=false}={}){
+ // Resolve numeric rewards before validation, but do not modify model if any check fails.
+ const {prepared,summary}=preflight(model,catalog,{skillText,fullRegistry});
  for(const skill of prepared.skills){
    if(!Array.isArray(model.skills))model.skills=[];
    model.skills.push(skill);
