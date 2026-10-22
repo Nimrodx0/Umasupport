@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "unresolved-gamewith-numeric-facts-and-utools-only-chain-candidate",
+  "cardId": "30240",
+  "cardEdition": "『最強は俺だ！！』",
+  "baselineRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "baselineRandomLocalIds": [
+    167,
+    168
+  ],
+  "baselineChainStageCount": 0,
+  "checkerRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+  "checkerEventCount": 0,
+  "gameToraWebsite": {
+    "url": "https://gametora.com/ja/umamusume/supports/30240-jungle-pocket",
+    "checkedAt": "2026-10-22",
+    "status": "CARD_ONLY"
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/490549",
+    "checkedAt": "2026-10-22",
+    "factStatus": "NOT_LISTED",
+    "eventSection": "UNDER_VERIFICATION",
+    "reportedTrainingEventSkillName": "迅速果断",
+    "reportedPerStageEffectNumbers": false,
+    "reportedHintLevel": false,
+    "reportedRouteTopology": false
+  },
+  "corroboration": {
+    "source": "U-tools",
+    "url": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/30240/event",
+    "independentEditorialFamilies": 1,
+    "reportedStages": [
+      {
+        "ordinal": 1,
+        "effects": [
+          {
+            "kind": "stamina",
+            "value": 15
+          },
+          {
+            "kind": "bond",
+            "value": 5
+          }
+        ],
+        "hintCandidates": []
+      },
+      {
+        "ordinal": 2,
+        "effects": [
+          {
+            "kind": "stamina",
+            "value": 15
+          },
+          {
+            "kind": "bond",
+            "value": 5
+          }
+        ],
+        "hintCandidates": []
+      },
+      {
+        "ordinal": 3,
+        "effects": [
+          {
+            "kind": "stamina",
+            "value": 15
+          },
+          {
+            "kind": "bond",
+            "value": 5
+          }
+        ],
+        "hintCandidates": [
+          {
+            "skillNumericId": 200591,
+            "hintLevel": 1
+          }
+        ]
+      }
+    ],
+    "playerSelectableChoiceCountVerified": false,
+    "predecessorConditionsVerified": false,
+    "branchTerminationVerified": false,
+    "skillHintAcquisitionVerified": false
+  },
+  "currentEditorialDecision": "PENDING_GAMEWITH_REQUIRED_EVENT_FACTS",
+  "unresolvedRequiredFacts": [
+    "STAGE_AND_CHOICE_IDENTITY",
+    "STAGE_NUMERIC_EFFECTS",
+    "SKILL_HINT_LEVEL_AND_STAGE",
+    "PRIOR_STAGE_BRANCH_AND_TERMINATION"
+  ],
+  "sourceProseIncluded": false,
+  "publicationApproved": false,
+  "game2026Verified": false,
+  "noAutomaticRuntimeAdoption": true
+}

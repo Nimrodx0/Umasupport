@@ -72,6 +72,12 @@ jobs:
           node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
           node poc/tools/verify_adjudicated_event_facts.cjs
 
+      - name: Guard SSR30240 GameWith unpublished event facts and simulate explicit U-tools-only hypothesis
+        run: |
+          node --check poc/src/phase2_30240_pending_chain_replay.cjs
+          node --test poc/tests/phase2_30240_pending_chain_replay.test.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Audit SR20075 missing stage without inventing results or publishing
         run: |
           node --check poc/src/phase2_20075_first_stage_intake.cjs

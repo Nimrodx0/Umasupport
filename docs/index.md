@@ -37,3 +37,5 @@
 - [SSR30221のGT欠損連続3段階をGameWithで数値採用](phase2-30221-missing-chain-editorial-intake-20261022.md)
 
 - [SR20075欠損連続初段階のGameWith数値採用](phase2-20075-first-chain-gamewith-numeric-adoption-20261022.md)
+
+- [SSR30240 GameWith未掲載の具体的保留とU-tools単独数値候補試験](phase2-30240-gamewith-gap-utools-only-replay-20261022.md)
