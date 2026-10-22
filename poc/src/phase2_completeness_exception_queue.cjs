@@ -80,7 +80,7 @@ function checkerPartialMatches(sourceEvent,paired,signature){
     paired.checkerChoiceCount!==1) return false;
  const [a,b]=sourceEvent.choices;
  if(![a,b].every(c=>typeof c?.label==='string'&&c.label.trim().length>0&&
-    c.random_either===false&&c.outcomes===undefined&&c.segments===undefined&&
+    c.random_either!==true&&c.outcomes===undefined&&c.segments===undefined&&
     Array.isArray(c.effects))||a.label===b.label) return false;
  const types=sourceEvent.choices.map(c=>c.effects.map(e=>e.type));
  const hints=sourceEvent.choices.map(c=>c.effects.filter(e=>e.type==='skill_hint')
