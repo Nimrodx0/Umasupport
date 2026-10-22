@@ -2,71 +2,64 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {validate}=require('../src/phase2_adjudicated_fact_intake.cjs');
-const original=require('../data/curation/adjudicated_event_facts.v1.json');
-const copy=()=>structuredClone(original);
-test('fixed 4-SSR register adopts five GameWith facts, preserves fifteen pending positions',()=>{
- assert.deepEqual(validate(copy()),{
-  sourceCards:4,sourcePositions:20,adoptedNumericalEvents:5,
-  pendingRoutePositions:15,adoptedSkillHintFacts:2,
-  adoptedNonSkillEffectFacts:17,pendingSkillHintMentions:10,
-  adoptedSelectableAlternatives:6,publishedEvents:0
- });
+const baseline=require('../data/curation/adjudicated_event_facts.v1.json');
+const copy=()=>structuredClone(baseline);
+const EXPECTED={sourceCards:4,sourcePositions:20,adoptedNumericalEvents:20,
+ pendingRoutePositions:0,adoptedSkillHintFacts:12,
+ adoptedNonSkillEffectFacts:90,pendingSkillHintMentions:0,
+ adoptedSelectableAlternatives:30,publishedEvents:0};
+test('all 20 editorial facts from four missing SSR cards are adopted, with zero published events',()=>{
+ assert.deepEqual(validate(copy()),EXPECTED);
 });
-test('inferred player choices and invented result branches cannot be adopted',()=>{
- const c=copy();
- c.cards[3].events[1].playerSelectableChoiceCount=2;
- assert.throws(()=>validate(c),/既存裁定と一致しない/);
- c.cards[3].events[1].playerSelectableChoiceCount=0;
- c.cards[3].events[1].outcomes=[{id:'success'}];
- assert.throws(()=>validate(c),/追加・欠落フィールド/);
-});
-test('wrong reward number, skill ID and source URL fail closed',()=>{
- for(const mutate of [
-  c=>{c.cards[3].events[1].numericEffects[1].value=11;},
-  c=>{c.cards[3].events[2].skillHints[0].skillNumericId=201464;},
-  c=>{c.cards[3].events[2].gameWithArticle='https://example.com/article';},
-  c=>{c.cards[3].events[2].gameToraLivePage=c.cards[0].events[0].gameToraLivePage;},
-  c=>{c.cards[3].events[2].checkedAt='2026-10-23';}
+test('new three-card numeric adoption cannot drift from independent card detail',()=>{
+ for(const change of [
+  x=>{x.cards[0].events[0].alternatives[0].effects[0].value=5;},
+  x=>{x.cards[0].events[2].skillHints[0].skillNumericId++;},
+  x=>{x.cards[1].events[4].playerSelectableChoiceCount=0;},
+  x=>{x.cards[1].events[3].alternatives[1].effects[0].kind='energy';},
+  x=>{x.cards[2].events[4].alternatives[0].skillHints[0].hintLevel=5;},
+  x=>{x.cards[2].events[2].decision='PENDING_ROUTE_REVIEW';},
+  x=>{x.cards[2].events[1].gameWithArticle='https://example.com';},
+  x=>{x.cards[0].events[2].priorStageDependenceVerified=true;}
  ]){
-  const c=copy();mutate(c);
-  assert.throws(()=>validate(c),/既存裁定と一致しない/);
+  const c=copy();change(c);
+  assert.throws(()=>validate(c),/GameWith編集採用事実と独立台帳が不一致/);
  }
 });
-test('a pending event cannot silently become an unconditional skill grant',()=>{
- for(const mutate of [
-  c=>{c.cards[0].events[0].decision='GAMEWITH_NUMERIC_FACTS_ADOPTED';},
-  c=>{c.cards[2].events[3].skillHints=[{skillNumericId:1,hintLevel:5}];},
-  c=>{c.cards[3].events[0].alternatives[0].effects[0].value++;},
-  c=>{c.cards[3].events[4].alternatives[1].skillHints[0].hintLevel=2;},
-  c=>{c.cards[3].events[2].decision='PENDING_ROUTE_REVIEW';},
-  c=>{c.cards[3].events[2].priorStageDependenceVerified=true;}
+test('existing five 30321 adjudications cannot lose selection identity or numerical integrity',()=>{
+ for(const change of [
+  x=>{x.cards[3].events[1].playerSelectableChoiceCount=2;},
+  x=>{x.cards[3].events[1].numericEffects[1].value++;},
+  x=>{x.cards[3].events[2].skillHints[0].skillNumericId++;},
+  x=>{x.cards[3].events[4].alternatives[1].skillHints[0].hintLevel=2;},
+  x=>{x.cards[3].events[0].alternatives[0].effects[0].value++;},
+  x=>{x.cards[3].events[2].priorStageDependenceVerified=true;},
+  x=>{x.cards[3].events[2].decision='PENDING_ROUTE_REVIEW';}
  ]){
-  const c=copy();mutate(c);
-  assert.throws(()=>validate(c));
+  const c=copy();change(c);assert.throws(()=>validate(c));
  }
 });
-test('no preview/publication flag or source prose can be smuggled into editorial facts',()=>{
- for(const mutate of [
-  c=>{c.noAutomaticRuntimeAdoption=false;},
-  c=>{c.publicationApproved=true;},
-  c=>{c.cards[3].events[2].publicationApproved=true;},
-  c=>{c.cards[1].events[4].publicationApproved=true;},
-  c=>{c.sourceProseIncluded=true;},
-  c=>{c.cards[3].events[1].name='source event title';}
+test('no editorial source prose, game truth claim, approval or automatic grant can be smuggled',()=>{
+ for(const change of [
+  x=>{x.noAutomaticRuntimeAdoption=false;},
+  x=>{x.game2026Verified=true;},
+  x=>{x.publicationApproved=true;},
+  x=>{x.sourceProseIncluded=true;},
+  x=>{x.cards[0].events[0].publicationApproved=true;},
+  x=>{x.cards[3].events[1].name='copied prose';},
+  x=>{x.cards[1].events[4].game2026Verified=true;}
  ]){
-  const c=copy();mutate(c);
-  assert.throws(()=>validate(c));
+  const c=copy();change(c);assert.throws(()=>validate(c));
  }
 });
-test('all positions and the exact pinned roster must be preserved',()=>{
- for(const mutate of [
-  c=>{c.cards.pop();},
-  c=>{c.cards[0].cardId='30321';},
-  c=>{c.cards[0].events.pop();},
-  c=>{c.cards[0].events[2].sourceOrdinal=2;},
-  c=>{c.sourcePins.checker='new-reference';}
+test('source cards, ordinal positions, counts and pins are fail-closed',()=>{
+ for(const change of [
+  x=>{x.cards.pop();},
+  x=>{x.cards[0].cardId='30321';},
+  x=>{x.cards[0].events.pop();},
+  x=>{x.cards[0].events[2].sourceOrdinal=2;},
+  x=>{x.sourcePins.checker='unapproved';}
  ]){
-  const c=copy();mutate(c);
-  assert.throws(()=>validate(c));
+  const c=copy();change(c);assert.throws(()=>validate(c));
  }
 });

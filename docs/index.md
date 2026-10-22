@@ -16,7 +16,7 @@
 | 実装コマンド | [poc/README.md](../poc/README.md) |
 | PR別の作業履歴 | [development-history.md](development-history.md) |
 | 仕様とコード／テストの整合性監査 | [初回スポット監査（2026-10-22）](decision-implementation-consistency-audit-20261022.md) |
-| 編集上採用済みのGameWith例外数値と未裁定位置 | [Phase 2・独立編集台帳](phase2-adjudicated-numeric-fact-intake-20261022.md) |
+| 編集上採用済みのGameWith例外数値と未裁定位置 | [Phase 2・独立編集台帳](phase2-adjudicated-numeric-fact-intake-20261022.md) / [4SSR全20件の追加採用](phase2-three-ssr-final-editorial-adoption-20261022.md) |
 | 個別の数値・例外・出典検証 | `docs/phase2-*.md` や `docs/*-audit*.md` の該当文書 |
 | 整理前の全文保存 | [archive/](archive/) |
 
