@@ -44,8 +44,18 @@ function decideNumericEffect(claims,{suspected=false}={}){
  }
  const baseline=bySource.get('GameTora-derived');
  const other=[...bySource.values()].filter(x=>x.source!=='GameTora-derived');
- if(!baseline)return {status:'unresolved-baseline-missing',selected:null,
-  disagreements:[],gameVerified:false,publicationApproved:false};
+ if(!baseline){
+  const gameWith=bySource.get('GameWith');
+  if(gameWith)return {
+   status:'adjudicated-missing-baseline-by-gamewith',
+   selected:gameWith,baseline:null,
+   baselineCoverageGap:true,disagreements:[],
+   gameVerified:false,publicationApproved:false
+  };
+  return {status:'unresolved-baseline-missing',selected:null,
+   baselineCoverageGap:true,disagreements:[],
+   gameVerified:false,publicationApproved:false};
+ }
  const disagree=other.filter(x=>x.value!==baseline.value);
  const hasIssue=suspected||disagree.length>0;
  const adjudicator=bySource.get('GameWith');
