@@ -35,7 +35,7 @@
 - スキル名／ID対応：2026年10月4日版 `Tsuyuchan-jp/umamusume-data@0cacbb1aaf9dca10283d5b9ea20b205b9d204535` の`skills.json`。元ファイルのGit blob SHA・SHA-256とChecker・UmaSimのハッシュを検証する。
 - `poc/src/missing_four_ssr_skill_fact_candidates.cjs`：20イベントの元`sourceKey`、元イベント内容の`sourceDigest`、元タイトルハッシュを一対一で照合。効果テキストから`ヒントLv`が見つかったのに一意のID／Lvにできなければ**fail-closed**。対応できる1件だけ`○／◯`を個別変換、名前が重複・変化したら拒否。
 - `poc/tools/build_missing_four_ssr_skill_fact_candidates.cjs`：元テキストは**CIの一時メモリ上で読むだけ**。元イベント名・選択肢の文章・効果文章・スキル名の一覧は結果JSONやログへ転載しない。出力は`whole-event-output/missing_four_ssr_numeric_skill_candidates.v1.json`だけで、GitHub Actionsの一時監査成果物。公開用`poc/data/reviewed_events.v1.json`へ書く経路はない。
-- `poc/tests/missing_four_ssr_skill_fact_candidates.test.cjs`：IDや出典・候補件数の改変、未解読のヒント記載、名前の不一致、レアリティの混同・出力文章混入を拒否。
+- `poc/tests/missing_four_ssr_skill_fact_candidates.test.cjs`：IDや出典・候補件数の改変、未解読のヒント記載、名前の不一致・出力文章混入を拒否。レアリティはこの機構では分類に使用せず、誤った出典間コード変換を避ける。
 
 ## 独立した確認が必要な次の工程
 
