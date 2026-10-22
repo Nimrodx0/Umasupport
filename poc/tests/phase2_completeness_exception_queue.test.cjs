@@ -47,7 +47,7 @@ test('GameWith no-choice 2-result illustration is reviewed but NOT a game verifi
  assert.ok(!JSON.stringify(out).includes('秘すれば'));
 });
 test('other non-choice discrepancy stays pending; no global automatic rule',()=>{
- const {index,docs}=make({cardId:'30010',withResult:false});
+ const {index,docs}=make({cardId:'30052',withResult:false});
  const out=build(index,docs,{strict:false});
  assert.equal(out.stats.choiceCountExplainedRepresentations,0);
  assert.equal(out.stats.choiceCountPending,1);
@@ -98,5 +98,34 @@ test('30207 stage effect alternatives are conditional year-classes, not choices'
  assert.equal(row.reviewEvidence.conclusion,'YEAR_CLASS_CONDITIONS_NOT_USER_CHOICES');
  assert.equal(row.reviewEvidence.conditionalOrOutcomeRows,3);
  docs[0].events_ja.ev1.choices[0].segments[2].when[0].value[1]=2;
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+});
+
+test('30010 stage 3 has no player choice: one pinned skill_hint_or effect, two editorial outcome rows',()=>{
+ const {index,docs}=make({cardId:'30010',withResult:false});
+ const event=docs[0].events_ja.ev4;
+ event.id=500;
+ index.cards[0].pairs[0].sourceLocalEventId=500;
+ event.choices=[{label:'',random_either:false,effects:[
+  {type:'skill_hint_or',options:[{skill_id:200581,value:'+1/+3'},
+   {skill_id:200582,value:'+1'}]}
+ ]}];
+ const x=build(index,docs,{strict:false});
+ const row=x.queue.find(r=>r.type==='CHOICE_COUNT_DIFFERENCE');
+ assert.equal(row.status,'SOURCE_REPRESENTATION_EXPLAINED');
+ assert.equal(row.reviewEvidence.conclusion,
+  'NO_PLAYER_SELECTION_TWO_HINT_RESULT_FAMILIES');
+ assert.equal(x.stats.choiceCountPending,0);
+ assert.equal(row.gameToraFirstChoiceOutcomeCount,0);
+ assert.equal(row.sourceIndependentlyVerified,false);
+ assert.equal(x.publicationApproved,false);
+ const altered=event.choices[0].effects[0].options[0];
+ altered.value='+1/+2';
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+ altered.value='+1/+3';
+ altered.skill_id=200582;
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+ altered.skill_id=200581;
+ event.choices[0].label='fictional player selection';
  assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
 });
