@@ -51,7 +51,7 @@ function build(index,docs,{strict=true}={}){
   checkerOnlyEvents:0,checkerOnlyOnMissingCards:0,checkerOnlyWithGameToraCard:0,
   checkerOnlyP0:0,gameToraOnlyR:0,gameToraOnlyNonR:0,
   choiceCountDisagreements:0,choiceCountExplainedRepresentations:0,
-  choiceCountPending:0,unresolvedItems:0
+  choiceCountPending:0,unresolvedItems:0,needsTargetedSourceReview:0
  };
  const keySet=new Set();
  function add(row){
@@ -161,6 +161,10 @@ function build(index,docs,{strict=true}={}){
   fail('固定元照合件数の保存則違反');
  stats.unresolvedItems=stats.checkerOnlyEvents+
   stats.gameToraOnlyR+stats.gameToraOnlyNonR+stats.choiceCountPending;
+ // R cards are not covered by Checker, so 395 GT-only R rows are
+ // NOT 395 genuine source disagreements. Keep them as scope metadata.
+ stats.needsTargetedSourceReview=stats.checkerOnlyEvents+
+  stats.gameToraOnlyNonR+stats.choiceCountPending;
  if(strict&&(stats.rosterCards!==563||stats.gameToraCards!==559||
     stats.missingGameToraCards!==4||stats.checkerOnlyEvents!==70||
     stats.checkerOnlyOnMissingCards!==20||
@@ -168,7 +172,8 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyP0!==2||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==54||stats.choiceCountDisagreements!==9||
     stats.choiceCountExplainedRepresentations!==3||
-    stats.choiceCountPending!==6||stats.unresolvedItems!==525))
+    stats.choiceCountPending!==6||stats.unresolvedItems!==525||
+    stats.needsTargetedSourceReview!==130))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
