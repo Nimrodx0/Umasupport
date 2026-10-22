@@ -87,6 +87,10 @@
 
 [イベント別の照合・留保](phase2-four-ssr-cross-site-editorial-review-20261022.md)、[PR #146](https://github.com/Nimrodx0/Umasupport/pull/146)。固定GTにファイルがないSSR30318〜30321は**GameToraの現在の公開サイト一覧では4枚とも掲載**され、30318/30319/30321の個別ページでは各3段階の連続＋2件の通常イベントを確認した。追加確認で30320の[GameTora個別ページ](https://gametora.com/ja/umamusume/supports/30320-admire-groove)を特定し、カード概要の直接表示を確認した。ただし取得範囲にイベント5件の見出し・個別分岐は含まれず、**イベント見出し確認3カード／個別概要のみ1カード／一覧のみ0カード**である。GameWithとゲームエイトのカード別記事により、Checker由来の**20イベント・35効果行・12ヒント数値記載**をイベント位置・効果行まで照合し、**掲載上の構造17件が整合、3件は選択肢と条件付き結果の解釈を保留**とした。GameToraのライブ記事と固定版JSONを混ぜて全563カードの固定GameToraデータが揃ったと見なさない。編集記事・数値候補はゲーム実機の直接確認でも公開許可でもなく、公開イベント0件は変わらない。
 
+## Phase 2・30010選択肢数差1件の限定解消（2026-10-22）
+
+[全カード差異監査の後続裁定](phase2-cross-source-completeness-exceptions-20261022.md)。SSRファインモーション30010の連続最終イベント（固定GT位置5・Checker位置3）は、GameTora元データの**選択肢なし1項目＋`skill_hint_or`2候補／Lv幅**と[GameWith](https://gamewith.jp/uma-musume/article/show/257451)・[ゲームエイト](https://game8.jp/umamusume/372306)の「選択肢なし」表示を照合し、Checker側の2掲載行をゲーム操作の2選択肢と数えないことを限定的に裁定した。厳密数値・形状ゲートをCIへ追加。**選択肢数差9件＝説明済み4＋未裁定5、優先差異125件（68＋52＋5）**。ゲーム実機・確率・結果ごとの完全な現行性は未確認、公開イベント0件は不変。
+
 ## 合格と未実施
 
 - A **機構**：PR #131/#132の合成データ回帰、および[マージ後PoC CI](https://github.com/Nimrodx0/Umasupport/actions/runs/39577800835)は成功。
