@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const {project}=require('../src/gametora_app_schema_dry_run.cjs');
+const {exercise}=require('../src/gametora_full_runtime_integration.cjs');
 const loader=require('../src/live_loader.js');
 const {CANONICAL_SOURCE_SHA}=require('../src/gametora_event_skill_crosswalk.cjs');
 const {gitBlobSha,INDEPENDENT_SKILLS_BLOB}=
@@ -54,6 +55,11 @@ function main(args){
  // Exact source numeric IDs and positions only; no scraped words, names,
  // outcome prose or unpublished runtime catalog leave the temporary runner.
  const augmented=historicalPreview!==undefined||independent2026Preview!==undefined;
+ // Execute the projected, unapproved event catalog through the ACTUAL
+ // deck/choice/outcome aggregator before it is discarded. Never serialize it.
+ const integration=exercise({catalog:result.dryRunCatalog,report:result.report,model},
+  {strict:augmented});
+ console.log('GAMETORA_FULL_CORE_INTEGRATION='+JSON.stringify(integration.totals));
  if(independent2026Preview!==undefined){
   console.log('GAMETORA_INDEPENDENT_2026_NAME_PREVIEW='+JSON.stringify({
    metadataRevision:'0cacbb1aaf9dca10283d5b9ea20b205b9d204535',
