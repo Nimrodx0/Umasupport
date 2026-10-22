@@ -152,3 +152,40 @@ test('30052 training-aftercare scenario rows are not player-selectable alternati
  docs[0].events_ja.ev1.choices[0].label='fake-selection';
  assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
 });
+
+test('30080 has 3 independent player choices, while pinned GT collapses them to one identical hint row',()=>{
+ const {index,docs}=make({cardId:'30080',withResult:false});
+ const card=index.cards[0], pair=card.pairs[0];
+ pair.sourceOrdinal=6;pair.checkerOrdinal=5;pair.checkerChoiceCount=3;
+ pair.sourceLocalEventId=1392;
+ card.gameToraObservedCount=6;
+ docs[0].events_ja.ev5={id:1392,section:'special',choices:[{
+  label:'',random_either:false,
+  effects:[{type:'energy',value:'+10'},
+   {type:'skill_hint',skill_id:201591,value:'+3'}]}]};
+ const row=build(index,docs,{strict:false});
+ assert.equal(row.stats.choiceCountConfirmedSourceGaps,1);
+ assert.equal(row.stats.choiceCountExplainedRepresentations,0);
+ assert.equal(row.stats.choiceCountPending,0);
+ assert.equal(row.stats.needsTargetedSourceReview,3);
+ const entry=row.queue.find(e=>e.type==='CHOICE_COUNT_DIFFERENCE');
+ assert.equal(entry.status,'FIXED_SOURCE_CHOICE_TOPOLOGY_INCOMPLETE');
+ assert.equal(entry.priority,'P1');
+ assert.equal(entry.sourceChoiceGapEvidence.expectedPlayerChoiceCount,3);
+ assert.equal(entry.sourceChoiceGapEvidence.missingSelectableChoicesRequireRepair,true);
+ assert.equal(entry.sourceIndependentlyVerified,false);
+ assert.equal(entry.gameVerified,false);
+ assert.equal(entry.publicationApproved,false);
+ for(const alter of [
+  e=>{e.choices[0].effects[1].value='+1';},
+  e=>{e.choices[0].effects[1].skill_id=201590;},
+  e=>{e.choices[0].label='a';},
+  e=>{e.choices[0].random_either=true;},
+  e=>{e.choices.push({label:'b'});},
+ ]){
+  const original=structuredClone(docs[0].events_ja.ev5);
+  alter(docs[0].events_ja.ev5);
+  assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+  docs[0].events_ja.ev5=original;
+ }
+});
