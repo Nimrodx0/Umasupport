@@ -72,6 +72,12 @@ jobs:
           node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
           node poc/tools/verify_adjudicated_event_facts.cjs
 
+      - name: Verify SSR30221 missing 3 chain stages using GameWith numeric intake
+        run: |
+          node --check poc/src/phase2_30221_missing_chain_intake.cjs
+          node --test poc/tests/phase2_30221_missing_chain_intake.test.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Replay SSR30080 three selectable choices against real core without publication
         run: |
           node --check poc/src/phase2_30080_three_choice_repair.cjs

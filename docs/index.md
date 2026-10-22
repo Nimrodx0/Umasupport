@@ -33,3 +33,5 @@
 - [Phase 2・SSR30321の全5件編集採用と非公開通常草稿](phase2-30321-editorial-adoption-20261022.md)
 
 - [SSR30080の1行→3択・非公開補正](phase2-30080-three-choice-editorial-repair-20261022.md)
+
+- [SSR30221のGT欠損連続3段階をGameWithで数値採用](phase2-30221-missing-chain-editorial-intake-20261022.md)
