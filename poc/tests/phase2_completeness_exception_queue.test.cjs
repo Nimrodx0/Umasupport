@@ -172,6 +172,20 @@ test('30080 has 3 independent player choices, while pinned GT collapses them to 
  assert.equal(entry.status,'FIXED_SOURCE_CHOICE_TOPOLOGY_INCOMPLETE');
  assert.equal(entry.priority,'P1');
  assert.equal(entry.sourceChoiceGapEvidence.expectedPlayerChoiceCount,3);
+ const draft=entry.sourceChoiceGapEvidence.privateNumericRepairDraft;
+ assert.equal(draft.sourceGameToraStoredChoiceCount,1);
+ assert.equal(draft.editorialSelectablePathCount,3);
+ assert.equal(draft.sourceOptionTextIncluded,false);
+ assert.equal(draft.noAutomaticRuntimeAdoption,true);
+ assert.equal(draft.publicationApproved,false);
+ assert.equal(draft.game2026Verified,false);
+ assert.equal(draft.exactGameSelectionWordingVerified,false);
+ assert.deepEqual(draft.choiceNumericCandidates.map(c=>[
+  c.sourceEditorialChoiceOrdinal,c.skillNumericId,c.hintLevel
+ ]),[[1,201591,3],[2,201591,3],[3,201591,3]]);
+ assert.ok(draft.choiceNumericCandidates.every(c=>
+  c.outcomeConditionVerified===false&&c.publicationApproved===false));
+ assert.equal(JSON.stringify(draft).includes('頭がよくなる'),false);
  assert.equal(entry.sourceChoiceGapEvidence.missingSelectableChoicesRequireRepair,true);
  assert.equal(entry.sourceIndependentlyVerified,false);
  assert.equal(entry.gameVerified,false);
