@@ -6,9 +6,11 @@
  * the runner. This is route EXECUTION coverage, not editorial/game approval.
  */
 const core=require('./core.js');
+const crypto=require('node:crypto');
+const publicCatalog=require('./public_event_catalog.js');
 const fail=s=>{throw Error('GT全イベント集計統合試験: '+s);};
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
-function exercise({catalog,report,model},{strict=false}={}){
+function exercise({catalog,report,model,rawCatalog=null,mergedSkillText=null},{strict=false}={}){
  if(catalog?.schemaVersion!==1||!Array.isArray(catalog.cards)||
     report?.dataKind!=='gametora-app-schema-dry-run'||
     report.publicationApproved!==false||report.gameVerified!==false||
@@ -27,14 +29,45 @@ function exercise({catalog,report,model},{strict=false}={}){
   checkedDuplicateCardAggregations:0,checkedProviderSkillCounts:0,
   checkedUnselectedChoiceEvents:0,checkedSelectedChoiceRoutes:0,
   checkedBlockedByTerminal:0};
+ let effectiveModel=model;
+ let publicLoaderAttachedInMemory=false;
+ if(rawCatalog!==null||mergedSkillText!==null){
+  if(rawCatalog?.schemaVersion!==1||
+     !Array.isArray(rawCatalog.cards)||
+     typeof mergedSkillText!=='string'||mergedSkillText.length<100)
+   fail('本番イベント読込の実行元データとスキル辞書が不足');
+  // The real public_event_catalog.attach API labels a successfully loaded
+  // catalog "reviewed". NEVER call it on the real model or deploy this catalog.
+  // A throwaway clone guarantees those runtime metadata cannot escape.
+  const cloned=JSON.parse(JSON.stringify(model));
+  const summary=publicCatalog.attach(cloned,rawCatalog,{
+   skillText:mergedSkillText,fullRegistry:false});
+  if(summary.cardsWithRecords!==catalog.cards.length||
+     summary.eventsWithRecords!==report.totals.candidateSchemaEvents||
+     cloned.meta.eventStatus!=='reviewed-partial')
+   fail('本番イベントDBの結合結果が元GTの投影数と異なる');
+  const attached={schemaVersion:1,cards:rawCatalog.cards.map(x=>({
+   cardId:x.cardId,coverageStatus:x.coverageStatus,
+   events:cloned.cardById[x.cardId]?.events
+  }))};
+  const originalDigest=crypto.createHash('sha256')
+   .update(JSON.stringify(catalog)).digest('hex');
+  const loadedDigest=crypto.createHash('sha256')
+   .update(JSON.stringify(attached)).digest('hex');
+  if(originalDigest!==loadedDigest||
+     report.runtimeSkillProjectionSha256!==originalDigest)
+   fail('本番イベントDB読込後のルートと元GT投影のSHA-256が不一致');
+  effectiveModel=cloned;
+  publicLoaderAttachedInMemory=true;
+ }
  const seenCards=new Set();
  for(const entry of catalog.cards){
   if(!obj(entry)||!Array.isArray(entry.events)||
      typeof entry.cardId!=='string'||seenCards.has(entry.cardId)||
-     !obj(model.cardById[entry.cardId]))
+     !obj(effectiveModel.cardById[entry.cardId]))
     fail('アプリの元カードとイベントカードIDが不一致');
   seenCards.add(entry.cardId);
-  const card={...model.cardById[entry.cardId],events:entry.events};
+  const card={...effectiveModel.cardById[entry.cardId],events:entry.events};
   const byEvent=new Map(),choices={},outcomes={};
   for(const e of entry.events){
    if(!e||typeof e.id!=='string'||byEvent.has(e.id)||
@@ -145,6 +178,8 @@ function exercise({catalog,report,model},{strict=false}={}){
   sourceDerivedEventsAreNotGameVerified:true,
   candidateEditorialFactsAreNotApproved:true,
   eventTextOrPrivateCatalogReturned:false,
+  actualProductionCatalogAttachExercised:publicLoaderAttachedInMemory,
+  attachedOnlyToTemporaryModel:publicLoaderAttachedInMemory,
   publicationApproved:false,gameVerified:false,
   totals};
 }
