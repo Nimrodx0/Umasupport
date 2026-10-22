@@ -77,7 +77,7 @@ test('numeric drift, wrong card, altered skill level and invented verified route
   d=>{d.remaining.cards[2].events[3].choiceCount=1;},
   d=>{d.remaining.cards[0].events[3].section='CHAIN';},
   d=>{d.duramente.events[4].alternatives[1].skillHints[0].hintLevel=7;},
-  d=>{d.ledger.cards[0].events[4].skillHints[0].hintLevel=99;},
+  d=>{d.ledger.cards[0].events[4].publicationApproved=true;},
   d=>{d.duramente.publicationApproved=true;},
   d=>{d.remaining.currentGameplayVerified=true;}
  ];
