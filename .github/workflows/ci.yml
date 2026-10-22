@@ -50,8 +50,20 @@ jobs:
           node --check poc/src/event_exception_adjudication.cjs
           node --test poc/tests/event_exception_adjudication.test.cjs poc/tests/event_source_precedence.test.cjs poc/tests/phase2_four_ssr_editorial_review.test.cjs
 
-      - name: Verify first real GameWith-adjudicated numeric event intake without publication
-        run: node --check poc/src/phase2_editorial_intake.cjs && node --test poc/tests/phase2_editorial_intake.test.cjs && node poc/tools/report_phase2_editorial_intake.cjs
+      - name: Validate first GameWith numeric adjudication intake without publication
+        run: |
+          node --check poc/src/phase2_adjudicated_fact_intake.cjs
+          node --check poc/tools/verify_adjudicated_event_facts.cjs
+          node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
+          node poc/tools/verify_adjudicated_event_facts.cjs
+
+      - name: Verify full SSR30321 choice-aware numeric fact adoption without public release
+        run: |
+          node --check poc/src/phase2_editorial_intake.cjs
+          node --check poc/src/phase2_adjudicated_fact_intake.cjs
+          node --test poc/tests/phase2_editorial_intake.test.cjs poc/tests/phase2_adjudicated_fact_intake.test.cjs
+          node poc/tools/report_phase2_editorial_intake.cjs
+          node poc/tools/verify_adjudicated_event_facts.cjs
 
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs

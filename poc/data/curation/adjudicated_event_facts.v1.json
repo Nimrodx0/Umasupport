@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-adjudicated-numeric-event-ledger",
+  "sourcePins": {
+    "gameToraDerived": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "checker": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+    "independentSkills": "0cacbb1aaf9dca10283d5b9ea20b205b9d204535"
+  },
+  "sourceProseIncluded": false,
+  "game2026Verified": false,
+  "publicationApproved": false,
+  "noAutomaticRuntimeAdoption": true,
+  "cards": [
+    {
+      "cardId": "30318",
+      "events": [
+        {
+          "sourceOrdinal": 1,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 2,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 3,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 4,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 5,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        }
+      ]
+    },
+    {
+      "cardId": "30319",
+      "events": [
+        {
+          "sourceOrdinal": 1,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 2,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 3,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 4,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 5,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        }
+      ]
+    },
+    {
+      "cardId": "30320",
+      "events": [
+        {
+          "sourceOrdinal": 1,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 2,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 3,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 4,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 5,
+          "decision": "PENDING_ROUTE_REVIEW",
+          "missing": "PLAYER_CHOICE_OR_RESULT_REWARD_SEMANTICS",
+          "publicationApproved": false
+        }
+      ]
+    },
+    {
+      "cardId": "30321",
+      "events": [
+        {
+          "sourceOrdinal": 1,
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "power",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "energy",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 2,
+          "decision": "GAMEWITH_NUMERIC_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 0,
+          "reportedSingleResult": true,
+          "numericEffects": [
+            {
+              "kind": "mood",
+              "value": 1
+            },
+            {
+              "kind": "power",
+              "value": 10
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": [],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 3,
+          "decision": "GAMEWITH_NUMERIC_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 0,
+          "reportedSingleResult": true,
+          "numericEffects": [
+            {
+              "kind": "power",
+              "value": 15
+            },
+            {
+              "kind": "bond",
+              "value": 5
+            }
+          ],
+          "skillHints": [
+            {
+              "skillNumericId": 201463,
+              "hintLevel": 1
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 4,
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "speed",
+                  "value": 10
+                },
+                {
+                  "kind": "guts",
+                  "value": 10
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "energy",
+                  "value": 25
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
+          "publicationApproved": false
+        },
+        {
+          "sourceOrdinal": 5,
+          "decision": "GAMEWITH_CHOICE_FACTS_ADOPTED",
+          "playerSelectableChoiceCount": 2,
+          "reportedSingleResultPerChoice": true,
+          "alternatives": [
+            {
+              "ordinal": 1,
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "value": 15
+                },
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": []
+            },
+            {
+              "ordinal": 2,
+              "effects": [
+                {
+                  "kind": "bond",
+                  "value": 5
+                }
+              ],
+              "skillHints": [
+                {
+                  "skillNumericId": 202602,
+                  "hintLevel": 1,
+                  "verifiedSkillName": "イグニッション"
+                }
+              ]
+            }
+          ],
+          "gameToraLivePage": "https://gametora.com/ja/umamusume/supports/30321-duramente",
+          "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+          "checkedAt": "2026-10-22",
+          "priorStageDependenceVerified": false,
+          "game2026Verified": false,
+          "publicationApproved": false
+        }
+      ]
+    }
+  ]
+}
