@@ -38,10 +38,19 @@ test('a discrepancy without GameWith remains localized, never auto-picks Game8',
  assert.equal(b.status,'pending-gamewith-adjudication');
  assert.equal(b.selected,null);
 });
-test('GameWith or Game8 alone must not silently replace missing GameTora baseline',()=>{
+test('a missing GameTora event is a scoped coverage gap; explicit GameWith facts adjudicate it',()=>{
  const a=decideNumericEffect([withClaim(2),eightClaim(2)]);
- assert.equal(a.status,'unresolved-baseline-missing');
- assert.equal(a.selected,null);
+ assert.equal(a.status,'adjudicated-missing-baseline-by-gamewith');
+ assert.equal(a.baselineCoverageGap,true);
+ assert.equal(a.selected.source,'GameWith');
+ assert.equal(a.selected.value,2);
+ assert.equal(a.baseline,null);
+ assert.equal(a.publicationApproved,false);
+ assert.equal(a.gameVerified,false);
+ const b=decideNumericEffect([eightClaim(2)]);
+ assert.equal(b.status,'unresolved-baseline-missing');
+ assert.equal(b.baselineCoverageGap,true);
+ assert.equal(b.selected,null);
 });
 test('invalid urls, duplicate contradictory sources, unpinned GT or invalid numeric claim fail closed',()=>{
  assert.throws(()=>decideNumericEffect([]),/数値出典/);
