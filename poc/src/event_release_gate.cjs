@@ -23,10 +23,17 @@ function secureUrl(raw){
   return u.protocol==='https:'&&nonempty(u.hostname)&&!u.username&&!u.password;
  }catch{return false;}
 }
+const QUARANTINE_FIELDS=new Set([
+ 'unresolvedRewards','noAutomaticRuntimeAdoption','editorialCandidate',
+ 'manualStageAssertionOnly','possibleOnly','chainPrerequisitesVerified',
+ 'priorStageDependenceVerified','game2026Verified','currentGameplayVerified',
+ 'publicationApproved','releaseReady','unresolvedRequiredFacts',
+ 'sourceKind','provisionalCatalog'
+]);
 function hasDraftOnlyFacts(value){
  if(Array.isArray(value))return value.some(hasDraftOnlyFacts);
  if(!obj(value))return false;
- if(Object.prototype.hasOwnProperty.call(value,'unresolvedRewards'))return true;
+ if(Object.keys(value).some(key=>QUARANTINE_FIELDS.has(key)))return true;
  return Object.values(value).some(hasDraftOnlyFacts);
 }
 function verifyRelease(catalog,approvals){

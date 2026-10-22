@@ -77,3 +77,24 @@ test('a complete approval SHA cannot launder pending draft-only skill metadata i
  a.entries[0].eventSha256=digest(e);
  assert.throws(()=>verifyRelease(c,a),/未照合報酬の草稿は公開できません/);
 });
+
+
+test('editorial-quarantine markers cannot be laundered by valid SHA and six checked boxes',()=>{
+ for(const [area,field,value] of [
+  ['event','noAutomaticRuntimeAdoption',true],
+  ['event','publicationApproved',false],
+  ['event','game2026Verified',false],
+  ['choice','manualStageAssertionOnly',true],
+  ['choice','possibleOnly',true],
+  ['outcome','sourceKind','UNADJUDICATED_U_TOOLS_SINGLE_EDITORIAL_SOURCE'],
+  ['event','chainPrerequisitesVerified',false],
+  ['event','unresolvedRequiredFacts',['CHAIN_TOPOLOGY']]
+ ]){
+  const c=catalog(),e=c.cards[0].events[0];
+  const target=area==='event'?e:area==='choice'?e.choices[0]:e.choices[0].outcomes[0];
+  target[field]=value;
+  const a=approved();a.entries[0].eventSha256=digest(e);
+  assert.throws(()=>verifyRelease(c,a),/未照合報酬の草稿は公開できません/,
+   area+'/'+field);
+ }
+});

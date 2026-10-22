@@ -172,6 +172,14 @@ jobs:
       - name: Verify complete Phase-2 563-card coverage index and pinned 2025 historical evidence
         run: node poc/tools/verify_event_coverage_index.cjs
 
+      - name: Build Phase 2 focused per-event publication-blocker worklist (not approval)
+        run: |
+          node --check poc/src/phase2_publication_readiness.cjs
+          node --check poc/tools/report_phase2_publication_readiness.cjs
+          node --test poc/tests/phase2_publication_readiness.test.cjs poc/tests/event_release_gate.test.cjs
+          node poc/tools/report_phase2_publication_readiness.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Verify every public event has evidence-bound release approval
         run: node poc/tools/verify_event_release.cjs
 
