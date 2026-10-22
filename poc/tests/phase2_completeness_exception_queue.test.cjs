@@ -264,3 +264,67 @@ for(const rule of [
   }
  });
 }
+
+function make30301Conflict(){
+ const {index,docs}=make({cardId:'30301',withResult:false});
+ const c=index.cards[0],d=docs[0].events_ja;
+ c.checkerObservedCount=5;
+ c.checkerOnly=[{checkerOrdinal:1,
+  sourceKey:'checker:30301:3b1cb9d61ef50cb538c9'}];
+ c.gameToraOnly=[{sourceOrdinal:4,sourceLocalEventId:1294,
+  sourceChainOrdinal:2,section:'arrows'}];
+ c.pairs=[[2,3],[3,5],[4,1],[5,2]].map(([checkerOrdinal,sourceOrdinal])=>({
+  checkerOrdinal,sourceOrdinal,choiceCountAgreement:true
+ }));
+ d.ev3={id:1294,section:'arrows',choices:[
+  {label:'choice above',effects:[
+   {type:'energy',value:'+5'},{type:'power',value:'+15'},
+   {type:'skill_points',value:'+10'},{type:'bond',value:'+5'}]},
+  {label:'choice below',effects:[
+   {type:'power',value:'+10'},{type:'skill_points',value:'+5'},
+   {type:'skill_hint',skill_id:203352,value:'+1'},
+   {type:'bond',value:'+5'}]}
+ ]};
+ index.attention.choiceCountConflicts=[];
+ index.attention.p0Unmatched=[];
+ index.stats.pairedChoiceCountConflict=0;
+ return {index,docs};
+}
+test('30301 has two different unpaired observations, never an identity alias',()=>{
+ const x=make30301Conflict(),out=build(x.index,x.docs,{strict:false});
+ assert.equal(out.stats.identityConflictsReviewedWithoutPairing,1);
+ assert.equal(out.stats.checkerOnlyEvents,1);
+ assert.equal(out.stats.gameToraOnlyNonR,1);
+ assert.equal(out.stats.needsTargetedSourceReview,2);
+ assert.equal(out.stats.choiceCountDisagreements,0);
+ const a=out.queue.find(e=>e.type==='CHECKER_ONLY');
+ const b=out.queue.find(e=>e.type==='GAMETORA_ONLY');
+ assert.equal(a.reason,'CHECKER_REPORTED_HINT_NOT_PAIRED_TO_CHAIN_EVENT');
+ assert.equal(b.reason,'MISSING_CHECKER_CHAIN_STAGE_TWO_CHOICES');
+ assert.equal(a.priority,'P1');assert.equal(b.priority,'P1');
+ assert.equal(a.identityConflictEvidence.status,'CROSS_SOURCE_EVENT_IDENTITY_CONFLICT');
+ assert.equal(b.identityConflictEvidence.status,'CROSS_SOURCE_EVENT_IDENTITY_CONFLICT');
+ assert.equal(a.identityConflictEvidence.mustNotPair,true);
+ assert.equal(b.identityConflictEvidence.gameToraBottomSkillNumericId,203352);
+ assert.equal(b.identityConflictEvidence.gameToraPlayerSelectableChoices,2);
+ assert.equal(b.identityConflictEvidence.trainingHintNatureGameVerified,false);
+ assert.equal(b.identityConflictEvidence.publicationApproved,false);
+ assert.equal(out.publicationApproved,false);
+});
+test('30301 data-drift rejects optimistic equivalence and accidental lost choice',()=>{
+ const mutations=[
+  x=>{x.index.cards[0].checkerOnly[0].sourceKey='wrong';},
+  x=>{x.index.cards[0].gameToraOnly[0].sourceOrdinal=1;},
+  x=>{x.index.cards[0].pairs[0].sourceOrdinal=4;},
+  x=>{x.docs[0].events_ja.ev3.choices.pop();},
+  x=>{x.docs[0].events_ja.ev3.choices[0].label='';},
+  x=>{x.docs[0].events_ja.ev3.choices[1].random_either=true;},
+  x=>{x.docs[0].events_ja.ev3.choices[1].effects[2].skill_id=123;},
+  x=>{x.docs[0].events_ja.ev3.choices[1].effects[2].value='+4';},
+  x=>{x.docs[0].events_ja.ev3.choices[1].effects[2].type='unknown';}
+ ];
+ for(const mutate of mutations){
+  const x=make30301Conflict();mutate(x);
+  assert.throws(()=>build(x.index,x.docs,{strict:false}),/完全性例外台帳/);
+ }
+});
