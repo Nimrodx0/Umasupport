@@ -57,8 +57,14 @@ function main(args){
  const augmented=historicalPreview!==undefined||independent2026Preview!==undefined;
  // Execute the projected, unapproved event catalog through the ACTUAL
  // deck/choice/outcome aggregator before it is discarded. Never serialize it.
- const integration=exercise({catalog:result.dryRunCatalog,report:result.report,model},
-  {strict:augmented});
+ const integration=exercise({
+  catalog:result.dryRunCatalog,report:result.report,model,
+  rawCatalog:result.dryRunUnpreparedCatalog,
+  mergedSkillText:result.dryRunMergedSkillText
+ },{strict:augmented});
+ if(integration.actualProductionCatalogAttachExercised!==true||
+    integration.attachedOnlyToTemporaryModel!==true)
+  fail('本番イベントDB結合を経由できていません');
  console.log('GAMETORA_FULL_CORE_INTEGRATION='+JSON.stringify(integration.totals));
  if(independent2026Preview!==undefined){
   console.log('GAMETORA_INDEPENDENT_2026_NAME_PREVIEW='+JSON.stringify({
