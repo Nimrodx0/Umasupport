@@ -170,14 +170,14 @@ function build(index,docs,{strict=true}={}){
  stats.needsTargetedSourceReview=stats.checkerOnlyEvents+
   stats.gameToraOnlyNonR+stats.choiceCountPending;
  if(strict&&(stats.rosterCards!==563||stats.gameToraCards!==559||
-    stats.missingGameToraCards!==4||stats.checkerOnlyEvents!==70||
+    stats.missingGameToraCards!==4||stats.checkerOnlyEvents!==68||
     stats.checkerOnlyOnMissingCards!==20||
-    stats.checkerOnlyWithGameToraCard!==50||
-    stats.checkerOnlyP0!==2||stats.gameToraOnlyR!==395||
-    stats.gameToraOnlyNonR!==54||stats.choiceCountDisagreements!==9||
+    stats.checkerOnlyWithGameToraCard!==48||
+    stats.checkerOnlyP0!==0||stats.gameToraOnlyR!==395||
+    stats.gameToraOnlyNonR!==52||stats.choiceCountDisagreements!==9||
     stats.choiceCountExplainedRepresentations!==3||
-    stats.choiceCountPending!==6||stats.unresolvedItems!==525||
-    stats.needsTargetedSourceReview!==130))
+    stats.choiceCountPending!==6||stats.unresolvedItems!==521||
+    stats.needsTargetedSourceReview!==126))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
