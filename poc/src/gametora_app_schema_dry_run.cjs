@@ -588,6 +588,11 @@ function project({candidate,crosswalk,skillText,model,supplemental,historicalPre
   report,
   // Memory-only for schema/UI regression; CLI refuses to serialize this.
   dryRunCatalog:prepared.catalog,
+  // The ORIGINAL input to the production attach() API, and the pinned
+  // supplementary ID/name registry, are also memory-only. The CLI MUST
+  // never persist either (only numeric counters and a digest).
+  dryRunUnpreparedCatalog:catalog,
+  dryRunMergedSkillText:mergedSkillText,
   runtimeValidation:validated};
 }
 module.exports={project};
