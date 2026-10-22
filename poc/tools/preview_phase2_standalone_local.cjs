@@ -54,8 +54,16 @@ function makeServer(){
    return reply(200,'text/javascript; charset=utf-8',fs.readFileSync(corejs));
   if(pathname==='/review.js')
    return reply(200,'text/javascript; charset=utf-8',fs.readFileSync(appjs));
-  if(pathname==='/data.json')
-   return reply(200,'application/json; charset=utf-8',JSON.stringify(buildView()));
+  if(pathname==='/data.json'){
+   try{
+    return reply(200,'application/json; charset=utf-8',JSON.stringify(buildView()));
+   }catch(error){
+    // The review process must fail closed without crashing the local HTTP
+    // server or leaking source input. Never fall back to stale/canned data.
+    return reply(503,'text/plain; charset=utf-8',
+     'Nonpublic numeric review rejected: '+String(error.message));
+   }
+  }
   return reply(404,'text/plain; charset=utf-8','Not found');
  });
 }

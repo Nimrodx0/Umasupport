@@ -18,7 +18,7 @@ const LABELS=Object.freeze({
   {event:4,reviewName:'窓辺の交流',headingHash:'f21dca6c604b21ce8a3f48479bf293c7137137be2de14406d9dcd1c21611e8b5'},
   {event:5,reviewName:'クラスの作品について',headingHash:'0acac3ae928b208d7f45ab663f0cc7f3fe8edba5c4e38cb5f0052caeab06a5f7'}]},
  '30321':{name:'ドゥラメンテ',events:[
-  {event:4,reviewName:'練習後のケア',headingHash:'5e183a7150af7980fd5f24fd3a130c08f4226459c23b478ca9fd949871'},
+  {event:4,reviewName:'練習後のケア',headingHash:'5e183a7150af7980fd5f24fd3a130c08f4226459c23b478ca9fdc7b8fd949871'},
   {event:5,reviewName:'走りと体調',headingHash:'6435c76e4fdc53bfb7be375522d3b443c8ca2c268cd1aa254b43ed59fcdafc78'}]}
 });
 const HINT_NAMES=Object.freeze({'200152':'良バ場○','201641':'一匹狼',
