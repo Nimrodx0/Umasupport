@@ -30,10 +30,10 @@ const REVIEW=Object.freeze([
  {cardId:'30320',optionRows:[2,2,1,2,2],
   eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','SELECTION'],
   hints:[as(2,1,201651,1),as(3,1,203801,2),as(3,1,204721,1),as(5,1,202082,1)],
-  references:{gameTora:'https://gametora.com/ja/umamusume/supports',
+  references:{gameTora:'https://gametora.com/ja/umamusume/supports/30320-admire-groove',
    gameWith:'https://gamewith.jp/uma-musume/article/show/578818',
    game8:'https://game8.jp/umamusume/818830'},
-  liveGameToraEvidence:'ROSTER_LIST_ONLY'},
+  liveGameToraEvidence:'CARD_DETAIL_METADATA_ONLY'},
  {cardId:'30321',optionRows:[2,1,1,2,2],
   eventShape:['SELECTION','EDITORIAL_PRESENTATION_UNRESOLVED',
    'EDITORIAL_PRESENTATION_UNRESOLVED','SELECTION','SELECTION'],
@@ -64,6 +64,7 @@ function review(candidate,{strict=true}={}){
   checkedNumericHintMentions:0,editorialShapeAlignedEvents:0,
   presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
   reviewedRandomPositionCandidates:0,gameToraLiveEventListCards:0,
+  gameToraLiveDetailMetadataOnlyCards:0,
   gameToraLiveRosterOnlyCards:0};
  const cards=[];
  for(const expected of REVIEW){
@@ -75,6 +76,8 @@ function review(candidate,{strict=true}={}){
   totals.reviewedCards++;
   if(expected.liveGameToraEvidence==='EVENT_LIST_3_CHAIN_2_RANDOM')
    totals.gameToraLiveEventListCards++;
+  else if(expected.liveGameToraEvidence==='CARD_DETAIL_METADATA_ONLY')
+   totals.gameToraLiveDetailMetadataOnlyCards++;
   else totals.gameToraLiveRosterOnlyCards++;
   const hints=[];
   const events=c.events.map((e,i)=>{
@@ -127,7 +130,9 @@ function review(candidate,{strict=true}={}){
     totals.editorialShapeAlignedEvents!==17||totals.presentationUnresolvedEvents!==3||
     totals.reviewedChainPositionCandidates!==12||
     totals.reviewedRandomPositionCandidates!==8||
-    totals.gameToraLiveEventListCards!==3||totals.gameToraLiveRosterOnlyCards!==1))
+    totals.gameToraLiveEventListCards!==3||
+    totals.gameToraLiveDetailMetadataOnlyCards!==1||
+    totals.gameToraLiveRosterOnlyCards!==0))
   fail('カード・ヒント・選択肢の固定全件数が変化');
  return {schemaVersion:1,
   dataKind:'phase2-four-ssr-editorial-numeric-provisional-review',
