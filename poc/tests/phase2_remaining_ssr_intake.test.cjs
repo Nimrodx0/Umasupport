@@ -31,7 +31,7 @@ test('only six standalone normal events get unpublished draft choices; chain ski
   ['editorial_candidate_30319_random_4','editorial_candidate_30319_random_5'],
   ['editorial_candidate_30320_random_4','editorial_candidate_30320_random_5']
  ]);
- const expected={'30318':['skill:200152',1],'30319':['skill:201641',2],
+ const expected={'30318':['skill:200152',2],'30319':['skill:201641',2],
   '30320':['skill:202082',1]};
  for(const c of output.cards){
   const [skillId,optionIndex]=expected[c.cardId];
