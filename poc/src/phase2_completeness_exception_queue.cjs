@@ -22,6 +22,12 @@ const editorialEvidence=[
   sourceUrl:'https://gamewith.jp/uma-musume/article/show/257451',
   independentEditorialUrl:'https://game8.jp/umamusume/372306',
   conclusion:'NO_PLAYER_SELECTION_TWO_HINT_RESULT_FAMILIES'},
+ {cardId:'30052',sourceOrdinal:2,checkerOrdinal:9,
+  checkerChoices:2,gameToraChoices:1,sourceSection:'special',
+  sourceEvidenceKind:'SCENARIO_CONTEXT_NOT_PLAYER_CHOICE',expectedRows:2,
+  sourceUrl:'https://gamewith.jp/uma-musume/article/show/359859',
+  independentEditorialUrl:'https://game8.jp/umamusume/473490',
+  conclusion:'SCENARIO_CONTEXT_ROWS_NOT_PLAYER_CHOICES'},
  {cardId:'30108',sourceOrdinal:5,checkerOrdinal:3,
   checkerChoices:2,gameToraChoices:1,sourceSection:'arrows',
   sourceEvidenceKind:'FOUR_OUTCOMES_BY_PRIOR_STAGE',expectedRows:4,
@@ -133,6 +139,8 @@ function build(index,docs,{strict=true}={}){
        JSON.stringify(first.effects.find(e=>e.type==='skill_hint_or').options)===
        JSON.stringify([{skill_id:200581,value:'+1/+3'},
          {skill_id:200582,value:'+1'}]):
+      signature.sourceEvidenceKind==='SCENARIO_CONTEXT_NOT_PLAYER_CHOICE'?
+       g.id===1399&&first.random_either===true&&first.outcomes?.length===2:
       signature.sourceEvidenceKind==='FOUR_OUTCOMES_BY_PRIOR_STAGE'?
        first.random_either===true&&first.outcomes?.length===4&&
        gt[paired.sourceOrdinal-2]?.choices?.length===2:
@@ -188,9 +196,9 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyWithGameToraCard!==48||
     stats.checkerOnlyP0!==0||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==52||stats.choiceCountDisagreements!==9||
-    stats.choiceCountExplainedRepresentations!==4||
-    stats.choiceCountPending!==5||stats.unresolvedItems!==520||
-    stats.needsTargetedSourceReview!==125))
+    stats.choiceCountExplainedRepresentations!==5||
+    stats.choiceCountPending!==4||stats.unresolvedItems!==519||
+    stats.needsTargetedSourceReview!==124))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
