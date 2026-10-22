@@ -38,10 +38,33 @@ test('a discrepancy without GameWith remains localized, never auto-picks Game8',
  assert.equal(b.status,'pending-gamewith-adjudication');
  assert.equal(b.selected,null);
 });
-test('GameWith or Game8 alone must not silently replace missing GameTora baseline',()=>{
+test('missing GT + GameWith must check actual GameTora card URL before deciding',()=>{
  const a=decideNumericEffect([withClaim(2),eightClaim(2)]);
- assert.equal(a.status,'unresolved-baseline-missing');
+ assert.equal(a.status,'pending-gametora-live-site-check');
+ assert.equal(a.baselineCoverageGap,true);
  assert.equal(a.selected,null);
+ const site={cardId:'30321',sourceEventOrdinal:3,gtWebsite:{
+  url:'https://gametora.com/ja/umamusume/supports/30321-duramente',
+  checkedAt:'2026-10-22',status:'EVENT_LIST'
+ }};
+ const confirmed=decideNumericEffect([withClaim(2),eightClaim(2)],
+  {gtWebsiteReview:site});
+ assert.equal(confirmed.status,'adjudicated-missing-baseline-by-gamewith');
+ assert.equal(confirmed.baselineCoverageGap,true);
+ assert.equal(confirmed.selected.source,'GameWith');
+ assert.equal(confirmed.selected.value,2);
+ assert.equal(confirmed.baseline,null);
+ assert.equal(confirmed.publicationApproved,false);
+ assert.equal(confirmed.gameVerified,false);
+ assert.equal(confirmed.gameToraWebsiteCheck.status,'EVENT_LIST');
+ const bad={...site,gtWebsite:{...site.gtWebsite,
+  url:'https://gametora.com/ja/umamusume/supports/30320-admire-groove'}};
+ assert.throws(()=>decideNumericEffect([withClaim(2)],
+  {gtWebsiteReview:bad}),/イベント出典裁定規則/);
+ const b=decideNumericEffect([eightClaim(2)]);
+ assert.equal(b.status,'unresolved-baseline-missing');
+ assert.equal(b.baselineCoverageGap,true);
+ assert.equal(b.selected,null);
 });
 test('invalid urls, duplicate contradictory sources, unpinned GT or invalid numeric claim fail closed',()=>{
  assert.throws(()=>decideNumericEffect([]),/数値出典/);

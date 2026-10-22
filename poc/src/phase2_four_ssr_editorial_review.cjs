@@ -8,6 +8,7 @@
  * Store ONLY card IDs, source positions, skill IDs, hint levels and links.
  */
 const fail=s=>{throw Error('Phase2未収録4SSRのイベント別照合: '+s);};
+const {evaluateException}=require('./event_exception_adjudication.cjs');
 const GT='6e38b54af4fad397ff4491e63007a90705a4fe67';
 const CHECKER='8cf9fcb3cc7239041161be75c84daf9f8f22d29f';
 const SKILLS='0cacbb1aaf9dca10283d5b9ea20b205b9d204535';
@@ -146,6 +147,28 @@ function review(candidate,{strict=true}={}){
       fail('30321連続2・3のGameWith裁定とChecker数値候補に不一致');
     totals.gameWithAdjudicatedNoSelectionEvents++;
    }
+   // The project's common decision engine forbids a second-editorial-source
+   // or gameplay recheck as a prerequisite once GameWith supplies the fact.
+   // Current live GT has an event list, but no pinned JSON for this card.
+   const policyDecision=gameWithNoSelection?evaluateException({
+    cardId:c.cardId,sourceEventOrdinal:i+1,baseline:'MISSING',
+    gtWebsite:{url:expected.references.gameTora,
+     checkedAt:'2026-10-22',status:'EVENT_LIST'},
+    gameWith:{url:expected.references.gameWith,checkedAt:'2026-10-22',
+     factStatus:'EXPLICIT',facts:{
+      playerSelectableChoiceCount:gameWithNoSelection.playerChoiceCountReported,
+      reportedEffects:gameWithNoSelection.reportedRewardFacts.map(
+       ([kind,value])=>({kind,value})),
+      reportedSkillHints:gameWithNoSelection.reportedHintFacts.map(
+       ([skillNumericId,hintLevel])=>({skillNumericId,hintLevel}))
+     }},
+    proposedDecision:'ADOPT'
+   }):null;
+   if(policyDecision&&
+      (policyDecision.status!=='GAMEWITH_ADJUDICATED_GT_GAP'||
+       !policyDecision.editorialDecisionComplete||
+       policyDecision.publicationApproved!==false))
+    fail('GameWith例外採用を実ゲームの検証・公開と誤認');
    for(const m of e.hintMentions){
     if(!Number.isSafeInteger(m.checkerOptionOrdinal)||m.checkerOptionOrdinal<1||
        m.checkerOptionOrdinal>e.checkerChoiceRows||
@@ -172,6 +195,7 @@ function review(candidate,{strict=true}={}){
       }
      }:{}),
     ...(gameWithNoSelection?{
+      policyAdjudication:policyDecision,
       gameWithAdjudication:{
        status:'GAMEWITH_NO_SELECTION_AND_NUMERIC_REWARDS_ADOPTED',
        authority:'PROJECT_DESIGNATED_GAMEWITH_ADJUDICATOR',

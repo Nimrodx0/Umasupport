@@ -15,5 +15,15 @@
     "U-tools"
   ],
   "automaticPublicationAllowed": false,
-  "rationale": "GameTora-derived support JSON is the database baseline. Accept its ordinary continuation when no explicit chain_end exists for a nonfinal stage whose next stage is identifiable; preserve flagged exceptions and use GameWith as adjudicator, not as source for wholesale reconstruction. Publication, complete game population, rights, and live game verification remain separate."
+  "rationale": "GameTora-derived support JSON is the database baseline. Accept its ordinary continuation when no explicit chain_end exists for a nonfinal stage whose next stage is identifiable; preserve flagged exceptions and use GameWith as adjudicator, not as source for wholesale reconstruction. Publication, complete game population, rights, and live game verification remain separate.",
+  "exceptionAdjudicationContract": {
+    "version": 1,
+    "baselineMissingIsReviewable": true,
+    "explicitGameWithFactsAreSufficientToAdjudicate": true,
+    "requiresSecondEditorialSource": false,
+    "requiresLiveGameplayReproduction": false,
+    "editorialAdjudicationIndependentOfPublicationApproval": true,
+    "requireCardScopedGameToraWebsiteCheck": true,
+    "allowPendingOnlyWhenGameWithFactNotEstablished": true
+  }
 }

@@ -5,6 +5,7 @@
 'use strict';
 const {URL}=require('node:url');
 const POLICY=require('../config/event-source-priority.v1.json');
+const {checkContract,validateGtWebsiteCheck}=require('./event_exception_adjudication.cjs');
 const hostBySource=Object.freeze({GameWith:'gamewith.jp',Game8:'game8.jp'});
 const fail=msg=>{throw Error('イベント優先参照: '+msg);};
 function validSourceUrl(url,source){
@@ -17,13 +18,14 @@ function validSourceUrl(url,source){
  }catch{return false;}
 }
 function validatePolicy(){
+ checkContract();
  if(POLICY.schemaVersion!==2||POLICY.baselineSource!=='GameTora-derived'||
     POLICY.canonicalExceptionSource!=='GameWith'||
     !/^[a-f0-9]{40}$/.test(POLICY.baselineRevision)||
     POLICY.automaticPublicationAllowed!==false)
   fail('GameTora基準の方針設定が不正');
 }
-function decideNumericEffect(claims,{suspected=false}={}){
+function decideNumericEffect(claims,{suspected=false,gtWebsiteReview=null}={}){
  validatePolicy();
  if(!Array.isArray(claims)||claims.length===0)fail('数値出典が必要');
  if(typeof suspected!=='boolean')fail('疑義フラグが不正');
@@ -44,8 +46,27 @@ function decideNumericEffect(claims,{suspected=false}={}){
  }
  const baseline=bySource.get('GameTora-derived');
  const other=[...bySource.values()].filter(x=>x.source!=='GameTora-derived');
- if(!baseline)return {status:'unresolved-baseline-missing',selected:null,
-  disagreements:[],gameVerified:false,publicationApproved:false};
+ if(!baseline){
+  const gameWith=bySource.get('GameWith');
+  if(!gameWith)return {status:'unresolved-baseline-missing',selected:null,
+   baselineCoverageGap:true,disagreements:[],
+   gameVerified:false,publicationApproved:false};
+  if(!gtWebsiteReview)return {
+   status:'pending-gametora-live-site-check',
+   selected:null,candidate:gameWith,baseline:null,
+   baselineCoverageGap:true,disagreements:[],
+   gameVerified:false,publicationApproved:false};
+  validateGtWebsiteCheck(gtWebsiteReview.cardId,
+   gtWebsiteReview.sourceEventOrdinal,gtWebsiteReview.gtWebsite);
+  return {
+   status:'adjudicated-missing-baseline-by-gamewith',
+   selected:gameWith,baseline:null,
+   baselineCoverageGap:true,
+   gameToraWebsiteCheck:gtWebsiteReview.gtWebsite,
+   disagreements:[],
+   gameVerified:false,publicationApproved:false
+  };
+ }
  const disagree=other.filter(x=>x.value!==baseline.value);
  const hasIssue=suspected||disagree.length>0;
  const adjudicator=bySource.get('GameWith');

@@ -84,6 +84,14 @@ test('avoid converting a third-party presentation discrepancy into fake selectab
  for(const row of [second,third]){
   assert.equal(row.editorialPresentation,'GAMEWITH_ADJUDICATED_NO_SELECTION');
   assert.equal(row.gameWithAdjudication.playerChoiceCountReported,0);
+  assert.equal(row.policyAdjudication.status,
+   'GAMEWITH_ADJUDICATED_GT_GAP');
+  assert.equal(row.policyAdjudication.editorialDecisionComplete,true);
+  assert.equal(row.policyAdjudication.furtherEditorialCorroborationRequired,false);
+  assert.equal(row.policyAdjudication.currentGameplayVerificationRequiredForEditorialDecision,false);
+  assert.equal(row.policyAdjudication.publicationApproved,false);
+  assert.equal(row.policyAdjudication.game2026Verified,false);
+  assert.equal(row.policyAdjudication.gameToraWebsite.status,'EVENT_LIST');
   assert.equal(row.gameWithAdjudication.editorialChoiceAndRewardFactsAdopted,true);
   assert.equal(row.gameWithAdjudication.reportedSingleResult,true);
   assert.equal(row.gameWithAdjudication.actualCurrentGameTested,false);
