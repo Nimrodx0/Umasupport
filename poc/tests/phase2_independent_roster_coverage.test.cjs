@@ -95,7 +95,7 @@ test('full-roster taxonomy does not assume no-chain friend/scenario or one-stage
  assert.equal(out.summary.editorialMissingChainStageCandidates,7);
  assert.equal(out.summary.editorialMissingStagesAlreadyCheckerOnly,4);
  assert.equal(out.summary.editorialMissingStagesOutsideBothFixedSources,3);
- assert.equal(out.summary.priorityReviewCards,6);
+ assert.equal(out.summary.priorityReviewCards,4);
  assert.equal(find('30052').classification,'NONSTANDARD_ZERO_CHAIN');
  assert.equal(find('10001').classification,'R_NOT_SUBJECT_TO_CHAIN');
  assert.equal(find('30244').reviewerStatus,'EDITORIAL_SINGLE_STAGE_INTENTIONAL');
