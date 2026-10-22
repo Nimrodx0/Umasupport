@@ -39,3 +39,5 @@
 - [SR20075欠損連続初段階のGameWith数値採用](phase2-20075-first-chain-gamewith-numeric-adoption-20261022.md)
 
 - [SSR30240 GameWith未掲載の具体的保留とU-tools単独数値候補試験](phase2-30240-gamewith-gap-utools-only-replay-20261022.md)
+
+- [Phase 2・重点28イベントの公開受け入れブロッカー](phase2-priority-release-readiness-20261022.md)
