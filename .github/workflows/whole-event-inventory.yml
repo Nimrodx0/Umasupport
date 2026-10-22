@@ -13,6 +13,9 @@ on:
       - 'poc/src/missing_four_ssr_skill_fact_candidates.cjs'
       - 'poc/tools/build_missing_four_ssr_skill_fact_candidates.cjs'
       - 'poc/tests/missing_four_ssr_skill_fact_candidates.test.cjs'
+      - 'poc/src/phase2_four_ssr_editorial_review.cjs'
+      - 'poc/tools/audit_four_ssr_editorial_numeric_review.cjs'
+      - 'poc/tests/phase2_four_ssr_editorial_review.test.cjs'
       - 'poc/tools/audit_missing_gametora_cards.cjs'
       - 'poc/tests/gametora_missing_card_triage.test.cjs'
       - 'poc/tests/whole_event_index.test.cjs'
@@ -207,6 +210,13 @@ jobs:
             "$RUNNER_TEMP/event-inputs/support_card.txt" \
             "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json" \
             whole-event-output/missing_four_ssr_numeric_skill_candidates.v1.json
+      - name: Verify 20 four-SSR editorial event positions and skill hints on synthetic fixtures
+        run: node --test umasupport/poc/tests/phase2_four_ssr_editorial_review.test.cjs
+      - name: Audit four-SSR 20-event source positions and 12 editorially corroborated numeric hints
+        run: |
+          node umasupport/poc/tools/audit_four_ssr_editorial_numeric_review.cjs \
+            whole-event-output/missing_four_ssr_numeric_skill_candidates.v1.json \
+            whole-event-output/phase2_four_ssr_editorial_numeric_review.v1.json
       - name: Verify synthetic 2026 external-name private registry preview
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
