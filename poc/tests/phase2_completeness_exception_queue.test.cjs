@@ -379,7 +379,7 @@ for(const rule of [
  });
  test(rule.cardId+' rejects pretending one of five source events does not exist',()=>{
   for(const mutate of [
-   x=>{x.index.cards[0].checkerMissing=false;},
+   x=>{x.index.cards[0].checkerMissing=true;},
    x=>{x.index.cards[0].checkerObservedCount=1;},
    x=>{x.docs[0].events_ja.ev2.id++;},
    x=>{x.docs[0].events_ja.ev1.section='unknown';},
