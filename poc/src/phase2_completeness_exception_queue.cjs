@@ -89,7 +89,10 @@ function build(index,docs,{strict=true}={}){
   }
   for(const event of card.gameToraOnly){
    if(!gt||!Number.isSafeInteger(event.sourceOrdinal)||event.sourceOrdinal<1||
-      event.sourceOrdinal>gt.length)fail('GameTora候補位置の整合不良');
+      event.sourceOrdinal>gt.length||
+      (gt[event.sourceOrdinal-1]?.id||null)!==event.sourceLocalEventId||
+      gt[event.sourceOrdinal-1]?.section!==event.section)
+    fail('GameTora候補位置／ローカルID／セクションの整合不良');
    if(card.rarity==='R')stats.gameToraOnlyR++;else stats.gameToraOnlyNonR++;
    add({cardId:card.cardId,rarity:card.rarity,type:'GAMETORA_ONLY',
     priority:card.rarity==='R'?'P3':'P2',
@@ -102,6 +105,7 @@ function build(index,docs,{strict=true}={}){
    if(paired.choiceCountAgreement)continue;
    const g=gt?.[paired.sourceOrdinal-1];
    if(!g||!Array.isArray(g.choices)||g.choices.length!==paired.sourceChoiceCount||
+      (g.id||null)!==paired.sourceLocalEventId||
       paired.checkerChoiceCount===paired.sourceChoiceCount)
     fail('同名イベントの選択肢数差分が固定ソースと不一致');
    const signature=editorialEvidence.find(x=>card.cardId===x.cardId&&
