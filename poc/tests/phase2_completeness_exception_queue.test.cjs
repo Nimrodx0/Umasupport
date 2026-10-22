@@ -39,7 +39,7 @@ test('GameWith no-choice 2-result illustration is reviewed but NOT a game verifi
  assert.equal(out.queue.length,3);
  const decision=out.queue.find(x=>x.type==='CHOICE_COUNT_DIFFERENCE');
  assert.equal(decision.status,'SOURCE_REPRESENTATION_EXPLAINED');
- assert.equal(decision.reviewEvidence.gameToraResultRoutes,2);
+ assert.equal(decision.reviewEvidence.conditionalOrOutcomeRows,2);
  assert.equal(decision.sourceIndependentlyVerified,false);
  assert.equal(decision.gameWithEditorialCorroborated,true);
  assert.equal(out.publicationApproved,false);
@@ -70,4 +70,32 @@ test('fail closed if confirmed GT outcome topology, source revision, event count
   const x=make();attack(x);
   assert.throws(()=>build(x.index,x.docs,{strict:false}),/完全性例外台帳/);
  }
+});
+
+test('30108 last stage uses prior choice and four success/failure routes, not two new choices',()=>{
+ const {index,docs}=make({cardId:'30108'});
+ const e=docs[0].events_ja;
+ e.ev3.choices=[{},{}];
+ e.ev4.choices=[{label:'',random_either:true,outcomes:[[],[],[],[]]}];
+ const got=build(index,docs,{strict:false});
+ const row=got.queue.find(x=>x.type==='CHOICE_COUNT_DIFFERENCE');
+ assert.equal(row.reviewEvidence.conclusion,'CURRENT_STAGE_HAS_NO_CHOICES_PRIOR_STAGE_TWO_CHOICES');
+ assert.equal(row.reviewEvidence.conditionalOrOutcomeRows,4);
+ assert.equal(got.stats.choiceCountPending,0);
+ e.ev3.choices=[{}];
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+});
+test('30207 stage effect alternatives are conditional year-classes, not choices',()=>{
+ const {index,docs}=make({cardId:'30207'});
+ const card=index.cards[0];const pair=card.pairs[0];
+ pair.sourceOrdinal=2;pair.checkerOrdinal=9;pair.checkerChoiceCount=3;
+ pair.sourceLocalEventId=485;
+ card.gameToraOnly[0].sourceOrdinal=1;
+ docs[0].events_ja.ev1={section:'special',id:485,choices:[{label:'',
+  segments:[1,2,3].map(i=>({when:[{kind:'scripted',value:['class',i]}],effects:[]}))}]};
+ const row=build(index,docs,{strict:false}).queue.find(x=>x.type==='CHOICE_COUNT_DIFFERENCE');
+ assert.equal(row.reviewEvidence.conclusion,'YEAR_CLASS_CONDITIONS_NOT_USER_CHOICES');
+ assert.equal(row.reviewEvidence.conditionalOrOutcomeRows,3);
+ docs[0].events_ja.ev1.choices[0].segments[2].when[0].value[1]=2;
+ assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
 });
