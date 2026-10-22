@@ -20,9 +20,17 @@ const FOCAL={
   checkerMissingSourceKey:'checker:20075:8fd4b0e1da2eeb063087',
   checkerLastStageOrdinal:2,gtLastStageOrdinal:3,
   editorialChainStages:2,
-  referenceUrls:['https://game8.jp/umamusume/600213'],
+  referenceUrls:['https://game8.jp/umamusume/600213',
+   'https://xn--gck1f423k.xn--1bvt37a.tools/supports/20075/event',
+   'https://gamewith.jp/uma-musume/article/show/441770'],
   numericRewardDisagreementUnresolved:true,
-  sourceLastStageNumericSkillId:202462},
+  sourceLastStageNumericSkillId:202462,
+  // Two UNLABELED reported outcome rows, not two selectable choices.
+  // U-tools displays both. Checker/GameWith record the first;
+  // Game8 records the second. The branching cause is NOT verified.
+  firstStageUnlabeledEffectFamilies:[
+   {guts:15,bond:15},{guts:5,bond:5}
+  ]},
  '30221':{kind:'GT_CHAIN_STAGES_MISSING_CHECKER_HAS_THREE',
   editorialChainStages:3,
   referenceUrls:['https://game8.jp/umamusume/636307',
@@ -137,6 +145,11 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
         p.sourceOrdinal===proof.gtLastStageOrdinal&&
         p.sourceLocalEventId===proof.gtLastStageId))
       fail('SR初段階欠損の元データが変化: '+c.cardId);
+    if(!Array.isArray(proof.firstStageUnlabeledEffectFamilies)||
+       proof.firstStageUnlabeledEffectFamilies.length!==2||
+       proof.firstStageUnlabeledEffectFamilies.some((row,i)=>
+        row.guts!==(i===0?15:5)||row.bond!==(i===0?15:5)))
+      fail('20075の編集記事上の2報酬候補が監査基準と異なる');
     reviewerStatus=proof.kind;
     editorialExpectedChainStages=proof.editorialChainStages;
     alreadyCheckerOnly=1;
@@ -188,7 +201,27 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
      absentBothFixedSources:externalBothSourceGap}:{}),
    ...(proof?.numericRewardDisagreementUnresolved?
     {numericRewardDisagreementUnresolved:true,
-     gtLastStageNumericHintId:proof.sourceLastStageNumericSkillId}:{}),
+     gtLastStageNumericHintId:proof.sourceLastStageNumericSkillId,
+     editorialNumericOutcomeDraft:{
+      status:'TWO_UNLABELED_REPORTED_OUTCOME_FAMILIES',
+      missingFixedGTEvent:true,
+      checkerEventOrdinal:proof.checkerMissingOrdinal,
+      reportCount:2,
+      reportedNumericEffects:proof.firstStageUnlabeledEffectFamilies.map(
+       ({guts,bond},i)=>({editorialRowOrdinal:i+1,
+        gains:{guts,bond},
+        choiceTextStored:false,
+        routeProbabilityVerified:false,
+        triggerConditionVerified:false,
+        currentGameVerified:false,
+        publicationApproved:false})),
+      providerRepresentation:['Checker/GameWith','Game8'],
+      referenceUrls:proof.referenceUrls,
+      playerSelectableChoicesVerified:false,
+      outcomesMutuallyExclusiveVerified:false,
+      noAutomaticRuntimeAdoption:true,
+      game2026Verified:false,publicationApproved:false
+     }}:{}),
    actualEventCompletenessVerified:false,
    game2026Verified:false,publicationApproved:false,
    noAutomaticRuntimeAdoption:true});
