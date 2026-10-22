@@ -192,11 +192,11 @@ function audit({index,checkerFacts,gameToraDocuments,checkerCandidates,checkerRa
   counts.matchedP0Events+=card.p0PairedCount;
   counts.unpairedP0Events+=card.p0CandidateCount-card.p0PairedCount;
  }
- if(counts.matchedEvents!==index.stats.pairedExact+index.stats.pairedTypographic||
+ if(counts.matchedEvents!==index.stats.pairedExact+index.stats.pairedTypographic+index.stats.pairedReviewedAliases||
    counts.matchedEvents+index.stats.checkerUnmatchedEvents!==2109||
    counts.eventsWithChoiceCountMismatch!==index.stats.pairedChoiceCountConflict||
-   counts.choicesCompared!==cases.length||counts.matchedP0Events!==197||
-   counts.unpairedP0Events!==2||counts.cards!==index.stats.rosterCards)
+   counts.choicesCompared!==cases.length||counts.matchedP0Events!==199||
+   counts.unpairedP0Events!==0||counts.cards!==index.stats.rosterCards)
   fail('full-population conservation mismatch');
  return {schemaVersion:1,dataKind:'umasupport-two-source-numeric-reward-audit',
   sourcePins:{...index.sourcePins,checkerSha256:checkerFacts.sourcePins.checkerSha256},
