@@ -36,7 +36,11 @@ function buildView(options={}){
     row.neutralDisplayDraft.name!==event.name||
     row.proposedReviewKey!==event.id||
     row.choiceFacts.length!==2||event.choices.length!==2)
-    fail('仮表示と数値採用監査の結合位置が違う');
+    fail('仮表示と数値採用監査の結合位置が違う: '+card.cardId+'/'+m.event+
+      ' row='+!!row+' fp='+/^([a-f0-9]{64})$/.test(m.headingHash)+
+      ' title='+(row?.neutralDisplayDraft?.name===event.name)+
+      ' key='+(row?.proposedReviewKey===event.id)+
+      ' choices='+(row?.choiceFacts?.length)+'/'+event.choices.length);
    const choices=event.choices.map((c,j)=>{
     const facts=row.choiceFacts[j];
     if(c.id!=='option'+(j+1)||facts.choiceOrdinal!==j+1||
