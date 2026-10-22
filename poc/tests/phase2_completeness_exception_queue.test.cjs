@@ -189,3 +189,64 @@ test('30080 has 3 independent player choices, while pinned GT collapses them to 
   docs[0].events_ja.ev5=original;
  }
 });
+
+// Do not collapse one of the two actual GT selectable routes just because
+// the correlated Checker record has a single effect/choice row.
+for(const rule of [
+ {cardId:'30191',sourceOrdinal:1,checkerOrdinal:4,localEventId:179,
+  effectKinds:[['mood','speed','bond'],['stamina','bond']],hintId:null},
+ {cardId:'30249',sourceOrdinal:1,checkerOrdinal:4,localEventId:231,
+  effectKinds:[['power','bond'],['skill_hint','bond']],hintId:201682},
+ {cardId:'30255',sourceOrdinal:2,checkerOrdinal:5,localEventId:236,
+  effectKinds:[['skill_points','bond'],['skill_hint','bond']],hintId:200602}
+]){
+ test(rule.cardId+' Checker one-row entry cannot override two GT selectable choices',()=>{
+  const {index,docs}=make({cardId:rule.cardId});
+  const card=index.cards[0],p=card.pairs[0],eventPos=rule.sourceOrdinal-1;
+  p.sourceOrdinal=rule.sourceOrdinal;p.checkerOrdinal=rule.checkerOrdinal;
+  p.sourceLocalEventId=rule.localEventId;
+  p.checkerChoiceCount=1;p.sourceChoiceCount=2;
+  if(rule.sourceOrdinal===2){
+   card.gameToraOnly[0].sourceOrdinal=1;
+   card.gameToraOnly[0].sourceLocalEventId=484;
+  }
+  const effect=k=>k==='skill_hint'?{type:k,skill_id:rule.hintId,value:'+1'}:
+   {type:k,value:k==='bond'?'+5':'+15'};
+  docs[0].events_ja['ev'+eventPos]={
+   id:rule.localEventId,section:'random',
+   choices:rule.effectKinds.map((k,i)=>({
+    label:i===0?'top route':'bottom route',random_either:false,effects:k.map(effect)
+   }))
+  };
+  const got=build(index,docs,{strict:false});
+  const row=got.queue.find(e=>e.type==='CHOICE_COUNT_DIFFERENCE');
+  assert.equal(row.status,'CHECKER_PARTIAL_CHOICE_ROWS');
+  assert.equal(row.priority,'REVIEWED_REPRESENTATION');
+  assert.equal(row.checkerChoiceCount,1);
+  assert.equal(row.gameToraChoiceCount,2);
+  assert.equal(got.stats.choiceCountCheckerPartial,1);
+  assert.equal(got.stats.choiceCountPending,0);
+  assert.equal(got.stats.needsTargetedSourceReview,2);
+  assert.equal(row.checkerPartialEvidence.sourceHasTwoSelectableChoices,true);
+  assert.equal(row.checkerPartialEvidence.checkerRawTextRedistributed,false);
+  assert.equal(row.gameVerified,false);
+  assert.equal(row.publicationApproved,false);
+  const changes=[
+   e=>{e.choices[0].label='';},
+   e=>{e.choices[1].label=e.choices[0].label;},
+   e=>{e.choices[0].random_either=true;},
+   e=>{e.choices.pop();},
+   e=>{e.choices[0].effects[0].type='unknown';}
+  ];
+  if(rule.hintId!==null)changes.push(
+   e=>{e.choices[1].effects[0].skill_id++;},
+   e=>{e.choices[1].effects[0].value='+3';}
+  );
+  for(const modify of changes){
+   const original=structuredClone(docs[0].events_ja['ev'+eventPos]);
+   modify(docs[0].events_ja['ev'+eventPos]);
+   assert.throws(()=>build(index,docs,{strict:false}),/完全性例外台帳/);
+   docs[0].events_ja['ev'+eventPos]=original;
+  }
+ });
+}
