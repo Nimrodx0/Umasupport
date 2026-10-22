@@ -76,3 +76,62 @@ test('does not globally merge approximate or shortened titles on another card',(
  assert.deepEqual(got.paired.unmatchedC,[0]);
  assert.deepEqual(got.paired.unmatchedG,[2]);
 });
+
+test('eleven individually pinned title variants pair exactly one pre-existing event each',()=>{
+ const variants=CASES.filter(x=>x.decision==='SAME_EVENT_REVIEWED_TITLE_VARIANT');
+ assert.equal(variants.length,11);
+ for(const rule of variants){
+  const checkerEvents=Array.from({length:rule.checkerOrdinal},(_,i)=>({
+   sourceKey:'unmatched:'+i,sourceIndex:i,strict:'other'+i,optionCount:1
+  }));
+  checkerEvents[rule.checkerOrdinal-1]={
+   sourceKey:rule.sourceKey,sourceIndex:rule.checkerOrdinal-1,
+   strict:rule.checkerTitleSha,optionCount:rule.checkerChoices
+  };
+  const gtEvents=Array.from({length:rule.sourceOrdinal},(_,i)=>({
+   sourceOrdinal:i+1,sourceLocalEventId:100+i,section:'random',
+   choiceCount:1,strict:'gt-other'+i
+  }));
+  gtEvents[rule.sourceOrdinal-1]={
+   sourceOrdinal:rule.sourceOrdinal,sourceLocalEventId:rule.gtLocalId,
+   section:rule.section,choiceCount:rule.gtChoices,strict:rule.gtTitleSha
+  };
+  const rawGtEvents=Array.from({length:rule.sourceOrdinal},()=>({
+   id:1,section:'random',choices:[{label:'',effects:[]}]
+  }));
+  rawGtEvents[rule.sourceOrdinal-1]={
+   id:rule.gtLocalId,section:rule.section,
+   choices:rule.choiceShape.split('').map((ch,i)=>({
+    label:ch==='S'?'unique-choice-'+i:'',random_either:false,
+    effects:rule.hintSignatures[i].map(([skill_id,value])=>({
+     type:'skill_hint',skill_id,value
+    }))
+   }))
+  };
+  const make=()=>({
+   cardId:rule.cardId,checkerEvents,gtEvents,rawGtEvents,
+   paired:{selected:[],unmatchedC:[rule.checkerOrdinal-1],
+    unmatchedG:[rule.sourceOrdinal-1]}
+  });
+  const result=applyReviewedAliases(make());
+  assert.equal(result.matched.length,1,rule.cardId);
+  assert.equal(result.paired.unmatchedC.length,0,rule.cardId);
+  assert.equal(result.paired.unmatchedG.length,0,rule.cardId);
+  assert.equal(result.matched[0].decision,'SAME_EVENT_REVIEWED_TITLE_VARIANT');
+  assert.equal(result.matched[0].currentGameVerified,false);
+  assert.equal(result.matched[0].publicationApproved,false);
+  const correct=checkerEvents[rule.checkerOrdinal-1];
+  correct.strict='changed-fingerprint';
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+  correct.strict=rule.checkerTitleSha;
+  const original=rawGtEvents[rule.sourceOrdinal-1].choices[0];
+  original.label=original.label?'':'not-an-original-choice';
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+  original.label=rule.choiceShape[0]==='S'?'unique-choice-0':'';
+  original.random_either=true;
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+  original.random_either=false;
+  original.effects.push({type:'skill_hint',skill_id:999999,value:'+4'});
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+ }
+});
