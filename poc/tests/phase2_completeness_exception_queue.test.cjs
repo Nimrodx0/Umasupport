@@ -91,6 +91,7 @@ test('30207 stage effect alternatives are conditional year-classes, not choices'
  pair.sourceOrdinal=2;pair.checkerOrdinal=9;pair.checkerChoiceCount=3;
  pair.sourceLocalEventId=485;
  card.gameToraOnly[0].sourceOrdinal=1;
+ card.gameToraOnly[0].sourceLocalEventId=484;
  docs[0].events_ja.ev1={section:'special',id:485,choices:[{label:'',
   segments:[1,2,3].map(i=>({when:[{kind:'scripted',value:['class',i]}],effects:[]}))}]};
  const row=build(index,docs,{strict:false}).queue.find(x=>x.type==='CHOICE_COUNT_DIFFERENCE');
