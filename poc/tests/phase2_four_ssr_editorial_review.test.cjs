@@ -36,15 +36,15 @@ test('all 20 pinned events, 35 source rows, 12 exact numeric hints verified as e
  const out=review(input());
  assert.deepEqual(out.totals,{
   reviewedCards:4,reviewedCandidateEvents:20,reviewedSourceRows:35,
-  checkedNumericHintMentions:12,editorialShapeAlignedEvents:17,
-  presentationUnresolvedEvents:3,
+  checkedNumericHintMentions:12,editorialShapeAlignedEvents:18,
+  editorialTwoChoiceCorroboratedEvents:1,presentationUnresolvedEvents:2,
   reviewedChainPositionCandidates:12,reviewedRandomPositionCandidates:8,
   gameToraLiveEventListCards:3,gameToraLiveDetailMetadataOnlyCards:1,
   gameToraLiveRosterOnlyCards:0
  });
  assert.deepEqual(out.cards.flatMap(c=>c.events.filter(e=>
   e.editorialPresentation==='EDITORIAL_PRESENTATION_UNRESOLVED').map(e=>
-  [c.cardId,e.checkerOrdinal])),[['30319',5],['30321',2],['30321',3]]);
+  [c.cardId,e.checkerOrdinal])),[['30321',2],['30321',3]]);
  assert.equal(out.allGameEventsVerified,false);
  assert.equal(out.selectionSemanticsVerified,false);
  assert.equal(out.publicationApproved,false);
@@ -78,6 +78,14 @@ test('avoid converting a third-party presentation discrepancy into fake selectab
  assert.equal(disputed.editorialPresentation,'EDITORIAL_PRESENTATION_UNRESOLVED');
  assert.equal(disputed.actualChoiceSemanticsVerified,false);
  assert.equal(disputed.hintGrantConditionVerified,false);
+ const narita=r.cards.find(c=>c.cardId==='30319').events[4];
+ assert.equal(narita.editorialPresentation,'EDITORIAL_TWO_CHOICES_CORROBORATED');
+ assert.equal(narita.editorialTwoChoiceEvidence.reportCount,2);
+ assert.equal(narita.editorialTwoChoiceEvidence.referenceUrls.length,2);
+ assert.equal(narita.editorialTwoChoiceEvidence.sourceLabelAmbiguityResolvedForEditorialUse,true);
+ assert.equal(narita.actualChoiceSemanticsVerified,false);
+ assert.equal(narita.editorialTwoChoiceEvidence.evidenceIsIndependentGameplayVerification,false);
+ assert.equal(narita.hintGrantConditionVerified,false);
  assert.equal(r.cards.find(c=>c.cardId==='30318').liveGameToraCoverage,
   'EVENT_LIST_3_CHAIN_2_RANDOM');
  assert.equal(r.cards.find(c=>c.cardId==='30320').liveGameToraCoverage,
@@ -86,4 +94,18 @@ test('avoid converting a third-party presentation discrepancy into fake selectab
   /\/supports\/30320-admire-groove$/);
  assert.equal(r.totals.gameToraLiveRosterOnlyCards,0);
  assert.equal(r.allGameEventsVerified,false);
+});
+
+test('SSR30319 event5 confirms editorial two-choice structure but never upgrades game/publication gates',()=>{
+ const valid=input();
+ const row=review(valid).cards.find(x=>x.cardId==='30319').events[4];
+ assert.equal(row.editorialPresentation,'EDITORIAL_TWO_CHOICES_CORROBORATED');
+ assert.equal(row.sourceEffectRows,2);
+ assert.equal(row.editorialTwoChoiceEvidence.reportCount,2);
+ assert.equal(row.game2026Verified,false);
+ assert.equal(row.actualChoiceSemanticsVerified,false);
+ assert.equal(row.publicationApproved,false);
+ const before=valid.cards.find(x=>x.cardId==='30319').events[4].hintMentions[0];
+ before.checkerOptionOrdinal=1;
+ assert.throws(()=>review(valid),/Phase2未収録4SSRのイベント別照合/);
 });
