@@ -41,8 +41,16 @@ const REVIEW=Object.freeze([
    game8:'https://game8.jp/umamusume/818830'},
   liveGameToraEvidence:'CARD_DETAIL_METADATA_ONLY'},
  {cardId:'30321',optionRows:[2,1,1,2,2],
-  eventShape:['SELECTION','EDITORIAL_PRESENTATION_UNRESOLVED',
-   'EDITORIAL_PRESENTATION_UNRESOLVED','SELECTION','SELECTION'],
+  eventShape:['SELECTION','GAMEWITH_ADJUDICATED_NO_SELECTION',
+   'GAMEWITH_ADJUDICATED_NO_SELECTION','SELECTION','SELECTION'],
+  gameWithAdjudications:[
+   {checkerOrdinal:2,sourceRow:1,playerChoiceCountReported:0,
+    reportedRewardFacts:[['mood',1],['power',10],['bond',5]],
+    reportedHintFacts:[]},
+   {checkerOrdinal:3,sourceRow:1,playerChoiceCountReported:0,
+    reportedRewardFacts:[['power',15],['bond',5]],
+    reportedHintFacts:[[201463,1]]}
+  ],
   hints:[as(3,1,201463,1),as(5,2,202602,1)],
   references:{gameTora:'https://gametora.com/ja/umamusume/supports/30321-duramente',
    gameWith:'https://gamewith.jp/uma-musume/article/show/578817',
@@ -68,7 +76,9 @@ function review(candidate,{strict=true}={}){
  }
  const totals={reviewedCards:0,reviewedCandidateEvents:0,reviewedSourceRows:0,
   checkedNumericHintMentions:0,editorialShapeAlignedEvents:0,
-  editorialTwoChoiceCorroboratedEvents:0,presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
+  editorialTwoChoiceCorroboratedEvents:0,
+  gameWithAdjudicatedNoSelectionEvents:0,
+  presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
   reviewedRandomPositionCandidates:0,gameToraLiveEventListCards:0,
   gameToraLiveDetailMetadataOnlyCards:0,
   gameToraLiveRosterOnlyCards:0};
@@ -114,6 +124,28 @@ function review(candidate,{strict=true}={}){
      fail('30319通常イベントの限定的2択資料とヒント配置が不一致');
     totals.editorialTwoChoiceCorroboratedEvents++;
    }
+   let gameWithNoSelection=null;
+   if(shape==='GAMEWITH_ADJUDICATED_NO_SELECTION'){
+    gameWithNoSelection=expected.gameWithAdjudications?.find(x=>
+      x.checkerOrdinal===i+1);
+    if(c.cardId!=='30321'||!gameWithNoSelection||
+       expected.references.gameWith!==
+         'https://gamewith.jp/uma-musume/article/show/578817'||
+       gameWithNoSelection.sourceRow!==1||
+       gameWithNoSelection.playerChoiceCountReported!==0||
+       e.checkerChoiceRows!==1||
+       (i===1?JSON.stringify(gameWithNoSelection.reportedRewardFacts)!==
+         JSON.stringify([['mood',1],['power',10],['bond',5]]):
+         i===2?JSON.stringify(gameWithNoSelection.reportedRewardFacts)!==
+         JSON.stringify([['power',15],['bond',5]]):true)||
+       JSON.stringify(gameWithNoSelection.reportedHintFacts)!==
+         JSON.stringify(i===2?[[201463,1]]:[])||
+       JSON.stringify(e.hintMentions.map(m=>
+        [m.skillNumericId,m.hintLevel]))!==
+         JSON.stringify(gameWithNoSelection.reportedHintFacts))
+      fail('30321連続2・3のGameWith裁定とChecker数値候補に不一致');
+    totals.gameWithAdjudicatedNoSelectionEvents++;
+   }
    for(const m of e.hintMentions){
     if(!Number.isSafeInteger(m.checkerOptionOrdinal)||m.checkerOptionOrdinal<1||
        m.checkerOptionOrdinal>e.checkerChoiceRows||
@@ -139,6 +171,29 @@ function review(candidate,{strict=true}={}){
        evidenceIsIndependentGameplayVerification:false
       }
      }:{}),
+    ...(gameWithNoSelection?{
+      gameWithAdjudication:{
+       status:'GAMEWITH_NO_SELECTION_AND_NUMERIC_REWARDS_ADOPTED',
+       authority:'PROJECT_DESIGNATED_GAMEWITH_ADJUDICATOR',
+       cardId:c.cardId,checkerOrdinal:i+1,
+       sourceRow:gameWithNoSelection.sourceRow,
+       sourceUrl:expected.references.gameWith,
+       sourceArticleLastUpdated:'2026-10-12',
+       decisionReviewedOn:'2026-10-22',
+       playerChoiceCountReported:0,
+       reportedSingleResult:true,
+       reportedNumericEffects:gameWithNoSelection.reportedRewardFacts.map(
+        ([kind,value])=>({kind,value})),
+       reportedSkillHints:gameWithNoSelection.reportedHintFacts.map(
+        ([skillNumericId,hintLevel])=>({skillNumericId,hintLevel,
+          sourceRow:1})),
+       editorialChoiceAndRewardFactsAdopted:true,
+       actualCurrentGameTested:false,
+       priorStageTerminationConditionVerified:false,
+       publicationApproved:false,
+       noAutomaticRuntimeAdoption:true
+      }
+     }:{}),
     actualChoiceSemanticsVerified:false,
     hintGrantConditionVerified:false,
     game2026Verified:false,publicationApproved:false};
@@ -152,9 +207,10 @@ function review(candidate,{strict=true}={}){
  }
  if(strict&&(totals.reviewedCards!==4||totals.reviewedCandidateEvents!==20||
     totals.reviewedSourceRows!==35||totals.checkedNumericHintMentions!==12||
-    totals.editorialShapeAlignedEvents!==18||
+    totals.editorialShapeAlignedEvents!==20||
     totals.editorialTwoChoiceCorroboratedEvents!==1||
-    totals.presentationUnresolvedEvents!==2||
+    totals.gameWithAdjudicatedNoSelectionEvents!==2||
+    totals.presentationUnresolvedEvents!==0||
     totals.reviewedChainPositionCandidates!==12||
     totals.reviewedRandomPositionCandidates!==8||
     totals.gameToraLiveEventListCards!==3||
