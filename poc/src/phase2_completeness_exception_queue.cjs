@@ -16,6 +16,12 @@ const editorialEvidence=[
   sourceEvidenceKind:'TWO_RANDOM_OUTCOMES',expectedRows:2,
   sourceUrl:'https://gamewith.jp/uma-musume/article/show/257455',
   conclusion:'ONE_UNSELECTABLE_EVENT_WITH_TWO_RESULT_ROUTES'},
+ {cardId:'30010',sourceOrdinal:5,checkerOrdinal:3,
+  checkerChoices:2,gameToraChoices:1,sourceSection:'arrows',
+  sourceEvidenceKind:'ONE_SKILL_HINT_OR_WITH_LEVEL_RANGE',expectedRows:2,
+  sourceUrl:'https://gamewith.jp/uma-musume/article/show/257451',
+  independentEditorialUrl:'https://game8.jp/umamusume/372306',
+  conclusion:'NO_PLAYER_SELECTION_TWO_HINT_RESULT_FAMILIES'},
  {cardId:'30108',sourceOrdinal:5,checkerOrdinal:3,
   checkerChoices:2,gameToraChoices:1,sourceSection:'arrows',
   sourceEvidenceKind:'FOUR_OUTCOMES_BY_PRIOR_STAGE',expectedRows:4,
@@ -120,6 +126,13 @@ function build(index,docs,{strict=true}={}){
       first?.label==='';
     const shape=signature.sourceEvidenceKind==='TWO_RANDOM_OUTCOMES'?
        first.random_either===true&&first.outcomes?.length===2:
+      signature.sourceEvidenceKind==='ONE_SKILL_HINT_OR_WITH_LEVEL_RANGE'?
+       g.id===500&&first.random_either===false&&first.outcomes===undefined&&
+       Array.isArray(first.effects)&&
+       first.effects.filter(e=>e.type==='skill_hint_or').length===1&&
+       JSON.stringify(first.effects.find(e=>e.type==='skill_hint_or').options)===
+       JSON.stringify([{skill_id:200581,value:'+1/+3'},
+         {skill_id:200582,value:'+1'}]):
       signature.sourceEvidenceKind==='FOUR_OUTCOMES_BY_PRIOR_STAGE'?
        first.random_either===true&&first.outcomes?.length===4&&
        gt[paired.sourceOrdinal-2]?.choices?.length===2:
@@ -175,9 +188,9 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyWithGameToraCard!==48||
     stats.checkerOnlyP0!==0||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==52||stats.choiceCountDisagreements!==9||
-    stats.choiceCountExplainedRepresentations!==3||
-    stats.choiceCountPending!==6||stats.unresolvedItems!==521||
-    stats.needsTargetedSourceReview!==126))
+    stats.choiceCountExplainedRepresentations!==4||
+    stats.choiceCountPending!==5||stats.unresolvedItems!==520||
+    stats.needsTargetedSourceReview!==125))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
