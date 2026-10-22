@@ -217,6 +217,60 @@ function checkerEmptyCardEvidence(rule){
   game2026Verified:false,publicationApproved:false,
   noAutomaticRuntimeAdoption:true};
 }
+// Version-pinned GT contains only two shared/random events for these SSRs.
+// Separate three externally listed chain stages from those random events.
+// For 30221 the three candidates are already Checker-only rows.
+// For 30240 the three candidates are absent from BOTH fixed sources; counting
+// them as Checker-only or as newly verified game data would be incorrect.
+const missingGTChains=[
+ {cardId:'30221',checkerSourceCount:5,checkerOnlyOrdinals:[1,2,3],
+  checkerOnlyKeys:['checker:30221:96a9b18141d8cf7ce729',
+   'checker:30221:142abc4e048db36f56b9',
+   'checker:30221:c56290b839ef7bbc1c85'],
+  paired:[[4,1],[5,2]],sourceEventIds:[107,108],
+  sourceChoiceCounts:[2,2],
+  editorialChainStages:3,
+  evidence:['https://game8.jp/umamusume/636307',
+   'https://xn--gck1f423k.xn--1bvt37a.tools/supports/30221/event']},
+ {cardId:'30240',checkerSourceCount:0,checkerOnlyOrdinals:[],
+  checkerOnlyKeys:[],paired:[],sourceEventIds:[167,168],
+  sourceChoiceCounts:[2,2],editorialChainStages:3,
+  evidence:['https://xn--gck1f423k.xn--1bvt37a.tools/supports/30240/event',
+   'https://gametora.com/ja/umamusume/supports/30240-jungle-pocket']}
+];
+function missingGTChainReview(card,gt){
+ const rule=missingGTChains.find(x=>x.cardId===card.cardId);
+ if(!rule)return null;
+ const other=rule.cardId==='30240';
+ if(card.rarity!=='SSR'||!gt||gt.length!==2||
+    card.sourceMissing!==false||card.checkerMissing!==false||
+    card.checkerObservedCount!==rule.checkerSourceCount||
+    card.gameToraObservedCount!==2||
+    card.checkerOnly.length!==rule.checkerOnlyOrdinals.length||
+    card.checkerOnly.some((x,i)=>x.checkerOrdinal!==rule.checkerOnlyOrdinals[i]||
+      x.sourceKey!==rule.checkerOnlyKeys[i])||
+    JSON.stringify(card.pairs.map(x=>[x.checkerOrdinal,x.sourceOrdinal]))!==
+      JSON.stringify(rule.paired)||
+    card.gameToraOnly.length!==(other?2:0)||
+    gt.some((e,i)=>e.id!==rule.sourceEventIds[i]||
+      e.section!=='random'||e.choices?.length!==rule.sourceChoiceCounts[i])||
+    card.gameToraOnly.some((e,i)=>e.sourceOrdinal!==i+1||
+      e.sourceLocalEventId!==rule.sourceEventIds[i]||
+      e.section!=='random'))
+   fail('GTで未収録の3段階連続イベントの原状態が変化: '+card.cardId);
+ return rule;
+}
+function missingGTChainEvidence(rule){
+ return {reviewStatus:'PINNED_GT_HAS_NO_CHAIN_STAGES',
+  expectedEditorialChainStages:rule.editorialChainStages,
+  checkerRecordedChainStageRows:rule.checkerOnlyOrdinals.length,
+  fixedGTRecordedChainStages:0,
+  checkerAndGTSourceEventCount:[rule.checkerSourceCount,2],
+  referenceUrls:rule.evidence,
+  chainEventsGameVerified:false,
+  detailsOrResultsComplete:false,publicationApproved:false,
+  noAutomaticRuntimeAdoption:true};
+}
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
     index.dataKind!=='umasupport-whole-event-provisional-index'||
@@ -236,7 +290,7 @@ function build(index,docs,{strict=true}={}){
   source.set(String(d.id),Object.values(d.events_ja&&Object.keys(d.events_ja).length?d.events_ja:d.events));
  }
  const p0=new Set(index.attention.p0Unmatched.map(x=>JSON.stringify([x.cardId,x.sourceKey,x.checkerOrdinal])));
- const queue=[],proof=[],stats={
+ const queue=[],proof=[],supplementalMissingGTChainReviews=[],stats={
   rosterCards:0,gameToraCards:0,missingGameToraCards:0,
   checkerOnlyEvents:0,checkerOnlyOnMissingCards:0,checkerOnlyWithGameToraCard:0,
   checkerOnlyP0:0,gameToraOnlyR:0,gameToraOnlyNonR:0,
@@ -244,6 +298,10 @@ function build(index,docs,{strict=true}={}){
   choiceCountConfirmedSourceGaps:0,choiceCountCheckerPartial:0,choiceCountPending:0,
   identityConflictsReviewedWithoutPairing:0,
   checkerEmptyFullCardReviews:0,checkerEmptyCardGTEvents:0,
+  gtChainShortfallCardsReviewed:0,
+  gtChainShortfallEditorialStages:0,
+  gtChainShortfallStagesAlreadyCheckerOnly:0,
+  gtChainShortfallStagesAbsentBothFixedSources:0,
   unresolvedItems:0,needsTargetedSourceReview:0
  };
  const keySet=new Set();
@@ -272,6 +330,22 @@ function build(index,docs,{strict=true}={}){
    stats.checkerEmptyFullCardReviews++;
    stats.checkerEmptyCardGTEvents+=emptyCard.ids.length;
   }
+  const chainShortfall=missingGTChainReview(card,gt);
+  if(chainShortfall){
+   stats.gtChainShortfallCardsReviewed++;
+   stats.gtChainShortfallEditorialStages+=chainShortfall.editorialChainStages;
+   stats.gtChainShortfallStagesAlreadyCheckerOnly+=
+     chainShortfall.checkerOnlyOrdinals.length;
+   stats.gtChainShortfallStagesAbsentBothFixedSources+=
+     chainShortfall.editorialChainStages-
+     chainShortfall.checkerOnlyOrdinals.length;
+   supplementalMissingGTChainReviews.push({
+    cardId:card.cardId,...missingGTChainEvidence(chainShortfall),
+    checkerUnmatchedRepresentations:chainShortfall.checkerOnlyOrdinals.length,
+    additionalIndependentExpectedEventsNotInNeitherPinnedSource:
+      chainShortfall.editorialChainStages-chainShortfall.checkerOnlyOrdinals.length
+   });
+  }
   for(const event of card.checkerOnly){
    if(typeof event.sourceKey!=='string'||
       !Number.isSafeInteger(event.checkerOrdinal)||event.checkerOrdinal<1)
@@ -281,12 +355,15 @@ function build(index,docs,{strict=true}={}){
    if(missing)stats.checkerOnlyOnMissingCards++;else stats.checkerOnlyWithGameToraCard++;
    if(isP0)stats.checkerOnlyP0++;
    add({cardId:card.cardId,rarity:card.rarity,type:'CHECKER_ONLY',
-    priority:isP0?'P0':missing||is30301Conflict?'P1':'P2',
+    priority:isP0?'P0':missing||is30301Conflict||chainShortfall?'P1':'P2',
     reason:missing?'NO_GAMETORA_CARD':is30301Conflict?
-      'CHECKER_REPORTED_HINT_NOT_PAIRED_TO_CHAIN_EVENT':'EVENT_IDENTITY_NOT_PAIRED',
+      'CHECKER_REPORTED_HINT_NOT_PAIRED_TO_CHAIN_EVENT':chainShortfall?
+      'GT_MISSING_THREE_EDITORIALLY_CONFIRMED_CHAIN_STAGES':
+      'EVENT_IDENTITY_NOT_PAIRED',
     checkerOrdinal:event.checkerOrdinal,sourceKey:event.sourceKey,
     highPriorityNumericalCandidate:isP0,
     ...(is30301Conflict?{identityConflictEvidence:sourceIdentityWarning30301()}:{}),
+    ...(chainShortfall?{missingGTChainEvidence:missingGTChainEvidence(chainShortfall)}:{}),
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
   }
   for(const event of card.gameToraOnly){
@@ -297,14 +374,17 @@ function build(index,docs,{strict=true}={}){
     fail('GameTora候補位置／ローカルID／セクションの整合不良');
    if(card.rarity==='R')stats.gameToraOnlyR++;else stats.gameToraOnlyNonR++;
    add({cardId:card.cardId,rarity:card.rarity,type:'GAMETORA_ONLY',
-    priority:card.rarity==='R'?'P3':is30301Conflict||emptyCard?'P1':'P2',
+    priority:card.rarity==='R'?'P3':is30301Conflict||emptyCard||chainShortfall?'P1':'P2',
     reason:card.rarity==='R'?'CHECKER_R_COVERAGE_ABSENT':is30301Conflict?
       'MISSING_CHECKER_CHAIN_STAGE_TWO_CHOICES':emptyCard?
-      'CHECKER_ENTIRE_CARD_EVENT_LIST_EMPTY':'EVENT_IDENTITY_NOT_PAIRED',
+      'CHECKER_ENTIRE_CARD_EVENT_LIST_EMPTY':chainShortfall?
+      'GT_AND_CHECKER_LACK_EDITORIAL_CHAIN_STAGES':
+      'EVENT_IDENTITY_NOT_PAIRED',
     sourceOrdinal:event.sourceOrdinal,sourceLocalEventId:event.sourceLocalEventId,
     section:event.section,sourceChainOrdinal:event.sourceChainOrdinal,
     ...(is30301Conflict?{identityConflictEvidence:sourceIdentityWarning30301()}:{}),
     ...(emptyCard?{checkerCoverageEvidence:checkerEmptyCardEvidence(emptyCard)}:{}),
+    ...(chainShortfall?{missingGTChainEvidence:missingGTChainEvidence(chainShortfall)}:{}),
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
   }
   for(const paired of card.pairs){
@@ -440,6 +520,10 @@ function build(index,docs,{strict=true}={}){
     stats.identityConflictsReviewedWithoutPairing!==1||
     stats.checkerEmptyFullCardReviews!==2||
     stats.checkerEmptyCardGTEvents!==10||
+    stats.gtChainShortfallCardsReviewed!==2||
+    stats.gtChainShortfallEditorialStages!==6||
+    stats.gtChainShortfallStagesAlreadyCheckerOnly!==3||
+    stats.gtChainShortfallStagesAbsentBothFixedSources!==3||
     stats.choiceCountPending!==0||stats.unresolvedItems!==460||
     stats.needsTargetedSourceReview!==65))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
@@ -451,6 +535,7 @@ function build(index,docs,{strict=true}={}){
   sourcePins:{gameToraDerived:gtRev,checker:checkerRev},
   sourceDocumentsNotRedistributed:true,gameVerified:false,
   allEventsComplete:false,publicationApproved:false,
-  stats,reviewedRepresentationExamples:proof,queue};
+  stats,reviewedRepresentationExamples:proof,
+  supplementalMissingGTChainReviews,queue};
 }
 module.exports={build};

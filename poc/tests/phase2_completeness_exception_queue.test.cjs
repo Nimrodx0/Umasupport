@@ -391,3 +391,78 @@ for(const rule of [
   }
  });
 }
+
+function missingGTChainFixture(id){
+ const {index,docs}=make({cardId:id});
+ const c=index.cards[0];
+ c.rarity='SSR';c.checkerMissing=false;c.sourceMissing=false;
+ c.gameToraObservedCount=2;
+ const card30221=id==='30221';
+ c.checkerObservedCount=card30221?5:0;
+ c.checkerOnly=card30221?[
+  'checker:30221:96a9b18141d8cf7ce729',
+  'checker:30221:142abc4e048db36f56b9',
+  'checker:30221:c56290b839ef7bbc1c85'
+ ].map((sourceKey,i)=>({checkerOrdinal:i+1,sourceKey})):[];
+ c.unmatchedCheckerCount=c.checkerOnly.length;
+ c.pairs=card30221?[[4,1],[5,2]].map(([checkerOrdinal,sourceOrdinal])=>({
+  checkerOrdinal,sourceOrdinal,checkerChoiceCount:2,sourceChoiceCount:2,
+  choiceCountAgreement:true})):[];
+ const ids=card30221?[107,108]:[167,168];
+ c.gameToraOnly=card30221?[]:ids.map((sourceLocalEventId,i)=>({
+  sourceOrdinal:i+1,sourceLocalEventId,section:'random'
+ }));
+ c.unmatchedGameToraCount=c.gameToraOnly.length;
+ docs[0].events_ja=Object.fromEntries(ids.map((eventId,i)=>[
+  'e'+i,{id:eventId,section:'random',choices:[
+   {label:'top route',effects:[{type:'stamina',value:'+5'}]},
+   {label:'bottom route',effects:[{type:'bond',value:'+5'}]}
+  ]}
+ ]));
+ index.attention.choiceCountConflicts=[];index.attention.p0Unmatched=[];
+ index.stats.checkerUnmatchedEvents=c.unmatchedCheckerCount;
+ index.stats.gameToraUnmatchedEvents=c.unmatchedGameToraCount;
+ index.stats.pairedChoiceCountConflict=0;
+ return {index,docs};
+}
+for(const cardId of ['30221','30240']){
+ test(cardId+' shows 3 absent GT chain stages separately from its two random events',()=>{
+  const x=missingGTChainFixture(cardId),out=build(x.index,x.docs,{strict:false});
+  assert.equal(out.stats.gtChainShortfallCardsReviewed,1);
+  assert.equal(out.stats.gtChainShortfallEditorialStages,3);
+  assert.equal(out.stats.gtChainShortfallStagesAlreadyCheckerOnly,
+   cardId==='30221'?3:0);
+  assert.equal(out.stats.gtChainShortfallStagesAbsentBothFixedSources,
+   cardId==='30221'?0:3);
+  const review=out.supplementalMissingGTChainReviews[0];
+  assert.equal(review.cardId,cardId);
+  assert.equal(review.editorialChainStages,undefined);
+  assert.equal(review.expectedEditorialChainStages,3);
+  assert.equal(review.fixedGTRecordedChainStages,0);
+  assert.equal(review.noAutomaticRuntimeAdoption,true);
+  assert.equal(review.game2026Verified,undefined);
+  assert.equal(review.chainEventsGameVerified,false);
+  assert.equal(review.publicationApproved,false);
+  assert.equal(out.stats.checkerOnlyEvents,cardId==='30221'?3:0);
+  assert.equal(out.stats.gameToraOnlyNonR,cardId==='30240'?2:0);
+  assert.ok(out.queue.every(row=>row.priority==='P1'&&
+   row.missingGTChainEvidence.expectedEditorialChainStages===3&&
+   row.missingGTChainEvidence.publicationApproved===false));
+  assert.equal(out.stats.needsTargetedSourceReview,cardId==='30221'?3:2);
+ });
+ test(cardId+' fail-closes when GT pairings, missing source events or counts drift',()=>{
+  for(const mutation of [
+   x=>{x.docs[0].events_ja.e0.id=999;},
+   x=>{x.docs[0].events_ja.e0.section='arrows';},
+   x=>{x.docs[0].events_ja.e1.choices.pop();},
+   x=>{x.index.cards[0].gameToraObservedCount=5;},
+   x=>{x.index.cards[0].checkerMissing=true;},
+   x=>{x.index.cards[0].checkerObservedCount++;},
+   x=>{x.index.cards[0].sourceMissing=true;},
+   x=>{x.index.cards[0].checkerOnly.push({checkerOrdinal:99,sourceKey:'bad'});}
+  ]){
+   const x=missingGTChainFixture(cardId);mutation(x);
+   assert.throws(()=>build(x.index,x.docs,{strict:false}),/完全性例外台帳/);
+  }
+ });
+}
