@@ -10,6 +10,9 @@ on:
       - 'poc/tools/build_phase2_completeness_exception_queue.cjs'
       - 'poc/tests/phase2_completeness_exception_queue.test.cjs'
       - 'poc/src/gametora_missing_card_triage.cjs'
+      - 'poc/src/missing_four_ssr_skill_fact_candidates.cjs'
+      - 'poc/tools/build_missing_four_ssr_skill_fact_candidates.cjs'
+      - 'poc/tests/missing_four_ssr_skill_fact_candidates.test.cjs'
       - 'poc/tools/audit_missing_gametora_cards.cjs'
       - 'poc/tests/gametora_missing_card_triage.test.cjs'
       - 'poc/tests/whole_event_index.test.cjs'
@@ -194,6 +197,16 @@ jobs:
           set -euo pipefail
           curl --fail --silent --show-error --location --retry 2 --max-time 120             "https://raw.githubusercontent.com/Tsuyuchan-jp/umamusume-data/0cacbb1aaf9dca10283d5b9ea20b205b9d204535/data/skills.json"             -o "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json"
           node umasupport/poc/tools/audit_independent_2026_skill_fingerprints.cjs             whole-event-output/historical_missing_skill_id_review.v1.json             "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json"             whole-event-output/independent_2026_skill_fingerprints.v1.json
+      - name: Test strictly quarantined skill fact extraction for 4 missing SSR cards
+        run: node --test umasupport/poc/tests/missing_four_ssr_skill_fact_candidates.test.cjs
+      - name: Backfill 20 fixed Checker candidate events and 2026 numeric hints into private audit ONLY
+        run: |
+          node umasupport/poc/tools/build_missing_four_ssr_skill_fact_candidates.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            "$RUNNER_TEMP/event-inputs/Events.json" \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json" \
+            whole-event-output/missing_four_ssr_numeric_skill_candidates.v1.json
       - name: Verify synthetic 2026 external-name private registry preview
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
