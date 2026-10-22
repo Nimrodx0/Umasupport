@@ -72,6 +72,12 @@ jobs:
           node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
           node poc/tools/verify_adjudicated_event_facts.cjs
 
+      - name: Audit SR20075 missing stage without inventing results or publishing
+        run: |
+          node --check poc/src/phase2_20075_first_stage_intake.cjs
+          node --test poc/tests/phase2_20075_first_stage_intake.test.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Verify SSR30221 missing 3 chain stages using GameWith numeric intake
         run: |
           node --check poc/src/phase2_30221_missing_chain_intake.cjs

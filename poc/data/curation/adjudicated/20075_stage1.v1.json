@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "gamewith-adjudicated-one-disputed-stage-numeric-facts",
+  "cardId": "20075",
+  "cardDisplayIdentity": "Cheers!",
+  "fixedGameToraRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "fixedGameToraOnlyChainStageLocalId": 416,
+  "fixedGameToraChainStageCount": 1,
+  "fixedCheckerRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+  "checkerOnlyOrdinal": 1,
+  "checkerOnlySourceKey": "checker:20075:8fd4b0e1da2eeb063087",
+  "gameToraWebsite": {
+    "url": "https://gametora.com/ja/umamusume/supports/20075-tap-dance-city",
+    "checkedAt": "2026-10-22",
+    "status": "CARD_ONLY"
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/441770",
+    "checkedAt": "2026-10-22",
+    "factStatus": "EXPLICIT",
+    "playerSelectableChoiceCount": 0,
+    "reportedEffects": [
+      {
+        "kind": "guts",
+        "value": 15
+      },
+      {
+        "kind": "bond",
+        "value": 15
+      }
+    ],
+    "reportedSkillHints": []
+  },
+  "otherOutcomeEvidence": {
+    "sourceUrl": "https://xn--gck1f423k.xn--1bvt37a.tools/supports/20075/event",
+    "unlabeledRewardRows": [
+      [
+        {
+          "kind": "guts",
+          "value": 15
+        },
+        {
+          "kind": "bond",
+          "value": 15
+        }
+      ],
+      [
+        {
+          "kind": "guts",
+          "value": 5
+        },
+        {
+          "kind": "bond",
+          "value": 5
+        }
+      ]
+    ],
+    "outcomeSelectionRuleVerified": false,
+    "successFailureLabelsVerified": false,
+    "probabilityKnown": false
+  },
+  "sourceProseIncluded": false,
+  "editorialNumericFactsAdopted": true,
+  "exactRouteSemanticsVerified": false,
+  "nextChainStageAvailabilityVerified": false,
+  "game2026Verified": false,
+  "publicationApproved": false,
+  "noAutomaticRuntimeAdoption": true
+}
