@@ -78,7 +78,7 @@ function buildView(options={}){
   checkedAt:'2026-10-23',nonpublic:true,sourceTextIncluded:false,
   directGameplayVerification:false,headingsReleaseApproved:false,
   choicesReleaseApproved:false,publicCatalogAltered:false,
-  note:'仮表示のみ。原文ではなく効果の要約。ゲームの選択肢との対応と結果網羅は未確認。',
+  note:'仮表示のみ。原文ではなく効果の要約。実ゲームの選択肢との対応と結果網羅は未確認。',
   summary:{cards:4,events:8,choiceRows:16,hintMentions:4,approvedEvents:0},
   cards};
 }
