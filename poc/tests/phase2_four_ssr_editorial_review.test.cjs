@@ -36,14 +36,19 @@ test('all 20 pinned events, 35 source rows, 12 exact numeric hints verified as e
  const out=review(input());
  assert.deepEqual(out.totals,{
   reviewedCards:4,reviewedCandidateEvents:20,reviewedSourceRows:35,
-  checkedNumericHintMentions:12,editorialShapeAlignedEvents:18,
-  editorialTwoChoiceCorroboratedEvents:1,presentationUnresolvedEvents:2,
+  checkedNumericHintMentions:12,editorialShapeAlignedEvents:20,
+  editorialTwoChoiceCorroboratedEvents:1,
+  gameWithAdjudicatedNoSelectionEvents:2,
+  presentationUnresolvedEvents:0,
   reviewedChainPositionCandidates:12,reviewedRandomPositionCandidates:8,
   gameToraLiveEventListCards:3,gameToraLiveDetailMetadataOnlyCards:1,
   gameToraLiveRosterOnlyCards:0
  });
  assert.deepEqual(out.cards.flatMap(c=>c.events.filter(e=>
   e.editorialPresentation==='EDITORIAL_PRESENTATION_UNRESOLVED').map(e=>
+  [c.cardId,e.checkerOrdinal])),[]);
+ assert.deepEqual(out.cards.flatMap(c=>c.events.filter(e=>
+  e.editorialPresentation==='GAMEWITH_ADJUDICATED_NO_SELECTION').map(e=>
   [c.cardId,e.checkerOrdinal])),[['30321',2],['30321',3]]);
  assert.equal(out.allGameEventsVerified,false);
  assert.equal(out.selectionSemanticsVerified,false);
@@ -74,10 +79,31 @@ test('incorrect numeric hint IDs, level, outcome position or event row count fai
 });
 test('avoid converting a third-party presentation discrepancy into fake selectable choices',()=>{
  const r=review(input());
- const disputed=r.cards.find(c=>c.cardId==='30321').events[1];
- assert.equal(disputed.editorialPresentation,'EDITORIAL_PRESENTATION_UNRESOLVED');
- assert.equal(disputed.actualChoiceSemanticsVerified,false);
- assert.equal(disputed.hintGrantConditionVerified,false);
+ const duramente=r.cards.find(c=>c.cardId==='30321');
+ const [second,third]=duramente.events.slice(1,3);
+ for(const row of [second,third]){
+  assert.equal(row.editorialPresentation,'GAMEWITH_ADJUDICATED_NO_SELECTION');
+  assert.equal(row.gameWithAdjudication.playerChoiceCountReported,0);
+  assert.equal(row.gameWithAdjudication.editorialChoiceAndRewardFactsAdopted,true);
+  assert.equal(row.gameWithAdjudication.reportedSingleResult,true);
+  assert.equal(row.gameWithAdjudication.actualCurrentGameTested,false);
+  assert.equal(row.gameWithAdjudication.priorStageTerminationConditionVerified,false);
+  assert.equal(row.gameWithAdjudication.publicationApproved,false);
+  assert.equal(row.actualChoiceSemanticsVerified,false);
+  assert.equal(row.hintGrantConditionVerified,false);
+ }
+ assert.deepEqual(second.gameWithAdjudication.reportedNumericEffects,[
+  {kind:'mood',value:1},{kind:'power',value:10},{kind:'bond',value:5}
+ ]);
+ assert.deepEqual(second.gameWithAdjudication.reportedSkillHints,[]);
+ assert.deepEqual(third.gameWithAdjudication.reportedNumericEffects,[
+  {kind:'power',value:15},{kind:'bond',value:5}
+ ]);
+ assert.deepEqual(third.gameWithAdjudication.reportedSkillHints,[
+  {skillNumericId:201463,hintLevel:1,sourceRow:1}
+ ]);
+ assert.equal(r.totals.gameWithAdjudicatedNoSelectionEvents,2);
+ assert.equal(r.totals.presentationUnresolvedEvents,0);
  const narita=r.cards.find(c=>c.cardId==='30319').events[4];
  assert.equal(narita.editorialPresentation,'EDITORIAL_TWO_CHOICES_CORROBORATED');
  assert.equal(narita.editorialTwoChoiceEvidence.reportCount,2);
@@ -108,4 +134,25 @@ test('SSR30319 event5 confirms editorial two-choice structure but never upgrades
  const before=valid.cards.find(x=>x.cardId==='30319').events[4].hintMentions[0];
  before.checkerOptionOrdinal=1;
  assert.throws(()=>review(valid),/Phase2未収録4SSRのイベント別照合/);
+});
+
+test('GameWith is the designated adjudicator for 30321, not a requirement for another editorial witness',()=>{
+ const rule=REVIEW.find(r=>r.cardId==='30321');
+ assert.equal(rule.references.gameWith,
+  'https://gamewith.jp/uma-musume/article/show/578817');
+ assert.deepEqual(rule.gameWithAdjudications.map(r=>r.checkerOrdinal),[2,3]);
+ const row=review(input()).cards.find(x=>x.cardId==='30321').events;
+ assert.ok(row[1].gameWithAdjudication.noAutomaticRuntimeAdoption);
+ assert.ok(row[2].gameWithAdjudication.noAutomaticRuntimeAdoption);
+ assert.equal(row[2].gameWithAdjudication.reportedSkillHints[0].hintLevel,1);
+ assert.equal(row[2].gameWithAdjudication.reportedSkillHints[0].skillNumericId,201463);
+ assert.ok(!JSON.stringify(row).includes('夜の王を討伐せよ'));
+ assert.ok(!JSON.stringify(row).includes('満月に光りしは'));
+ const changed=input();
+ changed.cards.find(x=>x.cardId==='30321').events[2]
+  .hintMentions[0].skillNumericId=987654;
+ assert.throws(()=>review(changed),/Phase2未収録4SSRのイベント別照合/);
+ const badShape=input();
+ badShape.cards.find(x=>x.cardId==='30321').events[1].checkerChoiceRows=2;
+ assert.throws(()=>review(badShape),/Phase2未収録4SSRのイベント別照合/);
 });
