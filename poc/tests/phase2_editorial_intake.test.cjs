@@ -5,7 +5,7 @@ const {build}=require('../src/phase2_editorial_intake.cjs');
 const core=require('../src/core.js');
 const fixture=require('../data/curation/adjudicated/30321.v1.json');
 const copy=()=>JSON.parse(JSON.stringify(fixture));
-const fakeModel={cardById:{'30321':{id:'30321'}},
+const fakeModel={cards:[{id:'30321'}],cardById:{'30321':{id:'30321'}},
  skillById:{'skill:202602':{id:'skill:202602',name:'イグニッション'}}};
 test('all five GameWith adjudicated event facts enter an unapproved numerical intake, only standalone two project',()=>{
  const r=build(copy(),{model:fakeModel});
@@ -49,7 +49,9 @@ test('source drift, altered hints, guessed chain dependencies or release claims 
   x=>{x.gameWith.url='https://gamewith.jp/uma-musume/article/show/123';},
   x=>{x.events[0].choiceCount=0;},
   x=>{x.events[0].alternatives.pop();},
+  x=>{x.events[0].alternatives[0].effects[0].value=16;},
   x=>{x.events[1].alternatives[0].effects[0].value=2;},
+  x=>{x.events[4].alternatives[1].skillHints[0].verifiedSkillName='誤名';},
   x=>{x.events[2].alternatives[0].skillHints[0].skillNumericId++;},
   x=>{x.events[2].chainPrerequisitesVerified=true;},
   x=>{x.events[4].alternatives[1].skillHints[0].hintLevel=3;},
