@@ -50,6 +50,41 @@ const sourceChoiceGaps=[{
  independentEditorialUrl:'https://game8.jp/umamusume/421771',
  conclusion:'THREE_REAL_PLAYER_CHOICES_COLLAPSED_IN_FIXED_GT'
 }];
+// Three apparently missing Checker rows are NOT evidence for deleting GT choices.
+// Independently rendered event pages show two selectable options for each.
+// Freeze the GT choice/effect topology; never publish copied option wording.
+const checkerPartialChoices=[
+ {cardId:'30191',sourceOrdinal:1,checkerOrdinal:4,localEventId:179,
+  effectKinds:[['mood','speed','bond'],['stamina','bond']],
+  hints:[[],[]],
+  references:['https://gamewith.jp/uma-musume/article/show/426313',
+   'https://game8.jp/umamusume/577815']},
+ {cardId:'30249',sourceOrdinal:1,checkerOrdinal:4,localEventId:231,
+  effectKinds:[['power','bond'],['skill_hint','bond']],
+  hints:[[],[[201682,'+1']]],
+  references:['https://gamewith.jp/uma-musume/article/show/495653',
+   'https://xn--gck1f423k.xn--1bvt37a.tools/supports/30249/event']},
+ {cardId:'30255',sourceOrdinal:2,checkerOrdinal:5,localEventId:236,
+  effectKinds:[['skill_points','bond'],['skill_hint','bond']],
+  hints:[[],[[200602,'+1']]],
+  references:['https://xn--gck1f423k.xn--1bvt37a.tools/supports/30255/event',
+   'https://wikiwiki.jp/sppenpen/サポカ選択肢']}
+];
+function checkerPartialMatches(sourceEvent,paired,signature){
+ if(sourceEvent?.id!==signature.localEventId||
+    sourceEvent.section!=='random'||!Array.isArray(sourceEvent.choices)||
+    sourceEvent.choices.length!==2||paired.sourceChoiceCount!==2||
+    paired.checkerChoiceCount!==1) return false;
+ const [a,b]=sourceEvent.choices;
+ if(![a,b].every(c=>typeof c?.label==='string'&&c.label.trim().length>0&&
+    c.random_either===false&&c.outcomes===undefined&&c.segments===undefined&&
+    Array.isArray(c.effects))||a.label===b.label) return false;
+ const types=sourceEvent.choices.map(c=>c.effects.map(e=>e.type));
+ const hints=sourceEvent.choices.map(c=>c.effects.filter(e=>e.type==='skill_hint')
+  .map(e=>[e.skill_id,e.value]));
+ return JSON.stringify(types)===JSON.stringify(signature.effectKinds)&&
+    JSON.stringify(hints)===JSON.stringify(signature.hints);
+}
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
     index.dataKind!=='umasupport-whole-event-provisional-index'||
@@ -74,7 +109,7 @@ function build(index,docs,{strict=true}={}){
   checkerOnlyEvents:0,checkerOnlyOnMissingCards:0,checkerOnlyWithGameToraCard:0,
   checkerOnlyP0:0,gameToraOnlyR:0,gameToraOnlyNonR:0,
   choiceCountDisagreements:0,choiceCountExplainedRepresentations:0,
-  choiceCountConfirmedSourceGaps:0,choiceCountPending:0,
+  choiceCountConfirmedSourceGaps:0,choiceCountCheckerPartial:0,choiceCountPending:0,
   unresolvedItems:0,needsTargetedSourceReview:0
  };
  const keySet=new Set();
@@ -136,10 +171,16 @@ function build(index,docs,{strict=true}={}){
      paired.sourceOrdinal===x.sourceOrdinal&&
      paired.checkerOrdinal===x.checkerOrdinal);
    const illustrative=!!signature;
+   const checkerPartial=checkerPartialChoices.find(x=>card.cardId===x.cardId&&
+     paired.sourceOrdinal===x.sourceOrdinal&&
+     paired.checkerOrdinal===x.checkerOrdinal);
+   if(checkerPartial&&!checkerPartialMatches(g,paired,checkerPartial))
+    fail('Checkerの掲載欠損として裁定した2択の固定GameTora構造が変更');
    const sourceGap=sourceChoiceGaps.find(x=>card.cardId===x.cardId&&
      paired.sourceOrdinal===x.sourceOrdinal&&
      paired.checkerOrdinal===x.checkerOrdinal);
-   if(illustrative&&sourceGap)fail('相反する差異裁定が存在します');
+   if([!!signature,!!sourceGap,!!checkerPartial].filter(Boolean).length>1)
+    fail('相反する差異裁定が存在します');
    if(sourceGap){
     const first=g.choices[0];
     if(g.id!==sourceGap.gameToraLocalEventId||
@@ -184,10 +225,11 @@ function build(index,docs,{strict=true}={}){
    }
    stats.choiceCountDisagreements++;
    if(illustrative)stats.choiceCountExplainedRepresentations++;
+   else if(checkerPartial)stats.choiceCountCheckerPartial++;
    else if(sourceGap)stats.choiceCountConfirmedSourceGaps++;
    else stats.choiceCountPending++;
    add({cardId:card.cardId,rarity:card.rarity,type:'CHOICE_COUNT_DIFFERENCE',
-    priority:illustrative?'REVIEWED_REPRESENTATION':'P1',
+    priority:illustrative||checkerPartial?'REVIEWED_REPRESENTATION':'P1',
     checkerOrdinal:paired.checkerOrdinal,sourceOrdinal:paired.sourceOrdinal,
     sourceLocalEventId:paired.sourceLocalEventId,
     checkerChoiceCount:paired.checkerChoiceCount,
@@ -196,20 +238,31 @@ function build(index,docs,{strict=true}={}){
     gameToraFirstChoiceConditionSegments:g.choices[0]?.segments?.length||0,
     gameToraFirstChoiceRandomEither:g.choices[0]?.random_either===true,
     status:illustrative?'SOURCE_REPRESENTATION_EXPLAINED':
+      checkerPartial?'CHECKER_PARTIAL_CHOICE_ROWS':
       sourceGap?'FIXED_SOURCE_CHOICE_TOPOLOGY_INCOMPLETE':'NEEDS_TARGETED_REVIEW',
     ...(illustrative?{reviewEvidence:{
       url:signature.sourceUrl,reviewedOn:signature.reviewedOn,
       conclusion:signature.conclusion,
       gameToraEvidenceCategory:signature.sourceEvidenceKind,
       conditionalOrOutcomeRows:signature.expectedRows}}:{}),
+    ...(checkerPartial?{checkerPartialEvidence:{
+      referenceUrls:checkerPartial.references,
+      sourceHasTwoSelectableChoices:true,checkerRecordedRows:1,
+      sourceSkillHintRows:checkerPartial.hints,
+      checkerRawTextRedistributed:false,game2026Verified:false}}:{}),
     ...(sourceGap?{sourceChoiceGapEvidence:{
       sourceUrl:sourceGap.sourceUrl,independentEditorialUrl:sourceGap.independentEditorialUrl,
       conclusion:sourceGap.conclusion,expectedPlayerChoiceCount:sourceGap.checkerChoices,
       missingSelectableChoicesRequireRepair:true,game2026Verified:false}}:{}),
     gameWithEditorialCorroborated:illustrative||!!sourceGap,
+    otherEditorialCorroborated:!!checkerPartial,
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
    if(illustrative)proof.push({cardId:card.cardId,sourceOrdinal:paired.sourceOrdinal,
      evidenceUrl:signature.sourceUrl});
+   if(checkerPartial)proof.push({cardId:card.cardId,
+     sourceOrdinal:paired.sourceOrdinal,
+     evidenceUrl:checkerPartial.references[0],
+     conclusion:'CHECKER_PARTIAL_CHOICE_ROWS'});
   }
  }
  const expected=index.stats;
@@ -234,9 +287,10 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyP0!==0||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==52||stats.choiceCountDisagreements!==9||
     stats.choiceCountExplainedRepresentations!==5||
+    stats.choiceCountCheckerPartial!==3||
     stats.choiceCountConfirmedSourceGaps!==1||
-    stats.choiceCountPending!==3||stats.unresolvedItems!==519||
-    stats.needsTargetedSourceReview!==124))
+    stats.choiceCountPending!==0||stats.unresolvedItems!==516||
+    stats.needsTargetedSourceReview!==121))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
   {P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[b.priority])||
