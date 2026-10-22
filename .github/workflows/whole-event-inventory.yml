@@ -5,6 +5,7 @@ on:
     paths:
       - 'poc/tools/build_whole_event_index.cjs'
       - 'poc/src/phase2_reviewed_event_aliases.cjs'
+      - 'poc/src/phase2_additional_pinned_aliases.cjs'
       - 'poc/tests/phase2_reviewed_event_aliases.test.cjs'
       - 'poc/src/phase2_completeness_exception_queue.cjs'
       - 'poc/tools/build_phase2_completeness_exception_queue.cjs'

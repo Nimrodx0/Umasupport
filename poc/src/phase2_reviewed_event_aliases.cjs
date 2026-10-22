@@ -5,6 +5,7 @@
  * or publish source event titles. Restrict to pinned one-to-one source cases.
  */
 const fail=msg=>{throw Error('Phase2 P0イベント同定: '+msg);};
+const MORPHOLOGY_ALIASES=require('./phase2_additional_pinned_aliases.cjs');
 // Eleven individual, pinned source-title variants. No general fuzzy matching.
 // Numeric source keys and hashes identify the exact source events; no prose.
 const TITLE_VARIANTS=Object.freeze([
@@ -150,7 +151,7 @@ const CASES=Object.freeze([
   ],
   decision:'SAME_EVENT_ABBREVIATED_TITLE'
  }
-,...TITLE_VARIANTS,...EDITORIAL_RENAMES]);
+,...TITLE_VARIANTS,...EDITORIAL_RENAMES,...MORPHOLOGY_ALIASES]);
 function applyReviewedAliases({cardId,checkerEvents,gtEvents,rawGtEvents,paired}){
  if(!Array.isArray(checkerEvents)||!Array.isArray(gtEvents)||!paired||
     !Array.isArray(paired.selected)||!Array.isArray(paired.unmatchedC)||
@@ -189,6 +190,20 @@ function applyReviewedAliases({cardId,checkerEvents,gtEvents,rawGtEvents,paired}
       (original.choices[0].effects||[]).some(x=>x.type==='chain_end')||
       !(original.choices[1].effects||[]).some(x=>x.type==='chain_end'))
     fail('前段イベントの選択肢別終了状態が変化した: '+cardId);
+  }else if(rule.decision==='SAME_EVENT_PINNED_MORPHOLOGY'){
+   // Source titles are matched only by their exact normalized hashes above.
+   // The full effect type sequences and skill numeric hints must also match.
+   // Do not equate different game events using common narrative themes.
+   if(original.choices.map(c=>c.label?'S':'N').join('')!==rule.choiceShape||
+      original.choices.some((c,i)=>typeof c.label!=='string'||
+        c.random_either!==false||c.outcomes!==undefined||
+        c.segments!==undefined||!Array.isArray(c.effects)||
+        c.effects.some(e=>e.type==='chain_end')||
+        c.effects.map(e=>e.type).join(',')!==rule.effectTypes[i]||
+        JSON.stringify(c.effects.filter(e=>e.type==='skill_hint')
+         .map(e=>[e.skill_id,e.value]))!==
+        JSON.stringify(rule.hintSignatures[i])))
+    fail('カード限定の元イベント候補の選択／効果／ヒント形状が変化した: '+cardId);
   }else if(rule.decision==='SAME_EVENT_REVIEWED_TITLE_VARIANT'){
    if(original.choices.map(c=>c.label?'S':'N').join('')!==rule.choiceShape||
       original.choices.some(c=>c.random_either!==false||
