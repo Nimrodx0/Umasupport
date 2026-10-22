@@ -1,0 +1,34 @@
+# Phase 2：SSR30240のGameWith未掲載数値を裁定保留し、U-tools単独仮説を手動再現（2026-10-22）
+
+## 現在のPhase 2との関係
+
+[開発ロードマップ](roadmap.md)の「Phase 2・全カードの収録範囲・出典差異」の作業。全体は、(1)元収録範囲・欠落把握、(2)報酬数値と選択・結果裁定、(3)連続内継続・打ち切りなどの正確なスキーマ実装、(4)著作権・第三者出典・独自表示レビューと公開承認、(5)実ブラウザ／実端末確認の独立したゲートを経る。固定GT2,488イベントを非公開集計エンジンに通したことは(4)を完了したことではない。
+
+## 対象の元カードと「GameWith未掲載」の厳密な意味
+
+対象は**SSR30240 ジャングルポケット［『最強は俺だ！！』］（2025-02-14実装）**。
+- 固定GT `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`：通常イベント・ローカルID167/168の2件、**連続0件**。
+- 固定Checker `Cilda/UmaUmaChecker@8cf9fcb3cc7239041161be75c84daf9f8f22d29f`：カード収録自体はあるがイベント欄**0件**。
+- [GameTora対象カード](https://gametora.com/ja/umamusume/supports/30240-jungle-pocket)：対象版名・カードは確認できるが、Webテキスト取得範囲ではイベント分岐は確認できない。
+- [GameWithの**同一カード版の個別記事**](https://gamewith.jp/uma-musume/article/show/490549)：イベント由来スキルに「迅速果断」の**名称**がある一方、**「発生イベントと選択肢一覧」は「検証中」**。段階と報酬数値、ヒントLv、選択や結果経路、連続打ち切りは記事に存在しない。GameWithのほかの**同名キャラの劇場版特典カード**の3段階を、本SSRに流用しない。
+- [U-tools対象カードイベント](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30240/event)：3連続段階について、各段階スタミナ+15・絆+5、最終にID200591「迅速果断」Lv1という**候補**を掲載。これは**単一記事系統**の数値仮説。プレイヤー選択・結果分岐・続行／打ち切り条件の証拠ではない。
+
+[出典裁定契約](event-adjudication-enforcement.md)に従い、欠落は「**GameWithが対象数値事実を掲載していない**」という例外として具体的に保留。第二サイトや実ゲームの裏付けを一律に要求して保留したのではない。GameWithに段階の明示値が後日現れた場合には再裁定できるが、本稿は2026-10-22時点の参照範囲の記録。
+
+## データと実装
+
+- `poc/data/curation/adjudicated/30240_gamewith_gap.v1.json`：固定ソース欠損・カード版の厳密な同定、GameWith未掲載の事実種別4つ、U-tools単独の3段階候補、2026-10-22の参照日、公開不可フラグ。
+- `poc/src/phase2_30240_pending_chain_replay.cjs`：元の固定U-tools独立監査`phase2_30240_independent_chain_numeric_review.cjs`と上記JSONを照合。共通`evaluateException`を**3段階とも`PENDING`／`GAMEWITH_DOES_NOT_REPORT_REQUIRED_FACT`**として通し、GameWith採用数**0件**を固定する。
+- 同モジュールの`simulate`は**明示的な2つの実験フラグ**（仮の段階到達と、GameWith未裁定U-tools仮説の受諾）が両方trueの場合だけ、`core.directRoutes`へ単独の非公開仮説イベントを一時投入。3段階目ID200591ヒントLv1を`possibleOnly:true`と未裁定の出典タグ付きで返す。通常GTイベントの別スキルID202422は混同しない。実装は連続イベント自体の到達関係や公開データには触れない。
+- 専用Nodeテストに、別カード同名タイトルの誤結合、元数値ドリフト、GameWith掲載があると偽る変更、未選択状態での付与、ゲーム確認済み・出版承認済みへ昇格する変更を拒否するケースを固定CIへ接続。
+
+## 合格・未実施のゲート
+
+```sh
+node --test poc/tests/phase2_30240_pending_chain_replay.test.cjs
+node poc/tools/verify_event_release.cjs
+```
+
+**A 機構**：Nodeで固定出典を照合し、出典未裁定のスキル付与が本番デッキへ無条件混入することを拒否。**B 出典**：GameWithは数値未掲載で採用0／留保3。U-toolsの3段階は非公開仮説として元の固定独立監査と突き合わせる。**C 実環境・権利**：GitHub ActionsのChromium回帰とPages構築は配信基盤の試験であり、このカードの2026年実ゲームイベント分岐・Windows/Android物理端末・第三者素材の再利用許諾を確認していない。
+
+正式配信イベント0件、GT固定2,488件、重点固定出典差異65件は不変。SSR30240の3段階は**両固定元の外側の別枠**なので、Checker-only数値へ3件足さない。
