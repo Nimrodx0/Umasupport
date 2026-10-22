@@ -41,12 +41,8 @@ function validate(doc){
   exactKeys(card,['cardId','events'],'card');
   const ref=expected.get(card.cardId);
   if(!ref||seen.has(card.cardId)||!Array.isArray(card.events)||
-     card.events.length===ref.optionRows.length)
-   { // length equality is checked below; keep explicit failure for invalid.
-    if(!ref||seen.has(card.cardId)||!Array.isArray(card.events)||
-       card.events.length!==ref.optionRows.length)
-     fail('4SSRまたはイベント位置が欠落・重複');
-   }
+     card.events.length!==ref.optionRows.length)
+   fail('4SSRまたはイベント位置が欠落・重複');
   seen.add(card.cardId);totals.sourceCards++;
   for(let index=0;index<ref.optionRows.length;index++){
    const event=card.events[index],ordinal=index+1;
