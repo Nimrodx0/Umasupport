@@ -30,6 +30,9 @@ jobs:
       - name: Audit GT result-vs-OR branch categories (synthetic source)
         run: node --check poc/src/gametora_branch_semantics_inventory.cjs && node --test poc/tests/gametora_branch_semantics_inventory.test.cjs
 
+      - name: Exercise actual deck aggregator with unpublished GT event choices, outcomes and terminal gates
+        run: node --check poc/src/gametora_full_runtime_integration.cjs && node --test poc/tests/gametora_full_runtime_integration.test.cjs
+
       - name: Validate GT event-to-runtime schema projection and quarantine
         run: node --check poc/src/gametora_app_schema_dry_run.cjs && node --check poc/tools/probe_gametora_app_schema_dry_run.cjs && node --test poc/tests/gametora_app_schema_dry_run.test.cjs
 
