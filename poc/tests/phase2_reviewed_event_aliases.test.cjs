@@ -135,3 +135,57 @@ test('eleven individually pinned title variants pair exactly one pre-existing ev
   assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
  }
 });
+
+test('two independently reported title changes retain one actual event and pinned skill/result topology',()=>{
+ const cases=CASES.filter(x=>x.decision==='SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED');
+ assert.equal(cases.length,2);
+ for(const rule of cases){
+  const ce=Array.from({length:rule.checkerOrdinal},(_,i)=>({
+   sourceKey:'unrelated:'+i,sourceIndex:i,strict:'other'+i,optionCount:1
+  }));
+  ce[rule.checkerOrdinal-1]={
+   sourceKey:rule.sourceKey,sourceIndex:rule.checkerOrdinal-1,
+   strict:rule.checkerTitleSha,optionCount:1
+  };
+  const ge=Array.from({length:rule.sourceOrdinal},(_,i)=>({
+   sourceOrdinal:i+1,sourceLocalEventId:100+i,section:'random',
+   choiceCount:1,strict:'other'+i
+  }));
+  ge[rule.sourceOrdinal-1]={
+   sourceOrdinal:rule.sourceOrdinal,sourceLocalEventId:rule.gtLocalId,
+   section:rule.section,choiceCount:1,strict:rule.gtTitleSha
+  };
+  const raw=Array.from({length:rule.sourceOrdinal},()=>({
+   section:'random',id:1,choices:[{label:'',effects:[]}]
+  }));
+  const current=rule.shape==='NO_CHOICE_HINT'?
+   {label:'',random_either:false,effects:[
+    {type:'stamina',value:'+10'},
+    {type:'skill_hint',skill_id:201121,value:'+1'}]}:
+   {label:'',random_either:true,outcomes:[
+    [{type:'speed',value:'+30'},{type:'bond',value:'+15'}],
+    [{type:'speed',value:'+20'},{type:'bond',value:'+5'}]]};
+  raw[rule.sourceOrdinal-1]={id:rule.gtLocalId,section:rule.section,
+   choices:[current]};
+  const make=()=>({
+   cardId:rule.cardId,checkerEvents:ce,gtEvents:ge,rawGtEvents:raw,
+   paired:{selected:[],unmatchedC:[rule.checkerOrdinal-1],
+    unmatchedG:[rule.sourceOrdinal-1]}
+  });
+  let res=applyReviewedAliases(make());
+  assert.equal(res.matched.length,1);
+  assert.equal(res.paired.unmatchedC.length,0);
+  assert.equal(res.paired.unmatchedG.length,0);
+  assert.equal(res.matched[0].publicationApproved,false);
+  assert.equal(res.matched[0].currentGameVerified,false);
+  ce[rule.checkerOrdinal-1].strict='modified';
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+  ce[rule.checkerOrdinal-1].strict=rule.checkerTitleSha;
+  if(rule.shape==='NO_CHOICE_HINT'){
+   current.effects[1].value='+3';
+  }else{
+   current.outcomes[1][0].value='+30';
+  }
+  assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
+ }
+});
