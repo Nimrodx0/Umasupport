@@ -189,3 +189,74 @@ test('two independently reported title changes retain one actual event and pinne
   assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/);
  }
 });
+
+test('15 newly source-pinned event identities match only the same card, ordinals and effects',()=>{
+ const cases=CASES.filter(x=>x.decision==='SAME_EVENT_PINNED_MORPHOLOGY');
+ assert.equal(cases.length,15);
+ for(const rule of cases){
+  const ce=Array.from({length:rule.checkerOrdinal},(_,i)=>({
+   sourceIndex:i,sourceKey:'unrelated:'+i,strict:'unrelated:'+i,optionCount:1
+  }));
+  ce[rule.checkerOrdinal-1]={
+   sourceIndex:rule.checkerOrdinal-1,sourceKey:rule.sourceKey,
+   strict:rule.checkerTitleSha,optionCount:rule.checkerChoices
+  };
+  const ge=Array.from({length:rule.sourceOrdinal},(_,i)=>({
+   sourceOrdinal:i+1,sourceLocalEventId:100+i,section:'random',
+   strict:'gt-unrelated:'+i,choiceCount:1
+  }));
+  ge[rule.sourceOrdinal-1]={
+   sourceOrdinal:rule.sourceOrdinal,sourceLocalEventId:rule.gtLocalId,
+   section:rule.section,strict:rule.gtTitleSha,choiceCount:rule.gtChoices
+  };
+  const raw=Array.from({length:rule.sourceOrdinal},()=>({
+   id:1,section:'random',choices:[{label:'',random_either:false,effects:[]}]
+  }));
+  raw[rule.sourceOrdinal-1]={
+   id:rule.gtLocalId,section:rule.section,
+   choices:rule.effectTypes.map((types,i)=>{
+    let hintIndex=0;
+    return {label:rule.choiceShape[i]==='S'?'selected '+i:'',
+     random_either:false,effects:types.split(',').map(type=>{
+      if(type==='skill_hint'){
+       const [skill_id,value]=rule.hintSignatures[i][hintIndex++];
+       return {type,skill_id,value};
+      }
+      return {type,value:'+5'};
+     })};
+   })
+  };
+  const make=()=>({cardId:rule.cardId,checkerEvents:ce,gtEvents:ge,
+   rawGtEvents:raw,paired:{selected:[],unmatchedC:[rule.checkerOrdinal-1],
+    unmatchedG:[rule.sourceOrdinal-1]}});
+  const out=applyReviewedAliases(make());
+  assert.equal(out.matched.length,1,rule.cardId);
+  assert.equal(out.paired.selected.length,1,rule.cardId);
+  assert.deepEqual(out.paired.unmatchedC,[],rule.cardId);
+  assert.deepEqual(out.paired.unmatchedG,[],rule.cardId);
+  assert.equal(out.matched[0].currentGameVerified,false,rule.cardId);
+  assert.equal(out.matched[0].publicationApproved,false,rule.cardId);
+  const c=ce[rule.checkerOrdinal-1],g=ge[rule.sourceOrdinal-1];
+  const first=raw[rule.sourceOrdinal-1].choices[0];
+  const checkMutation=(apply,undo)=>{
+   apply();assert.throws(()=>applyReviewedAliases(make()),/P0イベント同定/,
+    rule.cardId);undo();
+  };
+  checkMutation(()=>{c.sourceKey='bad';},()=>{c.sourceKey=rule.sourceKey;});
+  checkMutation(()=>{g.strict='bad';},()=>{g.strict=rule.gtTitleSha;});
+  checkMutation(()=>{first.label=first.label?'':'invented choice';},
+   ()=>{first.label=rule.choiceShape[0]==='S'?'selected 0':'';});
+  checkMutation(()=>{first.random_either=true;},()=>{first.random_either=false;});
+  checkMutation(()=>{first.effects[0].type='unrelated';},
+   ()=>{first.effects[0].type=rule.effectTypes[0].split(',')[0];});
+  const indexed=raw[rule.sourceOrdinal-1].choices.find(x=>
+   x.effects.some(e=>e.type==='skill_hint'));
+  if(indexed){
+   const hint=indexed.effects.find(e=>e.type==='skill_hint'),old=hint.skill_id;
+   checkMutation(()=>{hint.skill_id=999999;},()=>{hint.skill_id=old;});
+  }
+  const wrong=make();
+  wrong.cardId='30001';
+  assert.equal(applyReviewedAliases(wrong).matched.length,0);
+ }
+});
