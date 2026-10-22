@@ -76,7 +76,11 @@ function build(index,topology,numeric,exceptions,{strict=true}={}){
   pendingShortChainCards:0,priorityReviewCards:0};
  for(const c of index.cards){
   const t=tMap.get(c.cardId),n=nMap.get(c.cardId);
-  if(!t||!n||c.sourceMissing!==t.sourceMissing||
+  if(!t||!n||!Array.isArray(c.checkerOnly)||!Array.isArray(c.gameToraOnly)||
+     !Array.isArray(c.pairs)||
+     c.checkerOnly.length!==c.unmatchedCheckerCount||
+     c.gameToraOnly.length!==c.unmatchedGameToraCount||
+     c.sourceMissing!==t.sourceMissing||
      t.sourceEventCount!==c.gameToraObservedCount||
      n.sourceEventCount!==c.gameToraObservedCount||
      !['R','SR','SSR'].includes(c.rarity)||
