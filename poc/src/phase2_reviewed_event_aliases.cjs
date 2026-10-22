@@ -108,6 +108,25 @@ const TITLE_VARIANTS=Object.freeze([
    'https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30315.json'
   ],decision:'SAME_EVENT_REVIEWED_TITLE_VARIANT'},
 ]);
+// Title changes requiring independent editorial corroboration, not mere glyph normalization.
+const EDITORIAL_RENAMES=Object.freeze([
+ {cardId:'30104',checkerOrdinal:3,sourceOrdinal:5,gtLocalId:746,
+  section:'arrows',checkerChoices:1,gtChoices:1,
+  sourceKey:'checker:30104:79ed0ec24eb6ded2dbb9',
+  checkerTitleSha:'sha256:e4a281c3a19e161596eeec428716a1ae812e2ffc123a3701326324dd5f96875a',
+  gtTitleSha:'sha256:ea535cb1500d23b9873255942c234d8e80fb1b6e2525eae22a8414a5a46aabf0',
+  evidence:['https://game8.jp/umamusume/464017','https://altema.jp/umamusume/support/226'],
+  decision:'SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED',shape:'NO_CHOICE_HINT',
+  expectedHint:[201121,'+1']},
+ {cardId:'30267',checkerOrdinal:1,sourceOrdinal:3,gtLocalId:1205,
+  section:'arrows',checkerChoices:1,gtChoices:1,
+  sourceKey:'checker:30267:3b6b74eba72ee2687557',
+  checkerTitleSha:'sha256:3b65fa1aa011f7c85a4a464105e2490d71e352640898126ba8b8eecf2c874d00',
+  gtTitleSha:'sha256:163a9c33f1f7ae1c11cf365b7884ab0c15ec30155c67031b9a13a20c9efd1fd8',
+  evidence:['https://game8.jp/umamusume/713261','https://gametora.com/ja/umamusume/supports/30267-calstone-light-o'],
+  decision:'SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED',shape:'NO_CHOICE_TWO_RANDOM_OUTCOMES',
+  expectedSpeeds:[30,20],expectedBonds:[15,5]}
+]);
 const CASES=Object.freeze([
  {
   cardId:'30139',checkerOrdinal:3,sourceKey:'checker:30139:1fb0bc07b47e6c3519b2',
@@ -131,7 +150,7 @@ const CASES=Object.freeze([
   ],
   decision:'SAME_EVENT_ABBREVIATED_TITLE'
  }
- ,...TITLE_VARIANTS]);
+,...TITLE_VARIANTS,...EDITORIAL_RENAMES]);
 function applyReviewedAliases({cardId,checkerEvents,gtEvents,rawGtEvents,paired}){
  if(!Array.isArray(checkerEvents)||!Array.isArray(gtEvents)||!paired||
     !Array.isArray(paired.selected)||!Array.isArray(paired.unmatchedC)||
@@ -180,6 +199,27 @@ function applyReviewedAliases({cardId,checkerEvents,gtEvents,rawGtEvents,paired}
        e.type==='skill_hint').map(e=>[e.skill_id,e.value])))!==
        JSON.stringify(rule.hintSignatures))
     fail('個別表記差イベントの選択とヒントの元形状が変化した: '+cardId);
+  }else if(rule.decision==='SAME_EVENT_INDEPENDENT_EDITORIAL_RENAMED'){
+   const choice=original.choices[0];
+   if(choice.label!==''||rule.gtChoices!==1)
+    fail('編集記事同定イベントの元選択肢が変化した: '+cardId);
+   if(rule.shape==='NO_CHOICE_HINT'){
+    const hints=choice.effects?.filter(e=>e.type==='skill_hint')||[];
+    if(choice.random_either!==false||choice.outcomes!==undefined||
+       hints.length!==1||hints[0].skill_id!==rule.expectedHint[0]||
+       hints[0].value!==rule.expectedHint[1])
+     fail('編集記事のスキルヒントが固定元と一致しない: '+cardId);
+   }else if(rule.shape==='NO_CHOICE_TWO_RANDOM_OUTCOMES'){
+    const routes=choice.outcomes?.map(row=>({
+     speed:row.filter(e=>e.type==='speed').map(e=>e.value),
+     bond:row.filter(e=>e.type==='bond').map(e=>e.value)
+    }));
+    if(choice.random_either!==true||routes?.length!==2||
+       !routes.every((row,i)=>row.speed.length===1&&
+        row.speed[0]==='+'+rule.expectedSpeeds[i]&&
+        row.bond.length===1&&row.bond[0]==='+'+rule.expectedBonds[i]))
+     fail('編集記事の大成功／成功2結果形状が固定元と一致しない: '+cardId);
+   }else fail('未対応の編集記事同定の構造');
   }else fail('不明な同定の根拠');
   unmatchedC.delete(cIdx);unmatchedG.delete(gIdx);
   selected.push({ci:cIdx,gi:gIdx,status:'reviewed-alias-paired',reviewEvidence:{
