@@ -43,17 +43,22 @@ const holdReasons=new Set(['NOT_LISTED_IN_GAMEWITH',
  'NUMERIC_SKILL_ID_NOT_RESOLVED']);
 const allowedEffects=new Set(['speed','stamina','power','guts','wisdom',
  'bond','energy','mood','skill_points']);
+function validateGtWebsiteCheck(cardId,sourceEventOrdinal,gtWebsite){
+ if(!/^\d{5}$/.test(cardId||'')||
+    !Number.isSafeInteger(sourceEventOrdinal)||sourceEventOrdinal<1||
+    !gtWebsite||!urlMatches(gtWebsite.url,'gametora.com')||
+    !gtWebsite.url.includes('/umamusume/supports/'+cardId+'-')||
+    !liveStatuses.has(gtWebsite.status)||
+    !/^\d{4}-\d\d-\d\d$/.test(gtWebsite.checkedAt||''))
+   fail('イベント特定済みのGameTora元サイト確認が不足');
+ return true;
+}
 function evaluateException(input){
  checkContract();
  const {cardId,sourceEventOrdinal,baseline,gtWebsite,gameWith,
   proposedDecision,holdReason=null}=input||{};
- if(!/^\d{5}$/.test(cardId||'')||
-    !Number.isSafeInteger(sourceEventOrdinal)||sourceEventOrdinal<1||
-    !['MISSING','DISPUTED'].includes(baseline)||
-    !gtWebsite||!urlMatches(gtWebsite.url,'gametora.com')||
-    !gtWebsite.url.includes('/umamusume/supports/'+cardId+'-')||
-    !liveStatuses.has(gtWebsite.status)||
-    !/^\d{4}-\d\d-\d\d$/.test(gtWebsite.checkedAt||'')||
+ validateGtWebsiteCheck(cardId,sourceEventOrdinal,gtWebsite);
+ if(!['MISSING','DISPUTED'].includes(baseline)||
     !gameWith||!urlMatches(gameWith.url,'gamewith.jp')||
     !/^\d{4}-\d\d-\d\d$/.test(gameWith.checkedAt||'')||
     !gameWithStatuses.has(gameWith.factStatus)||
@@ -109,4 +114,4 @@ function evaluateException(input){
  };
  return result;
 }
-module.exports={evaluateException,checkContract};
+module.exports={evaluateException,checkContract,validateGtWebsiteCheck};
