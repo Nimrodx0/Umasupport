@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "gt-source-three-choice-topology-editorial-repair",
+  "cardId": "30080",
+  "sourceGameToraRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "sourceEventOrdinal": 6,
+  "sourceEventLocalId": 1392,
+  "checkerEventOrdinal": 5,
+  "baselineStoredChoiceCount": 1,
+  "playerSelectableChoiceCount": 3,
+  "gameToraWebsite": {
+    "url": "https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa",
+    "checkedAt": "2026-10-22",
+    "status": "EVENT_DETAIL_UNCONFIRMED"
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/315701",
+    "checkedAt": "2026-10-22",
+    "factStatus": "EXPLICIT"
+  },
+  "corroboratingArticle": "https://game8.jp/umamusume/421771",
+  "rewardInterpretation": "SAME_HINT_IN_EACH_SEPARATE_PLAYER_CHOICE",
+  "externalAppearanceConditionExcluded": true,
+  "currentGameplayVerified": false,
+  "publicationApproved": false,
+  "sourceProseIncluded": false,
+  "noAutomaticRuntimeAdoption": true,
+  "choices": [
+    {
+      "ordinal": 1,
+      "skillHints": [
+        {
+          "skillNumericId": 201591,
+          "hintLevel": 3
+        }
+      ],
+      "reportedVariableEffects": {
+        "energyRange": [
+          10,
+          16
+        ],
+        "randomStatCount": 2,
+        "randomStatGainRange": [
+          10,
+          15
+        ],
+        "bond": 5
+      },
+      "resultBranchesReported": false,
+      "choiceAvailabilityConditionVerified": false,
+      "publicationApproved": false
+    },
+    {
+      "ordinal": 2,
+      "skillHints": [
+        {
+          "skillNumericId": 201591,
+          "hintLevel": 3
+        }
+      ],
+      "reportedVariableEffects": {
+        "energyRange": [
+          10,
+          16
+        ],
+        "randomStatCount": 2,
+        "randomStatGainRange": [
+          10,
+          15
+        ],
+        "bond": 5
+      },
+      "resultBranchesReported": false,
+      "choiceAvailabilityConditionVerified": false,
+      "publicationApproved": false
+    },
+    {
+      "ordinal": 3,
+      "skillHints": [
+        {
+          "skillNumericId": 201591,
+          "hintLevel": 3
+        }
+      ],
+      "reportedVariableEffects": {
+        "energyRange": [
+          10,
+          16
+        ],
+        "randomStatCount": 2,
+        "randomStatGainRange": [
+          10,
+          15
+        ],
+        "bond": 5
+      },
+      "resultBranchesReported": false,
+      "choiceAvailabilityConditionVerified": false,
+      "publicationApproved": false
+    }
+  ]
+}
