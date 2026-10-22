@@ -39,6 +39,17 @@ const editorialEvidence=[
   sourceUrl:'https://gamewith.jp/uma-musume/article/show/454997',
   conclusion:'YEAR_CLASS_CONDITIONS_NOT_USER_CHOICES'}
 ];
+// Unlike the harmless presentation-only rows above, this position contains
+// three independently documented PLAYER CHOICES that the pinned GT snapshot
+// collapses into one non-selectable effect row. This cannot be adopted as-is.
+const sourceChoiceGaps=[{
+ cardId:'30080',sourceOrdinal:6,checkerOrdinal:5,
+ checkerChoices:3,gameToraChoices:1,gameToraLocalEventId:1392,
+ sourceSection:'special',hintSkillId:201591,hintValue:'+3',
+ sourceUrl:'https://gamewith.jp/uma-musume/article/show/315701',
+ independentEditorialUrl:'https://game8.jp/umamusume/421771',
+ conclusion:'THREE_REAL_PLAYER_CHOICES_COLLAPSED_IN_FIXED_GT'
+}];
 function build(index,docs,{strict=true}={}){
  if(index?.schemaVersion!==1||
     index.dataKind!=='umasupport-whole-event-provisional-index'||
@@ -63,7 +74,8 @@ function build(index,docs,{strict=true}={}){
   checkerOnlyEvents:0,checkerOnlyOnMissingCards:0,checkerOnlyWithGameToraCard:0,
   checkerOnlyP0:0,gameToraOnlyR:0,gameToraOnlyNonR:0,
   choiceCountDisagreements:0,choiceCountExplainedRepresentations:0,
-  choiceCountPending:0,unresolvedItems:0,needsTargetedSourceReview:0
+  choiceCountConfirmedSourceGaps:0,choiceCountPending:0,
+  unresolvedItems:0,needsTargetedSourceReview:0
  };
  const keySet=new Set();
  function add(row){
@@ -124,6 +136,23 @@ function build(index,docs,{strict=true}={}){
      paired.sourceOrdinal===x.sourceOrdinal&&
      paired.checkerOrdinal===x.checkerOrdinal);
    const illustrative=!!signature;
+   const sourceGap=sourceChoiceGaps.find(x=>card.cardId===x.cardId&&
+     paired.sourceOrdinal===x.sourceOrdinal&&
+     paired.checkerOrdinal===x.checkerOrdinal);
+   if(illustrative&&sourceGap)fail('相反する差異裁定が存在します');
+   if(sourceGap){
+    const first=g.choices[0];
+    if(g.id!==sourceGap.gameToraLocalEventId||
+       g.section!==sourceGap.sourceSection||
+       g.choices.length!==sourceGap.gameToraChoices||
+       paired.checkerChoiceCount!==sourceGap.checkerChoices||
+       first?.label!==''||first.random_either!==false||
+       first.outcomes!==undefined||!Array.isArray(first.effects)||
+       first.effects.filter(e=>e.type==='skill_hint').length!==1||
+       !first.effects.some(e=>e.type==='skill_hint'&&
+         e.skill_id===sourceGap.hintSkillId&&e.value===sourceGap.hintValue))
+      fail('3択欠落の固定GT形状が変化しました。再審査が必要');
+   }
    if(illustrative){
     const first=g.choices[0];
     const common=g.section===signature.sourceSection&&
@@ -155,6 +184,7 @@ function build(index,docs,{strict=true}={}){
    }
    stats.choiceCountDisagreements++;
    if(illustrative)stats.choiceCountExplainedRepresentations++;
+   else if(sourceGap)stats.choiceCountConfirmedSourceGaps++;
    else stats.choiceCountPending++;
    add({cardId:card.cardId,rarity:card.rarity,type:'CHOICE_COUNT_DIFFERENCE',
     priority:illustrative?'REVIEWED_REPRESENTATION':'P1',
@@ -165,13 +195,18 @@ function build(index,docs,{strict=true}={}){
     gameToraFirstChoiceOutcomeCount:g.choices[0]?.outcomes?.length||0,
     gameToraFirstChoiceConditionSegments:g.choices[0]?.segments?.length||0,
     gameToraFirstChoiceRandomEither:g.choices[0]?.random_either===true,
-    status:illustrative?'SOURCE_REPRESENTATION_EXPLAINED':'NEEDS_TARGETED_REVIEW',
+    status:illustrative?'SOURCE_REPRESENTATION_EXPLAINED':
+      sourceGap?'FIXED_SOURCE_CHOICE_TOPOLOGY_INCOMPLETE':'NEEDS_TARGETED_REVIEW',
     ...(illustrative?{reviewEvidence:{
       url:signature.sourceUrl,reviewedOn:signature.reviewedOn,
       conclusion:signature.conclusion,
       gameToraEvidenceCategory:signature.sourceEvidenceKind,
       conditionalOrOutcomeRows:signature.expectedRows}}:{}),
-    gameWithEditorialCorroborated:illustrative,
+    ...(sourceGap?{sourceChoiceGapEvidence:{
+      sourceUrl:sourceGap.sourceUrl,independentEditorialUrl:sourceGap.independentEditorialUrl,
+      conclusion:sourceGap.conclusion,expectedPlayerChoiceCount:sourceGap.checkerChoices,
+      missingSelectableChoicesRequireRepair:true,game2026Verified:false}}:{}),
+    gameWithEditorialCorroborated:illustrative||!!sourceGap,
     sourceIndependentlyVerified:false,gameVerified:false,publicationApproved:false});
    if(illustrative)proof.push({cardId:card.cardId,sourceOrdinal:paired.sourceOrdinal,
      evidenceUrl:signature.sourceUrl});
@@ -185,11 +220,13 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyP0!==index.attention.p0Unmatched.length)
   fail('固定元照合件数の保存則違反');
  stats.unresolvedItems=stats.checkerOnlyEvents+
-  stats.gameToraOnlyR+stats.gameToraOnlyNonR+stats.choiceCountPending;
+  stats.gameToraOnlyR+stats.gameToraOnlyNonR+
+  stats.choiceCountConfirmedSourceGaps+stats.choiceCountPending;
  // R cards are not covered by Checker, so 395 GT-only R rows are
  // NOT 395 genuine source disagreements. Keep them as scope metadata.
  stats.needsTargetedSourceReview=stats.checkerOnlyEvents+
-  stats.gameToraOnlyNonR+stats.choiceCountPending;
+  stats.gameToraOnlyNonR+
+  stats.choiceCountConfirmedSourceGaps+stats.choiceCountPending;
  if(strict&&(stats.rosterCards!==563||stats.gameToraCards!==559||
     stats.missingGameToraCards!==4||stats.checkerOnlyEvents!==68||
     stats.checkerOnlyOnMissingCards!==20||
@@ -197,7 +234,8 @@ function build(index,docs,{strict=true}={}){
     stats.checkerOnlyP0!==0||stats.gameToraOnlyR!==395||
     stats.gameToraOnlyNonR!==52||stats.choiceCountDisagreements!==9||
     stats.choiceCountExplainedRepresentations!==5||
-    stats.choiceCountPending!==4||stats.unresolvedItems!==519||
+    stats.choiceCountConfirmedSourceGaps!==1||
+    stats.choiceCountPending!==3||stats.unresolvedItems!==519||
     stats.needsTargetedSourceReview!==124))
   fail('固定全件母集団が変更されました。新しい版として調査が必要');
  queue.sort((a,b)=>({P0:0,P1:1,P2:2,P3:3,REVIEWED_REPRESENTATION:4}[a.priority]-
