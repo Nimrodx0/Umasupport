@@ -13,6 +13,14 @@ const allowedEffects=new Set(['speed','stamina','power','guts','wisdom',
  'bond','energy','mood','skill_points']);
 const expectedHints={1:[],2:[],3:[[201463,1]],4:[],5:[[202602,1]]};
 const expectedChoiceCounts=[2,0,0,2,2];
+const expectedEffects=[
+ [[['power',15],['bond',5]],[['energy',15],['bond',5]]],
+ [[['mood',1],['power',10],['bond',5]]],
+ [[['power',15],['bond',5]]],
+ [[['speed',10],['guts',10],['bond',5]],[['energy',25],['bond',5]]],
+ [[['stamina',15],['bond',5]],[['bond',5]]]
+];
+const expectedSkillNames={201463:'月影円刃',202602:'イグニッション'};
 const expectedSource='6e38b54af4fad397ff4491e63007a90705a4fe67';
 const expectedAdjudicated=REVIEW.find(c=>c.cardId==='30321');
 function build(input,{model=null}={}){
@@ -56,10 +64,15 @@ function build(input,{model=null}={}){
        !Number.isInteger(h.hintLevel)||h.hintLevel<1||
        typeof h.verifiedSkillName!=='string'||!h.verifiedSkillName.trim())
      fail('数値スキルと確認名が不正: '+ordinal);
+    if(expectedSkillNames[h.skillNumericId]!==h.verifiedSkillName)
+     fail('数値IDとスキル名の照合済み組が変化: '+ordinal);
     allHints.push([h.skillNumericId,h.hintLevel]);
     hintMentions++;
    }
   }
+  if(JSON.stringify(e.alternatives.map(a=>a.effects.map(x=>[x.kind,x.value])))!==
+     JSON.stringify(expectedEffects[i]))
+   fail('GameWith採用済みの能力・絆数値が変化: '+ordinal);
   if(JSON.stringify(allHints)!==JSON.stringify(expectedHints[ordinal]))
    fail('照合済みスキルのID・Lv・イベント位置が変化: '+ordinal);
   const decision=evaluateException({
