@@ -1,0 +1,142 @@
+'use strict';
+/*
+ * Numerically bounded, non-publishing editorial review of four SSRs absent
+ * from the PINNED GameTora JSON. 2026 GameTora live and editorial sites may
+ * be newer; this module makes NO claim of an independently acquired GT JSON.
+ *
+ * GameWith underlies Checker; never treat them as independent witnesses.
+ * Store ONLY card IDs, source positions, skill IDs, hint levels and links.
+ */
+const fail=s=>{throw Error('Phase2未収録4SSRのイベント別照合: '+s);};
+const GT='6e38b54af4fad397ff4491e63007a90705a4fe67';
+const CHECKER='8cf9fcb3cc7239041161be75c84daf9f8f22d29f';
+const SKILLS='0cacbb1aaf9dca10283d5b9ea20b205b9d204535';
+const as=(event,option,id,level)=>[event,option,id,level];
+const REVIEW=Object.freeze([
+ {cardId:'30318',optionRows:[2,2,1,2,2],
+  eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','SELECTION'],
+  hints:[as(3,1,201323,1),as(5,2,200152,1)],
+  references:{gameTora:'https://gametora.com/ja/umamusume/supports/30318-rice-shower',
+   gameWith:'https://gamewith.jp/uma-musume/article/show/578814',
+   game8:'https://game8.jp/umamusume/818871'},
+  liveGameToraEvidence:'EVENT_LIST_3_CHAIN_2_RANDOM'},
+ {cardId:'30319',optionRows:[2,2,1,2,2],
+  eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','EDITORIAL_PRESENTATION_UNRESOLVED'],
+  hints:[as(2,1,204412,1),as(3,1,202371,1),as(3,1,204151,2),as(5,2,201641,1)],
+  references:{gameTora:'https://gametora.com/ja/umamusume/supports/30319-narita-brian',
+   gameWith:'https://gamewith.jp/uma-musume/article/show/578819',
+   game8:'https://game8.jp/umamusume/818831'},
+  liveGameToraEvidence:'EVENT_LIST_3_CHAIN_2_RANDOM'},
+ {cardId:'30320',optionRows:[2,2,1,2,2],
+  eventShape:['SELECTION','SELECTION','NO_SELECTION','SELECTION','SELECTION'],
+  hints:[as(2,1,201651,1),as(3,1,203801,2),as(3,1,204721,1),as(5,1,202082,1)],
+  references:{gameTora:'https://gametora.com/ja/umamusume/supports',
+   gameWith:'https://gamewith.jp/uma-musume/article/show/578818',
+   game8:'https://game8.jp/umamusume/818830'},
+  liveGameToraEvidence:'ROSTER_LIST_ONLY'},
+ {cardId:'30321',optionRows:[2,1,1,2,2],
+  eventShape:['SELECTION','EDITORIAL_PRESENTATION_UNRESOLVED',
+   'EDITORIAL_PRESENTATION_UNRESOLVED','SELECTION','SELECTION'],
+  hints:[as(3,1,201463,1),as(5,2,202602,1)],
+  references:{gameTora:'https://gametora.com/ja/umamusume/supports/30321-duramente',
+   gameWith:'https://gamewith.jp/uma-musume/article/show/578817',
+   game8:'https://game8.jp/umamusume/818829'},
+  liveGameToraEvidence:'EVENT_LIST_3_CHAIN_2_RANDOM'}
+]);
+function review(candidate,{strict=true}={}){
+ if(candidate?.schemaVersion!==1||
+    candidate.dataKind!=='missing-gt-four-ssr-numeric-skill-candidate-backfill'||
+    candidate.publicationApproved!==false||
+    candidate.currentGameVerified!==false||
+    candidate.noAutomaticRuntimeAdoption!==true||
+    candidate.sourceProseIncluded!==false||
+    candidate.sourcePins?.gameToraDerived!==GT||
+    candidate.sourcePins?.checker!==CHECKER||
+    candidate.sourcePins?.independentSkills!==SKILLS||
+    !Array.isArray(candidate.cards))
+  fail('固定の未承認数値候補の形と出典が不正');
+ const byId=new Map();
+ for(const c of candidate.cards){
+  if(byId.has(c.cardId)||!REVIEW.some(r=>r.cardId===c.cardId))fail('想定外カードか重複カード');
+  byId.set(c.cardId,c);
+ }
+ const totals={reviewedCards:0,reviewedCandidateEvents:0,reviewedSourceRows:0,
+  checkedNumericHintMentions:0,editorialShapeAlignedEvents:0,
+  presentationUnresolvedEvents:0,reviewedChainPositionCandidates:0,
+  reviewedRandomPositionCandidates:0,gameToraLiveEventListCards:0,
+  gameToraLiveRosterOnlyCards:0};
+ const cards=[];
+ for(const expected of REVIEW){
+  const c=byId.get(expected.cardId);
+  if(!c||c.rarity!=='SSR'||c.sourceCardMissing!==true||
+     c.currentGameVerified!==false||c.publicationApproved!==false||
+     !Array.isArray(c.events)||c.events.length!==5)
+   fail('4SSRのカード・5イベント候補の構造が不正');
+  totals.reviewedCards++;
+  if(expected.liveGameToraEvidence==='EVENT_LIST_3_CHAIN_2_RANDOM')
+   totals.gameToraLiveEventListCards++;
+  else totals.gameToraLiveRosterOnlyCards++;
+  const hints=[];
+  const events=c.events.map((e,i)=>{
+   if(!e||e.checkerOrdinal!==i+1||
+      !/^checker:\d+:[0-9a-f]{20}$/.test(e.sourceKey||'')||
+      !/^sha256:[0-9a-f]{64}$/.test(e.sourceDigest||'')||
+      !/^sha256:[0-9a-f]{64}$/.test(e.titleFingerprint||'')||
+      e.checkerChoiceRows!==expected.optionRows[i]||
+      e.orderingHypothesis!==(i<3?'CHAIN_STAGE_CANDIDATE':'RANDOM_EVENT_CANDIDATE')||
+      e.sourceEffectAlternativesUnverified!==true||
+      e.actualGameplaySelectionVerified!==false||
+      e.currentGameVerified!==false||
+      e.publicationApproved!==false||!Array.isArray(e.hintMentions))
+    fail('Checker候補の行・指紋・連続位置が固定資料と一致しない '+expected.cardId+':'+(i+1));
+   totals.reviewedCandidateEvents++;totals.reviewedSourceRows+=e.checkerChoiceRows;
+   if(i<3)totals.reviewedChainPositionCandidates++;
+   else totals.reviewedRandomPositionCandidates++;
+   const shape=expected.eventShape[i];
+   if(shape==='EDITORIAL_PRESENTATION_UNRESOLVED')totals.presentationUnresolvedEvents++;
+   else totals.editorialShapeAlignedEvents++;
+   for(const m of e.hintMentions){
+    if(!Number.isSafeInteger(m.checkerOptionOrdinal)||m.checkerOptionOrdinal<1||
+       m.checkerOptionOrdinal>e.checkerChoiceRows||
+       !Number.isSafeInteger(m.skillNumericId)||
+       !Number.isSafeInteger(m.hintLevel)||
+       m.rewardConditionVerified!==false||
+       m.choiceIsPlayerSelectableVerified!==false)
+     fail('ヒント位置／条件の未確認フラグが不正');
+    hints.push([i+1,m.checkerOptionOrdinal,m.skillNumericId,m.hintLevel]);
+    totals.checkedNumericHintMentions++;
+   }
+   return {checkerOrdinal:i+1,sourceKey:e.sourceKey,
+    sourceDigest:e.sourceDigest,sourceTitleFingerprint:e.titleFingerprint,
+    sourceEffectRows:e.checkerChoiceRows,
+    sourceSectionHypothesis:i<3?'CHAIN_STAGE':'RANDOM',
+    editorialPresentation:shape,
+    actualChoiceSemanticsVerified:false,
+    hintGrantConditionVerified:false,
+    game2026Verified:false,publicationApproved:false};
+  });
+  const sorted=x=>[...x].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  if(JSON.stringify(sorted(hints))!==JSON.stringify(sorted(expected.hints)))
+   fail('スキル数値ID・Lv・出典イベントと行位置が独立記事の照合値と不一致: '+c.cardId);
+  cards.push({cardId:c.cardId,liveGameToraCoverage:expected.liveGameToraEvidence,
+    referenceUrls:expected.references,editorialSkillHintLocations:hints.length,
+    events,game2026Verified:false,publicationApproved:false});
+ }
+ if(strict&&(totals.reviewedCards!==4||totals.reviewedCandidateEvents!==20||
+    totals.reviewedSourceRows!==35||totals.checkedNumericHintMentions!==12||
+    totals.editorialShapeAlignedEvents!==17||totals.presentationUnresolvedEvents!==3||
+    totals.reviewedChainPositionCandidates!==12||
+    totals.reviewedRandomPositionCandidates!==8||
+    totals.gameToraLiveEventListCards!==3||totals.gameToraLiveRosterOnlyCards!==1))
+  fail('カード・ヒント・選択肢の固定全件数が変化');
+ return {schemaVersion:1,
+  dataKind:'phase2-four-ssr-editorial-numeric-provisional-review',
+  provenance:{gameToraOldSnapshot:GT,checker:CHECKER,skillMetadata:SKILLS},
+  totals,cards,
+  // Two editorial websites do not independently confirm game behavior.
+  editorialChecksAreNotGameplayVerification:true,
+  game2026Verified:false,allGameEventsVerified:false,
+  selectionSemanticsVerified:false,sourceProseIncluded:false,
+  publicationApproved:false,noAutomaticRuntimeAdoption:true};
+}
+module.exports={review,REVIEW};
