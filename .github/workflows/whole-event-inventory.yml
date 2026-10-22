@@ -9,6 +9,9 @@ on:
       - 'poc/tests/phase2_reviewed_event_aliases.test.cjs'
       - 'poc/src/phase2_completeness_exception_queue.cjs'
       - 'poc/src/phase2_independent_roster_coverage.cjs'
+      - 'poc/src/phase2_30240_independent_chain_numeric_review.cjs'
+      - 'poc/tools/audit_30240_independent_chain_numeric_review.cjs'
+      - 'poc/tests/phase2_30240_independent_chain_numeric_review.test.cjs'
       - 'poc/tools/audit_phase2_independent_roster_coverage.cjs'
       - 'poc/tests/phase2_independent_roster_coverage.test.cjs'
       - 'poc/tools/build_phase2_completeness_exception_queue.cjs'
@@ -93,6 +96,8 @@ jobs:
           curl -fLsS --retry 2 --max-time 90 \
             https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json \
             -o "$RUNNER_TEMP/event-inputs/Events.json"
+      - name: Verify independent 30240 chain numerical candidates and fail-closed gates
+        run: node --test umasupport/poc/tests/phase2_30240_independent_chain_numeric_review.test.cjs
       - name: Verify independent coverage triage with synthetic cards
         run: node --test umasupport/poc/tests/phase2_independent_roster_coverage.test.cjs
       - name: Verify purely synthetic event matching regressions
@@ -271,6 +276,15 @@ jobs:
           node umasupport/poc/tools/check_private_schema_digest_parity.cjs \
             whole-event-output/gametora_app_schema_dry_run_summary.v1.json \
             whole-event-output/gametora_app_schema_private_2026_name_preview_summary.v1.json
+      - name: Audit SSR30240's three missing chain stages against pinned 2026 skill identity (no publication)
+        run: |
+          node umasupport/poc/tools/audit_30240_independent_chain_numeric_review.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            whole-event-output/phase2_independent_roster_coverage.v1.json \
+            whole-event-output/phase2_completeness_exceptions.v1.json \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            "$RUNNER_TEMP/event-inputs/independent-skills-20261004.json" \
+            whole-event-output/phase2_30240_missing_chain_numeric.v1.json
       - name: Upload matched event facts, missing source positions and totals only
         uses: actions/upload-artifact@v4
         with:
