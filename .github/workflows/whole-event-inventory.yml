@@ -8,6 +8,9 @@ on:
       - 'poc/src/phase2_additional_pinned_aliases.cjs'
       - 'poc/tests/phase2_reviewed_event_aliases.test.cjs'
       - 'poc/src/phase2_completeness_exception_queue.cjs'
+      - 'poc/src/phase2_independent_roster_coverage.cjs'
+      - 'poc/tools/audit_phase2_independent_roster_coverage.cjs'
+      - 'poc/tests/phase2_independent_roster_coverage.test.cjs'
       - 'poc/tools/build_phase2_completeness_exception_queue.cjs'
       - 'poc/tests/phase2_completeness_exception_queue.test.cjs'
       - 'poc/src/gametora_missing_card_triage.cjs'
@@ -90,6 +93,8 @@ jobs:
           curl -fLsS --retry 2 --max-time 90 \
             https://raw.githubusercontent.com/Cilda/UmaUmaChecker/8cf9fcb3cc7239041161be75c84daf9f8f22d29f/UmaUmaChecker/Library/Events.json \
             -o "$RUNNER_TEMP/event-inputs/Events.json"
+      - name: Verify independent coverage triage with synthetic cards
+        run: node --test umasupport/poc/tests/phase2_independent_roster_coverage.test.cjs
       - name: Verify purely synthetic event matching regressions
         run: node --test umasupport/poc/tests/whole_event_index.test.cjs umasupport/poc/tests/whole_event_reward_audit.test.cjs umasupport/poc/tests/whole_chain_topology.test.cjs umasupport/poc/tests/gametora_missing_card_triage.test.cjs umasupport/poc/tests/phase2_completeness_exception_queue.test.cjs umasupport/poc/tests/phase2_reviewed_event_aliases.test.cjs
       - name: Validate direct old-master crosswalk with synthetic SQLite
@@ -167,6 +172,14 @@ jobs:
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora \
             whole-event-output/gametora_whole_event_numeric_candidate.v1.json
+      - name: Audit independent coverage risks for every one of 563 cards
+        run: |
+          node umasupport/poc/tools/audit_phase2_independent_roster_coverage.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            whole-event-output/whole_chain_topology_review.v1.json \
+            whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
+            whole-event-output/phase2_completeness_exceptions.v1.json \
+            whole-event-output/phase2_independent_roster_coverage.v1.json
       - name: Fetch version-pinned UmaSim skill dictionary and verify checksum
         shell: bash
         run: |
