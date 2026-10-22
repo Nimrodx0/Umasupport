@@ -31,7 +31,7 @@ const FROZEN={
  gtRandomSkillId:202422,gtRandomSkillLevel:1
 };
 const hashedName=x=>'sha256:'+crypto.createHash('sha256').update(
- String(x).normalize('NFKC').replace(/\\s+/g,' ').trim()
+ String(x).normalize('NFKC').replace(/\s+/g,' ').trim()
 ).digest('hex');
 function make(index,coverage,exceptions,numeric,independentSkills,{strict=true}={}){
  if(index?.sourcePins?.checker!==PIN.checker||
@@ -98,8 +98,9 @@ function make(index,coverage,exceptions,numeric,independentSkills,{strict=true}=
  const randomHints=n.events.flatMap(x=>x.choices.flatMap(c=>
    c.routes.flatMap(y=>y.numericHintFacts||[])));
  if(randomHints.length!==1||
-    randomHints[0].skillNumericId!==FROZEN.gtRandomSkillId||
-    randomHints[0].hintLevel!==FROZEN.gtRandomSkillLevel)
+    randomHints[0].skillNumericId!==String(FROZEN.gtRandomSkillId)||
+    randomHints[0].level!==FROZEN.gtRandomSkillLevel||
+    randomHints[0].numericFactParsed!==true)
   fail('固定GT通常イベントのヒント数値が変化');
  const skills=independentSkills.filter(x=>x.id===FROZEN.skillNameId);
  const prev=independentSkills.filter(x=>x.id===FROZEN.gtRandomSkillId);
