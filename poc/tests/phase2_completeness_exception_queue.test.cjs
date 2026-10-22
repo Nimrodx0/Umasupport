@@ -340,7 +340,7 @@ for(const rule of [
  function fixture(){
   const {index,docs}=make({cardId:rule.cardId});
   const c=index.cards[0];
-  c.checkerObservedCount=0;c.checkerMissing=true;c.sourceMissing=false;
+  c.checkerObservedCount=0;c.checkerMissing=false;c.sourceMissing=false;
   c.unmatchedCheckerCount=0;c.unmatchedGameToraCount=5;
   c.checkerOnly=[];c.pairs=[];
   c.gameToraOnly=rule.ids.map((id,i)=>({
