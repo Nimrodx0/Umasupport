@@ -10,6 +10,8 @@ const {REVIEW}=require('./phase2_four_ssr_editorial_review.cjs');
 const {evaluateException}=require('./event_exception_adjudication.cjs');
 const {build:review30321}=require('./phase2_editorial_intake.cjs');
 const DETAILS=require('../data/curation/adjudicated/30321.v1.json');
+const {build:reviewRemaining}=require('./phase2_remaining_ssr_intake.cjs');
+const REMAINING_DETAILS=require('../data/curation/adjudicated/30318-30320.v1.json');
 const fail=s=>{throw Error('GameWith例外の編集採用台帳: '+s);};
 const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -39,6 +41,12 @@ function validate(doc){
     doc.noAutomaticRuntimeAdoption!==true||!Array.isArray(doc.cards)||
     doc.cards.length!==REVIEW.length)
   fail('固定版・未公開・4枚の境界が不正');
+ const remaining=reviewRemaining(REMAINING_DETAILS);
+ if(remaining.summary.editoriallyAdoptedEvents!==15||
+    remaining.summary.blockedChainEvents!==9||
+    remaining.summary.publicationApproved!==false)
+  fail('追加3SSRのGameWith編集採用データが不正');
+ const remainingById=new Map(remaining.ledgerCards.map(c=>[c.cardId,c]));
  const scoped=review30321(DETAILS);
  if(scoped.summary.editoriallyAdoptedEvents!==5||
     scoped.summary.blockedChainEvents!==3||
@@ -61,6 +69,21 @@ function validate(doc){
    if(!object(event)||event.sourceOrdinal!==ordinal)
     fail(card.cardId+': Checker元イベント位置に欠落・入替');
    totals.sourcePositions++;
+   if(card.cardId!=='30321'){
+    const adopted=remainingById.get(card.cardId)?.events[index];
+    if(!adopted||!same(event,adopted))
+     fail(card.cardId+'/'+ordinal+': GameWith編集採用事実と独立台帳が不一致');
+    totals.adoptedNumericalEvents++;
+    if(event.decision==='GAMEWITH_NUMERIC_FACTS_ADOPTED'){
+     totals.adoptedNonSkillEffectFacts+=event.numericEffects.length;
+     totals.adoptedSkillHintFacts+=event.skillHints.length;
+    }else if(event.decision==='GAMEWITH_CHOICE_FACTS_ADOPTED'){
+     totals.adoptedSelectableAlternatives+=event.alternatives.length;
+     totals.adoptedNonSkillEffectFacts+=event.alternatives.reduce((n,a)=>n+a.effects.length,0);
+     totals.adoptedSkillHintFacts+=event.alternatives.reduce((n,a)=>n+a.skillHints.length,0);
+    }else fail('追加SSRに未裁定が混入');
+    continue;
+   }
    const decision=(ref.gameWithAdjudications||[]).find(e=>e.checkerOrdinal===ordinal);
    if(decision){
     exactKeys(event,ADOPTED_FIELDS,card.cardId+'/'+ordinal);
@@ -138,12 +161,12 @@ function validate(doc){
   }
  }
  if(seen.size!==4||totals.sourcePositions!==20||
-    totals.adoptedNumericalEvents!==5||
-    totals.pendingRoutePositions!==15||
-    totals.adoptedSkillHintFacts!==2||
-    totals.pendingSkillHintMentions!==10||
-    totals.adoptedNonSkillEffectFacts!==17||
-    totals.adoptedSelectableAlternatives!==6)
+    totals.adoptedNumericalEvents!==20||
+    totals.pendingRoutePositions!==0||
+    totals.adoptedSkillHintFacts!==12||
+    totals.pendingSkillHintMentions!==0||
+    totals.adoptedNonSkillEffectFacts!==90||
+    totals.adoptedSelectableAlternatives!==30)
   fail('既存SSR20イベント・12ヒントの保存則が不一致');
  return totals;
 }

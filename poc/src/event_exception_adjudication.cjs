@@ -42,7 +42,7 @@ const holdReasons=new Set(['NOT_LISTED_IN_GAMEWITH',
  'CARD_OR_EVENT_IDENTITY_NOT_RESOLVED',
  'NUMERIC_SKILL_ID_NOT_RESOLVED']);
 const allowedEffects=new Set(['speed','stamina','power','guts','wisdom',
- 'bond','energy','mood','skill_points']);
+ 'bond','energy','mood','skill_points','max_energy']);
 function validateGtWebsiteCheck(cardId,sourceEventOrdinal,gtWebsite){
  if(!/^\d{5}$/.test(cardId||'')||
     !Number.isSafeInteger(sourceEventOrdinal)||sourceEventOrdinal<1||

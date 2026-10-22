@@ -65,6 +65,13 @@ jobs:
           node poc/tools/report_phase2_editorial_intake.cjs
           node poc/tools/verify_adjudicated_event_facts.cjs
 
+      - name: Verify SSR30318-30320 fifteen editorial events and unpublished six normal-event drafts
+        run: |
+          node --check poc/src/phase2_remaining_ssr_intake.cjs
+          node --test poc/tests/phase2_remaining_ssr_intake.test.cjs
+          node --test poc/tests/phase2_adjudicated_fact_intake.test.cjs
+          node poc/tools/verify_adjudicated_event_facts.cjs
+
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs
 
