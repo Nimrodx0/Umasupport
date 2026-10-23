@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Phase 2 連続イベント12段階の試用 | ウマサルタント</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+--ink:#192437;--muted:#62728a;--line:#dce4ef;--paper:#fff;--back:#f4f7fb;--accent:#3d5b9c;--selected:#ebf1fe}
+*{box-sizing:border-box}body{margin:0;background:var(--back);color:var(--ink);line-height:1.6}
+a{color:#345bb2}header{background:#16294b;color:white;padding:30px max(16px,calc((100vw - 1060px)/2))}
+header .eyebrow{font-size:.76rem;letter-spacing:.12em;font-weight:700;color:#b5c9fa}
+header h1{font-size:clamp(1.4rem,3vw,2.1rem);line-height:1.3;margin:.2rem 0 .35rem}
+header p{margin:.4rem 0;color:#d7e2fa;font-size:.93rem}header a{color:#d8e9ff}
+main{max-width:1092px;margin:auto;padding:22px 16px 44px}
+.notice{border:1px solid #d5dfef;border-left:4px solid #6c83be;background:#fff;
+padding:13px 17px;border-radius:8px;font-size:.88rem;margin:0 0 22px}
+.notice strong{color:#294777}.section-label{font-size:.84rem;font-weight:700;color:#5e6e87;margin:0 0 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px}
+.tab{font:inherit;background:white;border:1px solid #cbd5e1;padding:9px 15px;border-radius:12px;
+cursor:pointer;font-size:.9rem;font-weight:600;flex:1 1 190px;text-align:center;color:var(--ink)}
+.tab[aria-selected=true]{border-color:#385c9a;background:#e7eefc;box-shadow:inset 0 0 0 1px #385c9a}
+.tab:focus-visible,.choice:focus-visible,.arrived:focus-visible{outline:3px solid #829de8;outline-offset:2px}
+.card-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:4px 0 16px}
+.card-header h2{font-size:1.2rem;margin:0}.card-header p{margin:0;color:var(--muted);font-size:.85rem}
+.events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.event{background:white;border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0}
+.event h3{font-size:1.03rem;margin:0 0 5px;line-height:1.45}
+.event .hint{font-size:.78rem;color:var(--muted);margin:0 0 12px}
+.arrived{font:inherit;font-size:.88rem;border:1px solid #6580ad;background:#eef3fc;border-radius:9px;
+padding:10px 12px;cursor:pointer;width:100%;text-align:left;color:#1b3567;font-weight:700}
+.arrived[aria-pressed=true]{background:#d8e8f9;border-color:#365995}
+.choices{display:grid;gap:8px;margin-top:12px}
+.choice{font:inherit;border:1px solid #ccd7e6;border-radius:10px;padding:10px 11px;background:white;
+text-align:left;cursor:pointer;color:var(--ink);width:100%}
+.choice[aria-pressed=true]{border-color:#4269b4;background:var(--selected);box-shadow:inset 0 0 0 1px #4269b4}
+.choice:disabled{cursor:default;opacity:.7}
+.choice-title{display:block;font-size:.85rem;font-weight:700;margin-bottom:5px}
+.effects{display:flex;flex-wrap:wrap;gap:4px}
+.effect{font-size:.72rem;color:#344764;background:#eff3f8;border-radius:5px;padding:2px 5px}
+.effect.skill{background:#eaf5e7;color:#37593a}
+.result{display:block;font-size:.82rem;min-height:56px;border-radius:8px;background:#f3f7fb;
+padding:10px 11px;margin:12px 0 0;overflow-wrap:anywhere}
+.result b{color:#274e91}.source{display:block;font-size:.78rem;margin-top:10px}
+.status{font-size:.88rem;color:var(--muted);margin:0 0 10px}
+.status.error{color:#ae3131}.warning{font-size:.78rem;color:#6b5d44;margin-top:11px}
+footer{max-width:1092px;margin:auto;padding:0 16px 36px;color:var(--muted);font-size:.8rem}
+@media(max-width:940px){.events{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){header{padding:23px 16px}.events{grid-template-columns:1fr}.tab{flex:1 1 calc(50% - 5px)}.event{padding:15px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">UMASARUTANT / PHASE 2</div>
+  <h1>連続イベント・段階別プレビュー</h1>
+  <p>4枚のSSR × 3段階。到達を明示した段階だけ、選択肢とスキルヒントの数値を試算します。</p>
+  <a href="./phase2-eight-preview.html">通常8イベントの試用に戻る</a>　/　<a href="./live.html">通常版アプリ</a>
+</header>
+<main>
+  <p class="notice"><strong>連続分岐は未確定です。</strong> このページは段階間の継続・打ち切りを再現しません。各段階を自分で「到達した」と指定した場合だけスキル候補を数えます。第1段階の選択によって第2・第3段階へ進めるとは限りません。正式公開イベント0件、元記事の台詞や文章は含みません。</p>
+  <p id="bootstrap" role="status" class="status">監査済み数値データを読み込んでいます…</p>
+  <p class="section-label">サポートカード</p>
+  <nav class="tabs" id="card-tabs" aria-label="カード切り替え"></nav>
+  <section id="selected-card" aria-live="polite"></section>
+</main>
+<footer>GameWithの記事中に明記された数値事実だけを、開発用に段階別表示しています。到達条件・次段階・結果分岐・公開利用の可否は別途審査対象です。</footer>
+<script src="./src/core.js"></script>
+<script src="./src/phase2_chain_pages_preview.js"></script>
+</body>
+</html>

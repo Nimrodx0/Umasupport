@@ -200,6 +200,12 @@ jobs:
       - name: Verify complete Phase-2 563-card coverage index and pinned 2025 historical evidence
         run: node poc/tools/verify_event_coverage_index.cjs
 
+      - name: Verify 12-stage manual chain preview remains fully unapproved
+        run: |
+          node --check poc/src/phase2_chain_pages_preview_artifact.cjs
+          node --check poc/src/phase2_chain_pages_preview.js
+          node --test poc/tests/phase2_chain_pages_preview_artifact.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Verify hosted Phase 2 8-event preview contains only audited facts
         run: |
           node --check poc/src/phase2_eight_pages_preview_artifact.cjs
@@ -294,6 +300,8 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
+      - name: Browser-test manual chain stages on GitHub Pages-style subpath
+        run: node poc/tests/browser_phase2_chain_pages_preview.cjs
       - name: Browser-test hosted Phase 2 event preview on GitHub Pages-style subpath
         run: node poc/tests/browser_phase2_eight_pages_preview.cjs
       - name: Browser-test 8 real-source editorial choices with local-only review page

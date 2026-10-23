@@ -1,0 +1,545 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-twelve-manual-chain-stage-browser-review",
+  "previewOnly": true,
+  "formallyApproved": false,
+  "gameplayReproductionClaimed": false,
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "inferredChainTransitions": 0,
+  "unresolvedPossibleTransitions": 15,
+  "explicitStageAssertionRequired": true,
+  "cards": [
+    {
+      "cardId": "30318",
+      "name": "ライスシャワー",
+      "events": [
+        {
+          "id": "usl:30318:chain:1",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "guts",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "guts",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30318:chain:2",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "guts",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "skill_points",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30318:chain:3",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "NOT_MODELED",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "guts",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201323",
+                  1,
+                  "スキルID 201323"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30319",
+      "name": "ナリタブライアン",
+      "events": [
+        {
+          "id": "usl:30319:chain:1",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "wisdom",
+                  5
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  5
+                ],
+                [
+                  "skill_points",
+                  20
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30319:chain:2",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "wisdom",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:204412",
+                  1,
+                  "スキルID 204412"
+                ]
+              ]
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "skill_points",
+                  25
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30319:chain:3",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "NOT_MODELED",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "speed",
+                  10
+                ],
+                [
+                  "wisdom",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:202371",
+                  1,
+                  "スキルID 202371"
+                ],
+                [
+                  "skill:204151",
+                  2,
+                  "スキルID 204151"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30320",
+      "name": "アドマイヤグルーヴ",
+      "events": [
+        {
+          "id": "usl:30320:chain:1",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  15
+                ],
+                [
+                  "wisdom",
+                  10
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "skill_points",
+                  10
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30320:chain:2",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "wisdom",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201651",
+                  1,
+                  "スキルID 201651"
+                ]
+              ]
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "stamina",
+                  10
+                ],
+                [
+                  "wisdom",
+                  20
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30320:chain:3",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "NOT_MODELED",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "wisdom",
+                  20
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:203801",
+                  2,
+                  "スキルID 203801"
+                ],
+                [
+                  "skill:204721",
+                  1,
+                  "スキルID 204721"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30321",
+      "name": "ドゥラメンテ",
+      "events": [
+        {
+          "id": "usl:30321:chain:1",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "power",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30321:chain:2",
+          "ordinal": 2,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "power",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30321:chain:3",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "NOT_MODELED",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "power",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201463",
+                  1,
+                  "月影円刃"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
