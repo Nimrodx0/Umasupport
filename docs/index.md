@@ -69,3 +69,5 @@
 - [Phase 2・5SSRの15連続段階を非公開2,511全イベントへ統合](phase2-private-2511-chain-loader-20261023.md)
 
 - [Phase 2・2,511件統合後に残る固定出典差異20位置の照合](phase2-2511-residual-source-gaps-20261023.md)
+
+- [Phase 2・SSR30301の「足任せ」通常ヒントと連続イベント資料差の裁定](phase2-30301-gt-hint-vs-checker-event-20261023.md)

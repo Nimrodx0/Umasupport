@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-card-30301-source-identity-editorial-resolution",
+  "cardId": "30301",
+  "checkerOrdinal": 1,
+  "checkerSourceKey": "checker:30301:3b1cb9d61ef50cb538c9",
+  "fixedGameToraRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+  "fixedCheckerRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+  "gameTora": {
+    "url": "https://gametora.com/ja/umamusume/supports/30301-gran-alegria",
+    "observedChainStages": 3,
+    "observedRandomEvents": 2,
+    "supportsHintName": "足任せ",
+    "eventNames": [
+      "最強≒ミューズ",
+      "勝利へのマイルストーン",
+      "最強のミューズへ"
+    ],
+    "disputedSourceOrdinal": 4,
+    "disputedSourceLocalEventId": 1294,
+    "disputedSourcePlayerChoiceCount": 2,
+    "lowerOptionSkillNumericId": 203352,
+    "lowerOptionHintLevel": 1
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/561921",
+    "listedExtraHeading": "成長のヒント",
+    "listedSkill": "足任せ",
+    "listedHintLevel": 4,
+    "articleListsItUnderChains": true,
+    "articleOmitsGTMiddleChainStage": true
+  },
+  "corroboratingPresentation": {
+    "url": "https://game8.jp/umamusume/785657",
+    "reportedFirstChain": "最強≒ミューズ",
+    "reportedMiddleChain": "勝利へのマイルストーン",
+    "reportedLastChain": "最強のミューズへ",
+    "reportedMiddleHintName": "ハイピッチ",
+    "reportedMiddleHintLevel": 1
+  },
+  "editorialDecision": "KEEP_GAMETORA_THREE_CHAIN_EVENTS_NO_CHECKER_EXTRA",
+  "checkerRowDecision": "DO_NOT_ADD_AS_EVENT_SOURCE_PRESENTATION_CONFLICT",
+  "independentProofOfExtraEvent": false,
+  "publicationApproved": false,
+  "sourceNarrativeOrChoiceProseIncluded": false
+}

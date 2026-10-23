@@ -18,7 +18,16 @@ function fixture(){
  cards.push({cardId:'30240',events:[1,2].map(i=>({id:gt('30240',i)}))});
  cards.push({cardId:'30080',events:[{id:gt('30080',6),type:'choice',
   availabilityKind:'special-trigger',choices:[{id:'option1'},{id:'option2'},{id:'option3'}]}]});
- cards.push({cardId:'30001',events:Array.from({length:24},(_,k)=>({id:gt('30001',k+1)}))});
+ cards.push({cardId:'30001',events:Array.from({length:23},(_,k)=>({id:gt('30001',k+1)}))});
+ cards.push({cardId:'30301',events:[
+  {id:gt('30301',1),type:'choice'},
+  {id:gt('30301',2),type:'choice'},
+  {id:gt('30301',3),name:'最強≒ミューズ',type:'auto'},
+  {id:gt('30301',4),name:'勝利へのマイルストーン',type:'choice',
+   choices:[{id:'option1',rewards:[]},
+    {id:'option2',rewards:[{skillId:'skill:203352',level:1}]}]},
+  {id:gt('30301',5),name:'最強のミューズへ',type:'auto'}
+ ]});
  const unmatchedCheckerRows=[];
  for(const id of missing)for(let i=1;i<=5;i++)
   unmatchedCheckerRows.push({cardId:id,checkerOrdinal:i,sourceKey:'checker:'+id+':'+i,
@@ -29,23 +38,30 @@ function fixture(){
  unmatchedCheckerRows.push({cardId:'20075',checkerOrdinal:1,
   sourceKey:'checker:20075:stage1',triageCode:'UNMATCHED_CHECKER_EVENT_IDENTITY'});
  cards.push({cardId:'20075',events:[{id:gt('20075',1)}]});
- for(let i=1;i<=16;i++){
+ for(let i=1;i<=15;i++){
   const id=String(30400+i);
   cards.push({cardId:id,events:[{id:gt(id,1)}]});
   unmatchedCheckerRows.push({cardId:id,checkerOrdinal:1,
    sourceKey:'checker:'+id+':1',triageCode:'UNMATCHED_CHECKER_EVENT_IDENTITY'});
  }
+ unmatchedCheckerRows.push({
+  cardId:'30301',checkerOrdinal:1,
+  sourceKey:'checker:30301:3b1cb9d61ef50cb538c9',
+  triageCode:'UNMATCHED_CHECKER_EVENT_IDENTITY'});
  const catalog={schemaVersion:1,cards};
  const triage={dataKind:'phase2-cross-source-publication-triage',
   publicReleaseApproved:false,sourceNarrativeOrChoiceProseIncluded:false,
-  sourcePins:{gameToraDerived:'a'.repeat(40),checkerIndex:'b'.repeat(40)},
+  sourcePins:{gameToraDerived:'6e38b54af4fad397ff4491e63007a90705a4fe67',
+   checkerIndex:'8cf9fcb3cc7239041161be75c84daf9f8f22d29f'},
   summary:{sourceEvents:27,approvedEvents:0,unmatchedCheckerRows:40,
    checkerOnlyOnMissingGTCards:20,checkerOnlyOnGTCards:20,
    gtOnlyNonR:24,sourceChoiceTopologyIncomplete:1,
    missingBothPinnedGTAndCheckerChainStages:3},
   rows:[
-   ...Array.from({length:24},(_,k)=>({cardId:'30001',sourceOrdinal:k+1,
+   ...Array.from({length:23},(_,k)=>({cardId:'30001',sourceOrdinal:k+1,
     crossSourceFlags:['NON_R_GT_EVENT_NOT_PAIRED_IN_CHECKER']})),
+   {cardId:'30301',sourceOrdinal:4,eventId:gt('30301',4),
+    crossSourceFlags:['NON_R_GT_EVENT_NOT_PAIRED_IN_CHECKER']},
    {cardId:'30080',sourceOrdinal:6,eventId:gt('30080',6),
     crossSourceFlags:['FIXED_GT_PLAYER_CHOICE_TOPOLOGY_INCOMPLETE']}
   ],unmatchedCheckerRows};
@@ -57,23 +73,28 @@ function fixture(){
    appendedChainStages:15,catalogSha256:hash(catalog)}};
  return {triage,integrated};
 }
-test('fixed-source 65 differences shrink to 17 unpaired identities plus 3 outside both pinned sources',()=>{
+test('fixed-source 65 differences yield one adjudication, 16 unpaired identities and 3 outside both pinned sources',()=>{
  const f=fixture(),copy=structuredClone(f),result=reconcile(f);
  assert.deepEqual(result.summary,{
   fixedSourceExceptionPositions:65,
   checkerOnlyOriginal:40,gtOnlyNonROriginal:24,choiceTopologyOriginal:1,
   checkerMissingGTCardScopeCovered:20,checkerOnGTCardScopeCovered:3,
   gtOnlyAlreadyInBaseline:24,sourceChoiceTopologyPatched:1,
-  checkerOnGTCardIdentityUnpaired:17,
-  checkerOnGTCardsNeedingIdentityAudit:17,
+  checkerOnGTCardIdentityEditoriallyResolved:1,
+  checkerOnGTCardIdentityUnpaired:16,
+  checkerOnGTCardsNeedingIdentityAudit:16,
   missingFromBothFixedSources:3,
-  stillRequireIndividualInvestigation:20,
+  stillRequireIndividualInvestigation:19,
   confirmedNewMissingEventsFromThisAudit:0,publicationApprovedEvents:0
  });
- assert.equal(result.openQueue.length,18,'17 individual unmatched+one 3-stage group');
- assert.equal(Object.keys(result.unpairedCheckerOnGTPositionsByCard).length,17);
+ assert.equal(result.openQueue.length,17,'16 remaining unmatched+one 3-stage group');
+ assert.equal(Object.keys(result.unpairedCheckerOnGTPositionsByCard).length,16);
  assert.equal(Object.values(result.unpairedCheckerOnGTPositionsByCard)
-  .reduce((n,x)=>n+x,0),17);
+  .reduce((n,x)=>n+x,0),16);
+ assert.equal(result.sourceConflictsAdjudicatedWithoutNewEvents.length,1);
+ assert.equal(result.sourceConflictsAdjudicatedWithoutNewEvents[0].cardId,'30301');
+ assert.equal(result.sourceConflictsAdjudicatedWithoutNewEvents[0].checkerExtraSkillHintAdded,false);
+ assert.equal(result.openQueue.some(x=>x.cardId==='30301'),false);
  assert.equal(result.openQueue.find(x=>x.cardId==='20075').priority,null);
  assert.equal(result.openQueue.find(x=>x.cardId==='20075').action,
   'REVIEW_REPORTED_NO_SKILL_CHAIN_FIRST_STAGE');
@@ -104,6 +125,28 @@ test('fail closed if a missing event, patched option, source identity, checksum 
   f=>{f.integrated.catalog.cards.find(x=>x.cardId==='30240').events.push({id:'usl:30240:chain:1'})}
  ];
  for(const change of changes){const f=fixture();change(f);assert.throws(()=>reconcile(f),change.toString())}
+});
+test('30301 is not silently merged with GT chain or added as a skill event',()=>{
+ const f=fixture(),original=structuredClone(f);
+ const r=reconcile(f);
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].status,
+  'EDITORIAL_ADJUDICATED_GT_FIRST_NO_ADDITIONAL_EVENT');
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].originalGTChainStagesPreserved,3);
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].checkerExtraSourceRowAdopted,false);
+ assert.equal(r.summary.confirmedNewMissingEventsFromThisAudit,0);
+ assert.deepEqual(f,original);
+ for(const change of [
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events[3].choices[1].rewards=[]},
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events[3].name='incorrect name'},
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events.pop()},
+  x=>{x.triage.unmatchedCheckerRows.find(y=>y.cardId==='30301').checkerOrdinal=2},
+  x=>{x.triage.rows.find(y=>y.cardId==='30301').crossSourceFlags=[]}
+ ]){
+  const mutated=fixture();change(mutated);
+  // In cases of in-memory event mutation the SHA precondition alone is
+  // sufficient to reject; no new event can leak through a permissive path.
+  assert.throws(()=>reconcile(mutated));
+ }
 });
 test('small fabricated fixture never counts as whole actual 563/2511 audit',()=>{
  assert.throws(()=>reconcile(fixture(),{strict:true}),/固定563カード2511イベント/);

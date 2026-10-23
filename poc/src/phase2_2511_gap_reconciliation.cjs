@@ -8,6 +8,7 @@
  */
 const crypto=require('node:crypto');
 const gap=require('../data/curation/adjudicated/30240_gamewith_gap.v1.json');
+const {evaluate:resolve30301}=require('./phase2_30301_identity_resolution.cjs');
 const fail=s=>{throw Error('Phase2全2511件と65出典差異の照合: '+s);};
 const hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');
 const missing=['30318','30319','30320','30321'];
@@ -39,7 +40,7 @@ function reconcile({triage,integrated},{strict=false}={}){
   byCard.set(card.cardId,{ids,events:card.events});
  }
  let coveredAtCardScope=0,coveredOnGTCard=0,remainingCheckerOnGT=0;
- const checkerUnpaired=[],checkerIds=new Set(),gtOnlyKeys=new Set();
+ const checkerUnpaired=[],resolvedChecker=[],checkerIds=new Set(),gtOnlyKeys=new Set();
  const perMissing=new Map(missing.map(id=>[id,0]));
  for(const entry of triage.unmatchedCheckerRows){
   const {cardId,checkerOrdinal,sourceKey,triageCode}=entry;
@@ -64,6 +65,12 @@ function reconcile({triage,integrated},{strict=false}={}){
     if(![1,2,3].every(i=>c.ids.has('usl:30221:chain:'+i))||
        checkerOrdinal<1)fail('30221の補完連続段階と元照合が不正');
     coveredOnGTCard++;
+   }else if(cardId==='30301'&&checkerOrdinal===1){
+    const gtOnlySourceRow=triage.rows.find(r=>r.cardId==='30301'&&
+     r.sourceOrdinal===4&&r.crossSourceFlags?.includes('NON_R_GT_EVENT_NOT_PAIRED_IN_CHECKER'));
+    const result=resolve30301({entry,card:c,
+     sourcePins:triage.sourcePins,gtOnlySourceRow});
+    resolvedChecker.push(result);
    }else{
     remainingCheckerOnGT++;
     checkerUnpaired.push({cardId,checkerOrdinal,sourceKey,
@@ -76,7 +83,7 @@ function reconcile({triage,integrated},{strict=false}={}){
  }
  if([...perMissing.values()].some(x=>x!==5)||
     coveredAtCardScope!==20||coveredOnGTCard!==3||
-    remainingCheckerOnGT!==17||
+    resolvedChecker.length!==1||remainingCheckerOnGT!==16||
     checkerIds.size!==triage.summary.unmatchedCheckerRows||
     triage.summary.checkerOnlyOnMissingGTCards!==20||
     triage.summary.checkerOnlyOnGTCards!==20)
@@ -132,6 +139,7 @@ function reconcile({triage,integrated},{strict=false}={}){
   checkerOnGTCardScopeCovered:coveredOnGTCard,
   gtOnlyAlreadyInBaseline:gtOnlyAlreadyPresent,
   sourceChoiceTopologyPatched:gtChoiceFixed,
+  checkerOnGTCardIdentityEditoriallyResolved:resolvedChecker.length,
   checkerOnGTCardIdentityUnpaired:remainingCheckerOnGT,
   checkerOnGTCardsNeedingIdentityAudit:Object.keys(sortedUnmatchedByCard).length,
   missingFromBothFixedSources:unresolvedBothSources,
@@ -157,7 +165,8 @@ function reconcile({triage,integrated},{strict=false}={}){
   ],
   unpairedCheckerOnGTPositionsByCard:sortedUnmatchedByCard,
   coveredCheckerMissingGTCardCounts:Object.fromEntries(perMissing),
-  coveredCheckerOnGTCardIds:['30221']
+  coveredCheckerOnGTCardIds:['30221'],
+  sourceConflictsAdjudicatedWithoutNewEvents:resolvedChecker
  };
 }
 module.exports={reconcile};
