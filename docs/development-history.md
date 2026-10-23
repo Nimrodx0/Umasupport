@@ -341,3 +341,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：固定GT全イベントの非公開投影を、元イベントSHAと旧辞書／元分岐の注意位置を含む未署名レビュー索引へ分類する工程を追加。[個別記録](phase2-gametora-unsigned-release-review-20261023.md)。
 
 - 2026-10-23：未署名のGT全2,488イベントとChecker重点差異65を照合し、旧UmaSim辞書の根本保留75と後続35を区別する非公開トリアージを追加。[概要](phase2-source-exception-overlay-20261023.md)。
+
+- 2026-10-23：固定GT特定SSR30080/6の操作なし1行を、GameWith裁定済み実3選択の本番イベント型へ元ID保持で非公開上書き。[詳細](phase2-30080-private-runtime-overlay-20261023.md)。

@@ -93,6 +93,23 @@ function main(args){
     allHumanApprovalFieldsIntentionallyAbsent:true,
     sourceNarrativeOrChoiceProseIncluded:false
    }));
+   const {apply:apply30080}=require('../src/phase2_30080_runtime_overlay.cjs');
+   const fixed30080=apply30080({
+    catalog:enriched.catalog,normalized:candidateAudit,review:reviewQueue
+   });
+   if(fixed30080.reviewEvidence.runtimeSelectedHintRoutes.join(',')!=='0,1,1,1')
+    fail('SSR30080の特殊イベント3択の実集計検証に失敗');
+   console.log('PHASE2_30080_PRIVATE_RUNTIME_OVERLAY='+JSON.stringify({
+    cardId:fixed30080.reviewEvidence.cardId,
+    sourceOrdinal:fixed30080.reviewEvidence.sourceOrdinal,
+    sourceChoiceRows:fixed30080.reviewEvidence.sourceChoiceRows,
+    adjudicatedPlayerChoices:fixed30080.reviewEvidence.adjudicatedPlayerChoices,
+    runtimeSelectedHintRoutes:fixed30080.reviewEvidence.runtimeSelectedHintRoutes,
+    conditionalSpecialTriggerPreserved:true,
+    beforeEventSha256:fixed30080.reviewEvidence.beforeEventSha256,
+    afterEventSha256:fixed30080.reviewEvidence.afterEventSha256,
+    publicationApproved:false,publicCatalogUnchanged:true
+   }));
    if(process.env.UMASUPPORT_GT_CROSS_SOURCE_QUEUE||
       process.env.UMASUPPORT_GT_TRIAGE_OUTPUT){
     if(!process.env.UMASUPPORT_GT_CROSS_SOURCE_QUEUE||

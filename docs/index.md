@@ -53,3 +53,5 @@
 - [Phase 2・GameTora 2,488イベントの署名前レビューキュー](phase2-gametora-unsigned-release-review-20261023.md)
 
 - [Phase 2・固定GTスキル辞書の根本原因とGameTora／Checker例外の統合](phase2-source-exception-overlay-20261023.md)
+
+- [Phase 2・SSR30080/6の3択を非公開本番実行形式に補正](phase2-30080-private-runtime-overlay-20261023.md)
