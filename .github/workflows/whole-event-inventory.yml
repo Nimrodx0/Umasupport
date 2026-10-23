@@ -65,6 +65,10 @@ on:
       - 'poc/src/phase2_2511_gap_reconciliation.cjs'
       - 'poc/data/curation/adjudicated/30180_special_cornering.v1.json'
       - 'poc/src/phase2_30180_special_overlay.cjs'
+      - 'poc/data/curation/adjudicated/phase2_p1_scenario_event_facts.v1.json'
+      - 'poc/src/phase2_p1_scenario_event_ledger.cjs'
+      - 'poc/tests/phase2_p1_scenario_event_ledger.test.cjs'
+      - 'poc/tools/audit_phase2_p1_scenario_events.cjs'
       - 'poc/src/phase2_p1_source_title_join.cjs'
       - 'poc/tests/phase2_p1_source_title_join.test.cjs'
       - 'poc/tools/audit_phase2_p1_source_title_join.cjs'
@@ -163,6 +167,12 @@ jobs:
         run: |
           node --test umasupport/poc/tests/phase2_p1_source_title_join.test.cjs
           node umasupport/poc/tools/audit_phase2_p1_source_title_join.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            gt-snapshot/server/data/events/gametora
+      - name: Validate L'Arc special title replacements and overseas-only Mei data as unpublished metadata
+        run: |
+          node --test umasupport/poc/tests/phase2_p1_scenario_event_ledger.test.cjs
+          node umasupport/poc/tools/audit_phase2_p1_scenario_events.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
       - name: Triage missing GameTora card records by numeric ID (not a game absence claim)
