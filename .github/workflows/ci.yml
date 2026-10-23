@@ -180,6 +180,14 @@ jobs:
           node --test poc/tests/phase2_eight_event_local_review.test.cjs
           node poc/tools/verify_event_release.cjs
 
+      - name: Validate unsigned eight-event production schema release candidates
+        run: |
+          node --check poc/src/phase2_eight_release_candidate.cjs
+          node --check poc/tools/report_phase2_eight_release_candidate.cjs
+          node --test poc/tests/phase2_eight_release_candidate.test.cjs
+          node poc/tools/report_phase2_eight_release_candidate.cjs
+          node poc/tools/verify_event_release.cjs
+
       - name: Validate four SSR standalone eight-event independent Japanese review previews
         run: |
           node --check poc/src/phase2_eight_standalone_review_pack.cjs
