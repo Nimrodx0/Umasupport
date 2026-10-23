@@ -22,6 +22,15 @@ test('publicly viewable but nonapproved numeric preview matches the curated 12-s
  assert.equal(stages.flatMap(s=>s.alternatives).length,19);
  assert.equal(stages.flatMap(s=>s.alternatives.flatMap(a=>a.hints)).length,8);
  assert.equal(stages.filter(s=>s.choiceCount===0).length,5);
+ const expectedTitles=[
+  ['見上げた空は眩しくて','手にした花は煌めいて','届けた幸せは、甘く花開いて'],
+  ['生徒会副会長の報告書','生徒会副会長の根源','生徒会副会長の"未来"'],
+  ['戸惑いのレクチャー','不器用コミュニケーション','ひそやかな温もり'],
+  ['『かの者、魔界より現れる』','『夜の王を討伐せよ！』','『満月に光りしは、赤い石』']
+ ];
+ assert.deepEqual(expected.cards.map(c=>c.events.map(e=>e.title)),expectedTitles);
+ assert.ok(stages.every(e=>!/^連続イベント第\\d段階/.test(e.title)));
+
  assert.deepEqual(expected.cards.map(c=>c.events.map(e=>e.choiceCount)),[
   [2,2,0],[2,2,0],[2,2,0],[2,0,0]
  ]);
