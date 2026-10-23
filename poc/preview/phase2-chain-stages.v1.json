@@ -15,6 +15,7 @@
       "events": [
         {
           "id": "usl:30318:chain:1",
+          "title": "見上げた空は眩しくて",
           "ordinal": 1,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -62,6 +63,7 @@
         },
         {
           "id": "usl:30318:chain:2",
+          "title": "手にした花は煌めいて",
           "ordinal": 2,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -101,6 +103,7 @@
         },
         {
           "id": "usl:30318:chain:3",
+          "title": "届けた幸せは、甘く花開いて",
           "ordinal": 3,
           "choiceCount": 0,
           "manualReachedRequired": true,
@@ -138,6 +141,7 @@
       "events": [
         {
           "id": "usl:30319:chain:1",
+          "title": "生徒会副会長の報告書",
           "ordinal": 1,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -193,6 +197,7 @@
         },
         {
           "id": "usl:30319:chain:2",
+          "title": "生徒会副会長の根源",
           "ordinal": 2,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -250,6 +255,7 @@
         },
         {
           "id": "usl:30319:chain:3",
+          "title": "生徒会副会長の\"未来\"",
           "ordinal": 3,
           "choiceCount": 0,
           "manualReachedRequired": true,
@@ -296,6 +302,7 @@
       "events": [
         {
           "id": "usl:30320:chain:1",
+          "title": "戸惑いのレクチャー",
           "ordinal": 1,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -347,6 +354,7 @@
         },
         {
           "id": "usl:30320:chain:2",
+          "title": "不器用コミュニケーション",
           "ordinal": 2,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -396,6 +404,7 @@
         },
         {
           "id": "usl:30320:chain:3",
+          "title": "ひそやかな温もり",
           "ordinal": 3,
           "choiceCount": 0,
           "manualReachedRequired": true,
@@ -442,6 +451,7 @@
       "events": [
         {
           "id": "usl:30321:chain:1",
+          "title": "『かの者、魔界より現れる』",
           "ordinal": 1,
           "choiceCount": 2,
           "manualReachedRequired": true,
@@ -481,6 +491,7 @@
         },
         {
           "id": "usl:30321:chain:2",
+          "title": "『夜の王を討伐せよ！』",
           "ordinal": 2,
           "choiceCount": 0,
           "manualReachedRequired": true,
@@ -510,6 +521,7 @@
         },
         {
           "id": "usl:30321:chain:3",
+          "title": "『満月に光りしは、赤い石』",
           "ordinal": 3,
           "choiceCount": 0,
           "manualReachedRequired": true,
