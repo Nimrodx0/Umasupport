@@ -34,7 +34,7 @@ async function main(){
   const response=await page.goto(base+PREFIX+'poc/phase2-chain-preview.html',{waitUntil:'load'});
   assert.equal(response.status(),200);
   await page.locator('html[data-ready="true"]').waitFor({timeout:20000});
-  assert.match(await page.locator('.notice').innerText(),/連続分岐は未確定/);
+  assert.match(await page.locator('.notice').innerText(),/個別段階の検証画面です/);
   assert.equal(await page.locator('#card-tabs button').count(),5);
   assert.equal(await page.locator('article.event').count(),3);
   assert.match(await page.locator('article.event[data-event="1"] h3').innerText(),/見上げた空は眩しくて/);
