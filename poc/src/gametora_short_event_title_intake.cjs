@@ -27,6 +27,13 @@ function bindNames({normalized,projectedCatalog,documents},{strict=false}={}){
   docs.set(id,doc);
  }
  for(const card of normalized.cards){
+  // Four cards in the pinned 563-card roster have no GT source record.
+  // They are tracked by the separate GameWith exception pipeline.
+  if(card.sourceMissing===true){
+   if(docs.has(card.cardId)||!Array.isArray(card.events)||card.events.length!==0)
+    fail('固定GT欠損カードの状態が不正');
+   continue;
+  }
   if(items.has(card.cardId)||!docs.has(card.cardId)||!Array.isArray(card.events))
    fail('元候補とカードIDが一致しない');
   const doc=docs.get(card.cardId);
