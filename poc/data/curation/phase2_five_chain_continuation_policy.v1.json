@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-five-ssr-chain-ordinary-continuation-planning-policy",
+  "publicationApproved": false,
+  "chainTopologyProven": false,
+  "actualEventOccurrenceGuaranteed": false,
+  "reviewedAt": "2026-10-23",
+  "policyBasis": "docs/gametora-baseline-event-policy-20261021.md",
+  "meaning": "An omitted cutoff is an ordinary-continuation planning default, NOT a positive per-option proof or guaranteed triggering.",
+  "cards": [
+    {
+      "cardId": "30318",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+      "expectedFirstTwoStageOptionCounts": [
+        2,
+        2
+      ],
+      "explicitTerminationReportedInReviewedArticle": false
+    },
+    {
+      "cardId": "30319",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+      "expectedFirstTwoStageOptionCounts": [
+        2,
+        2
+      ],
+      "explicitTerminationReportedInReviewedArticle": false
+    },
+    {
+      "cardId": "30320",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+      "expectedFirstTwoStageOptionCounts": [
+        2,
+        2
+      ],
+      "explicitTerminationReportedInReviewedArticle": false
+    },
+    {
+      "cardId": "30321",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+      "expectedFirstTwoStageOptionCounts": [
+        2,
+        0
+      ],
+      "explicitTerminationReportedInReviewedArticle": false
+    },
+    {
+      "cardId": "30221",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+      "expectedFirstTwoStageOptionCounts": [
+        0,
+        0
+      ],
+      "explicitTerminationReportedInReviewedArticle": false
+    }
+  ]
+}
