@@ -63,6 +63,8 @@ on:
       - 'poc/src/phase2_integrated_private_loader.cjs'
       - 'poc/src/phase2_2511_chain_runtime.cjs'
       - 'poc/src/phase2_2511_gap_reconciliation.cjs'
+      - 'poc/src/phase2_2511_remaining_checker_skill_impact.cjs'
+      - 'poc/tests/phase2_2511_remaining_checker_skill_impact.test.cjs'
       - 'poc/src/phase2_30301_identity_resolution.cjs'
       - 'poc/data/curation/adjudicated/30301_checker_hint_event_conflict.v1.json'
       - 'poc/tests/phase2_2511_gap_reconciliation.test.cjs'
@@ -268,6 +270,8 @@ jobs:
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
         run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
+      - name: Prioritize sixteen residual Checker source positions by reported numeric hints
+        run: node --test umasupport/poc/tests/phase2_2511_remaining_checker_skill_impact.test.cjs
       - name: Reconcile after 2511 candidate integration without false missing-event closure
         run: node --test umasupport/poc/tests/phase2_2511_gap_reconciliation.test.cjs
       - name: Verify curated missing 15 chain stages with actual event flags and 2511-event production loader

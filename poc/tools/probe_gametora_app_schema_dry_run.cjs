@@ -176,6 +176,28 @@ function main(args){
      thirdPartyEventProseIncluded:false,
      publicationApproved:false
     }));
+    const {build:prioritizeCheckerHints}=
+     require('../src/phase2_2511_remaining_checker_skill_impact.cjs');
+    const checkerFacts=JSON.parse(fs.readFileSync(
+     path.resolve(__dirname,'../data/candidates/checker_event_hints.v1.json'),'utf8'));
+    const prioritized=prioritizeCheckerHints({
+     reconciliation:repairedGapQueue,integrated:withChains,checker:checkerFacts
+    },{strict:true});
+    console.log('PHASE2_16_CHECKER_SKILL_IMPACT_PRIORITY='+JSON.stringify({
+     ...prioritized.summary,
+     positions:prioritized.rows.map(x=>({
+      cardId:x.cardId,checkerOrdinal:x.checkerOrdinal,priority:x.priority,
+      skillEvidence:x.skillEvidence,
+      absentNumericSkillIds:x.candidateSkillIdsAbsentFromGTEventCatalog,
+      presentNumericSkillIds:x.candidateSkillIdsAlreadyInGTEventCatalog,
+      unresolvedHintMentions:x.unresolvedNameOnlyHintMentions,
+      conditionalChoiceRows:x.manualResultReviewChoices,
+      unparsedHintChoiceRows:x.unparsedHintChoices
+     })),
+     sourceNarrativeOrChoiceProseIncluded:false,
+     publicationApproved:false,rawCandidateCatalogPublished:false
+    }));
+
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
