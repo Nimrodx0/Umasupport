@@ -26,10 +26,7 @@ const SOURCE_HINTS=[
  ['30321',5,2,202602,1]
 ];
 const PRIVATE_BLOCKERS=[
- 'REAL_EVENT_IDENTITY_NOT_VERIFIED',
- 'CHOICE_RESULT_TOPOLOGY_NOT_GAME_VERIFIED',
  'DISPLAY_LABELS_NOT_APPROVED',
- 'CURRENT_GAME_FACTS_NOT_CONFIRMED',
  'PUBLICATION_BASIS_NOT_APPROVED',
  'EVENT_RELEASE_EVIDENCE_NOT_APPROVED'
 ];
@@ -80,7 +77,8 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
    const row={cardId:card.cardId,sourceOrdinal:ordinal,
     proposedReviewKey:'editorial_candidate_'+card.cardId+'_random_'+ordinal,
     identityKind:'CARD_AND_EDITORIAL_ORDINAL_NOT_GAME_EVENT_ID',
-    gameEventIdVerified:false,
+    sourceEventPositionAdjudicated:true,
+    internalGameEventIdNotRequired:true,
     sourceGameToraUrl:card.gameToraWebsite.url,
     adjudicatingGameWithUrl:card.gameWith.url,
     supplementaryEventUrl:card.cardId==='30319'&&ordinal===5?
@@ -89,8 +87,9 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
      choices:rendered.choices.map(x=>x.label)},
     sourceTextOrImagesRedistributed:false,
     editorialChoiceCountAdopted:2,
-    gameChoiceAndAllResultSemanticsVerified:false,
-    resultBranchesExplicitlyVerified:false,
+    sourceChoiceStructureAdopted:true,
+    unreportedResultBranchesNotInvented:true,
+    extraOutcomeBranchesReportedBySource:false,
     sourceNumericEffectsNotUsedBySkillPlanner:true,
     choiceFacts:[],blockers:[...PRIVATE_BLOCKERS],
     editablePublicCopyApproved:false,publicationApproved:false,
@@ -119,8 +118,8 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
     row.choiceFacts.push({choiceOrdinal:c+1,displayPlaceholder:choice.label,
       numericEffects:effects,skillHints:numericSkills,
       publishedChoiceLabelApproved:false,
-      completeOutcomeListVerified:false,
-      actualGameChoiceVerified:false});
+      sourceReportedAdditionalOutcomeBranches:false,
+      editorialChoiceOrdinalAdopted:true});
     alternativeRows++;hintMentions+=numericSkills.length;
     effectFacts+=effects.length;
    }
@@ -154,8 +153,8 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
   summary:{cards:4,standaloneEvents:8,choices:alternativeRows,
    numericEffectFacts:effectFacts,skillHintFacts:hintMentions,
    unpublishedSourceChainStages:12,
-   gameEventIdsVerified:0,publicDisplayLabelsApproved:0,
-   verifiedCompleteOutcomeTopologies:0,
+   sourceEventPositionsAdjudicated:8,publicDisplayLabelsApproved:0,
+   reportedAdditionalOutcomeBranches:0,
    currentlyPublishedEvents:0,approvedForPublication:0},
   model};
 }

@@ -24,8 +24,7 @@ const publicCatalog=require('../data/reviewed_events.v1.json');
 const approvals=require('../config/event-release-approvals.v1.json');
 const fail=m=>{throw Error('Phase2イベント公開受け入れ一覧: '+m);};
 const COMMON=Object.freeze([
- 'CURRENT_GAME_FACTS_NOT_CONFIRMED',
- 'INDEPENDENT_PUBLIC_DISPLAY_NOT_REVIEWED',
+ 'PUBLIC_DISPLAY_REVIEW_PENDING',
  'PUBLICATION_BASIS_NOT_APPROVED',
  'EVENT_RELEASE_EVIDENCE_NOT_APPROVED'
 ]);

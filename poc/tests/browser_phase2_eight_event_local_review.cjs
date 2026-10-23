@@ -20,6 +20,15 @@ async function main(){
   assert.equal(await page.locator('button[data-choice="option1"]').count(),8);
   assert.equal(await page.locator('button[data-choice="option2"]').count(),8);
   assert.match(await page.locator('.notice').innerText(),/未確認/);
+  for(const [card,ordinal,title] of [
+   ['30318',4,'お花屋さんでの1ページ'],['30318',5,'曇りの日の1ページ'],
+   ['30319',4,'生徒会役員！'],['30319',5,'孤狼'],
+   ['30320',4,'窓側が好きなお客さん'],['30320',5,'ひとりが好きなクラスメイトさん'],
+   ['30321',4,'流すべきこの汗'],['30321',5,'追うべき背中']
+  ]){
+   const item=page.locator('section.card[data-card-id="'+card+'"] article.event[data-event="'+ordinal+'"]');
+   assert.ok((await item.locator('h3').innerText()).includes(title));
+  }
   assert.match(await page.locator('#bootstrap').innerText(),/承認済み0/);
   assert.equal((await page.locator('article.event .route-result').allTextContents())
    .filter(t=>t.includes('未選択')).length,8);

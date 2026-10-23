@@ -19,9 +19,9 @@ test('four fixed cards × two standalone events, sixteen alternatives, four nume
  assert.equal(p.summary.unpublishedSourceChainStages,12);
  assert.equal(p.summary.approvedForPublication,0);
  assert.equal(p.summary.currentlyPublishedEvents,0);
- assert.equal(p.summary.gameEventIdsVerified,0);
+ assert.equal(p.summary.sourceEventPositionsAdjudicated,8);
  assert.equal(p.summary.publicDisplayLabelsApproved,0);
- assert.equal(p.summary.verifiedCompleteOutcomeTopologies,0);
+ assert.equal(p.summary.reportedAdditionalOutcomeBranches,0);
  assert.deepEqual(p.previewCatalog.cards.map(c=>[c.cardId,c.events.length]),
   [['30318',2],['30319',2],['30320',2],['30321',2]]);
  assert.deepEqual(p.records.map(r=>r.sourceOrdinal),[4,5,4,5,4,5,4,5]);
@@ -29,9 +29,10 @@ test('four fixed cards × two standalone events, sixteen alternatives, four nume
   c.skillHints.map(h=>[r.cardId,r.sourceOrdinal,c.choiceOrdinal,
    h.skillNumericId,h.hintLevel])));
  assert.deepEqual(got,SOURCE_HINTS);
- assert.ok(p.records.every(r=>r.gameEventIdVerified===false&&
+ assert.ok(p.records.every(r=>r.sourceEventPositionAdjudicated===true&&
   r.neutralDisplayDraft.choices.length===2&&
-  r.blockers.includes('PUBLICATION_BASIS_NOT_APPROVED')));
+  r.blockers.includes('PUBLICATION_BASIS_NOT_APPROVED')&&
+  !r.blockers.some(x=>x.includes('GAME')||x.includes('REAL_EVENT_IDENTITY'))));
 });
 test('unique neutral labels do not purport to be game event names or expose copied source prose',()=>{
  const p=build();

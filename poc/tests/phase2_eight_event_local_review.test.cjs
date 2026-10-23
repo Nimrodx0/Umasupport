@@ -10,15 +10,19 @@ test('4 SSR cards and 8 readable review titles remain explicitly unapproved',()=
   [['30318',2],['30319',2],['30320',2],['30321',2]]);
  assert.ok(v.cards.every(c=>c.events.every(e=>e.choices.length===2&&
   e.sourceHeadingSha256.length===64&&
-  e.actualInGameEventIdVerified===false&&
-  e.actualPlayerChoiceAndAllOutcomesVerified===false&&
-  e.displayKind==='ORIGINAL_EDITORIAL_SUMMARY_NOT_GAME_TITLE')));
+  e.sourceEventPositionAdjudicated===true&&
+  e.sourceChoiceCountAdopted===true&&
+  e.gameplayVerificationRequiredForAdoption===false&&
+  e.displayKind==='GAMEWITH_ADJUDICATED_EVENT_TITLE')));
  assert.ok(v.cards.every(c=>c.events.every(e=>e.choices.every(x=>
-  x.resultTopologyVerified===false&&x.publicationApproved===false))));
- assert.match(v.note,/実ゲーム.*未確認/);
+  x.sourceChoiceFactsAdopted===true&&x.publicationApproved===false))));
+ assert.match(v.note,/指定出典に従い編集採用済み/);
+ assert.equal(v.sourceEventTitlesIncluded,true);
+ assert.equal(v.sourceNarrativeOrChoiceProseIncluded,false);
+ assert.equal(v.gameplayVerificationRequiredForAdoption,false);
  assert.ok(!JSON.stringify(v).includes('体育館を借りて走ろう'));
 });
-test('NFKC headline fingerprints match the exact observed GameWith card headings without copying them into JSON',()=>{
+test('GameWith event titles are shown verbatim and match their pinned SHA fingerprints',()=>{
  for(const [card,ord,title] of [
   ['30318',4,'お花屋さんでの1ページ'],['30318',5,'曇りの日の1ページ'],
   ['30319',4,'生徒会役員！'],['30319',5,'孤狼'],
@@ -28,7 +32,7 @@ test('NFKC headline fingerprints match the exact observed GameWith card headings
   const e=buildView().cards.find(c=>c.cardId===card).events
    .find(e=>e.editorialOrdinal===ord);
   assert.equal(fingerprint(title),e.sourceHeadingSha256,card+'/'+ord);
-  assert.ok(!JSON.stringify(buildView()).includes(title));
+  assert.equal(e.eventTitle,title,card+'/'+ord);
  }
 });
 test('skill hint names and numeric IDs are distinct and choice-local',()=>{
@@ -61,6 +65,7 @@ test('local HTTP server only serves four exact GET paths; no write or runtime re
   const d=await (await fetch(base+'/data.json')).json();
   assert.equal(d.summary.approvedEvents,0);
   assert.ok(!JSON.stringify(d).includes('すごい力作だな'));
+  assert.ok(JSON.stringify(d).includes('お花屋さんでの1ページ'));
  }finally{await new Promise(ok=>server.close(ok));}
  assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);

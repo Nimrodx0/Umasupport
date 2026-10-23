@@ -28,6 +28,7 @@ test('28 targeted cases are counted without pretending to audit all 563 cards',(
  assert.ok(a.rows.every(x=>x.releaseReady===false&&x.publicationApproved===false&&
   x.evidenceUrls.length>=2&&x.blockers.includes('PUBLICATION_BASIS_NOT_APPROVED')));
  assert.ok(!JSON.stringify(a).includes('option1'));
+ assert.ok(a.rows.every(x=>!x.blockers.includes('CURRENT_GAME_FACTS_NOT_CONFIRMED')));
 });
 test('chain dependency, unadjudicated numeric data and result ambiguity are distinct blockers',()=>{
  const a=build(),of=(card,ord)=>a.rows.find(r=>r.cardId===card&&r.sourceOrdinal===ord);
