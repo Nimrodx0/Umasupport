@@ -1,12 +1,9 @@
 'use strict';
 /*
- * Option-based chain PLANNING only. Keep two distinct claims apart:
- * (a) in the absence of an explicit cutoff, ordinary progression is the
- * default plan under the established GT/GameWith source policy;
- * (b) this does NOT verify 17 individual edge outcomes or guarantee that
- * an event will randomly trigger during a real training run.
- *
- * All derived skill routes remain prospects, never awarded facts.
+ * Game chain FLAG semantics: in a non-final stage, any outcome without
+ * an explicit cutoff sets the next-stage unlock flag. No independent
+ * affirmative continuation claim or event-spawn probability is required.
+ * Event rewards are skill opportunities, not already-obtained skills.
  */
 const {build:reviewed}=require('./phase2_chain_pages_preview_artifact.cjs');
 const POLICY=require('../data/curation/phase2_five_chain_continuation_policy.v1.json');
@@ -23,8 +20,8 @@ function build(){
     POLICY.schemaVersion!==1||
     POLICY.dataKind!=='phase2-five-ssr-chain-ordinary-continuation-planning-policy'||
     POLICY.publicationApproved!==false||
-    POLICY.chainTopologyProven!==false||
-    POLICY.actualEventOccurrenceGuaranteed!==false||
+    POLICY.ordinaryContinuationFlagRule!=='NO_EXPLICIT_CHAIN_END_SETS_NEXT_STAGE_FLAG'||
+    POLICY.mechanicsScope!=='CHOICE_DEPENDENT_UNLOCK_FLAGS_WITHOUT_EVENT_SPAWN_MODEL'||
     POLICY.policyBasis!=='docs/gametora-baseline-event-policy-20261021.md'||
     !Array.isArray(POLICY.cards)||POLICY.cards.length!==5)
   fail('参照した5サポカ・未確定17経路・方針が変更されました');
@@ -53,8 +50,8 @@ function build(){
     return {
      choiceId:a.id,nextStageId:card.events[stage+1].id,
      continuation:'ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF',
-     individuallyVerified:false,terminationReported:false,
-     nextEventOccurrenceGuaranteed:false
+     setsNextStageFlag:true,terminal:false,
+     rule:'NO_EXPLICIT_CHAIN_END'
     };
    });
    return {
@@ -68,18 +65,17 @@ function build(){
  });
  if(stages!==15||alts!==22||hints!==9||paths!==17||
     seen.size!==5)
-  fail('5枚15段階22結果行9ヒント17通常継続候補の母数不整合');
+  fail('5枚15段階22結果行9ヒント17継続フラグの母数不整合');
  return {
   schemaVersion:1,dataKind:'phase2-five-chain-ordinary-default-planning-preview',
   previewOnly:true,publicationApproved:false,
   sourceNarrativeOrChoiceProseIncluded:false,
   planUsesOrdinaryContinuationDefault:true,
-  verifiedIndividualContinuations:0,
-  plannedDefaultContinuations:17,
-  eventOccurrenceGuaranteed:false,
+  enabledContinuationFlags:17,
+  flagSetUnlessTerminated:true,
   explicitTerminalBranchesInSelectedEvidence:0,
   manualStageArrivalRequired:false,
-  status:'PROSPECTIVE_SKILLS_ONLY',
+  status:'CHOICE_DEPENDENT_CHAIN_FLAGS',
   cards
  };
 }
