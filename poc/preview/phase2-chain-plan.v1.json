@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-five-chain-ordinary-default-planning-preview",
+  "previewOnly": true,
+  "publicationApproved": false,
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "planUsesOrdinaryContinuationDefault": true,
+  "verifiedIndividualContinuations": 0,
+  "plannedDefaultContinuations": 17,
+  "eventOccurrenceGuaranteed": false,
+  "explicitTerminalBranchesInSelectedEvidence": 0,
+  "manualStageArrivalRequired": false,
+  "status": "PROSPECTIVE_SKILLS_ONLY",
+  "cards": [
+    {
+      "cardId": "30318",
+      "name": "ライスシャワー",
+      "events": [
+        {
+          "id": "usl:30318:chain:1",
+          "title": "見上げた空は眩しくて",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "guts",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "guts",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30318:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30318:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30318:chain:2",
+          "title": "手にした花は煌めいて",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "guts",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "skill_points",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30318:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30318:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30318:chain:3",
+          "title": "届けた幸せは、甘く花開いて",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "guts",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201323",
+                  1,
+                  "勇迅円刃"
+                ]
+              ]
+            }
+          ],
+          "nextStageEdges": []
+        }
+      ]
+    },
+    {
+      "cardId": "30319",
+      "name": "ナリタブライアン",
+      "events": [
+        {
+          "id": "usl:30319:chain:1",
+          "title": "生徒会副会長の報告書",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "wisdom",
+                  5
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  5
+                ],
+                [
+                  "skill_points",
+                  20
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30319:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30319:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30319:chain:2",
+          "title": "生徒会副会長の根源",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "wisdom",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:204412",
+                  1,
+                  "憂いなし"
+                ]
+              ]
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "skill_points",
+                  25
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30319:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30319:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30319:chain:3",
+          "title": "生徒会副会長の\"未来\"",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "speed",
+                  10
+                ],
+                [
+                  "wisdom",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:202371",
+                  1,
+                  "アンストッパブル"
+                ],
+                [
+                  "skill:204151",
+                  2,
+                  "ぶっちぎり！"
+                ]
+              ]
+            }
+          ],
+          "nextStageEdges": []
+        }
+      ]
+    },
+    {
+      "cardId": "30320",
+      "name": "アドマイヤグルーヴ",
+      "events": [
+        {
+          "id": "usl:30320:chain:1",
+          "title": "戸惑いのレクチャー",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  15
+                ],
+                [
+                  "wisdom",
+                  10
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "skill_points",
+                  10
+                ],
+                [
+                  "bond",
+                  10
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30320:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30320:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30320:chain:2",
+          "title": "不器用コミュニケーション",
+          "ordinal": 2,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "wisdom",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201651",
+                  1,
+                  "スリップストリーム"
+                ]
+              ]
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "stamina",
+                  10
+                ],
+                [
+                  "wisdom",
+                  20
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30320:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30320:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30320:chain:3",
+          "title": "ひそやかな温もり",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "wisdom",
+                  20
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:203801",
+                  2,
+                  "解き放つ情念"
+                ],
+                [
+                  "skill:204721",
+                  1,
+                  "一往直前"
+                ]
+              ]
+            }
+          ],
+          "nextStageEdges": []
+        }
+      ]
+    },
+    {
+      "cardId": "30321",
+      "name": "ドゥラメンテ",
+      "events": [
+        {
+          "id": "usl:30321:chain:1",
+          "title": "『かの者、魔界より現れる』",
+          "ordinal": 1,
+          "choiceCount": 2,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "power",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30321:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            },
+            {
+              "choiceId": "option2",
+              "nextStageId": "usl:30321:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30321:chain:2",
+          "title": "『夜の王を討伐せよ！』",
+          "ordinal": 2,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "power",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30321:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30321:chain:3",
+          "title": "『満月に光りしは、赤い石』",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "power",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201463",
+                  1,
+                  "月影円刃"
+                ]
+              ]
+            }
+          ],
+          "nextStageEdges": []
+        }
+      ]
+    },
+    {
+      "cardId": "30221",
+      "name": "サトノダイヤモンド",
+      "events": [
+        {
+          "id": "usl:30221:chain:1",
+          "title": "ふたりでひとつは、とってもおいしい！",
+          "ordinal": 1,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  5
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30221:chain:2",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30221:chain:2",
+          "title": "それはまるで“スーパーノヴァ”",
+          "ordinal": 2,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ],
+          "nextStageEdges": [
+            {
+              "choiceId": "option1",
+              "nextStageId": "usl:30221:chain:3",
+              "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
+              "individuallyVerified": false,
+              "terminationReported": false,
+              "nextEventOccurrenceGuaranteed": false
+            }
+          ]
+        },
+        {
+          "id": "usl:30221:chain:3",
+          "title": "打ち解ければ、きっと伝わるから！",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201351",
+                  1,
+                  "食いしん坊"
+                ]
+              ]
+            }
+          ],
+          "nextStageEdges": []
+        }
+      ]
+    }
+  ]
+}
