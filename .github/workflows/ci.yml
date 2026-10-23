@@ -42,6 +42,9 @@ jobs:
       - name: Validate fixed GameTora event skill ID crosswalk
         run: node --check poc/src/gametora_event_skill_crosswalk.cjs && node --check poc/tools/audit_gametora_event_skill_crosswalk.cjs && node --test poc/tests/gametora_event_skill_crosswalk.test.cjs
 
+      - name: Enforce source title SHA join for bulk GT release candidates
+        run: node --check poc/src/gametora_short_event_title_intake.cjs && node --test poc/tests/gametora_short_event_title_intake.test.cjs
+
       - name: Verify full GameTora numeric event normalization (synthetic)
         run: node --check poc/src/gametora_whole_event_normalize.cjs && node --check poc/tools/generate_gametora_whole_event_candidate.cjs && node --test poc/tests/gametora_whole_event_normalize.test.cjs
 
