@@ -62,6 +62,12 @@ jobs:
           node --check poc/src/phase2_four_p1_outcome_review.cjs
           node --test poc/tests/phase2_four_p1_outcome_review.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Validate P1 GT/Checker source-title key correspondence without auto-pairing
+        run: |
+          node --check poc/src/phase2_p1_source_title_join.cjs
+          node --check poc/tools/audit_phase2_p1_source_title_join.cjs
+          node --test poc/tests/phase2_p1_source_title_join.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Validate SSR30180 event-only cornering hint and production loader
         run: |
           node --check poc/src/phase2_30180_special_overlay.cjs
