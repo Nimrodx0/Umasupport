@@ -73,3 +73,5 @@
 - [Phase 2・SSR30301の「足任せ」通常ヒントと連続イベント資料差の裁定](phase2-30301-gt-hint-vs-checker-event-20261023.md)
 
 - [Phase 2・Checker未対16位置のスキルID影響と調査優先順位](phase2-remaining-checker-skill-impact-20261023.md)
+
+- [Phase 2・SSR30180のコーナー巧者○Lv1を非公開2,512件へ補完](phase2-30180-special-corner-adept-20261023.md)
