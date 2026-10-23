@@ -8,7 +8,7 @@
 const crypto=require('node:crypto');
 const fail=s=>{throw Error('P1出典見出し照合: '+s);};
 const sha=s=>crypto.createHash('sha256').update(s).digest('hex');
-const norm=s=>String(s).normalize('NFKC').replace(/\\s+/g,' ').trim();
+const norm=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim();
 const gtRev='6e38b54af4fad397ff4491e63007a90705a4fe67';
 const checkerRev='8cf9fcb3cc7239041161be75c84daf9f8f22d29f';
 const TARGETS=Object.freeze([
@@ -26,9 +26,9 @@ function titleCandidates(base){
  return [...new Set([base,base+'(温かなメッセージ)',base+'（温かなメッセージ）'])];
 }
 function sourceKey(cardId,ordinal,title){
- if(!/^\\d{5}$/.test(cardId)||!Number.isInteger(ordinal)||ordinal<1||!norm(title))
+ if(!/^\d{5}$/.test(cardId)||!Number.isInteger(ordinal)||ordinal<1||!norm(title))
   fail('照合用キーのカード／元位置／短見出し不正');
- return 'checker:'+cardId+':'+sha(cardId+'\\0'+norm(title)+'\\0'+String(ordinal-1)).slice(0,20);
+ return 'checker:'+cardId+':'+sha(cardId+'\0'+norm(title)+'\0'+String(ordinal-1)).slice(0,20);
 }
 function compare({index,checker,gtDocuments},{strict=false}={}){
  if(index?.dataKind!=='umasupport-whole-event-provisional-index'||
