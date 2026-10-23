@@ -61,6 +61,9 @@ on:
       - 'poc/src/phase2_30080_runtime_overlay.cjs'
       - 'poc/src/phase2_integrated_private_catalog.cjs'
       - 'poc/src/phase2_integrated_private_loader.cjs'
+      - 'poc/src/phase2_2511_chain_runtime.cjs'
+      - 'poc/src/phase2_2511_chain_loader.cjs'
+      - 'poc/tests/phase2_2511_chain_runtime.test.cjs'
       - 'poc/tests/phase2_integrated_private_loader.test.cjs'
       - 'poc/tests/phase2_integrated_private_catalog.test.cjs'
       - 'poc/tests/phase2_30080_runtime_overlay.test.cjs'
@@ -261,6 +264,8 @@ jobs:
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
         run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
+      - name: Verify curated missing 15 chain stages with actual event flags and 2511-event production loader
+        run: node --test umasupport/poc/tests/phase2_2511_chain_runtime.test.cjs
       - name: Verify disposable actual loader acceptance with strict numeric skill names
         run: node --test umasupport/poc/tests/phase2_integrated_private_loader.test.cjs
       - name: Validate synthetic 2488 GT plus 8 GameWith event assembly
