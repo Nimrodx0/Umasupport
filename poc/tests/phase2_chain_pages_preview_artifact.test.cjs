@@ -75,5 +75,17 @@ test('no made-up skill names or branch edges appear in static review data',()=>{
  const names=output.cards.flatMap(c=>c.events.flatMap(e=>
   e.alternatives.flatMap(a=>a.hints)));
  assert.ok(names.some(h=>h[0]==='skill:201463'&&h[2]==='月影円刃'));
- assert.ok(names.some(h=>h[0]==='skill:204412'&&h[2]==='スキルID 204412'));
+ const expected=new Map([
+  ['201323','勇迅円刃'],['204412','憂いなし'],
+  ['202371','アンストッパブル'],['204151','ぶっちぎり！'],
+  ['201651','スリップストリーム'],['203801','解き放つ情念'],
+  ['204721','一往直前'],['201463','月影円刃']
+ ]);
+ assert.equal(names.length,8);
+ assert.deepEqual(new Set(names.map(h=>h[0].slice(6))),new Set(expected.keys()));
+ for(const h of names){
+  assert.equal(h[2],expected.get(h[0].slice(6)));
+  assert.ok(!/^スキルID|^\\d+$/.test(h[2]));
+ }
+
 });
