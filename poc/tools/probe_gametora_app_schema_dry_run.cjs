@@ -164,6 +164,17 @@ function main(args){
      usedExistingRuntimeCore:true,randomEventOccurrenceModeled:false,
      sourceNarrativeOrChoiceProseIncluded:false,rawCatalogPublished:false
     }));
+    const {reconcile:reconcile2511}=
+     require('../src/phase2_2511_gap_reconciliation.cjs');
+    const repairedGapQueue=reconcile2511({triage,integrated:withChains},{strict:true});
+    console.log('PHASE2_2511_REMAINING_SOURCE_EXCEPTION_GAPS='+JSON.stringify({
+     ...repairedGapQueue.summary,
+     unpairedGTCardPositions:repairedGapQueue.openQueue
+      .filter(x=>x.status==='UNPAIRED_IDENTITY_NOT_PROVEN_MISSING')
+      .map(x=>({cardId:x.cardId,checkerOrdinal:x.checkerOrdinal})),
+     thirdPartyEventProseIncluded:false,
+     publicationApproved:false
+    }));
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
