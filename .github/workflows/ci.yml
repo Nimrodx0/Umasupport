@@ -42,6 +42,11 @@ jobs:
       - name: Validate fixed GameTora event skill ID crosswalk
         run: node --check poc/src/gametora_event_skill_crosswalk.cjs && node --check poc/tools/audit_gametora_event_skill_crosswalk.cjs && node --test poc/tests/gametora_event_skill_crosswalk.test.cjs
 
+      - name: Verify all-card private candidate on actual production loader in disposable model
+        run: |
+          node --check poc/src/phase2_integrated_private_loader.cjs
+          node --test poc/tests/phase2_integrated_private_loader.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Validate combined 563-card GT and GameWith event candidate runtime
         run: |
           node --check poc/src/phase2_integrated_private_catalog.cjs

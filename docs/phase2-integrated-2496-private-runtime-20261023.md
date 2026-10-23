@@ -44,3 +44,7 @@ A＝スキーマ・GT内容改変拒否と実コア4ヒントの全選択照合�
 [固定GameTora全件Actions](https://github.com/Nimrodx0/Umasupport/actions/runs/39905007793) **PASS**。公開でないGT全2,488イベントと固定GTに存在しない4SSR通常8件を、同一一時スキーマへ結合して全件検証。実数は**563カード、559固定GTカード、2,488固定GTイベント＋GameWith通常8イベント＝2,496**、choice1,604・auto892・選択位置3,255・改変のない元GT2,487件・未承認0件。通常8件の16選択位置・4スキルヒントを `UmaCore.directRoutes` で照合。統合カタログのSHA-256は `a74a9662d7c5a74ea350513f823a97cb4eaa127fe25b3b36f4607b1b13403226`。
 
 [通常CI](https://github.com/Nimrodx0/Umasupport/actions/runs/39905007894)のNode／ChromiumジョブもPASS。注意：固定GT由来の2,488件は従来の公開用ローダーの実読込経路でも検証済みだが、**新しい2,496件については統合スキーマと集計コードに通した**検証であって、公開権利や8追加件を含めた実UmaSim辞書との本番配信用ローダー通過を証明していない。元データ文章や2,496件の本体はActionsへ保存していない。
+
+### 後続の本番読込ゲートで内容SHA更新（2026-10-23）
+
+[新しい本番スキル辞書／ローダー検査](phase2-integrated-private-loader-acceptance-20261023.md)の初回実行でSSR30080/6の3択補正版に `verifiedSkillName` の継承漏れを発見・修正。この文書に記録した統合カタログSHA `a74a9662…` は**最初の統合時点の履歴値**。元GTの実スキル名を継承した現行統合候補SHAは `4f6bdd235838569f54c0ef26d30e43e12ba23934809518302ed1bb2ebb624d5e`。2,496イベントの件数・分岐・ヒントLvは不変、公開0件。

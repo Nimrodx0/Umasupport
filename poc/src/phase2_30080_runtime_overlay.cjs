@@ -47,6 +47,8 @@ function apply({catalog,normalized,review}){
     old.outcomes!==undefined||
     old.rewards[0].skillId!==EXPECTED.skillId||
     old.rewards[0].level!==EXPECTED.hintLevel||
+    typeof old.rewards[0].verifiedSkillName!=='string'||
+    !old.rewards[0].verifiedSkillName.trim()||
     approvalRow.eventId!==EXPECTED.eventId||
     approvalRow.eventSha256!==digest(old)||
     approvalRow.releaseApproved!==false||
@@ -60,7 +62,15 @@ function apply({catalog,normalized,review}){
   fail('元GTのスキル位置とヒントLvが既存裁定に一致しない');
  // Reuse the individually adjudicated 3 alternatives. The non-skill effect
  // ranges remain editorial evidence; they are NOT unconditional skill routes.
- const choices=editorial.provisionalCatalog.cards[0].events[0].choices;
+ // A corrected selection must retain the independently source-verified
+ // numeric ID -> Japanese name identity from the ORIGINAL pinned GT row.
+ // The editorial GameWith 3-choice draft intentionally contains only IDs.
+ // Without this bridge the actual public loader cannot validate the patch.
+ const choices=editorial.provisionalCatalog.cards[0].events[0].choices.map(c=>({
+  ...c,rewards:c.rewards.map(r=>({
+   ...r,verifiedSkillName:old.rewards[0].verifiedSkillName
+  }))
+ }));
  if(choices.length!==3||choices.some((c,i)=>
     c.id!=='option'+(i+1)||c.rewards.length!==1||
     c.rewards[0].skillId!==EXPECTED.skillId||

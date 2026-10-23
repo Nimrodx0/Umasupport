@@ -345,3 +345,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：固定GT特定SSR30080/6の操作なし1行を、GameWith裁定済み実3選択の本番イベント型へ元ID保持で非公開上書き。[詳細](phase2-30080-private-runtime-overlay-20261023.md)。
 
 - 2026-10-23：固定GT559枚・2,488イベントにGameWith裁定済み4SSR通常8イベントとSSR30080の3択補正を加えた、563枚・2,496件の非公開統合実行候補を実装。[詳細](phase2-integrated-2496-private-runtime-20261023.md)。
+
+- 2026-10-23：非公開統合2,496件の本番`public_event_catalog.preflight/attach`、現行固定UmaSim＋独立2026名による数値スキル照合、元入力不変の全件ゲートを追加。[設計](phase2-integrated-private-loader-acceptance-20261023.md)。

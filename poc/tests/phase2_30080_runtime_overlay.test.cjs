@@ -39,6 +39,8 @@ test('one GT auto row becomes three real selections with the SAME stable ID and 
  assert.equal(e.name,'元GameToraの見出し');
  assert.equal(e.type,'choice');
  assert.equal(e.availabilityKind,'special-trigger');
+ assert.ok(e.choices.every(c=>c.rewards[0].verifiedSkillName==='仮のスキル名'));
+
  assert.equal(e.rewards,undefined);
  assert.deepEqual(e.choices.map(x=>x.id),['option1','option2','option3']);
  assert.ok(e.choices.every(x=>x.rewards.length===1&&x.rewards[0].skillId==='skill:201591'&&
@@ -75,6 +77,7 @@ test('source, canonical row, signed content hash or special context changes caus
   f=>{f.catalog.cards[0].events[1].type='choice'},
   f=>{f.catalog.cards[0].events[1].availabilityKind=undefined},
   f=>{f.catalog.cards[0].events[1].rewards[0].level=4},
+  f=>{delete f.catalog.cards[0].events[1].rewards[0].verifiedSkillName},
   f=>{f.catalog.cards[0].events[1].rewards.push({skillId:'skill:1',level:1})},
   f=>{f.review.rows[0].eventSha256='0'.repeat(64)},
   f=>{f.review.rows[0].releaseApproved=true},
