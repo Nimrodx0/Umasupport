@@ -112,7 +112,7 @@ function reconcile({triage,integrated},{strict=false}={}){
   fail('30240の両固定元欠落3段階を誤って採用');
  if(gap.cardId!=='30240'||gap.publicationApproved!==false||
     gap.noAutomaticRuntimeAdoption!==true||
-    gap.gameWith?.factStatus!=='NOT_REPORTED')
+    gap.gameWith?.factStatus!=='NOT_LISTED')
   fail('SSR30240の未掲載資料の採用状況が変化');
  const unresolvedBothSources=3;
  // GT-only 24 are already IN THE APP BASELINE. The 20 missing GT card
@@ -143,7 +143,7 @@ function reconcile({triage,integrated},{strict=false}={}){
   openQueue:[
    ...checkerUnpaired,
    {cardId:'30240',count:3,
-    status:'MISSING_IN_BOTH_PINNED_SOURCES_UTOOlS_STAGE_AND_HINT_REPORTED',
+    status:'MISSING_IN_BOTH_PINNED_SOURCES_UTOOLS_STAGE_AND_HINT_REPORTED',
     action:'GAMEWITH_CARD_EVENT_TABLE_NOT_REPORTED;DO_NOT_INFER_HINT_LEVEL_OR_RESULTS'}
   ],
   coveredCheckerMissingGTCardCounts:Object.fromEntries(perMissing),
