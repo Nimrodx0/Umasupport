@@ -47,6 +47,11 @@ jobs:
           node --check poc/src/phase2_integrated_private_loader.cjs
           node --test poc/tests/phase2_integrated_private_loader.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Verify targeted 30301 Checker training-hint versus GT chain adjudication
+        run: |
+          node --check poc/src/phase2_30301_identity_resolution.cjs
+          node --test poc/tests/phase2_2511_gap_reconciliation.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Reconcile 65 pinned source differences after the 2511-event integration
         run: |
           node --check poc/src/phase2_2511_gap_reconciliation.cjs
