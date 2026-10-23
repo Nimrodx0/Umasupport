@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-p1-scenario-specific-event-fact-ledger",
+  "editorialReviewedAt": "2026-10-23",
+  "sourcePins": {
+    "gameToraDerived": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "checker": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f"
+  },
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "publicationApproved": false,
+  "automaticPublicAdoption": false,
+  "runtimeCatalogAdoption": false,
+  "baselinePrivateEventCount": 2512,
+  "commonReplacements": [
+    {
+      "cardId": "30067",
+      "checkerOrdinal": 10,
+      "referenceGTOrdinal": 10,
+      "referenceGTLocalId": 1492,
+      "displayName": "温かなメッセージ",
+      "originalGTEventName": "鍛えよ共に",
+      "context": "PROJECT_LARC_SUMMER_EXPEDITION",
+      "behavior": "REPLACES_VISIBLE_TITLE_WITH_SAME_EFFECTS",
+      "outcomeMultiplicity": "SOURCE_CONDITIONAL_CHOICES",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/414606",
+      "noAdditionalEvent": true,
+      "noAdditionalSkillGrant": true,
+      "publicationApproved": false
+    },
+    {
+      "cardId": "30081",
+      "checkerOrdinal": 12,
+      "referenceGTOrdinal": 16,
+      "referenceGTLocalId": 1478,
+      "displayName": "温かなメッセージ",
+      "originalGTEventName": "おかわりトレーニング",
+      "context": "PROJECT_LARC_SUMMER_EXPEDITION",
+      "behavior": "REPLACES_VISIBLE_TITLE_WITH_SAME_EFFECTS",
+      "outcomeMultiplicity": "SOURCE_CONDITIONAL_CHOICES",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/414606",
+      "noAdditionalEvent": true,
+      "noAdditionalSkillGrant": true,
+      "publicationApproved": false
+    },
+    {
+      "cardId": "30137",
+      "checkerOrdinal": 10,
+      "referenceGTOrdinal": 10,
+      "referenceGTLocalId": 1510,
+      "displayName": "温かなメッセージ",
+      "originalGTEventName": "三女神の気分転換トレーニング",
+      "context": "PROJECT_LARC_SUMMER_EXPEDITION",
+      "behavior": "REPLACES_VISIBLE_TITLE_WITH_SAME_EFFECTS",
+      "outcomeMultiplicity": "SOURCE_CONDITIONAL_CHOICES",
+      "sourceUrl": "https://gamewith.jp/uma-musume/article/show/414606",
+      "noAdditionalEvent": true,
+      "noAdditionalSkillGrant": true,
+      "publicationApproved": false
+    }
+  ],
+  "overseasSeparate": {
+    "eventFamilyId": "usl:mei:larc:overseas-cheer:review-only",
+    "title": "労いのエール",
+    "context": "PROJECT_LARC_OVERSEAS_ONLY",
+    "alternativeToDomesticEvent": "お疲れ様！！",
+    "cardIds": [
+      "10094",
+      "30160"
+    ],
+    "checkerSSR": {
+      "cardId": "30160",
+      "ordinal": 10
+    },
+    "domesticGtSourceOrdinal": 2,
+    "domesticGtLocalId": 1411,
+    "playerSelectableChoiceCount": 0,
+    "resultKinds": [
+      "GREAT_SUCCESS",
+      "SUCCESS"
+    ],
+    "results": {
+      "GREAT_SUCCESS": {
+        "guts": 3,
+        "mood": 1,
+        "bond": 5
+      },
+      "SUCCESS": {
+        "guts": 3,
+        "mood": 0,
+        "bond": 5
+      }
+    },
+    "projectLarcAdditionalEffects": {
+      "skillPoints": 3,
+      "aptitudePoints": 50,
+      "bond": 2
+    },
+    "skillHints": [],
+    "chainEnd": false,
+    "gameWithUrl": "https://gamewith.jp/uma-musume/article/show/414373",
+    "gameWithCardUrls": [
+      "https://gamewith.jp/uma-musume/article/show/414258",
+      "https://gamewith.jp/uma-musume/article/show/413773"
+    ],
+    "gameToraCardUrls": [
+      "https://gametora.com/ja/umamusume/supports/10094-mei-satake",
+      "https://gametora.com/ja/umamusume/supports/30160-mei-satake"
+    ],
+    "sourceEditorialDecision": "ADOPT_EXPLICIT_NONSKILL_FACTS",
+    "runtimeRepresentation": "STAGED_METADATA_ONLY_NOT_AN_EMPTY_REWARD_EVENT",
+    "publicationApproved": false
+  }
+}
