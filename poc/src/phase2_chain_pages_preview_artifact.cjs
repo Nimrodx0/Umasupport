@@ -7,6 +7,7 @@
 const {audit}=require('./phase2_chain_manual_replay.cjs');
 const {buildView}=require('./phase2_eight_event_review_view.cjs');
 const NAMES=require('../data/curation/phase2_chain_skill_display_names.v1.json');
+const HEADINGS=require('../data/curation/phase2_chain_event_headings.v1.json');
 const fail=s=>{throw Error('Phase2連続12段階のPages試用: '+s);};
 function build(){
  const source=audit(), regular=buildView();
@@ -27,6 +28,21 @@ function build(){
   verifiedNames.set(item.numericId,item.name);
  }
  const referencedNames=new Set();
+ if(HEADINGS.schemaVersion!==1||
+    HEADINGS.dataKind!=='phase2-chain-stage-headings-from-card-scoped-GameWith'||
+    HEADINGS.sourceNarrativeOrChoiceProseIncluded!==false||
+    HEADINGS.publicationApproved!==false||
+    !Array.isArray(HEADINGS.cards)||HEADINGS.cards.length!==4)
+  fail('連続イベントの正式短見出し出典が不正');
+ const headings=new Map();
+ for(const row of HEADINGS.cards){
+  if(headings.has(row.cardId)||!/^303(18|19|20|21)$/.test(row.cardId)||
+     !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(row.gameWithArticle)||
+     !Array.isArray(row.titles)||row.titles.length!==3||
+     row.titles.some(x=>typeof x!=='string'||!x.trim()||x.length>80))
+   fail('連続イベントの出典URLと12正式見出しが不正');
+  headings.set(row.cardId,row);
+ }
  if(source.summary.sourceCards!==4||source.summary.chainStages!==12||
     source.summary.reportedChainAlternatives!==19||
     source.summary.unresolvedPossibleTransitions!==15||
@@ -41,7 +57,9 @@ function build(){
  let stages=0,alternatives=0,hints=0,pendingEdges=0;
  const cards=regular.cards.map(meta=>{
   const card=source.cards.get(meta.cardId);
-  if(!card||card.events.length!==5||
+  const titles=headings.get(meta.cardId);
+  if(!card||card.events.length!==5||!titles||
+     titles.gameWithArticle!==card.gameWith.url||
      !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(card.gameWith.url))
    fail('出典記事または4SSRのイベント対応が不正');
   const events=card.events.slice(0,3).map((e,i)=>{
@@ -62,6 +80,7 @@ function build(){
    }
    return {
     id:'usl:'+meta.cardId+':chain:'+e.ordinal,
+    title:titles.titles[i],
     ordinal:e.ordinal,choiceCount:e.choiceCount,
     manualReachedRequired:true,priorStageDependenceVerified:false,
     nextStageTransitionStatus:i<2?'UNKNOWN':'NOT_MODELED',
@@ -97,6 +116,9 @@ function build(){
   });
   return {cardId:meta.cardId,name:meta.displayName,events};
  });
+ if(headings.size!==cards.length||
+    [...headings.keys()].some(id=>!cards.some(c=>c.cardId===id)))
+  fail('短い正式見出しのカードと出典位置が全件一致しない');
  if(referencedNames.size!==verifiedNames.size||
     [...verifiedNames.keys()].some(id=>!referencedNames.has(id)))
   fail('8種類の出典照合済みスキル名に欠損または余剰があります');
