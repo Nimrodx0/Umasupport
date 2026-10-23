@@ -115,7 +115,10 @@ function assemble(assembled,{strict=false}={}){
   for(let i=0;i<2;i++){
    const parent=incoming[i],next=incoming[i+1];
    for(const option of parent.type==='choice'?parent.choices:[{id:'option1'}]){
-    const selected=parent.type==='choice'?{[parent.id]:option.id}:{};
+    const selected={};
+    for(const prior of incoming.slice(0,i))if(prior.type==='choice')
+     selected[prior.id]=prior.choices[0].id;
+    if(parent.type==='choice')selected[parent.id]=option.id;
     const status=core.reachability(next,selected,incoming,{});
     if(status.status!=='reachable')
      fail('通常継続フラグが本番コアで立たない: '+source.cardId+'/'+parent.id);
