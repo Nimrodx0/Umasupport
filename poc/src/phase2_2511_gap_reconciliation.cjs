@@ -67,6 +67,7 @@ function reconcile({triage,integrated},{strict=false}={}){
    }else{
     remainingCheckerOnGT++;
     checkerUnpaired.push({cardId,checkerOrdinal,sourceKey,
+     priority:typeof entry.priority==='string'?entry.priority:null,
      status:'UNPAIRED_IDENTITY_NOT_PROVEN_MISSING',
      action:cardId==='20075'?'REVIEW_REPORTED_NO_SKILL_CHAIN_FIRST_STAGE':
       'CHECK_CARD_SCOPED_EVENT_IDENTITY_AND_SKILL_ROUTE'});
@@ -114,6 +115,13 @@ function reconcile({triage,integrated},{strict=false}={}){
     gap.noAutomaticRuntimeAdoption!==true||
     gap.gameWith?.factStatus!=='NOT_LISTED')
   fail('SSR30240の未掲載資料の採用状況が変化');
+ const unmatchedByCard={};
+ for(const x of checkerUnpaired)
+  unmatchedByCard[x.cardId]=(unmatchedByCard[x.cardId]||0)+1;
+ const sortedUnmatchedByCard=Object.fromEntries(
+  Object.entries(unmatchedByCard).sort(([a],[b])=>a.localeCompare(b)));
+ if(Object.values(sortedUnmatchedByCard).reduce((n,v)=>n+v,0)!==remainingCheckerOnGT)
+  fail('イベント同定のカード別残件集計が不一致');
  const unresolvedBothSources=3;
  // GT-only 24 are already IN THE APP BASELINE. The 20 missing GT card
  // locations are covered at card scope, not necessarily exact paired IDs.
@@ -125,6 +133,7 @@ function reconcile({triage,integrated},{strict=false}={}){
   gtOnlyAlreadyInBaseline:gtOnlyAlreadyPresent,
   sourceChoiceTopologyPatched:gtChoiceFixed,
   checkerOnGTCardIdentityUnpaired:remainingCheckerOnGT,
+  checkerOnGTCardsNeedingIdentityAudit:Object.keys(sortedUnmatchedByCard).length,
   missingFromBothFixedSources:unresolvedBothSources,
   stillRequireIndividualInvestigation:remainingCheckerOnGT+unresolvedBothSources,
   confirmedNewMissingEventsFromThisAudit:0,
@@ -146,6 +155,7 @@ function reconcile({triage,integrated},{strict=false}={}){
     status:'MISSING_IN_BOTH_PINNED_SOURCES_UTOOLS_STAGE_AND_HINT_REPORTED',
     action:'GAMEWITH_CARD_EVENT_TABLE_NOT_REPORTED;DO_NOT_INFER_HINT_LEVEL_OR_RESULTS'}
   ],
+  unpairedCheckerOnGTPositionsByCard:sortedUnmatchedByCard,
   coveredCheckerMissingGTCardCounts:Object.fromEntries(perMissing),
   coveredCheckerOnGTCardIds:['30221']
  };
