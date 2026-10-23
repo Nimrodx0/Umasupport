@@ -74,7 +74,10 @@ function accept({assembled,model,skillText},{strict=false}={}){
     if(routes.length!==a.hints.length||
        routes.some((r,j)=>r.skillId!==a.hints[j][0]||
         r.level!==a.hints[j][1]))
-     fail('本番辞書解決後にルート別スキルID/Lvが変化');
+     fail('本番辞書解決後にルート別スキルID/Lvが変化: '+
+      sourceCard.cardId+'/'+event.id+'/'+a.id+
+      ' expected='+JSON.stringify(a.hints.map(h=>[h[0],h[1]]))+
+      ' actual='+JSON.stringify(routes.map(r=>[r.skillId,r.level])));
    }
   }
  }
