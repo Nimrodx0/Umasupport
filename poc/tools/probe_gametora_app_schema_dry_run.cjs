@@ -93,6 +93,27 @@ function main(args){
     allHumanApprovalFieldsIntentionallyAbsent:true,
     sourceNarrativeOrChoiceProseIncluded:false
    }));
+   if(process.env.UMASUPPORT_GT_CROSS_SOURCE_QUEUE||
+      process.env.UMASUPPORT_GT_TRIAGE_OUTPUT){
+    if(!process.env.UMASUPPORT_GT_CROSS_SOURCE_QUEUE||
+       !process.env.UMASUPPORT_GT_TRIAGE_OUTPUT)
+     fail('出典横断例外キューの入力・出力パスが揃っていません');
+    const triageOutput=path.resolve(process.env.UMASUPPORT_GT_TRIAGE_OUTPUT);
+    if(triageOutput===checkoutRoot||triageOutput.startsWith(checkoutRoot+path.sep))
+     fail('非公開例外トリアージをGit管理領域へ保存できません');
+    const crossSource=JSON.parse(fs.readFileSync(
+     path.resolve(process.env.UMASUPPORT_GT_CROSS_SOURCE_QUEUE),'utf8'));
+    const {build:buildTriage}=require('../src/phase2_release_triage.cjs');
+    const triage=buildTriage({
+     review:reviewQueue,normalized:candidateAudit,baselineReport,crossSource
+    },{strict:true});
+    fs.mkdirSync(path.dirname(triageOutput),{recursive:true});
+    fs.writeFileSync(triageOutput,JSON.stringify(triage,null,2)+'\\n');
+    console.log('GAMETORA_CROSS_SOURCE_RELEASE_TRIAGE='+JSON.stringify({
+     ...triage.summary,publicReleaseApproved:false,
+     sourceNarrativeOrChoiceProseIncluded:false
+    }));
+   }
   }
   // No source titles or unapproved runtime catalog are printed or written.
   const fingerprint=hash(Buffer.from(JSON.stringify(enriched.catalog)));
