@@ -47,3 +47,5 @@
 - [4SSRの通常8件・16択の公開前レビューと仮表示](phase2-eight-standalone-event-display-review-20261022.md)
 
 - [Phase 2・通常8イベントをlocalhostのブラウザで非公開の選択検証](phase2-eight-standalone-local-interactive-review-20261023.md)
+
+- [Phase 2・GitHub Pagesで通常8イベントを操作する試用画面](phase2-eight-pages-browser-preview-20261023.md)
