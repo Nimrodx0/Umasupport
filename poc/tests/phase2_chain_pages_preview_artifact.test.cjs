@@ -21,7 +21,7 @@ test('publicly viewable but nonapproved numeric preview matches the curated 12-s
  assert.equal(stages.length,12);
  assert.equal(stages.flatMap(s=>s.alternatives).length,19);
  assert.equal(stages.flatMap(s=>s.alternatives.flatMap(a=>a.hints)).length,8);
- assert.equal(stages.filter(s=>s.choiceCount===0).length,4);
+ assert.equal(stages.filter(s=>s.choiceCount===0).length,5);
  assert.deepEqual(expected.cards.map(c=>c.events.map(e=>e.choiceCount)),[
   [2,2,0],[2,2,0],[2,2,0],[2,0,0]
  ]);
