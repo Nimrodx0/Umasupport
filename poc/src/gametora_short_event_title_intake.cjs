@@ -5,6 +5,7 @@
  * heading SHA. Only for LOCAL REVIEW / CI MEMORY. Never writes a public DB.
  */
 const crypto=require('node:crypto');
+const {digest}=require('./event_release_gate.cjs');
 const fail=s=>{throw Error('GameToraイベント名編集取込: '+s);};
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 const normalize=s=>String(s).normalize('NFKC').replace(/\s+/gu,' ').trim();
@@ -16,6 +17,7 @@ function bindNames({normalized,projectedCatalog,documents},{strict=false}={}){
     !Array.isArray(normalized.cards)||!Array.isArray(projectedCatalog?.cards)||
     projectedCatalog.schemaVersion!==1||!Array.isArray(documents))
   fail('未承認GameTora候補と元資料が必要');
+ const output=structuredClone(projectedCatalog);
  const docs=new Map(),items=new Map(),projected=new Map(),manifest=[];
  let sourceEvents=0,accepted=0,needsReview=0;
  for(const doc of documents){
@@ -48,7 +50,7 @@ function bindNames({normalized,projectedCatalog,documents},{strict=false}={}){
   items.set(card.cardId,{card,sourceEntries});
   sourceEvents+=card.events.length;
  }
- for(const card of projectedCatalog.cards){
+ for(const card of output.cards){
   if(projected.has(card.cardId)||!items.has(card.cardId)||!Array.isArray(card.events))
    fail('投影対象カードが出典母集団と一致しない');
   projected.set(card.cardId,card);
@@ -71,18 +73,18 @@ function bindNames({normalized,projectedCatalog,documents},{strict=false}={}){
    manifest.push({cardId:card.cardId,eventId:e.id,
     sourceOrdinal:row.record.sourceOrdinal,
     sourceHeadingSha256:row.record.sourceTitleFingerprint,
-    eventSha256:null,
+    eventSha256:digest(e),
     status:canReview?'SHORT_HEADING_JOINED_NOT_APPROVED':'HEADING_NEEDS_REVIEW'});
   }
  }
- if(projected.size!==projectedCatalog.cards.length||
+ if(projected.size!==output.cards.length||
     accepted+needsReview!==manifest.length||
     manifest.length>sourceEvents)
   fail('出典・投影イベント件数を保全できない');
  if(strict&&(sourceEvents!==2488||docs.size!==559||
     manifest.length!==2488||projected.size!==559))
   fail('2,488イベント/559枚の固定GT全件ゲートが不一致');
- return {catalog:projectedCatalog,manifest,
+ return {catalog:output,manifest,
   summary:{sourceCards:docs.size,sourceEvents,
    projectedCards:projected.size,projectedEvents:manifest.length,
    shortTitlesJoined:accepted,shortTitlesNeedsReview:needsReview,
