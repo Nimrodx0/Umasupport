@@ -197,6 +197,17 @@ function main(args){
      sourceNarrativeOrChoiceProseIncluded:false,
      publicationApproved:false,rawCandidateCatalogPublished:false
     }));
+    const {inspect:inspectP1}=require('../src/phase2_four_p1_outcome_review.cjs');
+    const checkedP1=inspectP1({priority:prioritized,checker:checkerFacts},{strict:true});
+    console.log('PHASE2_FOUR_P1_CONDITIONAL_RESULT_REVIEW='+JSON.stringify({
+     ...checkedP1.summary,
+     entries:checkedP1.rows.map(x=>({
+      cardId:x.cardId,checkerOrdinal:x.checkerOrdinal,
+      conditionalChoiceRows:x.conditionalChoiceRows,
+      status:x.status,hasMissingSkillRoute:x.numericSkillHintsInCheckerRow>0
+     })),
+     noSourceOptionText:true,publicationApproved:false
+    }));
     const {apply:append30180}=require('../src/phase2_30180_special_overlay.cjs');
     const {accept:verify2512}=require('../src/phase2_30180_loader.cjs');
     const withSpecial=append30180({integrated:withChains,priority:prioritized},{strict:true});

@@ -65,6 +65,8 @@ on:
       - 'poc/src/phase2_2511_gap_reconciliation.cjs'
       - 'poc/data/curation/adjudicated/30180_special_cornering.v1.json'
       - 'poc/src/phase2_30180_special_overlay.cjs'
+      - 'poc/src/phase2_four_p1_outcome_review.cjs'
+      - 'poc/tests/phase2_four_p1_outcome_review.test.cjs'
       - 'poc/src/phase2_30180_loader.cjs'
       - 'poc/tests/phase2_30180_special_overlay.test.cjs'
       - 'poc/src/phase2_2511_remaining_checker_skill_impact.cjs'
@@ -276,6 +278,8 @@ jobs:
         run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
       - name: Prioritize sixteen residual Checker source positions by reported numeric hints
         run: node --test umasupport/poc/tests/phase2_2511_remaining_checker_skill_impact.test.cjs
+      - name: Verify P1 success/failure rows do not acquire invented skill hints
+        run: node --test umasupport/poc/tests/phase2_four_p1_outcome_review.test.cjs
       - name: Validate new P0 skill hint SSR30180 using the production loader
         run: node --test umasupport/poc/tests/phase2_30180_special_overlay.test.cjs
       - name: Reconcile after 2511 candidate integration without false missing-event closure
