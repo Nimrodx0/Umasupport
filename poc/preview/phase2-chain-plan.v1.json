@@ -5,12 +5,9 @@
   "publicationApproved": false,
   "sourceNarrativeOrChoiceProseIncluded": false,
   "planUsesOrdinaryContinuationDefault": true,
-  "verifiedIndividualContinuations": 0,
-  "plannedDefaultContinuations": 17,
-  "eventOccurrenceGuaranteed": false,
   "explicitTerminalBranchesInSelectedEvidence": 0,
   "manualStageArrivalRequired": false,
-  "status": "PROSPECTIVE_SKILLS_ONLY",
+  "status": "CHOICE_DEPENDENT_CHAIN_FLAGS",
   "cards": [
     {
       "cardId": "30318",
@@ -65,17 +62,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30318:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30318:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -120,17 +117,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30318:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30318:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -227,17 +224,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30319:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30319:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -300,17 +297,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30319:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30319:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -412,17 +409,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30320:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30320:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -477,17 +474,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30320:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30320:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -577,17 +574,17 @@
               "choiceId": "option1",
               "nextStageId": "usl:30321:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             },
             {
               "choiceId": "option2",
               "nextStageId": "usl:30321:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -622,9 +619,9 @@
               "choiceId": "option1",
               "nextStageId": "usl:30321:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -695,9 +692,9 @@
               "choiceId": "option1",
               "nextStageId": "usl:30221:chain:2",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -732,9 +729,9 @@
               "choiceId": "option1",
               "nextStageId": "usl:30221:chain:3",
               "continuation": "ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF",
-              "individuallyVerified": false,
-              "terminationReported": false,
-              "nextEventOccurrenceGuaranteed": false
+              "setsNextStageFlag": true,
+              "terminal": false,
+              "rule": "NO_EXPLICIT_CHAIN_END"
             }
           ]
         },
@@ -774,5 +771,7 @@
         }
       ]
     }
-  ]
+  ],
+  "enabledContinuationFlags": 17,
+  "flagSetUnlessTerminated": true
 }

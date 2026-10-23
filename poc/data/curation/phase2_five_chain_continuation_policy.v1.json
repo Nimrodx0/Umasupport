@@ -2,11 +2,9 @@
   "schemaVersion": 1,
   "dataKind": "phase2-five-ssr-chain-ordinary-continuation-planning-policy",
   "publicationApproved": false,
-  "chainTopologyProven": false,
-  "actualEventOccurrenceGuaranteed": false,
   "reviewedAt": "2026-10-23",
   "policyBasis": "docs/gametora-baseline-event-policy-20261021.md",
-  "meaning": "An omitted cutoff is an ordinary-continuation planning default, NOT a positive per-option proof or guaranteed triggering.",
+  "meaning": "Non-terminal outcomes set the next chain-stage flag. A reported chain_end or terminal outcome does not. Event appearance RNG is outside this application's model.",
   "cards": [
     {
       "cardId": "30318",
@@ -53,5 +51,7 @@
       ],
       "explicitTerminationReportedInReviewedArticle": false
     }
-  ]
+  ],
+  "ordinaryContinuationFlagRule": "NO_EXPLICIT_CHAIN_END_SETS_NEXT_STAGE_FLAG",
+  "mechanicsScope": "CHOICE_DEPENDENT_UNLOCK_FLAGS_WITHOUT_EVENT_SPAWN_MODEL"
 }

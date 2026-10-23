@@ -1,7 +1,7 @@
 'use strict';
-/* Prospective path planner, not actual in-game reached-event history.
- * The absence of an explicit cutoff is a POLICY DEFAULT, not independent
- * confirmation of the 17 routes. Do not mark event rewards as guaranteed.
+/* Choice-stage flags: an option without explicit terminal state unlocks
+ * the next stage. Event appearance RNG is intentionally out of scope.
+ * No stage-by-stage "arrived" inputs, no claims of actual skill ownership.
  */
 (async()=>{
  const ready=document.getElementById('bootstrap');
@@ -19,13 +19,12 @@
      data.dataKind!=='phase2-five-chain-ordinary-default-planning-preview'||
      data.previewOnly!==true||data.publicationApproved!==false||
      data.planUsesOrdinaryContinuationDefault!==true||
-     data.verifiedIndividualContinuations!==0||
-     data.plannedDefaultContinuations!==17||
-     data.eventOccurrenceGuaranteed!==false||
+     data.enabledContinuationFlags!==17||
+     data.flagSetUnlessTerminated!==true||
      data.explicitTerminalBranchesInSelectedEvidence!==0||
      data.sourceNarrativeOrChoiceProseIncluded!==false||
      data.manualStageArrivalRequired!==false||
-     data.status!=='PROSPECTIVE_SKILLS_ONLY'||
+     data.status!=='CHOICE_DEPENDENT_CHAIN_FLAGS'||
      !Array.isArray(data.cards)||data.cards.length!==5)
     throw Error('未承認・通常継続候補の検証フラグが不正');
   let evs=0,alts=0,hints=0,edges=0;
@@ -68,10 +67,10 @@
      if(edge.choiceId!==e.alternatives[k].id||
         edge.nextStageId!==c.events[j+1].id||
         edge.continuation!=='ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF'||
-        edge.individuallyVerified!==false||
-        edge.terminationReported!==false||
-        edge.nextEventOccurrenceGuaranteed!==false)
-      throw Error('継続を確定したと偽装したデータを拒否');
+        edge.setsNextStageFlag!==true||
+        edge.terminal!==false||
+        edge.rule!=='NO_EXPLICIT_CHAIN_END')
+      throw Error('通常継続のフラグ判定が不正');
     }
    }
   }
@@ -88,14 +87,21 @@
    const resolved=visible&&selectedIsValid;
    if(resolved&&e.choiceCount>0)choiceSettings[e.id]=choice;
    const edge=i<2&&resolved?e.nextStageEdges.find(x=>x.choiceId===choice):null;
-   eligible=!!edge&&edge.continuation==='ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF';
+   eligible=!!edge&&edge.setsNextStageFlag===true&&edge.terminal===false;
    return {event:e,eligible:visible,resolved,choice};
   });
-  const runtimeEvents=row.filter(r=>r.eligible).map(r=>{
+  // Use the production core's event prerequisites for flag propagation.
+  // The complete chain is present; its stage 2 and 3 rewards are blocked by
+  // the previous stage until the previous player's choice is selected.
+  const runtimeEvents=row.map((r,index)=>{
    const e=r.event;const reward=a=>a.hints.map(h=>({skillId:h[0],level:h[1]}));
+   const previous=index===0?{}:{
+    requires:{all:[{eventId:row[index-1].event.id}]}
+   };
    if(e.choiceCount===0)return {
-    id:e.id,name:e.title,type:'auto',rewards:reward(e.alternatives[0])};
-   return {id:e.id,name:e.title,type:'choice',
+    id:e.id,name:e.title,type:'auto',...previous,
+    rewards:reward(e.alternatives[0])};
+   return {id:e.id,name:e.title,type:'choice',...previous,
     choices:e.alternatives.map((a,k)=>({
      id:a.id,label:k===0?'上の選択肢':'下の選択肢',rewards:reward(a)
     }))
@@ -120,7 +126,7 @@
   const {row,routes}=path(card);
   const banner=node('div','','card-header');
   banner.append(node('h2',card.name),
-   node('p','現在のスキル獲得候補 '+routes.length+'経路（発生保証なし）'));
+   node('p','現在の獲得可能スキル '+routes.length+'経路'));
   mount.append(banner);
   const reset=node('button','このカードの選択を解除','reset');
   reset.type='button';reset.addEventListener('click',()=>{
@@ -128,7 +134,7 @@
    render(card);
   });
   mount.append(reset);
-  mount.append(node('p','上から順に選択肢を指定してください。通常継続を前提とした計画上の候補だけを表示します。','subnote'));
+  mount.append(node('p','上から選択肢を指定してください。打ち切りのない選択肢では次段階のフラグが立ちます。','subnote'));
   const grid=node('div','','events');
   for(const info of row){
    const e=info.event;
@@ -138,7 +144,7 @@
    article.dataset.resolved=String(info.resolved);
    article.append(node('h3',e.title),node('p','連続イベント 第'+e.ordinal+'段階','stage'));
    article.append(node('p',!info.eligible?'前段の選択を指定すると候補が開きます':
-    e.choiceCount===0?'選択肢なし（この段階が発生した場合の候補）':
+    e.choiceCount===0?'選択肢なし：次段階へ継続':
     info.resolved?'選択位置を指定済み':'選択位置を指定してください','state'));
    const list=node('div','','choices');
    if(e.choiceCount===0){
@@ -170,7 +176,7 @@
    const selectedRoutes=routes.filter(r=>r.eventId===e.id);
    const output=node('output','','result');
    output.dataset.hintCount=String(selectedRoutes.length);
-   if(!info.eligible)output.textContent='この段階は現在の計画経路に含まれません';
+   if(!info.eligible)output.textContent='前段のフラグが立っていません';
    else if(!info.resolved)output.textContent='選択肢を決めると、この段階の報酬候補を計算します';
    else if(!selectedRoutes.length)output.textContent='この段階・選択肢のスキルヒント記載はありません';
    else{
@@ -180,7 +186,7 @@
      if(!h)throw Error('スキルの数値ID/日本語名が一致しません');
      return h[2]+' ヒントLv'+r.level;
     });
-    output.append(node('b','将来の獲得候補：'),document.createTextNode(labels.join(' / ')));
+    output.append(node('b','獲得可能スキル：'),document.createTextNode(labels.join(' / ')));
    }
    article.append(output);
    const src=node('a','出典記事を確認する ↗','source');
@@ -204,7 +210,7 @@
    tab.dataset.cardId=card.cardId;tab.setAttribute('aria-selected','false');
    tab.addEventListener('click',()=>render(card));tabs.append(tab);
   });
-  ready.textContent='5枚・15段階・17通常継続候補。確証済みの選択別継続は0件です。';
+  ready.textContent='5枚・15段階・通常継続フラグ17件を適用しています。';
   render(data.cards[0]);document.documentElement.dataset.ready='true';
  }catch(err){
   ready.textContent='連続イベント計画を表示できません：'+String(err.message||err);
