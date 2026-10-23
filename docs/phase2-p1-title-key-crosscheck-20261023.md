@@ -37,7 +37,7 @@ GameWith編集資料：[温かなメッセージ共通イベント](https://game
 
 A：`node --test poc/tests/phase2_p1_source_title_join.test.cjs`。厳密タイトル・元ID・GT形状・Checker条件行、改変拒否、4件から3件に減らす不一致動作の合成テスト。
 
-B：`.github/workflows/whole-event-inventory.yml`で固定GT559枚2,488件／Checker2,109件／UmaSim563枚を再取得・出典版確認し、4行の**元文言を含まない**結果を出す。実CIの行別結果を後続の実測追記で明示する。
+B：`.github/workflows/whole-event-inventory.yml`で固定GT559枚2,488件／Checker2,109件／UmaSim563枚を再取得・出典版確認し、4行の**元文言を含まない**結果を出す。[全件Action #39968475095](https://github.com/Nimrodx0/Umasupport/actions/runs/39968475095)で**4/4の短見出し分類キーが厳密一致**。内訳：グループ共通「温かなメッセージ」3／佐岳メイ海外別イベント「労いのエール」1。Checker未対元位置とGTカードID・元選択肢形状の改変拒否も成功。**GT同一イベントペアの追加0、結果経路同一性の確認0、正式公開0**。
 
 C：通常の公開Webアプリの表示・設定保存・公開イベントには変更なし。物理端末C確認は対象外。
 
