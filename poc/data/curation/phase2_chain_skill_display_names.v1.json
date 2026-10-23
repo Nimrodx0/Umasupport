@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-chain-preview-verified-skill-names",
+  "source": {
+    "repository": "mee1080/umasim",
+    "revision": "cf9366f6a487bd8f197b53d8a11981207beb9f6c",
+    "path": "data/skill_data.txt",
+    "verifiedAt": "2026-10-23"
+  },
+  "scope": "phase2-four-gt-missing-ssr-chain-hints-only",
+  "publicCatalogApproved": false,
+  "records": [
+    {
+      "numericId": "201323",
+      "name": "勇迅円刃"
+    },
+    {
+      "numericId": "201463",
+      "name": "月影円刃"
+    },
+    {
+      "numericId": "201651",
+      "name": "スリップストリーム"
+    },
+    {
+      "numericId": "202371",
+      "name": "アンストッパブル"
+    },
+    {
+      "numericId": "203801",
+      "name": "解き放つ情念"
+    },
+    {
+      "numericId": "204151",
+      "name": "ぶっちぎり！"
+    },
+    {
+      "numericId": "204412",
+      "name": "憂いなし"
+    },
+    {
+      "numericId": "204721",
+      "name": "一往直前"
+    }
+  ]
+}

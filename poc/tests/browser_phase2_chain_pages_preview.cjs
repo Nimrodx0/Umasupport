@@ -37,6 +37,9 @@ async function main(){
   assert.match(await page.locator('.notice').innerText(),/連続分岐は未確定/);
   assert.equal(await page.locator('#card-tabs button').count(),4);
   assert.equal(await page.locator('article.event').count(),3);
+  assert.match(await page.locator('article.event[data-event="1"] h3').innerText(),/見上げた空は眩しくて/);
+  assert.match(await page.locator('article.event[data-event="3"] h3').innerText(),/届けた幸せは、甘く花開いて/);
+
   assert.equal(await page.locator('article.event[data-observed="false"]').count(),3);
   assert.equal(await page.locator('.choice:disabled').count(),6);
   assert.equal(await page.locator('output[data-hint-count="0"]').count(),3);
@@ -45,11 +48,12 @@ async function main(){
   assert.equal(await page.locator('article.event[data-observed="true"]').count(),1);
   assert.equal(await page.locator('article.event[data-observed="false"]').count(),2);
   assert.equal(await page.locator('article.event[data-event="3"] output').getAttribute('data-hint-count'),'1');
-  assert.match(await page.locator('article.event[data-event="3"] output').innerText(),/201323/);
+  assert.match(await page.locator('article.event[data-event="3"] output').innerText(),/勇迅円刃/);
+  assert.doesNotMatch(await page.locator('article.event[data-event="3"] output').innerText(),/201323/);
   await page.locator('article.event[data-event="3"] .arrived').click();
   assert.equal(await page.locator('output[data-hint-count="0"]').count(),3);
   for(const [card,stage3,stage2Hint] of [
-   ['30319',2,'204412'],['30320',2,'201651'],['30321',1,null]
+   ['30319',2,'憂いなし'],['30320',2,'スリップストリーム'],['30321',1,null]
   ]){
    await page.locator('#card-tabs button[data-card-id="'+card+'"]').click();
    assert.equal(await page.locator('article.event').count(),3);
@@ -57,6 +61,16 @@ async function main(){
    await page.locator('article.event[data-event="3"] .arrived').click();
    assert.equal(await page.locator('article.event[data-event="3"] output')
     .getAttribute('data-hint-count'),String(stage3));
+   const sourceSkillNames={
+    '30319':['アンストッパブル','ぶっちぎり！'],
+    '30320':['解き放つ情念','一往直前'],
+    '30321':['月影円刃']
+   };
+   for(const name of sourceSkillNames[card]){
+    const actual=await page.locator('article.event[data-event="3"] output').innerText();
+    assert.ok(actual.includes(name),'Expected reviewed skill name '+name+' in '+actual);
+   }
+
    if(stage2Hint){
     const second=page.locator('article.event[data-event="2"]');
     assert.equal(await second.locator('button[data-choice="option1"]').isDisabled(),true);
@@ -82,6 +96,8 @@ async function main(){
      .getAttribute('data-hint-count'),String(stage3));
    }
   }
+  // User-visible text must not expose internal skill IDs.
+  assert.doesNotMatch(await page.locator('main').innerText(),/スキルID\\s*\\d+/);
   assert.deepEqual(errors,[]);
   assert.deepEqual(requests,[]);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

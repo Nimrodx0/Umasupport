@@ -349,3 +349,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：非公開統合2,496件の本番`public_event_catalog.preflight/attach`、現行固定UmaSim＋独立2026名による数値スキル照合、元入力不変の全件ゲートを追加。[設計](phase2-integrated-private-loader-acceptance-20261023.md)。
 
 - 2026-10-23：4SSRの未確証連続イベント12段階を、段階ごとに明示到達した場合だけスキル候補を試算するブラウザ画面へ拡張。15の未確証経路は自動接続せず。[仕様](phase2-chain-pages-manual-review-20261023.md)。
+
+- 2026-10-23：ユーザー指定により連続イベント試用の8スキル名を数値ID表示から固定辞書照合済みの日本語名へ変更。12件の正式イベント短見出しも追加し、未知名はfail-closed。[機構と出典](phase2-chain-pages-manual-review-20261023.md)。

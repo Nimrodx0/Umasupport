@@ -36,7 +36,9 @@
    for(const [j,e] of card.events.entries()){
     stages++;
     if(e.id!=='usl:'+card.cardId+':chain:'+(j+1)||
-       e.ordinal!==j+1||e.manualReachedRequired!==true||
+       e.ordinal!==j+1||typeof e.title!=='string'||
+       !e.title.trim()||e.title.length>80||
+       e.manualReachedRequired!==true||
        e.priorStageDependenceVerified!==false||
        e.nextStageTransitionStatus!==(j<2?'UNKNOWN':'NOT_MODELED')||
        !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(e.sourceUrl)||
@@ -60,7 +62,8 @@
       if(!Array.isArray(hint)||hint.length!==3||
          !/^skill:\d+$/.test(hint[0])||
          !Number.isSafeInteger(hint[1])||hint[1]<1||
-         typeof hint[2]!=='string'||!hint[2])
+         typeof hint[2]!=='string'||!hint[2].trim()||
+         /^スキルID\s*\d+/.test(hint[2])||/^\d+$/.test(hint[2]))
        throw Error('スキル数値事実が不正');
      }
     }
@@ -114,7 +117,8 @@
    section.dataset.eventId=ev.id;
    const isObserved=observed.get(ev.id)===true;
    section.dataset.observed=String(isObserved);
-   section.append(make('h3','連続イベント・第'+ev.ordinal+'段階'));
+   section.append(make('h3',ev.title));
+   section.append(make('p','連続イベント・第'+ev.ordinal+'段階','hint'));
    section.append(make('p',ev.choiceCount===0?'選択肢なし：到達を手動指定':
     'プレイヤー選択肢2件：到達を手動指定','hint'));
    const arrive=make('button',isObserved?'到達した ✓ （解除する）':'この段階に到達した','arrived');
@@ -162,7 +166,8 @@
      ev.alternatives.find(x=>x.id===selected.get(ev.id));
     const result=eventRoutes.map(r=>{
      const h=alt.hints.find(h=>h[0]===r.skillId&&h[1]===r.level);
-     return (h?h[2]:r.skillId)+' ヒントLv'+r.level;
+     if(!h)throw Error('スキル名称の照合に失敗しました');
+     return h[2]+' ヒントLv'+r.level;
     });
     output.append(make('b','到達を指定した段階の候補：'),
      document.createTextNode(result.join(' / ')));
