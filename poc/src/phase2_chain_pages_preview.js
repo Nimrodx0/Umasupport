@@ -70,7 +70,7 @@
    }
   }
   if(stages!==15||alts!==22||hints!==9||pending!==17)
-   throw Error('固定12段階・19結果行・8ヒント・15未確定経路と不一致');
+   throw Error('固定15段階・22結果行・9ヒント・17経路と不一致');
  }
  function runtimeEvents(card){
   return card.events.filter(e=>observed.get(e.id)===true).map(e=>{
@@ -173,7 +173,7 @@
      document.createTextNode(result.join(' / ')));
    }
    section.append(output);
-   const warning=make('p','前段からの到達・次段階の継続／打ち切りは未確定です','warning');
+   const warning=make('p','この画面は段階の独立検証用です。通常ルートでは打ち切りがない限り次段階のフラグON','warning');
    section.append(warning);
    const link=make('a','GameWith出典を見る ↗','source');
    link.href=ev.sourceUrl;link.target='_blank';link.rel='noopener noreferrer';
@@ -198,7 +198,7 @@
    tab.addEventListener('click',()=>render(card));
    tabs.append(tab);
   }
-  ready.textContent='5カード・連続15段階・結果行22・ヒント9件。段階間の17遷移候補は全て未確定です。';
+  ready.textContent='5カード・連続15段階・結果行22・ヒント9件。段階別の検査用画面です。';
   render(data.cards[0]);
   document.documentElement.dataset.ready='true';
  }catch(error){
