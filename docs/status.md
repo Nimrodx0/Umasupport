@@ -356,3 +356,7 @@
 ### 固定Checker全件による残16位置のスキル影響分類（2026-10-23）
 
 [全件監査](https://github.com/Nimrodx0/Umasupport/actions/runs/39942584498) PASS。P0 **1位置（SSR30180/Checker7、コーナー巧者○ ID200332）**、結果条件要注意P1 **4位置**、数値ヒント未収録を検出しないP2 **11位置**。P0のSSR30180は[GameWith](https://gamewith.jp/uma-musume/article/show/431692)の「あなたを想って」ヒントLv1が明記されており、GameToraカードページも確認済み。次の補修対象として優先。
+
+## Phase 2・SSR30180「あなたを想って」のコーナー巧者○Lv1を非公開全件へ補完（2026-10-23）
+
+[元GameToraとGameWith個別記事・非公開追加ゲート](phase2-30180-special-corner-adept-20261023.md)。残16位置の数値ヒント差P0唯一、SSR30180 Checker/7のID`200332`は、GameWithに選択なし・「コーナー巧者○」ヒントLv1で明記。固定GTカード元サイトを確認後、明示事実を独自特別イベント `usl:30180:special:checker-007` として既存2,511件の**非公開**実本番スキーマへ1件追加。クラシック級1月前半という発生時期はアプリ対象外。**非公開候補2,512件**の本番辞書・集計へCI投入、正式公開0件は不変。実全件Actionの結果は独立確認する。
