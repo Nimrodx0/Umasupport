@@ -197,6 +197,20 @@ function main(args){
      sourceNarrativeOrChoiceProseIncluded:false,
      publicationApproved:false,rawCandidateCatalogPublished:false
     }));
+    const {apply:append30180}=require('../src/phase2_30180_special_overlay.cjs');
+    const {accept:verify2512}=require('../src/phase2_30180_loader.cjs');
+    const withSpecial=append30180({integrated:withChains,priority:prioritized},{strict:true});
+    const loaded2512=verify2512({
+     assembled:withSpecial,model,skillText:result.dryRunMergedSkillText
+    },{strict:true});
+    console.log('PHASE2_30180_2512_PRIVATE_HINT_ADOPTION='+JSON.stringify({
+     ...loaded2512,
+     addedCardId:'30180',addedHintNumericId:'200332',
+     addedHintLevel:1,
+     availabilityKind:'special-trigger',
+     sourceNarrativeOrChoiceProseIncluded:false,
+     publicCatalogUnchanged:true
+    }));
 
    }
   }
