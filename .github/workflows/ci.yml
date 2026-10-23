@@ -57,6 +57,12 @@ jobs:
           node --check poc/src/phase2_2511_remaining_checker_skill_impact.cjs
           node --test poc/tests/phase2_2511_remaining_checker_skill_impact.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Validate SSR30180 event-only cornering hint and production loader
+        run: |
+          node --check poc/src/phase2_30180_special_overlay.cjs
+          node --check poc/src/phase2_30180_loader.cjs
+          node --test poc/tests/phase2_30180_special_overlay.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Reconcile 65 pinned source differences after the 2511-event integration
         run: |
           node --check poc/src/phase2_2511_gap_reconciliation.cjs
