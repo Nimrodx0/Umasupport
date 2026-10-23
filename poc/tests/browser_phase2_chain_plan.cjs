@@ -34,8 +34,8 @@ async function main(){
   const result=await page.goto(base+PREFIX+'poc/phase2-chain-plan.html',{waitUntil:'load'});
   assert.equal(result.status(),200);
   await page.locator('html[data-ready="true"]').waitFor({timeout:20000});
-  assert.match(await page.locator('.notice').innerText(),/17の選択別継続を個別に立証できたわけではありません/);
-  assert.match(await page.locator('#bootstrap').innerText(),/確証済みの選択別継続は0件/);
+  assert.match(await page.locator('.notice').innerText(),/明示的な打ち切りがない選択肢は次段階のフラグを立てます/);
+  assert.match(await page.locator('#bootstrap').innerText(),/通常継続フラグ17件/);
   assert.equal(await page.locator('#card-tabs button').count(),5);
   assert.equal(await page.locator('article.event').count(),3);
   assert.equal(await page.locator('.arrived').count(),0,
@@ -94,7 +94,7 @@ async function main(){
   assert.equal(await second.getAttribute('data-eligible'),'true');
   assert.equal(await third.getAttribute('data-eligible'),'true');
   assert.match(await third.locator('output').innerText(),/食いしん坊/);
-  assert.match(await third.locator('output').innerText(),/獲得候補/);
+  assert.match(await third.locator('output').innerText(),/獲得可能スキル/);
   assert.doesNotMatch(await third.locator('output').innerText(),/201351/);
 
   assert.deepEqual(errors,[]);
@@ -105,8 +105,8 @@ async function main(){
   await page.close();
 
   for(const [attribute,value] of [
-   ['publicationApproved',true],['verifiedIndividualContinuations',17],
-   ['eventOccurrenceGuaranteed',true]
+   ['publicationApproved',true],['enabledContinuationFlags',0],
+   ['flagSetUnlessTerminated',false]
   ]){
    const tamper=await browser.newPage();
    await tamper.route('**/preview/phase2-chain-plan.v1.json',async route=>{
@@ -119,7 +119,7 @@ async function main(){
    assert.match(await tamper.locator('#bootstrap').innerText(),/検証フラグが不正/);
    await tamper.close();
   }
-  console.log('Phase2 chain plan browser PASS: 5 cards, 17 default-only edges, choice-based unlock, no reached toggles, 390/1280px, tamper rejection');
+  console.log('Phase2 chain plan browser PASS: 5 cards, 17 enabled continuation flags, choice-based unlock, no reached toggles, 390/1280px, tamper rejection');
  }finally{await browser?.close();await new Promise(ok=>svr.close(ok))}
 }
 main().catch(err=>{console.error(err);process.exitCode=1});
