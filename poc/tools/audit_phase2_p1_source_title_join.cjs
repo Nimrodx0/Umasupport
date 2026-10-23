@@ -24,7 +24,7 @@ function main(args){
   publicationApproved:r.publicationApproved
  }))));
  // Diagnostic never emits Checker original event titles or option/effect text.
- const rawChecker=JSON.parse(fs.readFileSync(checkerPath,'utf8').replace(/^\\uFEFF/,''));
+ const rawChecker=JSON.parse(fs.readFileSync(checkerPath,'utf8').replace(/^\uFEFF/,''));
  const profiles=report.rows.map(r=>{
   const target=TARGETS.find(t=>t.cardId===r.cardId),found=[];
   for(const group of Object.values(rawChecker.Skills?.SSR||{})){
