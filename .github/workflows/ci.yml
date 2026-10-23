@@ -47,6 +47,12 @@ jobs:
           node --check poc/src/phase2_integrated_private_loader.cjs
           node --test poc/tests/phase2_integrated_private_loader.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Validate 2511 private GT/GameWith chain runtime flags through production core
+        run: |
+          node --check poc/src/phase2_2511_chain_runtime.cjs
+          node --check poc/src/phase2_2511_chain_loader.cjs
+          node --test poc/tests/phase2_2511_chain_runtime.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Validate combined 563-card GT and GameWith event candidate runtime
         run: |
           node --check poc/src/phase2_integrated_private_catalog.cjs
