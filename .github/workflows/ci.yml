@@ -42,6 +42,11 @@ jobs:
       - name: Validate fixed GameTora event skill ID crosswalk
         run: node --check poc/src/gametora_event_skill_crosswalk.cjs && node --check poc/tools/audit_gametora_event_skill_crosswalk.cjs && node --test poc/tests/gametora_event_skill_crosswalk.test.cjs
 
+      - name: Verify Phase 2 SSR30080 exact three-option private runtime correction
+        run: |
+          node --check poc/src/phase2_30080_runtime_overlay.cjs
+          node --test poc/tests/phase2_30080_runtime_overlay.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Verify GT baseline roots and Checker exception overlay
         run: |
           node --check poc/src/phase2_release_triage.cjs
