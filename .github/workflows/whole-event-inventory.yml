@@ -164,7 +164,8 @@ jobs:
           node --test umasupport/poc/tests/phase2_p1_source_title_join.test.cjs
           node umasupport/poc/tools/audit_phase2_p1_source_title_join.cjs \
             whole-event-output/whole_event_provisional.v1.json \
-            gt-snapshot/server/data/events/gametora
+            gt-snapshot/server/data/events/gametora \
+            "$RUNNER_TEMP/event-inputs/Events.json"
       - name: Triage missing GameTora card records by numeric ID (not a game absence claim)
         run: |
           node umasupport/poc/tools/audit_missing_gametora_cards.cjs \
