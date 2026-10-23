@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-card-30180-checker-only-gamewith-numeric-adjudication",
+  "cardId": "30180",
+  "cardDisplayName": "刻み続ける者たち",
+  "cardEdition": "この先も！",
+  "gameTora": {
+    "url": "https://gametora.com/ja/umamusume/supports/30180-group",
+    "checkedAt": "2026-10-23",
+    "fixedRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "missingFromPinnedEventSkillNumericIds": [
+      200332
+    ]
+  },
+  "gameWith": {
+    "url": "https://gamewith.jp/uma-musume/article/show/431692",
+    "checkedAt": "2026-10-23",
+    "eventShortTitle": "あなたを想って",
+    "playerSelectableChoices": 0,
+    "reportedSkillNumericId": 200332,
+    "reportedSkillName": "コーナー巧者○",
+    "reportedHintLevel": 1,
+    "externalTiming": "クラシック級1月前半",
+    "reportingStatus": "EXPLICIT"
+  },
+  "checker": {
+    "fixedRevision": "8cf9fcb3cc7239041161be75c84daf9f8f22d29f",
+    "sourceEventOrdinal": 7,
+    "expectedMatchedNumericSkillId": 200332,
+    "expectedHintLevel": 1
+  },
+  "editorialDecision": "ADOPT_GAMEWITH_EXPLICIT_MISSING_GT_EVENT_HINT",
+  "eventId": "usl:30180:special:checker-007",
+  "type": "auto",
+  "availabilityKind": "special-trigger",
+  "externalOccurrenceModeled": false,
+  "noAutomaticRuntimeAdoption": true,
+  "publicationApproved": false,
+  "sourceNarrativeOrChoiceProseIncluded": false
+}
