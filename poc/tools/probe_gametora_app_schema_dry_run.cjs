@@ -70,7 +70,31 @@ function main(args){
      summary.projectedEvents!==2488||
      summary.shortTitlesJoined+summary.shortTitlesNeedsReview!==2488)
    fail('元GTイベント名と本番候補の全件照合に失敗');
-  // No names, options, titles, or review manifest are printed or written.
+  // Only metadata may leave this nonpublic runner; the source titles,
+  // choice labels, effect prose and unapproved runtime catalog remain in RAM.
+  if(process.env.UMASUPPORT_GT_BASELINE_REPORT||process.env.UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT){
+   if(!process.env.UMASUPPORT_GT_BASELINE_REPORT||
+      !process.env.UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT)
+    fail('非公開レビュー台帳の入力・出力パスが揃っていません');
+   const outputFile=path.resolve(process.env.UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT);
+   const checkoutRoot=path.resolve(__dirname,'../..');
+   if(outputFile===checkoutRoot||outputFile.startsWith(checkoutRoot+path.sep))
+    fail('未承認審査台帳をGit管理領域へ保存できません');
+   const baselineReport=JSON.parse(fs.readFileSync(
+    path.resolve(process.env.UMASUPPORT_GT_BASELINE_REPORT),'utf8'));
+   const {build:buildQueue}=require('../src/gametora_publication_review_queue.cjs');
+   const reviewQueue=buildQueue({
+    normalized:candidateAudit,enriched,baselineReport,completeReport:result.report
+   },{strict:true});
+   fs.mkdirSync(path.dirname(outputFile),{recursive:true});
+   fs.writeFileSync(outputFile,JSON.stringify(reviewQueue,null,2)+'\n');
+   console.log('GAMETORA_UNSIGNED_RELEASE_REVIEW='+JSON.stringify({
+    ...reviewQueue.summary,
+    allHumanApprovalFieldsIntentionallyAbsent:true,
+    sourceNarrativeOrChoiceProseIncluded:false
+   }));
+  }
+  // No source titles or unapproved runtime catalog are printed or written.
   const fingerprint=hash(Buffer.from(JSON.stringify(enriched.catalog)));
   console.log('GAMETORA_SHORT_TITLE_REVIEW_SCOPE='+JSON.stringify({
    ...summary,releaseApproved:false,catalogSha256:fingerprint,
