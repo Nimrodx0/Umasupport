@@ -63,6 +63,8 @@ on:
       - 'poc/src/phase2_integrated_private_loader.cjs'
       - 'poc/src/phase2_2511_chain_runtime.cjs'
       - 'poc/src/phase2_2511_gap_reconciliation.cjs'
+      - 'poc/src/phase2_30301_identity_resolution.cjs'
+      - 'poc/data/curation/adjudicated/30301_checker_hint_event_conflict.v1.json'
       - 'poc/tests/phase2_2511_gap_reconciliation.test.cjs'
       - 'poc/src/phase2_2511_chain_loader.cjs'
       - 'poc/tests/phase2_2511_chain_runtime.test.cjs'
