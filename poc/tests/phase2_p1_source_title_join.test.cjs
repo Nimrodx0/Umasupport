@@ -8,7 +8,7 @@ const digest='sha256:'+'a'.repeat(64);
 function fixture(){
  const cards=[],checkerCards=[],gtDocuments=[];
  for(const t of TARGETS){
-  const name=t.gtName+'(温かなメッセージ)';
+  const name=t.checkerTitle;
   const source=sourceKey(t.cardId,t.checkerOrdinal,name);
   cards.push({cardId:t.cardId,checkerOnly:[
    {checkerOrdinal:t.checkerOrdinal,sourceKey:source}]});
@@ -45,11 +45,16 @@ test('exact pinned Checker sourceKey generation uses original card/title/index N
 test('four scoped title hints correspond to pinned GT local positions, not results',()=>{
  const f=fixture(),before=structuredClone(f);
  const x=compare(f);
- assert.deepEqual(x.summary,{targetPositions:4,headingKeyMatches:4,
-  headingKeyStillUnmatched:0,resultPathsCertified:0,publicEventsAdded:0});
- assert.ok(x.rows.every(row=>row.titleKeyMatchesKnownGameWithHeading&&
-  row.titleVariantClass==='GAMEWITH_CONTEXT_SUFFIX'&&
+ assert.deepEqual(x.summary,{targetPositions:4,checkerCategoryTitlesVerified:4,
+  checkerCategoryTitlesStillUnverified:0,sharedContextRowsVerified:3,
+  separateOverseasEventRowsVerified:1,GTEventIdentityPairsAdded:0,
+  resultPathsCertified:0,publicEventsAdded:0});
+ assert.ok(x.rows.every(row=>row.checkerSourceHeadingMatchesKnownCategory&&
+  row.individualGTEventIdentityPaired===false&&
   row.outcomeSemanticsProvenEquivalent===false&&row.publicationApproved===false));
+ assert.deepEqual(x.rows.map(row=>row.checkerTitleCategory),[
+  'COMMON_GROUP_CONTEXT','COMMON_GROUP_CONTEXT','COMMON_GROUP_CONTEXT',
+  'OVERSEAS_SEPARATE_EVENT']);
  assert.equal(x.originalCrossSourceQueueUnchanged,true);
  assert.equal(x.skillGrantsAdded,0);
  assert.equal(x.chainFlagsChanged,0);
@@ -60,9 +65,9 @@ test('unknown Checker title stays unpaired, not invented as a matched event',()=
  row.sourceKey=sourceKey(TARGETS[0].cardId,TARGETS[0].checkerOrdinal,'未同定の別見出し');
  f.index.cards[0].checkerOnly[0].sourceKey=row.sourceKey;
  const r=compare(f);
- assert.equal(r.summary.headingKeyMatches,3);
- assert.equal(r.summary.headingKeyStillUnmatched,1);
- assert.equal(r.rows[0].sourceHeadingCorrespondence,'CHECKER_TITLE_KEY_NOT_RESOLVED');
+ assert.equal(r.summary.checkerCategoryTitlesVerified,3);
+ assert.equal(r.summary.checkerCategoryTitlesStillUnverified,1);
+ assert.equal(r.rows[0].sourceHeadingCorrespondence,'CHECKER_CATEGORY_TITLE_KEY_NOT_RESOLVED');
  assert.equal(r.summary.publicEventsAdded,0);
 });
 test('different source ordinal, source hash, GT event, GT rewards or gate fails closed',()=>{
