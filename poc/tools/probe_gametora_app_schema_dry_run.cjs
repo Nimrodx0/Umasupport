@@ -130,6 +130,17 @@ function main(args){
      ...triage.summary,publicReleaseApproved:false,
      sourceNarrativeOrChoiceProseIncluded:false
     }));
+    // Merge existing GameWith 8-event signed-NO drafts with the 2,488
+    // GT events and one GT choice-topology correction, in RAM only.
+    const {build:assemble2496}=require('../src/phase2_integrated_private_catalog.cjs');
+    const combined=assemble2496({
+     normalized:candidateAudit,enriched,review:reviewQueue,triage
+    },{strict:true});
+    console.log('PHASE2_INTEGRATED_PRIVATE_EVENT_CANDIDATES='+JSON.stringify({
+     ...combined.summary,
+     publicationApproved:false,sourceNarrativeOrChoiceProseIncluded:false,
+     ephemeralOnly:true
+    }));
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
