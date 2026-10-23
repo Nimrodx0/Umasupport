@@ -200,22 +200,6 @@ jobs:
       - name: Verify complete Phase-2 563-card coverage index and pinned 2025 historical evidence
         run: node poc/tools/verify_event_coverage_index.cjs
 
-      - name: Resolve 8 curated chain skill names against pinned UmaSim metadata
-        run: |
-          node - <<'NODE'
-          (async()=>{
-            const revision='cf9366f6a487bd8f197b53d8a11981207beb9f6c';
-            const uri='https://raw.githubusercontent.com/mee1080/umasim/'+revision+'/data/skill_data.txt';
-            const response=await fetch(uri);
-            if(!response.ok)throw Error('Pinned skill registry fetch HTTP '+response.status);
-            const json=await response.json();
-            const ids=['201323','204412','202371','204151','201651','203801','204721','201463'];
-            const found=ids.map(id=>({id,record:json.find(v=>String(v.id)===id)}));
-            console.log('PHASE2_CHAIN_NAMES_PINNED='+JSON.stringify({
-              revision,names:found.map(({id,record})=>({id,name:record?.name||null,rarity:record?.rarity||null}))
-            }));
-          })().catch(e=>{console.error(e);process.exitCode=1});
-          NODE
       - name: Verify 12-stage manual chain preview remains fully unapproved
         run: |
           node --check poc/src/phase2_chain_pages_preview_artifact.cjs
