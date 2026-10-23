@@ -141,6 +141,15 @@ function main(args){
      publicationApproved:false,sourceNarrativeOrChoiceProseIncluded:false,
      ephemeralOnly:true
     }));
+    const {acceptance:accept2496}=require('../src/phase2_integrated_private_loader.cjs');
+    const attached2496=accept2496({
+     assembled:combined,model,skillText:result.dryRunMergedSkillText
+    },{strict:true});
+    console.log('PHASE2_INTEGRATED_PRIVATE_PRODUCTION_LOADER='+JSON.stringify({
+     ...attached2496.summary,approvedEvents:0,
+     attachedOnlyToDisposableModel:true,
+     rawEventDataPublished:false
+    }));
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
