@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {build}=require('../src/phase2_chain_pages_preview_artifact.cjs');
 const {audit,replay}=require('../src/phase2_chain_manual_replay.cjs');
+const {replay:replay30221}=require('../src/phase2_30221_missing_chain_intake.cjs');
 const core=require('../src/core.js');
 const published=require('../data/reviewed_events.v1.json');
 const approvals=require('../config/event-release-approvals.v1.json');
@@ -39,7 +40,7 @@ test('publicly viewable but nonapproved numeric preview matches the curated 12-s
  assert.deepEqual(published,{schemaVersion:1,cards:[]});
  assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
 });
-test('all 12 numeric stages remain isolated from their unverified preceding stages',()=>{
+test('all 15 numeric stages remain isolated from their unverified preceding stages',()=>{
  const facts=audit();
  const data=build();
  for(const card of data.cards){
@@ -64,10 +65,12 @@ test('all 12 numeric stages remain isolated from their unverified preceding stag
     const routes=core.directRoutes(model,settings).filter(r=>r.source==='event');
     assert.deepEqual(routes.map(r=>[r.skillId,r.level]),
      alt.hints.map(h=>[h[0],h[1]]));
-    const replayed=replay({
-     cardId:card.cardId,stageOrdinal:s.ordinal,observed:true,
-     selectedOptionOrdinal:s.choiceCount?Number(alt.id.slice(6)):null
-    });
+    const replayed=card.cardId==='30221'?
+     replay30221({stageOrdinal:s.ordinal,observed:true}):
+     replay({
+      cardId:card.cardId,stageOrdinal:s.ordinal,observed:true,
+      selectedOptionOrdinal:s.choiceCount?Number(alt.id.slice(6)):null
+     });
     assert.deepEqual(routes.map(r=>[r.skillId,r.level]),
      replayed.routes.map(r=>[r.skillId,r.level]));
    }
