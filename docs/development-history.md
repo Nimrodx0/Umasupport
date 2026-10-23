@@ -337,3 +337,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：固定GT2,488イベントの短い見出しを、イベント位置と元SHAの一致で非公開候補へ注入する工程を追加。原文と候補DBのGitHub公開なし。[詳細](phase2-gametora-short-title-intake-20261023.md)。
 
 - 2026-10-23：GT欠損4SSRの通常8イベント・16択をGitHub Pagesの独立デモへ配置。通常版のイベントDBと公開承認ゲートはそのまま。[試用と制限](phase2-eight-pages-browser-preview-20261023.md)。
+
+- 2026-10-23：固定GT全イベントの非公開投影を、元イベントSHAと旧辞書／元分岐の注意位置を含む未署名レビュー索引へ分類する工程を追加。[個別記録](phase2-gametora-unsigned-release-review-20261023.md)。
