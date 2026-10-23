@@ -89,7 +89,7 @@ function verify({comparison,gtDocuments,ledger=FACTS},{strict=false}={}){
     !same(mei.results,expected)||
     !same(mei.projectLarcAdditionalEffects,{
      skillPoints:3,aptitudePoints:50,bond:2})||
-    !same(mei.skillHints,[])||mei.chainEnd!==false||
+    !same(mei.skillHints,[])||mei.chainEnd!=='NOT_REPORTED'||
     mei.gameWithUrl!=='https://gamewith.jp/uma-musume/article/show/414373'||
     !same(mei.gameWithCardUrls,[
       'https://gamewith.jp/uma-musume/article/show/414258',
