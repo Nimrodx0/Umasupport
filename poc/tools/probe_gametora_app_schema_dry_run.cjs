@@ -169,6 +169,7 @@ function main(args){
     const repairedGapQueue=reconcile2511({triage,integrated:withChains},{strict:true});
     console.log('PHASE2_2511_REMAINING_SOURCE_EXCEPTION_GAPS='+JSON.stringify({
      ...repairedGapQueue.summary,
+     unpairedByCard:repairedGapQueue.unpairedCheckerOnGTPositionsByCard,
      unpairedGTCardPositions:repairedGapQueue.openQueue
       .filter(x=>x.status==='UNPAIRED_IDENTITY_NOT_PROVEN_MISSING')
       .map(x=>({cardId:x.cardId,checkerOrdinal:x.checkerOrdinal})),
