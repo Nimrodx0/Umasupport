@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-chain-stage-headings-from-card-scoped-GameWith",
+  "sourceScope": "GameTora-fixed-missing-four-SSR-individually-adjudicated",
+  "checkedAt": "2026-10-23",
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "publicationApproved": false,
+  "cards": [
+    {
+      "cardId": "30318",
+      "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578814",
+      "titles": [
+        "見上げた空は眩しくて",
+        "手にした花は煌めいて",
+        "届けた幸せは、甘く花開いて"
+      ]
+    },
+    {
+      "cardId": "30319",
+      "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578819",
+      "titles": [
+        "生徒会副会長の報告書",
+        "生徒会副会長の根源",
+        "生徒会副会長の\"未来\""
+      ]
+    },
+    {
+      "cardId": "30320",
+      "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578818",
+      "titles": [
+        "戸惑いのレクチャー",
+        "不器用コミュニケーション",
+        "ひそやかな温もり"
+      ]
+    },
+    {
+      "cardId": "30321",
+      "gameWithArticle": "https://gamewith.jp/uma-musume/article/show/578817",
+      "titles": [
+        "『かの者、魔界より現れる』",
+        "『夜の王を討伐せよ！』",
+        "『満月に光りしは、赤い石』"
+      ]
+    }
+  ]
+}
