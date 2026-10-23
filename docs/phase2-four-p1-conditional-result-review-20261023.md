@@ -27,3 +27,21 @@
 A：Nodeで全4位置の厳密な照合と、sourceKey・digest・hint件数・公開区分を改変した負のテスト。B：固定GT/Checker全件ワークフロー内で実2,109元Checker候補と全2,511件の数値優先監査を同時に通し、30067と残3位置の母数を実測。C：新しい公開イベントやUIを作成しないためPages操作は対象外。実ゲームの発生抽選・掲載権利を新たな採否条件に加えない。
 
 **次の作業**：30081/12、30137/10、30160/10の3位置をGT対象カードで確認し、GameWithイベント記事と比較してスキル取得・連続打ち切り・結果報酬への実質的影響を順に裁定する。
+
+## 追加の3カードのGT/GameWith照合（2026-10-23）
+
+最優先P0修正後のP1条件結果の残り3カードについて、固定GTの対象カードイベントJSONを**元カードID指定**で読み、各カードのGameToraページを確認したうえで、当該GameWith記事の条件付き結果と突き合わせた。Checker側の `ordinal` をGTイベントIDへ断定対応させる根拠はまだない。従って**カード単位の出典確認と、Checker元位置の同一性確定は別**。
+
+| カード／Checker位置 | GameTora固定データ・GameWith記事で確認できるイベント／分岐 | 重要な限定 |
+| --- | --- | --- |
+| [30081](https://gametora.com/ja/umamusume/supports/30081-team-sirius)／12 | [GameWith](https://gamewith.jp/uma-musume/article/show/324511)「おかわりトレーニング(温かなメッセージ)」は3選択ごとの成功／失敗。GTの `asecondservingoftraining` は3択、ヒントなし、明示 `chain_end` なし | Checker位置12＝同イベントのID対応は未確証。スキル取得や停止の未掲載結果は創作しない |
+| [30137](https://gametora.com/ja/umamusume/supports/30137-ancestors-guides)／10 | [GameWith](https://gamewith.jp/uma-musume/article/show/392647)「三女神の気分転換トレーニング(温かなメッセージ)」は3択の条件付き非スキル報酬。GT `三女神の気分転換トレーニング` は3択でヒントなし、明示 `chain_end` なし | Checker位置10とのイベント同定は未証明。シナリオ効果や欠けた条件をスキルヒントへ変換しない |
+| [30160](https://gametora.com/ja/umamusume/supports/30160-mei-satake)／10 | [GameWith](https://gamewith.jp/uma-musume/article/show/413773)「お疲れ様！！」は自動トレーニングの結果差で、GTの同名イベントはスキルヒントなし。一方、同じカードの**別イベント**「時には仕事を忘れて」では、GT固定データに選択2の失敗時終了および選択3の数値スキルID `201641` ヒント+5・`chain_end` が存在 | Checker位置10とこれらイベントとの同定は未確証。**同じカードに重要なヒントと打ち切りがあるため、カード全体を「スキル・連続分岐の影響なし」としてはいけない** |
+
+`phase2_four_p1_outcome_review.cjs` は、元Checkerの4件・条件行10・数値ヒント0・元位置SHAの既存確認に加え、3カードの参照イベントと条件分岐の種類を**公開不能な全文ではなく出典URLと独自の短い分類語**で記録する。3位置は `checkerOrdinalIdentityProven:false` のまま、`eventIdentityPaired:false` を維持し、`skillGrantAdded:false`／`chainFlagChanged:false` とする。30160はカード全体に別のスキル・お出かけ終了がある注意だけ添付する。
+
+**進捗の厳密な区分**：4位置のうち30067は既にイベント個別の非スキル事実を採用、その他3カードは対象カードのGameToraとGameWith記事の関連分岐を調査した。しかし、Checker元イベントからGT／GameWithに向けた**固有イベントID・位置の一対一対応は依然4件とも未確定**。Checkerの0ヒントは「実ゲームの全ての関連選択が無ヒント」を意味しない。
+
+A：新しい3カードの参照記録・30160の別イベント警告、元出典digest改変・未承認昇格拒否の合成テストを既存P1監査に追加。B：固定全件監査はPR専用ワークフローで実行し、通過した結果だけ合格とする。C：通常Webアプリ・公開イベントJSONは不変なのでUI操作ゲートは対象外。
+
+次工程はChecker元側のイベント見出し（権利に配慮したローカル照合・SHA等）とGameToraのイベントID／原位置との一対一対応を固定し、結果／スキル経路が実際に変化する位置だけを追加裁定する。公開イベント0件・非公開2,512件を維持。

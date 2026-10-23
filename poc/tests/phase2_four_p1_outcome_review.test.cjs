@@ -28,7 +28,8 @@ test('all four P1 conditional positions have no skill hints in the fixed candida
  const x=inspect(fixture(),{strict:true});
  assert.equal(x.summary.conditionalPositions,4);
  assert.equal(x.summary.skillNeutralExplicitlyReviewed,1);
- assert.equal(x.summary.remainingCardScopedResultReviews,3);
+ assert.equal(x.summary.cardScopedAdditionalReferencesReviewed,3);
+ assert.equal(x.summary.remainingExactCheckerEventIdentityReviews,3);
  assert.equal(x.summary.individualEventIdentitiesStillUnpaired,4);
  assert.equal(x.summary.numericSkillHintsInTheseRows,0);
  assert.equal(x.summary.skillGrantsAdded,0);
@@ -39,6 +40,21 @@ test('all four P1 conditional positions have no skill hints in the fixed candida
  assert.equal(x.rows[0].specificFactAdopted.eventName,'鍛えよ共に(温かなメッセージ)');
  assert.equal(x.rows[0].specificFactAdopted.allSuccessFailureRowsWithoutSkillHints,true);
  assert.ok(x.rows.slice(1).every(r=>r.specificFactAdopted===undefined));
+ assert.deepEqual(x.rows.slice(1).map(r=>r.cardScopedSourceEvidence.namedEvent),[
+  'おかわりトレーニング(温かなメッセージ)',
+  '三女神の気分転換トレーニング(温かなメッセージ)',
+  'お疲れ様！！'
+ ]);
+ assert.ok(x.rows.slice(1).every(r=>
+  r.cardScopedSourceEvidence.checkerOrdinalIdentityProven===false &&
+  r.cardScopedSourceEvidence.gameToraUrl.includes('/supports/'+r.cardId+'-') &&
+  r.cardScopedSourceEvidence.gameWithUrl.startsWith('https://gamewith.jp/')));
+ assert.ok(x.rows.slice(1).every(r=>
+  r.status==='CONDITIONAL_RESULTS_REQUIRE_CARD_SCOPED_EDITORIAL_REVIEW' &&
+  r.cardScopedSourceEvidence.skillHintsInNamedSourceEvent===0));
+ assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.choiceThreeSkillId,'201641');
+ assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.choiceThreeHintLevel,5);
+ assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.canTerminateOutings,true);
  assert.ok(x.rows.every(r=>r.eventIdentityPaired===false&&
   r.publicationApproved===false&&!r.skillGrantAdded&&!r.chainFlagChanged));
 });
