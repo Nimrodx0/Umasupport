@@ -59,6 +59,8 @@ on:
       - 'poc/src/gametora_publication_review_queue.cjs'
       - 'poc/src/phase2_release_triage.cjs'
       - 'poc/src/phase2_30080_runtime_overlay.cjs'
+      - 'poc/src/phase2_integrated_private_catalog.cjs'
+      - 'poc/tests/phase2_integrated_private_catalog.test.cjs'
       - 'poc/tests/phase2_30080_runtime_overlay.test.cjs'
       - 'poc/tests/phase2_release_triage.test.cjs'
       - 'poc/tests/gametora_publication_review_queue.test.cjs'
@@ -257,6 +259,8 @@ jobs:
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
         run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
+      - name: Validate synthetic 2488 GT plus 8 GameWith event assembly
+        run: node --test umasupport/poc/tests/phase2_integrated_private_catalog.test.cjs
       - name: Verify 30080 exact private three-choice runtime projection with synthetic fixtures
         run: node --test umasupport/poc/tests/phase2_30080_runtime_overlay.test.cjs
       - name: Verify source exception overlay and root-cause tracing with synthetic cases
