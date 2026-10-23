@@ -1,0 +1,361 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-eight-standalone-browser-preview",
+  "previewOnly": true,
+  "formallyApproved": false,
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "cards": [
+    {
+      "cardId": "30318",
+      "name": "ライスシャワー",
+      "events": [
+        {
+          "id": "usl:30318:random:4",
+          "title": "お花屋さんでの1ページ",
+          "ordinal": 4,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  2
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "stamina",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30318:random:5",
+          "title": "曇りの日の1ページ",
+          "ordinal": 5,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578814",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "guts",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:200152",
+                  1,
+                  "良バ場○"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30319",
+      "name": "ナリタブライアン",
+      "events": [
+        {
+          "id": "usl:30319:random:4",
+          "title": "生徒会役員！",
+          "ordinal": 4,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "speed",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "max_energy",
+                  4
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30319:random:5",
+          "title": "孤狼",
+          "ordinal": 5,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578819",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "speed",
+                  3
+                ],
+                [
+                  "stamina",
+                  3
+                ],
+                [
+                  "power",
+                  3
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201641",
+                  1,
+                  "一匹狼"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30320",
+      "name": "アドマイヤグルーヴ",
+      "events": [
+        {
+          "id": "usl:30320:random:4",
+          "title": "窓側が好きなお客さん",
+          "ordinal": 4,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "mood",
+                  1
+                ],
+                [
+                  "wisdom",
+                  25
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "power",
+                  15
+                ],
+                [
+                  "guts",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30320:random:5",
+          "title": "ひとりが好きなクラスメイトさん",
+          "ordinal": 5,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578818",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:202082",
+                  1,
+                  "ワンチャンス"
+                ]
+              ]
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "skill_points",
+                  20
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30321",
+      "name": "ドゥラメンテ",
+      "events": [
+        {
+          "id": "usl:30321:random:4",
+          "title": "流すべきこの汗",
+          "ordinal": 4,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "speed",
+                  10
+                ],
+                [
+                  "guts",
+                  10
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "energy",
+                  25
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30321:random:5",
+          "title": "追うべき背中",
+          "ordinal": 5,
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/578817",
+          "choices": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "stamina",
+                  15
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            },
+            {
+              "id": "option2",
+              "effects": [
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:202602",
+                  1,
+                  "イグニッション"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
