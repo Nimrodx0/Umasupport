@@ -36,7 +36,9 @@
    for(const [j,e] of card.events.entries()){
     stages++;
     if(e.id!=='usl:'+card.cardId+':chain:'+(j+1)||
-       e.ordinal!==j+1||e.manualReachedRequired!==true||
+       e.ordinal!==j+1||typeof e.title!=='string'||
+       !e.title.trim()||e.title.length>80||
+       e.manualReachedRequired!==true||
        e.priorStageDependenceVerified!==false||
        e.nextStageTransitionStatus!==(j<2?'UNKNOWN':'NOT_MODELED')||
        !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(e.sourceUrl)||
@@ -115,7 +117,8 @@
    section.dataset.eventId=ev.id;
    const isObserved=observed.get(ev.id)===true;
    section.dataset.observed=String(isObserved);
-   section.append(make('h3','連続イベント・第'+ev.ordinal+'段階'));
+   section.append(make('h3',ev.title));
+   section.append(make('p','連続イベント・第'+ev.ordinal+'段階','hint'));
    section.append(make('p',ev.choiceCount===0?'選択肢なし：到達を手動指定':
     'プレイヤー選択肢2件：到達を手動指定','hint'));
    const arrive=make('button',isObserved?'到達した ✓ （解除する）':'この段階に到達した','arrived');
