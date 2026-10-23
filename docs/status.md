@@ -304,3 +304,7 @@
 ### 統合2,496件の固定出典による実行成功（2026-10-23）
 
 [全件データCI](https://github.com/Nimrodx0/Umasupport/actions/runs/39905007793)と[Node／Chromium](https://github.com/Nimrodx0/Umasupport/actions/runs/39905007894)がPASS。固定GT**2,488イベント**＋GameWith裁定済み通常**8イベント**を全563枚の非公開独自イベント形式へ統合し、**choice1,604・auto892・選択肢3,255**、SSR30080/6以外の既存GT **2,487件のSHA不変**を実測。統合カタログSHAは `a74a9662d7c5a74ea350513f823a97cb4eaa127fe25b3b36f4607b1b13403226`。**技術候補2,496・正式公開0**を区別し、元の公開DB・承認台帳・Pages独立8件デモは維持。追加8件を含む本番ローダーの実辞書照合と公開利用審査はまだ別工程。
+
+## Phase 2・全2,496イベントの本番スキル読込器への非公開接続（2026-10-23）
+
+[本番ローダー全件受け入れの検証設計](phase2-integrated-private-loader-acceptance-20261023.md)。前工程で統合したGT2,488＋GameWith通常8イベント（SSR30080の3択補正済み）を、**公開時と同じ数値スキル名・ID照合と`public_event_catalog.preflight/attach`**を経由して、元モデルと別の一時複製へ読み込む受け入れ試験を新設した。読込前後の全イベント内容SHA、元モデル不変、8追加件の16択・4ヒントの実コア再検証を行う。公開DB・承認台帳0件、Pagesの独立8件デモは不変。実固定全件の合否はActions結果を確認したうえで確定する。
