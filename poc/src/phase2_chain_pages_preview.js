@@ -60,7 +60,8 @@
       if(!Array.isArray(hint)||hint.length!==3||
          !/^skill:\d+$/.test(hint[0])||
          !Number.isSafeInteger(hint[1])||hint[1]<1||
-         typeof hint[2]!=='string'||!hint[2])
+         typeof hint[2]!=='string'||!hint[2].trim()||
+         /^スキルID\\s*\\d+/.test(hint[2])||/^\\d+$/.test(hint[2]))
        throw Error('スキル数値事実が不正');
      }
     }
@@ -162,7 +163,8 @@
      ev.alternatives.find(x=>x.id===selected.get(ev.id));
     const result=eventRoutes.map(r=>{
      const h=alt.hints.find(h=>h[0]===r.skillId&&h[1]===r.level);
-     return (h?h[2]:r.skillId)+' ヒントLv'+r.level;
+     if(!h)throw Error('スキル名称の照合に失敗しました');
+     return h[2]+' ヒントLv'+r.level;
     });
     output.append(make('b','到達を指定した段階の候補：'),
      document.createTextNode(result.join(' / ')));
