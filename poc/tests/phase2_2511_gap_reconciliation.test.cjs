@@ -51,7 +51,8 @@ function fixture(){
  const catalog={schemaVersion:1,cards};
  const triage={dataKind:'phase2-cross-source-publication-triage',
   publicReleaseApproved:false,sourceNarrativeOrChoiceProseIncluded:false,
-  sourcePins:{gameToraDerived:'a'.repeat(40),checkerIndex:'b'.repeat(40)},
+  sourcePins:{gameToraDerived:'6e38b54af4fad397ff4491e63007a90705a4fe67',
+   checkerIndex:'8cf9fcb3cc7239041161be75c84daf9f8f22d29f'},
   summary:{sourceEvents:27,approvedEvents:0,unmatchedCheckerRows:40,
    checkerOnlyOnMissingGTCards:20,checkerOnlyOnGTCards:20,
    gtOnlyNonR:24,sourceChoiceTopologyIncomplete:1,
@@ -124,6 +125,28 @@ test('fail closed if a missing event, patched option, source identity, checksum 
   f=>{f.integrated.catalog.cards.find(x=>x.cardId==='30240').events.push({id:'usl:30240:chain:1'})}
  ];
  for(const change of changes){const f=fixture();change(f);assert.throws(()=>reconcile(f),change.toString())}
+});
+test('30301 is not silently merged with GT chain or added as a skill event',()=>{
+ const f=fixture(),original=structuredClone(f);
+ const r=reconcile(f);
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].status,
+  'EDITORIAL_ADJUDICATED_GT_FIRST_NO_ADDITIONAL_EVENT');
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].originalGTChainStagesPreserved,3);
+ assert.equal(r.sourceConflictsAdjudicatedWithoutNewEvents[0].checkerExtraSourceRowAdopted,false);
+ assert.equal(r.summary.confirmedNewMissingEventsFromThisAudit,0);
+ assert.deepEqual(f,original);
+ for(const change of [
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events[3].choices[1].rewards=[]},
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events[3].name='incorrect name'},
+  x=>{x.integrated.catalog.cards.find(c=>c.cardId==='30301').events.pop()},
+  x=>{x.triage.unmatchedCheckerRows.find(y=>y.cardId==='30301').checkerOrdinal=2},
+  x=>{x.triage.rows.find(y=>y.cardId==='30301').crossSourceFlags=[]}
+ ]){
+  const mutated=fixture();change(mutated);
+  // In cases of in-memory event mutation the SHA precondition alone is
+  // sufficient to reject; no new event can leak through a permissive path.
+  assert.throws(()=>reconcile(mutated));
+ }
 });
 test('small fabricated fixture never counts as whole actual 563/2511 audit',()=>{
  assert.throws(()=>reconcile(fixture(),{strict:true}),/固定563カード2511イベント/);
