@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "phase2-30180-adjudicated-extra-special-event",
+  "cardId": "30180",
+  "cardIdentity": "刻み続ける者たち",
+  "eventTitle": "あなたを想って",
+  "eventId": "usl:30180:special:checker-007",
+  "checkerOrdinal": 7,
+  "skillNumericId": "200332",
+  "skillDisplayName": "コーナー巧者○",
+  "hintLevel": 1,
+  "choiceCount": 0,
+  "availabilityKind": "special-trigger",
+  "scope": "CLASSIC_EARLY_JANUARY",
+  "gameToraUrl": "https://gametora.com/ja/umamusume/supports/30180-group",
+  "gameWithUrl": "https://gamewith.jp/uma-musume/article/show/431692",
+  "reviewedAt": "2026-10-23",
+  "description": "GameWith explicit fixed-point none-selectable support event. Internal scenario/time trigger excluded from model, but event is not an unconditional always-occurs skill. No source prose copied.",
+  "sourceNarrativeOrChoiceProseIncluded": false,
+  "publicationApproved": false,
+  "automaticPublicAdoption": false
+}
