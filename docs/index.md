@@ -49,3 +49,5 @@
 - [Phase 2・通常8イベントをlocalhostのブラウザで非公開の選択検証](phase2-eight-standalone-local-interactive-review-20261023.md)
 
 - [Phase 2・GitHub Pagesで通常8イベントを操作する試用画面](phase2-eight-pages-browser-preview-20261023.md)
+
+- [Phase 2・GameTora 2,488イベントの署名前レビューキュー](phase2-gametora-unsigned-release-review-20261023.md)
