@@ -66,10 +66,10 @@ async function main(){
     '30320':['解き放つ情念','一往直前'],
     '30321':['月影円刃']
    };
-   for(const name of sourceSkillNames[card])
-    assert.match(await page.locator('article.event[data-event="3"] output').innerText(),
-     new RegExp(name.replace(/[.*+?^${}()|[\\]\\]/g,'\\assert.equal(await page.locator('article.event[data-event="3"] output')
-    .getAttribute('data-hint-count'),String(stage3));')));
+   for(const name of sourceSkillNames[card]){
+    const actual=await page.locator('article.event[data-event="3"] output').innerText();
+    assert.ok(actual.includes(name),'Expected reviewed skill name '+name+' in '+actual);
+   }
 
    if(stage2Hint){
     const second=page.locator('article.event[data-event="2"]');
