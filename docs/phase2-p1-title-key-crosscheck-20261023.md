@@ -1,32 +1,44 @@
-# Phase 2：Checker P1の4位置をGTイベントIDと短見出しハッシュで限定照合（2026-10-23）
+# Phase 2：Checker P1の未対4位置は「同じ名前のGTイベント」ではなかった（2026-10-23）
 
-## 目的と母集団
+## 結論（出典に基づく限定判定）
 
-既存の[条件付き4位置の監査](phase2-four-p1-conditional-result-review-20261023.md)で、Checker未対イベントとして30067/10、30081/12、30137/10、30160/10が残った。これらはChecker原候補からスキルヒントが検出されないが、単に0件だから欠損なしと断言することも、GameWithの類似名だけで同一イベントと断定することもできない。
+固定Checkerにイベント名だけの対応がないP1の4位置について、**GT同名イベントIDとの対応付けを行わない**。GameWithのカード記事・個別記事と、実GT固定イベントを再調査すると二種類に分かれる。
 
-本監査はGT固定 `systemless10/UmamusumePS@6e38b54` の`events_ja`、Checker固定 `Cilda/UmaUmaChecker@8cf9fcb3` のタイトルから構成した`sourceKey`、既存の**テキストなし2,109件Checker候補**と固定`whole_event_provisional`索引を、4カード／4位置に限り照合する。GameTora個別カードページを既に確認済みとし、GameWithの対応記事で使用されるイベント短見出し・限定された条件付き説明のみを対象とする。
+| Checker側のカード／元位置 | Checker側で確認する短見出し | GT固定データの参照イベント | 個別に確認した編集事実 | GT同一イベントか |
+| --- | --- | --- | --- | --- |
+| 30067／10 | 温かなメッセージ | 30067／GT位置10、1492「鍛えよ共に」 | グループサポカ共通の「温かなメッセージ」が元のトレーニングイベントへ追加の結果差を付ける | **GT本体と直接同一視しない** |
+| 30081／12 | 温かなメッセージ | 30081／GT位置16、1478「おかわりトレーニング」 | 上と同じ共通イベント文脈で3択・成功失敗 | **GT本体と直接同一視しない** |
+| 30137／10 | 温かなメッセージ | 30137／GT位置10、1510「三女神の気分転換トレーニング」 | 上と同じ共通イベント文脈で3択・シナリオ効果 | **GT本体と直接同一視しない** |
+| 30160／10 | 労いのエール | 30160／GT位置2、1411「お疲れ様！！」 | 「労いのエール」は**海外時のみ**、「お疲れ様！！」は国内時。選択肢なし・大成功／成功でいずれもスキルヒントなし | **別イベント候補**（固定GT未収録） |
 
-| カード／Checker位置 | GT固定イベント位置／ローカルID | GameWith見出し・報酬の参照 |
-| --- | --- | --- |
-| 30067/10 | 10／1492 | [鍛えよ共に](https://gamewith.jp/uma-musume/article/show/352660) |
-| 30081/12 | 16／1478 | [おかわりトレーニング](https://gamewith.jp/uma-musume/article/show/324511) |
-| 30137/10 | 10／1510 | [三女神の気分転換トレーニング](https://gamewith.jp/uma-musume/article/show/392647) |
-| 30160/10 | 2／1411 | [お疲れ様！！](https://gamewith.jp/uma-musume/article/show/413773) |
+個別GameToraカード：[30067](https://gametora.com/ja/umamusume/supports/30067-the-thrones-assemblage)／[30081](https://gametora.com/ja/umamusume/supports/30081-team-sirius)／[30137](https://gametora.com/ja/umamusume/supports/30137-ancestors-guides)／[30160](https://gametora.com/ja/umamusume/supports/30160-mei-satake)。
 
-GTのカード確認：[30067](https://gametora.com/ja/umamusume/supports/30067-the-thrones-assemblage)、[30081](https://gametora.com/ja/umamusume/supports/30081-team-sirius)、[30137](https://gametora.com/ja/umamusume/supports/30137-ancestors-guides)、[30160](https://gametora.com/ja/umamusume/supports/30160-mei-satake)。
+GameWith編集資料：[温かなメッセージ共通イベント](https://gamewith.jp/uma-musume/article/show/414606)／[玉座の3択](https://gamewith.jp/uma-musume/article/show/352660)／[チームシリウス](https://gamewith.jp/uma-musume/article/show/324511)／[三女神](https://gamewith.jp/uma-musume/article/show/392647)／[佐岳メイ国内・海外](https://gamewith.jp/uma-musume/article/show/413773)／[労いのエール個別記事](https://gamewith.jp/uma-musume/article/show/414373)。
 
-## 実装と意味の区分
+## なぜ前工程の仮説を訂正したか
 
-`poc/src/phase2_p1_source_title_join.cjs` は既存Checkerアダプタと同じ**NFKC＋空白統一、カードID＋NUL＋元イベント短見出し＋NUL＋0始まり位置のSHA-256先頭20桁**から`sourceKey`を独立再計算する。タイトル候補は個別GameWith記事の短見出しと、その直後に「(温かなメッセージ)」が付く場合の表記だけを許可する。カード名や別カードの一般的な類似度で自動突合しない。
+[PR #201](https://github.com/Nimrodx0/Umasupport/pull/201)では関連していそうなGT/GW個別イベント名だけを確認した。Checker元イベントのタイトル`sourceKey`から**GT同名タイトルを再計算**すると、4位置とも一致しなかった。2026-10-23の固定全件CIで初めてその結果を実測した。
 
-同時にGTのカード・`events_ja`順序・元ローカルID・`special`区分・操作項目数、当該GT効果にスキルヒントおよび`chain_end`がないこと、元Checkerの条件行数・候補スキルなし・出典ダイジェストを検証する。不変条件が変化すれば**監査を停止**する。タイトル`sourceKey`一致が見つからない場合は保留にし、偽の同定はしない。
+元Checkerの見出しタイトルを直接同梱・ログ転載する代わりに、固定Checkerアダプタと同じ**NFKC＋空白統一、カードID・NUL・イベント短見出し・NUL・0始まり位置、SHA-256前20桁**を算出し、`checker_event_hints.v1.json` の各`sourceKey`へ厳密一致させる。対応する記事短見出しを「共通の温かなメッセージ」と「海外の労いのエール」に訂正し、その限られた2種類だけを採用候補とする。
 
-重要：この検査が一致しても確認できるのは**カード内の出典見出しと操作項目形状の限定的な対応**であり、Checker掲載の成功／失敗とGT元の非スキル効果の完全な意味同一性ではない。従って正式な分岐・結果承認、元65差異の台帳件数、技術用2,512イベント、スキル候補数、公開承認は一切変えない。30160の別イベント「時には仕事を忘れて」のヒントID201641・連続お出かけ終了も本件と混同しない。
+## 実装・安全条件
 
-## A/B/C
+`poc/src/phase2_p1_source_title_join.cjs`は元`whole_event_provisional`の未対4位置、Checker候補の元ID・digest・条件行数、GTイベントのカードID・`events_ja`元位置・ローカルID・`special`・操作項目数・スキルヒント／打ち切り不在を検査する。4件のChecker分類見出しの正確な`sourceKey`を再計算し、一致／不一致を出す。コードに原文の選択肢セリフ・結果文章は入れない。
 
-- **A**: `node --test poc/tests/phase2_p1_source_title_join.test.cjs`。ソース見出し差、GT ID・位置・イベント選択肢・スキル・終了フラグ改変を拒否し、未同定時は自動追加しない。
-- **B**: `.github/workflows/whole-event-inventory.yml`で実固定元2,488 GT／2,109 Checkerイベントを読み取り、個別4イベントに限定して`audit_phase2_p1_source_title_join.cjs`を実行。結果の一致件数はActions実測から追記する。
-- **C**: 通常Pagesのアプリ、正式公開JSON、ユーザー保存値は無変更。Windows／Android実機試験はこの差分の対象外。
+**一致したとしても、GTとCheckerのイベント本体の同一性を証明したことにはならない。** 次のように区分する。
 
-次は今回のハッシュ一致候補についてChecker条件付き結果群とGameWithの同名イベントの各結果の対応を追加で照合し、意味同一性を別に審査する。確証のない結果や報酬を創作しない。
+- `COMMON_GROUP_CONTEXT`：共通イベントの名前を厳密識別。GTトレーニングイベントの成否・非スキル追加報酬について、GameWith側を元にした**限定編集**が可能。対応カードに新しいスキルヒントがあるとは判定しない。
+- `OVERSEAS_SEPARATE_EVENT`：Checker「労いのエール」を別の海外限定イベント候補として識別。GT固定の国内用「お疲れ様！！」をこれで上書きしない。現行スキル獲得経路には直接関係しないが、**全イベント収録範囲としては独立して検討する**。
+- `UNRESOLVED_CHECKER_TITLE`：元タイトルハッシュが一致しない場合は保留。表記・カード版差を想像して対応付けない。
+
+いずれも現存2,512件の非公開実行候補、GT/Checker差異の全件統計、正式公開イベント0件、イベント内の技能・フラグに変更はない。佐岳メイの**別イベント**「時には仕事を忘れて」にあるスキルID201641（Lv5）とお出かけ終了分岐を混入させない。
+
+## A/B/Cゲート
+
+A：`node --test poc/tests/phase2_p1_source_title_join.test.cjs`。厳密タイトル・元ID・GT形状・Checker条件行、改変拒否、4件から3件に減らす不一致動作の合成テスト。
+
+B：`.github/workflows/whole-event-inventory.yml`で固定GT559枚2,488件／Checker2,109件／UmaSim563枚を再取得・出典版確認し、4行の**元文言を含まない**結果を出す。実CIの行別結果を後続の実測追記で明示する。
+
+C：通常の公開Webアプリの表示・設定保存・公開イベントには変更なし。物理端末C確認は対象外。
+
+次工程：1) 3グループの「温かなメッセージ」成功失敗がGTの基本効果に足されるルートを、スキル以外の報酬としてどう保存するか判断する（現アプリの対象はスキル経路）。2) 30160海外限定別イベントを独立候補として形式化する場合、スキルなし／条件限定／公開審査未了と明示し、固定GTモデルに無断結合しない。
