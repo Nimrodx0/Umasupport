@@ -57,3 +57,5 @@
 - [Phase 2・SSR30080/6の3択を非公開本番実行形式に補正](phase2-30080-private-runtime-overlay-20261023.md)
 
 - [Phase 2・固定GameTora 2,488＋追加通常8件の非公開統合イベント候補](phase2-integrated-2496-private-runtime-20261023.md)
+
+- [Phase 2・2,496件を公開用スキルローダーへ非公開で通す全件検査](phase2-integrated-private-loader-acceptance-20261023.md)
