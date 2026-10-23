@@ -43,7 +43,7 @@ test('all four P1 conditional positions have no skill hints in the fixed candida
  assert.deepEqual(x.rows.slice(1).map(r=>r.cardScopedSourceEvidence.namedEvent),[
   'おかわりトレーニング(温かなメッセージ)',
   '三女神の気分転換トレーニング(温かなメッセージ)',
-  'お疲れ様！！'
+  '労いのエール'
  ]);
  assert.ok(x.rows.slice(1).every(r=>
   r.cardScopedSourceEvidence.checkerOrdinalIdentityProven===false &&
@@ -52,6 +52,17 @@ test('all four P1 conditional positions have no skill hints in the fixed candida
  assert.ok(x.rows.slice(1).every(r=>
   r.status==='CONDITIONAL_RESULTS_REQUIRE_CARD_SCOPED_EDITORIAL_REVIEW' &&
   r.cardScopedSourceEvidence.skillHintsInNamedSourceEvent===0));
+ assert.equal(x.rows[3].cardScopedSourceEvidence.observedResultFamily,
+  'OVERSEAS_ONLY_NONSKILL_AUTOMATIC_SUCCESS_TIERS');
+ assert.equal(x.rows[3].cardScopedSourceEvidence.outingStopInNamedSourceEvent,
+  'NOT_REPORTED');
+ assert.equal(x.rows[3].cardScopedSourceEvidence.relatedDomesticEvent.name,
+  'お疲れ様！！');
+ assert.equal(x.rows[3].cardScopedSourceEvidence.relatedDomesticEvent.sameAsCheckerOverseasEvent,
+  false);
+ assert.ok(x.rows.slice(1,3).every(r=>
+  r.cardScopedSourceEvidence.observedResultFamily===
+   'LARC_SUMMER_GT_TRAINING_EVENT_REPLACEMENT_SAME_EFFECTS'));
  assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.choiceThreeSkillId,'201641');
  assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.choiceThreeHintLevel,5);
  assert.equal(x.rows[3].cardScopedSourceEvidence.relatedCardEvent.canTerminateOutings,true);
