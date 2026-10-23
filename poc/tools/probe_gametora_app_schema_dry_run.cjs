@@ -54,6 +54,28 @@ function main(args){
   skillText:raw.toString('utf8'),model,supplemental,historicalPreview,independent2026Preview});
  // Exact source numeric IDs and positions only; no scraped words, names,
  // outcome prose or unpublished runtime catalog leave the temporary runner.
+ // Exactly one full-coverage CI variant binds short headings from the
+ // pinned GT source files to the 2,488 projected events IN MEMORY ONLY.
+ // Source narrative, original options and the candidate JSON are discarded.
+ if(process.env.UMASUPPORT_GT_EVENT_DIR&&independent2026Preview!==undefined){
+  const {readDocuments}=require('./audit_gametora_branches.cjs');
+  const {bindNames}=require('../src/gametora_short_event_title_intake.cjs');
+  const enriched=bindNames({
+   normalized:candidateAudit,
+   projectedCatalog:result.dryRunUnpreparedCatalog,
+   documents:readDocuments(process.env.UMASUPPORT_GT_EVENT_DIR)
+  },{strict:true});
+  const summary=enriched.summary;
+  if(summary.sourceEvents!==2488||
+     summary.projectedEvents!==2488||
+     summary.shortTitlesJoined+summary.shortTitlesNeedsReview!==2488)
+   fail('元GTイベント名と本番候補の全件照合に失敗');
+  // No names, options, titles, or review manifest are printed or written.
+  const fingerprint=hash(Buffer.from(JSON.stringify(enriched.catalog)));
+  console.log('GAMETORA_SHORT_TITLE_REVIEW_SCOPE='+JSON.stringify({
+   ...summary,releaseApproved:false,catalogSha256:fingerprint,
+   sourceChoiceOrOutcomeProseIncluded:false}));
+ }
  const augmented=historicalPreview!==undefined||independent2026Preview!==undefined;
  // Execute the projected, unapproved event catalog through the ACTUAL
  // deck/choice/outcome aggregator before it is discarded. Never serialize it.
