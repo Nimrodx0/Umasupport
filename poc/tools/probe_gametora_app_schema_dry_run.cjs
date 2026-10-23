@@ -108,7 +108,7 @@ function main(args){
      review:reviewQueue,normalized:candidateAudit,baselineReport,crossSource
     },{strict:true});
     fs.mkdirSync(path.dirname(triageOutput),{recursive:true});
-    fs.writeFileSync(triageOutput,JSON.stringify(triage,null,2)+'\\n');
+    fs.writeFileSync(triageOutput,JSON.stringify(triage,null,2)+'\n');
     console.log('GAMETORA_CROSS_SOURCE_RELEASE_TRIAGE='+JSON.stringify({
      ...triage.summary,publicReleaseApproved:false,
      sourceNarrativeOrChoiceProseIncluded:false
