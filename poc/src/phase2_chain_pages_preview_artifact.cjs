@@ -6,9 +6,27 @@
  */
 const {audit}=require('./phase2_chain_manual_replay.cjs');
 const {buildView}=require('./phase2_eight_event_review_view.cjs');
+const NAMES=require('../data/curation/phase2_chain_skill_display_names.v1.json');
 const fail=s=>{throw Error('Phase2連続12段階のPages試用: '+s);};
 function build(){
  const source=audit(), regular=buildView();
+ if(NAMES.schemaVersion!==1||
+    NAMES.dataKind!=='phase2-chain-preview-verified-skill-names'||
+    NAMES.source?.repository!=='mee1080/umasim'||
+    NAMES.source?.revision!=='cf9366f6a487bd8f197b53d8a11981207beb9f6c'||
+    NAMES.source?.path!=='data/skill_data.txt'||
+    NAMES.publicCatalogApproved!==false||
+    !Array.isArray(NAMES.records)||NAMES.records.length!==8)
+  fail('数値スキルID→日本語スキル名の固定照合根拠が不正');
+ const verifiedNames=new Map();
+ for(const item of NAMES.records){
+  if(!/^\\d{6}$/.test(item.numericId)||typeof item.name!=='string'||
+     !item.name.trim()||item.name.includes('スキルID')||
+     verifiedNames.has(item.numericId))
+   fail('内部スキルIDに対する一意の日本語名がありません');
+  verifiedNames.set(item.numericId,item.name);
+ }
+ const referencedNames=new Set();
  if(source.summary.sourceCards!==4||source.summary.chainStages!==12||
     source.summary.reportedChainAlternatives!==19||
     source.summary.unresolvedPossibleTransitions!==15||
@@ -65,10 +83,13 @@ function build(){
           h.verifiedSkillName!==undefined&&
           (typeof h.verifiedSkillName!=='string'||!h.verifiedSkillName))
         fail('採用済み数値ヒントのID/Lv/名称が不正');
-       // A name is displayed only if already independently reviewed;
-       // otherwise the actual numeric ID is displayed, never a guess.
-       return ['skill:'+h.skillNumericId,h.hintLevel,
-        h.verifiedSkillName||'スキルID '+h.skillNumericId];
+       // The identifier is an internal join key, NOT a user-facing label.
+       // Every display name was checked against an exact pinned registry.
+       const numericId=String(h.skillNumericId),name=verifiedNames.get(numericId);
+       if(!name||h.verifiedSkillName!==undefined&&h.verifiedSkillName!==name)
+        fail('内部IDと日本語スキル名の対応不一致: '+numericId);
+       referencedNames.add(numericId);
+       return ['skill:'+numericId,h.hintLevel,name];
       })
      };
     })
@@ -76,6 +97,9 @@ function build(){
   });
   return {cardId:meta.cardId,name:meta.displayName,events};
  });
+ if(referencedNames.size!==verifiedNames.size||
+    [...verifiedNames.keys()].some(id=>!referencedNames.has(id)))
+  fail('8種類の出典照合済みスキル名に欠損または余剰があります');
  if(stages!==12||alternatives!==19||hints!==8||pendingEdges!==15)
   fail('12段階・19報酬行・8スキルヒント・15未確証遷移が不一致');
  return {
