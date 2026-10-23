@@ -65,3 +65,5 @@
 - [Phase 2・SSR30221（KFCサトノダイヤモンド）の連続3段階を試用に追加](phase2-30221-chain-pages-preview-20261023.md)
 
 - [Phase 2・連続イベントの選択ルートを到達チェックなしで試す](phase2-chain-ordinary-continuation-planner-20261023.md)
+
+- [Phase 2・5SSRの15連続段階を非公開2,511全イベントへ統合](phase2-private-2511-chain-loader-20261023.md)
