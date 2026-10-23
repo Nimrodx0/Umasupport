@@ -61,13 +61,13 @@ footer{max-width:1100px;margin:auto;padding:0 16px 35px;color:var(--muted);font-
  <a href="./phase2-chain-preview.html">開発用・各段階の手動到達検査</a>　/　<a href="./phase2-eight-preview.html">通常イベント8件</a>
 </header>
 <main>
- <p class="notice"><strong>通常継続を仮定した計画です。</strong> 攻略記事に明示的な打ち切りが掲載されていないため、通常は次段階へ進むものとして候補を表示します。17の選択別継続を個別に立証できたわけではありません。また、次のイベントが育成中に発生する保証はありません。スキルはすべて<strong>獲得候補</strong>であり確定報酬ではありません。正式公開DBへの承認は0件です。</p>
+ <p class="notice"><strong>連続イベントのフラグを計算します。</strong> 明示的な打ち切りがない選択肢は次段階のフラグを立てます。打ち切りが明示された選択肢では継続しません。現在の5枚には通常継続17経路を適用しています。イベント発生のランダム性は計算対象外です。画面のスキルは<strong>獲得可能スキル</strong>であり、既に習得済みという意味ではありません。正式公開DBへの承認は0件です。</p>
  <p id="bootstrap" role="status" class="status">連続イベントのデータを読み込んでいます…</p>
  <p class="section-label">サポートカード</p>
  <nav id="card-tabs" class="tabs" aria-label="対象カードを選択"></nav>
  <section id="selected-card" aria-live="polite"></section>
 </main>
-<footer>GameToraの通常継続規則と、GameWithカード別記事の記載に基づく開発用シミュレーションです。段階到達を実際に観測したことにはなりません。記事の本文・選択肢の台詞・画像は転載していません。</footer>
+<footer>GameToraの通常継続規則とGameWithカード別記事の記載に基づく開発用の経路計算です。記事本文・選択肢の台詞・画像は転載していません。</footer>
 <script src="./src/core.js"></script>
 <script src="./src/phase2_chain_plan_client.js"></script>
 </body></html>
