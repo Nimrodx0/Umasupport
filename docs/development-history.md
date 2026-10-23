@@ -365,3 +365,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：残るChecker未対16元位置と非公開2,511件の全カード内イベントヒントIDを突き合わせ、スキル数値ID・条件分岐の未収録リスクをP0/P1/P2に分類する固定全件CIを追加。[機構と限界](phase2-remaining-checker-skill-impact-20261023.md)。
 
 - 2026-10-23：残存Checker16位置のP0・SSR30180の未収録イベントヒントをGameWithから採用し、非公開2,511候補＋1の本番型検証を追加。[根拠](phase2-30180-special-cornering-2512-20261023.md)。
+
+- 2026-10-23：Checker残存P1の4位置（条件付き10行、抽出ヒント0）を固定sourceKey/digestで監査。30067「鍛えよ共に」は非スキル報酬の成功／失敗分岐とGameWithで採用し、残3位置は継続調査。[監査](phase2-four-p1-conditional-result-review-20261023.md)。
