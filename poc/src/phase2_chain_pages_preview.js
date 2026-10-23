@@ -63,7 +63,7 @@
          !/^skill:\d+$/.test(hint[0])||
          !Number.isSafeInteger(hint[1])||hint[1]<1||
          typeof hint[2]!=='string'||!hint[2].trim()||
-         /^スキルID\\s*\\d+/.test(hint[2])||/^\\d+$/.test(hint[2]))
+         /^スキルID\s*\d+/.test(hint[2])||/^\d+$/.test(hint[2]))
        throw Error('スキル数値事実が不正');
      }
     }
