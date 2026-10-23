@@ -23,13 +23,13 @@
      data.gameplayReproductionClaimed!==false||
      data.sourceNarrativeOrChoiceProseIncluded!==false||
      data.inferredChainTransitions!==0||
-     data.unresolvedPossibleTransitions!==15||
+     data.unresolvedPossibleTransitions!==17||
      data.explicitStageAssertionRequired!==true||
-     !Array.isArray(data.cards)||data.cards.length!==4)
+     !Array.isArray(data.cards)||data.cards.length!==5)
    throw Error('連続イベントの未承認・未確定条件が不正です');
   let stages=0,alts=0,hints=0,pending=0;
   for(const [i,card] of data.cards.entries()){
-   if(card.cardId!==String(30318+i)||
+   if(card.cardId!==['30318','30319','30320','30321','30221'][i]||
       typeof card.name!=='string'||!card.name||
       !Array.isArray(card.events)||card.events.length!==3)
     throw Error('カードの3段階が不正');
@@ -69,7 +69,7 @@
     }
    }
   }
-  if(stages!==12||alts!==19||hints!==8||pending!==15)
+  if(stages!==15||alts!==22||hints!==9||pending!==17)
    throw Error('固定12段階・19結果行・8ヒント・15未確定経路と不一致');
  }
  function runtimeEvents(card){
@@ -198,7 +198,7 @@
    tab.addEventListener('click',()=>render(card));
    tabs.append(tab);
   }
-  ready.textContent='4カード・連続12段階・結果行19・ヒント8件。段階間の15遷移候補は全て未確定です。';
+  ready.textContent='5カード・連続15段階・結果行22・ヒント9件。段階間の17遷移候補は全て未確定です。';
   render(data.cards[0]);
   document.documentElement.dataset.ready='true';
  }catch(error){

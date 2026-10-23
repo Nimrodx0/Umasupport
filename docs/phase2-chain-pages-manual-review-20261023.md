@@ -1,5 +1,7 @@
 # Phase 2：4SSRの連続12段階を手動到達指定でブラウザ試用（2026-10-23）
 
+**2026-10-23追補：** 同じ画面は[SSR30221の連続3段階](phase2-30221-chain-pages-preview-20261023.md)も追加し、現行の試用対象は**5SSR・15段階・22結果行・9ヒント・未確証17遷移**。以下の4SSR・12段階と15遷移は初版の内訳であり、SSR30221は別出典を監査した3段階として加わる。
+
 ## 入口と目的
 
 [GitHub Pages・連続イベント段階別試用](https://nimrodx0.github.io/Umasupport/poc/phase2-chain-preview.html) を独立ページとして追加する。既存の[通常イベント8件](https://nimrodx0.github.io/Umasupport/poc/phase2-eight-preview.html)の試用ページと相互に移動できる。

@@ -35,7 +35,7 @@ async function main(){
   assert.equal(response.status(),200);
   await page.locator('html[data-ready="true"]').waitFor({timeout:20000});
   assert.match(await page.locator('.notice').innerText(),/連続分岐は未確定/);
-  assert.equal(await page.locator('#card-tabs button').count(),4);
+  assert.equal(await page.locator('#card-tabs button').count(),5);
   assert.equal(await page.locator('article.event').count(),3);
   assert.match(await page.locator('article.event[data-event="1"] h3').innerText(),/見上げた空は眩しくて/);
   assert.match(await page.locator('article.event[data-event="3"] h3').innerText(),/届けた幸せは、甘く花開いて/);
@@ -98,7 +98,27 @@ async function main(){
   }
   // User-visible text must not expose internal skill IDs.
   assert.doesNotMatch(await page.locator('main').innerText(),/スキルID\\s*\\d+/);
-  assert.deepEqual(errors,[]);
+  // 30221 adds a fifth card with three individually adjudicated auto stages.
+  await page.locator('#card-tabs button[data-card-id="30221"]').click();
+  assert.match(await page.locator('article.event[data-event="1"] h3').innerText(),
+   /ふたりでひとつは、とってもおいしい！/);
+  assert.match(await page.locator('article.event[data-event="3"] h3').innerText(),
+   /打ち解ければ、きっと伝わるから！/);
+  assert.equal(await page.locator('article.event[data-observed="false"]').count(),3);
+  assert.equal(await page.locator('article.event button[data-choice]').count(),0);
+  const satonoLast=page.locator('article.event[data-event="3"]');
+  await satonoLast.locator('.arrived').click();
+  assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'1');
+  assert.match(await satonoLast.locator('output').innerText(),/食いしん坊/);
+  assert.doesNotMatch(await satonoLast.locator('output').innerText(),/201351/);
+  assert.equal(await page.locator('article.event[data-observed="true"]').count(),1);
+  const satonoFirst=page.locator('article.event[data-event="1"]');
+  await satonoFirst.locator('.arrived').click();
+  assert.equal(await satonoFirst.locator('output').getAttribute('data-hint-count'),'0');
+  assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'1');
+  await satonoLast.locator('.arrived').click();
+  assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'0');
+    assert.deepEqual(errors,[]);
   assert.deepEqual(requests,[]);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.setViewportSize({width:1280,height:800});
@@ -118,7 +138,7 @@ async function main(){
    assert.match(await tamper.locator('#bootstrap').innerText(),/未承認・未確定条件が不正/);
    await tamper.close();
   }
-  console.log('Pages-path chain manual stage browser PASS: four cards x three independently asserted stages, 19 alternatives, 8 hints, unknown transitions, narrow/wide view, forged release rejection.');
+  console.log('Pages-path chain manual stage browser PASS: five cards x three independently asserted stages, 22 alternatives, 9 hints, unknown transitions, narrow/wide view, forged release rejection.');
  }finally{
   await browser?.close();
   await new Promise(ok=>srv.close(ok));
