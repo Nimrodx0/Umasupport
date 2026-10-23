@@ -21,7 +21,7 @@ function build(){
   fail('数値スキルID→日本語スキル名の固定照合根拠が不正');
  const verifiedNames=new Map();
  for(const item of NAMES.records){
-  if(!/^\\d{6}$/.test(item.numericId)||typeof item.name!=='string'||
+  if(!/^\d{6}$/.test(item.numericId)||typeof item.name!=='string'||
      !item.name.trim()||item.name.includes('スキルID')||
      verifiedNames.has(item.numericId))
    fail('内部スキルIDに対する一意の日本語名がありません');
