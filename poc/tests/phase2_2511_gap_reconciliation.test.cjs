@@ -64,11 +64,17 @@ test('fixed-source 65 differences shrink to 17 unpaired identities plus 3 outsid
   checkerOnlyOriginal:40,gtOnlyNonROriginal:24,choiceTopologyOriginal:1,
   checkerMissingGTCardScopeCovered:20,checkerOnGTCardScopeCovered:3,
   gtOnlyAlreadyInBaseline:24,sourceChoiceTopologyPatched:1,
-  checkerOnGTCardIdentityUnpaired:17,missingFromBothFixedSources:3,
+  checkerOnGTCardIdentityUnpaired:17,
+  checkerOnGTCardsNeedingIdentityAudit:17,
+  missingFromBothFixedSources:3,
   stillRequireIndividualInvestigation:20,
   confirmedNewMissingEventsFromThisAudit:0,publicationApprovedEvents:0
  });
  assert.equal(result.openQueue.length,18,'17 individual unmatched+one 3-stage group');
+ assert.equal(Object.keys(result.unpairedCheckerOnGTPositionsByCard).length,17);
+ assert.equal(Object.values(result.unpairedCheckerOnGTPositionsByCard)
+  .reduce((n,x)=>n+x,0),17);
+ assert.equal(result.openQueue.find(x=>x.cardId==='20075').priority,null);
  assert.equal(result.openQueue.find(x=>x.cardId==='20075').action,
   'REVIEW_REPORTED_NO_SKILL_CHAIN_FIRST_STAGE');
  assert.equal(result.openQueue.find(x=>x.cardId==='30240').count,3);
