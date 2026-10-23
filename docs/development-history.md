@@ -333,3 +333,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 
 
 - 2026-10-23：4SSR通常8イベントを正式なイベント公開スキーマの未署名候補として自動生成。元数値・ID・SHAを固定し、実公開JSONへの誤混入を防止。[詳細](phase2-eight-release-schema-candidate-20261023.md)。
+
+- 2026-10-23：固定GT2,488イベントの短い見出しを、イベント位置と元SHAの一致で非公開候補へ注入する工程を追加。原文と候補DBのGitHub公開なし。[詳細](phase2-gametora-short-title-intake-20261023.md)。
