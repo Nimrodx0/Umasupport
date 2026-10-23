@@ -17,7 +17,11 @@ function fixture(){
  const catalog={schemaVersion:1,cards};
  const modelCards=ids.map(id=>({id,hints:[],events:[]}));
  const skillRecords=[...hints.records.map(s=>({id:s.numericId,name:s.name,
-  rarity:'normal',group:Number(s.numericId)})),
+  rarity:s.numericId==='203801'?'rare':'normal',
+  group:s.numericId==='203801'?20380:Number(s.numericId)})),
+  // The loader checks a review-anchored gold/white relationship. A fake
+  // isolated gold skill would contradict that independently reviewed pair.
+  {id:'203802',name:'想い焦がれて',rarity:'normal',group:20380},
   {id:'201351',name:'食いしん坊',rarity:'normal',group:201351},
   ...Array.from({length:110},(_,i)=>({
    id:String(950000+i),name:'フェイク'+i,rarity:'normal',group:950000+i
