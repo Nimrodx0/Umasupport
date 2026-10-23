@@ -363,3 +363,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：SSR30301のChecker-only一位置を、GameToraの連続3段階／通常ヒントとGameWithの表示差としてGT優先の個別編集裁定。追加イベント0、未対Checker位置17→16、SSR30240欠損3を含む調査対象19位置へ。[根拠](phase2-30301-gt-hint-vs-checker-event-20261023.md)。
 
 - 2026-10-23：残るChecker未対16元位置と非公開2,511件の全カード内イベントヒントIDを突き合わせ、スキル数値ID・条件分岐の未収録リスクをP0/P1/P2に分類する固定全件CIを追加。[機構と限界](phase2-remaining-checker-skill-impact-20261023.md)。
+
+- 2026-10-23：唯一のP0となったSSR30180のChecker位置7／数値ID200332を、GameToraカード確認・GameWith記事のイベントヒントLv1により編集採用。選択なしの特別イベント1件として非公開2,511→2,512候補を固定全件テストへ。[根拠と制約](phase2-30180-special-corner-adept-20261023.md)。

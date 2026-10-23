@@ -197,6 +197,45 @@ function main(args){
      sourceNarrativeOrChoiceProseIncluded:false,
      publicationApproved:false,rawCandidateCatalogPublished:false
     }));
+    // Editorial GameWith exception: the one P0 missing 30180 event hint.
+    // The calendar trigger is outside this application's event-flag model.
+    const {apply:insert30180}=require('../src/phase2_30180_special_event_overlay.cjs');
+    const oneMore=insert30180({integrated:withChains,priorities:prioritized},
+     {strict:true});
+    const publishedLoader=require('../src/public_event_catalog.js');
+    const prepared2512=publishedLoader.preflight(model,oneMore.catalog,{
+     skillText:result.dryRunMergedSkillText,fullRegistry:false
+    });
+    const disposable2512=JSON.parse(JSON.stringify(model));
+    disposable2512.cards=disposable2512.cards.map(c=>
+     disposable2512.cardById[c.id]||c);
+    const installed2512=publishedLoader.attach(disposable2512,oneMore.catalog,{
+     skillText:result.dryRunMergedSkillText,fullRegistry:false
+    });
+    if(prepared2512.summary.eventsWithRecords!==2512||
+       installed2512.eventsWithRecords!==2512||
+       installed2512.cardsWithRecords!==563)
+     fail('30180補完後の本番2,512件が辞書・スキル出典に接続できません');
+    const target30180=disposable2512.cardById['30180'];
+    const newEvent=target30180?.events?.find(e=>e.id===
+     'usl:30180:special:checker-007');
+    const newRoutes=require('../src/core.js').directRoutes(target30180,{
+     stage:4,choices:{},outcomes:{}
+    }).filter(x=>x.eventId===newEvent?.id);
+    const remapped=prepared2512.prepared.catalog.cards
+     .find(c=>c.cardId==='30180').events.find(e=>e.id===newEvent.id);
+    if(newRoutes.length!==1||remapped.rewards.length!==1||
+       newRoutes[0].skillId!==remapped.rewards[0].skillId||
+       newRoutes[0].level!==1)
+     fail('30180ヒントの数値ID・名称変換とイベント経路が一致しません');
+    console.log('PHASE2_2512_30180_SPECIAL_HINT_PRODUCTION_LOADER='+JSON.stringify({
+     ...oneMore.summary,attachedEvents:installed2512.eventsWithRecords,
+     attachedCards:installed2512.cardsWithRecords,
+     sourceHintNumericId:200332,sourceHintLevel:1,
+     resolvedSkillId:newRoutes[0].skillId,
+     eventOccurrenceModeled:false,
+     sourceNarrativeOrChoiceProseIncluded:false,publicationApproved:false
+    }));
 
    }
   }
