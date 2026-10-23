@@ -56,6 +56,8 @@ on:
       - 'poc/tests/independent_skill_fingerprint_audit.test.cjs'
       - 'poc/src/gametora_app_schema_dry_run.cjs'
       - 'poc/src/gametora_short_event_title_intake.cjs'
+      - 'poc/src/gametora_publication_review_queue.cjs'
+      - 'poc/tests/gametora_publication_review_queue.test.cjs'
       - 'poc/tests/gametora_short_event_title_intake.test.cjs'
       - 'poc/src/gametora_full_runtime_integration.cjs'
       - 'poc/src/public_event_catalog.js'
@@ -251,6 +253,8 @@ jobs:
         run: node --test umasupport/poc/tests/independent_2026_skill_dry_run.test.cjs
       - name: Verify full private catalog digest parity comparison on synthetic fixtures
         run: node --test umasupport/poc/tests/private_schema_digest_parity.test.cjs
+      - name: Verify synthetic full-GT unsigned review queue
+        run: node --test umasupport/poc/tests/gametora_publication_review_queue.test.cjs
       - name: Verify synthetic ordinal-and-SHA event title binding
         run: node --test umasupport/poc/tests/gametora_short_event_title_intake.test.cjs
       - name: Verify synthetic source-to-runtime app schema conversion
@@ -276,6 +280,8 @@ jobs:
       - name: Dry-run complete fixed event catalog with 2026 names and 2025 hashed numeric evidence
         env:
           UMASUPPORT_GT_EVENT_DIR: gt-snapshot/server/data/events/gametora
+          UMASUPPORT_GT_BASELINE_REPORT: whole-event-output/gametora_app_schema_no_historical.v1.json
+          UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT: whole-event-output/gametora_unsigned_release_review.v1.json
         run: |
           node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
             whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
