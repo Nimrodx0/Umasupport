@@ -71,12 +71,19 @@ function accept({assembled,model,skillText},{strict=false}={}){
     if(event.type==='choice')choiceState[event.id]=a.id;
     const routes=core.directRoutes(card,{stage:4,choices:choiceState,outcomes:{}})
      .filter(r=>r.source==='event'&&r.eventId===event.id);
-    if(routes.length!==a.hints.length||
-       routes.some((r,j)=>r.skillId!==a.hints[j][0]||
-        r.level!==a.hints[j][1]))
-     fail('本番辞書解決後にルート別スキルID/Lvが変化: '+
+    // The loader deliberately resolves a numeric GameTora/GW ID to the
+    // existing UmaSim *hint:* model skill when the unique ID+name matches.
+    // Compare to the rewritten event rewards, not their raw skill:<id> keys.
+    // Raw numeric ID+verifiedSkillName was already checked by preflight.
+    const resolved=event.type==='choice'?
+     event.choices.find(c=>c.id===a.id)?.rewards:event.rewards;
+    if(!Array.isArray(resolved)||resolved.length!==a.hints.length||
+       routes.length!==resolved.length||
+       routes.some((r,j)=>r.skillId!==resolved[j].skillId||
+        r.level!==resolved[j].level))
+     fail('本番辞書解決後の選択別報酬に不整合: '+
       sourceCard.cardId+'/'+event.id+'/'+a.id+
-      ' expected='+JSON.stringify(a.hints.map(h=>[h[0],h[1]]))+
+      ' expected='+JSON.stringify(resolved?.map(x=>[x.skillId,x.level]))+
       ' actual='+JSON.stringify(routes.map(r=>[r.skillId,r.level])));
    }
   }
