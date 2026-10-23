@@ -17,6 +17,7 @@
 | PR別の作業履歴 | [development-history.md](development-history.md) |
 | 仕様とコード／テストの整合性監査 | [初回スポット監査（2026-10-22）](decision-implementation-consistency-audit-20261022.md) |
 | 編集採用済みのGameWith数値事実と未確証の連続経路 | [Phase 2・独立編集台帳](phase2-adjudicated-numeric-fact-intake-20261022.md) / [4SSR全20件の追加採用](phase2-three-ssr-final-editorial-adoption-20261022.md) / [連続12段階の手動再現・遷移監査](phase2-four-ssr-chain-manual-replay-20261022.md) |
+| 通常8イベントの公開スキーマ候補と署名前チェック | [Phase 2・公開候補8件](phase2-eight-release-schema-candidate-20261023.md) |
 | 個別の数値・例外・出典検証 | `docs/phase2-*.md` や `docs/*-audit*.md` の該当文書 |
 | 整理前の全文保存 | [archive/](archive/) |
 
