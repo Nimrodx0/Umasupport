@@ -150,6 +150,20 @@ function main(args){
      attachedOnlyToDisposableModel:true,
      rawEventDataPublished:false
     }));
+    // Apply the independently curated missing 5-SSR chain stages on the
+    // already verified private 2496 catalog, and exercise 2511 on the
+    // SAME production preflight/attach pipeline in a separate throwaway model.
+    const {assemble:assemble2511}=require('../src/phase2_2511_chain_runtime.cjs');
+    const {accept:accept2511}=require('../src/phase2_2511_chain_loader.cjs');
+    const withChains=assemble2511(combined,{strict:true});
+    const allLoaded=accept2511({
+     assembled:withChains,model,skillText:result.dryRunMergedSkillText
+    },{strict:true});
+    console.log('PHASE2_2511_CHAIN_FLAG_PRODUCTION_LOADER='+JSON.stringify({
+     ...allLoaded.summary,publicationApproved:false,
+     usedExistingRuntimeCore:true,randomEventOccurrenceModeled:false,
+     sourceNarrativeOrChoiceProseIncluded:false,rawCatalogPublished:false
+    }));
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
