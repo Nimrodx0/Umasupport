@@ -347,3 +347,5 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 - 2026-10-23：固定GT559枚・2,488イベントにGameWith裁定済み4SSR通常8イベントとSSR30080の3択補正を加えた、563枚・2,496件の非公開統合実行候補を実装。[詳細](phase2-integrated-2496-private-runtime-20261023.md)。
 
 - 2026-10-23：非公開統合2,496件の本番`public_event_catalog.preflight/attach`、現行固定UmaSim＋独立2026名による数値スキル照合、元入力不変の全件ゲートを追加。[設計](phase2-integrated-private-loader-acceptance-20261023.md)。
+
+- 2026-10-23：4SSRの未確証連続イベント12段階を、段階ごとに明示到達した場合だけスキル候補を試算するブラウザ画面へ拡張。15の未確証経路は自動接続せず。[仕様](phase2-chain-pages-manual-review-20261023.md)。
