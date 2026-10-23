@@ -6,7 +6,7 @@
   "gameplayReproductionClaimed": false,
   "sourceNarrativeOrChoiceProseIncluded": false,
   "inferredChainTransitions": 0,
-  "unresolvedPossibleTransitions": 15,
+  "unresolvedPossibleTransitions": 17,
   "explicitStageAssertionRequired": true,
   "cards": [
     {
@@ -546,6 +546,108 @@
                   "skill:201463",
                   1,
                   "月影円刃"
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30221",
+      "name": "サトノダイヤモンド",
+      "events": [
+        {
+          "id": "usl:30221:chain:1",
+          "title": "ふたりでひとつは、とってもおいしい！",
+          "ordinal": 1,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  5
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30221:chain:2",
+          "title": "それはまるで“スーパーノヴァ”",
+          "ordinal": 2,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "UNKNOWN",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": []
+            }
+          ]
+        },
+        {
+          "id": "usl:30221:chain:3",
+          "title": "打ち解ければ、きっと伝わるから！",
+          "ordinal": 3,
+          "choiceCount": 0,
+          "manualReachedRequired": true,
+          "priorStageDependenceVerified": false,
+          "nextStageTransitionStatus": "NOT_MODELED",
+          "sourceUrl": "https://gamewith.jp/uma-musume/article/show/461418",
+          "alternatives": [
+            {
+              "id": "option1",
+              "effects": [
+                [
+                  "energy",
+                  10
+                ],
+                [
+                  "stamina",
+                  5
+                ],
+                [
+                  "bond",
+                  5
+                ]
+              ],
+              "hints": [
+                [
+                  "skill:201351",
+                  1,
+                  "食いしん坊"
                 ]
               ]
             }
