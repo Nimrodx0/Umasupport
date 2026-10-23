@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Phase 2 イベント試用 | ウマサルタント</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+ --ink:#192437;--muted:#64748b;--line:#dce4ef;--paper:#fff;--back:#f4f7fb;--accent:#3d5b9c;
+ --selected:#ebf1fe}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--back);line-height:1.6}
+a{color:#345bb2}
+header{background:#16294b;color:#fff;padding:30px max(16px,calc((100vw - 1060px)/2))}
+header .eyebrow{font-size:.76rem;letter-spacing:.12em;font-weight:700;color:#b5c9fa}
+header h1{font-size:clamp(1.4rem,3vw,2.1rem);line-height:1.3;margin:.2rem 0 .35rem}
+header p{margin:.4rem 0;color:#d7e2fa;font-size:.93rem}
+header a{color:#d8e9ff}
+main{max-width:1092px;margin:auto;padding:22px 16px 44px}
+.notice{border:1px solid #d5dfef;border-left:4px solid #6c83be;background:#fff;
+ padding:13px 17px;border-radius:8px;font-size:.87rem;margin:0 0 24px}
+.notice strong{color:#294777}
+.section-label{font-size:.84rem;font-weight:700;color:#5e6e87;margin:0 0 8px}
+.tabs{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px}
+.tab{font:inherit;background:#fff;border:1px solid #cbd5e1;padding:9px 15px;border-radius:12px;
+ cursor:pointer;font-size:.9rem;font-weight:600;flex:1 1 190px;text-align:center;color:var(--ink)}
+.tab[aria-selected=true]{border-color:#385c9a;background:#e7eefc;box-shadow:inset 0 0 0 1px #385c9a}
+.tab:focus-visible,.choice:focus-visible{outline:3px solid #829de8;outline-offset:2px}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 17px}
+.card-header h2{font-size:1.2rem;margin:0}
+.card-header p{margin:0;color:var(--muted);font-size:.85rem}
+.events{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.event{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}
+.event h3{font-size:1.08rem;line-height:1.45;margin:1px 0 4px;overflow-wrap:anywhere}
+.event .source-label{font-size:.78rem;color:var(--muted);margin:0 0 15px}
+.event .choices{display:grid;gap:9px}
+.choice{font:inherit;border:1px solid #ccd7e6;border-radius:11px;padding:11px 12px;background:#fff;
+ text-align:left;cursor:pointer;color:var(--ink);width:100%}
+.choice[aria-pressed=true]{border-color:#4269b4;background:var(--selected);box-shadow:inset 0 0 0 1px #4269b4}
+.choice-title{display:block;font-weight:700;font-size:.88rem;margin-bottom:6px}
+.effects{display:flex;gap:5px;flex-wrap:wrap}
+.effect{font-size:.73rem;color:#344764;background:#eff3f8;border-radius:5px;padding:2px 6px}
+.hint{background:#e8f2e8;color:#365b36}
+.choice[aria-pressed=true] .effect{background:#fff}
+.choice.clear{font-size:.86rem;text-align:center;padding:8px}
+.result{padding:11px 12px;background:#f5f8fc;border-radius:9px;min-height:64px;margin-top:13px;font-size:.85rem}
+.result b{color:#274e91}
+.source{display:block;margin:12px 0 0;font-size:.77rem}
+#bootstrap{font-size:.91rem;color:var(--muted);margin:0 0 12px}
+#bootstrap.error{color:#ad2929}
+footer{max-width:1092px;margin:auto;padding:0 16px 35px;font-size:.79rem;color:var(--muted)}
+@media(max-width:720px){.events{grid-template-columns:1fr}.tab{flex:1 1 calc(50% - 5px)}
+ header{padding:23px 16px}.event{padding:16px}.card-header{align-items:start}}
+@media(prefers-reduced-motion:no-preference){.tab,.choice{transition:background .12s,border-color .12s}}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow">UMASARUTANT / PHASE 2</div>
+ <h1>サポートカード イベント選択プレビュー</h1>
+ <p>4枚のSSRサポカ × 通常イベント8件。選択肢を切り替えて、数値効果とスキル候補を確かめられます。</p>
+ <a href="./live.html">通常版アプリに戻る</a>
+</header>
+<main>
+ <p class="notice"><strong>開発用試用ページ</strong>：正式公開イベントDBとは別です。選択肢の台詞は転載せず、上・下の位置と効果値で区別しています。表示は指定攻略資料を参照した編集候補であり、出現確率やゲーム内の実取得を保証しません。正式承認は0件です。</p>
+ <p id="bootstrap" role="status">データを読み込んでいます…</p>
+ <p class="section-label">サポートカードを選択</p>
+ <nav class="tabs" id="card-tabs" aria-label="カードの切り替え"></nav>
+ <section id="selected-card" aria-live="polite"></section>
+</main>
+<footer>表示・数値の出典：各イベント内のGameWith記事リンク。これは公開イベントDBへの承認・収録ではありません。</footer>
+<script src="./src/core.js"></script>
+<script src="./src/phase2_eight_pages_preview.js"></script>
+</body>
+</html>
