@@ -55,7 +55,7 @@ function apply({catalog,normalized,review}){
  const sourceRoutes=record.choices[0].routes||[];
  if(sourceRoutes.length!==1||
     sourceRoutes[0].numericHintFacts?.length!==1||
-    sourceRoutes[0].numericHintFacts[0]?.skillNumericId!==201591||
+    sourceRoutes[0].numericHintFacts[0]?.skillNumericId!=='201591'||
     sourceRoutes[0].numericHintFacts[0]?.level!==3)
   fail('元GTのスキル位置とヒントLvが既存裁定に一致しない');
  // Reuse the individually adjudicated 3 alternatives. The non-skill effect
