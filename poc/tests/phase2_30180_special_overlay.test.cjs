@@ -42,7 +42,7 @@ test('production event loader attaches resolved skill names to disposable model'
  const f=fixture(),assembled=apply(f),card={id:'30180',hints:[],events:[]};
  const model={cards:[card],cardById:{'30180':card},skills:[],skillById:{},meta:{}};
  const skillText=JSON.stringify([{id:'200332',name:'コーナー巧者○',
-  rarity:'normal',group:20033},...Array.from({length:20},(_,i)=>({
+  rarity:'normal',group:20033},...Array.from({length:110},(_,i)=>({
    id:String(990000+i),name:'test '+i,rarity:'normal',group:990000+i}))]);
  const r=accept({assembled,model,skillText});
  assert.equal(r.status,'PRIVATE_2512_FULL_LOADER_VERIFIED');
