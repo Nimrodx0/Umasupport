@@ -51,3 +51,5 @@
 - [Phase 2・GitHub Pagesで通常8イベントを操作する試用画面](phase2-eight-pages-browser-preview-20261023.md)
 
 - [Phase 2・GameTora 2,488イベントの署名前レビューキュー](phase2-gametora-unsigned-release-review-20261023.md)
+
+- [Phase 2・固定GTスキル辞書の根本原因とGameTora／Checker例外の統合](phase2-source-exception-overlay-20261023.md)
