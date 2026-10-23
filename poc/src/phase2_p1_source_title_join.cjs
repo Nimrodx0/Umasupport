@@ -23,7 +23,7 @@ const TARGETS=Object.freeze([
   gtName:'お疲れ様！！',choices:1,gameWithUrl:'https://gamewith.jp/uma-musume/article/show/413773'}
 ]);
 function titleCandidates(base){
- return [...new Set([base,base+'(温かなメッセージ)',base+'（温かなメッセージ）'])];
+ return [...new Set([base,base+'(温かなメッセージ)',base+'（温かなメッセージ）'].map(norm))];
 }
 function sourceKey(cardId,ordinal,title){
  if(!/^\d{5}$/.test(cardId)||!Number.isInteger(ordinal)||ordinal<1||!norm(title))
