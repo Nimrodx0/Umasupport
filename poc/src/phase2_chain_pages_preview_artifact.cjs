@@ -8,9 +8,21 @@ const {audit}=require('./phase2_chain_manual_replay.cjs');
 const {buildView}=require('./phase2_eight_event_review_view.cjs');
 const NAMES=require('../data/curation/phase2_chain_skill_display_names.v1.json');
 const HEADINGS=require('../data/curation/phase2_chain_event_headings.v1.json');
+const SATONO=require('../data/curation/adjudicated/30221_chain.v1.json');
+const {audit:audit30221}=require('./phase2_30221_missing_chain_intake.cjs');
 const fail=s=>{throw Error('Phase2連続12段階のPages試用: '+s);};
 function build(){
  const source=audit(), regular=buildView();
+ const satono=audit30221(SATONO);
+ if(satono.summary.editoriallyAdoptedChainStages!==3||
+    satono.summary.numericSkillHintFacts!==1||
+    satono.summary.verifiedContinuationEdges!==0||
+    satono.summary.publicEvents!==0||
+    SATONO.cardId!=='30221'||SATONO.skillIdentityEvidence.skillName!=='食いしん坊'||
+    SATONO.skillIdentityEvidence.skillNumericId!==201351||
+    SATONO.chainRouteVerified!==false||
+    SATONO.gameWith.url!=='https://gamewith.jp/uma-musume/article/show/461418')
+  fail('KFCサトノダイヤモンドの独立数値採用と非公開ゲートが不一致');
  if(NAMES.schemaVersion!==1||
     NAMES.dataKind!=='phase2-chain-preview-verified-skill-names'||
     NAMES.source?.repository!=='mee1080/umasim'||
@@ -32,11 +44,11 @@ function build(){
     HEADINGS.dataKind!=='phase2-chain-stage-headings-from-card-scoped-GameWith'||
     HEADINGS.sourceNarrativeOrChoiceProseIncluded!==false||
     HEADINGS.publicationApproved!==false||
-    !Array.isArray(HEADINGS.cards)||HEADINGS.cards.length!==4)
+    !Array.isArray(HEADINGS.cards)||HEADINGS.cards.length!==5)
   fail('連続イベントの正式短見出し出典が不正');
  const headings=new Map();
  for(const row of HEADINGS.cards){
-  if(headings.has(row.cardId)||!/^303(18|19|20|21)$/.test(row.cardId)||
+  if(headings.has(row.cardId)||!['30318','30319','30320','30321','30221'].includes(row.cardId)||
      !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(row.gameWithArticle)||
      !Array.isArray(row.titles)||row.titles.length!==3||
      row.titles.some(x=>typeof x!=='string'||!x.trim()||x.length>80))
@@ -116,19 +128,58 @@ function build(){
   });
   return {cardId:meta.cardId,name:meta.displayName,events};
  });
+ // A fifth card is an independently adjudicated GT-missing CHAIN,
+ // not a claimed continuation from its fixed GT random events.
+ const satonoTitles=headings.get('30221');
+ if(!satonoTitles||satonoTitles.gameWithArticle!==SATONO.gameWith.url||
+    !Array.isArray(SATONO.events)||SATONO.events.length!==3)
+  fail('30221個別記事・連続3段階の対応が不正');
+ const satonoEvents=SATONO.events.map((e,i)=>{
+  if(e.checkerOrdinal!==i+1||e.chainStageOrdinal!==i+1||
+     e.playerSelectableChoices!==0||
+     !Array.isArray(e.numericEffects)||!Array.isArray(e.skillHints)||
+     e.continuationDecision!==(i<2?'NOT_ESTABLISHED_BY_SOURCE':
+      'FINAL_REPORTED_STAGE_NO_NEXT_STAGE'))
+   fail('30221の先行・後続条件と数値が出典と不一致');
+  stages++;alternatives++;
+  if(i<2)pendingEdges++;
+  hints+=e.skillHints.length;
+  return {
+   id:'usl:30221:chain:'+(i+1),title:satonoTitles.titles[i],
+   ordinal:i+1,choiceCount:0,
+   manualReachedRequired:true,priorStageDependenceVerified:false,
+   nextStageTransitionStatus:i<2?'UNKNOWN':'NOT_MODELED',
+   sourceUrl:SATONO.gameWith.url,
+   alternatives:[{
+    id:'option1',
+    effects:e.numericEffects.map(effect=>{
+     if(typeof effect.kind!=='string'||!Number.isSafeInteger(effect.value))
+      fail('30221ステータス数値の不一致');
+     return [effect.kind,effect.value];
+    }),
+    hints:e.skillHints.map(h=>{
+     if(h.skillNumericId!==201351||h.hintLevel!==1||
+        SATONO.skillIdentityEvidence.skillName!=='食いしん坊')
+      fail('30221の食いしん坊ID/ヒントLvの不一致');
+     return ['skill:201351',1,'食いしん坊'];
+    })
+   }]
+  };
+ });
+ cards.push({cardId:'30221',name:'サトノダイヤモンド',events:satonoEvents});
  if(headings.size!==cards.length||
     [...headings.keys()].some(id=>!cards.some(c=>c.cardId===id)))
   fail('短い正式見出しのカードと出典位置が全件一致しない');
  if(referencedNames.size!==verifiedNames.size||
     [...verifiedNames.keys()].some(id=>!referencedNames.has(id)))
   fail('8種類の出典照合済みスキル名に欠損または余剰があります');
- if(stages!==12||alternatives!==19||hints!==8||pendingEdges!==15)
+ if(stages!==15||alternatives!==22||hints!==9||pendingEdges!==17)
   fail('12段階・19報酬行・8スキルヒント・15未確証遷移が不一致');
  return {
   schemaVersion:1,dataKind:'phase2-twelve-manual-chain-stage-browser-review',
   previewOnly:true,formallyApproved:false,gameplayReproductionClaimed:false,
   sourceNarrativeOrChoiceProseIncluded:false,
-  inferredChainTransitions:0,unresolvedPossibleTransitions:15,
+  inferredChainTransitions:0,unresolvedPossibleTransitions:17,
   explicitStageAssertionRequired:true,
   cards
  };
