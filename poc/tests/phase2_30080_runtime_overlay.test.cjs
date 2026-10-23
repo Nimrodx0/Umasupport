@@ -66,7 +66,7 @@ test('two slots of the same card still yield one provider',()=>{
  const result=core.aggregate(deck,model);
  assert.equal(result['skill:201591'].count,1);
  assert.equal(Object.keys(result['skill:201591'].providers).length,2);
- assert.ok(result['skill:201591'].providers.every(p=>p.routes.length===1&&
+ assert.ok(Object.values(result['skill:201591'].providers).every(p=>p.routes.length===1&&
   p.routes[0].conditional===true));
 });
 test('source, canonical row, signed content hash or special context changes cause rejection',()=>{
