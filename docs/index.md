@@ -81,3 +81,4 @@
 - [Phase 2・L'Arcイベントの置換と佐岳メイR/SSR海外専用の非スキル数値台帳](phase2-p1-larc-replacement-and-mei-overseas-20261023.md)
 - [Phase 2・非スキル効果スキーマと佐岳メイ海外限定R/SSR結果の技術試作](phase2-nonskill-outcome-runtime-20261024.md)
 - [Phase 2・GameTora全2,488イベントの非スキル数値・受け手・結果構造全件監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)
+- [Phase 2・GameTora固定 `all_stats` 68記載の5能力展開と2,220件の構造試作](phase2-all-stats-five-attributes-20261024.md)

@@ -30,6 +30,10 @@
 
 [GameTora全2,488イベントの数値監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)では、2,181イベントについて非スキル効果の匿名・孤立した形状だけを変換した。連続経路の完全性、シナリオ条件、公開承認は別に審査する。
 
+## 2026-10-24：固定GameTora `all_stats` の5能力展開
+
+固定GT実行コードの `all_stats` はスピード・スタミナ・パワー・根性・賢さの5属性に**同じ符号付き値**を適用する。技術用監査では5つの `effects[]` 行へ展開し、元が複合1記載だったことを`sourceBundle:'all_stats'`で保持。スキーマは `sourceBundle` を5能力以外の行へ付けることを拒否する。結果から`core.directEffectRoutes`へ出典由来も伝える。`random_stats`は同一視しない。[固定元コードと全件68記載の監査](phase2-all-stats-five-attributes-20261024.md)。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。

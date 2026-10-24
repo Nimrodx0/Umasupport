@@ -13,6 +13,11 @@ function main(args){
  if(result.summary.rosterCards!==563||result.summary.sourceCards!==559||
     result.summary.sourceEvents!==2488||result.summary.sourceChoices!==4129||
     result.summary.expandedRoutes!==4376||
+    result.summary.allEffectMentions!==13263||
+    result.summary.allStatsMentions!==68||
+    result.summary.allStatsValidMentions!==68||
+    result.summary.allStatsExpandedEffectComponents!==340||
+    result.summary.allStatsInvalidMentions!==0||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||
