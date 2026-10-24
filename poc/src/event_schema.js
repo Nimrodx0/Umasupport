@@ -81,7 +81,7 @@
        fail(e.id+': 特殊イベント発生条件が不正');
      byId.set(e.id,e);
      if(e.type==='choice'){
-       if(e.rewards!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
+       if(e.rewards!==undefined||e.effects!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
        const used=new Set();
        for(const c of e.choices){
          if(!obj(c)||!id(c.id)||!id(c.label)||used.has(c.id)||c.terminal!==undefined&&typeof c.terminal!=='boolean')fail(e.id+': 選択肢が不正・重複');
