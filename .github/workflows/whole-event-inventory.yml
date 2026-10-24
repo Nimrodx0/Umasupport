@@ -66,6 +66,11 @@ on:
       - 'poc/data/curation/adjudicated/30180_special_cornering.v1.json'
       - 'poc/src/phase2_30180_special_overlay.cjs'
       - 'poc/data/curation/adjudicated/phase2_p1_scenario_event_facts.v1.json'
+      - 'poc/src/event_schema.js'
+      - 'poc/src/core.js'
+      - 'poc/src/phase2_mei_overseas_nonskill_preview.cjs'
+      - 'poc/tests/phase2_nonskill_outcome_runtime.test.cjs'
+      - 'poc/tools/audit_phase2_mei_effect_runtime.cjs'
       - 'poc/src/phase2_p1_scenario_event_ledger.cjs'
       - 'poc/tests/phase2_p1_scenario_event_ledger.test.cjs'
       - 'poc/tools/audit_phase2_p1_scenario_events.cjs'
@@ -173,6 +178,12 @@ jobs:
         run: |
           node --test umasupport/poc/tests/phase2_p1_scenario_event_ledger.test.cjs
           node umasupport/poc/tools/audit_phase2_p1_scenario_events.cjs \
+            whole-event-output/whole_event_provisional.v1.json \
+            gt-snapshot/server/data/events/gametora
+      - name: Project R and SSR Mei overseas success tiers into two private non-skill event records
+        run: |
+          node --test umasupport/poc/tests/phase2_nonskill_outcome_runtime.test.cjs
+          node umasupport/poc/tools/audit_phase2_mei_effect_runtime.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
       - name: Triage missing GameTora card records by numeric ID (not a game absence claim)
