@@ -155,8 +155,7 @@ function analyze({documents,index},{strict=false}={}){
       classifiedNonSkillMentions:countsInRoute,
       eligibleScalarEffects:eligible?effects:[],
       quarantinedScalarEffects:eligible?0:numericRows,
-      skippedZeroEffects:countsInRoute-numericRows-
-        (route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===null).length),
+      skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
@@ -172,13 +171,15 @@ function analyze({documents,index},{strict=false}={}){
    // Projection is ISOLATED. The source's arrows/outing predecessors and
    // event availability remain UNVERIFIED, and this must never be published.
    // All source outcomes must be projectable to preserve per-result structure.
-   if(eventEligible){
+   if(eventEligible&&eventHasNonSkill){
     const name='非公開元イベント'+String(ordinal).padStart(3,'0');
     const eid='gt:'+cardId+':'+String(ordinal).padStart(3,'0')+':effect-only';
     const part=x=>{
-     if(x.routeCount===1)return {effects:x.projectedResults[0].effects};
+     if(x.routeCount===1)return x.projectedResults[0].effects.length?
+      {effects:x.projectedResults[0].effects}: {};
      return {outcomes:x.projectedResults.map((route,i)=>({
-      id:'result-'+(i+1),label:'結果'+(i+1),effects:route.effects}))};
+      id:'result-'+(i+1),label:'結果'+(i+1),
+      ...(route.effects.length?{effects:route.effects}:{rewards:[]})}))};
     };
     const isAuto=projectionParts.length===1&&projectionParts[0].sourceLabelWasEmpty;
     const ev={id:eid,name,type:isAuto?'auto':'choice',
@@ -212,7 +213,7 @@ function analyze({documents,index},{strict=false}={}){
   skillById:{}};
  const checked=schema.validateCatalog(catalog,model);
  if(checked.eventsWithRecords!==isolatedPreviewEventRecords||
-    isolatedPreviewEventRecords!==eligibleEvents)fail('スキーマのイベント母数が不一致');
+    isolatedPreviewEventRecords>eligibleEvents)fail('スキーマのイベント母数が不一致');
  let replayed=0;
  for(const entry of projectedCards){
   const routes=core.directEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{
@@ -254,10 +255,10 @@ function projectedResultsAreIncorrect(event,parts){
  if(event.type==='choice')return event.choices.length!==parts.length||
   event.choices.some((p,i)=>parts[i].routeCount>1?
    p.outcomes?.length!==parts[i].routeCount:
-   !Array.isArray(p.effects));
+   !(Array.isArray(p.effects)||p.effects===undefined));
  return parts.length!==1||
   (parts[0].routeCount>1?
    event.outcomes?.length!==parts[0].routeCount:
-   !Array.isArray(event.effects));
+   !(Array.isArray(event.effects)||event.effects===undefined));
 }
 module.exports={analyze};
