@@ -145,6 +145,7 @@ function analyze({documents,index},{strict=false}={}){
       effects.push({kind,delta,...(recipientCharId===undefined?{}:{recipientCharId})});
       numericRows++;
      }
+     if(hasControl)problems.add('CONTROL_MARKERS_REQUIRE_BRANCH_ADJUDICATION');
      const eligible=problems.size===0;
      if(countsInRoute)routesWithNonSkill++;
      if(eligible){eligibleRoutes++;eligibleNumericEffectMentions+=numericRows;}
