@@ -12,6 +12,7 @@ const core=require('./core.js');
 const POLICY=require('../config/event-source-priority.v1.json');
 const fail=s=>{throw Error('GT非スキル全件監査: '+s);};
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const STAT_KINDS=['speed','stamina','power','guts','wisdom'];
 const TYPES=new Set(['speed','stamina','power','guts','wisdom',
  'energy','max_energy','mood','bond','skill_points','aptitude_points']);
 const SKILL_TYPES=new Set(['skill_hint','skill_hint_or','obtain_skill']);
@@ -57,6 +58,9 @@ function analyze({documents,index},{strict=false}={}){
   blockedNumericEffectMentions=0,eligibleNumericEffectMentions=0,
   sourceSkillEffectMentions=0,sourceControlEffectMentions=0,
   unrecognizedEffectMentions=0,invalidRecipientNumericMentions=0,
+  allStatsMentions=0,allStatsValidMentions=0,
+  allStatsInvalidMentions=0,allStatsZeroMentions=0,
+  allStatsExpandedEffectComponents=0,
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
@@ -119,6 +123,26 @@ function analyze({documents,index},{strict=false}={}){
       if(CONTROL_TYPES.has(kind)){
        sourceControlEffectMentions++;hasControl=true;markers.push(kind);
        continue; // Preserve markers for source audit, do not invent chain edges.
+      }
+      if(kind==='all_stats'){
+       allStatsMentions++;eventHasNonSkill=true;countsInRoute++;
+       const value=parseDelta(effect.value);
+       if(value===null||Object.keys(effect).some(k=>!['type','value'].includes(k))){
+        allStatsInvalidMentions++;
+        problems.add('ALL_STATS_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(value===0){allStatsZeroMentions++;continue;}
+       allStatsValidMentions++;
+       for(const statKind of STAT_KINDS){
+        if(duplicates.has(statKind+'|'))
+         problems.add('DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED');
+        duplicates.add(statKind+'|');
+        effects.push({kind:statKind,delta:value,sourceBundle:'all_stats'});
+        numericRows++;
+        allStatsExpandedEffectComponents++;
+       }
+       continue;
       }
       if(!TYPES.has(kind)){
        unrecognizedEffectMentions++;
@@ -205,12 +229,15 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==eligibleRoutes+blockedRoutes||
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
-    allEffectMentions!==recognizedNonSkillMentions+
+    allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
+    allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
+    allStatsExpandedEffectComponents!==5*allStatsValidMentions||
     nonZeroNumericNonSkillMentions+zeroNonSkillMentions!==integerNonSkillMentions||
-    nonZeroNumericNonSkillMentions!==eligibleNumericEffectMentions+
-      blockedNumericEffectMentions+invalidRecipientNumericMentions)
+    nonZeroNumericNonSkillMentions+allStatsExpandedEffectComponents!==
+      eligibleNumericEffectMentions+blockedNumericEffectMentions+
+      invalidRecipientNumericMentions)
   fail('全件母数・効果数の保存則不一致');
  const catalog={schemaVersion:1,cards:projectedCards};
  const model={cards:[...roster.keys()].map(id=>({id})),
@@ -245,6 +272,8 @@ function analyze({documents,index},{strict=false}={}){
    nonZeroNumericNonSkillMentions,zeroNonSkillMentions,
    sourceSkillEffectMentions,sourceControlEffectMentions,
    unrecognizedEffectMentions,invalidRecipientNumericMentions,
+   allStatsMentions,allStatsValidMentions,allStatsInvalidMentions,
+   allStatsZeroMentions,allStatsExpandedEffectComponents,
    routesWithNonSkill,noNonSkillRoutes,eligibleRoutes,blockedRoutes,
    eligibleEvents,blockedEvents,noNonSkillEvents,
    affectedCards:affectedCards.size,
