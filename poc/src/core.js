@@ -186,6 +186,7 @@ function directEffectRoutes(card,config={}){
         ...(outcome?{outcomeId:outcome.id,outcomeLabel:outcome.label}:{}),
         effectKind:effect.kind,delta:effect.delta,
         ...(effect.recipientCharId?{recipientCharId:effect.recipientCharId}:{}),
+        ...(effect.sourceBundle?{sourceBundle:effect.sourceBundle}:{}),
         ...(effect.sourceComponent?{sourceComponent:effect.sourceComponent}:{}),
         conditional:conditions.length>0,
         condition:conditions.length?[...new Set(conditions)].join(' / '):null});
