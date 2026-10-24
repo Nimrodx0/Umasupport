@@ -116,6 +116,60 @@ test('unknown or malformed source cards and mismatched audit population fail clo
   assert.throws(()=>analyze(x),/GT非スキル全件監査/,mutate.toString());
  }
 });
+
+test('source-verified all_stats expands to five distinct signed attributes, never random single stat',()=>{
+ const source=fixture([
+  ev(10,[mk([effect('all_stats','+7'),effect('skill_hint','+1')])]),
+  ev(11,[mk([effect('all_stats','-15')])])
+ ]);
+ const report=analyze(source);
+ assert.equal(report.summary.allEffectMentions,3);
+ assert.equal(report.summary.allStatsMentions,2);
+ assert.equal(report.summary.allStatsValidMentions,2);
+ assert.equal(report.summary.allStatsInvalidMentions,0);
+ assert.equal(report.summary.allStatsExpandedEffectComponents,10);
+ assert.equal(report.summary.unrecognizedEffectMentions,0);
+ assert.equal(report.summary.sourceSkillEffectMentions,1);
+ assert.equal(report.summary.isolatedPreviewEffectRecords,10);
+ assert.equal(report.summary.isolatedPreviewEventRecords,2);
+ const [positive,negative]=report.isolatedPreview.cards[0].events;
+ const expected=['speed','stamina','power','guts','wisdom'];
+ assert.deepEqual(positive.effects.map(x=>x.kind),expected);
+ assert.deepEqual(negative.effects.map(x=>x.kind),expected);
+ assert.deepEqual(positive.effects.map(x=>x.delta),[7,7,7,7,7]);
+ assert.deepEqual(negative.effects.map(x=>x.delta),[-15,-15,-15,-15,-15]);
+ assert.ok([...positive.effects,...negative.effects].every(x=>x.sourceBundle==='all_stats'));
+ const card={id:'30001',events:[positive,negative],hints:[]};
+ const runtime=core.directEffectRoutes(card,{choices:{},outcomes:{}});
+ assert.equal(runtime.length,10);
+ assert.equal(runtime.filter(x=>x.sourceBundle==='all_stats').length,10);
+ assert.equal(core.directRoutes(card,{choices:{},outcomes:{}}).length,0);
+});
+test('all_stats invalid input, duplicate scalar and uncertain values fail closed',()=>{
+ const cases=[
+  [{type:'all_stats',value:'+3/+8'}],
+  [{type:'all_stats',value:'unknown'}],
+  [{type:'all_stats',value:'+2',char_id:1234}],
+  [effect('all_stats','+3'),effect('speed','+5')],
+  [effect('speed','+5'),effect('all_stats','+3')],
+  [effect('all_stats','+3'),effect('all_stats','+4')]
+ ];
+ for(const effects of cases){
+  const x=analyze(fixture([ev(10,[mk(effects)])]));
+  assert.equal(x.summary.blockedEvents,1);
+  assert.equal(x.summary.isolatedPreviewEventRecords,0);
+  assert.ok(Object.keys(x.blockedReasons).length>0);
+ }
+ const zero=analyze(fixture([ev(10,[mk([effect('all_stats','0'),effect('guts','+2')])])]));
+ assert.equal(zero.summary.allStatsZeroMentions,1);
+ assert.equal(zero.summary.isolatedPreviewEffectRecords,1);
+ const model={cards:[{id:'30001'}],cardById:{'30001':{id:'30001'}},skillById:{}};
+ const bad={schemaVersion:1,cards:[{cardId:'30001',events:[{
+  id:'bad',name:'bad',type:'auto',effects:[
+   {kind:'energy',delta:5,sourceBundle:'all_stats'}]}]}]};
+ assert.throws(()=>schema.validateCatalog(bad,model),/イベント検証/);
+});
+
 test('route guards remain an isolated blocker even when their raw scalar is numeric',()=>{
  const x=fixture([ev(1,[{
   label:'',segments:[{when:[{kind:'scripted'}],effects:[
