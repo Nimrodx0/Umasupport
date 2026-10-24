@@ -108,8 +108,8 @@ function analyze({documents,index},{strict=false}={}){
      const effects=[],duplicates=new Set(),markers=[];
      for(const [effectIndex,effect] of route.effects.entries()){
       allEffectMentions++;
-      if(!obj(e)||typeof e.type!=='string')fail('効果レコード形状不正');
-      const kind=e.type;
+      if(!obj(effect)||typeof effect.type!=='string')fail('効果レコード形状不正');
+      const kind=effect.type;
       count(sourceTypeCounts,kind);
       if(SKILL_TYPES.has(kind)){
        sourceSkillEffectMentions++;
@@ -125,7 +125,7 @@ function analyze({documents,index},{strict=false}={}){
       }
       eventHasNonSkill=true;countsInRoute++;
       recognizedNonSkillMentions++;
-      const delta=parseDelta(e.value);
+      const delta=parseDelta(effect.value);
       if(delta===null){
        problems.add('NONSCALAR_OR_INVALID_NUMERIC_VALUE');
        continue;
@@ -133,12 +133,12 @@ function analyze({documents,index},{strict=false}={}){
       integerNonSkillMentions++;
       if(delta===0){zeroNonSkillMentions++;continue;}
       nonZeroNumericNonSkillMentions++;
-      if(e.char_id!==undefined&&
-         (!Number.isSafeInteger(e.char_id)||e.char_id<=0||kind!=='bond')){
+      if(effect.char_id!==undefined&&
+         (!Number.isSafeInteger(effect.char_id)||effect.char_id<=0||kind!=='bond')){
         problems.add('INVALID_OR_NONBOND_RECIPIENT');
         continue;
       }
-      const recipientCharId=e.char_id;
+      const recipientCharId=effect.char_id;
       const k=kind+'|'+(recipientCharId??'');
       if(duplicates.has(k))problems.add('DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED');
       duplicates.add(k);
