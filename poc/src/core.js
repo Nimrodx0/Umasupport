@@ -18,7 +18,8 @@ function reachability(event,choices,events,outcomes={},visiting=new Set()){
   const availabilityLabels={
     'special-trigger':'特殊イベントの発生時',
     'outing-sequence':'お出かけイベントの発生時',
-    'outing-random':'お出かけ中のランダムイベント発生時'
+    'outing-random':'お出かけ中のランダムイベント発生時',
+    'scenario-overseas':'海外遠征中の該当イベントが発生した場合'
   };
   if(event.availabilityKind!==undefined){
     if(!Object.prototype.hasOwnProperty.call(availabilityLabels,event.availabilityKind))
@@ -171,6 +172,52 @@ function directRoutes(card,config){
   }
   return routes;
 }
+// Non-skill effects are separate from directRoutes/aggregate/skill coverage.
+ // Each row is an outcome-specific CONDITIONAL candidate until its selection
+ // and contextual availability are established. Do not infer probabilities.
+function directEffectRoutes(card,config={}){
+  const choices=config.choices||{},outcomes=config.outcomes||{};
+  const events=card.events||[],routes=[];
+  function add(effects,event,choice,outcome,conditions){
+    for(const effect of effects||[]){
+      routes.push({source:'event-effect',cardId:card.id,eventId:event.id,
+        eventName:event.name,
+        ...(choice?{choiceId:choice.id,choiceLabel:choice.label}:{}),
+        ...(outcome?{outcomeId:outcome.id,outcomeLabel:outcome.label}:{}),
+        effectKind:effect.kind,delta:effect.delta,
+        ...(effect.sourceComponent?{sourceComponent:effect.sourceComponent}:{}),
+        conditional:conditions.length>0,
+        condition:conditions.length?[...new Set(conditions)].join(' / '):null});
+    }
+  }
+  function collect(part,event,choice,baseConditions){
+    if(Array.isArray(part.outcomes)&&part.outcomes.length){
+      const picked=outcomes[event.id];
+      if(picked&&!part.outcomes.some(o=>o.id===picked))return;
+      for(const outcome of part.outcomes){
+        if(picked&&picked!==outcome.id)continue;
+        const gate=outcomeReachability(outcome,event,choices,events,outcomes);
+        if(gate.status==='blocked')continue;
+        // An unresolved random result is NEVER an unconditional reward.
+        const conditions=[...baseConditions,...gate.conditions];
+        if(!picked)conditions.push(event.name+'・'+outcome.label+'の結果時');
+        add(outcome.effects,event,choice,outcome,conditions);
+      }
+    }else add(part.effects,event,choice,null,baseConditions);
+  }
+  for(const event of events){
+    const gate=reachability(event,choices,events,outcomes);
+    if(gate.status==='blocked')continue;
+    if(event.type==='choice'){
+      const choice=event.choices?.find(c=>c.id===choices[event.id]);
+      if(!choice)continue;
+      const selectedGate=choiceReachability(choice,event,choices,events,outcomes);
+      if(selectedGate.status==='blocked')continue;
+      collect(choice,event,choice,selectedGate.conditions);
+    }else if(event.type==='auto')collect(event,event,null,gate.conditions);
+  }
+  return routes;
+}
 function aggregate(deck,data){
   const bySkill={};
   // F-04: unique support-card IDs define the count. Slot-indexed routes
@@ -286,7 +333,7 @@ function clearDependentState(card,choices,outcomes,eventId){
 function clearDescendants(card,choices,eventId){
   return clearDependentState(card,choices,{},eventId).choices;
 }
-const core={directRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability,outcomeReachability};
+const core={directRoutes,directEffectRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability,outcomeReachability};
 if(typeof module!=='undefined'&&module.exports)module.exports=core;
 g.UmaCore=core;
 })(typeof globalThis!=='undefined'?globalThis:this);

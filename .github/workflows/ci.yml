@@ -68,6 +68,14 @@ jobs:
           node --check poc/tools/audit_phase2_p1_source_title_join.cjs
           node --test poc/tests/phase2_p1_source_title_join.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Test non-skill event-outcome schema, conditional routing and R/SSR Mei private preview
+        run: |
+          node --check poc/src/event_schema.js
+          node --check poc/src/core.js
+          node --check poc/src/phase2_mei_overseas_nonskill_preview.cjs
+          node --check poc/tools/audit_phase2_mei_effect_runtime.cjs
+          node --test poc/tests/phase2_nonskill_outcome_runtime.test.cjs
+          node poc/tools/verify_event_release.cjs
       - name: Validate L'Arc group replacement and R/SSR Mei overseas scenario review without runtime release
         run: |
           node --check poc/src/phase2_p1_scenario_event_ledger.cjs

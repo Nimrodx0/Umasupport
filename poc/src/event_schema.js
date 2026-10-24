@@ -13,13 +13,33 @@
    if(id(r.eventId)&&Object.keys(r).every(k=>['eventId','choiceId','outcomeId'].includes(k)))return [r]; // old artificial fixtures
    fail(e.id+': requiresは{all:[...]}で指定する');
  }
+ const effectKinds=new Set(['speed','stamina','power','guts','wisdom',
+   'energy','max_energy','mood','bond','skill_points','aptitude_points']);
+ function checkEffects(effects,where){
+   if(effects===undefined)return;
+   if(!Array.isArray(effects)||effects.length===0)
+     fail(where+': 非スキル効果は1件以上必要');
+   const seen=new Set();
+   for(const e of effects){
+     if(!obj(e)||!effectKinds.has(e.kind)||
+        !Number.isSafeInteger(e.delta)||e.delta===0||
+        e.sourceComponent!==undefined&&
+          !['event-result','scenario-bonus'].includes(e.sourceComponent)||
+        Object.keys(e).some(k=>!['kind','delta','sourceComponent'].includes(k)))
+       fail(where+': 非スキル効果の種類・整数値・出典成分が不正');
+     const key=e.kind+'|'+(e.sourceComponent||'');
+     if(seen.has(key))fail(where+': 同じ出典成分の効果を二重計上');
+     seen.add(key);
+   }
+ }
  function checkRewards(part,model,where){
+   checkEffects(part.effects,where);
    // Editorial pending rewards must NEVER enter published/runtime catalogs.
    if(part.unresolvedRewards!==undefined)fail(where+': 未照合報酬は公開イベントに登録できません');
    // A verified result tree is exclusive: alongside unconditional rewards,
    // the same skills could be falsely counted as guaranteed and conditional.
    // Shared rewards must be placed explicitly in each reviewed outcome.
-   if(part.rewards!==undefined&&part.outcomes!==undefined)
+   if((part.rewards!==undefined||part.effects!==undefined)&&part.outcomes!==undefined)
      fail(where+': rewardsとoutcomesは同時指定できません');
    if(part.rewards!==undefined){
      if(!Array.isArray(part.rewards))fail(where+': rewardsが不正');
@@ -39,10 +59,12 @@
      if(!Array.isArray(part.outcomes)||part.outcomes.length<2)fail(where+': outcomesは2種類以上必要');
      const seen=new Set();
      for(const out of part.outcomes){
-       if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||!Array.isArray(out.rewards)||
+       if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||
+          (out.rewards===undefined&&out.effects===undefined)||
+          (out.rewards!==undefined&&!Array.isArray(out.rewards))||
           out.terminal!==undefined&&typeof out.terminal!=='boolean')fail(where+': 結果が不正');
        seen.add(out.id);
-       checkRewards({rewards:out.rewards},model,where+'/'+out.id);
+       checkRewards({rewards:out.rewards,effects:out.effects},model,where+'/'+out.id);
      }
    }
  }
@@ -54,11 +76,12 @@
      // Availability is distinct from prior event choices/results: trigger
      // types must not appear as unconditional guaranteed skill paths.
      if(e.availabilityKind!==undefined&&
-        !['special-trigger','outing-sequence','outing-random'].includes(e.availabilityKind))
+        !['special-trigger','outing-sequence','outing-random',
+          'scenario-overseas'].includes(e.availabilityKind))
        fail(e.id+': 特殊イベント発生条件が不正');
      byId.set(e.id,e);
      if(e.type==='choice'){
-       if(e.rewards!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
+       if(e.rewards!==undefined||e.effects!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
        const used=new Set();
        for(const c of e.choices){
          if(!obj(c)||!id(c.id)||!id(c.label)||used.has(c.id)||c.terminal!==undefined&&typeof c.terminal!=='boolean')fail(e.id+': 選択肢が不正・重複');

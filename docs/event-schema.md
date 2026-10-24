@@ -16,6 +16,14 @@
 
 **到達条件の現在の実装**：結果 `outcomeId` による次段への到達条件も機構として実装済み（後述）。一方、外部ソースの結果依存情報が欠けたイベントを「経路再現済み」とみなすことはできない。PR #106の数値ファクト879件には連続内分岐の検証済み構造がない。
 
+## 2026-10-24：非スキル報酬の分岐付き保持（非公開技術試作）
+
+スキル報酬`rewards[]`は従来の数値スキルIDの候補集計に専用とし、能力値・体力・やる気・絆・スキルPt・適性Ptは**独立した`effects: [{kind,delta,sourceComponent?}]`**で扱う。イベント本体、選択肢、各`outcomes[]`へ記載できる。結果未確定なら複数結果の各効果を**条件付き候補**として残し、獲得済み値には集計しない。
+
+`kind`は`speed`/`stamina`/`power`/`guts`/`wisdom`/`energy`/`max_energy`/`mood`/`bond`/`skill_points`/`aptitude_points`に限定。`delta`は正負の非0整数、`sourceComponent`は`event-result`/`scenario-bonus`または省略。同じ能力への元報酬とシナリオ追加分は別記録とし、同一能力・同一成分の二重登録は拒否。同じ親で`effects`と`outcomes`は併用不可、結果が複数の場合は各結果に必要な成分を置く。
+
+`availabilityKind:'scenario-overseas'`は海外の発生条件を**獲得候補の条件ラベル**として扱うだけで、出現確率はモデル化しない。`UmaCore.directEffectRoutes`はスキル経路と別の結果別一覧を返し、`directRoutes`・`aggregate`に新たなスキル提供枚数を生まない。実出典の一例は[佐岳メイのR/SSR非公開2カード×2結果の検証](phase2-nonskill-outcome-runtime-20261024.md)。**旧非公開2,512件は不変、公開イベント0件**。公開JSONへの転送・正式収録を意味しない。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。
