@@ -23,11 +23,12 @@
    for(const e of effects){
      if(!obj(e)||!effectKinds.has(e.kind)||
         !Number.isSafeInteger(e.delta)||e.delta===0||
+        e.recipientCharId!==undefined&&(!Number.isSafeInteger(e.recipientCharId)||e.recipientCharId<=0)||
         e.sourceComponent!==undefined&&
           !['event-result','scenario-bonus'].includes(e.sourceComponent)||
-        Object.keys(e).some(k=>!['kind','delta','sourceComponent'].includes(k)))
+        Object.keys(e).some(k=>!['kind','delta','sourceComponent','recipientCharId'].includes(k)))
        fail(where+': 非スキル効果の種類・整数値・出典成分が不正');
-     const key=e.kind+'|'+(e.sourceComponent||'');
+     const key=e.kind+'|'+(e.sourceComponent||'')+'|'+(e.recipientCharId??'');
      if(seen.has(key))fail(where+': 同じ出典成分の効果を二重計上');
      seen.add(key);
    }

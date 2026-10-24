@@ -24,6 +24,12 @@
 
 `availabilityKind:'scenario-overseas'`は海外の発生条件を**獲得候補の条件ラベル**として扱うだけで、出現確率はモデル化しない。`UmaCore.directEffectRoutes`はスキル経路と別の結果別一覧を返し、`directRoutes`・`aggregate`に新たなスキル提供枚数を生まない。実出典の一例は[佐岳メイのR/SSR非公開2カード×2結果の検証](phase2-nonskill-outcome-runtime-20261024.md)。**旧非公開2,512件は不変、公開イベント0件**。公開JSONへの転送・正式収録を意味しない。
 
+## 2026-10-24：効果の受け手と全件数値監査
+
+非スキル効果の `effects[]` は `recipientCharId`（正の整数、省略可）を扱う。これは元GameToraの絆 `char_id` の対象を保持する数値であり、キャラクター名を推測しない。同じ種類・成分でも受け手が違えば別の効果。同じ種類・成分・受け手の重複は拒否する。`core.directEffectRoutes` もIDを維持。
+
+[GameTora全2,488イベントの数値監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)では、2,181イベントについて非スキル効果の匿名・孤立した形状だけを変換した。連続経路の完全性、シナリオ条件、公開承認は別に審査する。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。

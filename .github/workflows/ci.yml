@@ -68,6 +68,11 @@ jobs:
           node --check poc/tools/audit_phase2_p1_source_title_join.cjs
           node --test poc/tests/phase2_p1_source_title_join.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Test all-GT non-skill effect source classifier and numeric recipient identity
+        run: |
+          node --check poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs
+          node --check poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs
+          node --test poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs
       - name: Test non-skill event-outcome schema, conditional routing and R/SSR Mei private preview
         run: |
           node --check poc/src/event_schema.js
