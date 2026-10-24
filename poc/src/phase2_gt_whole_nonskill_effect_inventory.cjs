@@ -56,6 +56,7 @@ function analyze({documents,index},{strict=false}={}){
   nonZeroNumericNonSkillMentions=0,zeroNonSkillMentions=0,
   blockedNumericEffectMentions=0,eligibleNumericEffectMentions=0,
   sourceSkillEffectMentions=0,sourceControlEffectMentions=0,
+  unrecognizedEffectMentions=0,invalidRecipientNumericMentions=0,
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
@@ -120,6 +121,7 @@ function analyze({documents,index},{strict=false}={}){
        continue; // Preserve markers for source audit, do not invent chain edges.
       }
       if(!TYPES.has(kind)){
+       unrecognizedEffectMentions++;
        problems.add('UNSUPPORTED_EFFECT_TYPE');
        continue;
       }
@@ -136,6 +138,7 @@ function analyze({documents,index},{strict=false}={}){
       if(effect.char_id!==undefined&&
          (!Number.isSafeInteger(effect.char_id)||effect.char_id<=0||kind!=='bond')){
         problems.add('INVALID_OR_NONBOND_RECIPIENT');
+        invalidRecipientNumericMentions++;
         continue;
       }
       const recipientCharId=effect.char_id;
@@ -202,11 +205,12 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==eligibleRoutes+blockedRoutes||
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
-    recognizedNonSkillMentions!==integerNonSkillMentions+
-     (recognizedNonSkillMentions-integerNonSkillMentions)||
+    allEffectMentions!==recognizedNonSkillMentions+
+      sourceSkillEffectMentions+sourceControlEffectMentions+
+      unrecognizedEffectMentions||
     nonZeroNumericNonSkillMentions+zeroNonSkillMentions!==integerNonSkillMentions||
-    eligibleNumericEffectMentions+blockedNumericEffectMentions>
-       nonZeroNumericNonSkillMentions)
+    nonZeroNumericNonSkillMentions!==eligibleNumericEffectMentions+
+      blockedNumericEffectMentions+invalidRecipientNumericMentions)
   fail('全件母数・効果数の保存則不一致');
  const catalog={schemaVersion:1,cards:projectedCards};
  const model={cards:[...roster.keys()].map(id=>({id})),
@@ -240,6 +244,7 @@ function analyze({documents,index},{strict=false}={}){
    recognizedNonSkillMentions,integerNonSkillMentions,
    nonZeroNumericNonSkillMentions,zeroNonSkillMentions,
    sourceSkillEffectMentions,sourceControlEffectMentions,
+   unrecognizedEffectMentions,invalidRecipientNumericMentions,
    routesWithNonSkill,noNonSkillRoutes,eligibleRoutes,blockedRoutes,
    eligibleEvents,blockedEvents,noNonSkillEvents,
    affectedCards:affectedCards.size,
