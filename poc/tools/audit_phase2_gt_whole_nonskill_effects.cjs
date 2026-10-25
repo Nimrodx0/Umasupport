@@ -36,7 +36,8 @@ function main(args){
     result.chainTopologyVerified!==false||
     result.sourceProseIncluded!==false||
     result.summary.publishedEventRecords!==0)
-  fail('固定全母数・無公開／無自動導入ゲートが不一致');
+  fail('固定全母数・無公開／無自動導入ゲートが不一致 '+
+    JSON.stringify({summary:result.summary,blockers:result.blockedReasons}));
  fs.mkdirSync(path.dirname(outPath),{recursive:true});
  fs.writeFileSync(outPath,JSON.stringify(result,null,2)+'\n');
  console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY='+JSON.stringify(result.summary));
