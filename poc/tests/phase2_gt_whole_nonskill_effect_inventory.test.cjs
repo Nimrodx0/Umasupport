@@ -74,7 +74,7 @@ test('explicit random_either result groups preserve alternatives, and choice is 
   outcomes:{[event.id]:'result-1'}});
  assert.deepEqual(success.map(x=>x.delta),[4,10]);
 });
-test('conditional segments, duplicated recipient, undecodable values and unknown effect codes are quarantined',()=>{
+test('separate ordered duplicate recipients survive while unknown codes, ranges and unflagged choices stay quarantined',()=>{
  const parts=[
   ev(1,[mk([effect('bond','+5',1003),effect('bond','+2',1003)])]),
   ev(2,[mk([effect('sga','+1'),effect('guts','+2')])]),
@@ -88,12 +88,14 @@ test('conditional segments, duplicated recipient, undecodable values and unknown
  const r=analyze(fixture(parts));
  assert.equal(r.summary.sourceEvents,6);
  assert.equal(r.summary.expandedRoutes,8);
- assert.equal(r.summary.blockedEvents,5);
- assert.equal(r.summary.eligibleEvents,1);
- assert.equal(r.summary.isolatedPreviewEventRecords,1);
+ assert.equal(r.summary.blockedEvents,4);
+ assert.equal(r.summary.eligibleEvents,2);
+ assert.equal(r.summary.isolatedPreviewEventRecords,2);
  assert.equal(r.summary.zeroNonSkillMentions,1);
- assert.equal(r.summary.isolatedPreviewEffectRecords,1);
- assert.ok(r.blockedReasons.DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED>0);
+ assert.equal(r.summary.isolatedPreviewEffectRecords,3);
+ assert.equal(r.summary.isolatedOrderedRepeatedNumericMentions,1);
+ assert.deepEqual(r.isolatedPreview.cards[0].events[0].effects.map(e=>e.sourceEffectOrdinal),[1,2]);
+ assert.equal(r.blockedReasons.DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED,undefined);
  assert.ok(r.blockedReasons.UNSUPPORTED_EFFECT_TYPE>0);
  assert.ok(r.blockedReasons.NONSCALAR_OR_INVALID_NUMERIC_VALUE>0);
  assert.ok(r.blockedReasons.CONDITIONAL_SEGMENTS_NOT_MODELED>0);
