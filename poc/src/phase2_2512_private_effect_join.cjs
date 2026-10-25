@@ -229,18 +229,19 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords<2288||
+    effectInventory.summary.isolatedPreviewEventRecords!==2306||
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
-    candidateEvents!==effectInventory.summary.isolatedPreviewEventRecords||
-    exactEventIdentityMatched!==candidateEvents||
-    joinedEvents!==candidateEvents||joinedEffects<10338||
-    joinedStatuses<86||joinedDynamic<1||
-    unchangedEvents!==2512-joinedEvents||touchedCards.size!==559||
-    Object.keys(blocked).length!==0||reviewPositions.length!==0))
+    candidateEvents!==2306||exactEventIdentityMatched!==2306||
+    joinedEvents!==2305||joinedEffects!==10384||
+    joinedStatuses!==88||joinedDynamic<1||
+    unchangedEvents!==207||touchedCards.size!==559||
+    blocked.EVENT_TYPE_MISMATCH!==1||
+    Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
+    reviewPositions.length!==1))
   fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
-    joinedStatuses,unchangedEvents,touchedCards:touchedCards.size,blocked}));
+    joinedStatuses,joinedDynamic,unchangedEvents,touchedCards:touchedCards.size,blocked,reviewPositions}));
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
  let cardChecks=0;
