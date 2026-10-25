@@ -89,7 +89,12 @@ function mergeEvent(skill,eff){
  for(const p of parts){
   const leaves=p.outcomes||[p];
   for(const leaf of leaves){
-   const {effect}=matches[slot++];
+   const {effect,skill:skillLeaf}=matches[slot++];
+   // Both source and skill-only runtime must agree which exact result ends
+   // a support chain. Never copy an effect from an early-exit result to
+   // a continuing result or vice versa.
+   if((effect.terminal===true)!==(skillLeaf.terminal===true))
+    return {event:null,reason:'SOURCE_TERMINAL_MISMATCH'};
    if(leaf.effects!==undefined||leaf.statusEffects!==undefined||
       leaf.dynamicEffects!==undefined||
       leaf.unresolvedRewards!==undefined)
