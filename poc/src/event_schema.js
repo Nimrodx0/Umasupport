@@ -62,6 +62,7 @@
  }
  function checkRewards(part,model,where){
    checkEffects(part.effects,where);
+   checkStatusEffects(part.statusEffects,where);
    // Editorial pending rewards must NEVER enter published/runtime catalogs.
    if(part.unresolvedRewards!==undefined)fail(where+': 未照合報酬は公開イベントに登録できません');
    // A verified result tree is exclusive: alongside unconditional rewards,
