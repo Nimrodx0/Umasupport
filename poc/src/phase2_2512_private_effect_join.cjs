@@ -234,11 +234,14 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     originalEvents.size!==2512||
     candidateEvents!==2306||exactEventIdentityMatched!==2306||
     joinedEvents!==2305||joinedEffects!==10384||
-    joinedStatuses!==88||joinedDynamic<1||
+    joinedStatuses!==88||joinedDynamic!==17||
     unchangedEvents!==207||touchedCards.size!==559||
     blocked.EVENT_TYPE_MISMATCH!==1||
     Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
-    reviewPositions.length!==1))
+    reviewPositions.length!==1||
+    reviewPositions[0]?.cardId!=='30080'||
+    reviewPositions[0]?.sourceOrdinal!==6||
+    reviewPositions[0]?.reason!=='EVENT_TYPE_MISMATCH'))
   fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
     joinedStatuses,joinedDynamic,unchangedEvents,touchedCards:touchedCards.size,blocked,reviewPositions}));
