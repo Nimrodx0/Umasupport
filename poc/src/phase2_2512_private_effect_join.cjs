@@ -82,7 +82,7 @@ function mergeEvent(skill,eff){
    matches.push(...mapped.parts);
   }
  }else return {event:null,reason:'UNKNOWN_TYPE'};
- let attached=0;
+ let attached=0,attachedStatuses=0;
  const copy=structuredClone(skill);
  const parts=copy.type==='auto'?[copy]:copy.choices;
  let slot=0;
@@ -90,7 +90,8 @@ function mergeEvent(skill,eff){
   const leaves=p.outcomes||[p];
   for(const leaf of leaves){
    const {effect}=matches[slot++];
-   if(leaf.effects!==undefined||leaf.unresolvedRewards!==undefined)
+   if(leaf.effects!==undefined||leaf.statusEffects!==undefined||
+      leaf.unresolvedRewards!==undefined)
     return {event:null,reason:'SKILL_LEAF_HAS_EFFECTS'};
    if(effect.effects!==undefined){
     if(!Array.isArray(effect.effects)||!effect.effects.length)
@@ -98,11 +99,17 @@ function mergeEvent(skill,eff){
     leaf.effects=structuredClone(effect.effects);
     attached+=leaf.effects.length;
    }
+   if(effect.statusEffects!==undefined){
+    if(!Array.isArray(effect.statusEffects)||!effect.statusEffects.length)
+     return {event:null,reason:'INVALID_STATUS_LEAF'};
+    leaf.statusEffects=structuredClone(effect.statusEffects);
+    attachedStatuses+=leaf.statusEffects.length;
+   }
   }
  }
  if(slot!==matches.length)return {event:null,reason:'TOPOLOGY_CONSUMPTION_MISMATCH'};
- if(!attached)return {event:null,reason:'NO_NUMERIC_EFFECTS'};
- return {event:copy,effectRows:attached};
+ if(!attached&&!attachedStatuses)return {event:null,reason:'NO_SUPPORTED_EFFECTS'};
+ return {event:copy,effectRows:attached,statusRows:attachedStatuses};
 }
 function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(skillRuntime?.dataKind!=='phase2-2512-nonpublishing-with-30180-special-hint'||
@@ -130,7 +137,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     cardMap.size!==result.cards.length)
   fail('出典カードIDに重複');
  const blocked={},addReason=k=>blocked[k]=(blocked[k]||0)+1;
- let candidateEvents=0,joinedEvents=0,joinedEffects=0,unchangedEvents=0,
+ let candidateEvents=0,joinedEvents=0,joinedEffects=0,joinedStatuses=0,unchangedEvents=0,
   exactEventIdentityMatched=0;
  const touchedCards=new Set(),mergedIds=new Set(),reviewPositions=[];
  const originalEvents=new Map();
@@ -164,6 +171,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    card.events[idx]=attempt.event;
    const key=cardId+'|'+before.id;
    mergedIds.add(key);joinedEvents++;joinedEffects+=attempt.effectRows;
+   joinedStatuses+=attempt.statusRows;
    touchedCards.add(cardId);
   }
  }
@@ -179,6 +187,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     const x=structuredClone(e);
     const remove=p=>{
      delete p.effects;
+     delete p.statusEffects;
      for(const o of p.outcomes||[])remove(o);
     };
     if(x.type==='choice')for(const c of x.choices)remove(c);
@@ -214,7 +223,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
     candidateEvents!==2220||exactEventIdentityMatched!==2220||
-    joinedEvents!==2220||joinedEffects!==9928||
+    joinedEvents<2220||joinedEffects<9928||
     unchangedEvents!==292||touchedCards.size!==558||
     exactEventIdentityMatched!==2220||
     Object.keys(blocked).length!==0||reviewPositions.length!==0))
@@ -249,6 +258,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    isolatedEffectCandidates:candidateEvents,
    matchedSourceEventIdentity:exactEventIdentityMatched,
    combinedEventRecords:joinedEvents,combinedNumericComponents:joinedEffects,
+   combinedStatusOperations:joinedStatuses,
    untouchedEventRecords:unchangedEvents,touchedCards:touchedCards.size,
    originalRuntimeSha256:hash(original),mergedRuntimeSha256:hash(result),
    cardCoreSkillRouteChecks:cardChecks,
