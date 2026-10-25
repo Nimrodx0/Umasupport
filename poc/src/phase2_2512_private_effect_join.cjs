@@ -229,14 +229,13 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords<2306||
+    effectInventory.summary.isolatedPreviewEventRecords!==2309||
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
-    candidateEvents!==effectInventory.summary.isolatedPreviewEventRecords||
-    exactEventIdentityMatched!==candidateEvents||
-    joinedEvents<candidateEvents-1||joinedEffects<10384||
-    joinedStatuses<88||joinedDynamic<17||
-    unchangedEvents!==2512-joinedEvents||touchedCards.size!==559||
+    candidateEvents!==2309||exactEventIdentityMatched!==2309||
+    joinedEvents!==2308||joinedEffects!==10413||
+    joinedStatuses!==88||joinedDynamic!==22||
+    unchangedEvents!==204||touchedCards.size!==559||
     blocked.EVENT_TYPE_MISMATCH!==1||
     Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
     reviewPositions.length!==1||
