@@ -232,9 +232,6 @@ function directStatusRoutes(card,config={}){
         statusKind:effect.kind,possible:true,
          ...(effect.conditionId?{conditionId:effect.conditionId}:{}),
          ...(effect.chance!==undefined?{chance:effect.chance}:{}),
-        ...(effect.recipientCharId?{recipientCharId:effect.recipientCharId}:{}),
-        ...(effect.sourceBundle?{sourceBundle:effect.sourceBundle}:{}),
-        ...(effect.sourceComponent?{sourceComponent:effect.sourceComponent}:{}),
         conditional:true,
         condition:[...new Set([...conditions,'状態操作の適用条件・確率は未保証'])].join(' / ')});
     }
