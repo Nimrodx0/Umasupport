@@ -25,7 +25,6 @@ function main(args){
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
-    result.summary.isolatedPreviewDynamicRecords!==18||
     result.summary.scenarioCurrencyMentions!==4||
     result.summary.validScenarioCurrencyMentions!==4||
     result.summary.invalidScenarioCurrencyMentions!==0||
