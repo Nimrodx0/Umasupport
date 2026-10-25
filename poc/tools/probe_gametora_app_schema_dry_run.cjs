@@ -223,6 +223,41 @@ function main(args){
      publicCatalogUnchanged:true
     }));
 
+    if(process.env.UMASUPPORT_GT_NONSKILL_EFFECT_PRIVATE_FILE){
+     const evidence=JSON.parse(fs.readFileSync(
+      path.resolve(process.env.UMASUPPORT_GT_NONSKILL_EFFECT_PRIVATE_FILE),'utf8'));
+     const {assemble:join}=require('../src/phase2_2512_private_effect_join.cjs');
+     const merged=join({skillRuntime:withSpecial,effectInventory:evidence},{strict:true});
+     const publicCatalog=require('../src/public_event_catalog.js');
+     const core=require('../src/core.js');
+     const {summary}=publicCatalog.preflight(model,merged.catalog,{
+      skillText:result.dryRunMergedSkillText,fullRegistry:false});
+     if(summary.eventsWithRecords!==2512)fail('非スキル統合後の全件preflight失敗');
+     const disposable=JSON.parse(JSON.stringify(model));
+     disposable.cards=disposable.cards.map(c=>disposable.cardById[c.id]||c);
+     const attached=publicCatalog.attach(disposable,merged.catalog,{
+      skillText:result.dryRunMergedSkillText,fullRegistry:false});
+     if(attached.eventsWithRecords!==2512)fail('非スキル統合後の本番attach失敗');
+     let liveEffects=0;
+     for(const card of disposable.cards){
+      const config={stage:4,choices:{},outcomes:{}};
+      for(const e of card.events||[]){
+       if(e.type==='choice'){
+        config.choices[e.id]=e.choices[0].id;
+        if(e.choices[0].outcomes?.length)
+         config.outcomes[e.id]=e.choices[0].outcomes[0].id;
+       }else if(e.outcomes?.length)config.outcomes[e.id]=e.outcomes[0].id;
+      }
+      liveEffects+=core.directEffectRoutes(card,config).length;
+     }
+     if(!liveEffects||merged.summary.combinedEventRecords<=0)
+      fail('本番コアに数値効果を再生できません');
+     console.log('PHASE2_2512_MERGED_SKILL_NONSKILL_AUDIT='+JSON.stringify({
+      ...merged.summary,productionLoaderEvents:attached.eventsWithRecords,
+      sampledProductionEffectRoutes:liveEffects,publicEventsAdded:0}));
+    }
+
+
    }
   }
   // No source titles or unapproved runtime catalog are printed or written.
