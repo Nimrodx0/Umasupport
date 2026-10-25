@@ -34,6 +34,10 @@
 
 固定GT実行コードの `all_stats` はスピード・スタミナ・パワー・根性・賢さの5属性に**同じ符号付き値**を適用する。技術用監査では5つの `effects[]` 行へ展開し、元が複合1記載だったことを`sourceBundle:'all_stats'`で保持。スキーマは `sourceBundle` を5能力以外の行へ付けることを拒否する。結果から`core.directEffectRoutes`へ出典由来も伝える。`random_stats`は同一視しない。[固定元コードと全件68記載の監査](phase2-all-stats-five-attributes-20261024.md)。
 
+## 2026-10-25：スキルと非スキルの同一イベント内結合（非公開）
+
+固定GTのカードID＋元イベント位置、選択肢ID・元結果の番号が**完全に追跡できる場合だけ**、従来の`rewards`（スキル獲得候補）と`effects`（非スキル効果）を同じイベントの結果に保持する。既存`requires`／`terminal`／`availabilityKind`／各報酬は不変。元`skill_hint_or`等で一方だけ結果数が増えた場合も、`route-NN-or-M`の元番号・派生番号が連続しており、各候補の元結果が一意なら元の非スキル効果を各候補へ保持する。候補は排他的で、同時取得として合算しない。元番号が確認できない場合は統合を保留。実測結果・未公開ゲートは[統合監査](phase2-private-2512-skill-nonskill-join-20261025.md)。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。

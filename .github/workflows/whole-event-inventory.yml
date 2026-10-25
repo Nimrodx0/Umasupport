@@ -68,6 +68,8 @@ on:
       - 'poc/data/curation/adjudicated/phase2_p1_scenario_event_facts.v1.json'
       - 'poc/src/event_schema.js'
       - 'poc/src/core.js'
+      - 'poc/src/phase2_2512_private_effect_join.cjs'
+      - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
       - 'poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs'
       - 'poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs'
       - 'poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs'
@@ -338,6 +340,8 @@ jobs:
         run: node --test umasupport/poc/tests/gametora_publication_review_queue.test.cjs
       - name: Verify synthetic ordinal-and-SHA event title binding
         run: node --test umasupport/poc/tests/gametora_short_event_title_intake.test.cjs
+      - name: Verify skill/non-skill GT ordinal join with outcome and chain gating
+        run: node --test umasupport/poc/tests/phase2_2512_private_effect_join.test.cjs
       - name: Verify synthetic source-to-runtime app schema conversion
         run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
       - name: Independently freeze current UmaSim and curated IDs without 2025 historical preview
@@ -362,6 +366,7 @@ jobs:
         env:
           UMASUPPORT_GT_EVENT_DIR: gt-snapshot/server/data/events/gametora
           UMASUPPORT_GT_BASELINE_REPORT: whole-event-output/gametora_app_schema_no_historical.v1.json
+          UMASUPPORT_GT_NONSKILL_EFFECT_PRIVATE_FILE: whole-event-output/phase2_gt_nonskill_effects_private.v1.json
           UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT: whole-event-output/gametora_unsigned_release_review.v1.json
           UMASUPPORT_GT_CROSS_SOURCE_QUEUE: whole-event-output/phase2_completeness_exceptions.v1.json
           UMASUPPORT_GT_TRIAGE_OUTPUT: whole-event-output/phase2_cross_source_release_triage.v1.json
