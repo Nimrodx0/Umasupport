@@ -87,3 +87,4 @@
 - [Phase 2・GTランダム能力値18記載の対象未確定処理と2,306件の数値・状態構造化](phase2-gt-random-stat-targets-20261025.md)
 - [Phase 2・GTグランドライブ最少パフォーマンスと最大体力までの回復：2,309件の非公開構造化](phase2-grand-live-lowest-and-full-energy-20261025.md)
 - [Phase 2・GT連続イベント結果別打ち切り109記載の厳格照合と2,395件の非公開構造化](phase2-gt-chain-end-outcome-proof-20261025.md)
+- [Phase 2・GTの同一対象への複数数値効果を元出典の順序で保持し2,402件を構造化](phase2-gt-ordered-repeated-numeric-effects-20261026.md)
