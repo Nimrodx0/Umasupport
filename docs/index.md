@@ -84,3 +84,4 @@
 - [Phase 2・GameTora固定 `all_stats` 68記載の5能力展開と2,220件の構造試作](phase2-all-stats-five-attributes-20261024.md)
 - [Phase 2・非公開2,512件へGT非スキル2,220件を元結果の番号照合で結合](phase2-private-2512-skill-nonskill-join-20261025.md)
 - [Phase 2・固定GT121状態操作を候補として分岐に導入し、非スキル構造2,288件へ拡張](phase2-gt-status-operation-adoption-20261025.md)
+- [Phase 2・GTランダム能力値18記載の対象未確定処理と2,306件の数値・状態構造化](phase2-gt-random-stat-targets-20261025.md)

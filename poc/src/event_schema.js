@@ -60,16 +60,36 @@
      seen.add(key);
    }
  }
+
+ // A random-stat outcome changes N distinct attributes, not N guaranteed
+ // named stats. This cannot be represented as ordinary numeric effects.
+ function checkDynamicEffects(dynamicEffects,where){
+   if(dynamicEffects===undefined)return;
+   if(!Array.isArray(dynamicEffects)||dynamicEffects.length===0)
+     fail(where+': 対象未確定の能力値効果は1件以上必要');
+   const seen=new Set();
+   for(const e of dynamicEffects){
+     if(!obj(e)||e.kind!=='random-stats'||
+        !Number.isSafeInteger(e.delta)||e.delta===0||
+        !Number.isSafeInteger(e.statCount)||e.statCount<1||e.statCount>5||
+        e.targetSelection!=='random-distinct'||
+        Object.keys(e).some(k=>!['kind','delta','statCount','targetSelection'].includes(k)))
+       fail(where+': ランダムな能力変化の整数・対象数・未確定方式が不正');
+     if(seen.has(e.kind))fail(where+': 同じ結果の複数ランダム能力変化は未裁定');
+     seen.add(e.kind);
+   }
+ }
  function checkRewards(part,model,where){
    checkEffects(part.effects,where);
    checkStatusEffects(part.statusEffects,where);
+   checkDynamicEffects(part.dynamicEffects,where);
    // Editorial pending rewards must NEVER enter published/runtime catalogs.
    if(part.unresolvedRewards!==undefined)fail(where+': 未照合報酬は公開イベントに登録できません');
    // A verified result tree is exclusive: alongside unconditional rewards,
    // the same skills could be falsely counted as guaranteed and conditional.
    // Shared rewards must be placed explicitly in each reviewed outcome.
    if((part.rewards!==undefined||part.effects!==undefined||
-        part.statusEffects!==undefined)&&part.outcomes!==undefined)
+        part.statusEffects!==undefined||part.dynamicEffects!==undefined)&&part.outcomes!==undefined)
      fail(where+': rewardsとoutcomesは同時指定できません');
    if(part.rewards!==undefined){
      if(!Array.isArray(part.rewards))fail(where+': rewardsが不正');
@@ -90,12 +110,13 @@
      const seen=new Set();
      for(const out of part.outcomes){
        if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||
-          (out.rewards===undefined&&out.effects===undefined&&out.statusEffects===undefined)||
+          (out.rewards===undefined&&out.effects===undefined&&
+            out.statusEffects===undefined&&out.dynamicEffects===undefined)||
           (out.rewards!==undefined&&!Array.isArray(out.rewards))||
           out.terminal!==undefined&&typeof out.terminal!=='boolean')fail(where+': 結果が不正');
        seen.add(out.id);
        checkRewards({rewards:out.rewards,effects:out.effects,
-          statusEffects:out.statusEffects},model,where+'/'+out.id);
+          statusEffects:out.statusEffects,dynamicEffects:out.dynamicEffects},model,where+'/'+out.id);
      }
    }
  }
@@ -113,7 +134,7 @@
      byId.set(e.id,e);
      if(e.type==='choice'){
        if(e.rewards!==undefined||e.effects!==undefined||e.statusEffects!==undefined||
-           e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
+           e.dynamicEffects!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
        const used=new Set();
        for(const c of e.choices){
          if(!obj(c)||!id(c.id)||!id(c.label)||used.has(c.id)||c.terminal!==undefined&&typeof c.terminal!=='boolean')fail(e.id+': 選択肢が不正・重複');

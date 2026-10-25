@@ -82,7 +82,7 @@ function mergeEvent(skill,eff){
    matches.push(...mapped.parts);
   }
  }else return {event:null,reason:'UNKNOWN_TYPE'};
- let attached=0,attachedStatuses=0;
+ let attached=0,attachedStatuses=0,attachedDynamic=0;
  const copy=structuredClone(skill);
  const parts=copy.type==='auto'?[copy]:copy.choices;
  let slot=0;
@@ -91,6 +91,7 @@ function mergeEvent(skill,eff){
   for(const leaf of leaves){
    const {effect}=matches[slot++];
    if(leaf.effects!==undefined||leaf.statusEffects!==undefined||
+      leaf.dynamicEffects!==undefined||
       leaf.unresolvedRewards!==undefined)
     return {event:null,reason:'SKILL_LEAF_HAS_EFFECTS'};
    if(effect.effects!==undefined){
@@ -105,11 +106,18 @@ function mergeEvent(skill,eff){
     leaf.statusEffects=structuredClone(effect.statusEffects);
     attachedStatuses+=leaf.statusEffects.length;
    }
+   if(effect.dynamicEffects!==undefined){
+    if(!Array.isArray(effect.dynamicEffects)||!effect.dynamicEffects.length)
+     return {event:null,reason:'INVALID_DYNAMIC_LEAF'};
+    leaf.dynamicEffects=structuredClone(effect.dynamicEffects);
+    attachedDynamic+=leaf.dynamicEffects.length;
+   }
   }
  }
  if(slot!==matches.length)return {event:null,reason:'TOPOLOGY_CONSUMPTION_MISMATCH'};
- if(!attached&&!attachedStatuses)return {event:null,reason:'NO_SUPPORTED_EFFECTS'};
- return {event:copy,effectRows:attached,statusRows:attachedStatuses};
+ if(!attached&&!attachedStatuses&&!attachedDynamic)return {event:null,reason:'NO_SUPPORTED_EFFECTS'};
+ return {event:copy,effectRows:attached,statusRows:attachedStatuses,
+  dynamicRows:attachedDynamic};
 }
 function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(skillRuntime?.dataKind!=='phase2-2512-nonpublishing-with-30180-special-hint'||
@@ -137,7 +145,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     cardMap.size!==result.cards.length)
   fail('出典カードIDに重複');
  const blocked={},addReason=k=>blocked[k]=(blocked[k]||0)+1;
- let candidateEvents=0,joinedEvents=0,joinedEffects=0,joinedStatuses=0,unchangedEvents=0,
+ let candidateEvents=0,joinedEvents=0,joinedEffects=0,joinedStatuses=0,joinedDynamic=0,unchangedEvents=0,
   exactEventIdentityMatched=0;
  const touchedCards=new Set(),mergedIds=new Set(),reviewPositions=[];
  const originalEvents=new Map();
@@ -172,6 +180,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    const key=cardId+'|'+before.id;
    mergedIds.add(key);joinedEvents++;joinedEffects+=attempt.effectRows;
    joinedStatuses+=attempt.statusRows;
+   joinedDynamic+=attempt.dynamicRows;
    touchedCards.add(cardId);
   }
  }
@@ -188,6 +197,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     const remove=p=>{
      delete p.effects;
      delete p.statusEffects;
+     delete p.dynamicEffects;
      for(const o of p.outcomes||[])remove(o);
     };
     if(x.type==='choice')for(const c of x.choices)remove(c);
@@ -219,16 +229,22 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords!==2288||
+    effectInventory.summary.isolatedPreviewEventRecords!==2306||
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
-    candidateEvents!==2288||exactEventIdentityMatched!==2288||
-    joinedEvents!==2288||joinedEffects!==10338||joinedStatuses!==86||
-    unchangedEvents!==224||touchedCards.size!==559||
-    Object.keys(blocked).length!==0||reviewPositions.length!==0))
+    candidateEvents!==2306||exactEventIdentityMatched!==2306||
+    joinedEvents!==2305||joinedEffects!==10384||
+    joinedStatuses!==88||joinedDynamic!==17||
+    unchangedEvents!==207||touchedCards.size!==559||
+    blocked.EVENT_TYPE_MISMATCH!==1||
+    Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
+    reviewPositions.length!==1||
+    reviewPositions[0]?.cardId!=='30080'||
+    reviewPositions[0]?.sourceOrdinal!==6||
+    reviewPositions[0]?.reason!=='EVENT_TYPE_MISMATCH'))
   fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
-    joinedStatuses,unchangedEvents,touchedCards:touchedCards.size,blocked}));
+    joinedStatuses,joinedDynamic,unchangedEvents,touchedCards:touchedCards.size,blocked,reviewPositions}));
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
  let cardChecks=0;
@@ -260,6 +276,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    matchedSourceEventIdentity:exactEventIdentityMatched,
    combinedEventRecords:joinedEvents,combinedNumericComponents:joinedEffects,
    combinedStatusOperations:joinedStatuses,
+   combinedDynamicOperations:joinedDynamic,
    untouchedEventRecords:unchangedEvents,touchedCards:touchedCards.size,
    originalRuntimeSha256:hash(original),mergedRuntimeSha256:hash(result),
    cardCoreSkillRouteChecks:cardChecks,

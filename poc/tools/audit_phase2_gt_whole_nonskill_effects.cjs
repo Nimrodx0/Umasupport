@@ -21,10 +21,14 @@ function main(args){
     result.summary.statusSourceMentions!==121||
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
-    result.summary.isolatedPreviewStatusRecords!==86||
-    result.summary.isolatedPreviewEventRecords!==2288||
-    result.summary.blockedEvents!==200||
-    result.summary.unrecognizedEffectMentions!==113||
+    result.summary.isolatedPreviewStatusRecords!==88||
+    result.summary.randomStatMentions!==18||
+    result.summary.validRandomStatMentions!==18||
+    result.summary.invalidRandomStatMentions!==0||
+    result.summary.isolatedPreviewDynamicRecords!==18||
+    result.summary.isolatedPreviewEventRecords!==2306||
+    result.summary.blockedEvents!==182||
+    result.summary.unrecognizedEffectMentions!==95||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||
