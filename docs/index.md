@@ -85,3 +85,4 @@
 - [Phase 2・非公開2,512件へGT非スキル2,220件を元結果の番号照合で結合](phase2-private-2512-skill-nonskill-join-20261025.md)
 - [Phase 2・固定GT121状態操作を候補として分岐に導入し、非スキル構造2,288件へ拡張](phase2-gt-status-operation-adoption-20261025.md)
 - [Phase 2・GTランダム能力値18記載の対象未確定処理と2,306件の数値・状態構造化](phase2-gt-random-stat-targets-20261025.md)
+- [Phase 2・GTグランドライブ最少パフォーマンスと最大体力までの回復：2,309件の非公開構造化](phase2-grand-live-lowest-and-full-energy-20261025.md)

@@ -69,13 +69,24 @@
      fail(where+': 対象未確定の能力値効果は1件以上必要');
    const seen=new Set();
    for(const e of dynamicEffects){
-     if(!obj(e)||e.kind!=='random-stats'||
-        !Number.isSafeInteger(e.delta)||e.delta===0||
-        !Number.isSafeInteger(e.statCount)||e.statCount<1||e.statCount>5||
-        e.targetSelection!=='random-distinct'||
-        Object.keys(e).some(k=>!['kind','delta','statCount','targetSelection'].includes(k)))
-       fail(where+': ランダムな能力変化の整数・対象数・未確定方式が不正');
-     if(seen.has(e.kind))fail(where+': 同じ結果の複数ランダム能力変化は未裁定');
+     if(!obj(e))fail(where+': 動的報酬はオブジェクト');
+     const only=keys=>Object.keys(e).every(k=>keys.includes(k));
+     const signed=Number.isSafeInteger(e.delta)&&e.delta!==0;
+     const ok=e.kind==='random-stats'?
+       signed&&Number.isSafeInteger(e.statCount)&&
+         e.statCount>=1&&e.statCount<=5&&
+         e.targetSelection==='random-distinct'&&
+         only(['kind','delta','statCount','targetSelection']):
+       e.kind==='grand-live-lowest-performance'?
+         signed&&e.possible===true&&e.scenario==='grand-live'&&
+         e.targetSelection==='lowest-performance-at-runtime'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='restore-current-max-energy'?
+         e.possible===true&&e.targetSelection==='current-max-energy'&&
+         only(['kind','possible','targetSelection']):
+       false;
+     if(!ok)fail(where+': 動的報酬の値・シナリオ・ターゲット方式が不正');
+     if(seen.has(e.kind))fail(where+': 同じ結果の複数動的報酬は未裁定');
      seen.add(e.kind);
    }
  }

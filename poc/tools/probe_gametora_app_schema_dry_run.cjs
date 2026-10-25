@@ -255,7 +255,8 @@ function main(args){
        fail('状態候補が確定報酬として表示されました');
       liveStatusOperations+=statuses.length;
       const dynamic=core.directDynamicEffectRoutes(card,config);
-      if(dynamic.some(r=>!r.unresolvedTargets||r.targetSelection!=='random-distinct'||
+      if(dynamic.some(r=>!r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
+           'current-max-energy'].includes(r.targetSelection)||
           r.source!=='event-dynamic-effect'||r.conditional!==true))
        fail('ランダム能力値の対象が確定値に混入した');
       liveDynamic+=dynamic.length;
