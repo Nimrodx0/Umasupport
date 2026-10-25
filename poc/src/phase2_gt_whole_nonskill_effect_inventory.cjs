@@ -341,11 +341,11 @@ function projectedResultsAreIncorrect(event,parts){
   event.choices.some((p,i)=>parts[i].routeCount>1?
    p.outcomes?.length!==parts[i].routeCount:
    !(Array.isArray(p.effects)||Array.isArray(p.statusEffects)||
-     p.rewards!==undefined));
+     p.effects===undefined));
  return parts.length!==1||
   (parts[0].routeCount>1?
    event.outcomes?.length!==parts[0].routeCount:
    !(Array.isArray(event.effects)||Array.isArray(event.statusEffects)||
-     event.rewards!==undefined));
+     event.effects===undefined));
 }
 module.exports={analyze};
