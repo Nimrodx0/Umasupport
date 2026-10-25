@@ -97,6 +97,47 @@ test('fail closed when one source route is an OR-skill variant or choice topolog
  nonSkill.choices[0].outcomes.reverse();
  assert.equal(mergeEvent(e,nonSkill).event,null);
 });
+
+test('multiple exclusive skill alternatives inherit stats from their exact original source route, not from a neighboring result',()=>{
+ const original={id:'gt-30001-event-002',name:'source',type:'choice',choices:[
+  {id:'choice-01',label:'choice',outcomes:[
+   {id:'route-01-or-1',label:'A',rewards:[{skillId:'skill:1',level:1}]},
+   {id:'route-01-or-2',label:'B',rewards:[{skillId:'skill:2',level:1}]},
+   {id:'route-02',label:'failure',rewards:[]}
+  ]}
+ ]};
+ const effect={id:'gt:30001:002:effect-only',name:'private',type:'choice',choices:[
+  {id:'choice-1',label:'index 1',outcomes:[
+   {id:'result-1',label:'win',effects:[{kind:'guts',delta:10}]},
+   {id:'result-2',label:'fail',effects:[{kind:'energy',delta:-5}]}
+  ]}
+ ]};
+ const m=mergeEvent(original,effect);
+ assert.ok(m.event);
+ assert.equal(m.effectRows,3);
+ assert.deepEqual(m.event.choices[0].outcomes.map(x=>x.effects),[
+  [{kind:'guts',delta:10}],[{kind:'guts',delta:10}],
+  [{kind:'energy',delta:-5}]
+ ]);
+ assert.deepEqual(original.choices[0].outcomes.map(x=>x.effects),[undefined,undefined,undefined]);
+ const single={id:'gt-30001-event-003',name:'source',type:'auto',
+  outcomes:[
+   {id:'route-01-or-1',label:'one',rewards:[{skillId:'skill:1',level:1}]},
+   {id:'route-01-or-2',label:'two',rewards:[{skillId:'skill:2',level:1}]}
+  ]};
+ const flat={id:'gt:30001:003:effect-only',name:'private',type:'auto',
+  effects:[{kind:'bond',delta:5,recipientCharId:111}]};
+ assert.deepEqual(mergeEvent(single,flat).event.outcomes.map(x=>x.effects),[
+  flat.effects,flat.effects
+ ]);
+ const invalid=structuredClone(single);
+ invalid.outcomes[1].id='route-02-or-2';
+ assert.equal(mergeEvent(invalid,flat).event,null);
+ const invalid2=structuredClone(original);
+ invalid2.choices[0].outcomes[1].id='route-01-or-3';
+ assert.equal(mergeEvent(invalid2,effect).event,null);
+});
+
 test('ignore unmatched and structurally incompatible source events instead of widening the runtime',()=>{
  const f=fixture(),a=f.effectInventory.isolatedPreview.cards[0].events;
  a[1].choices[0].outcomes[0].id='wrong';
