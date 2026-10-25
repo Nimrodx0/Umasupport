@@ -15,6 +15,14 @@ const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const STAT_KINDS=['speed','stamina','power','guts','wisdom'];
 const TYPES=new Set(['speed','stamina','power','guts','wisdom',
  'energy','max_energy','mood','bond','skill_points','aptitude_points']);
+const STATUS_TYPES=new Set(['condition','heal_status']);
+const parseChance=value=>{
+ if(value===undefined)return undefined;
+ const s=typeof value==='number'||typeof value==='string'?String(value):'';
+ if(!/^(?:0?\.\d+|1(?:\.0+)?)$/.test(s))return null;
+ const n=Number(s);
+ return n>0&&n<=1?n:null;
+};
 const SKILL_TYPES=new Set(['skill_hint','skill_hint_or','obtain_skill']);
 const CONTROL_TYPES=new Set(['chain_end','branch_flag',
  'both_previous_chain_good','one_previous_chain_good',
@@ -61,6 +69,8 @@ function analyze({documents,index},{strict=false}={}){
   allStatsMentions=0,allStatsValidMentions=0,
   allStatsInvalidMentions=0,allStatsZeroMentions=0,
   allStatsExpandedEffectComponents=0,
+  statusSourceMentions=0,statusValidMentions=0,statusInvalidMentions=0,
+  isolatedPreviewStatusRecords=0,
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
@@ -110,7 +120,7 @@ function analyze({documents,index},{strict=false}={}){
      const problems=new Set(choiceIssues);
      if(route.when.length>0)problems.add('SOURCE_ROUTE_GUARD_UNMODELED');
      let countsInRoute=0,numericRows=0,hasControl=false;
-     const effects=[],duplicates=new Set(),markers=[];
+     const effects=[],statusEffects=[],duplicates=new Set(),statusKeys=new Set(),markers=[];
      for(const [effectIndex,effect] of route.effects.entries()){
       allEffectMentions++;
       if(!obj(effect)||typeof effect.type!=='string')fail('効果レコード形状不正');
@@ -123,6 +133,32 @@ function analyze({documents,index},{strict=false}={}){
       if(CONTROL_TYPES.has(kind)){
        sourceControlEffectMentions++;hasControl=true;markers.push(kind);
        continue; // Preserve markers for source audit, do not invent chain edges.
+      }
+      if(STATUS_TYPES.has(kind)){
+       statusSourceMentions++;eventHasNonSkill=true;countsInRoute++;
+       const propKeys=Object.keys(effect);
+       const validKeys=kind==='condition'?
+        ['type','condition_id','chance']:['type','chance'];
+       const chance=parseChance(effect.chance);
+       const status=kind==='condition'?
+        {kind:'add-condition',conditionId:effect.condition_id,possible:true}:
+        {kind:'cure-one-bad',possible:true};
+       if(propKeys.some(k=>!validKeys.includes(k))||
+          chance===null||
+          kind==='condition'&&(!Number.isSafeInteger(effect.condition_id)||
+           effect.condition_id<=0)){
+        statusInvalidMentions++;
+        problems.add('STATUS_OPERATION_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(chance!==undefined)status.chance=chance;
+       const key=status.kind+'|'+(status.conditionId??'');
+       if(statusKeys.has(key))
+        problems.add('DUPLICATE_STATUS_OPERATION_UNADJUDICATED');
+       statusKeys.add(key);
+       statusEffects.push(status);
+       statusValidMentions++;
+       continue;
       }
       if(kind==='all_stats'){
        allStatsMentions++;eventHasNonSkill=true;countsInRoute++;
@@ -182,12 +218,14 @@ function analyze({documents,index},{strict=false}={}){
      rows.push({cardId,sourceOrdinal:ordinal,choiceOrdinal,routeOrdinal,
       classifiedNonSkillMentions:countsInRoute,
       eligibleScalarEffects:eligible?effects:[],
+      eligibleStatusEffects:eligible?statusEffects:[],
+      quarantinedStatusEffects:eligible?0:statusEffects.length,
       quarantinedScalarEffects:eligible?0:numericRows,
       skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
-     projectedResults.push({eligible,effects,markers});
+     projectedResults.push({eligible,effects,statusEffects,markers});
     }
     projectionParts.push({sourceLabelWasEmpty:!choice.label.trim(),randomAlternative,
      choiceOrdinal,projectedResults,routeCount:routes.length});
@@ -202,12 +240,16 @@ function analyze({documents,index},{strict=false}={}){
    if(eventEligible&&eventHasNonSkill){
     const name='非公開元イベント'+String(ordinal).padStart(3,'0');
     const eid='gt:'+cardId+':'+String(ordinal).padStart(3,'0')+':effect-only';
+    const outputParts=route=>({
+     ...(route.effects.length?{effects:route.effects}:{}),
+     ...(route.statusEffects.length?{statusEffects:route.statusEffects}:{})
+    });
     const part=x=>{
-     if(x.routeCount===1)return x.projectedResults[0].effects.length?
-      {effects:x.projectedResults[0].effects}: {};
+     if(x.routeCount===1)return outputParts(x.projectedResults[0]);
      return {outcomes:x.projectedResults.map((route,i)=>({
       id:'result-'+(i+1),label:'結果'+(i+1),
-      ...(route.effects.length?{effects:route.effects}:{rewards:[]})}))};
+      ...outputParts(route),
+      ...(!route.effects.length&&!route.statusEffects.length?{rewards:[]}:{})}))};
     };
     const isAuto=projectionParts.length===1&&projectionParts[0].sourceLabelWasEmpty;
     const ev={id:eid,name,type:isAuto?'auto':'choice',
@@ -217,6 +259,8 @@ function analyze({documents,index},{strict=false}={}){
       label:'選択肢'+x.choiceOrdinal,...part(x)}));
     if(projectedResultsAreIncorrect(ev,projectionParts))fail('結果順序の保存に失敗');
     previewEvents.push(ev);isolatedPreviewEventRecords++;
+    isolatedPreviewStatusRecords+=projectionParts.reduce((sum,x)=>sum+
+     x.projectedResults.reduce((n,r)=>n+r.statusEffects.length,0),0);
     isolatedPreviewEffectRecords+=projectionParts.reduce((sum,x)=>sum+
      x.projectedResults.reduce((n,r)=>n+r.effects.length,0),0);
     isolatedPreviewOutcomeRecords+=projectionParts.reduce((sum,x)=>sum+
@@ -229,11 +273,12 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==eligibleRoutes+blockedRoutes||
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
-    allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+
+    allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
     allStatsExpandedEffectComponents!==5*allStatsValidMentions||
+    statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     nonZeroNumericNonSkillMentions+zeroNonSkillMentions!==integerNonSkillMentions||
     nonZeroNumericNonSkillMentions+allStatsExpandedEffectComponents!==
       eligibleNumericEffectMentions+blockedNumericEffectMentions+
@@ -250,6 +295,9 @@ function analyze({documents,index},{strict=false}={}){
  for(const entry of projectedCards){
   const routes=core.directEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{
    choices:{},outcomes:{}});
+  const statuses=core.directStatusRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
+  if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
+   fail('固定出典の状態候補を誤って確定状態に変換');
   if(routes.some(r=>r.source!=='event-effect'||!Number.isSafeInteger(r.delta)))
    fail('元数値を正規化形式に投影できない');
   replayed+=routes.length;
@@ -274,6 +322,8 @@ function analyze({documents,index},{strict=false}={}){
    unrecognizedEffectMentions,invalidRecipientNumericMentions,
    allStatsMentions,allStatsValidMentions,allStatsInvalidMentions,
    allStatsZeroMentions,allStatsExpandedEffectComponents,
+   statusSourceMentions,statusValidMentions,statusInvalidMentions,
+   isolatedPreviewStatusRecords,
    routesWithNonSkill,noNonSkillRoutes,eligibleRoutes,blockedRoutes,
    eligibleEvents,blockedEvents,noNonSkillEvents,
    affectedCards:affectedCards.size,
@@ -290,10 +340,12 @@ function projectedResultsAreIncorrect(event,parts){
  if(event.type==='choice')return event.choices.length!==parts.length||
   event.choices.some((p,i)=>parts[i].routeCount>1?
    p.outcomes?.length!==parts[i].routeCount:
-   !(Array.isArray(p.effects)||p.effects===undefined));
+   !(Array.isArray(p.effects)||Array.isArray(p.statusEffects)||
+     p.rewards!==undefined));
  return parts.length!==1||
   (parts[0].routeCount>1?
    event.outcomes?.length!==parts[0].routeCount:
-   !(Array.isArray(event.effects)||event.effects===undefined));
+   !(Array.isArray(event.effects)||Array.isArray(event.statusEffects)||
+     event.rewards!==undefined));
 }
 module.exports={analyze};
