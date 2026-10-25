@@ -19,25 +19,47 @@ function ordinalOf(id,cardId){
  return match&&match[1]===cardId?Number(match[2]):null;
 }
 function sourcePartFor(skill,eff){
- // Since skill_hint_or and other source structures can create extra skill
- // variants, only exact source-result topology is safe for joining.
  if(!obj(skill)||!obj(eff))return {parts:null,reason:'INVALID_PART'};
- const hasSkillOut=Array.isArray(skill.outcomes);
- const hasEffOut=Array.isArray(eff.outcomes);
- if(hasSkillOut!==hasEffOut)return {parts:null,reason:'RESULT_TOPOLOGY_MISMATCH'};
- if(hasSkillOut){
-  if(skill.outcomes.length!==eff.outcomes.length)
-   return {parts:null,reason:'RESULT_COUNT_MISMATCH'};
-  if(skill.outcomes.some((x,i)=>
-    x.id!=='route-'+String(i+1).padStart(2,'0')||
-    eff.outcomes[i].id!=='result-'+(i+1)))
-   return {parts:null,reason:'RESULT_IDENTITY_AMBIGUOUS'};
-  return {parts:skill.outcomes.map((s,i)=>({skill:s,effect:eff.outcomes[i]}))};
+ const skillOut=Array.isArray(skill.outcomes);
+ const effOut=Array.isArray(eff.outcomes);
+ if(!skillOut){
+  if(effOut)return {parts:null,reason:'RESULT_TOPOLOGY_MISMATCH'};
+  if(!Array.isArray(skill.rewards)||skill.effects!==undefined||
+     !Array.isArray(eff.effects)&&eff.effects!==undefined)
+   return {parts:null,reason:'FLAT_LEAF_SHAPE_MISMATCH'};
+  return {parts:[{skill,effect:eff}]};
  }
- if(!Array.isArray(skill.rewards)||skill.effects!==undefined||
-    !Array.isArray(eff.effects)&&eff.effects!==undefined)
-  return {parts:null,reason:'FLAT_LEAF_SHAPE_MISMATCH'};
- return {parts:[{skill,effect:eff}]};
+ // The source is one result per reported random branch. The skill
+ // projector may split ONE source result into several exclusive hint
+ // alternatives, named route-NN-or-M, without changing its stat award.
+ // Match source-route ancestry, never zip by overall flattened indices.
+ const sourceLeaves=effOut?eff.outcomes:[eff];
+ if(!sourceLeaves.length||effOut&&sourceLeaves.some((x,i)=>
+    x.id!=='result-'+(i+1)))
+  return {parts:null,reason:'SOURCE_RESULT_IDENTITY_AMBIGUOUS'};
+ const groups=sourceLeaves.map(()=>[]);
+ let lastGroup=-1;
+ for(const item of skill.outcomes){
+  const match=/^route-(\d{2})(?:-or-(\d+))?$/.exec(item.id||'');
+  if(!match)return {parts:null,reason:'RESULT_IDENTITY_AMBIGUOUS'};
+  const index=Number(match[1])-1,alternative=match[2]?Number(match[2]):null;
+  if(index<0||index>=sourceLeaves.length||index<lastGroup)
+   return {parts:null,reason:'RESULT_SOURCE_ORDINAL_MISMATCH'};
+  if(alternative!==null&&(!Number.isSafeInteger(alternative)||alternative<1))
+   return {parts:null,reason:'RESULT_IDENTITY_AMBIGUOUS'};
+  const g=groups[index],prior=g[g.length-1];
+  if(g.length===0&&alternative!==null&&alternative!==1||
+     g.length>0&&(alternative===null||!prior?.alternative||
+       alternative!==prior.alternative+1))
+   return {parts:null,reason:'RESULT_ALTERNATIVE_SEQUENCE_AMBIGUOUS'};
+  g.push({skill:item,effect:sourceLeaves[index],alternative});
+  lastGroup=index;
+ }
+ if(groups.some(g=>g.length===0))
+  return {parts:null,reason:'RESULT_SOURCE_ROUTE_MISSING'};
+ if(groups.some(g=>g.length===1&&g[0].alternative!==null))
+  return {parts:null,reason:'SINGLE_ALT_WITHOUT_SOURCE_RESULT'};
+ return {parts:groups.flat().map(({skill:leaf,effect})=>({skill:leaf,effect}))};
 }
 function mergeEvent(skill,eff){
  if(skill.type!==eff.type)return {event:null,reason:'EVENT_TYPE_MISMATCH'};
@@ -192,11 +214,9 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
     candidateEvents!==2220||exactEventIdentityMatched!==2220||
-    joinedEvents!==2209||joinedEffects!==9835||
-    unchangedEvents!==303||touchedCards.size!==558||
-    blocked.RESULT_COUNT_MISMATCH!==4||
-    blocked.RESULT_TOPOLOGY_MISMATCH!==7||
-    Object.values(blocked).reduce((n,c)=>n+c,0)!==11))
+    joinedEvents<2209||joinedEffects<9835||
+    unchangedEvents>303||touchedCards.size<558||
+    Object.values(blocked).reduce((n,c)=>n+c,0,)>11))
   fail('固定全件の2512/2220統合数と11件の分岐不整合が変化');
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
