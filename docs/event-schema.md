@@ -44,6 +44,12 @@
 
 [GameTora固定状態効果121記載の詳細監査](phase2-gt-status-operation-adoption-20261025.md)では、保留元イベント268→200、技術構造試作2,220→2,288件。スキル用2,512イベントと固定出典順序で統合するが、正式公開イベントは0件。
 
+## 2026-10-25：ランダムな対象能力の増減を数値確定効果と区別
+
+固定GTの`random_stats`は5能力から重複なくN種類をランダムに選ぶため、選択される能力を勝手に決めて`effects[]`へ格納してはならない。非公開技術用のイベント・選択肢・結果の末端では別フィールド`dynamicEffects[]`を用い、`{kind:'random-stats',delta:10,statCount:2,targetSelection:'random-distinct'}`のように符号付き数値と**対象数のみ**を保持する。
+
+`UmaCore.directDynamicEffectRoutes`は既存のイベント到達・選択・結果条件を使い、`unresolvedTargets:true`かつ`conditional:true`の**対象能力未確定**経路を返す。単一選択でも能力の名前が特定されるわけではない。この候補をスキル集計・確定能力合計へ混入しない。GT固定2,488件から2,306イベントを孤立した非スキル効果形式へ変換し、そのうち2,305件を非公開スキル用2,512イベントへ同一位置で結合。元GTがautoで既に3択補正したSSR30080#6だけは構造相違により保留。[固定18記載と元コードの根拠・統合監査](phase2-gt-random-stat-targets-20261025.md)。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。
