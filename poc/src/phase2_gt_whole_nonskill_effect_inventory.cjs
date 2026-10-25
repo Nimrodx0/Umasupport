@@ -74,6 +74,10 @@ function analyze({documents,index},{strict=false}={}){
   randomStatMentions=0,validRandomStatMentions=0,
   invalidRandomStatMentions=0,zeroRandomStatMentions=0,
   isolatedPreviewDynamicRecords=0,
+  scenarioCurrencyMentions=0,validScenarioCurrencyMentions=0,
+  invalidScenarioCurrencyMentions=0,zeroScenarioCurrencyMentions=0,
+  fullEnergyMentions=0,validFullEnergyMentions=0,
+  invalidFullEnergyMentions=0,
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
@@ -136,6 +140,38 @@ function analyze({documents,index},{strict=false}={}){
       if(CONTROL_TYPES.has(kind)){
        sourceControlEffectMentions++;hasControl=true;markers.push(kind);
        continue; // Preserve markers for source audit, do not invent chain edges.
+      }
+      if(kind==='mt'){
+       scenarioCurrencyMentions++;eventHasNonSkill=true;countsInRoute++;
+       // Fixed event_engine.py delegates raw GT mt to Grand Live's lowest
+       // performance category. Other scenarios supply a neutral no-op.
+       const delta=parseDelta(effect.value);
+       if(delta===null||Object.keys(effect).some(k=>!['type','value'].includes(k))){
+        invalidScenarioCurrencyMentions++;
+        problems.add('LOWEST_PERFORMANCE_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(delta===0){zeroScenarioCurrencyMentions++;continue;}
+       if(dynamicEffects.some(x=>x.kind==='grand-live-lowest-performance'))
+        problems.add('DUPLICATE_SCENARIO_CURRENCY_UNADJUDICATED');
+       dynamicEffects.push({kind:'grand-live-lowest-performance',delta,
+        scenario:'grand-live',possible:true,targetSelection:'lowest-performance-at-runtime'});
+       validScenarioCurrencyMentions++;
+       continue;
+      }
+      if(kind==='full_energy'){
+       fullEnergyMentions++;eventHasNonSkill=true;countsInRoute++;
+       if(Object.keys(effect).some(k=>k!=='type')){
+        invalidFullEnergyMentions++;
+        problems.add('FULL_ENERGY_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(dynamicEffects.some(x=>x.kind==='restore-current-max-energy'))
+        problems.add('DUPLICATE_FULL_ENERGY_UNADJUDICATED');
+       dynamicEffects.push({kind:'restore-current-max-energy',possible:true,
+        targetSelection:'current-max-energy'});
+       validFullEnergyMentions++;
+       continue;
       }
       if(kind==='random_stats'){
        randomStatMentions++;eventHasNonSkill=true;countsInRoute++;
@@ -304,6 +340,7 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
     allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+randomStatMentions+
+      scenarioCurrencyMentions+fullEnergyMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
@@ -311,6 +348,9 @@ function analyze({documents,index},{strict=false}={}){
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     randomStatMentions!==validRandomStatMentions+
       invalidRandomStatMentions+zeroRandomStatMentions||
+    scenarioCurrencyMentions!==validScenarioCurrencyMentions+
+      invalidScenarioCurrencyMentions+zeroScenarioCurrencyMentions||
+    fullEnergyMentions!==validFullEnergyMentions+invalidFullEnergyMentions||
     nonZeroNumericNonSkillMentions+zeroNonSkillMentions!==integerNonSkillMentions||
     nonZeroNumericNonSkillMentions+allStatsExpandedEffectComponents!==
       eligibleNumericEffectMentions+blockedNumericEffectMentions+
@@ -330,7 +370,11 @@ function analyze({documents,index},{strict=false}={}){
   const statuses=core.directStatusRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
   const dynamic=core.directDynamicEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
   if(dynamic.some(r=>r.source!=='event-dynamic-effect'||
-     !r.unresolvedTargets||r.targetSelection!=='random-distinct'))
+     !r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
+       'current-max-energy'].includes(r.targetSelection)||
+     r.dynamicKind==='grand-live-lowest-performance'&&
+       (r.scenario!=='grand-live'||r.possible!==true)||
+     r.dynamicKind==='restore-current-max-energy'&&r.possible!==true))
    fail('ランダム能力の対象を確定能力へ偽装しました');
   if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
    fail('固定出典の状態候補を誤って確定状態に変換');
@@ -362,6 +406,9 @@ function analyze({documents,index},{strict=false}={}){
    isolatedPreviewStatusRecords,
    randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
    zeroRandomStatMentions,isolatedPreviewDynamicRecords,
+   scenarioCurrencyMentions,validScenarioCurrencyMentions,
+   invalidScenarioCurrencyMentions,zeroScenarioCurrencyMentions,
+   fullEnergyMentions,validFullEnergyMentions,invalidFullEnergyMentions,
    routesWithNonSkill,noNonSkillRoutes,eligibleRoutes,blockedRoutes,
    eligibleEvents,blockedEvents,noNonSkillEvents,
    affectedCards:affectedCards.size,
