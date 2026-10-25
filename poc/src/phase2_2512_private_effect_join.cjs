@@ -214,9 +214,10 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
     candidateEvents!==2220||exactEventIdentityMatched!==2220||
-    joinedEvents<2209||joinedEffects<9835||
-    unchangedEvents>303||touchedCards.size<558||
-    Object.values(blocked).reduce((n,c)=>n+c,0,)>11))
+    joinedEvents!==2220||joinedEffects!==9928||
+    unchangedEvents!==292||touchedCards.size!==558||
+    exactEventIdentityMatched!==2220||
+    Object.keys(blocked).length!==0||reviewPositions.length!==0))
   fail('固定全件の2512/2220統合数と11件の分岐不整合が変化');
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
