@@ -19,7 +19,7 @@
    if(effects===undefined)return;
    if(!Array.isArray(effects)||effects.length===0)
      fail(where+': 非スキル効果は1件以上必要');
-   const seen=new Set();
+   const seen=new Map();
    for(const e of effects){
      if(!obj(e)||!effectKinds.has(e.kind)||
         !Number.isSafeInteger(e.delta)||e.delta===0||
@@ -28,11 +28,21 @@
           (e.sourceBundle!=='all_stats'||!['speed','stamina','power','guts','wisdom'].includes(e.kind))||
         e.sourceComponent!==undefined&&
           !['event-result','scenario-bonus'].includes(e.sourceComponent)||
-        Object.keys(e).some(k=>!['kind','delta','sourceComponent','recipientCharId','sourceBundle'].includes(k)))
+        e.sourceEffectOrdinal!==undefined&&
+          (!Number.isSafeInteger(e.sourceEffectOrdinal)||e.sourceEffectOrdinal<1)||
+        Object.keys(e).some(k=>!['kind','delta','sourceComponent','recipientCharId','sourceBundle',
+          'sourceEffectOrdinal'].includes(k)))
        fail(where+': 非スキル効果の種類・整数値・出典成分が不正');
      const key=e.kind+'|'+(e.sourceComponent||'')+'|'+(e.recipientCharId??'');
-     if(seen.has(key))fail(where+': 同じ出典成分の効果を二重計上');
-     seen.add(key);
+     const prior=seen.get(key);
+     // Multiple effects of the same kind can be genuine distinct source
+     // entries. Accept them only if both carry distinct, increasing original
+     // effect ordinals. Never combine +/- entries, energy caps, or mood rules.
+     if(prior&&(prior.sourceEffectOrdinal===undefined||
+         e.sourceEffectOrdinal===undefined||
+         prior.sourceEffectOrdinal>=e.sourceEffectOrdinal))
+       fail(where+': 同じ能力への複数効果は元の各位置と順序が必要');
+     seen.set(key,e);
    }
  }
 

@@ -74,7 +74,7 @@ test('explicit random_either result groups preserve alternatives, and choice is 
   outcomes:{[event.id]:'result-1'}});
  assert.deepEqual(success.map(x=>x.delta),[4,10]);
 });
-test('conditional segments, duplicated recipient, undecodable values and unknown effect codes are quarantined',()=>{
+test('separate ordered duplicate recipients survive while unknown codes, ranges and unflagged choices stay quarantined',()=>{
  const parts=[
   ev(1,[mk([effect('bond','+5',1003),effect('bond','+2',1003)])]),
   ev(2,[mk([effect('sga','+1'),effect('guts','+2')])]),
@@ -88,12 +88,14 @@ test('conditional segments, duplicated recipient, undecodable values and unknown
  const r=analyze(fixture(parts));
  assert.equal(r.summary.sourceEvents,6);
  assert.equal(r.summary.expandedRoutes,8);
- assert.equal(r.summary.blockedEvents,5);
- assert.equal(r.summary.eligibleEvents,1);
- assert.equal(r.summary.isolatedPreviewEventRecords,1);
+ assert.equal(r.summary.blockedEvents,4);
+ assert.equal(r.summary.eligibleEvents,2);
+ assert.equal(r.summary.isolatedPreviewEventRecords,2);
  assert.equal(r.summary.zeroNonSkillMentions,1);
- assert.equal(r.summary.isolatedPreviewEffectRecords,1);
- assert.ok(r.blockedReasons.DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED>0);
+ assert.equal(r.summary.isolatedPreviewEffectRecords,3);
+ assert.equal(r.summary.isolatedOrderedRepeatedNumericMentions,1);
+ assert.deepEqual(r.isolatedPreview.cards[0].events[0].effects.map(e=>e.sourceEffectOrdinal),[1,2]);
+ assert.equal(r.blockedReasons.DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED,undefined);
  assert.ok(r.blockedReasons.UNSUPPORTED_EFFECT_TYPE>0);
  assert.ok(r.blockedReasons.NONSCALAR_OR_INVALID_NUMERIC_VALUE>0);
  assert.ok(r.blockedReasons.CONDITIONAL_SEGMENTS_NOT_MODELED>0);
@@ -145,22 +147,31 @@ test('source-verified all_stats expands to five distinct signed attributes, neve
  assert.equal(runtime.filter(x=>x.sourceBundle==='all_stats').length,10);
  assert.equal(core.directRoutes(card,{choices:{},outcomes:{}}).length,0);
 });
-test('all_stats invalid input, duplicate scalar and uncertain values fail closed',()=>{
- const cases=[
+test('invalid all_stats inputs quarantine, but overlapping distinct source records remain separate',()=>{
+ for(const effects of [
   [{type:'all_stats',value:'+3/+8'}],
   [{type:'all_stats',value:'unknown'}],
-  [{type:'all_stats',value:'+2',char_id:1234}],
+  [{type:'all_stats',value:'+2',char_id:1234}]
+ ]){
+  const r=analyze(fixture([ev(10,[mk(effects)])]));
+  assert.equal(r.summary.blockedEvents,1);
+  assert.equal(r.summary.isolatedPreviewEventRecords,0);
+ }
+ for(const effects of [
   [effect('all_stats','+3'),effect('speed','+5')],
   [effect('speed','+5'),effect('all_stats','+3')],
   [effect('all_stats','+3'),effect('all_stats','+4')]
- ];
- for(const effects of cases){
+ ]){
   const x=analyze(fixture([ev(10,[mk(effects)])]));
-  assert.equal(x.summary.blockedEvents,1);
-  assert.equal(x.summary.isolatedPreviewEventRecords,0);
-  assert.ok(Object.keys(x.blockedReasons).length>0);
+  assert.equal(x.summary.blockedEvents,0);
+  assert.equal(x.summary.isolatedPreviewEventRecords,1);
+  assert.equal(x.summary.isolatedOrderedRepeatedNumericMentions,
+   effects.every(x=>x.type==='all_stats')?5:1);
+  const ordered=x.isolatedPreview.cards[0].events[0].effects.filter(
+   e=>e.kind==='speed');
+  assert.deepEqual(ordered.map(e=>e.sourceEffectOrdinal),[1,2]);
  }
- const zero=analyze(fixture([ev(10,[mk([effect('all_stats','0'),effect('guts','+2')])])]));
+ const zero=analyze(fixture([ev(10,[mk([effect('all_stats','0'),effect('guts','+2')])])])); 
  assert.equal(zero.summary.allStatsZeroMentions,1);
  assert.equal(zero.summary.isolatedPreviewEffectRecords,1);
  const model={cards:[{id:'30001'}],cardById:{'30001':{id:'30001'}},skillById:{}};
