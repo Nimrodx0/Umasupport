@@ -35,6 +35,31 @@
      seen.add(key);
    }
  }
+
+ // Non-scalar condition operations are NOT stat deltas and may be guarded
+ // by source-specific chance, existing state, or source implementation rules.
+ // Even an explicit branch must not promise that the operation fires.
+ function checkStatusEffects(statusEffects,where){
+   if(statusEffects===undefined)return;
+   if(!Array.isArray(statusEffects)||statusEffects.length===0)
+     fail(where+': 状態操作候補は1件以上必要');
+   const seen=new Set();
+   for(const x of statusEffects){
+     if(!obj(x)||!['add-condition','cure-one-bad'].includes(x.kind)||
+        x.possible!==true||
+        x.kind==='add-condition'&&
+          (!Number.isSafeInteger(x.conditionId)||x.conditionId<=0)||
+        x.kind==='cure-one-bad'&&x.conditionId!==undefined||
+        x.chance!==undefined&&
+          (typeof x.chance!=='number'||!Number.isFinite(x.chance)||
+           x.chance<=0||x.chance>1)||
+        Object.keys(x).some(k=>!['kind','conditionId','possible','chance'].includes(k)))
+       fail(where+': 状態操作の種類・状態ID・任意確率が不正');
+     const key=x.kind+'|'+(x.conditionId??'');
+     if(seen.has(key))fail(where+': 状態操作の同一対象が重複');
+     seen.add(key);
+   }
+ }
  function checkRewards(part,model,where){
    checkEffects(part.effects,where);
    // Editorial pending rewards must NEVER enter published/runtime catalogs.
@@ -42,7 +67,8 @@
    // A verified result tree is exclusive: alongside unconditional rewards,
    // the same skills could be falsely counted as guaranteed and conditional.
    // Shared rewards must be placed explicitly in each reviewed outcome.
-   if((part.rewards!==undefined||part.effects!==undefined)&&part.outcomes!==undefined)
+   if((part.rewards!==undefined||part.effects!==undefined||
+        part.statusEffects!==undefined)&&part.outcomes!==undefined)
      fail(where+': rewardsとoutcomesは同時指定できません');
    if(part.rewards!==undefined){
      if(!Array.isArray(part.rewards))fail(where+': rewardsが不正');
@@ -63,11 +89,12 @@
      const seen=new Set();
      for(const out of part.outcomes){
        if(!obj(out)||!id(out.id)||!id(out.label)||seen.has(out.id)||
-          (out.rewards===undefined&&out.effects===undefined)||
+          (out.rewards===undefined&&out.effects===undefined&&out.statusEffects===undefined)||
           (out.rewards!==undefined&&!Array.isArray(out.rewards))||
           out.terminal!==undefined&&typeof out.terminal!=='boolean')fail(where+': 結果が不正');
        seen.add(out.id);
-       checkRewards({rewards:out.rewards,effects:out.effects},model,where+'/'+out.id);
+       checkRewards({rewards:out.rewards,effects:out.effects,
+          statusEffects:out.statusEffects},model,where+'/'+out.id);
      }
    }
  }
@@ -84,7 +111,8 @@
        fail(e.id+': 特殊イベント発生条件が不正');
      byId.set(e.id,e);
      if(e.type==='choice'){
-       if(e.rewards!==undefined||e.effects!==undefined||e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
+       if(e.rewards!==undefined||e.effects!==undefined||e.statusEffects!==undefined||
+           e.outcomes!==undefined||!Array.isArray(e.choices)||e.choices.length===0)fail(e.id+': 選択式の構造が不正');
        const used=new Set();
        for(const c of e.choices){
          if(!obj(c)||!id(c.id)||!id(c.label)||used.has(c.id)||c.terminal!==undefined&&typeof c.terminal!=='boolean')fail(e.id+': 選択肢が不正・重複');
