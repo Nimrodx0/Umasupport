@@ -220,6 +220,53 @@ function directEffectRoutes(card,config={}){
   }
   return routes;
 }
+function directStatusRoutes(card,config={}){
+  const choices=config.choices||{},outcomes=config.outcomes||{};
+  const events=card.events||[],routes=[];
+  function add(statusEffects,event,choice,outcome,conditions){
+    for(const effect of statusEffects||[]){
+      routes.push({source:'event-status-effect',cardId:card.id,eventId:event.id,
+        eventName:event.name,
+        ...(choice?{choiceId:choice.id,choiceLabel:choice.label}:{}),
+        ...(outcome?{outcomeId:outcome.id,outcomeLabel:outcome.label}:{}),
+        statusKind:effect.kind,possible:true,
+         ...(effect.conditionId?{conditionId:effect.conditionId}:{}),
+         ...(effect.chance!==undefined?{chance:effect.chance}:{}),
+        ...(effect.recipientCharId?{recipientCharId:effect.recipientCharId}:{}),
+        ...(effect.sourceBundle?{sourceBundle:effect.sourceBundle}:{}),
+        ...(effect.sourceComponent?{sourceComponent:effect.sourceComponent}:{}),
+        conditional:true,
+        condition:[...new Set([...conditions,'状態操作の適用条件・確率は未保証'])].join(' / ')});
+    }
+  }
+  function collect(part,event,choice,baseConditions){
+    if(Array.isArray(part.outcomes)&&part.outcomes.length){
+      const picked=outcomes[event.id];
+      if(picked&&!part.outcomes.some(o=>o.id===picked))return;
+      for(const outcome of part.outcomes){
+        if(picked&&picked!==outcome.id)continue;
+        const gate=outcomeReachability(outcome,event,choices,events,outcomes);
+        if(gate.status==='blocked')continue;
+        // An unresolved random result is NEVER an unconditional reward.
+        const conditions=[...baseConditions,...gate.conditions];
+        if(!picked)conditions.push(event.name+'・'+outcome.label+'の結果時');
+        add(outcome.statusEffects,event,choice,outcome,conditions);
+      }
+    }else add(part.statusEffects,event,choice,null,baseConditions);
+  }
+  for(const event of events){
+    const gate=reachability(event,choices,events,outcomes);
+    if(gate.status==='blocked')continue;
+    if(event.type==='choice'){
+      const choice=event.choices?.find(c=>c.id===choices[event.id]);
+      if(!choice)continue;
+      const selectedGate=choiceReachability(choice,event,choices,events,outcomes);
+      if(selectedGate.status==='blocked')continue;
+      collect(choice,event,choice,selectedGate.conditions);
+    }else if(event.type==='auto')collect(event,event,null,gate.conditions);
+  }
+  return routes;
+}
 function aggregate(deck,data){
   const bySkill={};
   // F-04: unique support-card IDs define the count. Slot-indexed routes
