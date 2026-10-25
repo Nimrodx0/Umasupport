@@ -18,6 +18,13 @@ function main(args){
     result.summary.allStatsValidMentions!==68||
     result.summary.allStatsExpandedEffectComponents!==340||
     result.summary.allStatsInvalidMentions!==0||
+    result.summary.statusSourceMentions!==121||
+    result.summary.statusValidMentions!==121||
+    result.summary.statusInvalidMentions!==0||
+    result.summary.isolatedPreviewStatusRecords!==86||
+    result.summary.isolatedPreviewEventRecords!==2288||
+    result.summary.blockedEvents!==200||
+    result.summary.unrecognizedEffectMentions!==113||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||

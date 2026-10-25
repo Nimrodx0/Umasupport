@@ -38,6 +38,12 @@
 
 固定GTのカードID＋元イベント位置、選択肢ID・元結果の番号が**完全に追跡できる場合だけ**、従来の`rewards`（スキル獲得候補）と`effects`（非スキル効果）を同じイベントの結果に保持する。既存`requires`／`terminal`／`availabilityKind`／各報酬は不変。元`skill_hint_or`等で一方だけ結果数が増えた場合も、`route-NN-or-M`の元番号・派生番号が連続しており、各候補の元結果が一意なら元の非スキル効果を各候補へ保持する。候補は排他的で、同時取得として合算しない。元番号が確認できない場合は統合を保留。実測結果・未公開ゲートは[統合監査](phase2-private-2512-skill-nonskill-join-20261025.md)。
 
+## 2026-10-25：状態の付与・回復候補を数値効果と分離
+
+イベント・選択肢・結果の末端には、従来の数値`effects[]`とは**独立**した`statusEffects[]`を任意で持たせる。`{kind:'add-condition',conditionId:10,possible:true}`は状態ID10の付与**候補**、`{kind:'cure-one-bad',possible:true}`は保有する悪い状態のうちランダムに**1つ回復する操作候補**。出典に明示された場合のみ`chance`（0超1以下の数）を保持。元コードに隠れた個別の状態適用条件・確率・治療対象の選択は、出典に明記された範囲以上の保証をしない。状態効果は能力値増減でもスキル取得でもないため、`UmaCore.directStatusRoutes`は必ず`possible:true`かつ`conditional:true`で返す。状態操作・効果を同じ結果の末端に併記できるが、結果分岐の外へ移動して無条件取得にはしない。
+
+[GameTora固定状態効果121記載の詳細監査](phase2-gt-status-operation-adoption-20261025.md)では、保留元イベント268→200、技術構造試作2,220→2,288件。スキル用2,512イベントと固定出典順序で統合するが、正式公開イベントは0件。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。
