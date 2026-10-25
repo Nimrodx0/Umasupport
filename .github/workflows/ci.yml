@@ -68,6 +68,11 @@ jobs:
           node --check poc/tools/audit_phase2_p1_source_title_join.cjs
           node --test poc/tests/phase2_p1_source_title_join.test.cjs
           node poc/tools/verify_event_release.cjs
+      - name: Test direct merge of source-ordinal-matched skills and non-skill outcome effects
+        run: |
+          node --check poc/src/phase2_2512_private_effect_join.cjs
+          node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
+          node --test poc/tests/phase2_2512_private_effect_join.test.cjs
       - name: Test all-GT non-skill effect source classifier and numeric recipient identity
         run: |
           node --check poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs
