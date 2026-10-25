@@ -82,4 +82,4 @@
 - [Phase 2・非スキル効果スキーマと佐岳メイ海外限定R/SSR結果の技術試作](phase2-nonskill-outcome-runtime-20261024.md)
 - [Phase 2・GameTora全2,488イベントの非スキル数値・受け手・結果構造全件監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)
 - [Phase 2・GameTora固定 `all_stats` 68記載の5能力展開と2,220件の構造試作](phase2-all-stats-five-attributes-20261024.md)
-- [Phase 2・非公開2,512件へGT非スキル2,209件を厳密一致で統合](phase2-private-2512-skill-nonskill-join-20261025.md)
+- [Phase 2・非公開2,512件へGT非スキル2,220件を元結果の番号照合で結合](phase2-private-2512-skill-nonskill-join-20261025.md)
