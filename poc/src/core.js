@@ -273,10 +273,19 @@ function directDynamicEffectRoutes(card,config={}){
         eventName:event.name,
         ...(choice?{choiceId:choice.id,choiceLabel:choice.label}:{}),
         ...(outcome?{outcomeId:outcome.id,outcomeLabel:outcome.label}:{}),
-        dynamicKind:effect.kind,delta:effect.delta,
-        statCount:effect.statCount,targetSelection:effect.targetSelection,
+        dynamicKind:effect.kind,
+        ...(effect.delta!==undefined?{delta:effect.delta}:{}),
+        ...(effect.statCount!==undefined?{statCount:effect.statCount}:{}),
+        ...(effect.scenario?{scenario:effect.scenario}:{}),
+        ...(effect.possible?{possible:true}:{}),
+        targetSelection:effect.targetSelection,
         unresolvedTargets:true,conditional:true,
-        condition:[...new Set([...conditions,'対象能力はランダムに決まり固定値として合算できない'])].join(' / ')});
+        condition:[...new Set([...conditions,
+          effect.kind==='grand-live-lowest-performance'?
+            'グランドライブ限定：現在の最少パフォーマンス項目（取得量は上限に依存）':
+          effect.kind==='restore-current-max-energy'?
+            '実行時の最大体力まで回復（増加量は現在体力に依存）':
+            '対象能力はランダムに決まり固定値として合算できない'])].join(' / ')});
     }
   }
   function collect(part,event,choice,baseConditions){
