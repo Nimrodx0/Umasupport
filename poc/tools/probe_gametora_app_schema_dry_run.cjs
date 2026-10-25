@@ -238,7 +238,7 @@ function main(args){
      const attached=publicCatalog.attach(disposable,merged.catalog,{
       skillText:result.dryRunMergedSkillText,fullRegistry:false});
      if(attached.eventsWithRecords!==2512)fail('非スキル統合後の本番attach失敗');
-     let liveEffects=0;
+     let liveEffects=0,liveStatusOperations=0;
      for(const card of disposable.cards){
       const config={stage:4,choices:{},outcomes:{}};
       for(const e of card.events||[]){
@@ -249,12 +249,18 @@ function main(args){
        }else if(e.outcomes?.length)config.outcomes[e.id]=e.outcomes[0].id;
       }
       liveEffects+=core.directEffectRoutes(card,config).length;
+      const statuses=core.directStatusRoutes(card,config);
+      if(statuses.some(r=>r.source!=='event-status-effect'||
+         r.possible!==true||r.conditional!==true))
+       fail('状態候補が確定報酬として表示されました');
+      liveStatusOperations+=statuses.length;
      }
-     if(!liveEffects||merged.summary.combinedEventRecords<=0)
+     if(!liveEffects||!liveStatusOperations||merged.summary.combinedEventRecords<=0)
       fail('本番コアに数値効果を再生できません');
      console.log('PHASE2_2512_MERGED_SKILL_NONSKILL_AUDIT='+JSON.stringify({
       ...merged.summary,productionLoaderEvents:attached.eventsWithRecords,
-      sampledProductionEffectRoutes:liveEffects,publicEventsAdded:0}));
+      sampledProductionEffectRoutes:liveEffects,
+      sampledProductionStatusRoutes:liveStatusOperations,publicEventsAdded:0}));
     }
 
 
