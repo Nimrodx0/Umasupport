@@ -146,7 +146,7 @@ test('ignore unmatched and structurally incompatible source events instead of wi
  assert.equal(r.summary.combinedEventRecords,1);
  assert.equal(r.summary.matchedSourceEventIdentity,2);
  assert.equal(r.summary.untouchedEventRecords,3);
- assert.equal(r.summary.blockedReasons.RESULT_IDENTITY_AMBIGUOUS,1);
+ assert.equal(r.summary.blockedReasons.SOURCE_RESULT_IDENTITY_AMBIGUOUS,1);
  assert.equal(r.summary.blockedReasons.GT_RUNTIME_EVENT_ID_NOT_FOUND,1);
  assert.deepEqual(r.catalog.cards[0].events[1],f.skillRuntime.catalog.cards[0].events[1]);
 });
