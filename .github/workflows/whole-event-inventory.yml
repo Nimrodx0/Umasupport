@@ -70,6 +70,7 @@ on:
       - 'poc/src/core.js'
       - 'poc/src/phase2_2512_private_effect_join.cjs'
       - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
+      - 'poc/tests/phase2_gt_chain_end_effect_join.test.cjs'
       - 'poc/tests/phase2_gt_grand_live_mt_full_energy.test.cjs'
       - 'poc/tests/phase2_gt_random_stats_targets.test.cjs'
       - 'poc/tests/phase2_gt_status_effects.test.cjs'
@@ -194,6 +195,8 @@ jobs:
           node umasupport/poc/tools/audit_phase2_mei_effect_runtime.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
+      - name: Verify chain-ending GT effects with exact skill result terminal proof
+        run: node --test umasupport/poc/tests/phase2_gt_chain_end_effect_join.test.cjs
       - name: Verify Grand Live scenario-only token and full-energy operations
         run: node --test umasupport/poc/tests/phase2_gt_grand_live_mt_full_energy.test.cjs
       - name: Verify random target count and per-result exclusive reward classification
