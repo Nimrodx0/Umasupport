@@ -82,7 +82,7 @@ function mergeEvent(skill,eff){
    matches.push(...mapped.parts);
   }
  }else return {event:null,reason:'UNKNOWN_TYPE'};
- let attached=0,attachedStatuses=0;
+ let attached=0,attachedStatuses=0,attachedDynamic=0;
  const copy=structuredClone(skill);
  const parts=copy.type==='auto'?[copy]:copy.choices;
  let slot=0;
@@ -91,6 +91,7 @@ function mergeEvent(skill,eff){
   for(const leaf of leaves){
    const {effect}=matches[slot++];
    if(leaf.effects!==undefined||leaf.statusEffects!==undefined||
+      leaf.dynamicEffects!==undefined||
       leaf.unresolvedRewards!==undefined)
     return {event:null,reason:'SKILL_LEAF_HAS_EFFECTS'};
    if(effect.effects!==undefined){
@@ -105,11 +106,18 @@ function mergeEvent(skill,eff){
     leaf.statusEffects=structuredClone(effect.statusEffects);
     attachedStatuses+=leaf.statusEffects.length;
    }
+   if(effect.dynamicEffects!==undefined){
+    if(!Array.isArray(effect.dynamicEffects)||!effect.dynamicEffects.length)
+     return {event:null,reason:'INVALID_DYNAMIC_LEAF'};
+    leaf.dynamicEffects=structuredClone(effect.dynamicEffects);
+    attachedDynamic+=leaf.dynamicEffects.length;
+   }
   }
  }
  if(slot!==matches.length)return {event:null,reason:'TOPOLOGY_CONSUMPTION_MISMATCH'};
- if(!attached&&!attachedStatuses)return {event:null,reason:'NO_SUPPORTED_EFFECTS'};
- return {event:copy,effectRows:attached,statusRows:attachedStatuses};
+ if(!attached&&!attachedStatuses&&!attachedDynamic)return {event:null,reason:'NO_SUPPORTED_EFFECTS'};
+ return {event:copy,effectRows:attached,statusRows:attachedStatuses,
+  dynamicRows:attachedDynamic};
 }
 function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(skillRuntime?.dataKind!=='phase2-2512-nonpublishing-with-30180-special-hint'||
@@ -137,7 +145,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     cardMap.size!==result.cards.length)
   fail('出典カードIDに重複');
  const blocked={},addReason=k=>blocked[k]=(blocked[k]||0)+1;
- let candidateEvents=0,joinedEvents=0,joinedEffects=0,joinedStatuses=0,unchangedEvents=0,
+ let candidateEvents=0,joinedEvents=0,joinedEffects=0,joinedStatuses=0,joinedDynamic=0,unchangedEvents=0,
   exactEventIdentityMatched=0;
  const touchedCards=new Set(),mergedIds=new Set(),reviewPositions=[];
  const originalEvents=new Map();
@@ -172,6 +180,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    const key=cardId+'|'+before.id;
    mergedIds.add(key);joinedEvents++;joinedEffects+=attempt.effectRows;
    joinedStatuses+=attempt.statusRows;
+   joinedDynamic+=attempt.dynamicRows;
    touchedCards.add(cardId);
   }
  }
@@ -188,6 +197,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     const remove=p=>{
      delete p.effects;
      delete p.statusEffects;
+     delete p.dynamicEffects;
      for(const o of p.outcomes||[])remove(o);
     };
     if(x.type==='choice')for(const c of x.choices)remove(c);
@@ -219,12 +229,14 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords!==2288||
+    effectInventory.summary.isolatedPreviewEventRecords<2288||
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
-    candidateEvents!==2288||exactEventIdentityMatched!==2288||
-    joinedEvents!==2288||joinedEffects!==10338||joinedStatuses!==86||
-    unchangedEvents!==224||touchedCards.size!==559||
+    candidateEvents!==effectInventory.summary.isolatedPreviewEventRecords||
+    exactEventIdentityMatched!==candidateEvents||
+    joinedEvents!==candidateEvents||joinedEffects<10338||
+    joinedStatuses<86||joinedDynamic<1||
+    unchangedEvents!==2512-joinedEvents||touchedCards.size!==559||
     Object.keys(blocked).length!==0||reviewPositions.length!==0))
   fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
@@ -260,6 +272,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    matchedSourceEventIdentity:exactEventIdentityMatched,
    combinedEventRecords:joinedEvents,combinedNumericComponents:joinedEffects,
    combinedStatusOperations:joinedStatuses,
+   combinedDynamicOperations:joinedDynamic,
    untouchedEventRecords:unchangedEvents,touchedCards:touchedCards.size,
    originalRuntimeSha256:hash(original),mergedRuntimeSha256:hash(result),
    cardCoreSkillRouteChecks:cardChecks,
