@@ -35,7 +35,7 @@ function fixture(){
     {id:'choice-1',label:'番号1',outcomes:[
      {id:'result-1',label:'結果1',effects:[{kind:'energy',delta:-10}]},
      {id:'result-2',label:'結果2',effects:[{kind:'mood',delta:-1}]}]},
-    {id:'choice-2',label:'番号2',effects:[{kind:'speed',delta:5}]}]},
+    {id:'choice-2',label:'番号2',terminal:true,effects:[{kind:'speed',delta:5}]}]},
    {id:'gt:30001:003:effect-only',name:'匿名3',type:'auto',
     effects:[{kind:'power',delta:10,sourceBundle:'all_stats'}]}
   ]
