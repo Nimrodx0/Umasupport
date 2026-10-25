@@ -226,7 +226,9 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     joinedEvents!==2288||joinedEffects<9928||joinedStatuses<86||
     unchangedEvents!==224||touchedCards.size!==558||
     Object.keys(blocked).length!==0||reviewPositions.length!==0))
-  fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化');
+  fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
+   JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
+    joinedStatuses,unchangedEvents,touchedCards:touchedCards.size,blocked}));
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
  let cardChecks=0;
