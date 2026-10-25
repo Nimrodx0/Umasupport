@@ -70,6 +70,7 @@ on:
       - 'poc/src/core.js'
       - 'poc/src/phase2_2512_private_effect_join.cjs'
       - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
+      - 'poc/tests/phase2_gt_status_effects.test.cjs'
       - 'poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs'
       - 'poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs'
       - 'poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs'
@@ -191,6 +192,8 @@ jobs:
           node umasupport/poc/tools/audit_phase2_mei_effect_runtime.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
+      - name: Verify condition and cure effect operations with result-dependent synthetic fixtures
+        run: node --test umasupport/poc/tests/phase2_gt_status_effects.test.cjs
       - name: Inventory all 2488 GT non-skill effects and verify isolated schema routes in private CI only
         run: |
           node --test umasupport/poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs
