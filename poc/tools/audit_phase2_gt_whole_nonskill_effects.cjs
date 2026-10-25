@@ -36,12 +36,13 @@ function main(args){
     result.summary.chainEndAcceptedSourceMentions!==91||
     result.summary.chainEndRejectedSourceMentions!==18||
     result.summary.isolatedTerminalOutcomeRecords!==90||
-    result.summary.repeatedNumericSourceMentions>0&&
-       result.summary.isolatedOrderedRepeatedNumericMentions===0||
-    result.summary.isolatedPreviewEventRecords<2395||
-    result.summary.eligibleRoutes<4254||
-    result.summary.blockedRoutes>122||
-    result.summary.blockedEvents>93||
+    result.summary.repeatedNumericSourceMentions!==25||
+    result.summary.eligibleRepeatedNumericSourceMentions!==10||
+    result.summary.isolatedOrderedRepeatedNumericMentions!==10||
+    result.summary.isolatedPreviewEventRecords!==2402||
+    result.summary.eligibleRoutes!==4261||
+    result.summary.blockedRoutes!==115||
+    result.summary.blockedEvents!==86||
     result.summary.unrecognizedEffectMentions!==90||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
