@@ -110,7 +110,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  const blocked={},addReason=k=>blocked[k]=(blocked[k]||0)+1;
  let candidateEvents=0,joinedEvents=0,joinedEffects=0,unchangedEvents=0,
   exactEventIdentityMatched=0;
- const touchedCards=new Set(),mergedIds=new Set();
+ const touchedCards=new Set(),mergedIds=new Set(),reviewPositions=[];
  const originalEvents=new Map();
  for(const card of original.cards)for(const event of card.events){
   const key=card.cardId+'|'+event.id;
@@ -134,7 +134,11 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     addReason('GT_RUNTIME_EVENT_ID_NOT_FOUND');continue;
    }
    const attempt=mergeEvent(before,effectEvent);
-   if(!attempt.event){addReason(attempt.reason);continue;}
+   if(!attempt.event){
+    addReason(attempt.reason);
+    reviewPositions.push({cardId,sourceOrdinal:ordinal,reason:attempt.reason});
+    continue;
+   }
    card.events[idx]=attempt.event;
    const key=cardId+'|'+before.id;
    mergedIds.add(key);joinedEvents++;joinedEffects+=attempt.effectRows;
@@ -228,6 +232,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
    originalRuntimeSha256:hash(original),mergedRuntimeSha256:hash(result),
    cardCoreSkillRouteChecks:cardChecks,
    blockedReasons:Object.fromEntries(Object.entries(blocked).sort()),
+   reviewPositions:reviewPositions.sort((a,b)=>a.cardId.localeCompare(b.cardId)||a.sourceOrdinal-b.sourceOrdinal),
    sourceDatasetPublished:false,publicEventsAdded:0}
  };
 }
