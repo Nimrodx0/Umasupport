@@ -89,7 +89,12 @@ function mergeEvent(skill,eff){
  for(const p of parts){
   const leaves=p.outcomes||[p];
   for(const leaf of leaves){
-   const {effect}=matches[slot++];
+   const {effect,skill:skillLeaf}=matches[slot++];
+   // Both source and skill-only runtime must agree which exact result ends
+   // a support chain. Never copy an effect from an early-exit result to
+   // a continuing result or vice versa.
+   if((effect.terminal===true)!==(skillLeaf.terminal===true))
+    return {event:null,reason:'SOURCE_TERMINAL_MISMATCH'};
    if(leaf.effects!==undefined||leaf.statusEffects!==undefined||
       leaf.dynamicEffects!==undefined||
       leaf.unresolvedRewards!==undefined)
@@ -229,20 +234,22 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords!==2309||
+    effectInventory.summary.isolatedPreviewEventRecords!==2395||
     effectInventory.summary.sourceEvents!==2488||
+    effectInventory.summary.chainEndMentions!==109||
+    effectInventory.summary.isolatedTerminalOutcomeRecords!==90||
     originalEvents.size!==2512||
-    candidateEvents!==2309||exactEventIdentityMatched!==2309||
-    joinedEvents!==2308||joinedEffects!==10413||
-    joinedStatuses!==88||joinedDynamic!==22||
-    unchangedEvents!==204||touchedCards.size!==559||
+    candidateEvents!==2395||exactEventIdentityMatched!==2395||
+    joinedEvents!==2394||joinedEffects!==10919||
+    joinedStatuses!==92||joinedDynamic!==22||
+    unchangedEvents!==118||touchedCards.size!==559||
     blocked.EVENT_TYPE_MISMATCH!==1||
     Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
     reviewPositions.length!==1||
     reviewPositions[0]?.cardId!=='30080'||
     reviewPositions[0]?.sourceOrdinal!==6||
     reviewPositions[0]?.reason!=='EVENT_TYPE_MISMATCH'))
-  fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
+  fail('固定全件の2512スキルイベント・2395非スキル／結果別打ち切り統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
     joinedStatuses,joinedDynamic,unchangedEvents,touchedCards:touchedCards.size,blocked,reviewPositions}));
  // Confirm every *selected route* has unchanged skill semantics without

@@ -21,7 +21,7 @@ function main(args){
     result.summary.statusSourceMentions!==121||
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
-    result.summary.isolatedPreviewStatusRecords!==88||
+    result.summary.isolatedPreviewStatusRecords!==92||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
@@ -32,10 +32,14 @@ function main(args){
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
     result.summary.isolatedPreviewDynamicRecords!==23||
-    result.summary.isolatedPreviewEventRecords!==2309||
-    result.summary.eligibleRoutes!==4164||
-    result.summary.blockedRoutes!==212||
-    result.summary.blockedEvents!==179||
+    result.summary.chainEndMentions!==109||
+    result.summary.chainEndAcceptedSourceMentions!==91||
+    result.summary.chainEndRejectedSourceMentions!==18||
+    result.summary.isolatedTerminalOutcomeRecords!==90||
+    result.summary.isolatedPreviewEventRecords!==2395||
+    result.summary.eligibleRoutes!==4254||
+    result.summary.blockedRoutes!==122||
+    result.summary.blockedEvents!==93||
     result.summary.unrecognizedEffectMentions!==90||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||

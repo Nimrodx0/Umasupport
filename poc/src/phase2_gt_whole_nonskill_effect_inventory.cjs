@@ -65,6 +65,8 @@ function analyze({documents,index},{strict=false}={}){
   nonZeroNumericNonSkillMentions=0,zeroNonSkillMentions=0,
   blockedNumericEffectMentions=0,eligibleNumericEffectMentions=0,
   sourceSkillEffectMentions=0,sourceControlEffectMentions=0,
+  chainEndMentions=0,chainEndAcceptedSourceMentions=0,
+  chainEndRejectedSourceMentions=0,isolatedTerminalOutcomeRecords=0,
   unrecognizedEffectMentions=0,invalidRecipientNumericMentions=0,
   allStatsMentions=0,allStatsValidMentions=0,
   allStatsInvalidMentions=0,allStatsZeroMentions=0,
@@ -126,7 +128,7 @@ function analyze({documents,index},{strict=false}={}){
      const routeOrdinal=routeIndex+1;
      const problems=new Set(choiceIssues);
      if(route.when.length>0)problems.add('SOURCE_ROUTE_GUARD_UNMODELED');
-     let countsInRoute=0,numericRows=0,hasControl=false;
+     let countsInRoute=0,numericRows=0,hasControl=false,explicitTerminal=false;
      const effects=[],statusEffects=[],dynamicEffects=[],duplicates=new Set(),statusKeys=new Set(),markers=[];
      for(const [effectIndex,effect] of route.effects.entries()){
       allEffectMentions++;
@@ -138,8 +140,20 @@ function analyze({documents,index},{strict=false}={}){
        continue; // Separate skill engine handles hints and direct acquisition.
       }
       if(CONTROL_TYPES.has(kind)){
-       sourceControlEffectMentions++;hasControl=true;markers.push(kind);
-       continue; // Preserve markers for source audit, do not invent chain edges.
+       sourceControlEffectMentions++;markers.push(kind);
+       if(kind==='chain_end'){
+        chainEndMentions++;
+        // Pinned GT ee is a branch-specific stop; only arrows with exactly
+        // one parameterless terminal marker get lifted. The skill projection
+        // independently checks its terminal flag on that same result.
+        if(event.section==='arrows'&&Object.keys(effect).length===1&&!explicitTerminal){
+         explicitTerminal=true;chainEndAcceptedSourceMentions++;
+        }else{
+         hasControl=true;chainEndRejectedSourceMentions++;
+         problems.add('CHAIN_END_SOURCE_CONTEXT_UNSUPPORTED');
+        }
+       }else hasControl=true;
+       continue;
       }
       if(kind==='mt'){
        scenarioCurrencyMentions++;eventHasNonSkill=true;countsInRoute++;
@@ -285,9 +299,11 @@ function analyze({documents,index},{strict=false}={}){
       quarantinedScalarEffects:eligible?0:numericRows,
       skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
+      explicitTerminal:eligible?explicitTerminal:null,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
-     projectedResults.push({eligible,effects,statusEffects,dynamicEffects,markers});
+     projectedResults.push({eligible,effects,statusEffects,dynamicEffects,markers,
+      terminal:explicitTerminal});
     }
     projectionParts.push({sourceLabelWasEmpty:!choice.label.trim(),randomAlternative,
      choiceOrdinal,projectedResults,routeCount:routes.length});
@@ -303,6 +319,7 @@ function analyze({documents,index},{strict=false}={}){
     const name='非公開元イベント'+String(ordinal).padStart(3,'0');
     const eid='gt:'+cardId+':'+String(ordinal).padStart(3,'0')+':effect-only';
     const outputParts=route=>({
+     ...(route.terminal?{terminal:true}:{}),
      ...(route.effects.length?{effects:route.effects}:{}),
      ...(route.statusEffects.length?{statusEffects:route.statusEffects}:{}),
      ...(route.dynamicEffects.length?{dynamicEffects:route.dynamicEffects}:{})
@@ -323,6 +340,8 @@ function analyze({documents,index},{strict=false}={}){
       label:'選択肢'+x.choiceOrdinal,...part(x)}));
     if(projectedResultsAreIncorrect(ev,projectionParts))fail('結果順序の保存に失敗');
     previewEvents.push(ev);isolatedPreviewEventRecords++;
+    isolatedTerminalOutcomeRecords+=projectionParts.reduce((sum,x)=>sum+
+     x.projectedResults.filter(r=>r.terminal).length,0);
     isolatedPreviewDynamicRecords+=projectionParts.reduce((sum,x)=>sum+
      x.projectedResults.reduce((n,r)=>n+r.dynamicEffects.length,0),0);
     isolatedPreviewStatusRecords+=projectionParts.reduce((sum,x)=>sum+
@@ -344,6 +363,7 @@ function analyze({documents,index},{strict=false}={}){
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
+    chainEndMentions!==chainEndAcceptedSourceMentions+chainEndRejectedSourceMentions||
     allStatsExpandedEffectComponents!==5*allStatsValidMentions||
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     randomStatMentions!==validRandomStatMentions+
@@ -399,6 +419,8 @@ function analyze({documents,index},{strict=false}={}){
    recognizedNonSkillMentions,integerNonSkillMentions,
    nonZeroNumericNonSkillMentions,zeroNonSkillMentions,
    sourceSkillEffectMentions,sourceControlEffectMentions,
+   chainEndMentions,chainEndAcceptedSourceMentions,chainEndRejectedSourceMentions,
+   isolatedTerminalOutcomeRecords,
    unrecognizedEffectMentions,invalidRecipientNumericMentions,
    allStatsMentions,allStatsValidMentions,allStatsInvalidMentions,
    allStatsZeroMentions,allStatsExpandedEffectComponents,

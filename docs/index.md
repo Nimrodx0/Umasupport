@@ -86,3 +86,4 @@
 - [Phase 2・固定GT121状態操作を候補として分岐に導入し、非スキル構造2,288件へ拡張](phase2-gt-status-operation-adoption-20261025.md)
 - [Phase 2・GTランダム能力値18記載の対象未確定処理と2,306件の数値・状態構造化](phase2-gt-random-stat-targets-20261025.md)
 - [Phase 2・GTグランドライブ最少パフォーマンスと最大体力までの回復：2,309件の非公開構造化](phase2-grand-live-lowest-and-full-energy-20261025.md)
+- [Phase 2・GT連続イベント結果別打ち切り109記載の厳格照合と2,395件の非公開構造化](phase2-gt-chain-end-outcome-proof-20261025.md)
