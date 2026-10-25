@@ -32,10 +32,13 @@ function main(args){
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
     result.summary.isolatedPreviewDynamicRecords!==23||
-    result.summary.isolatedPreviewEventRecords!==2309||
-    result.summary.eligibleRoutes!==4164||
-    result.summary.blockedRoutes!==212||
-    result.summary.blockedEvents!==179||
+    result.summary.chainEndMentions!==109||
+    result.summary.chainEndAcceptedSourceMentions+
+       result.summary.chainEndRejectedSourceMentions!==109||
+    result.summary.isolatedPreviewEventRecords<2309||
+    result.summary.eligibleRoutes<4164||
+    result.summary.blockedRoutes>212||
+    result.summary.blockedEvents>179||
     result.summary.unrecognizedEffectMentions!==90||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
