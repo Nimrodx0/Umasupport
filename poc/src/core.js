@@ -382,7 +382,7 @@ function clearDependentState(card,choices,outcomes,eventId){
 function clearDescendants(card,choices,eventId){
   return clearDependentState(card,choices,{},eventId).choices;
 }
-const core={directRoutes,directEffectRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability,outcomeReachability};
+const core={directRoutes,directEffectRoutes,directStatusRoutes,aggregate,coverage,goalStatus,combinedRows,hierarchyRows,clearDescendants,clearDependentState,isReachable,reachability,choiceReachability,outcomeReachability};
 if(typeof module!=='undefined'&&module.exports)module.exports=core;
 g.UmaCore=core;
 })(typeof globalThis!=='undefined'?globalThis:this);
