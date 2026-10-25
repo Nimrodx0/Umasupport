@@ -166,7 +166,7 @@ test('invalid all_stats inputs quarantine, but overlapping distinct source recor
   assert.equal(x.summary.blockedEvents,0);
   assert.equal(x.summary.isolatedPreviewEventRecords,1);
   assert.equal(x.summary.isolatedOrderedRepeatedNumericMentions,
-   effects[1].type==='all_stats'?5:1);
+   effects.every(x=>x.type==='all_stats')?5:1);
   const ordered=x.isolatedPreview.cards[0].events[0].effects.filter(
    e=>e.kind==='speed');
   assert.deepEqual(ordered.map(e=>e.sourceEffectOrdinal),[1,2]);
