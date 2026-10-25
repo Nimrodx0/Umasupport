@@ -27,9 +27,16 @@ function main(args){
     result.summary.invalidRandomStatMentions!==0||
     result.summary.isolatedPreviewDynamicRecords!==18||
     result.summary.scenarioCurrencyMentions!==4||
+    result.summary.validScenarioCurrencyMentions!==4||
+    result.summary.invalidScenarioCurrencyMentions!==0||
     result.summary.fullEnergyMentions!==1||
-    result.summary.isolatedPreviewEventRecords<2306||
-    result.summary.blockedEvents>182||
+    result.summary.validFullEnergyMentions!==1||
+    result.summary.invalidFullEnergyMentions!==0||
+    result.summary.isolatedPreviewDynamicRecords!==23||
+    result.summary.isolatedPreviewEventRecords!==2309||
+    result.summary.eligibleRoutes!==4164||
+    result.summary.blockedRoutes!==212||
+    result.summary.blockedEvents!==179||
     result.summary.unrecognizedEffectMentions!==90||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
