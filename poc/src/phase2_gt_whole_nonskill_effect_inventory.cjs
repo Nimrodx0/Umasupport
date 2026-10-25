@@ -71,6 +71,9 @@ function analyze({documents,index},{strict=false}={}){
   allStatsExpandedEffectComponents=0,
   statusSourceMentions=0,statusValidMentions=0,statusInvalidMentions=0,
   isolatedPreviewStatusRecords=0,
+  randomStatMentions=0,validRandomStatMentions=0,
+  invalidRandomStatMentions=0,zeroRandomStatMentions=0,
+  isolatedPreviewDynamicRecords=0,
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
@@ -120,7 +123,7 @@ function analyze({documents,index},{strict=false}={}){
      const problems=new Set(choiceIssues);
      if(route.when.length>0)problems.add('SOURCE_ROUTE_GUARD_UNMODELED');
      let countsInRoute=0,numericRows=0,hasControl=false;
-     const effects=[],statusEffects=[],duplicates=new Set(),statusKeys=new Set(),markers=[];
+     const effects=[],statusEffects=[],dynamicEffects=[],duplicates=new Set(),statusKeys=new Set(),markers=[];
      for(const [effectIndex,effect] of route.effects.entries()){
       allEffectMentions++;
       if(!obj(effect)||typeof effect.type!=='string')fail('効果レコード形状不正');
@@ -133,6 +136,27 @@ function analyze({documents,index},{strict=false}={}){
       if(CONTROL_TYPES.has(kind)){
        sourceControlEffectMentions++;hasControl=true;markers.push(kind);
        continue; // Preserve markers for source audit, do not invent chain edges.
+      }
+      if(kind==='random_stats'){
+       randomStatMentions++;eventHasNonSkill=true;countsInRoute++;
+       // Pinned event_engine.py applies one signed scalar to min(max(1,N),5)
+       // unique stats sampled without replacement. Never choose a stat here.
+       const delta=parseDelta(effect.value);
+       const rawCount=effect.stat_count;
+       if(delta===null||
+          rawCount!==undefined&&rawCount!==null&&!Number.isSafeInteger(rawCount)||
+          Object.keys(effect).some(k=>!['type','value','stat_count'].includes(k))){
+        invalidRandomStatMentions++;
+        problems.add('RANDOM_STATS_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(delta===0){zeroRandomStatMentions++;continue;}
+       const statCount=Math.min(5,Math.max(1,rawCount??1));
+       if(dynamicEffects.length)problems.add('DUPLICATE_RANDOM_STATS_UNADJUDICATED');
+       dynamicEffects.push({kind:'random-stats',delta,statCount,
+        targetSelection:'random-distinct'});
+       validRandomStatMentions++;
+       continue;
       }
       if(STATUS_TYPES.has(kind)){
        statusSourceMentions++;eventHasNonSkill=true;countsInRoute++;
@@ -219,13 +243,15 @@ function analyze({documents,index},{strict=false}={}){
       classifiedNonSkillMentions:countsInRoute,
       eligibleScalarEffects:eligible?effects:[],
       eligibleStatusEffects:eligible?statusEffects:[],
+      eligibleDynamicEffects:eligible?dynamicEffects:[],
+      quarantinedDynamicEffects:eligible?0:dynamicEffects.length,
       quarantinedStatusEffects:eligible?0:statusEffects.length,
       quarantinedScalarEffects:eligible?0:numericRows,
       skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
-     projectedResults.push({eligible,effects,statusEffects,markers});
+     projectedResults.push({eligible,effects,statusEffects,dynamicEffects,markers});
     }
     projectionParts.push({sourceLabelWasEmpty:!choice.label.trim(),randomAlternative,
      choiceOrdinal,projectedResults,routeCount:routes.length});
@@ -242,14 +268,16 @@ function analyze({documents,index},{strict=false}={}){
     const eid='gt:'+cardId+':'+String(ordinal).padStart(3,'0')+':effect-only';
     const outputParts=route=>({
      ...(route.effects.length?{effects:route.effects}:{}),
-     ...(route.statusEffects.length?{statusEffects:route.statusEffects}:{})
+     ...(route.statusEffects.length?{statusEffects:route.statusEffects}:{}),
+     ...(route.dynamicEffects.length?{dynamicEffects:route.dynamicEffects}:{})
     });
     const part=x=>{
      if(x.routeCount===1)return outputParts(x.projectedResults[0]);
      return {outcomes:x.projectedResults.map((route,i)=>({
       id:'result-'+(i+1),label:'結果'+(i+1),
       ...outputParts(route),
-      ...(!route.effects.length&&!route.statusEffects.length?{rewards:[]}:{})}))};
+      ...(!route.effects.length&&!route.statusEffects.length&&
+       !route.dynamicEffects.length?{rewards:[]}:{})}))};
     };
     const isAuto=projectionParts.length===1&&projectionParts[0].sourceLabelWasEmpty;
     const ev={id:eid,name,type:isAuto?'auto':'choice',
@@ -259,6 +287,8 @@ function analyze({documents,index},{strict=false}={}){
       label:'選択肢'+x.choiceOrdinal,...part(x)}));
     if(projectedResultsAreIncorrect(ev,projectionParts))fail('結果順序の保存に失敗');
     previewEvents.push(ev);isolatedPreviewEventRecords++;
+    isolatedPreviewDynamicRecords+=projectionParts.reduce((sum,x)=>sum+
+     x.projectedResults.reduce((n,r)=>n+r.dynamicEffects.length,0),0);
     isolatedPreviewStatusRecords+=projectionParts.reduce((sum,x)=>sum+
      x.projectedResults.reduce((n,r)=>n+r.statusEffects.length,0),0);
     isolatedPreviewEffectRecords+=projectionParts.reduce((sum,x)=>sum+
@@ -273,12 +303,14 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==eligibleRoutes+blockedRoutes||
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
-    allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+
+    allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+randomStatMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
     allStatsExpandedEffectComponents!==5*allStatsValidMentions||
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
+    randomStatMentions!==validRandomStatMentions+
+      invalidRandomStatMentions+zeroRandomStatMentions||
     nonZeroNumericNonSkillMentions+zeroNonSkillMentions!==integerNonSkillMentions||
     nonZeroNumericNonSkillMentions+allStatsExpandedEffectComponents!==
       eligibleNumericEffectMentions+blockedNumericEffectMentions+
@@ -296,6 +328,10 @@ function analyze({documents,index},{strict=false}={}){
   const routes=core.directEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{
    choices:{},outcomes:{}});
   const statuses=core.directStatusRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
+  const dynamic=core.directDynamicEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
+  if(dynamic.some(r=>r.source!=='event-dynamic-effect'||
+     !r.unresolvedTargets||r.targetSelection!=='random-distinct'))
+   fail('ランダム能力の対象を確定能力へ偽装しました');
   if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
    fail('固定出典の状態候補を誤って確定状態に変換');
   if(routes.some(r=>r.source!=='event-effect'||!Number.isSafeInteger(r.delta)))
@@ -324,6 +360,8 @@ function analyze({documents,index},{strict=false}={}){
    allStatsZeroMentions,allStatsExpandedEffectComponents,
    statusSourceMentions,statusValidMentions,statusInvalidMentions,
    isolatedPreviewStatusRecords,
+   randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
+   zeroRandomStatMentions,isolatedPreviewDynamicRecords,
    routesWithNonSkill,noNonSkillRoutes,eligibleRoutes,blockedRoutes,
    eligibleEvents,blockedEvents,noNonSkillEvents,
    affectedCards:affectedCards.size,
@@ -340,12 +378,12 @@ function projectedResultsAreIncorrect(event,parts){
  if(event.type==='choice')return event.choices.length!==parts.length||
   event.choices.some((p,i)=>parts[i].routeCount>1?
    p.outcomes?.length!==parts[i].routeCount:
-   !(Array.isArray(p.effects)||Array.isArray(p.statusEffects)||
+   !(Array.isArray(p.effects)||Array.isArray(p.statusEffects)||Array.isArray(p.dynamicEffects)||
      p.effects===undefined));
  return parts.length!==1||
   (parts[0].routeCount>1?
    event.outcomes?.length!==parts[0].routeCount:
-   !(Array.isArray(event.effects)||Array.isArray(event.statusEffects)||
+   !(Array.isArray(event.effects)||Array.isArray(event.statusEffects)||Array.isArray(event.dynamicEffects)||
      event.effects===undefined));
 }
 module.exports={analyze};
