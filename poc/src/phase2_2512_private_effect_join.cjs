@@ -223,8 +223,8 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
     candidateEvents!==2288||exactEventIdentityMatched!==2288||
-    joinedEvents!==2288||joinedEffects<9928||joinedStatuses<86||
-    unchangedEvents!==224||touchedCards.size!==558||
+    joinedEvents!==2288||joinedEffects!==10338||joinedStatuses!==86||
+    unchangedEvents!==224||touchedCards.size!==559||
     Object.keys(blocked).length!==0||reviewPositions.length!==0))
   fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
