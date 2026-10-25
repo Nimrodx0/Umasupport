@@ -50,6 +50,12 @@
 
 `UmaCore.directDynamicEffectRoutes`は既存のイベント到達・選択・結果条件を使い、`unresolvedTargets:true`かつ`conditional:true`の**対象能力未確定**経路を返す。単一選択でも能力の名前が特定されるわけではない。この候補をスキル集計・確定能力合計へ混入しない。GT固定2,488件から2,306イベントを孤立した非スキル効果形式へ変換し、そのうち2,305件を非公開スキル用2,512イベントへ同一位置で結合。元GTがautoで既に3択補正したSSR30080#6だけは構造相違により保留。[固定18記載と元コードの根拠・統合監査](phase2-gt-random-stat-targets-20261025.md)。
 
+## 2026-10-25：グランドライブ最少パフォーマンスと現最大体力回復
+
+元GameToraの`mt`は固定の能力値・スキルPtではなく、グランドライブにおける**実行時最少のパフォーマンス項目**へ加算する動的効果。専用の`dynamicEffects[]`形式として`{kind:'grand-live-lowest-performance',delta:20,possible:true,scenario:'grand-live',targetSelection:'lowest-performance-at-runtime'}`を保持する。元GTの`full_energy`は体力+100ではなく、**実行時点の最大体力へ設定する**ため`{kind:'restore-current-max-energy',possible:true,targetSelection:'current-max-energy'}`とし、固定回復量の`delta`は指定しない。`UmaCore.directDynamicEffectRoutes`は結果選択・到達条件を守り、対象能力／効果量の実行時解決が必要な非公開の候補として返す。通常スキル`rewards[]`や確定増減`effects[]`には混合しない。
+
+固定元全件で`mt`4記載、`full_energy`1記載を元型として追加認識し、孤立した非スキル構造対象イベント2,306→**2,309**。既存SSR30080イベント#6の裁定済み3択例外は元GTのauto効果を勝手に配らず保留する。[固定出典・全件測定](phase2-grand-live-lowest-and-full-energy-20261025.md)。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。
