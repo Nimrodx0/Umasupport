@@ -83,7 +83,9 @@ function analyze({documents,index},{strict=false}={}){
   routesWithNonSkill=0,eligibleRoutes=0,blockedRoutes=0,
   noNonSkillRoutes=0,eligibleEvents=0,blockedEvents=0,
   noNonSkillEvents=0,isolatedPreviewEventRecords=0,
-  isolatedPreviewEffectRecords=0,isolatedPreviewOutcomeRecords=0;
+  isolatedPreviewEffectRecords=0,isolatedPreviewOutcomeRecords=0,
+  repeatedNumericSourceMentions=0,eligibleRepeatedNumericSourceMentions=0,
+  isolatedOrderedRepeatedNumericMentions=0;
  const sourceTypeCounts=new Map(),issueCounts=new Map();
  const rows=[],projectedCards=[],affectedCards=new Set();
  const countIssues=issues=>{for(const code of issues)count(issueCounts,code);};
@@ -129,7 +131,22 @@ function analyze({documents,index},{strict=false}={}){
      const problems=new Set(choiceIssues);
      if(route.when.length>0)problems.add('SOURCE_ROUTE_GUARD_UNMODELED');
      let countsInRoute=0,numericRows=0,hasControl=false,explicitTerminal=false;
-     const effects=[],statusEffects=[],dynamicEffects=[],duplicates=new Set(),statusKeys=new Set(),markers=[];
+     const effects=[],statusEffects=[],dynamicEffects=[],
+      seenNumeric=new Map(),statusKeys=new Set(),markers=[];
+     let repeatedNumericInRoute=0;
+     const addOrderedNumeric=(record,sourceOrdinal)=>{
+       const key=record.kind+'|'+(record.recipientCharId??'');
+       const earlier=seenNumeric.get(key);
+       if(earlier){
+         // Exact original GT result-effect position (1-based). Do not sum.
+         effects[earlier.effectIndex].sourceEffectOrdinal=earlier.sourceOrdinal;
+         record.sourceEffectOrdinal=sourceOrdinal;
+         repeatedNumericInRoute++;
+         repeatedNumericSourceMentions++;
+       }
+       seenNumeric.set(key,{effectIndex:effects.length,sourceOrdinal});
+       effects.push(record);
+     };
      for(const [effectIndex,effect] of route.effects.entries()){
       allEffectMentions++;
       if(!obj(effect)||typeof effect.type!=='string')fail('効果レコード形状不正');
@@ -245,10 +262,8 @@ function analyze({documents,index},{strict=false}={}){
        if(value===0){allStatsZeroMentions++;continue;}
        allStatsValidMentions++;
        for(const statKind of STAT_KINDS){
-        if(duplicates.has(statKind+'|'))
-         problems.add('DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED');
-        duplicates.add(statKind+'|');
-        effects.push({kind:statKind,delta:value,sourceBundle:'all_stats'});
+        addOrderedNumeric({kind:statKind,delta:value,sourceBundle:'all_stats'},
+         effectIndex+1);
         numericRows++;
         allStatsExpandedEffectComponents++;
        }
@@ -276,16 +291,15 @@ function analyze({documents,index},{strict=false}={}){
         continue;
       }
       const recipientCharId=effect.char_id;
-      const k=kind+'|'+(recipientCharId??'');
-      if(duplicates.has(k))problems.add('DUPLICATE_EFFECT_COMPONENT_UNADJUDICATED');
-      duplicates.add(k);
-      effects.push({kind,delta,...(recipientCharId===undefined?{}:{recipientCharId})});
+      addOrderedNumeric({kind,delta,
+       ...(recipientCharId===undefined?{}:{recipientCharId})},effectIndex+1);
       numericRows++;
      }
      if(hasControl)problems.add('CONTROL_MARKERS_REQUIRE_BRANCH_ADJUDICATION');
      const eligible=problems.size===0;
      if(countsInRoute)routesWithNonSkill++;
-     if(eligible){eligibleRoutes++;eligibleNumericEffectMentions+=numericRows;}
+     if(eligible){eligibleRoutes++;eligibleNumericEffectMentions+=numericRows;
+      eligibleRepeatedNumericSourceMentions+=repeatedNumericInRoute;}
      else{blockedRoutes++;blockedNumericEffectMentions+=numericRows;
       eventHasBlock=true;countIssues(problems);}
      if(!countsInRoute)noNonSkillRoutes++;
@@ -299,10 +313,12 @@ function analyze({documents,index},{strict=false}={}){
       quarantinedScalarEffects:eligible?0:numericRows,
       skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
+      orderedRepeatedNumericMentions:eligible?repeatedNumericInRoute:0,
       explicitTerminal:eligible?explicitTerminal:null,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
      projectedResults.push({eligible,effects,statusEffects,dynamicEffects,markers,
+      repeatedNumericInRoute,
       terminal:explicitTerminal});
     }
     projectionParts.push({sourceLabelWasEmpty:!choice.label.trim(),randomAlternative,
@@ -340,6 +356,8 @@ function analyze({documents,index},{strict=false}={}){
       label:'選択肢'+x.choiceOrdinal,...part(x)}));
     if(projectedResultsAreIncorrect(ev,projectionParts))fail('結果順序の保存に失敗');
     previewEvents.push(ev);isolatedPreviewEventRecords++;
+    isolatedOrderedRepeatedNumericMentions+=projectionParts.reduce((sum,x)=>sum+
+     x.projectedResults.reduce((n,r)=>n+r.repeatedNumericInRoute,0),0);
     isolatedTerminalOutcomeRecords+=projectionParts.reduce((sum,x)=>sum+
      x.projectedResults.filter(r=>r.terminal).length,0);
     isolatedPreviewDynamicRecords+=projectionParts.reduce((sum,x)=>sum+
@@ -436,7 +454,9 @@ function analyze({documents,index},{strict=false}={}){
    affectedCards:affectedCards.size,
    eligibleNumericEffectMentions,blockedNumericEffectMentions,
    isolatedPreviewEventRecords,isolatedPreviewEffectRecords,
-   isolatedPreviewOutcomeRecords,automaticRuntimeAdoptions:0,
+   isolatedPreviewOutcomeRecords,
+   repeatedNumericSourceMentions,eligibleRepeatedNumericSourceMentions,
+   isolatedOrderedRepeatedNumericMentions,automaticRuntimeAdoptions:0,
    publishedEventRecords:0},
   sourceEffectTypes:sorted(sourceTypeCounts),
   blockedReasons:sorted(issueCounts),rows,
