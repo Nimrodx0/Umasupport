@@ -219,15 +219,14 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords!==2220||
+    effectInventory.summary.isolatedPreviewEventRecords!==2288||
     effectInventory.summary.sourceEvents!==2488||
     originalEvents.size!==2512||
-    candidateEvents!==2220||exactEventIdentityMatched!==2220||
-    joinedEvents<2220||joinedEffects<9928||
-    unchangedEvents!==292||touchedCards.size!==558||
-    exactEventIdentityMatched!==2220||
+    candidateEvents!==2288||exactEventIdentityMatched!==2288||
+    joinedEvents!==2288||joinedEffects<9928||joinedStatuses<86||
+    unchangedEvents!==224||touchedCards.size!==558||
     Object.keys(blocked).length!==0||reviewPositions.length!==0))
-  fail('固定全件の2512/2220統合数と11件の分岐不整合が変化');
+  fail('固定全件の2512スキルイベント・2288非スキル／状態イベント統合が変化');
  // Confirm every *selected route* has unchanged skill semantics without
  // assuming an event has occurred or an RNG outcome was selected.
  let cardChecks=0;
