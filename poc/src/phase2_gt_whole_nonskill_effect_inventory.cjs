@@ -78,6 +78,8 @@ function analyze({documents,index},{strict=false}={}){
   randomStatMentions=0,validRandomStatMentions=0,
   invalidRandomStatMentions=0,zeroRandomStatMentions=0,
   isolatedPreviewDynamicRecords=0,
+  uafAllDiscMentions=0,validUafAllDiscMentions=0,
+  invalidUafAllDiscMentions=0,zeroUafAllDiscMentions=0,
   scenarioCurrencyMentions=0,validScenarioCurrencyMentions=0,
   invalidScenarioCurrencyMentions=0,zeroScenarioCurrencyMentions=0,
   fullEnergyMentions=0,validFullEnergyMentions=0,
@@ -173,6 +175,27 @@ function analyze({documents,index},{strict=false}={}){
          problems.add('CHAIN_END_SOURCE_CONTEXT_UNSUPPORTED');
         }
        }else hasControl=true;
+       continue;
+      }
+      if(kind==='all_disc'){
+       uafAllDiscMentions++;eventHasNonSkill=true;countsInRoute++;
+       // Fixed GT U.A.F. scenario-linked Ryoka outings: all fifteen SPORTS
+       // discipline levels, not the five base stats and not an unconditional
+       // gain outside U.A.F. Check the complete value/field shape.
+       const delta=parseDelta(effect.value);
+       if(delta===null||
+          Object.keys(effect).some(k=>!['type','value'].includes(k))){
+        invalidUafAllDiscMentions++;
+        problems.add('UAF_ALL_DISC_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(delta===0){zeroUafAllDiscMentions++;continue;}
+       if(dynamicEffects.some(x=>x.kind==='uaf-all-disciplines'))
+        problems.add('DUPLICATE_UAF_ALL_DISC_UNADJUDICATED');
+       dynamicEffects.push({kind:'uaf-all-disciplines',delta,
+        scenario:'uaf',possible:true,
+        targetSelection:'all-15-sports-disciplines'});
+       validUafAllDiscMentions++;
        continue;
       }
       if(kind==='mt'){
@@ -389,7 +412,7 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
     allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+randomStatMentions+
-      scenarioCurrencyMentions+fullEnergyMentions+
+      uafAllDiscMentions+scenarioCurrencyMentions+fullEnergyMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
@@ -398,6 +421,8 @@ function analyze({documents,index},{strict=false}={}){
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     randomStatMentions!==validRandomStatMentions+
       invalidRandomStatMentions+zeroRandomStatMentions||
+    uafAllDiscMentions!==validUafAllDiscMentions+
+      invalidUafAllDiscMentions+zeroUafAllDiscMentions||
     scenarioCurrencyMentions!==validScenarioCurrencyMentions+
       invalidScenarioCurrencyMentions+zeroScenarioCurrencyMentions||
     fullEnergyMentions!==validFullEnergyMentions+invalidFullEnergyMentions||
@@ -421,10 +446,12 @@ function analyze({documents,index},{strict=false}={}){
   const dynamic=core.directDynamicEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
   if(dynamic.some(r=>r.source!=='event-dynamic-effect'||
      !r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
-       'current-max-energy'].includes(r.targetSelection)||
+       'current-max-energy','all-15-sports-disciplines'].includes(r.targetSelection)||
      r.dynamicKind==='grand-live-lowest-performance'&&
        (r.scenario!=='grand-live'||r.possible!==true)||
-     r.dynamicKind==='restore-current-max-energy'&&r.possible!==true))
+     r.dynamicKind==='restore-current-max-energy'&&r.possible!==true||
+     r.dynamicKind==='uaf-all-disciplines'&&
+       (r.scenario!=='uaf'||r.possible!==true)))
    fail('ランダム能力の対象を確定能力へ偽装しました');
   if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
    fail('固定出典の状態候補を誤って確定状態に変換');
@@ -460,6 +487,8 @@ function analyze({documents,index},{strict=false}={}){
    isolatedOrderedRepeatedStatusMentions,
    randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
    zeroRandomStatMentions,isolatedPreviewDynamicRecords,
+   uafAllDiscMentions,validUafAllDiscMentions,
+   invalidUafAllDiscMentions,zeroUafAllDiscMentions,
    scenarioCurrencyMentions,validScenarioCurrencyMentions,
    invalidScenarioCurrencyMentions,zeroScenarioCurrencyMentions,
    fullEnergyMentions,validFullEnergyMentions,invalidFullEnergyMentions,
