@@ -37,7 +37,7 @@ test('silent revisions to existing hints / card identity or deleted cards fail c
   newer.filter(l=>!l.startsWith('10042\t'))
  ]){
   assert.throws(()=>audit({beforeText:base,afterText:mutant.join('\n')+'\n'}),
-   /母集団の差分監査|性能解放データが不足/);
+   /母集団の差分監査|性能解放データが不足|段階または属性に矛盾/);
  }
 });
 test('invalid TSV release, missing stages, duplicate stage, wrong SHA or wrong pinned population are rejected',()=>{
