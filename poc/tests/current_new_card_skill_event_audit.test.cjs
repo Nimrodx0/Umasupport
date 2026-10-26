@@ -95,7 +95,7 @@ test('strict source pin and new-card public event gate are fail closed',()=>{
  const f=fixture();
  assert.throws(()=>audit(f,{strict:true}),/Git blob識別値が不一致/);
  const faulty=fixture();
- faulty.rosterText=faulty.rosterText.replace(
+ faulty.rosterText=faulty.rosterText.replaceAll(
   '30323\t[いとどめでたき、まつりかな]吾妻',
   '30323\t[破損した新カード]吾妻');
  const report=audit(faulty);
