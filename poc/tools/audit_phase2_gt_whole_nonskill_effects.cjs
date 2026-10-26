@@ -52,8 +52,8 @@ function main(args){
     result.summary.statusSourceMentions!==121||
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
-    result.summary.isolatedPreviewStatusRecords!==111||
-    result.summary.isolatedPreviewEffectRecords!==11255||
+    result.summary.isolatedPreviewStatusRecords!==115||
+    result.summary.isolatedPreviewEffectRecords!==11377||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
@@ -84,19 +84,20 @@ function main(args){
     result.summary.invalidFullEnergyMentions!==0||
     result.summary.isolatedPreviewDynamicRecords!==104||
     result.summary.chainEndMentions!==109||
-    result.summary.chainEndAcceptedSourceMentions!==91||
-    result.summary.chainEndRejectedSourceMentions!==18||
-    result.summary.isolatedTerminalOutcomeRecords!==90||
+    result.summary.chainEndAcceptedSourceMentions!==109||
+    result.summary.chainEndAcceptedOutingUnlockMentions!==18||
+    result.summary.chainEndRejectedSourceMentions!==0||
+    result.summary.isolatedTerminalOutcomeRecords!==108||
     result.summary.repeatedNumericSourceMentions!==25||
     result.summary.eligibleRepeatedNumericSourceMentions!==13||
     result.summary.isolatedOrderedRepeatedNumericMentions!==13||
     result.summary.repeatedStatusSourceMentions!==5||
     result.summary.eligibleRepeatedStatusSourceMentions!==5||
     result.summary.isolatedOrderedRepeatedStatusMentions!==5||
-    result.summary.isolatedPreviewEventRecords!==2458||
-    result.summary.eligibleRoutes!==4332||
-    result.summary.blockedRoutes!==44||
-    result.summary.blockedEvents!==30||
+    result.summary.isolatedPreviewEventRecords!==2472||
+    result.summary.eligibleRoutes!==4350||
+    result.summary.blockedRoutes!==26||
+    result.summary.blockedEvents!==16||
     result.summary.unrecognizedEffectMentions!==9||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
