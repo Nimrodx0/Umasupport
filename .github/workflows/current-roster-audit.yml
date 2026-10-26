@@ -1,0 +1,58 @@
+name: Audit current UmaSim support roster source delta
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/current_umasim_roster_delta.cjs'
+      - 'poc/tests/current_umasim_roster_delta.test.cjs'
+      - '.github/workflows/current-roster-audit.yml'
+  push:
+    paths:
+      - 'poc/src/current_umasim_roster_delta.cjs'
+      - 'poc/tests/current_umasim_roster_delta.test.cjs'
+      - '.github/workflows/current-roster-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-current-roster-delta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test generic schema and live-loader source delta semantics
+        run: |
+          node --check poc/src/current_umasim_roster_delta.cjs
+          node --test poc/tests/current_umasim_roster_delta.test.cjs
+      - name: Fetch exactly two pinned UmaSim text snapshots into temporary runner paths
+        env:
+          OLD_COMMIT: 91952973eb334ae530b8cd76541bce8a01a141cd
+          NEW_COMMIT: 910dd79f046710245e0cc88a09c5c92b1044897e
+        run: |
+          mkdir -p "$RUNNER_TEMP/umasim-sources"
+          curl --fail --location --silent --show-error --retry 3 --max-time 45 \
+            "https://raw.githubusercontent.com/mee1080/umasim/$OLD_COMMIT/data/support_card.txt" \
+            --output "$RUNNER_TEMP/umasim-sources/before.txt"
+          curl --fail --location --silent --show-error --retry 3 --max-time 45 \
+            "https://raw.githubusercontent.com/mee1080/umasim/$NEW_COMMIT/data/support_card.txt" \
+            --output "$RUNNER_TEMP/umasim-sources/current.txt"
+      - name: Verify source hash, 563 to 566 roster expansion and actual browser loader model
+        run: |
+          node poc/src/current_umasim_roster_delta.cjs \
+            "$RUNNER_TEMP/umasim-sources/before.txt" \
+            "$RUNNER_TEMP/umasim-sources/current.txt"
+      - name: Install Chromium for actual pinned roster browser check
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Verify all 566 cards on Pages-style Chromium and select all three new cards
+        run: |
+          node --check poc/tests/browser_current_umasim_566.cjs
+          node poc/tests/browser_current_umasim_566.cjs "$RUNNER_TEMP/umasim-sources/current.txt"
+      - name: Keep the public event release gate independent
+        run: node poc/tools/verify_event_release.cjs
