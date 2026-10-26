@@ -113,6 +113,19 @@
          signed&&e.possible===true&&e.scenario==='scenario-14'&&
          e.targetSelection==='secret-ingredient-count'&&
          only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='next-turn-other-support-specialty-rate'?
+         signed&&e.possible===true&&e.duration==='next-turn'&&
+         e.targetSelection==='other-supports-next-turn'&&
+         only(['kind','delta','possible','duration','targetSelection']):
+       e.kind==='onsen-bathing-tickets'?
+         signed&&e.possible===true&&e.scenario==='yukoma-onsen'&&
+         e.targetSelection==='bath-ticket-count'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='onsen-next-bath-super-recovery'?
+         e.delta===undefined&&e.possible===true&&
+         e.scenario==='yukoma-onsen'&&e.activation==='next-bath'&&
+         e.targetSelection==='next-bath-super-recovery'&&
+         only(['kind','possible','scenario','activation','targetSelection']):
        e.kind==='restore-current-max-energy'?
          e.possible===true&&e.targetSelection==='current-max-energy'&&
          only(['kind','possible','targetSelection']):
