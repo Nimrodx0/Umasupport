@@ -100,3 +100,4 @@
 - [Phase 2・レジェンズの全員／選択相手の指南ゲージ9イベントを共通変換](phase2-legends-gauge-batch-20261026.md)
 - [Phase 2・お出かけ連続イベントの解放／打ち切り14イベントを一括変換](phase2-outing-unlock-terminal-batch-20261026.md)
 - [Phase 2・2026-10-26現行UmaSimサポカ563→566枚の差分と公開ローダー監査](phase2-current-roster-566-audit-20261026.md)
+- [Phase 2・2026/10/26追加サポカ3枚の通常ヒント14件・数値スキルIDとイベント未収録の独立照合](phase2-20261026-new-card-skill-event-scope.md)
