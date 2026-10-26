@@ -84,6 +84,12 @@ jobs:
                  result.observedHeadCommits.umaSim,
                  result.affectedUmaSimFiles.join(', ')||'none']
               ])
+              .addRaw('Current new-card GT JSON availability: **'+
+                result.eventData.knownLatestUmaSimCardCoverage.withGtEventJson+
+                '/'+result.eventData.knownLatestUmaSimCardCoverage.total+
+                '**; missing numeric IDs: '+
+                (result.eventData.knownLatestUmaSimCardIdsWithoutGtJson.join(', ')||'none')+
+                '. File presence does not establish event accuracy or approval.')
               .addRaw('Review required: **'+result.requiresReview+
                 '**. No event data or source contents are published.')
               .write();
