@@ -293,7 +293,9 @@ function main(args){
       const dynamic=core.directDynamicEffectRoutes(card,config);
       if(dynamic.some(r=>!r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
            'current-max-energy','all-15-sports-disciplines',
-           'all-five-vegetables','secret-ingredient-count'].includes(r.targetSelection)||
+           'all-five-vegetables','secret-ingredient-count',
+           'other-supports-next-turn','bath-ticket-count',
+           'next-bath-super-recovery'].includes(r.targetSelection)||
           r.source!=='event-dynamic-effect'||r.conditional!==true))
        fail('ランダム能力値の対象が確定値に混入した');
       liveDynamic+=dynamic.length;
