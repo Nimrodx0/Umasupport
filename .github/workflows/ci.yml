@@ -73,6 +73,11 @@ jobs:
           node --check poc/src/phase2_2512_private_effect_join.cjs
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/phase2_2512_private_effect_join.test.cjs
+      - name: Test batch triage of all blocked GT events
+        run: |
+          node --check poc/src/phase2_gt_blocker_cohorts.cjs
+          node --check poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs
+          node --test poc/tests/phase2_gt_blocker_cohorts.test.cjs
       - name: Test GT30090 bond-range outcomes remain terminal on both tiers
         run: |
           node --check poc/src/phase2_gt_30090_terminal_bond_overlay.cjs
