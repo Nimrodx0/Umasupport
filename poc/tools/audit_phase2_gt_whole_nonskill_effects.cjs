@@ -3,6 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {readDocuments}=require('./audit_gametora_branches.cjs');
 const {analyze}=require('../src/phase2_gt_whole_nonskill_effect_inventory.cjs');
+const {analyze:reviewConditionalSegments}=require('../src/phase2_gt_conditional_segment_review.cjs');
 const fail=s=>{throw Error('全件非スキル出典監査CLI: '+s);};
 function main(args){
  if(args.length!==3)fail('usage: <whole-provisional-index.json> <fixed-GT-dir> <private-CI-output.json>');
@@ -10,6 +11,11 @@ function main(args){
  const index=JSON.parse(fs.readFileSync(indexPath,'utf8'));
  const docs=readDocuments(gtDir);
  const result=analyze({documents:docs,index},{strict:true});
+ const guarded=reviewConditionalSegments({documents:docs,index,inventory:result});
+ if(guarded.publicationApproved!==false||guarded.automaticRuntimeAdoption!==false||
+    guarded.sourceNarrativeIncluded!==false||
+    guarded.summary.quarantineConfirmedRoutes!==guarded.summary.segmentRoutes)
+  fail('ガード条件が未解決のまま獲得確定・公開へ昇格');
  if(result.summary.rosterCards!==563||result.summary.sourceCards!==559||
     result.summary.sourceEvents!==2488||result.summary.sourceChoices!==4129||
     result.summary.expandedRoutes!==4376||
@@ -57,6 +63,9 @@ function main(args){
     JSON.stringify({summary:result.summary,blockers:result.blockedReasons}));
  fs.mkdirSync(path.dirname(outPath),{recursive:true});
  fs.writeFileSync(outPath,JSON.stringify(result,null,2)+'\n');
+ const guardPath=path.join(path.dirname(outPath),'phase2_gt_conditional_segments_review_private.v1.json');
+ fs.writeFileSync(guardPath,JSON.stringify(guarded,null,2)+'\n');
+ console.log('GT_CONDITIONAL_SEGMENTS_REVIEW_SUMMARY='+JSON.stringify(guarded.summary));
  console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY='+JSON.stringify(result.summary));
  console.log('GT_ALL_NONSKILL_EFFECT_TYPES='+JSON.stringify(result.sourceEffectTypes));
  console.log('GT_ALL_NONSKILL_EFFECT_BLOCKERS='+JSON.stringify(result.blockedReasons));
