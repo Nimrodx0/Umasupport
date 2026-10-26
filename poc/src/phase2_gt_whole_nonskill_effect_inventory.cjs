@@ -525,7 +525,8 @@ function analyze({documents,index},{strict=false}={}){
        'current-max-energy','all-15-sports-disciplines',
        'all-five-vegetables','secret-ingredient-count',
        'other-supports-next-turn','bath-ticket-count',
-       'next-bath-super-recovery'].includes(r.targetSelection)||
+       'next-bath-super-recovery','all-three-legend-guides',
+       'chosen-legend-from-event-choice'].includes(r.targetSelection)||
      r.dynamicKind==='grand-live-lowest-performance'&&
        (r.scenario!=='grand-live'||r.possible!==true)||
      r.dynamicKind==='restore-current-max-energy'&&r.possible!==true||
