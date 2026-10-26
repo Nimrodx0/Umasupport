@@ -89,3 +89,4 @@
 - [Phase 2・GT連続イベント結果別打ち切り109記載の厳格照合と2,395件の非公開構造化](phase2-gt-chain-end-outcome-proof-20261025.md)
 - [Phase 2・GTの同一対象への複数数値効果を元出典の順序で保持し2,402件を構造化](phase2-gt-ordered-repeated-numeric-effects-20261026.md)
 - [Phase 2・GTの同一状態操作の反復を元順序で保持し2,404イベントを構造化](phase2-gt-ordered-repeated-status-effects-20261026.md)
+- [Phase 2・3カードの条件付きセグメント8結果を元ガードIDで隔離・非公開照合](phase2-gt-conditional-segment-guard-review-20261026.md)
