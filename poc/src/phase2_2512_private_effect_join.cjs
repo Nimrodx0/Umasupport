@@ -240,7 +240,7 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
     effectInventory.summary.isolatedTerminalOutcomeRecords!==90||
     originalEvents.size!==2512||
     candidateEvents!==2404||exactEventIdentityMatched!==2404||
-    joinedEvents!==2403||joinedEffects<10953||
+    joinedEvents!==2403||joinedEffects!==10961||
     joinedStatuses!==96||joinedDynamic!==22||
     unchangedEvents!==109||touchedCards.size!==559||
     blocked.EVENT_TYPE_MISMATCH!==1||
