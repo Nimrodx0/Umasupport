@@ -43,7 +43,7 @@ test('all_stats creates five synchronized stat effects at each tier',()=>{
 test('already-random, conditional and unsupported extras do not enter runtime projection',()=>{
  const ev=evt([
   {...choice([e('speed','+1/+2')]),random_either:true,
-   outcomes:[[e('power','+3')],[e('power','+9')]]},
+   outcomes:[[e('power','+3/+7')],[e('power','+9')]]},
   {label:'',segments:[
    {when:[{kind:'mood_min',value:3}],effects:[e('guts','+3/+6')]},
    {when:[{kind:'otherwise'}],effects:[e('guts','+4')]}]},
