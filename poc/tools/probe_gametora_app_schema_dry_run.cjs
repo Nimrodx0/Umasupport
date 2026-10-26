@@ -247,7 +247,15 @@ function main(args){
       documents:rangedDocuments,review:rangeReview});
      console.log('GT_NONSKILL_ONLY_RANGE_PAIR_PRIVATE_OVERLAY='+
       JSON.stringify(numericOnly.summary));
-     const privateEventCatalog=numericOnly.catalog;
+     // GT30010's skill_hint_or has two options and one shared low/high
+     // wisdom tier: preserve the four existing exclusive skill outcomes.
+     const {enrich:enrich30010}=
+      require('../src/phase2_gt_30010_correlated_or_overlay.cjs');
+     const numericAndOr=enrich30010({catalog:numericOnly.catalog,
+      documents:rangedDocuments,review:rangeReview});
+     console.log('GT_30010_CORRELATED_OR_PRIVATE_OVERLAY='+
+      JSON.stringify(numericAndOr.summary));
+     const privateEventCatalog=numericAndOr.catalog;
      const publicCatalog=require('../src/public_event_catalog.js');
      const core=require('../src/core.js');
      const {summary}=publicCatalog.preflight(model,privateEventCatalog,{
