@@ -93,9 +93,15 @@ function inspect({gameToraPinnedTree,gameToraLatestTree,
  }
  const changedSourceFiles=UMA_FILES.filter(k=>umaChanges[k].changed);
  const needsReview=!!(added.length||removed.length||modified.length||changedSourceFiles.length);
- const evidence={added,removed,modified,uma:UMA_FILES.map(p=>({
-  path:p,blob:umaChanges[p].currentBlobSha
- }))};
+ // Include the latest blob SHA for changes to an EXISTING event card.
+ // Otherwise a second rewrite of the same card would be hidden behind an
+ // unchanged set of card IDs, and the review issue could become stale.
+ const evidence={
+  added:added.map(id=>[id,headEvents.get(id)]),
+  removed:removed.map(id=>[id,baseEvents.get(id)]),
+  modified:modified.map(id=>[id,headEvents.get(id)]),
+  uma:UMA_FILES.map(p=>({path:p,blob:umaChanges[p].currentBlobSha}))
+ };
  const fingerprint=crypto.createHash('sha256').update(JSON.stringify(evidence)).digest('hex');
  return {
   schemaVersion:1,kind:'pinned-upstream-refresh-watch',
