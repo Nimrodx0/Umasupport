@@ -25,6 +25,17 @@ const SCENARIO_RESOURCES=Object.freeze({
  ken_ing:{kind:'scenario14-secret-ingredients',
   scenario:'scenario-14',targetSelection:'secret-ingredient-count'}
 });
+// Separate temporal and scenario-effect statuses from scalar stats.
+// yhs_sr is a no-value flag, so never synthesize a numeric gain.
+const CONTEXT_OPERATIONS=Object.freeze({
+ ntsr:{kind:'next-turn-other-support-specialty-rate',
+  targetSelection:'other-supports-next-turn',duration:'next-turn'},
+ yhs_tix:{kind:'onsen-bathing-tickets',
+  scenario:'yukoma-onsen',targetSelection:'bath-ticket-count'},
+ yhs_sr:{kind:'onsen-next-bath-super-recovery',
+  scenario:'yukoma-onsen',targetSelection:'next-bath-super-recovery',
+  activation:'next-bath',flag:true}
+});
 const parseChance=value=>{
  if(value===undefined)return undefined;
  const s=typeof value==='number'||typeof value==='string'?String(value):'';
@@ -87,6 +98,8 @@ function analyze({documents,index},{strict=false}={}){
   randomStatMentions=0,validRandomStatMentions=0,
   invalidRandomStatMentions=0,zeroRandomStatMentions=0,
   isolatedPreviewDynamicRecords=0,
+  contextOperationMentions=0,validContextOperationMentions=0,
+  invalidContextOperationMentions=0,zeroContextOperationMentions=0,
   scenarioResourceMentions=0,validScenarioResourceMentions=0,
   invalidScenarioResourceMentions=0,zeroScenarioResourceMentions=0,
   uafAllDiscMentions=0,validUafAllDiscMentions=0,
@@ -101,7 +114,7 @@ function analyze({documents,index},{strict=false}={}){
   isolatedPreviewEffectRecords=0,isolatedPreviewOutcomeRecords=0,
   repeatedNumericSourceMentions=0,eligibleRepeatedNumericSourceMentions=0,
   isolatedOrderedRepeatedNumericMentions=0;
- const sourceTypeCounts=new Map(),issueCounts=new Map(),scenarioResourceTypes=new Map();
+ const sourceTypeCounts=new Map(),issueCounts=new Map(),scenarioResourceTypes=new Map(),contextOperationTypes=new Map();
  const rows=[],projectedCards=[],affectedCards=new Set();
  const countIssues=issues=>{for(const code of issues)count(issueCounts,code);};
  for(const [cardId,rosterRow] of roster){
@@ -186,6 +199,28 @@ function analyze({documents,index},{strict=false}={}){
          problems.add('CHAIN_END_SOURCE_CONTEXT_UNSUPPORTED');
         }
        }else hasControl=true;
+       continue;
+      }
+      if(Object.prototype.hasOwnProperty.call(CONTEXT_OPERATIONS,kind)){
+       contextOperationMentions++;eventHasNonSkill=true;countsInRoute++;
+       count(contextOperationTypes,kind);
+       const spec=CONTEXT_OPERATIONS[kind],isFlag=spec.flag===true;
+       const delta=isFlag?undefined:parseDelta(effect.value);
+       const requiredKeys=isFlag?['type']:['type','value'];
+       if(!Object.keys(effect).every(x=>requiredKeys.includes(x))||
+          Object.keys(effect).length!==requiredKeys.length||
+          !isFlag&&delta===null){
+        invalidContextOperationMentions++;
+        problems.add('CONTEXT_OPERATION_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(!isFlag&&delta===0){zeroContextOperationMentions++;continue;}
+       if(dynamicEffects.some(x=>x.kind===spec.kind))
+        problems.add('DUPLICATE_CONTEXT_OPERATION_UNADJUDICATED');
+       const {flag:discardFlag,...normalized}=spec;
+       dynamicEffects.push({...normalized,
+        ...(isFlag?{}:{delta}),possible:true});
+       validContextOperationMentions++;
        continue;
       }
       if(Object.prototype.hasOwnProperty.call(SCENARIO_RESOURCES,kind)){
@@ -442,7 +477,7 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
     allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+randomStatMentions+
-      scenarioResourceMentions+uafAllDiscMentions+scenarioCurrencyMentions+fullEnergyMentions+
+      contextOperationMentions+scenarioResourceMentions+uafAllDiscMentions+scenarioCurrencyMentions+fullEnergyMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
@@ -451,6 +486,8 @@ function analyze({documents,index},{strict=false}={}){
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     randomStatMentions!==validRandomStatMentions+
       invalidRandomStatMentions+zeroRandomStatMentions||
+    contextOperationMentions!==validContextOperationMentions+
+      invalidContextOperationMentions+zeroContextOperationMentions||
     scenarioResourceMentions!==validScenarioResourceMentions+
       invalidScenarioResourceMentions+zeroScenarioResourceMentions||
     uafAllDiscMentions!==validUafAllDiscMentions+
@@ -479,7 +516,9 @@ function analyze({documents,index},{strict=false}={}){
   if(dynamic.some(r=>r.source!=='event-dynamic-effect'||
      !r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
        'current-max-energy','all-15-sports-disciplines',
-       'all-five-vegetables','secret-ingredient-count'].includes(r.targetSelection)||
+       'all-five-vegetables','secret-ingredient-count',
+       'other-supports-next-turn','bath-ticket-count',
+       'next-bath-super-recovery'].includes(r.targetSelection)||
      r.dynamicKind==='grand-live-lowest-performance'&&
        (r.scenario!=='grand-live'||r.possible!==true)||
      r.dynamicKind==='restore-current-max-energy'&&r.possible!==true||
@@ -488,7 +527,14 @@ function analyze({documents,index},{strict=false}={}){
      r.dynamicKind==='great-food-festival-all-vegetables'&&
        (r.scenario!=='great-food-festival'||r.possible!==true)||
      r.dynamicKind==='scenario14-secret-ingredients'&&
-       (r.scenario!=='scenario-14'||r.possible!==true)))
+       (r.scenario!=='scenario-14'||r.possible!==true)||
+     r.dynamicKind==='next-turn-other-support-specialty-rate'&&
+       (r.duration!=='next-turn'||r.possible!==true)||
+     r.dynamicKind==='onsen-bathing-tickets'&&
+       (r.scenario!=='yukoma-onsen'||r.possible!==true)||
+     r.dynamicKind==='onsen-next-bath-super-recovery'&&
+       (r.scenario!=='yukoma-onsen'||r.activation!=='next-bath'||
+        r.possible!==true)))
    fail('ランダム能力の対象を確定能力へ偽装しました');
   if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
    fail('固定出典の状態候補を誤って確定状態に変換');
@@ -524,6 +570,9 @@ function analyze({documents,index},{strict=false}={}){
    isolatedOrderedRepeatedStatusMentions,
    randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
    zeroRandomStatMentions,isolatedPreviewDynamicRecords,
+   contextOperationMentions,validContextOperationMentions,
+   invalidContextOperationMentions,zeroContextOperationMentions,
+   contextOperationTypes:sorted(contextOperationTypes),
    scenarioResourceMentions,validScenarioResourceMentions,
    invalidScenarioResourceMentions,zeroScenarioResourceMentions,
    scenarioResourceTypes:sorted(scenarioResourceTypes),
