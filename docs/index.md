@@ -96,3 +96,4 @@
 - [Phase 2・SSR30090絆±5の2結果と両方の連続打ち切りを厳格照合](phase2-gt-30090-terminal-bond-20261026.md)
 - [Phase 2・未対応84件の原因別一括分類とU.A.F.全15競技の共通変換](phase2-gt-batch-cohort-uaf-20261026.md)
 - [Phase 2・大豊食祭の野菜とシナリオ14秘密素材を共通型で一括変換](phase2-scenario-resources-batch-20261026.md)
+- [Phase 2・タッカー翌ターン得意率と保科温泉入浴券・次回超回復の22イベント一括変換](phase2-gt-contextual-batch-20261026.md)
