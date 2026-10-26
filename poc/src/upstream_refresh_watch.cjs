@@ -149,9 +149,9 @@ function issueBody(result){
  '',
  '**未完成の自動検証があっても、元ゲームのイベント存在／取得条件や公開承認を断定しないこと。**',
  '',
- '監視設計: [継続更新の手順](../blob/main/docs/upstream-refresh-operations.md) 。',
+ '監視設計: [継続更新の手順](https://github.com/Nimrodx0/Umasupport/blob/main/docs/upstream-refresh-operations.md) 。',
  '',
- '<!-- umasupport-source-refresh-issue -->'
+ '<!-- umasupport-source-refresh-issue fingerprint:'+result.reviewFingerprint+' -->'
  ].join('\n');
 }
 module.exports={inspect,issueBody,PINS};
