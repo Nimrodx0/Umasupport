@@ -144,7 +144,45 @@ function apply({catalog,documents,review}){
    chainConditionsAltered:false});
  }
  if(changed.length!==2)fail('対象2件の連動範囲を確認できない');
+ // Re-evaluate the old and modified SKILL routes of every private card.
+ // Isolated event checks alone are insufficient: later chains might rely
+ // on the exact parent choice or result identities.
+ if(clone.cards.length!==catalog.cards.length)
+  fail('全カード母数を変更');
+ let cardCoreSkillRouteChecks=0;
+ const originals=new Map(catalog.cards.map(c=>[c.cardId,c]));
+ if(originals.size!==catalog.cards.length)
+  fail('スキル元の同じカードIDが重複');
+ for(const updated of clone.cards){
+  const old=originals.get(updated.cardId);
+  if(!old||old.events?.length!==updated.events?.length)
+   fail('元スキルカード・イベントの件数が一致しない');
+  const cfg={stage:4,choices:{},outcomes:{}};
+  for(const e of old.events||[]){
+   if(e.type==='choice'&&e.choices?.length){
+    cfg.choices[e.id]=e.choices[0].id;
+    if(e.choices[0].outcomes?.length)
+     cfg.outcomes[e.id]=e.choices[0].outcomes[0].id;
+   }else if(e.outcomes?.length)cfg.outcomes[e.id]=e.outcomes[0].id;
+  }
+  const cases=[{stage:4,choices:{},outcomes:{}},cfg];
+  if(PROFILES.some(p=>p.cardId===updated.cardId)){
+   const spec=PROFILES.find(p=>p.cardId===updated.cardId);
+   const eventId='gt-'+spec.cardId+'-event-003';
+   for(const tier of [1,2])cases.push({stage:4,
+    choices:{...cfg.choices,[eventId]:'choice-0'+spec.rangeChoiceOrdinal},
+    outcomes:{...cfg.outcomes,[eventId]:'range-tier-'+tier}});
+  }
+  for(const c of cases){
+   const before=core.directRoutes({...old,id:old.cardId},c);
+   const after=core.directRoutes({...updated,id:updated.cardId},c);
+   if(JSON.stringify(before)!==JSON.stringify(after))
+    fail('既存カードのスキル取得経路が変化 '+updated.cardId);
+  }
+  cardCoreSkillRouteChecks++;
+ }
  return {catalog:clone,summary:{sourceRevision:POLICY.baselineRevision,
+  cardCoreSkillRouteChecks,
   eventsWithNumericTierOverlay:2,updatedCards:2,
   addedComponents:changed.reduce((n,r)=>n+r.addedComponents,0),
   twoResultChoices:2,otherChoiceResultsUnchanged:true,
