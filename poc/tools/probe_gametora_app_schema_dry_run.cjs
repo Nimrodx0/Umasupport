@@ -255,7 +255,15 @@ function main(args){
       documents:rangedDocuments,review:rangeReview});
      console.log('GT_30010_CORRELATED_OR_PRIVATE_OVERLAY='+
       JSON.stringify(numericAndOr.summary));
-     const privateEventCatalog=numericAndOr.catalog;
+     // GT30090 has a bond low/high tier followed by chain_end.
+     // Both leaves must remain terminal. The normal hint branch is unchanged.
+     const {enrich:enrich30090}=
+      require('../src/phase2_gt_30090_terminal_bond_overlay.cjs');
+     const terminalBond=enrich30090({catalog:numericAndOr.catalog,
+      documents:rangedDocuments,review:rangeReview});
+     console.log('GT_30090_TERMINAL_BOND_RANGE_PRIVATE_OVERLAY='+
+      JSON.stringify(terminalBond.summary));
+     const privateEventCatalog=terminalBond.catalog;
      const publicCatalog=require('../src/public_event_catalog.js');
      const core=require('../src/core.js');
      const {summary}=publicCatalog.preflight(model,privateEventCatalog,{
