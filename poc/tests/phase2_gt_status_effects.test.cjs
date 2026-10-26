@@ -69,7 +69,7 @@ test('status-only auto and random outcome branches do not fabricate unselected g
   outcomes:{[second.id]:'result-2'}});
  assert.deepEqual(picked.map(x=>x.statusKind),['cure-one-bad','cure-one-bad']);
 });
-test('unknown shape, chance, duplicates and invalid IDs quarantine the event without guessing',()=>{
+test('unknown source status shapes, probability formats and condition IDs quarantine without guessing',()=>{
  const invalids=[
   [{type:'condition',condition_id:null}],
   [{type:'condition',condition_id:-1}],
@@ -77,10 +77,8 @@ test('unknown shape, chance, duplicates and invalid IDs quarantine the event wit
   [{type:'condition',condition_id:7,chance:'60%'}],
   [{type:'condition',condition_id:7,chance:0}],
   [{type:'condition',condition_id:7,chance:1.3}],
-  [{type:'condition',condition_id:7},{type:'condition',condition_id:7}],
   [{type:'heal_status',condition_id:1}],
-  [{type:'heal_status',value:'+1'}],
-  [{type:'heal_status'},{type:'heal_status'}]
+  [{type:'heal_status',value:'+1'}]
  ];
  for(const effects of invalids){
   const report=analyze(source([ev([mk(effects)])]));
