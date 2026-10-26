@@ -24,6 +24,7 @@ function fixture(){
   events_ja:Object.fromEntries(events.map((e,i)=>['event'+(i+1),e]))}];
  const index={dataKind:'umasupport-whole-event-provisional-index',
   publicationApproval:false,sourcePins:{gameToraDerived:rev},
+  stats:{gameToraEventRecords:events.length},
   cards:[{cardId:'30100',sourceMissing:false,gameToraObservedCount:events.length},
     {cardId:'30101',sourceMissing:true,gameToraObservedCount:0}]};
  const result=inventory({documents,index});
