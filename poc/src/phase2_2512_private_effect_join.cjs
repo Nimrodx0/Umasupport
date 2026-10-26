@@ -234,22 +234,22 @@ function assemble({skillRuntime,effectInventory},{strict=false}={}){
  if(validation.eventsWithRecords!==skillRuntime.summary.totalCandidateEvents)
   fail('統合後の全本番スキーマイベント数が不一致');
  if(strict&&(result.cards.length!==563||validation.eventsWithRecords!==2512||
-    effectInventory.summary.isolatedPreviewEventRecords!==2404||
+    effectInventory.summary.isolatedPreviewEventRecords!==2414||
     effectInventory.summary.sourceEvents!==2488||
     effectInventory.summary.chainEndMentions!==109||
     effectInventory.summary.isolatedTerminalOutcomeRecords!==90||
     originalEvents.size!==2512||
-    candidateEvents!==2404||exactEventIdentityMatched!==2404||
-    joinedEvents!==2403||joinedEffects!==10961||
-    joinedStatuses!==96||joinedDynamic!==22||
-    unchangedEvents!==109||touchedCards.size!==559||
+    candidateEvents!==2414||exactEventIdentityMatched!==2414||
+    joinedEvents!==2413||joinedEffects!==11013||
+    joinedStatuses!==96||joinedDynamic!==36||
+    unchangedEvents!==99||touchedCards.size!==559||
     blocked.EVENT_TYPE_MISMATCH!==1||
     Object.values(blocked).reduce((n,c)=>n+c,0)!==1||
     reviewPositions.length!==1||
     reviewPositions[0]?.cardId!=='30080'||
     reviewPositions[0]?.sourceOrdinal!==6||
     reviewPositions[0]?.reason!=='EVENT_TYPE_MISMATCH'))
-  fail('固定全件の2512スキルイベント・2404元イベントの状態重複を含む統合が変化: '+
+  fail('固定全件の2512スキルイベント・2414元イベントの状態重複を含む統合が変化: '+
    JSON.stringify({candidateEvents,exactEventIdentityMatched,joinedEvents,joinedEffects,
     joinedStatuses,joinedDynamic,unchangedEvents,touchedCards:touchedCards.size,blocked,reviewPositions}));
  // Confirm every *selected route* has unchanged skill semantics without
