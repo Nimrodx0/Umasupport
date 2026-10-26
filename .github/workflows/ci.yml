@@ -73,6 +73,10 @@ jobs:
           node --check poc/src/phase2_2512_private_effect_join.cjs
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/phase2_2512_private_effect_join.test.cjs
+      - name: Test cohort-wide UAF all-disciplines scenario reward parsing
+        run: |
+          node --check poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs
+          node --test poc/tests/phase2_gt_uaf_all_disc_batch.test.cjs
       - name: Test batch triage of all blocked GT events
         run: |
           node --check poc/src/phase2_gt_blocker_cohorts.cjs
