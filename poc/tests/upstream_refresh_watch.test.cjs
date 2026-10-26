@@ -77,6 +77,16 @@ test('added/modified/removed event-card ids and updated UmaSim blobs get stable 
  }),{strict:false});
  assert.equal(r.reviewFingerprint,again.reviewFingerprint,
   'same source-data blobs but new commits or path order must not create another issue');
+ const updated=source([['30002','f'],['30322','e']],{
+  ...BASE_UMA,'data/support_card.txt':H('c')
+ });
+ const later=inspect(arg({
+  gameToraLatestTree:updated.gt,
+  umaSimLatestTree:updated.uma,
+  gameToraLatestCommit:H('e'),umaSimLatestCommit:H('e')
+ }),{strict:false});
+ assert.notEqual(r.reviewFingerprint,later.reviewFingerprint,
+  'a SECOND source rewrite of the same event card must update the review issue');
 });
 test('missing or truncated trees fail closed, not as zero files or a mass deletion',()=>{
  const patterns=[
