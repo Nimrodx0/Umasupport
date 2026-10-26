@@ -22,6 +22,7 @@ function main(args){
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
     result.summary.isolatedPreviewStatusRecords!==96||
+    result.summary.isolatedPreviewEffectRecords!==10923||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
