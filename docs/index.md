@@ -90,3 +90,4 @@
 - [Phase 2・GTの同一対象への複数数値効果を元出典の順序で保持し2,402件を構造化](phase2-gt-ordered-repeated-numeric-effects-20261026.md)
 - [Phase 2・GTの同一状態操作の反復を元順序で保持し2,404イベントを構造化](phase2-gt-ordered-repeated-status-effects-20261026.md)
 - [Phase 2・3カードの条件付きセグメント8結果を元ガードIDで隔離・非公開照合](phase2-gt-conditional-segment-guard-review-20261026.md)
+- [Phase 2・GT連動数値範囲15記載を調査しSSR30028の能力値＋ヒントLv2結果を非公開統合](phase2-gt-coupled-range-numeric-outcomes-20261026.md)
