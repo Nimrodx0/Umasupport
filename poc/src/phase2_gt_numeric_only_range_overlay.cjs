@@ -91,7 +91,7 @@ function enrich({catalog,documents,review}){
  }
  if(seen.size!==2)fail('固定2イベントの追加数が違う');
  return {catalog:copy,summary:{newCorrelatedChoiceEvents:2,
-  newCorrelatedResultLeaves:4,addedNumericComponents:12,
+  newCorrelatedResultLeaves:4,addedNumericComponents:15,
   sourceContexts: deltas,publicationApproved:false}};
 }
 module.exports={enrich};
