@@ -93,7 +93,8 @@ function analyze({documents,index},{strict=false}={}){
   blockedNumericEffectMentions=0,eligibleNumericEffectMentions=0,
   sourceSkillEffectMentions=0,sourceControlEffectMentions=0,
   chainEndMentions=0,chainEndAcceptedSourceMentions=0,
-  chainEndRejectedSourceMentions=0,isolatedTerminalOutcomeRecords=0,
+  chainEndRejectedSourceMentions=0,chainEndAcceptedOutingUnlockMentions=0,
+  isolatedTerminalOutcomeRecords=0,
   unrecognizedEffectMentions=0,invalidRecipientNumericMentions=0,
   allStatsMentions=0,allStatsValidMentions=0,
   allStatsInvalidMentions=0,allStatsZeroMentions=0,
@@ -137,8 +138,23 @@ function analyze({documents,index},{strict=false}={}){
      rosterRow.sourceMissing!==false||
      rosterRow.gameToraObservedCount!==Object.keys(source).length)
    fail('元カードのイベント配列・件数が元索引と不一致: '+cardId);
+  // A single ordinary RANDOM "pd" event can unlock a five-part OUTING
+  // chain. GT's chain_end on the negative choice then terminates that outing
+  // chain, while other independent random events remain available.
+  // This is the same source-level qualification used by the skill projector;
+  // do not mistake every random chain_end for an arrow-chain terminal.
+  const sourceEventsForCard=Object.values(source);
+  const enders=sourceEventsForCard.filter(ev=>ev.section==='random'&&
+   ev.choices?.some(ch=>flattenRoutes(ch).some(route=>
+    route.effects.some(e=>e.type==='chain_end'))));
+  const outingUnlock=sourceEventsForCard.some(ev=>ev.section==='dates')&&
+   !sourceEventsForCard.some(ev=>ev.section==='arrows')&&
+   enders.length===1&&enders[0].event_type==='pd'&&
+   enders[0].choices.length>1&&
+   enders[0].choices.some(ch=>flattenRoutes(ch).every(route=>
+    route.effects.every(e=>e.type!=='chain_end')))?enders[0]:null;
   const previewEvents=[];
-  for(const [sourceIndex,event] of Object.values(source).entries()){
+  for(const [sourceIndex,event] of sourceEventsForCard.entries()){
    const ordinal=sourceIndex+1;
    if(!obj(event)||!Array.isArray(event.choices)||event.choices.length===0||
       typeof event.name!=='string'||!SECTIONS.has(event.section))
@@ -196,11 +212,16 @@ function analyze({documents,index},{strict=false}={}){
        sourceControlEffectMentions++;markers.push(kind);
        if(kind==='chain_end'){
         chainEndMentions++;
-        // Pinned GT ee is a branch-specific stop; only arrows with exactly
-        // one parameterless terminal marker get lifted. The skill projection
-        // independently checks its terminal flag on that same result.
-        if(event.section==='arrows'&&Object.keys(effect).length===1&&!explicitTerminal){
+        // Pinned GT ee is a branch-specific stop. Source arrows are chain
+        // events; a unique "pd" random outing unlocker can instead stop
+        // only the linked OUTING sequence. Do not mark unrelated random
+        // events unavailable. Private skill projection has an independent
+        // terminal flag for the same result; fail closed on mismatch.
+        const isOutingUnlock=event===outingUnlock;
+        if((event.section==='arrows'||isOutingUnlock)&&
+           Object.keys(effect).length===1&&!explicitTerminal){
          explicitTerminal=true;chainEndAcceptedSourceMentions++;
+         if(isOutingUnlock)chainEndAcceptedOutingUnlockMentions++;
         }else{
          hasControl=true;chainEndRejectedSourceMentions++;
          problems.add('CHAIN_END_SOURCE_CONTEXT_UNSUPPORTED');
@@ -568,7 +589,7 @@ function analyze({documents,index},{strict=false}={}){
    nonZeroNumericNonSkillMentions,zeroNonSkillMentions,
    sourceSkillEffectMentions,sourceControlEffectMentions,
    chainEndMentions,chainEndAcceptedSourceMentions,chainEndRejectedSourceMentions,
-   isolatedTerminalOutcomeRecords,
+   chainEndAcceptedOutingUnlockMentions,isolatedTerminalOutcomeRecords,
    unrecognizedEffectMentions,invalidRecipientNumericMentions,
    allStatsMentions,allStatsValidMentions,allStatsInvalidMentions,
    allStatsZeroMentions,allStatsExpandedEffectComponents,
