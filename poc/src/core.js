@@ -295,6 +295,10 @@ function directDynamicEffectRoutes(card,config={}){
             '大豊食祭限定：5種類の野菜それぞれの獲得候補（能力値に加算しない）':
           effect.kind==='scenario14-secret-ingredients'?
             'シナリオ14限定：秘密素材の候補（元実装では報酬の事前表示のみ）':
+          effect.kind==='legends-all-guide-gauges'?
+            'レジェンズ限定：3名全員の指南ゲージの変動（通常能力値・絆ゲージとは別）':
+          effect.kind==='legends-choice-guide-gauge'?
+            'レジェンズ限定：選択肢に対応する1名の指南ゲージの変動（対象は元選択肢に依存）':
           effect.kind==='next-turn-other-support-specialty-rate'?
             '次ターン限定：他の編成サポートカードの得意率補正（確率と混同しない）':
           effect.kind==='onsen-bathing-tickets'?

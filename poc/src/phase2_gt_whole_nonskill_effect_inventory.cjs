@@ -23,7 +23,14 @@ const SCENARIO_RESOURCES=Object.freeze({
  veggies:{kind:'great-food-festival-all-vegetables',
   scenario:'great-food-festival',targetSelection:'all-five-vegetables'},
  ken_ing:{kind:'scenario14-secret-ingredients',
-  scenario:'scenario-14',targetSelection:'secret-ingredient-count'}
+  scenario:'scenario-14',targetSelection:'secret-ingredient-count'},
+ // Three distinct Legends guide gauges. The fixed effect has no explicit
+ // character/legend ID for a selected gauge; the chosen source branch owns
+ // that identity. Never make one selected gain look like all-three gains.
+ ttl_gauge_all:{kind:'legends-all-guide-gauges',
+  scenario:'legends',targetSelection:'all-three-legend-guides'},
+ ttl_gauge:{kind:'legends-choice-guide-gauge',
+  scenario:'legends',targetSelection:'chosen-legend-from-event-choice'}
 });
 // Separate temporal and scenario-effect statuses from scalar stats.
 // yhs_sr is a no-value flag, so never synthesize a numeric gain.
@@ -518,7 +525,8 @@ function analyze({documents,index},{strict=false}={}){
        'current-max-energy','all-15-sports-disciplines',
        'all-five-vegetables','secret-ingredient-count',
        'other-supports-next-turn','bath-ticket-count',
-       'next-bath-super-recovery'].includes(r.targetSelection)||
+       'next-bath-super-recovery','all-three-legend-guides',
+       'chosen-legend-from-event-choice'].includes(r.targetSelection)||
      r.dynamicKind==='grand-live-lowest-performance'&&
        (r.scenario!=='grand-live'||r.possible!==true)||
      r.dynamicKind==='restore-current-max-energy'&&r.possible!==true||

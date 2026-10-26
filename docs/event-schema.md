@@ -241,3 +241,6 @@ GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ�
 ## 2026-10-26：翌ターン補正と次回温泉入浴フラグの条件付き動的効果
 
 [出典と実装詳細](phase2-gt-contextual-batch-20261026.md)。元GTの`ntsr`を`next-turn-other-support-specialty-rate`（`delta`、`duration:'next-turn'`）、`yhs_tix`を`onsen-bathing-tickets`（`delta`、`scenario:'yukoma-onsen'`）、`yhs_sr`を`onsen-next-bath-super-recovery`（`activation:'next-bath'`、`delta`無し、`scenario:'yukoma-onsen'`）で保持。各`targetSelection`と`possible:true`を必須にして、不明な報酬・確率・ゲーム外条件を勝手に通常報酬へ変換しない。固定GTの一般構造化2,449／保留39、非公開スキル同結果結合2,448、公開0。
+## 2026-10-26：レジェンズの指南ゲージを個別・全員に分ける共通動的型
+
+[全件の出典と実装](phase2-legends-gauge-batch-20261026.md)。元GT `ttl_gauge_all` は `{kind:'legends-all-guide-gauges',delta:N,scenario:'legends',possible:true,targetSelection:'all-three-legend-guides'}`、`ttl_gauge` は `{kind:'legends-choice-guide-gauge',delta:N,scenario:'legends',possible:true,targetSelection:'chosen-legend-from-event-choice'}`。後者の元効果には個人IDがないので、元の選択枝で一意にするだけで特定のキャラクターIDは捏造しない。どちらも通常能力値ではなく、動的な条件付き候補。GT2,488イベントの一般構造化2,458／保留30、技術的な非公開統合2,457、正式公開0件。

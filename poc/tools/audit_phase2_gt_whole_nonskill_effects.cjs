@@ -52,8 +52,8 @@ function main(args){
     result.summary.statusSourceMentions!==121||
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
-    result.summary.isolatedPreviewStatusRecords!==98||
-    result.summary.isolatedPreviewEffectRecords!==11179||
+    result.summary.isolatedPreviewStatusRecords!==111||
+    result.summary.isolatedPreviewEffectRecords!==11255||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
@@ -67,10 +67,12 @@ function main(args){
     result.summary.contextOperationTypes?.ntsr!==14||
     result.summary.contextOperationTypes?.yhs_tix!==12||
     result.summary.contextOperationTypes?.yhs_sr!==12||
-    result.summary.scenarioResourceMentions!==16||
-    result.summary.validScenarioResourceMentions!==16||
+    result.summary.scenarioResourceMentions!==29||
+    result.summary.validScenarioResourceMentions!==29||
     result.summary.invalidScenarioResourceMentions!==0||
     result.summary.zeroScenarioResourceMentions!==0||
+    result.summary.scenarioResourceTypes?.ttl_gauge_all!==7||
+    result.summary.scenarioResourceTypes?.ttl_gauge!==6||
     result.summary.scenarioResourceTypes?.veggies!==10||
     result.summary.scenarioResourceTypes?.ken_ing!==6||
     result.summary.uafAllDiscMentions!==14||
@@ -80,22 +82,22 @@ function main(args){
     result.summary.fullEnergyMentions!==1||
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
-    result.summary.isolatedPreviewDynamicRecords!==91||
+    result.summary.isolatedPreviewDynamicRecords!==104||
     result.summary.chainEndMentions!==109||
     result.summary.chainEndAcceptedSourceMentions!==91||
     result.summary.chainEndRejectedSourceMentions!==18||
     result.summary.isolatedTerminalOutcomeRecords!==90||
     result.summary.repeatedNumericSourceMentions!==25||
-    result.summary.eligibleRepeatedNumericSourceMentions!==12||
-    result.summary.isolatedOrderedRepeatedNumericMentions!==12||
+    result.summary.eligibleRepeatedNumericSourceMentions!==13||
+    result.summary.isolatedOrderedRepeatedNumericMentions!==13||
     result.summary.repeatedStatusSourceMentions!==5||
-    result.summary.eligibleRepeatedStatusSourceMentions!==2||
-    result.summary.isolatedOrderedRepeatedStatusMentions!==2||
-    result.summary.isolatedPreviewEventRecords!==2449||
-    result.summary.eligibleRoutes!==4319||
-    result.summary.blockedRoutes!==57||
-    result.summary.blockedEvents!==39||
-    result.summary.unrecognizedEffectMentions!==22||
+    result.summary.eligibleRepeatedStatusSourceMentions!==5||
+    result.summary.isolatedOrderedRepeatedStatusMentions!==5||
+    result.summary.isolatedPreviewEventRecords!==2458||
+    result.summary.eligibleRoutes!==4332||
+    result.summary.blockedRoutes!==44||
+    result.summary.blockedEvents!==30||
+    result.summary.unrecognizedEffectMentions!==9||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||
