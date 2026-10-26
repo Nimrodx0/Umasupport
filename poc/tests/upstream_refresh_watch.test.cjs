@@ -8,7 +8,7 @@ const source=(gt,uma)=>{
   path:'server/data/events/gametora/support_'+id+'.json',
   sha:H(hash),type:'blob'
  }));
- const u=Object.entries(uma).map(([path,sha])=>({path,sha:H(sha),type:'blob'}));
+ const u=Object.entries(uma).map(([path,sha])=>({path,sha:/^[a-f0-9]{40}$/.test(sha)?sha:H(sha),type:'blob'}));
  return {
   gt:{sha:H('a'),truncated:false,tree:gtRecords},
   uma:{sha:H('b'),truncated:false,tree:u}
@@ -66,7 +66,7 @@ test('added/modified/removed event-card ids and updated UmaSim blobs get stable 
  const body=issueBody(r);
  assert.match(body,/30322/);
  assert.match(body,/固定出典との差分/);
- assert.match(body,/人間/);
+ assert.match(body,/確認ゲート/);
  assert.match(body,/レビュー|審査/);
  assert.equal(body.includes('"effects"'),false);
  const again=inspect(arg({
