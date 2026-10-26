@@ -14,9 +14,16 @@ function main(args){
  const result=analyze({documents:docs,index},{strict:true});
  const guarded=reviewConditionalSegments({documents:docs,index,inventory:result});
  const ranged=reviewCorrelatedRanges({documents:docs,index});
- if(ranged.publicationApproved!==false||ranged.automaticRuntimeAdoption!==false||
+ if(ranged.summary.sourceRangeEvents!==14||
+    ranged.summary.sourceRangeCards!==12||
+    ranged.summary.sourceRangeChoices!==14||
+    ranged.summary.rangedValueMentions!==15||
+    ranged.summary.rangeEffectComponents!==6||
+    ranged.summary.rangeOutcomeCandidates!==9||
+    ranged.summary.uncertainChoices!==5||
+    ranged.publicationApproved!==false||ranged.automaticRuntimeAdoption!==false||
     ranged.sourceNarrativeIncluded!==false||
-    ranged.rows.length!==ranged.summary.sourceRangeChoices)
+    ranged.rows.length!==14)
   fail('連動範囲の2結果を無条件の報酬として昇格');
  if(guarded.summary.sourceSegmentEvents!==3||
     guarded.summary.sourceSegmentCards!==3||
