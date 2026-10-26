@@ -70,6 +70,8 @@ on:
       - 'poc/src/core.js'
       - 'poc/src/phase2_2512_private_effect_join.cjs'
       - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
+      - 'poc/src/phase2_gt_30090_terminal_bond_overlay.cjs'
+      - 'poc/tests/phase2_gt_30090_terminal_bond_overlay.test.cjs'
       - 'poc/src/phase2_gt_30010_correlated_or_overlay.cjs'
       - 'poc/tests/phase2_gt_30010_correlated_or_overlay.test.cjs'
       - 'poc/src/phase2_gt_nonskill_only_range_overlay.cjs'
