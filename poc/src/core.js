@@ -281,6 +281,8 @@ function directDynamicEffectRoutes(card,config={}){
         ...(effect.delta!==undefined?{delta:effect.delta}:{}),
         ...(effect.statCount!==undefined?{statCount:effect.statCount}:{}),
         ...(effect.scenario?{scenario:effect.scenario}:{}),
+        ...(effect.duration?{duration:effect.duration}:{}),
+        ...(effect.activation?{activation:effect.activation}:{}),
         ...(effect.possible?{possible:true}:{}),
         targetSelection:effect.targetSelection,
         unresolvedTargets:true,conditional:true,
@@ -293,6 +295,12 @@ function directDynamicEffectRoutes(card,config={}){
             '大豊食祭限定：5種類の野菜それぞれの獲得候補（能力値に加算しない）':
           effect.kind==='scenario14-secret-ingredients'?
             'シナリオ14限定：秘密素材の候補（元実装では報酬の事前表示のみ）':
+          effect.kind==='next-turn-other-support-specialty-rate'?
+            '次ターン限定：他の編成サポートカードの得意率補正（確率と混同しない）':
+          effect.kind==='onsen-bathing-tickets'?
+            '温泉郷限定：入浴券の獲得候補（残りの所持上限に依存）':
+          effect.kind==='onsen-next-bath-super-recovery'?
+            '温泉郷限定：次回入浴時の超回復を確定させる効果（入浴イベント自体は未発生）':
           effect.kind==='restore-current-max-energy'?
             '実行時の最大体力まで回復（増加量は現在体力に依存）':
             '対象能力はランダムに決まり固定値として合算できない'])].join(' / ')});
