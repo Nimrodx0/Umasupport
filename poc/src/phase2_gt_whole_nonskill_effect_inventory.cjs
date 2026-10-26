@@ -73,6 +73,8 @@ function analyze({documents,index},{strict=false}={}){
   allStatsExpandedEffectComponents=0,
   statusSourceMentions=0,statusValidMentions=0,statusInvalidMentions=0,
   isolatedPreviewStatusRecords=0,
+  repeatedStatusSourceMentions=0,eligibleRepeatedStatusSourceMentions=0,
+  isolatedOrderedRepeatedStatusMentions=0,
   randomStatMentions=0,validRandomStatMentions=0,
   invalidRandomStatMentions=0,zeroRandomStatMentions=0,
   isolatedPreviewDynamicRecords=0,
@@ -132,7 +134,8 @@ function analyze({documents,index},{strict=false}={}){
      if(route.when.length>0)problems.add('SOURCE_ROUTE_GUARD_UNMODELED');
      let countsInRoute=0,numericRows=0,hasControl=false,explicitTerminal=false;
      const effects=[],statusEffects=[],dynamicEffects=[],
-      seenNumeric=new Map(),statusKeys=new Set(),markers=[];
+      seenNumeric=new Map(),seenStatus=new Map(),markers=[];
+     let repeatedStatusInRoute=0;
      let repeatedNumericInRoute=0;
      const addOrderedNumeric=(record,sourceOrdinal)=>{
        const key=record.kind+'|'+(record.recipientCharId??'');
@@ -244,9 +247,14 @@ function analyze({documents,index},{strict=false}={}){
        }
        if(chance!==undefined)status.chance=chance;
        const key=status.kind+'|'+(status.conditionId??'');
-       if(statusKeys.has(key))
-        problems.add('DUPLICATE_STATUS_OPERATION_UNADJUDICATED');
-       statusKeys.add(key);
+       const previous=seenStatus.get(key);
+       if(previous){
+        statusEffects[previous.effectIndex].sourceEffectOrdinal=previous.sourceOrdinal;
+        status.sourceEffectOrdinal=effectIndex+1;
+        repeatedStatusInRoute++;
+        repeatedStatusSourceMentions++;
+       }
+       seenStatus.set(key,{effectIndex:statusEffects.length,sourceOrdinal:effectIndex+1});
        statusEffects.push(status);
        statusValidMentions++;
        continue;
@@ -299,7 +307,8 @@ function analyze({documents,index},{strict=false}={}){
      const eligible=problems.size===0;
      if(countsInRoute)routesWithNonSkill++;
      if(eligible){eligibleRoutes++;eligibleNumericEffectMentions+=numericRows;
-      eligibleRepeatedNumericSourceMentions+=repeatedNumericInRoute;}
+      eligibleRepeatedNumericSourceMentions+=repeatedNumericInRoute;
+      eligibleRepeatedStatusSourceMentions+=repeatedStatusInRoute;}
      else{blockedRoutes++;blockedNumericEffectMentions+=numericRows;
       eventHasBlock=true;countIssues(problems);}
      if(!countsInRoute)noNonSkillRoutes++;
@@ -314,11 +323,12 @@ function analyze({documents,index},{strict=false}={}){
       skippedZeroEffects:route.effects.filter(x=>TYPES.has(x.type)&&parseDelta(x.value)===0).length,
       sourceControlMarkers:markers,
       orderedRepeatedNumericMentions:eligible?repeatedNumericInRoute:0,
+      orderedRepeatedStatusMentions:eligible?repeatedStatusInRoute:0,
       explicitTerminal:eligible?explicitTerminal:null,
       supportedProjectionEligible:eligible,
       issueCodes:[...problems].sort()});
      projectedResults.push({eligible,effects,statusEffects,dynamicEffects,markers,
-      repeatedNumericInRoute,
+      repeatedNumericInRoute,repeatedStatusInRoute,
       terminal:explicitTerminal});
     }
     projectionParts.push({sourceLabelWasEmpty:!choice.label.trim(),randomAlternative,
@@ -356,6 +366,8 @@ function analyze({documents,index},{strict=false}={}){
       label:'選択肢'+x.choiceOrdinal,...part(x)}));
     if(projectedResultsAreIncorrect(ev,projectionParts))fail('結果順序の保存に失敗');
     previewEvents.push(ev);isolatedPreviewEventRecords++;
+    isolatedOrderedRepeatedStatusMentions+=projectionParts.reduce((sum,x)=>sum+
+     x.projectedResults.reduce((n,r)=>n+r.repeatedStatusInRoute,0),0);
     isolatedOrderedRepeatedNumericMentions+=projectionParts.reduce((sum,x)=>sum+
      x.projectedResults.reduce((n,r)=>n+r.repeatedNumericInRoute,0),0);
     isolatedTerminalOutcomeRecords+=projectionParts.reduce((sum,x)=>sum+
@@ -444,6 +456,8 @@ function analyze({documents,index},{strict=false}={}){
    allStatsZeroMentions,allStatsExpandedEffectComponents,
    statusSourceMentions,statusValidMentions,statusInvalidMentions,
    isolatedPreviewStatusRecords,
+   repeatedStatusSourceMentions,eligibleRepeatedStatusSourceMentions,
+   isolatedOrderedRepeatedStatusMentions,
    randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
    zeroRandomStatMentions,isolatedPreviewDynamicRecords,
    scenarioCurrencyMentions,validScenarioCurrencyMentions,

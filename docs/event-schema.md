@@ -70,6 +70,12 @@
 
 [固定GT2,488件の追加監査](phase2-gt-ordered-repeated-numeric-effects-20261026.md)では、重複効果25記載のうち他に保留理由のない10記載を活用し、非スキル構造化2,395→**2,402件**、既存2,512件中の結合2,394→**2,401件**。正式公開0件は不変。
 
+## 2026-10-26：同一結果で繰り返す状態操作の位置を保存
+
+`statusEffects[]`の`add-condition`（同じ`conditionId`）または`cure-one-bad`が同じ結果に複数回あるときは、各操作行に固定GameTora元結果内の**1始まりの`sourceEffectOrdinal`**を保持する。元の正整数位置が欠ける、同じ位置を重複する、配列内で逆順になる場合は不正として拒否。重複する状態付与・ランダムな悪い状態回復を一つへ合成せず、明示の`chance`と現在状態による判定を個別の`possible:true`候補として維持する。`UmaCore.directStatusRoutes`は元位置も返し、`conditional:true`を維持する。回復が2行あるからといって、2つの状態が確実に治ることやすべて治ることを保証しない。
+
+[固定GameToraの121状態記載の監査](phase2-gt-ordered-repeated-status-effects-20261026.md)では、重複元記載5行のうち、ほかに保留理由がない2行を採用。GT元イベントの非スキル構造2,402→**2,404件**、非公開スキル2,512件との同結果結合2,401→**2,403件**。正式公開イベント0件は不変。
+
 ## データ構造
 
 最上位は schemaVersion=1、cards の配列。それぞれ cardId、events を持ち、coverageStatus は partial（既定）または complete。

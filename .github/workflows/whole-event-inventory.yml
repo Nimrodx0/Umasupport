@@ -70,6 +70,7 @@ on:
       - 'poc/src/core.js'
       - 'poc/src/phase2_2512_private_effect_join.cjs'
       - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
+      - 'poc/tests/phase2_gt_ordered_status_effects.test.cjs'
       - 'poc/tests/phase2_gt_ordered_duplicate_numeric_effects.test.cjs'
       - 'poc/tests/phase2_gt_chain_end_effect_join.test.cjs'
       - 'poc/tests/phase2_gt_grand_live_mt_full_energy.test.cjs'
@@ -196,6 +197,8 @@ jobs:
           node umasupport/poc/tools/audit_phase2_mei_effect_runtime.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
+      - name: Verify repeated GT condition and one-bad-cure source order
+        run: node --test umasupport/poc/tests/phase2_gt_ordered_status_effects.test.cjs
       - name: Verify signed order of source-duplicated effect components
         run: node --test umasupport/poc/tests/phase2_gt_ordered_duplicate_numeric_effects.test.cjs
       - name: Verify chain-ending GT effects with exact skill result terminal proof
