@@ -239,7 +239,15 @@ function main(args){
      const withRanges=enrich30028({catalog:merged.catalog,documents:rangedDocuments,
       review:rangeReview});
      console.log('GT_30028_CORRELATED_RANGE_PRIVATE_OVERLAY='+JSON.stringify(withRanges.summary));
-     const privateEventCatalog=withRanges.catalog;
+     // Numeric-only ranges lack skill-result tiers to reuse. Create exactly
+     // two fresh results on the identified choice, with no skill gains.
+     const {apply:attachNumericOnlyRanges}=
+      require('../src/phase2_gt_nonskill_only_range_overlay.cjs');
+     const numericOnly=attachNumericOnlyRanges({catalog:withRanges.catalog,
+      documents:rangedDocuments,review:rangeReview});
+     console.log('GT_NONSKILL_ONLY_RANGE_PAIR_PRIVATE_OVERLAY='+
+      JSON.stringify(numericOnly.summary));
+     const privateEventCatalog=numericOnly.catalog;
      const publicCatalog=require('../src/public_event_catalog.js');
      const core=require('../src/core.js');
      const {summary}=publicCatalog.preflight(model,privateEventCatalog,{

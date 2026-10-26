@@ -73,6 +73,11 @@ jobs:
           node --check poc/src/phase2_2512_private_effect_join.cjs
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/phase2_2512_private_effect_join.test.cjs
+      - name: Test numeric-only low/high exclusive outcomes in GT30030 and GT30041
+        run: |
+          node --check poc/src/phase2_gt_nonskill_only_range_overlay.cjs
+          node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
+          node --test poc/tests/phase2_gt_nonskill_only_range_overlay.test.cjs
       - name: Test GT30028 joint speed and hint level tier overlay without skill topology changes
         run: |
           node --check poc/src/phase2_gt_30028_correlated_range_overlay.cjs
