@@ -37,6 +37,11 @@ test('all relevant blobs unchanged: newer unrelated commits do not trigger a fal
  assert.equal(r.eventData.pinnedCardFiles,2);
  assert.equal(r.eventData.currentCardFiles,2);
  assert.equal(r.requiresReview,false);
+ assert.deepEqual(r.eventData.knownLatestUmaSimCardIdsWithGtJson,[]);
+ assert.deepEqual(r.eventData.knownLatestUmaSimCardCoverage,{
+  total:3,withGtEventJson:0,withoutGtEventJson:3,
+  eventTopologyVerified:false,publicationApproved:false
+ });
  assert.equal(r.commitMoved.gameTora,true);
  assert.equal(r.commitMoved.umaSim,true);
  assert.deepEqual(r.affectedUmaSimFiles,[]);
@@ -63,8 +68,14 @@ test('added/modified/removed event-card ids and updated UmaSim blobs get stable 
  assert.deepEqual(r.affectedUmaSimFiles,['data/support_card.txt']);
  assert.equal(r.requiresReview,true);
  assert.deepEqual(r.eventData.knownLatestUmaSimCardIdsWithoutGtJson,['10149','30323']);
+ assert.deepEqual(r.eventData.knownLatestUmaSimCardIdsWithGtJson,['30322']);
+ assert.equal(r.eventData.knownLatestUmaSimCardCoverage.withGtEventJson,1);
+ assert.equal(r.eventData.knownLatestUmaSimCardCoverage.withoutGtEventJson,2);
  const body=issueBody(r);
  assert.match(body,/30322/);
+ assert.match(body,/GTイベントJSONが存在/);
+ assert.match(body,/GTイベントJSONが未収録/);
+ assert.match(body,/公開許可を保証しません/);
  assert.match(body,/固定出典との差分/);
  assert.match(body,/確認ゲート/);
  assert.match(body,/レビュー|審査/);
@@ -111,4 +122,26 @@ test('strict mode refuses a wrong pinned GT population or unexpected baseline Um
  });
  assert.throws(()=>inspect(arg({umaSimPinnedTree:malformed.uma}),{strict:false}),
   /出典Git blob/);
+});
+
+test('newly available GT JSON for all three current cards still requires manual result and rights review',()=>{
+ const head=source([
+  ['30001','a'],['30002','b'],
+  ['10149','c'],['30322','d'],['30323','e']
+ ],BASE_UMA);
+ const r=inspect(arg({gameToraLatestTree:head.gt,
+  gameToraLatestCommit:H('c')}),{strict:false});
+ assert.deepEqual(r.eventData.addedCardIds,['10149','30322','30323']);
+ assert.deepEqual(r.eventData.knownLatestUmaSimCardIdsWithGtJson,
+  ['10149','30322','30323']);
+ assert.deepEqual(r.eventData.knownLatestUmaSimCardIdsWithoutGtJson,[]);
+ assert.equal(r.eventData.knownLatestUmaSimCardCoverage.withGtEventJson,3);
+ assert.equal(r.eventData.knownLatestUmaSimCardCoverage.eventTopologyVerified,false);
+ assert.equal(r.eventData.knownLatestUmaSimCardCoverage.publicationApproved,false);
+ assert.equal(r.requiresReview,true);
+ assert.equal(r.automaticEventApproval,false);
+ const issue=issueBody(r);
+ assert.match(issue,/10149/);assert.match(issue,/30322/);assert.match(issue,/30323/);
+ assert.match(issue,/公開許可を保証しません/);
+ assert.doesNotMatch(issue,/元イベント本文/);
 });
