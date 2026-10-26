@@ -19,7 +19,7 @@ permissions:
 jobs:
   pinned-current-roster-delta:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,5 +46,13 @@ jobs:
           node poc/src/current_umasim_roster_delta.cjs \
             "$RUNNER_TEMP/umasim-sources/before.txt" \
             "$RUNNER_TEMP/umasim-sources/current.txt"
+      - name: Install Chromium for actual pinned roster browser check
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Verify all 566 cards on Pages-style Chromium and select all three new cards
+        run: |
+          node --check poc/tests/browser_current_umasim_566.cjs
+          node poc/tests/browser_current_umasim_566.cjs "$RUNNER_TEMP/umasim-sources/current.txt"
       - name: Keep the public event release gate independent
         run: node poc/tools/verify_event_release.cjs
