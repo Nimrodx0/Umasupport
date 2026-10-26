@@ -80,6 +80,17 @@ function inspect({gameToraPinnedTree,gameToraLatestTree,
    fail('UmaSim固定ソースの出典Git blob SHAが一致しない: '+path);
  }
  const {added,removed,modified}=gitDiff(baseEvents,headEvents);
+ // These three numeric card IDs are independently present in the current
+ // UmaSim roster but absent from the historical GT baseline. Track BOTH
+ // their arrival and their continued absence, without ever claiming that a
+ // new GT JSON has already passed event-result or publication adjudication.
+ const expectedIds=roster.expectedNewIds;
+ if(!Array.isArray(expectedIds)||expectedIds.length!==3||
+    new Set(expectedIds).size!==3||
+    expectedIds.some(id=>!/^[0-9]{5}$/.test(id)||baseEvents.has(id)))
+  fail('既知の現行サポカ追加IDと固定GT基準の不一致');
+ const coveredKnown=expectedIds.filter(id=>headEvents.has(id));
+ const missingKnown=expectedIds.filter(id=>!headEvents.has(id));
  const umaChanges={};
  for(const path of UMA_FILES){
   const current=umaHead.get(path);
@@ -116,7 +127,14 @@ function inspect({gameToraPinnedTree,gameToraLatestTree,
    addedCardIds:added,removedCardIds:removed,modifiedCardIds:modified,
    // The new October 26 cards already confirmed in UmaSim are NOT present
    // in the currently pinned historical GT snapshot.
-   knownLatestUmaSimCardIdsWithoutGtJson:roster.expectedNewIds.filter(id=>!headEvents.has(id))
+   knownLatestUmaSimCardIdsWithoutGtJson:missingKnown,
+   knownLatestUmaSimCardIdsWithGtJson:coveredKnown,
+   knownLatestUmaSimCardCoverage:{
+    total:expectedIds.length,withGtEventJson:coveredKnown.length,
+    withoutGtEventJson:missingKnown.length,
+    // Presence of an upstream source file is NOT proof of correctness.
+    eventTopologyVerified:false,publicationApproved:false
+   }
   },
   umaSimData:umaChanges,
   affectedUmaSimFiles:changedSourceFiles,
@@ -143,6 +161,9 @@ function issueBody(result){
  '- GTの変更カードID: '+json(e.modifiedCardIds),
  '- GTの削除カードID: '+json(e.removedCardIds),
  '- UmaSimの更新対象: '+json(flags),
+ '- 現行追加サポカのGTイベントJSONが存在: '+json(e.knownLatestUmaSimCardIdsWithGtJson),
+ '- 現行追加サポカのGTイベントJSONが未収録: '+json(e.knownLatestUmaSimCardIdsWithoutGtJson),
+ '- 注記: JSONの存在は個別の選択肢・スキル・連続分岐の正しさ、公開許可を保証しません。',
  '- 今回の識別指紋: \`'+result.reviewFingerprint+'\`',
  '',
  '### 取り込みのための確認ゲート（自動で書き換えない）',
