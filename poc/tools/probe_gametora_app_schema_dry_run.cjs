@@ -295,7 +295,8 @@ function main(args){
            'current-max-energy','all-15-sports-disciplines',
            'all-five-vegetables','secret-ingredient-count',
            'other-supports-next-turn','bath-ticket-count',
-           'next-bath-super-recovery'].includes(r.targetSelection)||
+           'next-bath-super-recovery','all-three-legend-guides',
+           'chosen-legend-from-event-choice'].includes(r.targetSelection)||
           r.source!=='event-dynamic-effect'||r.conditional!==true))
        fail('ランダム能力値の対象が確定値に混入した');
       liveDynamic+=dynamic.length;
