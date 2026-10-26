@@ -82,9 +82,14 @@ function enrich({catalog,documents,review}){
  if(before!==after)fail('スキル報酬の出典条件が変化');
  const beforeCard=match[0],afterCard=copy.cards.find(c=>c.cardId==='30028');
  const chooses={choices:{[event.id]:'choice-02'},outcomes:{}};
- const low=core.directEffectRoutes({...afterCard,id:'30028'},{
+ // Isolate this effect leaf for the outcome-correlation proof. The real
+ // card may have a preceding chain stage not selected in this static check;
+ // a missing predecessor must not be confused with mismatched result tiers.
+ const isolated={id:'30028',events:[{...target,requires:undefined,
+  availabilityKind:undefined}]};
+ const low=core.directEffectRoutes(isolated,{
   ...chooses,outcomes:{[event.id]:'route-01-or-1'}});
- const high=core.directEffectRoutes({...afterCard,id:'30028'},{
+ const high=core.directEffectRoutes(isolated,{
   ...chooses,outcomes:{[event.id]:'route-01-or-2'}});
  if(low.length!==2||high.length!==2||
     low[0].delta!==5||high[0].delta!==10||
