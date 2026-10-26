@@ -94,3 +94,4 @@
 - [Phase 2・GT30030/30041の数値のみの低／高結果を厳格に2分割し非公開2512イベントへ限定統合](phase2-gt-nonskill-only-range-pair-20261026.md)
 - [Phase 2・SSR30010の賢さ低／高とヒント2択を既存4排他的結果で同期](phase2-gt-30010-correlated-or-20261026.md)
 - [Phase 2・SSR30090絆±5の2結果と両方の連続打ち切りを厳格照合](phase2-gt-30090-terminal-bond-20261026.md)
+- [Phase 2・未対応84件の原因別一括分類とU.A.F.全15競技の共通変換](phase2-gt-batch-cohort-uaf-20261026.md)
