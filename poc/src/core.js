@@ -234,6 +234,8 @@ function directStatusRoutes(card,config={}){
         statusKind:effect.kind,possible:true,
          ...(effect.conditionId?{conditionId:effect.conditionId}:{}),
          ...(effect.chance!==undefined?{chance:effect.chance}:{}),
+         ...(effect.sourceEffectOrdinal!==undefined?
+           {sourceEffectOrdinal:effect.sourceEffectOrdinal}:{}),
         conditional:true,
         condition:[...new Set([...conditions,'状態操作の適用条件・確率は未保証'])].join(' / ')});
     }
