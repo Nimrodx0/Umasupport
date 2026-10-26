@@ -101,6 +101,10 @@
          signed&&e.possible===true&&e.scenario==='grand-live'&&
          e.targetSelection==='lowest-performance-at-runtime'&&
          only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='uaf-all-disciplines'?
+         signed&&e.possible===true&&e.scenario==='uaf'&&
+         e.targetSelection==='all-15-sports-disciplines'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
        e.kind==='restore-current-max-energy'?
          e.possible===true&&e.targetSelection==='current-max-energy'&&
          only(['kind','possible','targetSelection']):
