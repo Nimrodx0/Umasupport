@@ -238,3 +238,6 @@ GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ�
 ## 2026-10-26：シナリオ別資源の共通動的効果型
 
 [固定GT同一イベント位置の2コード一括変換](phase2-scenario-resources-batch-20261026.md)。`dynamicEffects[]`の`great-food-festival-all-vegetables`は大豊食祭限定の5種野菜それぞれに対する増減、`scenario14-secret-ingredients`はシナリオ14の秘密素材表示候補（固定元実行器では事前表示のみ）であり、通常5能力値でも実際の付与が確認済みの取得量でもない。いずれも`scenario`・`targetSelection`・`possible:true`を厳格検証し、候補を`conditional:true`・`unresolvedTargets:true`で返す。元結果での重複、元効果の追加フィールド、幅値を自動解釈しない。今回の一般変換はGT2,488イベントの2,427構造化／保留61、非公開スキル2,512のうち通常結合2,426。正式公開0件を維持。
+## 2026-10-26：翌ターン補正と次回温泉入浴フラグの条件付き動的効果
+
+[出典と実装詳細](phase2-gt-contextual-batch-20261026.md)。元GTの`ntsr`を`next-turn-other-support-specialty-rate`（`delta`、`duration:'next-turn'`）、`yhs_tix`を`onsen-bathing-tickets`（`delta`、`scenario:'yukoma-onsen'`）、`yhs_sr`を`onsen-next-bath-super-recovery`（`activation:'next-bath'`、`delta`無し、`scenario:'yukoma-onsen'`）で保持。各`targetSelection`と`possible:true`を必須にして、不明な報酬・確率・ゲーム外条件を勝手に通常報酬へ変換しない。固定GTの一般構造化2,449／保留39、非公開スキル同結果結合2,448、公開0。
