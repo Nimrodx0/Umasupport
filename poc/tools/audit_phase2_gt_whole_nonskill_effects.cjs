@@ -53,13 +53,20 @@ function main(args){
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
     result.summary.isolatedPreviewStatusRecords!==98||
-    result.summary.isolatedPreviewEffectRecords!==11049||
+    result.summary.isolatedPreviewEffectRecords!==11179||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
     result.summary.scenarioCurrencyMentions!==4||
     result.summary.validScenarioCurrencyMentions!==4||
     result.summary.invalidScenarioCurrencyMentions!==0||
+    result.summary.contextOperationMentions!==38||
+    result.summary.validContextOperationMentions!==38||
+    result.summary.invalidContextOperationMentions!==0||
+    result.summary.zeroContextOperationMentions!==0||
+    result.summary.contextOperationTypes?.ntsr!==14||
+    result.summary.contextOperationTypes?.yhs_tix!==12||
+    result.summary.contextOperationTypes?.yhs_sr!==12||
     result.summary.scenarioResourceMentions!==16||
     result.summary.validScenarioResourceMentions!==16||
     result.summary.invalidScenarioResourceMentions!==0||
@@ -73,22 +80,22 @@ function main(args){
     result.summary.fullEnergyMentions!==1||
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
-    result.summary.isolatedPreviewDynamicRecords!==53||
+    result.summary.isolatedPreviewDynamicRecords!==91||
     result.summary.chainEndMentions!==109||
     result.summary.chainEndAcceptedSourceMentions!==91||
     result.summary.chainEndRejectedSourceMentions!==18||
     result.summary.isolatedTerminalOutcomeRecords!==90||
     result.summary.repeatedNumericSourceMentions!==25||
-    result.summary.eligibleRepeatedNumericSourceMentions!==10||
-    result.summary.isolatedOrderedRepeatedNumericMentions!==10||
+    result.summary.eligibleRepeatedNumericSourceMentions!==12||
+    result.summary.isolatedOrderedRepeatedNumericMentions!==12||
     result.summary.repeatedStatusSourceMentions!==5||
     result.summary.eligibleRepeatedStatusSourceMentions!==2||
     result.summary.isolatedOrderedRepeatedStatusMentions!==2||
-    result.summary.isolatedPreviewEventRecords!==2427||
-    result.summary.eligibleRoutes!==4293||
-    result.summary.blockedRoutes!==83||
-    result.summary.blockedEvents!==61||
-    result.summary.unrecognizedEffectMentions!==60||
+    result.summary.isolatedPreviewEventRecords!==2449||
+    result.summary.eligibleRoutes!==4319||
+    result.summary.blockedRoutes!==57||
+    result.summary.blockedEvents!==39||
+    result.summary.unrecognizedEffectMentions!==22||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||
