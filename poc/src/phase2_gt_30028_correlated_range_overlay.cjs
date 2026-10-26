@@ -94,7 +94,7 @@ function enrich({catalog,documents,review}){
  if(low.length!==2||high.length!==2||
     low[0].delta!==5||high[0].delta!==10||
     low[1].delta!==5||high[1].delta!==5||
-    core.directEffectRoutes({...afterCard,id:'30028'},{choices:{},outcomes:{}})
+    core.directEffectRoutes(isolated,{choices:{},outcomes:{}})
       .some(x=>x.delta===5||x.delta===10)||
     core.directRoutes({...beforeCard,id:'30028'},chooses).length!==
       core.directRoutes({...afterCard,id:'30028'},chooses).length)
