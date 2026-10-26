@@ -174,7 +174,17 @@ function apply({catalog,documents,review}){
     outcomes:{...cfg.outcomes,[eventId]:'range-tier-'+tier}});
   }
   for(const c of cases){
-   const before=core.directRoutes({...old,id:old.cardId},c);
+   // A new result ID cannot be supplied to the old FLAT choice: the old
+   // catalog rejects that ID and falsely appears to lose downstream skills.
+   // Compare semantically equivalent selections instead: old choice (no
+   // outcome) versus new choice with either possible continuing outcome.
+   const baseline={...c,outcomes:{...c.outcomes}};
+   const profile=PROFILES.find(p=>p.cardId===updated.cardId);
+   const newRangeEventId=profile&&'gt-'+profile.cardId+'-event-003';
+   if(newRangeEventId&&
+      /^range-tier-[12]$/.test(baseline.outcomes[newRangeEventId]||''))
+    delete baseline.outcomes[newRangeEventId];
+   const before=core.directRoutes({...old,id:old.cardId},baseline);
    const after=core.directRoutes({...updated,id:updated.cardId},c);
    if(JSON.stringify(before)!==JSON.stringify(after))
     fail('既存カードのスキル取得経路が変化 '+updated.cardId);
