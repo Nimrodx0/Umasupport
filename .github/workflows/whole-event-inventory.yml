@@ -89,6 +89,7 @@ on:
       - 'poc/tests/phase2_gt_random_stats_targets.test.cjs'
       - 'poc/tests/phase2_gt_status_effects.test.cjs'
       - 'poc/src/phase2_gt_blocker_cohorts.cjs'
+      - 'poc/tests/phase2_gt_random_outing_unlock_batch.test.cjs'
       - 'poc/tests/phase2_gt_legends_gauge_batch.test.cjs'
       - 'poc/tests/phase2_gt_contextual_effect_batch.test.cjs'
       - 'poc/tests/phase2_gt_scenario_resource_batch.test.cjs'
