@@ -8,7 +8,7 @@ const hints=['京都レース場○','直線巧者','地固め','端緒','比類
 function source(){
  const result=[];
  for(let i=0;i<563;i++){
-  const id=String(10000+i);
+  const id=String(20000+i);
   for(let stage=0;stage<5;stage++)result.push(line(id,stage,'[架空]旧カード',''));
  }
  for(const [id,name,h] of [
