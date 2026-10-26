@@ -518,3 +518,10 @@ A＝専用のNode合成変換・無選択／3択・拒否試験、B＝固定GT2,
 [更新運用の正本](upstream-refresh-operations.md)。固定GitHubソースの自動更新で元JSONや本番のイベントを無条件に上書きしないため、**日次12:27 JST**の `Monitor pinned GT events and UmaSim sources` GitHub Actionsを新設。GT固定／GT現行の各サポカイベントJSON（カードIDとGit blob SHA）、UmaSim固定／現行の2ファイル（サポカ・数値スキル辞書Git blob SHA）を比較し、**更新対象が生じた場合のみ重複しない1件のレビューIssue**を作る。固定コミットを採用するPR、全件A/B/Cと出典・分岐レビュー、イベントの正式公開は独立した人間の確認が必要。第三者イベントの選択肢・原文・元JSONは監視では取得・保存・配信しない。
 
 [初回本物のGitHubツリー監査CI](https://github.com/Nimrodx0/Umasupport/actions/runs/40315080036)は成功。GT固定と最新元は同一でイベントJSON559ファイルの差分**0**。UmaSimの元コミットは固定以降に進んだが、対象サポカとスキル辞書のGit blobは変わらず、**差分Issueは作成しない**と確認。既知の新3カードのGT元JSON未収録は継続して記録する。A＝合成の追加・削除・変更・型欠落・重複抑止単体、B＝実4Gitツリーメタ情報の出典差分検出、C＝既存公開UIのChromium回帰のみ（新イベントは未公開、物理端末操作は未実施）。**正式公開イベント0件**は不変。
+
+
+## Phase 2・新サポカ3枚のGT元JSON収録状態を監視に明示（2026-10-26）
+
+[継続更新の出典・動作契約](upstream-refresh-operations.md)／[元の固定Gitツリー4系統の監査](https://github.com/Nimrodx0/Umasupport/actions/runs/40315080036)。日次のGameTora／UmaSim Git blob更新監視に、**10/26追加のR10149・SSR30322・SSR30323の元GTイベントJSONの収録／未収録IDと0/3～3/3の件数**を追加。元データが3枚とも揃ってもイベントの分岐・スキルID照合と配信承認は**別の未実施工程**であるため、`eventTopologyVerified:false`／`publicationApproved:false`と明示する。元固定GTには新3カードが未収録という前提が崩れたら監視を安全に失敗させ、古い母数への黙示的統合を防ぐ。
+
+GitHub Actionsの日次ジョブ要約と出典差分レビューIssueに収録済み・未収録数値IDを別々に示す。Git blobが変わらない毎日の監視では既知の未収録3枚だけを理由にIssueを乱発しない。A：GT0/3・1/3・3/3の合成Gitツリー、B：元4 GitツリーのGit SHA照合、C：非公開イベントのブラウザ表示・Windows/Android実機と元ゲーム内分岐は未検証。**固定GT2,488件、非公開スキル2,512件を無断更新せず、正式公開イベント0件**を維持。
