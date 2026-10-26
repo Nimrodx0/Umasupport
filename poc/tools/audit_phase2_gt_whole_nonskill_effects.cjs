@@ -5,6 +5,7 @@ const {readDocuments}=require('./audit_gametora_branches.cjs');
 const {analyze}=require('../src/phase2_gt_whole_nonskill_effect_inventory.cjs');
 const {analyze:reviewConditionalSegments}=require('../src/phase2_gt_conditional_segment_review.cjs');
 const {candidates:reviewCorrelatedRanges}=require('../src/phase2_gt_correlated_numeric_range.cjs');
+const {analyze:classifyBlockedCohorts}=require('../src/phase2_gt_blocker_cohorts.cjs');
 const fail=s=>{throw Error('全件非スキル出典監査CLI: '+s);};
 function main(args){
  if(args.length!==3)fail('usage: <whole-provisional-index.json> <fixed-GT-dir> <private-CI-output.json>');
@@ -14,6 +15,8 @@ function main(args){
  const result=analyze({documents:docs,index},{strict:true});
  const guarded=reviewConditionalSegments({documents:docs,index,inventory:result});
  const ranged=reviewCorrelatedRanges({documents:docs,index});
+ const cohorts=classifyBlockedCohorts({inventory:result,documents:docs,index},
+  {strict:true});
  if(ranged.summary.sourceRangeEvents!==14||
     ranged.summary.sourceRangeCards!==12||
     ranged.summary.sourceRangeChoices!==14||
@@ -96,7 +99,21 @@ function main(args){
   guarded.rows.map(x=>({cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
    choiceOrdinal:x.choiceOrdinal,segmentOrdinal:x.segmentOrdinal,
    guardClasses:x.guardDescriptors.map(g=>g.reviewClass)}))));
- console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY='+JSON.stringify(result.summary));
+ // Aggregate by root-cause cohort rather than writing one overlay per event.
+ // Metadata is ID/shape only. Still 84 blocked events, not published records.
+ console.log('GT_NONSKILL_BLOCKER_COHORTS='+JSON.stringify({
+  sourceEvents:cohorts.sourceEvents,blockedEvents:cohorts.blockedEvents,
+  affectedCards:cohorts.affectedCards,blockedRoutes:cohorts.blockedRoutes,
+  groups:cohorts.cohorts,sourceEffectTypes:cohorts.involvedSourceEffectTypes,
+  reasonSignatures:cohorts.reasonSignatures,
+  publicationApproved:false
+ }));
+ console.log('GT_NONSKILL_BLOCKER_COHORT_ROWS='+JSON.stringify(cohorts.rows.map(x=>({
+  cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
+  group:x.priorityGroup,reasonCodes:x.reasonCodes,
+  types:x.sourceEffectTypes
+ }))));
+ console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY=+JSON.stringify(result.summary));
  console.log('GT_ALL_NONSKILL_EFFECT_TYPES='+JSON.stringify(result.sourceEffectTypes));
  console.log('GT_ALL_NONSKILL_EFFECT_BLOCKERS='+JSON.stringify(result.blockedReasons));
  console.log('PRIVATE_EFFECT_CANDIDATES_CI_ONLY='+outPath);
