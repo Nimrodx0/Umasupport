@@ -92,3 +92,4 @@
 - [Phase 2・3カードの条件付きセグメント8結果を元ガードIDで隔離・非公開照合](phase2-gt-conditional-segment-guard-review-20261026.md)
 - [Phase 2・GT連動数値範囲15記載を調査しSSR30028の能力値＋ヒントLv2結果を非公開統合](phase2-gt-coupled-range-numeric-outcomes-20261026.md)
 - [Phase 2・GT30030/30041の数値のみの低／高結果を厳格に2分割し非公開2512イベントへ限定統合](phase2-gt-nonskill-only-range-pair-20261026.md)
+- [Phase 2・SSR30010の賢さ低／高とヒント2択を既存4排他的結果で同期](phase2-gt-30010-correlated-or-20261026.md)
