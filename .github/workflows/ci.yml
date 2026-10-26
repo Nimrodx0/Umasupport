@@ -73,6 +73,11 @@ jobs:
           node --check poc/src/phase2_2512_private_effect_join.cjs
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/phase2_2512_private_effect_join.test.cjs
+      - name: Test GT original order of duplicate conditional status operations
+        run: |
+          node --check poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs
+          node --check poc/src/event_schema.js
+          node --test poc/tests/phase2_gt_ordered_status_effects.test.cjs
       - name: Test original ordering of duplicate GT numeric effects
         run: |
           node --check poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs
