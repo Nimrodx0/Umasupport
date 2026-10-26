@@ -113,6 +113,14 @@
          signed&&e.possible===true&&e.scenario==='scenario-14'&&
          e.targetSelection==='secret-ingredient-count'&&
          only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='legends-all-guide-gauges'?
+         signed&&e.possible===true&&e.scenario==='legends'&&
+         e.targetSelection==='all-three-legend-guides'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='legends-choice-guide-gauge'?
+         signed&&e.possible===true&&e.scenario==='legends'&&
+         e.targetSelection==='chosen-legend-from-event-choice'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
        e.kind==='next-turn-other-support-specialty-rate'?
          signed&&e.possible===true&&e.duration==='next-turn'&&
          e.targetSelection==='other-supports-next-turn'&&
