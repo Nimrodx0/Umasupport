@@ -235,3 +235,6 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 ## 2026-10-26：U.A.F.全競技レベルのシナリオ限定動的報酬（共通変換）
 
 GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ競技レベルすべてに関わる効果。`dynamicEffects[]`の`{kind:'uaf-all-disciplines',delta:N,scenario:'uaf',possible:true,targetSelection:'all-15-sports-disciplines'}`に保存し、`UmaCore.directDynamicEffectRoutes`ではシナリオ条件付き・対象値未確定として返す。`effects[]`へ5能力増分として入れるのは誤り。元値が不正、幅値、重複などでは保留。2,488イベントの共通変換で10イベントを追加して2,414を構造化、残り74を保留。[全件原因別コホートと根拠](phase2-gt-batch-cohort-uaf-20261026.md)。公開0件は不変。
+## 2026-10-26：シナリオ別資源の共通動的効果型
+
+[固定GT同一イベント位置の2コード一括変換](phase2-scenario-resources-batch-20261026.md)。`dynamicEffects[]`の`great-food-festival-all-vegetables`は大豊食祭限定の5種野菜それぞれに対する増減、`scenario14-secret-ingredients`はシナリオ14の秘密素材表示候補（固定元実行器では事前表示のみ）であり、通常5能力値でも実際の付与が確認済みの取得量でもない。いずれも`scenario`・`targetSelection`・`possible:true`を厳格検証し、候補を`conditional:true`・`unresolvedTargets:true`で返す。元結果での重複、元効果の追加フィールド、幅値を自動解釈しない。今回の一般変換はGT2,488イベントの2,427構造化／保留61、非公開スキル2,512のうち通常結合2,426。正式公開0件を維持。
