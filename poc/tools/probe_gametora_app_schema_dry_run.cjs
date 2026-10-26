@@ -228,14 +228,26 @@ function main(args){
       path.resolve(process.env.UMASUPPORT_GT_NONSKILL_EFFECT_PRIVATE_FILE),'utf8'));
      const {assemble:join}=require('../src/phase2_2512_private_effect_join.cjs');
      const merged=join({skillRuntime:withSpecial,effectInventory:evidence},{strict:true});
+     // Separate source-verified two-tier overlay. It has to reuse the
+     // exact skill outcome for SSR30028 and is never written to disk.
+     const rangedDocuments=readDocuments(process.env.UMASUPPORT_GT_EVENT_DIR);
+     const fullIndex=JSON.parse(fs.readFileSync(
+      path.resolve('whole-event-output/whole_event_provisional.v1.json'),'utf8'));
+     const {candidates:rangeCandidates}=require('../src/phase2_gt_correlated_numeric_range.cjs');
+     const rangeReview=rangeCandidates({documents:rangedDocuments,index:fullIndex});
+     const {enrich:enrich30028}=require('../src/phase2_gt_30028_correlated_range_overlay.cjs');
+     const withRanges=enrich30028({catalog:merged.catalog,documents:rangedDocuments,
+      review:rangeReview});
+     console.log('GT_30028_CORRELATED_RANGE_PRIVATE_OVERLAY='+JSON.stringify(withRanges.summary));
+     const privateEventCatalog=withRanges.catalog;
      const publicCatalog=require('../src/public_event_catalog.js');
      const core=require('../src/core.js');
-     const {summary}=publicCatalog.preflight(model,merged.catalog,{
+     const {summary}=publicCatalog.preflight(model,privateEventCatalog,{
       skillText:result.dryRunMergedSkillText,fullRegistry:false});
      if(summary.eventsWithRecords!==2512)fail('非スキル統合後の全件preflight失敗');
      const disposable=JSON.parse(JSON.stringify(model));
      disposable.cards=disposable.cards.map(c=>disposable.cardById[c.id]||c);
-     const attached=publicCatalog.attach(disposable,merged.catalog,{
+     const attached=publicCatalog.attach(disposable,privateEventCatalog,{
       skillText:result.dryRunMergedSkillText,fullRegistry:false});
      if(attached.eventsWithRecords!==2512)fail('非スキル統合後の本番attach失敗');
      let liveEffects=0,liveStatusOperations=0,liveDynamic=0;
