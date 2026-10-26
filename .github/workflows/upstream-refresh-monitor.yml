@@ -1,0 +1,110 @@
+name: Monitor pinned GT events and UmaSim sources
+
+on:
+  schedule:
+    # 03:27 UTC = 12:27 JST. GitHub scheduled runs can start late.
+    - cron: '27 3 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/upstream-refresh-monitor.yml'
+      - 'poc/src/upstream_refresh_watch.cjs'
+      - 'poc/tests/upstream_refresh_watch.test.cjs'
+      - 'poc/config/event-source-priority.v1.json'
+      - 'poc/src/current_umasim_roster_delta.cjs'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: upstream-source-refresh-review
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify metadata-only drift classifier
+        run: |
+          node --check poc/src/upstream_refresh_watch.cjs
+          node --test poc/tests/upstream_refresh_watch.test.cjs
+      - name: Compare current upstream trees with immutable source pins, notify on relevant drift only
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const monitor=require('./poc/src/upstream_refresh_watch.cjs');
+            const p=monitor.PINS;
+            const owners=[
+              {owner:p.gameTora.owner,repo:p.gameTora.repo,revision:p.gameTora.revision},
+              {owner:p.umaSim.owner,repo:p.umaSim.repo,revision:p.umaSim.revision}
+            ];
+            const heads=await Promise.all(owners.map(async src=>{
+              const head=await github.rest.repos.getCommit({
+                owner:src.owner,repo:src.repo,ref:'main'
+              });
+              return head.data.sha;
+            }));
+            const tree=async(src,ref)=>{
+              const response=await github.rest.git.getTree({
+                owner:src.owner,repo:src.repo,tree_sha:ref,recursive:'1'
+              });
+              return response.data;
+            };
+            const [gtPin,gtHead,umaPin,umaHead]=await Promise.all([
+              tree(owners[0],owners[0].revision),
+              tree(owners[0],heads[0]),
+              tree(owners[1],owners[1].revision),
+              tree(owners[1],heads[1])
+            ]);
+            const result=monitor.inspect({
+              gameToraPinnedTree:gtPin,gameToraLatestTree:gtHead,
+              umaSimPinnedTree:umaPin,umaSimLatestTree:umaHead,
+              gameToraLatestCommit:heads[0],umaSimLatestCommit:heads[1]
+            });
+            core.info('UPSTREAM_REFRESH_MONITOR='+JSON.stringify(result));
+            core.setOutput('requires_review',String(result.requiresReview));
+            await core.summary
+              .addHeading('Upstream fixed-source drift watch')
+              .addTable([
+                [{data:'Source',header:true},{data:'Pinned',header:true},
+                  {data:'Head',header:true},{data:'Relevant change',header:true}],
+                ['GameTora events',result.sourcePins.gameTora,
+                 result.observedHeadCommits.gameTora,
+                 'added '+result.eventData.addedCardIds.length+
+                 ', changed '+result.eventData.modifiedCardIds.length+
+                 ', deleted '+result.eventData.removedCardIds.length],
+                ['UmaSim card/skills',result.sourcePins.umaSim,
+                 result.observedHeadCommits.umaSim,
+                 result.affectedUmaSimFiles.join(', ')||'none']
+              ])
+              .addRaw('Review required: **'+result.requiresReview+
+                '**. No event data or source contents are published.')
+              .write();
+            if(!result.requiresReview)return;
+            const title='Upstream source update: pinned GT events / UmaSim require review';
+            const existing=(await github.paginate(github.rest.issues.listForRepo,{
+              owner:context.repo.owner,repo:context.repo.repo,state:'open',per_page:100
+            })).find(item=>!item.pull_request&&item.title===title);
+            const body=monitor.issueBody(result);
+            if(!existing){
+              const issue=await github.rest.issues.create({
+                owner:context.repo.owner,repo:context.repo.repo,title,body
+              });
+              core.notice('New source drift review issue: '+issue.data.html_url);
+            }else if(!(existing.body||'').includes(
+              'fingerprint:'+result.reviewFingerprint+' -->')){
+              await github.rest.issues.update({
+                owner:context.repo.owner,repo:context.repo.repo,
+                issue_number:existing.number,body
+              });
+              core.notice('Updated existing source drift issue #'+existing.number);
+            }else{
+              core.info('Identical source drift already tracked in issue #'+existing.number);
+            }
