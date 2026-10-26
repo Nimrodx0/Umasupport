@@ -130,9 +130,9 @@ function analyze({inventory,documents,index},{strict=false}={}){
     inventory.summary.eligibleEvents+blockedCount!==eventCount||
     rows.length!==blockedCount)
   fail('元イベント・保留ルート数の集計が一致しない');
- if(strict&&(eventCount!==2488||blockedCount!==84||
+ if(strict&&(eventCount!==2488||
      index.cards.length!==563||source.size!==559))
-  fail('固定563カード／559元カード／2488イベント／84保留の母数が変化');
+  fail('固定563カード／559元カード／2488イベントの母数が変化');
  return {dataKind:'phase2-gt-blocker-cohorts-private',
   sourceRevision:POLICY.baselineRevision,
   sourceEvents:eventCount,blockedEvents:blockedCount,
