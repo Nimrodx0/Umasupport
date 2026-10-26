@@ -4,7 +4,7 @@
 
 対象は固定GameTora派生 [systemless10/UmamusumePS@6e38b54a](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30010.json) のSSR30010、イベント元順位#5（選択肢#1、無選択自動イベント）だけ。元イベント・スキルの見出し本文は転載しない。元の各記載は体力-10、根性+5、賢さ+5/+10、スキルPt+15、そして**片方だけ**のスキルヒント（数値ID200581はLv1/Lv3、数値ID200582はLv1）。
 
-元実行コードの [_split_range_effects](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L414-L445) と [resolve_or_effects](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L463-L517) は、二者択一のスキルを先に解決してから、同じ低／高tierで賢さと該当スキルヒントのLv幅を処理する。だから「賢さは+5/+10を独立抽選、ヒントも独立抽選」「二つのスキルを同時取得」と解釈してはならない。発生確率とゲーム現行版の成否は本実装から推定しない。
+元実行コードの [_split_range_effects](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L414-L445) と [resolve_or_effects](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L905-L972) は、二者択一のスキルを先に解決してから、同じ低／高tierで賢さと該当スキルヒントのLv幅を処理する。だから「賢さは+5/+10を独立抽選、ヒントも独立抽選」「二つのスキルを同時取得」と解釈してはならない。発生確率とゲーム現行版の成否は本実装から推定しない。
 
 ## 既存の4排他的結果と結び付ける
 
@@ -24,7 +24,7 @@
 ## 試験（A／B／C）
 
 - A：専用 [合成テスト](../poc/tests/phase2_gt_30010_correlated_or_overlay.test.cjs) は4結果の賢さ連動と他の固定数値、前段条件の保持、未選択時の非確定扱い、元データ／報酬の意図的な改変で拒否することを検証する。
-- B：固定GT全件実験の [本番同形式の使い捨てローダー](../poc/tools/probe_gametora_app_schema_dry_run.cjs) に組み込み、追加16成分・スキル候補不変・2,512イベントpreflight/attach・現行一般非スキル構造2,404件の維持を確認する。CI結果の確定前は合格としない。
+- B：固定GT全件実験の [本番同形式の使い捨てローダー](../poc/tools/probe_gametora_app_schema_dry_run.cjs) に組み込み、追加16成分・スキル候補不変・2,512イベントpreflight/attach・現行一般非スキル構造2,404件の維持を確認する。[全件監査 #40268582009](https://github.com/Nimrodx0/Umasupport/actions/runs/40268582009) **PASS**：`GT_30010_CORRELATED_OR_PRIVATE_OVERLAY` で4結果・16成分・元スキル経路不変を実測。使い捨てローダー2,512件、元GT非スキル分類2,404件、通常結合2,403件も維持。
 - C：CIのChromium試験は**公開済み既存UIの回帰**に限る。非公開データのPagesへの配信、現行ゲーム内の抽選、Windows/Android物理端末では未検証。
 
-本実装は前工程のSSR30028（1件）、30030／30041（2件）の限定overlayに追加する**4番目の非スキル結果統合イベント**。固定GameTora元2,488・一般分類器の構造化2,404／保留84はそのままで、追加した限定overlayを含む本番同形式の非公開カタログで**非スキル効果付きイベントが2,407件になる想定**。CIで実数を確認する。正式公開イベントは0件、第三者のイベント本文・画像の同梱0件。
+本実装は前工程のSSR30028（1件）、30030／30041（2件）の限定overlayに追加する**4番目の非スキル結果統合イベント**。固定GameTora元2,488・一般分類器の構造化2,404／保留84はそのままで、追加した限定overlayを含む本番同形式の非公開カタログで**非スキル効果付きイベントが2,407件になる想定**。固定元監査で数値16成分の追加、限定overlay前3イベントとの重複なしを確認した。正式公開イベントは0件、第三者のイベント本文・画像の同梱0件。
