@@ -21,6 +21,10 @@ GitHub Pages: index.html → poc/live.html
 
 **React / TypeScript / Viteは未導入。** 導入する場合は、[Phase 3](roadmap.md)で既存UIとテストの保守性を比較して判断する。
 
+## 出典ピンの継続更新監視（監査層）
+
+[日次GitHub Actionsと更新手順](upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueを作成する。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
+
 ## モジュールの責務
 
 1. **外部ソース境界**：出典、取得時刻、スキーマ、データ版を明示し、形式不明の入力を受け付けない。外部GETは起動・明示監査に限定し、通常の絞り込み・集計で都度取得しない。

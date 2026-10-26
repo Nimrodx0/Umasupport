@@ -73,6 +73,10 @@ jobs:
           node --check poc/src/phase2_2512_private_effect_join.cjs
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/phase2_2512_private_effect_join.test.cjs
+      - name: Test daily upstream source drift and issue dedup fingerprint
+        run: |
+          node --check poc/src/upstream_refresh_watch.cjs
+          node --test poc/tests/upstream_refresh_watch.test.cjs
       - name: Test new card numerical skill IDs and event-gap classification
         run: |
           node --check poc/src/current_new_card_skill_event_audit.cjs
