@@ -77,8 +77,14 @@ function audit({rosterText,previousSkillText,currentSkillText},{strict=false}={}
   if(stages.some(x=>!Array.isArray(x)))fail('5段階の通常ヒント元が欠落: '+id);
   if(strict&&!stages.every(x=>x.length===(id==='30322'?14:0)))
    fail('新カードの5段階ヒント総数に未照合の変更: '+id);
-  const originalHints=stages[4].map(name=>{
-   const normalized=normalize(name);
+  // Live model stores "hint:<name>" references, not raw names.
+  // Resolve them through the very same model.skillById dictionary the
+  // production UI uses. Never match the internal hint: prefix to UmaSim.
+  const originalHints=stages[4].map(hintId=>{
+   const mapped=catalog.skillById[hintId];
+   if(!mapped||typeof mapped.name!=='string')
+    fail('公開ローダーの通常ヒント辞書が参照切れ: '+id);
+   const normalized=normalize(mapped.name);
    const candidates=current.byName.get(normalized)||[];
    const normal=candidates.filter(x=>x.rarity==='normal');
    // Exact ID matching is required. No name-based assumption that a
