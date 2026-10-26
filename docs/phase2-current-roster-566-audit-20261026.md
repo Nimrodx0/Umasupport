@@ -18,12 +18,12 @@
 - 比較前ピン：コミット `91952973eb334ae530b8cd76541bce8a01a141cd`、Git blob `215b1922fd385895acc48af583db41e32b69ff58`。
 - 比較後ピン：コミット `910dd79f046710245e0cc88a09c5c92b1044897e`、Git blob `3a9204291615ce0c3573bf91e388e6ba48854848`。
 - 旧563全カードの全5段階データをJSONベースで完全比較し、削除・変更を拒否。新カードは新ID・日本語名・タイプ・レア度を独立確認。**live loaderが566モデルを生成できる**ことをNodeで検証。
-- 公開サイトは従来から `https://raw.githubusercontent.com/mee1080/umasim/main/data/support_card.txt` を起動時に直読みし、構造が有効なら採用する。**公開アプリそのもののブラウザ画面や端末で今回の3カードを選択できることまでは検証していない**。
+- 公開サイトは従来から `https://raw.githubusercontent.com/mee1080/umasim/main/data/support_card.txt` を起動時に直読みし、構造が有効なら採用する。**GitHub Pages形式のサブパスで実Chromiumを起動し、566枚の受信・収録状況と新3カードすべての検索／本育成・継承デッキ登録を確認済み**。これは実際の配信ドメインではなくローカルサーバー上の画面、スキル辞書は合成テスト用である。Windows/Android実機は未実施。
 - 新カードの`events:[]`と通常ヒントの存在は区別する。**新3カードのイベントが正式に公開承認済みであるわけではない**。既存固定GTのイベント全体2,488とそのイベント候補2,512は旧母集団に付く別スナップショットであり、今回の新カード3件を元GTイベントへ自動的に結び付けない。
 - 元ファイルはCIの `$RUNNER_TEMP` へ**2ファイルだけ**ダウンロードし、ワークフロー終了後破棄。外部のマスターデータ全文やゲーム画像をレポジトリ／Pages／添付に含めない。出力は新カードのID・名前・カード数・チェック結果のみ。
 - A：[合成差分Nodeテスト](../poc/tests/current_umasim_roster_delta.test.cjs) で500→501カードの共通ロード、カード・段階・通常ヒント変造の拒否とblobピンを検証。
 - B：[固定UmaSim差分GitHub Action](../.github/workflows/current-roster-audit.yml) で563→566の実データ2本を検算。固定GT2,488イベントや全563スキル経路の試験は別の [固定GT監査](../.github/workflows/whole-event-inventory.yml) として維持。
-- C：GitHub Pagesの公開UIと実機端末・ブラウザ上の新カード表示／操作は未試験。Nodeで通ることと端末表示確認を混同しない。今回も**正式イベント公開0件**。
+- C：[実Chromiumテスト](../poc/tests/browser_current_umasim_566.cjs)で、固定新TSVと合成スキル辞書を起動時の外部取得URLにだけ注入し、GitHub Pages同形式のサブパス `/Umasupport/` から実際の `poc/live.html` を起動。データ収録状況566/566枚、新3カードの検索と本育成2枠・継承育成1枠への登録、ローカル保存、未承認イベントが0件のままであることを確認。**実GitHub Pagesドメインへのアクセス・Windows/Android物理端末は未試験**。公開イベント0件は不変。
 
 ## 工程上の意味
 
