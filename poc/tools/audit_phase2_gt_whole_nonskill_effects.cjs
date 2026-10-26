@@ -113,7 +113,7 @@ function main(args){
   group:x.priorityGroup,reasonCodes:x.reasonCodes,
   types:x.sourceEffectTypes
  }))));
- console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY=+JSON.stringify(result.summary));
+ console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY='+JSON.stringify(result.summary));
  console.log('GT_ALL_NONSKILL_EFFECT_TYPES='+JSON.stringify(result.sourceEffectTypes));
  console.log('GT_ALL_NONSKILL_EFFECT_BLOCKERS='+JSON.stringify(result.blockedReasons));
  console.log('PRIVATE_EFFECT_CANDIDATES_CI_ONLY='+outPath);
