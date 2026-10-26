@@ -65,27 +65,9 @@ async function run(sourcePath){
   assert.match(await page.locator('#source-status-cards').innerText(),/566 \/ 566枚/);
   await page.locator('button[data-action="close"]').click();
   for(const [deck,index,id] of [
-   ['main',0,'30322'],['main',1,'30323'],['inherit',0,'10149']
+   ['main',3,'30322'],['main',4,'30323'],['inherit',3,'10149']
   ]){
-   const slot=page.locator('button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]');
-   // Some default decks have an occupied slot; use the edit button as an
-   // alternative picker entry after fresh app initialization.
-   const button=(await slot.count())?slot:
-    page.locator('button[data-action="edit-card"][data-deck="'+deck+'"][data-index="'+index+'"]');
-   await button.click();
-   // Editing an occupied card may open a detail modal: explicit 'change
-   // card' action instead of accidentally mutating choices is required.
-   if(!(await page.locator('#picker-search').count())){
-    const replace=page.locator('[data-action="pick"] [data-deck="'+deck+'"]');
-    const change=page.locator('button[data-action="replace-card"]');
-    if(await change.count())await change.click();
-    else {
-     // Existing slot detail screen offers 'change card' under its own label.
-     const candidates=page.locator('button[data-action="change-card"]');
-     if(await candidates.count())await candidates.click();
-     else throw Error('Cannot reach picker for occupied slot: '+deck+'/'+index);
-    }
-   }
+   await page.locator('button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]').click();
    await page.locator('#picker-search').fill(id);
    await page.locator('button[data-action="set-card"][data-id="'+id+'"]').click();
    const current=await page.evaluate(({deck,index})=>{
