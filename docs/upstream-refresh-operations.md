@@ -36,6 +36,14 @@
 
 将来、新しい元コミットに対する**全件preflightが自動化・グリーン化したら、固定ピン更新候補のDraft PRを自動生成する**ことは検討できる。ただしDraft PRと正式公開承認は別。現在の実装は「自動検知・差分分類・Issue通知」までであり、**人手による差分事実裁定と新ピン採用は未自動化**。
 
+## 新3サポカのGameTora元データ収録の監視ゲート（2026-10-26）
+
+2026年10月26日追加の独立確認済みサポカ、**R10149・SSR30322・SSR30323**について、最新GTの各`support_<ID>.json`の**存在**と**欠損**を毎回分離して報告する。`eventData.knownLatestUmaSimCardIdsWithGtJson`／`knownLatestUmaSimCardIdsWithoutGtJson`、その合計が3の`knownLatestUmaSimCardCoverage`を監視結果・Job summary・差分レビューIssueに記録する。
+
+GTの新JSONが1件追加されれば従来の`addedCardIds`の厳密なGit blob差分で既存の単一レビューIssueを起票・更新する。3枚全部の元JSONが存在しても**イベントの選択肢、結果、後続連続、スキル数値IDの内容はまだ照合されていない**ため、`eventTopologyVerified:false`・`publicationApproved:false`を維持する。欠損3件が安定していてGT等のGit blobに差分がない場合は毎日の重複Issueを作らず、既存のログに欠損3を残す。元のイベント本文や画像、JSON内容は読み込まない。
+
+固定GT初期スナップショットにこれらの3 IDが収録されていた場合、以前確認した母集団の前提と矛盾するため**監視を失敗**させる。母集団・出典の再裁定なしに「新規欠損カード」の報告を上書きしない。A＝0/3、1/3、3/3の合成Gitツリーを使う回帰、B＝元の4 Gitツリーのメタデータ比較、C＝イベント実表示・物理端末は本工程の対象外。
+
 ## 現在の実測（2026-10-26の初回ワークフロー）
 
 [最初の実Gitツリー監視CI](https://github.com/Nimrodx0/Umasupport/actions/runs/40315080036)の結果：
