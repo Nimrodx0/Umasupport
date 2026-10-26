@@ -98,7 +98,12 @@ function enrich({catalog,documents,review}){
       .some(x=>x.delta===5||x.delta===10)||
     core.directRoutes({...beforeCard,id:'30028'},chooses).length!==
       core.directRoutes({...afterCard,id:'30028'},chooses).length)
-  fail('非公開アプリの連動分岐に位置ずれ');
+  fail('非公開アプリの連動分岐に位置ずれ '+JSON.stringify({
+   low:low.map(x=>[x.effectKind,x.delta]),high:high.map(x=>[x.effectKind,x.delta]),
+   unselected:core.directEffectRoutes(isolated,{choices:{},outcomes:{}}).length,
+   beforeSkill:core.directRoutes({...beforeCard,id:'30028'},chooses).length,
+   afterSkill:core.directRoutes({...afterCard,id:'30028'},chooses).length
+  }));
  return {catalog:copy,summary:{
   cardId:'30028',sourceOrdinal:4,choiceOrdinal:2,
   linkedHintNumericId:'200362',linkedHintTiers:[1,3],
