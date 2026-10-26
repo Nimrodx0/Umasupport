@@ -70,6 +70,8 @@ on:
       - 'poc/src/core.js'
       - 'poc/src/phase2_2512_private_effect_join.cjs'
       - 'poc/tests/phase2_2512_private_effect_join.test.cjs'
+      - 'poc/src/phase2_gt_30028_correlated_range_overlay.cjs'
+      - 'poc/tests/phase2_gt_30028_correlated_range_overlay.test.cjs'
       - 'poc/src/phase2_gt_correlated_numeric_range.cjs'
       - 'poc/tests/phase2_gt_correlated_numeric_range.test.cjs'
       - 'poc/src/phase2_gt_conditional_segment_review.cjs'
@@ -201,6 +203,8 @@ jobs:
           node umasupport/poc/tools/audit_phase2_mei_effect_runtime.cjs \
             whole-event-output/whole_event_provisional.v1.json \
             gt-snapshot/server/data/events/gametora
+      - name: Verify GT30028 joined speed/skill hinted tier shares exclusive source result
+        run: node --test umasupport/poc/tests/phase2_gt_30028_correlated_range_overlay.test.cjs
       - name: Verify source-coupled low/high numeric tiers are never independent draws
         run: node --test umasupport/poc/tests/phase2_gt_correlated_numeric_range.test.cjs
       - name: Verify conditional GameTora segment review is nonpublishing and guard-faithful
