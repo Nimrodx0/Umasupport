@@ -239,7 +239,10 @@ function main(args){
      const withRanges=enrich30028({catalog:merged.catalog,documents:rangedDocuments,
       review:rangeReview});
      console.log('GT_30028_CORRELATED_RANGE_PRIVATE_OVERLAY='+JSON.stringify(withRanges.summary));
-     const privateEventCatalog=withRanges.catalog;
+     const {enrich:enrichNumericOnly}=require('../src/phase2_gt_numeric_only_range_overlay.cjs');
+     const extraRanges=enrichNumericOnly({catalog:withRanges.catalog,documents:rangedDocuments,review:rangeReview});
+     console.log('GT_NUMERIC_ONLY_RANGE_PRIVATE_OVERLAY='+JSON.stringify(extraRanges.summary));
+     const privateEventCatalog=extraRanges.catalog;
      const publicCatalog=require('../src/public_event_catalog.js');
      const core=require('../src/core.js');
      const {summary}=publicCatalog.preflight(model,privateEventCatalog,{
