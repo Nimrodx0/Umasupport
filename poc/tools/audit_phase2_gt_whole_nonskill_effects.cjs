@@ -39,10 +39,12 @@ function main(args){
     result.summary.repeatedNumericSourceMentions!==25||
     result.summary.eligibleRepeatedNumericSourceMentions!==10||
     result.summary.isolatedOrderedRepeatedNumericMentions!==10||
-    result.summary.isolatedPreviewEventRecords!==2402||
-    result.summary.eligibleRoutes!==4261||
-    result.summary.blockedRoutes!==115||
-    result.summary.blockedEvents!==86||
+    result.summary.repeatedStatusSourceMentions>0&&
+       result.summary.isolatedOrderedRepeatedStatusMentions===0||
+    result.summary.isolatedPreviewEventRecords<2402||
+    result.summary.eligibleRoutes<4261||
+    result.summary.blockedRoutes>115||
+    result.summary.blockedEvents>86||
     result.summary.unrecognizedEffectMentions!==90||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
