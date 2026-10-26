@@ -88,6 +88,8 @@ on:
       - 'poc/tests/phase2_gt_grand_live_mt_full_energy.test.cjs'
       - 'poc/tests/phase2_gt_random_stats_targets.test.cjs'
       - 'poc/tests/phase2_gt_status_effects.test.cjs'
+      - 'poc/src/phase2_gt_blocker_cohorts.cjs'
+      - 'poc/tests/phase2_gt_blocker_cohorts.test.cjs'
       - 'poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs'
       - 'poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs'
       - 'poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs'
