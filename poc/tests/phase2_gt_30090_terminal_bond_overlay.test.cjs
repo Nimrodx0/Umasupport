@@ -38,7 +38,7 @@ function setup(){
     {id:'choice-02',label:'Choice 2',rewards:[],terminal:true}
    ]},
   {id:'gt-30090-event-005',name:'Later stage',type:'auto',
-   requires:{all:[{eventId:evt,choiceId:'choice-02'}]},rewards:[]}
+   requires:{all:[{eventId:evt,choiceId:'choice-01'}]},rewards:[]}
  ]}]};
  return {catalog,documents,review};
 }
