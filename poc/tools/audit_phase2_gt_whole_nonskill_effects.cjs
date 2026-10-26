@@ -5,6 +5,7 @@ const {readDocuments}=require('./audit_gametora_branches.cjs');
 const {analyze}=require('../src/phase2_gt_whole_nonskill_effect_inventory.cjs');
 const {analyze:reviewConditionalSegments}=require('../src/phase2_gt_conditional_segment_review.cjs');
 const {candidates:reviewCorrelatedRanges}=require('../src/phase2_gt_correlated_numeric_range.cjs');
+const {analyze:classifyBlockedCohorts}=require('../src/phase2_gt_blocker_cohorts.cjs');
 const fail=s=>{throw Error('全件非スキル出典監査CLI: '+s);};
 function main(args){
  if(args.length!==3)fail('usage: <whole-provisional-index.json> <fixed-GT-dir> <private-CI-output.json>');
@@ -14,6 +15,8 @@ function main(args){
  const result=analyze({documents:docs,index},{strict:true});
  const guarded=reviewConditionalSegments({documents:docs,index,inventory:result});
  const ranged=reviewCorrelatedRanges({documents:docs,index});
+ const cohorts=classifyBlockedCohorts({inventory:result,documents:docs,index},
+  {strict:true});
  if(ranged.summary.sourceRangeEvents!==14||
     ranged.summary.sourceRangeCards!==12||
     ranged.summary.sourceRangeChoices!==14||
@@ -50,17 +53,21 @@ function main(args){
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
     result.summary.isolatedPreviewStatusRecords!==96||
-    result.summary.isolatedPreviewEffectRecords!==10923||
+    result.summary.isolatedPreviewEffectRecords!==10975||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
     result.summary.scenarioCurrencyMentions!==4||
     result.summary.validScenarioCurrencyMentions!==4||
     result.summary.invalidScenarioCurrencyMentions!==0||
+    result.summary.uafAllDiscMentions!==14||
+    result.summary.validUafAllDiscMentions!==14||
+    result.summary.invalidUafAllDiscMentions!==0||
+    result.summary.zeroUafAllDiscMentions!==0||
     result.summary.fullEnergyMentions!==1||
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
-    result.summary.isolatedPreviewDynamicRecords!==23||
+    result.summary.isolatedPreviewDynamicRecords!==37||
     result.summary.chainEndMentions!==109||
     result.summary.chainEndAcceptedSourceMentions!==91||
     result.summary.chainEndRejectedSourceMentions!==18||
@@ -71,11 +78,11 @@ function main(args){
     result.summary.repeatedStatusSourceMentions!==5||
     result.summary.eligibleRepeatedStatusSourceMentions!==2||
     result.summary.isolatedOrderedRepeatedStatusMentions!==2||
-    result.summary.isolatedPreviewEventRecords!==2404||
-    result.summary.eligibleRoutes!==4263||
-    result.summary.blockedRoutes!==113||
-    result.summary.blockedEvents!==84||
-    result.summary.unrecognizedEffectMentions!==90||
+    result.summary.isolatedPreviewEventRecords!==2414||
+    result.summary.eligibleRoutes!==4277||
+    result.summary.blockedRoutes!==99||
+    result.summary.blockedEvents!==74||
+    result.summary.unrecognizedEffectMentions!==76||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||
@@ -96,6 +103,20 @@ function main(args){
   guarded.rows.map(x=>({cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
    choiceOrdinal:x.choiceOrdinal,segmentOrdinal:x.segmentOrdinal,
    guardClasses:x.guardDescriptors.map(g=>g.reviewClass)}))));
+ // Aggregate by root-cause cohort rather than writing one overlay per event.
+ // Metadata is ID/shape only. Still 84 blocked events, not published records.
+ console.log('GT_NONSKILL_BLOCKER_COHORTS='+JSON.stringify({
+  sourceEvents:cohorts.sourceEvents,blockedEvents:cohorts.blockedEvents,
+  affectedCards:cohorts.affectedCards,blockedRoutes:cohorts.blockedRoutes,
+  groups:cohorts.cohorts,sourceEffectTypes:cohorts.involvedSourceEffectTypes,
+  reasonSignatures:cohorts.reasonSignatures,
+  publicationApproved:false
+ }));
+ console.log('GT_NONSKILL_BLOCKER_COHORT_ROWS='+JSON.stringify(cohorts.rows.map(x=>({
+  cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
+  group:x.priorityGroup,reasonCodes:x.reasonCodes,
+  types:x.sourceEffectTypes
+ }))));
  console.log('GT_ALL_NONSKILL_EFFECT_AUDIT_SUMMARY='+JSON.stringify(result.summary));
  console.log('GT_ALL_NONSKILL_EFFECT_TYPES='+JSON.stringify(result.sourceEffectTypes));
  console.log('GT_ALL_NONSKILL_EFFECT_BLOCKERS='+JSON.stringify(result.blockedReasons));

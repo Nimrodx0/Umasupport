@@ -232,3 +232,6 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 - 結果が未選択なら後続は `conditional`、確定した失敗などで不可能なら `blocked` とする。スキル集計は到達可能性に矛盾する古い選択状態を除去し、`conditional` の報酬には根拠条件を残す。
 - `outcomes` の選択状態はデッキ枠に任意マップとして保存し、前段の選択・結果を変更したら従属する結果・選択を再帰削除。従来の `outcomes` なし設定は読み込める。
 - テストは `poc/tests/outcome_dependent_branches.test.cjs`。これは人工グラフの機構テストであり、563枚の実ゲーム分岐の照合ではない。全件監査索引は `phase2-result-branch-and-roster-index-20261019.md` に記録。公開イベント0件を維持。
+## 2026-10-26：U.A.F.全競技レベルのシナリオ限定動的報酬（共通変換）
+
+GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ競技レベルすべてに関わる効果。`dynamicEffects[]`の`{kind:'uaf-all-disciplines',delta:N,scenario:'uaf',possible:true,targetSelection:'all-15-sports-disciplines'}`に保存し、`UmaCore.directDynamicEffectRoutes`ではシナリオ条件付き・対象値未確定として返す。`effects[]`へ5能力増分として入れるのは誤り。元値が不正、幅値、重複などでは保留。2,488イベントの共通変換で10イベントを追加して2,414を構造化、残り74を保留。[全件原因別コホートと根拠](phase2-gt-batch-cohort-uaf-20261026.md)。公開0件は不変。
