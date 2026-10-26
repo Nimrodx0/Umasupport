@@ -52,14 +52,20 @@ function main(args){
     result.summary.statusSourceMentions!==121||
     result.summary.statusValidMentions!==121||
     result.summary.statusInvalidMentions!==0||
-    result.summary.isolatedPreviewStatusRecords!==96||
-    result.summary.isolatedPreviewEffectRecords!==10975||
+    result.summary.isolatedPreviewStatusRecords!==98||
+    result.summary.isolatedPreviewEffectRecords!==11049||
     result.summary.randomStatMentions!==18||
     result.summary.validRandomStatMentions!==18||
     result.summary.invalidRandomStatMentions!==0||
     result.summary.scenarioCurrencyMentions!==4||
     result.summary.validScenarioCurrencyMentions!==4||
     result.summary.invalidScenarioCurrencyMentions!==0||
+    result.summary.scenarioResourceMentions!==16||
+    result.summary.validScenarioResourceMentions!==16||
+    result.summary.invalidScenarioResourceMentions!==0||
+    result.summary.zeroScenarioResourceMentions!==0||
+    result.summary.scenarioResourceTypes?.veggies!==10||
+    result.summary.scenarioResourceTypes?.ken_ing!==6||
     result.summary.uafAllDiscMentions!==14||
     result.summary.validUafAllDiscMentions!==14||
     result.summary.invalidUafAllDiscMentions!==0||
@@ -67,7 +73,7 @@ function main(args){
     result.summary.fullEnergyMentions!==1||
     result.summary.validFullEnergyMentions!==1||
     result.summary.invalidFullEnergyMentions!==0||
-    result.summary.isolatedPreviewDynamicRecords!==37||
+    result.summary.isolatedPreviewDynamicRecords!==53||
     result.summary.chainEndMentions!==109||
     result.summary.chainEndAcceptedSourceMentions!==91||
     result.summary.chainEndRejectedSourceMentions!==18||
@@ -78,11 +84,11 @@ function main(args){
     result.summary.repeatedStatusSourceMentions!==5||
     result.summary.eligibleRepeatedStatusSourceMentions!==2||
     result.summary.isolatedOrderedRepeatedStatusMentions!==2||
-    result.summary.isolatedPreviewEventRecords!==2414||
-    result.summary.eligibleRoutes!==4277||
-    result.summary.blockedRoutes!==99||
-    result.summary.blockedEvents!==74||
-    result.summary.unrecognizedEffectMentions!==76||
+    result.summary.isolatedPreviewEventRecords!==2427||
+    result.summary.eligibleRoutes!==4293||
+    result.summary.blockedRoutes!==83||
+    result.summary.blockedEvents!==61||
+    result.summary.unrecognizedEffectMentions!==60||
     result.publicationApproved!==false||
     result.automaticRuntimeAdoption!==false||
     result.chainTopologyVerified!==false||

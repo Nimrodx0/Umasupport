@@ -289,6 +289,10 @@ function directDynamicEffectRoutes(card,config={}){
             'グランドライブ限定：現在の最少パフォーマンス項目（取得量は上限に依存）':
           effect.kind==='uaf-all-disciplines'?
             'U.A.F.限定：全15競技レベルの変動（5能力値ではない）':
+          effect.kind==='great-food-festival-all-vegetables'?
+            '大豊食祭限定：5種類の野菜それぞれの獲得候補（能力値に加算しない）':
+          effect.kind==='scenario14-secret-ingredients'?
+            'シナリオ14限定：秘密素材の候補（元実装では報酬の事前表示のみ）':
           effect.kind==='restore-current-max-energy'?
             '実行時の最大体力まで回復（増加量は現在体力に依存）':
             '対象能力はランダムに決まり固定値として合算できない'])].join(' / ')});

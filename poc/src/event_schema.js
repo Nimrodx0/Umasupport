@@ -105,6 +105,14 @@
          signed&&e.possible===true&&e.scenario==='uaf'&&
          e.targetSelection==='all-15-sports-disciplines'&&
          only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='great-food-festival-all-vegetables'?
+         signed&&e.possible===true&&e.scenario==='great-food-festival'&&
+         e.targetSelection==='all-five-vegetables'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
+       e.kind==='scenario14-secret-ingredients'?
+         signed&&e.possible===true&&e.scenario==='scenario-14'&&
+         e.targetSelection==='secret-ingredient-count'&&
+         only(['kind','delta','possible','scenario','targetSelection']):
        e.kind==='restore-current-max-energy'?
          e.possible===true&&e.targetSelection==='current-max-energy'&&
          only(['kind','possible','targetSelection']):
