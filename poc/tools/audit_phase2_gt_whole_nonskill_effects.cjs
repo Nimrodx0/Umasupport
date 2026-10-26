@@ -4,6 +4,7 @@ const path=require('node:path');
 const {readDocuments}=require('./audit_gametora_branches.cjs');
 const {analyze}=require('../src/phase2_gt_whole_nonskill_effect_inventory.cjs');
 const {analyze:reviewConditionalSegments}=require('../src/phase2_gt_conditional_segment_review.cjs');
+const {candidates:reviewCorrelatedRanges}=require('../src/phase2_gt_correlated_numeric_range.cjs');
 const fail=s=>{throw Error('全件非スキル出典監査CLI: '+s);};
 function main(args){
  if(args.length!==3)fail('usage: <whole-provisional-index.json> <fixed-GT-dir> <private-CI-output.json>');
@@ -12,6 +13,11 @@ function main(args){
  const docs=readDocuments(gtDir);
  const result=analyze({documents:docs,index},{strict:true});
  const guarded=reviewConditionalSegments({documents:docs,index,inventory:result});
+ const ranged=reviewCorrelatedRanges({documents:docs,index});
+ if(ranged.publicationApproved!==false||ranged.automaticRuntimeAdoption!==false||
+    ranged.sourceNarrativeIncluded!==false||
+    ranged.rows.length!==ranged.summary.sourceRangeChoices)
+  fail('連動範囲の2結果を無条件の報酬として昇格');
  if(guarded.summary.sourceSegmentEvents!==3||
     guarded.summary.sourceSegmentCards!==3||
     guarded.summary.sourceSegments!==8||
@@ -74,6 +80,10 @@ function main(args){
  fs.writeFileSync(outPath,JSON.stringify(result,null,2)+'\n');
  const guardPath=path.join(path.dirname(outPath),'phase2_gt_conditional_segments_review_private.v1.json');
  fs.writeFileSync(guardPath,JSON.stringify(guarded,null,2)+'\n');
+ const rangePath=path.join(path.dirname(outPath),'phase2_gt_correlated_numeric_range_private.v1.json');
+ fs.writeFileSync(rangePath,JSON.stringify(ranged,null,2)+'\n');
+ console.log('GT_CORRELATED_NUMERIC_RANGE_SUMMARY='+JSON.stringify(ranged.summary));
+ console.log('GT_CORRELATED_NUMERIC_RANGE_POSITIONS='+JSON.stringify(ranged.rows.map(r=>({cardId:r.cardId,sourceOrdinal:r.sourceOrdinal,choiceOrdinal:r.choiceOrdinal,rangeMentions:r.sourceRangeEffectCount,numericTierCandidate:r.canProjectNumericTiers,blockers:r.blockers}))));
  console.log('GT_CONDITIONAL_SEGMENTS_REVIEW_SUMMARY='+JSON.stringify(guarded.summary));
  console.log('GT_CONDITIONAL_SEGMENTS_SOURCE_POSITIONS='+JSON.stringify(
   guarded.rows.map(x=>({cardId:x.cardId,sourceOrdinal:x.sourceOrdinal,
