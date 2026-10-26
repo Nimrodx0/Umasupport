@@ -16,6 +16,15 @@ const STAT_KINDS=['speed','stamina','power','guts','wisdom'];
 const TYPES=new Set(['speed','stamina','power','guts','wisdom',
  'energy','max_energy','mood','bond','skill_points','aptitude_points']);
 const STATUS_TYPES=new Set(['condition','heal_status']);
+// A single schema contract handles distinct scenario resource families.
+// These are never base stats and their effective game-scene award is not
+// demonstrated by an unapproved GT snapshot alone.
+const SCENARIO_RESOURCES=Object.freeze({
+ veggies:{kind:'great-food-festival-all-vegetables',
+  scenario:'great-food-festival',targetSelection:'all-five-vegetables'},
+ ken_ing:{kind:'scenario14-secret-ingredients',
+  scenario:'scenario-14',targetSelection:'secret-ingredient-count'}
+});
 const parseChance=value=>{
  if(value===undefined)return undefined;
  const s=typeof value==='number'||typeof value==='string'?String(value):'';
@@ -78,6 +87,8 @@ function analyze({documents,index},{strict=false}={}){
   randomStatMentions=0,validRandomStatMentions=0,
   invalidRandomStatMentions=0,zeroRandomStatMentions=0,
   isolatedPreviewDynamicRecords=0,
+  scenarioResourceMentions=0,validScenarioResourceMentions=0,
+  invalidScenarioResourceMentions=0,zeroScenarioResourceMentions=0,
   uafAllDiscMentions=0,validUafAllDiscMentions=0,
   invalidUafAllDiscMentions=0,zeroUafAllDiscMentions=0,
   scenarioCurrencyMentions=0,validScenarioCurrencyMentions=0,
@@ -90,7 +101,7 @@ function analyze({documents,index},{strict=false}={}){
   isolatedPreviewEffectRecords=0,isolatedPreviewOutcomeRecords=0,
   repeatedNumericSourceMentions=0,eligibleRepeatedNumericSourceMentions=0,
   isolatedOrderedRepeatedNumericMentions=0;
- const sourceTypeCounts=new Map(),issueCounts=new Map();
+ const sourceTypeCounts=new Map(),issueCounts=new Map(),scenarioResourceTypes=new Map();
  const rows=[],projectedCards=[],affectedCards=new Set();
  const countIssues=issues=>{for(const code of issues)count(issueCounts,code);};
  for(const [cardId,rosterRow] of roster){
@@ -175,6 +186,25 @@ function analyze({documents,index},{strict=false}={}){
          problems.add('CHAIN_END_SOURCE_CONTEXT_UNSUPPORTED');
         }
        }else hasControl=true;
+       continue;
+      }
+      if(Object.prototype.hasOwnProperty.call(SCENARIO_RESOURCES,kind)){
+       scenarioResourceMentions++;eventHasNonSkill=true;countsInRoute++;
+       count(scenarioResourceTypes,kind);
+       const spec=SCENARIO_RESOURCES[kind],delta=parseDelta(effect.value);
+       // Unlike numeric stats, these are scenario-only resources. Do not
+       // accept unknown properties or infer an unconditional in-game payout.
+       if(delta===null||
+          Object.keys(effect).some(k=>!['type','value'].includes(k))){
+        invalidScenarioResourceMentions++;
+        problems.add('SCENARIO_RESOURCE_SOURCE_SHAPE_UNSUPPORTED');
+        continue;
+       }
+       if(delta===0){zeroScenarioResourceMentions++;continue;}
+       if(dynamicEffects.some(x=>x.kind===spec.kind))
+        problems.add('DUPLICATE_SCENARIO_RESOURCE_UNADJUDICATED');
+       dynamicEffects.push({...spec,delta,possible:true});
+       validScenarioResourceMentions++;
        continue;
       }
       if(kind==='all_disc'){
@@ -412,7 +442,7 @@ function analyze({documents,index},{strict=false}={}){
     expandedRoutes!==routesWithNonSkill+noNonSkillRoutes||
     eligibleEvents+blockedEvents!==sourceEvents||
     allEffectMentions!==recognizedNonSkillMentions+allStatsMentions+statusSourceMentions+randomStatMentions+
-      uafAllDiscMentions+scenarioCurrencyMentions+fullEnergyMentions+
+      scenarioResourceMentions+uafAllDiscMentions+scenarioCurrencyMentions+fullEnergyMentions+
       sourceSkillEffectMentions+sourceControlEffectMentions+
       unrecognizedEffectMentions||
     allStatsMentions!==allStatsValidMentions+allStatsInvalidMentions+allStatsZeroMentions||
@@ -421,6 +451,8 @@ function analyze({documents,index},{strict=false}={}){
     statusSourceMentions!==statusValidMentions+statusInvalidMentions||
     randomStatMentions!==validRandomStatMentions+
       invalidRandomStatMentions+zeroRandomStatMentions||
+    scenarioResourceMentions!==validScenarioResourceMentions+
+      invalidScenarioResourceMentions+zeroScenarioResourceMentions||
     uafAllDiscMentions!==validUafAllDiscMentions+
       invalidUafAllDiscMentions+zeroUafAllDiscMentions||
     scenarioCurrencyMentions!==validScenarioCurrencyMentions+
@@ -446,12 +478,17 @@ function analyze({documents,index},{strict=false}={}){
   const dynamic=core.directDynamicEffectRoutes({id:entry.cardId,hints:[],events:entry.events},{choices:{},outcomes:{}});
   if(dynamic.some(r=>r.source!=='event-dynamic-effect'||
      !r.unresolvedTargets||!['random-distinct','lowest-performance-at-runtime',
-       'current-max-energy','all-15-sports-disciplines'].includes(r.targetSelection)||
+       'current-max-energy','all-15-sports-disciplines',
+       'all-five-vegetables','secret-ingredient-count'].includes(r.targetSelection)||
      r.dynamicKind==='grand-live-lowest-performance'&&
        (r.scenario!=='grand-live'||r.possible!==true)||
      r.dynamicKind==='restore-current-max-energy'&&r.possible!==true||
      r.dynamicKind==='uaf-all-disciplines'&&
-       (r.scenario!=='uaf'||r.possible!==true)))
+       (r.scenario!=='uaf'||r.possible!==true)||
+     r.dynamicKind==='great-food-festival-all-vegetables'&&
+       (r.scenario!=='great-food-festival'||r.possible!==true)||
+     r.dynamicKind==='scenario14-secret-ingredients'&&
+       (r.scenario!=='scenario-14'||r.possible!==true)))
    fail('ランダム能力の対象を確定能力へ偽装しました');
   if(statuses.some(r=>r.source!=='event-status-effect'||r.possible!==true))
    fail('固定出典の状態候補を誤って確定状態に変換');
@@ -487,6 +524,9 @@ function analyze({documents,index},{strict=false}={}){
    isolatedOrderedRepeatedStatusMentions,
    randomStatMentions,validRandomStatMentions,invalidRandomStatMentions,
    zeroRandomStatMentions,isolatedPreviewDynamicRecords,
+   scenarioResourceMentions,validScenarioResourceMentions,
+   invalidScenarioResourceMentions,zeroScenarioResourceMentions,
+   scenarioResourceTypes:sorted(scenarioResourceTypes),
    uafAllDiscMentions,validUafAllDiscMentions,
    invalidUafAllDiscMentions,zeroUafAllDiscMentions,
    scenarioCurrencyMentions,validScenarioCurrencyMentions,
