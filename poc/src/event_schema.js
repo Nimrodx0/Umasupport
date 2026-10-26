@@ -53,7 +53,7 @@
    if(statusEffects===undefined)return;
    if(!Array.isArray(statusEffects)||statusEffects.length===0)
      fail(where+': 状態操作候補は1件以上必要');
-   const seen=new Set();
+   const seen=new Map();
    for(const x of statusEffects){
      if(!obj(x)||!['add-condition','cure-one-bad'].includes(x.kind)||
         x.possible!==true||
@@ -63,11 +63,21 @@
         x.chance!==undefined&&
           (typeof x.chance!=='number'||!Number.isFinite(x.chance)||
            x.chance<=0||x.chance>1)||
-        Object.keys(x).some(k=>!['kind','conditionId','possible','chance'].includes(k)))
+        x.sourceEffectOrdinal!==undefined&&
+          (!Number.isSafeInteger(x.sourceEffectOrdinal)||x.sourceEffectOrdinal<1)||
+        Object.keys(x).some(k=>!['kind','conditionId','possible','chance',
+          'sourceEffectOrdinal'].includes(k)))
        fail(where+': 状態操作の種類・状態ID・任意確率が不正');
      const key=x.kind+'|'+(x.conditionId??'');
-     if(seen.has(key))fail(where+': 状態操作の同一対象が重複');
-     seen.add(key);
+     const previous=seen.get(key);
+     // Original GT event_engine applies each source effect in listed order.
+     // Repeating a cure may attempt a second independent cure; repeating a
+     // condition has its own application guard. Neither is deduplicated.
+     if(previous&&(previous.sourceEffectOrdinal===undefined||
+        x.sourceEffectOrdinal===undefined||
+        previous.sourceEffectOrdinal>=x.sourceEffectOrdinal))
+       fail(where+': 同じ状態操作の繰返しには昇順の元位置が必要');
+     seen.set(key,x);
    }
  }
 
