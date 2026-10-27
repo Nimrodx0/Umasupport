@@ -296,11 +296,31 @@ async function probe(){
     const allRenderedGroups=[];
     const splitByOrEvents=[];
     const allChoiceEvidence=[];
+    const labelScopeEvidence=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
       await btn.click({timeout:5000});
      await page.waitForTimeout(950);
+     const historicOrdinal=visible.historicalTitleCrosscheck.provisionalComparisons
+      .find(x=>x.renderedEventPosition===index+1)?.historicalEventOrdinal;
+     const expectedLabels=reference[historicOrdinal-1]?.choices
+      .map(x=>x.label).filter(x=>typeof x==='string'&&x.trim())||[];
+     const labelScopes=await btn.evaluate((button,labels)=>{
+      const normalized=s=>String(s||'').normalize('NFKC')
+       .replace(/[\\s\\p{P}\\p{S}]/gu,'').toLowerCase();
+      const row=normalized(button.parentElement?.innerText||'');
+      const panel=[...button.parentElement.children].find(e=>e.tagName==='DIV');
+      const detail=normalized(panel?.innerText||'');
+      const pageText=normalized(document.body?.innerText||'');
+      return {
+       namedChoiceLabels:labels.length,
+       matchesInCurrentEventContainer:labels.filter(x=>row.includes(normalized(x))).length,
+       matchesInExpandedPanel:labels.filter(x=>detail.includes(normalized(x))).length,
+       matchesInFullDocument:labels.filter(x=>pageText.includes(normalized(x))).length
+      };
+     },expectedLabels);
+     labelScopeEvidence.push(labelScopes);
      const groups=await btn.evaluate(button=>{
       const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
       const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
@@ -403,7 +423,8 @@ async function probe(){
        historicalEventOrdinal:x.historicalEventOrdinal,
        displayedEventPosition:x.renderedEventPosition,
        ...semantics,
-       explicitTerminalRouteCheck:correlateExplicitTerminal(historicalEvent,semantics,route)
+       explicitTerminalRouteCheck:correlateExplicitTerminal(historicalEvent,semantics,route),
+       labelScopeEvidence:labelScopeEvidence[x.renderedEventPosition-1]
       };
      }),
      actualGameBranchingVerified:false,
