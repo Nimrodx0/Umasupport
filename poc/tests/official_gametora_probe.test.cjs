@@ -39,3 +39,24 @@ test('empty and huge inputs are rejected before any publication path',()=>{
  assert.throws(()=>inspectPage('',TARGETS[0]),/HTML/);
  assert.throws(()=>inspectPage('x'.repeat(2*1024*1024+1),TARGETS[0]),/サイズ/);
 });
+
+test('hydration inspection only emits numeric structure counts; no original data',()=>{
+ const json=JSON.stringify({props:{pageProps:{
+  events:[{choices:[{effects:[{type:'skill_hint',skill_id:12345}],outcomes:[[]]}]}],
+  sourceProse:'fictional text not for publication'
+ }}});
+ const html='<script id="__NEXT_DATA__" type="application/json">'+json+'</script>';
+ const {inspectInitialJson}=require('../src/official_gametora_probe.cjs');
+ const info=inspectInitialJson(html);
+ assert.equal(info.found,true);
+ assert.equal(info.parsed,true);
+ assert.equal(info.hasPageProps,true);
+ assert.equal(info.counts.eventLikeRecords,1);
+ assert.equal(info.counts.choiceArrays,1);
+ assert.equal(info.counts.effectArrays,1);
+ assert.equal(info.counts.outcomeArrays,1);
+ assert.equal(info.counts.skillIdFields,1);
+ assert.equal(info.eventChoicesAndRewardsVerified,false);
+ assert.equal(JSON.stringify(info).includes('fictional text'),false);
+ assert.equal(inspectInitialJson('<script id="__NEXT_DATA__">broken</script>').parsed,false);
+});
