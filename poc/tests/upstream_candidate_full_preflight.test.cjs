@@ -140,6 +140,42 @@ test('per-card topology delta reflects event, route and ordinal changes without 
   assert.equal(JSON.stringify(result).includes('SYNTHETIC'),false);
  });
 });
+test('unchanged aggregate counts still expose changed per-event numbers and hint IDs',()=>{
+ withSource(dir=>{
+  const original=fixture('30001');
+  original.events_ja.SYNTHETIC.choices[0].effects.push(
+   {type:'skill_hint',skill_id:200332,value:'+1'});
+  const base=source(dir,[['30001',original]]);
+  const altered=JSON.parse(JSON.stringify(original));
+  altered.events_ja.SYNTHETIC.choices[0].effects[0].value='+9';
+  altered.events_ja.SYNTHETIC.choices[0].effects[1].skill_id=200333;
+  const next=source(dir,[['30001',altered]]);
+  const diff=topologyDiff(base,next,compareGt(base,next));
+  const row=diff.rows[0];
+  assert.equal(row.numericTopologyChanged,false);
+  assert.equal(row.parsedNumericFactsChanged,true);
+  assert.deepEqual(row.changedEventOrdinals,[1]);
+  assert.deepEqual(diff.sameCountButDifferentSource,['30001']);
+  assert.deepEqual(diff.sameCountWithParsedNumericFactsChanged,['30001']);
+  assert.deepEqual(diff.sameCountWithNoParsedNumericChange,[]);
+  assert.deepEqual(diff.parsedNumericFactsChangedCardIds,['30001']);
+  assert.equal(JSON.stringify(diff).includes('SYNTHETIC'),false);
+ });
+});
+test('parsed numeric delta reports only affected event ordinals, not original text',()=>{
+ withSource(dir=>{
+  const initial=fixture('30001',true);
+  const base=source(dir,[['30001',initial]]);
+  const altered=JSON.parse(JSON.stringify(initial));
+  altered.events_ja.SYNTHETIC2.choices[0].effects[0].value='+7';
+  const next=source(dir,[['30001',altered]]);
+  const report=topologyDiff(base,next,compareGt(base,next));
+  assert.deepEqual(report.rows[0].changedEventOrdinals,[2]);
+  assert.equal(report.rows[0].parsedNumericFactsChanged,true);
+  assert.equal(report.rows[0].numericTopologyChanged,false);
+  assert.equal(JSON.stringify(report).includes('SYNTHETIC'),false);
+ });
+});
 test('source JSON change without numeric-topology change stays visible as manual semantic review',()=>{
  withSource(dir=>{
   const old=source(dir,[['30001',fixture('30001')]]);
@@ -150,7 +186,10 @@ test('source JSON change without numeric-topology change stays visible as manual
   assert.equal(result.affectedCards,1);
   assert.equal(result.rows[0].change,'modified');
   assert.equal(result.rows[0].numericTopologyChanged,false);
+  assert.equal(result.rows[0].parsedNumericFactsChanged,false);
+  assert.deepEqual(result.rows[0].changedEventOrdinals,[]);
   assert.deepEqual(result.sameCountButDifferentSource,['30001']);
+  assert.deepEqual(result.sameCountWithNoParsedNumericChange,['30001']);
   assert.equal(JSON.stringify(result).includes('different third-party prose'),false);
  });
 });
