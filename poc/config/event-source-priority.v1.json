@@ -33,5 +33,14 @@
     "gameWithCheckAfterDays": 21,
     "autoPromotePins": false,
     "autoPublish": false
+  },
+  "futureDirectSource": {
+    "status": "feasibility-in-progress",
+    "targetPrimary": "https://gametora.com",
+    "downstreamException": "GameWith",
+    "derivedGitHubRole": "historical-baseline-and-cross-check-only-after-feasibility",
+    "fullScaleAcquisitionAuthorized": false,
+    "autoSourceSwitchAllowed": false,
+    "automaticPublicationAllowed": false
   }
 }
