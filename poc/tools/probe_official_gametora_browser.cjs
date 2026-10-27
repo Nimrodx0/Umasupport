@@ -346,7 +346,7 @@ async function probe(){
          outerVisibleText:(group.innerText||'').slice(0,2800),
          outerDirectTextFragments:[group,...group.querySelectorAll('*')].map(el=>
           [...el.childNodes].filter(x=>x.nodeType===3)
-           .map(x=>x.textContent||'').join('').trim()).filter(Boolean).slice(0,90),
+           .map(x=>x.textContent||'').join('').trim().slice(0,250)).filter(Boolean).slice(0,90),
          outerOrSeparatorCount:dividers.length};
        });
       });
