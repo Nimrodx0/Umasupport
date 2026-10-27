@@ -21,6 +21,38 @@ try{
   baselineRoster,candidateRoster,baselineSkills,candidateSkills
  });
  process.stdout.write('UPSTREAM_CANDIDATE_FULL_PREFLIGHT='+JSON.stringify(result)+'\n');
+ if(process.env.GITHUB_STEP_SUMMARY){
+  const g=result.gameTora,u=result.umaSim,h=u.candidateHintCoverage;
+  const markdown=[
+   '## Candidate full-source preflight (review only)',
+   '',
+   '| Dataset | Pinned baseline | Proposed candidate |',
+   '| --- | ---: | ---: |',
+   '| GT source JSON cards | '+g.baseline.cards+' | '+g.candidate.cards+' |',
+   '| GT event records | '+g.baseline.events+' | '+g.candidate.events+' |',
+   '| GT choice records | '+g.baseline.choices+' | '+g.candidate.choices+' |',
+   '| GT result routes | '+g.baseline.routes+' | '+g.candidate.routes+' |',
+   '| UmaSim cards | '+u.cards.baselineCards+' | '+u.cards.candidateCards+' |',
+   '| UmaSim numeric skill IDs | '+u.skills.baselineNumericIds+
+      ' | '+u.skills.candidateNumericIds+' |',
+   '',
+   'Candidate GT ID changes: added '+g.diff.added.length+
+    ', modified '+g.diff.modified.length+
+    ', removed '+g.diff.removed.length+'.',
+   '',
+   'All-stage normal skill name resolution: '+h.uniqueNormalSkillIds+
+    '/'+h.hintStageOccurrences+' unique, '+h.missingRegistryNames+
+    ' absent, '+h.ambiguousOrNonNormalIds+' ambiguous or non-normal.',
+   '',
+   'Shape preflight: **'+(result.shapePreflightPassed?'PASS':'REQUIRES REVIEW')+'**.',
+   'Blockers: '+(result.blockerCodes.join(', ')||'none')+'.',
+   '',
+   '**Important:** Source-shape success does NOT establish event rewards, internal',
+   'branch adjudication, independent game completeness, third-party reuse',
+   'rights or permission to publish. Runtime pins remain unchanged.'
+  ].join('\n')+'\n';
+  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,markdown,'utf8');
+ }
  if(!result.shapePreflightPassed){
   process.stderr.write('Candidate data shape requires review: '+result.blockerCodes.join(',')+'\n');
   process.exitCode=1;
