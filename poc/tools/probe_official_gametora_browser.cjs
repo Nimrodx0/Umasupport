@@ -127,7 +127,7 @@ async function inspectEventSections(page){
 
 async function probe(){
  const target=TARGETS[0]; // only the old, already-listed 30001 card
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
   const context=await browser.newContext({locale:'ja-JP'});
   const page=await context.newPage();
