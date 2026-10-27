@@ -9,6 +9,7 @@ const crypto=require('node:crypto');
 const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -290,6 +291,63 @@ async function probe(){
      });
      routeMatches.push(resolved);
     }
+
+    const allRenderedGroups=[];
+    for(let index=0;index<await events.count();index++){
+     const btn=events.nth(index);
+     if((await btn.getAttribute('aria-expanded'))!=='true')
+      await btn.click({timeout:5000});
+     await page.waitForTimeout(950);
+     const groups=await btn.evaluate(button=>{
+      const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
+      const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
+      const body=section?.children?.[1];
+      if(!body)return [];
+      return [...body.children].slice(0,20).map(group=>{
+       const effectTexts=[],hintContexts=[];
+       for(const el of [group,...group.querySelectorAll('*')]){
+        const own=[...el.childNodes].filter(node=>node.nodeType===3)
+         .map(node=>node.textContent||'').join('').trim();
+        if(!own||!/[+＋\-－−]\s*\d/.test(own))continue;
+        effectTexts.push(own);
+        if(/ヒント|hint/i.test(own)){
+         const contexts=[];
+         for(let p=el,d=0;p&&d<4&&group.contains(p);p=p.parentElement,d++){
+          const value=p.innerText||'';
+          if(value.length<=250)contexts.push(value);
+         }
+         hintContexts.push({own,contexts});
+        }
+       }
+       return {effectTexts:effectTexts.slice(0,50),hintContexts:hintContexts.slice(0,10)};
+      });
+     });
+     const normalized=groups.map(group=>({
+      effectTexts:group.effectTexts,
+      hintLinks:group.hintContexts.map(({own,contexts})=>{
+       const level=scanOwnText(own)?.amount;
+       const matches=contexts.map(c=>matchContextToId(c,registry));
+       const best=matches.find(m=>m.status==='unique-verified-name')||
+        matches.find(m=>m.status==='ambiguous-name-or-id')||
+        matches.find(m=>m.status!=='not-a-hint')||{status:'name-not-found'};
+       return {...best,level};
+      })
+     }));
+     allRenderedGroups.push(normalized);
+    }
+    visible.officialRouteGroupingPilot={
+     eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
+     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
+      historicalEventOrdinal:x.historicalEventOrdinal,
+      displayedEventPosition:x.renderedEventPosition,
+      ...compareRenderedGroups(
+       reference[x.historicalEventOrdinal-1],
+       allRenderedGroups[x.renderedEventPosition-1]
+      )
+     })),
+     allEventsHaveVerifiedRouteSemantics:false,
+     publicationApproved:false,sourceProseIncluded:false
+    };
     visible.officialSkillIdCrosswalkPilot={
      registryEntries:registry.count,
      cards:1,
