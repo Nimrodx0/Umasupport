@@ -530,3 +530,8 @@ GitHub Actionsの日次ジョブ要約と出典差分レビューIssueに収録�
 [運用正本](upstream-refresh-operations.md)。前工程のGitHub Actionsが監視する固定GameToraイベントJSONとUmaSimサポカ・スキル辞書で、**対象blobに新規・変更・削除が発生した場合のみ**、既存の単一レビューIssueに続いて **`automation/upstream-refresh-candidate`** ブランチを作成する。候補Draft PRが追加／更新するファイルは `poc/review/upstream-refresh-candidate.v1.json` **1件**。内容は上流コミット、Git tree／Git blob識別子、変更カードID、既知の未収録ID、未実施の検証ゲートのみ。第三者イベント原文・元JSON・画像は含まず、現行の固定ピンやPagesの公開データにも変更を加えない。再検知は同じDraftのマニフェスト差分だけを更新する。人がDraftをReadyにしたり別ファイルの変更を加えた場合はBotが停止する。
 
 本来の全件候補イベント・数値スキルID・分岐を検証する**Bデータpreflightは未自動化**。Botのmetadata Draft作成時に `workflow_dispatch` でread-only Node／Chromium CIを起動するが、このテスト合格は新GTイベントを正式に採用できる証拠ではない。採用PRと第三者素材の公開承認は別工程で、正式公開承認イベント**0件**は変わらない。実上流は監視時点でドリフト0のため、**自動作成される差分候補Draftの本番陽性ケースは未実地検証**（合成テストで候補の生成／非公開ゲート／不正データ拒否を確認）。実ブラウザの新イベント表示・物理端末・元ゲーム分岐の再現は未実施。
+## Phase 2・未採用候補のGT／UmaSim全件ソース構造preflight（2026-10-27）
+
+[実装・成功ゲート・未裁定範囲](upstream-full-source-preflight-20261027.md)。監視されたGT／UmaSimソース更新をメタデータDraftの候補にした後、GTの**固定と候補の全イベントJSON**、UmaSimの**固定と候補の全サポカ5段階TSV・全数値スキルID JSON**を一時Actionsランナー上で検証する専用 `Preflight full upstream source candidate` を追加。GTの実ファイルGit SHAとmanifestの追加／変更／削除IDが一致するか、内部結果分岐の各経路を独立した正規化・分岐診断で全件再計算し、UmaSim側は既存ライブローダー・数値スキル辞書解析器を再利用する。結果は数値とID、保留理由だけをActions Job summaryに出力。候補の元イベント文章・画像・JSONはコミット・配信しない。
+
+[実固定GT559カード全件の新アダプタ試験](https://github.com/Nimrodx0/Umasupport/actions/runs/40429663611)は成功。**2,488元イベント／4,129選択肢／4,376経路、元構造で拒否されたカード0**。A＝合成元イベント・GT更新差分・500サポカ×5段階・スキルIDの正常／異常系、B＝固定GT全559ソースの実データ監査を実施。上流の実更新が現在発生していないため、新候補GT・UmaSimを採用する陽性preflightは未実地。C＝既存Chrome回帰のみ。**全候補の報酬数値の独立裁定・スキルID対応の意味確認・第三者素材の配布条件・実ゲーム/物理端末は未検証**。本番固定ピン・公開カタログを変更しない。

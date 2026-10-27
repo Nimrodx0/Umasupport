@@ -217,4 +217,9 @@ jobs:
                 owner,repo,workflow_id:'ci.yml',ref:branch
               });
               core.notice('Dispatched candidate branch core CI for safety checks');
+              await github.rest.actions.createWorkflowDispatch({
+                owner,repo,workflow_id:'upstream-candidate-full-preflight.yml',
+                ref:branch
+              });
+              core.notice('Dispatched full-source candidate preflight on ephemeral runner');
             }

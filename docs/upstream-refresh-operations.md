@@ -45,7 +45,7 @@
 - Bot作成のブランチは通常のpush／PRイベントではCIが自動起動しないため、メタデータに変更が生じたときは明示的に `PoC Core Tests` の `workflow_dispatch` を実行する。候補JSONそのものを厳密検査し、元データの追加格納・承認済みの偽装を拒否する。**このread-only Core CIは、候補バージョンの全件イベントを実際に取り込むB検証の代用ではない**。
 - GitHub Actionsの既定権限によりBotのPull Request作成が禁止されている環境では、Repository Settings → Actions → Generalで「Allow GitHub Actions to create and approve pull requests」を有効にする管理者の操作が必要になる場合がある。書き込み権限不足ならジョブは失敗し、既存Issueからレビューの続きを行う。
 
-**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → 候補のread-only CI」まで**。新固定ピンの全面更新・出典の自動裁定・未承認イベントの実公開は実装も許可もしていない。
+**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → read-only Core CI＋候補の全件ソース構造preflight」まで**。別の[実データ全件preflightの検証範囲・保留条件](upstream-full-source-preflight-20261027.md)を参照。候補のGTイベント全件とUmaSim全カード・全数値スキルIDの取り込み**構造**を確認できても、イベント内部の意味・外部出典の裁定、第三者素材の配布権利、公開許諾、実ゲーム全体の網羅性を証明しない。新固定ピンの正式採用・未承認イベントの実公開は実装も許可もしていない。
 
 ## 新3サポカのGameTora元データ収録の監視ゲート（2026-10-26）
 

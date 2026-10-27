@@ -102,3 +102,4 @@
 - [Phase 2・2026-10-26現行UmaSimサポカ563→566枚の差分と公開ローダー監査](phase2-current-roster-566-audit-20261026.md)
 - [Phase 2・2026/10/26追加サポカ3枚の通常ヒント14件・数値スキルIDとイベント未収録の独立照合](phase2-20261026-new-card-skill-event-scope.md)
 - [固定GameTora／UmaSim出典の継続更新手順と日次差分監視](upstream-refresh-operations.md)
+- [出典候補の全件GTイベント・UmaSimカード／数値スキル辞書preflight（2026-10-27）](upstream-full-source-preflight-20261027.md)
