@@ -40,8 +40,10 @@ function loadEvents(dir){
   if(!id)continue;
   const bytes=fs.readFileSync(path.join(dir,name));
   const blob=gitBlobSha(bytes);
-  const d=JSON.parse(bytes.toString('utf8'));
-  if(d.kind!=='support'||String(d.id)!==id||docs.has(id))
+  let d;
+  try{d=JSON.parse(bytes.toString('utf8'));}
+  catch(_){fail('GT元JSONの形式が不正: '+id);}
+  if(d?.kind!=='support'||String(d.id)!==id||docs.has(id))
    fail('GT元ファイルと実イベントIDが一致しない: '+id);
   docs.set(id,d);blobs.set(id,blob);
  }
