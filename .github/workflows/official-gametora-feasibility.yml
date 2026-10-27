@@ -61,10 +61,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Chromium
+      - name: Prepare Playwright controller for preinstalled system Chrome
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
-          npx playwright install --with-deps chromium
+          command -v google-chrome || command -v google-chrome-stable
       - name: Retrieve one immutable historical reference card, only in disposable runner
         run: |
           curl --fail --silent --show-error --location --retry 2 --max-time 30 \
