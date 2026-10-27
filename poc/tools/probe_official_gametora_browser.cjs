@@ -371,6 +371,15 @@ async function probe(){
      allEventsHaveVerifiedRouteSemantics:false,
      publicationApproved:false,sourceProseIncluded:false
     };
+
+    const matches=visible.officialRouteGroupingPilot.comparisons;
+    if(matches.length!==5||matches.reduce((n,r)=>n+r.sourceRoutes,0)!==9||
+       matches.reduce((n,r)=>n+r.renderedGroupCandidates,0)!==9||
+       matches.some(r=>r.uniqueRouteGroupAssignment!==true||
+        r.unmatchedSourceRoutes!==0||r.ambiguousSourceRoutes!==0||
+        r.unresolvedHintNames!==0)||
+       visible.officialRouteGroupingPilot.explicitOrSplitGroups!==2)
+     fail('旧カード5イベント/9経路の元サイトDOM照合に回帰差分があります');
     visible.officialSkillIdCrosswalkPilot={
      registryEntries:registry.count,
      cards:1,
