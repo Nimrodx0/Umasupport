@@ -23,7 +23,7 @@ GitHub Pages: index.html → poc/live.html
 
 ## 出典ピンの継続更新監視（監査層）
 
-[日次GitHub Actionsと更新手順](upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueを作成する。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
+[日次GitHub Actionsと更新手順](upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueと、未承認Git tree／Git blobだけの候補マニフェストを含む**Draft PR**を作成／更新する。Bot専用候補ブランチからread-only Core CIを明示起動するが、対象候補のイベント・スキル全件を読んだB検証ではない。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
 
 ## モジュールの責務
 
