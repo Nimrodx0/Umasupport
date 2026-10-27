@@ -112,7 +112,7 @@ async function probe(){
      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
      const text=(panel?.innerText||'');
      return {hasDetail:!!text.trim(),
-      hasSignedEffect:/[+＋\\-－−]\\s*\\d/.test(text)};
+      hasSignedEffect:/[+＋\-－−]\s*\d/.test(text)};
     });
     if(measured.hasDetail)counters.sampledEventPanels++;
     if(measured.hasSignedEffect)counters.sampledPanelsWithNumericEffects++;
