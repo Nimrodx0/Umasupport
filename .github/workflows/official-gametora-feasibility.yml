@@ -10,6 +10,8 @@ on:
       - 'poc/tools/probe_official_gametora_browser.cjs'
       - 'poc/src/official_gametora_title_crosscheck.cjs'
       - 'poc/tests/official_gametora_title_crosscheck.test.cjs'
+      - 'poc/src/official_gametora_numeric_fact_parser.cjs'
+      - 'poc/tests/official_gametora_numeric_fact_parser.test.cjs'
 
 permissions:
   contents: read
@@ -31,6 +33,8 @@ jobs:
           node --test poc/tests/official_gametora_probe.test.cjs
           node --check poc/src/official_gametora_title_crosscheck.cjs
           node --test poc/tests/official_gametora_title_crosscheck.test.cjs
+          node --check poc/src/official_gametora_numeric_fact_parser.cjs
+          node --test poc/tests/official_gametora_numeric_fact_parser.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
