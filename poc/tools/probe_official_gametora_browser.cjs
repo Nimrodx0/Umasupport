@@ -308,7 +308,7 @@ async function probe(){
       .map(x=>x.label).filter(x=>typeof x==='string'&&x.trim())||[];
      const labelScopes=await btn.evaluate((button,labels)=>{
       const normalized=s=>String(s||'').normalize('NFKC')
-       .replace(/[\\s\\p{P}\\p{S}]/gu,'').toLowerCase();
+       .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
       const row=normalized(button.parentElement?.innerText||'');
       const panel=[...button.parentElement.children].find(e=>e.tagName==='DIV');
       const detail=normalized(panel?.innerText||'');
