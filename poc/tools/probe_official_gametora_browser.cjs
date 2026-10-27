@@ -10,7 +10,7 @@ const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
-const {inspectRenderedChoices}=require('../src/official_gametora_choice_outcome_semantics.cjs');
+const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -393,14 +393,19 @@ async function probe(){
 
     visible.officialChoiceOutcomeSemanticsPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
-     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
-      historicalEventOrdinal:x.historicalEventOrdinal,
-      displayedEventPosition:x.renderedEventPosition,
-      ...inspectRenderedChoices(
-       reference[x.historicalEventOrdinal-1],
-       {groups:allChoiceEvidence[x.renderedEventPosition-1]}
-      )
-     })),
+     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>{
+      const historicalEvent=reference[x.historicalEventOrdinal-1];
+      const semantics=inspectRenderedChoices(
+       historicalEvent,{groups:allChoiceEvidence[x.renderedEventPosition-1]});
+      const route=visible.officialRouteGroupingPilot.comparisons.find(r=>
+       r.historicalEventOrdinal===x.historicalEventOrdinal);
+      return {
+       historicalEventOrdinal:x.historicalEventOrdinal,
+       displayedEventPosition:x.renderedEventPosition,
+       ...semantics,
+       explicitTerminalRouteCheck:correlateExplicitTerminal(historicalEvent,semantics,route)
+      };
+     }),
      actualGameBranchingVerified:false,
      publicationApproved:false,
      sourceProseIncluded:false
