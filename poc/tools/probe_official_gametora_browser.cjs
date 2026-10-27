@@ -111,7 +111,7 @@ async function inspectEventSections(page){
   const button=buttons.nth(n);
   if(await button.getAttribute('aria-expanded')!=='true')
    await button.click({timeout:5000});
-  await page.waitForTimeout(125);
+  await page.waitForTimeout(950);
   events.push({
    position:n+1,
    sameRowAccordionButtons:await button.evaluate(el=>[...el.parentElement.children].filter(x=>x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length),
@@ -228,7 +228,7 @@ async function probe(){
     const eventButton=events.nth(index);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
      await eventButton.click({timeout:5000});
-    await page.waitForTimeout(125);
+    await page.waitForTimeout(950);
     const ownLines=await eventButton.evaluate(button=>{
      const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
      if(!panel)return [];
