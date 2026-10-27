@@ -35,6 +35,40 @@ function classifyJson(root){
  return totals;
 }
 
+
+function measureRenderedEventDetails(page){
+ return page.evaluate(()=>{
+  const body=document.body;
+  const panels=[...document.querySelectorAll('[role="dialog"],[role="tabpanel"],[aria-expanded],details,table')];
+  return {
+   dialogs:document.querySelectorAll('[role="dialog"]').length,
+   expandedControls:document.querySelectorAll('[aria-expanded="true"],details[open]').length,
+   collapsedControls:document.querySelectorAll('[aria-expanded="false"],details:not([open])').length,
+   visibleTables:panels.filter(e=>e.tagName==='TABLE'&&e.getClientRects().length).length,
+   visibleElements:document.querySelectorAll('body *').length,
+   bodyTextCharacters:(body.innerText||'').length,
+   headingCount:document.querySelectorAll('h2,h3,h4').length,
+   buttons:document.querySelectorAll('button').length,
+   documentHeight:Math.round(body.scrollHeight)
+  };
+ });
+}
+function eventButtonAncestors(button){
+ let e=button;const rows=[];
+ for(let i=0;i<5&&e;i++,e=e.parentElement){
+  rows.push({
+   tag:e.tagName.toLowerCase(),
+   role:e.getAttribute('role')||null,
+   ariaExpanded:e.getAttribute('aria-expanded'),
+   directChildTags:[...e.children].map(x=>x.tagName.toLowerCase()).slice(0,20),
+   descendantButtons:e.querySelectorAll('button').length,
+   descendantLinks:e.querySelectorAll('a').length,
+   visibleTextLength:(e.innerText||'').length
+  });
+ }
+ return rows;
+}
+
 async function probe(){
  const target=TARGETS[0]; // only the old, already-listed 30001 card
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -101,11 +135,17 @@ async function probe(){
   const firstKnownEvent=page.getByRole('button',{name:/蹄鉄で/}).first();
   const found=(await firstKnownEvent.count())>0;
   visible.oneKnownEventControlPresent=found;
+  visible.eventDomBefore=await measureRenderedEventDetails(page);
   if(found){
+   visible.knownEventAncestorBefore=await firstKnownEvent.evaluate(eventButtonAncestors);
    const before=text.length;
    await firstKnownEvent.click({timeout:5000});
+   await page.waitForTimeout(600);
    const after=(await page.locator('body').innerText()).length;
    visible.eventExpansionChangedRenderedTextLength=before!==after;
+   visible.eventDomAfter=await measureRenderedEventDetails(page);
+   visible.samePageAfterClick=page.url()===pageUrl(target);
+   visible.knownEventAncestorAfter=await firstKnownEvent.evaluate(eventButtonAncestors).catch(()=>null);
   }else visible.eventExpansionChangedRenderedTextLength=null;
   return visible;
  }finally{await browser.close();}
@@ -116,4 +156,4 @@ if(require.main===module){
  probe().then(result=>process.stdout.write('OFFICIAL_GT_BROWSER='+JSON.stringify(result)+'\n'))
  .catch(e=>{process.stderr.write(String(e.message).slice(0,220)+'\n');process.exitCode=1;});
 }
-module.exports={probe};
+module.exports={probe,classifyJson};
