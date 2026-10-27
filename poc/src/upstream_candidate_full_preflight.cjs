@@ -153,6 +153,35 @@ function skillDiff(before,after){
   duplicateNumericIdsRejected:true
  };
 }
+function hintRegistryCoverage(rosterText,skillText){
+ const cards=parseSupportCards(rosterText).cards;
+ const skills=parseSkills(skillText);
+ const summary={hintStageOccurrences:0,uniqueNormalSkillIds:0,
+  missingRegistryNames:0,ambiguousOrNonNormalIds:0,
+  cardsWithUnresolvedHints:[]};
+ const unresolved=new Set();
+ for(const card of cards.values()){
+  for(const hints of Object.values(card.stages)){
+   for(const sourceName of hints){
+    summary.hintStageOccurrences++;
+    const name=String(sourceName).normalize('NFKC').replace(/\s+/g,' ').trim();
+    const candidates=skills.byName.get(name)||[];
+    if(candidates.length===1&&candidates[0].rarity==='normal')
+     summary.uniqueNormalSkillIds++;
+    else{
+     unresolved.add(card.id);
+     if(candidates.length===0)summary.missingRegistryNames++;
+     else summary.ambiguousOrNonNormalIds++;
+    }
+   }
+  }
+ }
+ summary.cardsWithUnresolvedHints=sorted(unresolved);
+ if(summary.uniqueNormalSkillIds+summary.missingRegistryNames+
+    summary.ambiguousOrNonNormalIds!==summary.hintStageOccurrences)
+   fail('通常ヒントの全出現回数を照合できない');
+ return summary;
+}
 function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
  baselineSkills,candidateSkills,baselineGtRepo,candidateGtRepo}){
  verifyManifest(manifest);
@@ -176,6 +205,10 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   fail('GT全件blob差分と候補レビューmanifestが異なる');
  const roster=rosterDiff(baselineRoster,candidateRoster);
  const skills=skillDiff(baselineSkills,candidateSkills);
+ const baselineHintCoverage=hintRegistryCoverage(baselineRoster,baselineSkills);
+ const candidateHintCoverage=hintRegistryCoverage(candidateRoster,candidateSkills);
+ const candidateRosterIds=new Set(parseSupportCards(candidateRoster).cards.keys());
+ const gtIdsMissingFromRoster=sorted([...head.docs.keys()].filter(id=>!candidateRosterIds.has(id)));
  const baseInventory=inspectSource(base);
  const headInventory=inspectSource(head);
  if(!baseInventory.shapeValidated||baseInventory.cards!==PINS.gameTora.expectedBaselineCards||
@@ -189,7 +222,10 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   ...(skills.removed.length?['NUMERIC_SKILL_IDS_REMOVED_NEED_REVIEW']:[]),
   ...(skills.modified.length?['NUMERIC_SKILL_IDS_CHANGED_NEED_REVIEW']:[]),
   ...(roster.modified.length?['EXISTING_CARD_STAGES_CHANGED_NEED_REVIEW']:[]),
-  ...(roster.candidateCards<head.docs.size?['GT_CARDS_EXCEED_UMASIM_ROSTER']:[])
+  ...(gtIdsMissingFromRoster.length?['GT_SOURCE_CARD_ID_NOT_IN_UMASIM']:[]),
+  ...(candidateHintCoverage.missingRegistryNames>baselineHintCoverage.missingRegistryNames||
+     candidateHintCoverage.ambiguousOrNonNormalIds>baselineHintCoverage.ambiguousOrNonNormalIds?
+     ['CANDIDATE_HINT_REGISTRY_CROSSWALK_DEGRADED']:[])
  ];
  return {
   schemaVersion:1,kind:'source-refresh-full-data-preflight-private-metadata',
@@ -199,7 +235,9 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
    added:gtDiff.added,modified:gtDiff.modified,removed:gtDiff.removed,
    unchangedCount:gtDiff.unchanged.length
   }},
-  umaSim:{cards:roster,skills},
+  umaSim:{cards:roster,skills,
+   baselineHintCoverage,candidateHintCoverage,
+   gtSourceIdsAbsentFromRoster:gtIdsMissingFromRoster},
   blockerCodes:sorted(new Set(blockers)),
   shapePreflightPassed:blockers.length===0,
   eventResultAdjudication:'not-performed',
@@ -208,4 +246,4 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   originalSourceFilesStored:false,eventProseIncluded:false
  };
 }
-module.exports={audit,inspectSource,rosterDiff,skillDiff,compareGt,loadEvents};
+module.exports={audit,inspectSource,rosterDiff,skillDiff,compareGt,loadEvents,hintRegistryCoverage};
