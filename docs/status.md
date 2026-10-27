@@ -535,3 +535,7 @@ GitHub Actionsの日次ジョブ要約と出典差分レビューIssueに収録�
 [実装・成功ゲート・未裁定範囲](upstream-full-source-preflight-20261027.md)。監視されたGT／UmaSimソース更新をメタデータDraftの候補にした後、GTの**固定と候補の全イベントJSON**、UmaSimの**固定と候補の全サポカ5段階TSV・全数値スキルID JSON**を一時Actionsランナー上で検証する専用 `Preflight full upstream source candidate` を追加。GTの実ファイルGit SHAとmanifestの追加／変更／削除IDが一致するか、内部結果分岐の各経路を独立した正規化・分岐診断で全件再計算し、UmaSim側は既存ライブローダー・数値スキル辞書解析器を再利用する。結果は数値とID、保留理由だけをActions Job summaryに出力。候補の元イベント文章・画像・JSONはコミット・配信しない。
 
 [実固定GT559カード全件の新アダプタ試験](https://github.com/Nimrodx0/Umasupport/actions/runs/40429663611)は成功。**2,488元イベント／4,129選択肢／4,376経路、元構造で拒否されたカード0**。A＝合成元イベント・GT更新差分・500サポカ×5段階・スキルIDの正常／異常系、B＝固定GT全559ソースの実データ監査を実施。上流の実更新が現在発生していないため、新候補GT・UmaSimを採用する陽性preflightは未実地。C＝既存Chrome回帰のみ。**全候補の報酬数値の独立裁定・スキルID対応の意味確認・第三者素材の配布条件・実ゲーム/物理端末は未検証**。本番固定ピン・公開カタログを変更しない。
+
+## Phase 2・新固定元候補のカード別イベント形状差分（2026-10-27）
+
+[継続更新の手順](upstream-refresh-operations.md)。すでに稼働する[候補の全件preflight](../.github/workflows/upstream-candidate-full-preflight.yml)に、GTカードごとの**追加・変更・削除**について、イベント／選択肢／展開分岐／数値ヒント／終了／未解決数の変更前と変更後を個別に出す `changedCardTopologies` を実装。元JSONの本文や選択肢文字列をログへ出さない。同一数値トポロジーでもblobが変更されていれば `sameCountButDifferentSource` としてレビュー対象に残す。A＝合成Node試験、B＝固定GT559枚・2,488件の実全件スモーク、C＝公開UIの既存保護回帰。実上流で今回カードJSONの差分が未発生のため、新規・改変の本物の候補についてのB比較は未実施。正式イベント公開0件のまま。

@@ -124,6 +124,44 @@ function inspectSource(source){
   shapeValidated:errors.length===0
  };
 }
+/**
+ * Audit every changed GT file's numeric event topology, never prose.
+ * Files with the same blob remain independently covered by whole-source
+ * normalization; they do not get a fabricated "change" row.
+ */
+function topologyDiff(base,next,blobDiff){
+ const ids=[...new Set([
+  ...blobDiff.added,...blobDiff.modified,...blobDiff.removed
+ ])].sort();
+ const rows=[];
+ const topology=(doc,id)=>{
+  if(!doc)return null;
+  const {docs,blobs}= {docs:new Map([[id,doc]])};
+  const shape=inspectSource({docs});
+  if(!shape.shapeValidated)fail('変更サポカのイベント構造が不正: '+id);
+  return {
+   events:shape.events,choices:shape.choices,routes:shape.routes,
+   numericHintMentions:shape.numericHintMentions,
+   terminalMentions:shape.terminalMentions,
+   unresolvedHintMentions:shape.unresolvedHintMentions,
+   reviewQueueEntries:shape.reviewQueueEntries
+  };
+ };
+ for(const id of ids){
+  const before=topology(base.docs.get(id),id);
+  const after=topology(next.docs.get(id),id);
+  const change=blobDiff.added.includes(id)?'added':
+   blobDiff.removed.includes(id)?'removed':'modified';
+  rows.push({cardId:id,change,before,after,
+   numericTopologyChanged:JSON.stringify(before)!==JSON.stringify(after)});
+ }
+ return {affectedCards:rows.length,rows,
+  added:rows.filter(x=>x.change==='added').length,
+  modified:rows.filter(x=>x.change==='modified').length,
+  removed:rows.filter(x=>x.change==='removed').length,
+  sameCountButDifferentSource:rows.filter(x=>x.change==='modified'&&!x.numericTopologyChanged)
+   .map(x=>x.cardId)};
+}
 function rosterDiff(before,after){
  const old=parseSupportCards(before),now=parseSupportCards(after);
  const added=[],removed=[],changed=[];
@@ -205,6 +243,7 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
     !equal(gtDiff.removed,wanted.removedCardIds)||
     !equal(gtDiff.modified,wanted.modifiedCardIds))
   fail('GT全件blob差分と候補レビューmanifestが異なる');
+ const changedTopologies=topologyDiff(base,head,gtDiff);
  const roster=rosterDiff(baselineRoster,candidateRoster);
  const skills=skillDiff(baselineSkills,candidateSkills);
  const baselineHintCoverage=hintRegistryCoverage(baselineRoster,baselineSkills);
@@ -233,7 +272,8 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   schemaVersion:1,kind:'source-refresh-full-data-preflight-private-metadata',
   candidateFingerprint:manifest.reviewFingerprint,
   candidateCommits:{gameTora:newPin.gameToraCommit,umaSim:newPin.umaSimCommit},
-  gameTora:{baseline:baseInventory,candidate:headInventory,diff:{
+  gameTora:{baseline:baseInventory,candidate:headInventory,
+   changedCardTopologies:changedTopologies,diff:{
    added:gtDiff.added,modified:gtDiff.modified,removed:gtDiff.removed,
    unchangedCount:gtDiff.unchanged.length
   }},
@@ -248,4 +288,4 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   originalSourceFilesStored:false,eventProseIncluded:false
  };
 }
-module.exports={audit,inspectSource,rosterDiff,skillDiff,compareGt,loadEvents,hintRegistryCoverage};
+module.exports={audit,inspectSource,rosterDiff,skillDiff,compareGt,loadEvents,hintRegistryCoverage,topologyDiff};
