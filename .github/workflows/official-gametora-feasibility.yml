@@ -18,6 +18,11 @@ on:
       - 'poc/tests/official_gametora_route_group_probe.test.cjs'
       - 'poc/src/official_gametora_choice_outcome_semantics.cjs'
       - 'poc/tests/official_gametora_choice_outcome_semantics.test.cjs'
+      - 'poc/review/choice-label-provenance-30001.v1.json'
+      - 'poc/tools/verify_choice_label_provenance.cjs'
+      - 'poc/tests/choice_label_provenance.test.cjs'
+      - 'poc/tools/probe_official_gametora_new_cards.cjs'
+      - 'poc/tests/official_gametora_new_cards.test.cjs'
 
 permissions:
   contents: read
@@ -47,6 +52,10 @@ jobs:
           node --test poc/tests/official_gametora_route_group_probe.test.cjs
           node --check poc/src/official_gametora_choice_outcome_semantics.cjs
           node --test poc/tests/official_gametora_choice_outcome_semantics.test.cjs
+          node --check poc/tools/verify_choice_label_provenance.cjs
+          node --test poc/tests/choice_label_provenance.test.cjs
+          node --check poc/tools/probe_official_gametora_new_cards.cjs
+          node --test poc/tests/official_gametora_new_cards.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
@@ -75,8 +84,27 @@ jobs:
           curl --fail --silent --show-error --location --retry 2 --max-time 30 \
             https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt \
             -o "$RUNNER_TEMP/umasim-pinned-skills.json"
+      - name: Verify six historical choice labels against editorial GameWith link ledger (hash-only)
+        run: node poc/tools/verify_choice_label_provenance.cjs "$RUNNER_TEMP/gt-historical-30001.json"
       - name: Observe one published support-card page and compare event headings without source export
         env:
           GT_REFERENCE_SAMPLE: ${{ runner.temp }}/gt-historical-30001.json
           GT_SKILL_REGISTRY_SAMPLE: ${{ runner.temp }}/umasim-pinned-skills.json
         run: node poc/tools/probe_official_gametora_browser.cjs --live-browser
+
+  two-new-cards-browser-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Use preinstalled Chrome for fixed two-card census
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Observe two new original-site SSR card pages, without exporting article content
+        run: node poc/tools/probe_official_gametora_new_cards.cjs --live-new-cards
