@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {loadEvents,compareGt,inspectSource,rosterDiff,skillDiff,hintRegistryCoverage}=
+const {loadEvents,compareGt,inspectSource,rosterDiff,skillDiff,hintRegistryCoverage,topologyDiff}=
  require('../src/upstream_candidate_full_preflight.cjs');
 function event(id,term=false){
  return {id,section:'random',event_type:'pd',name:'SYNTHETIC',
@@ -121,4 +121,36 @@ test('all five stage hints receive numeric crosswalk classification without gues
  entries.pop();entries[0].name='別の名前';
  const absent=hintRegistryCoverage(cardText,JSON.stringify(entries));
  assert.equal(absent.missingRegistryNames,2500);
+});
+
+test('per-card topology delta reflects event, route and ordinal changes without proprietary wording',()=>{
+ withSource(dir=>{
+  const before=source(dir,[['30001',fixture('30001')],['30002',fixture('30002')]]);
+  fs.rmSync(path.join(dir,'support_30001.json'));
+  const next=source(dir,[['30002',fixture('30002',true)],['30003',fixture('30003')]]);
+  const changed=compareGt(before,next);
+  const result=topologyDiff(before,next,changed);
+  assert.equal(result.affectedCards,3);
+  assert.deepEqual(result.rows.map(x=>x.cardId),['30001','30002','30003']);
+  assert.deepEqual(result.rows.map(x=>x.change),['removed','modified','added']);
+  assert.deepEqual(result.rows.map(x=>x.before?.events??null),[1,1,null]);
+  assert.deepEqual(result.rows.map(x=>x.after?.events??null),[null,2,1]);
+  assert.equal(result.rows[1].numericTopologyChanged,true);
+  assert.deepEqual(result.sameCountButDifferentSource,[]);
+  assert.equal(JSON.stringify(result).includes('SYNTHETIC'),false);
+ });
+});
+test('source JSON change without numeric-topology change stays visible as manual semantic review',()=>{
+ withSource(dir=>{
+  const old=source(dir,[['30001',fixture('30001')]]);
+  const altered=fixture('30001');
+  altered.events_ja.SYNTHETIC.name='different third-party prose';
+  const next=source(dir,[['30001',altered]]);
+  const result=topologyDiff(old,next,compareGt(old,next));
+  assert.equal(result.affectedCards,1);
+  assert.equal(result.rows[0].change,'modified');
+  assert.equal(result.rows[0].numericTopologyChanged,false);
+  assert.deepEqual(result.sameCountButDifferentSource,['30001']);
+  assert.equal(JSON.stringify(result).includes('different third-party prose'),false);
+ });
 });
