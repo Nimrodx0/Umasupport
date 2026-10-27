@@ -293,7 +293,7 @@ async function probe(){
     }
 
     const allRenderedGroups=[];
-    const allGroupOutlines=[];
+    const splitByOrEvents=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
@@ -304,33 +304,43 @@ async function probe(){
       const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
       const body=section?.children?.[1];
       if(!body)return [];
-      return [...body.children].slice(0,20).map(group=>{
-       const effectTexts=[],hintContexts=[];
-       for(const el of [group,...group.querySelectorAll('*')]){
-        const own=[...el.childNodes].filter(node=>node.nodeType===3)
-         .map(node=>node.textContent||'').join('').trim();
-        if(!own||!/[+＋\-－−]\s*\d/.test(own))continue;
-        effectTexts.push(own);
-        if(/ヒント|hint/i.test(own)){
-         const contexts=[];
-         for(let p=el,d=0;p&&d<4&&group.contains(p);p=p.parentElement,d++){
-          const value=p.innerText||'';
-          if(value.length<=250)contexts.push(value);
-         }
-         hintContexts.push({own,contexts});
+      return [...body.children].slice(0,20).flatMap(group=>{
+       // A "one-choice, two-outcome" event may render one outer group,
+       // with two separate result rows divided by an explicit OR marker.
+       // Only split on an actual visible separator, never on source counts.
+       const inner=group.children.length===1?group.firstElementChild:group;
+       const rows=[...inner.children];
+       const dividers=rows.map((el,i)=>({el,i})).filter(({el})=>
+        /^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
+       let segments=[[group]],splitByVisibleOr=false;
+       if(dividers.length===1){
+        const p=dividers[0].i;
+        if(p>0&&p<rows.length-1){
+         segments=[rows.slice(0,p),rows.slice(p+1)];
+         splitByVisibleOr=true;
         }
        }
-       const tree=(el,depth)=>{
-        if(depth>7)return null;
-        const children=[...el.children];
-        const own=[...el.childNodes].filter(x=>x.nodeType===3)
-         .map(x=>x.textContent||'').join('').trim();
-        return {tag:el.tagName.toLowerCase(),n:children.length,
-         directTextLength:own.length,numeric:/[+＋\-－−]\s*\d/.test(own),
-         children:children.slice(0,9).map(c=>tree(c,depth+1))};
-       };
-       return {effectTexts:effectTexts.slice(0,50),
-        hintContexts:hintContexts.slice(0,10),outline:tree(group,0)};
+       return segments.map(roots=>{
+        const effectTexts=[],hintContexts=[];
+        for(const root of roots){
+         for(const el of [root,...root.querySelectorAll('*')]){
+          const own=[...el.childNodes].filter(node=>node.nodeType===3)
+           .map(node=>node.textContent||'').join('').trim();
+          if(!own||!/[+＋\-－−]\s*\d/.test(own))continue;
+          effectTexts.push(own);
+          if(/ヒント|hint/i.test(own)){
+           const contexts=[];
+           for(let p=el,d=0;p&&d<5&&group.contains(p);p=p.parentElement,d++){
+            const value=p.innerText||'';
+            if(value.length<=250)contexts.push(value);
+           }
+           hintContexts.push({own,contexts});
+          }
+         }
+        }
+        return {effectTexts:effectTexts.slice(0,50),
+         hintContexts:hintContexts.slice(0,10),splitByVisibleOr};
+       });
       });
      });
      const normalized=groups.map(group=>({
@@ -345,7 +355,7 @@ async function probe(){
       })
      }));
      allRenderedGroups.push(normalized);
-     allGroupOutlines.push(groups.map(x=>x.outline));
+     splitByOrEvents.push(groups.filter(x=>x.splitByVisibleOr).length);
     }
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
@@ -357,7 +367,7 @@ async function probe(){
        allRenderedGroups[x.renderedEventPosition-1]
       )
      })),
-     mismatchedGroupShape:allGroupOutlines[2]||[],
+     explicitOrSplitGroups:splitByOrEvents.reduce((n,x)=>n+x,0),
      allEventsHaveVerifiedRouteSemantics:false,
      publicationApproved:false,sourceProseIncluded:false
     };
