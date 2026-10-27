@@ -27,6 +27,11 @@ function summarizeEvents(visible){
   chainSectionCount:visible.chainSections,
   randomSectionCount:visible.randomSections,
   outingSectionCount:visible.outingSections,
+  chainHeadingCount:visible.chainHeadings,
+  randomHeadingCount:visible.randomHeadings,
+  outingHeadingCount:visible.outingHeadings,
+  sampledEventPanels:visible.sampledEventPanels,
+  sampledPanelsWithNumericEffects:visible.sampledPanelsWithNumericEffects,
   eventRewardRoutesVerified:false,
   choiceWordingVerified:false,
   independentSkillIdVerified:false,
@@ -87,9 +92,31 @@ async function probe(){
      if(/お出かけイベント|Outing Events/i.test(p.heading))categories.outingSections++;
      if(/育成イベント|Training Events/i.test(p.heading))categories.trainingSections++;
     }
+    const headings=[...document.querySelectorAll('h2,h3,h4')]
+     .map(x=>(x.innerText||'').trim());
+    categories.chainHeadings=headings.filter(x=>/連続イベント|Chain Events/i.test(x)).length;
+    categories.randomHeadings=headings.filter(x=>/ランダムイベント|Random Events/i.test(x)).length;
+    categories.outingHeadings=headings.filter(x=>/お出かけイベント|Outing Events/i.test(x)).length;
     categories.accordionButtons=document.querySelectorAll('section button[aria-expanded]').length;
+    categories.sampledEventPanels=0;
+    categories.sampledPanelsWithNumericEffects=0;
     return categories;
    });
+   const eventButtons=page.locator('section button[aria-expanded]');
+   for(let n=0;n<Math.min(await eventButtons.count(),2);n++){
+    const btn=eventButtons.nth(n);
+    if((await btn.getAttribute('aria-expanded'))!=='true')
+     await btn.click({timeout:5000});
+    await page.waitForTimeout(800);
+    const measured=await btn.evaluate(button=>{
+     const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+     const text=(panel?.innerText||'');
+     return {hasDetail:!!text.trim(),
+      hasSignedEffect:/[+＋\\-－−]\\s*\\d/.test(text)};
+    });
+    if(measured.hasDetail)counters.sampledEventPanels++;
+    if(measured.hasSignedEffect)counters.sampledPanelsWithNumericEffects++;
+   }
    observed.push({
     cardId:target.cardId,
     pageReceived200:true,
