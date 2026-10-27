@@ -225,7 +225,11 @@ async function probe(){
    const reference=Object.values(expected.events_ja);
    const observedFacts=[];
    for(let index=0;index<await events.count();index++){
-    const ownLines=await events.nth(index).evaluate(button=>{
+    const eventButton=events.nth(index);
+    if((await eventButton.getAttribute('aria-expanded'))!=='true')
+     await eventButton.click({timeout:5000});
+    await page.waitForTimeout(125);
+    const ownLines=await eventButton.evaluate(button=>{
      const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
      if(!panel)return [];
      return [panel,...panel.querySelectorAll('*')].map(el=>
