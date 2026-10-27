@@ -25,5 +25,13 @@
     "editorialAdjudicationIndependentOfPublicationApproval": true,
     "requireCardScopedGameToraWebsiteCheck": true,
     "allowPendingOnlyWhenGameWithFactNotEstablished": true
+  },
+  "freshCardSourceLookup": {
+    "version": 1,
+    "strategy": "delayed-website-before-gamewith",
+    "websiteCheckAfterDays": 7,
+    "gameWithCheckAfterDays": 21,
+    "autoPromotePins": false,
+    "autoPublish": false
   }
 }
