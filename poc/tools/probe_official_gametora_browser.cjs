@@ -95,31 +95,24 @@ function analyzeExpandedPanel(button){
  };
 }
 async function inspectEventSections(page){
- const sections=page.locator('section');
- const out=[];
- for(let i=0;i<await sections.count();i++){
-  const section=sections.nth(i);
-  const heading=await section.locator('h2').first().innerText().catch(()=>'');
-  const kind=/連続イベント|Chain Events/i.test(heading)?'chain':
-   /ランダムイベント|Random Events/i.test(heading)?'random':null;
-  if(!kind)continue;
-  const buttons=section.locator('button[aria-expanded]');
-  const total=await buttons.count();
-  const events=[];
-  for(let n=0;n<Math.min(total,6);n++){
-   const button=buttons.nth(n);
-   if(await button.getAttribute('aria-expanded')!=='true')
-    await button.click({timeout:5000});
-   await page.waitForTimeout(125);
-   events.push({
-    eventPosition:n+1,
-    expanded:await button.getAttribute('aria-expanded')==='true',
-    panel:await button.evaluate(analyzeExpandedPanel)
-   });
-  }
-  out.push({kind,accordionCount:total,events});
+ const known=page.getByRole('button',{name:/蹄鉄で/}).first();
+ if(await known.count()!==1)return [{knownEventButtonCount:await known.count(),failure:'target-event-not-unique'}];
+ const section=known.locator('xpath=ancestor::section[1]');
+ const buttons=section.locator('button[aria-expanded]');
+ const total=await buttons.count();
+ const events=[];
+ for(let n=0;n<Math.min(total,8);n++){
+  const button=buttons.nth(n);
+  if(await button.getAttribute('aria-expanded')!=='true')
+   await button.click({timeout:5000});
+  await page.waitForTimeout(125);
+  events.push({
+   position:n+1,
+   expanded:(await button.getAttribute('aria-expanded'))==='true',
+   panel:await button.evaluate(analyzeExpandedPanel)
+  });
  }
- return out;
+ return [{targetSectionFound:true,accordionCount:total,events}];
 }
 
 async function probe(){
