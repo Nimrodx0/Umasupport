@@ -293,6 +293,7 @@ async function probe(){
     }
 
     const allRenderedGroups=[];
+    const allGroupOutlines=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
@@ -319,7 +320,17 @@ async function probe(){
          hintContexts.push({own,contexts});
         }
        }
-       return {effectTexts:effectTexts.slice(0,50),hintContexts:hintContexts.slice(0,10)};
+       const tree=(el,depth)=>{
+        if(depth>7)return null;
+        const children=[...el.children];
+        const own=[...el.childNodes].filter(x=>x.nodeType===3)
+         .map(x=>x.textContent||'').join('').trim();
+        return {tag:el.tagName.toLowerCase(),n:children.length,
+         directTextLength:own.length,numeric:/[+＋\-－−]\s*\d/.test(own),
+         children:children.slice(0,9).map(c=>tree(c,depth+1))};
+       };
+       return {effectTexts:effectTexts.slice(0,50),
+        hintContexts:hintContexts.slice(0,10),outline:tree(group,0)};
       });
      });
      const normalized=groups.map(group=>({
@@ -334,6 +345,7 @@ async function probe(){
       })
      }));
      allRenderedGroups.push(normalized);
+     allGroupOutlines.push(groups.map(x=>x.outline));
     }
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
@@ -345,6 +357,7 @@ async function probe(){
        allRenderedGroups[x.renderedEventPosition-1]
       )
      })),
+     mismatchedGroupShape:allGroupOutlines[2]||[],
      allEventsHaveVerifiedRouteSemantics:false,
      publicationApproved:false,sourceProseIncluded:false
     };
