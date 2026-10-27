@@ -1,0 +1,30 @@
+name: Feasibility of direct GameTora support event sourcing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-feasibility.yml'
+      - 'poc/src/official_gametora_probe.cjs'
+      - 'poc/tests/official_gametora_probe.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  limited-official-source-read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate nonpublishing fetch allowlist and offline parser
+        run: |
+          node --check poc/src/official_gametora_probe.cjs
+          node --test poc/tests/official_gametora_probe.test.cjs
+      - name: Read at most three official support-card pages, no source export
+        run: node poc/src/official_gametora_probe.cjs --live
