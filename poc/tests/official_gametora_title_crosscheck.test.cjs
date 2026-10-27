@@ -42,3 +42,26 @@ test('refuse unpinned card, wrong source population and invalid observations',()
  assert.throws(()=>compareTitles({...model(),events_ja:{}},[]),/照合/);
  assert.throws(()=>compareTitles(model(),[{title:'x',sameGroupSize:0.5}]),/照合/);
 });
+
+test('candidate DOM row numbers can differ from old routes without being treated as verified',()=>{
+ const source=model();
+ source.events_ja.a.choices=[{effects:[]}];
+ source.events_ja.b.choices=[{effects:[]},{effects:[]}];
+ source.events_ja.c.choices=[{outcomes:[[],[]]}];
+ source.events_ja.d.choices=[{effects:[]},{effects:[]}];
+ source.events_ja.e.choices=[{effects:[]},{effects:[]}];
+ const visible=[
+  {title:'架空の第1段',sameGroupSize:3,provisionalDetailRows:1},
+  {title:'架空の第2段',sameGroupSize:3,provisionalDetailRows:1},
+  {title:'架空の第3段',sameGroupSize:3,provisionalDetailRows:2},
+  {title:'架空の通常一',sameGroupSize:2,provisionalDetailRows:2},
+  {title:'架空の通常二',sameGroupSize:2,provisionalDetailRows:2}
+ ];
+ const r=compareTitles(source,visible);
+ assert.equal(r.candidateRowHeuristicMatches,4);
+ assert.equal(r.candidateRowHeuristicDifferences,1);
+ assert.equal(r.provisionalComparisons.find(x=>x.historicalEventOrdinal===2).heuristicRowsMatch,false);
+ assert.equal(r.rewardAndOutcomeFactsVerified,false);
+ assert.equal(r.sourceRoutesAndRenderedRowsSemanticallyEquivalent,false);
+ assert.doesNotMatch(JSON.stringify(r),/架空/);
+});
