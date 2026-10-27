@@ -85,6 +85,7 @@ function analyzeExpandedPanel(button){
  const links=[...panel.querySelectorAll('a[href]')];
  return {
   panelFound:true,
+  provisionalDetailRowCount:panel.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild?.children?.[1]?.children?.length??null,
   panelTag:panel.tagName.toLowerCase(),
   panelChildTags:[...panel.children].slice(0,30).map(e=>e.tagName.toLowerCase()),
   totalElements:elements.length,
@@ -230,7 +231,8 @@ async function probe(){
      title:await button.innerText(),
      sameGroupSize:await button.evaluate(e=>
       [...e.parentElement.children].filter(x=>
-       x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length)
+       x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length),
+     provisionalDetailRows:await button.evaluate(el=>analyzeExpandedPanel(el).provisionalDetailRowCount)
     });
    }
    visible.historicalTitleCrosscheck=compareTitles(expected,headings);
