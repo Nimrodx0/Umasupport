@@ -232,7 +232,7 @@ async function probe(){
      sameGroupSize:await button.evaluate(e=>
       [...e.parentElement.children].filter(x=>
        x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length),
-     provisionalDetailRows:await button.evaluate(el=>analyzeExpandedPanel(el).provisionalDetailRowCount)
+     provisionalDetailRows:(await button.evaluate(analyzeExpandedPanel)).provisionalDetailRowCount
     });
    }
    visible.historicalTitleCrosscheck=compareTitles(expected,headings);
