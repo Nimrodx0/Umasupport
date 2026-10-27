@@ -162,5 +162,83 @@ function draftBody(manifest,issueNumber){
 function contentDigest(text){
  return crypto.createHash('sha256').update(text,'utf8').digest('hex');
 }
+function exactKeys(object,keys,where){
+ if(!object||typeof object!=='object'||Array.isArray(object)||
+    JSON.stringify(Object.keys(object).sort())!==JSON.stringify([...keys].sort()))
+  fail('候補メタデータに未承認の追加・欠落項目: '+where);
+}
+function verifyManifest(m){
+ const fields=['schemaVersion','kind','reviewState','reviewFingerprint',
+  'observedRun','currentPinned','proposedSnapshot','eventSourceDiff',
+  'umaSimChangedSourceFiles','preflight','safeBoundaries'];
+ exactKeys(m,fields,'manifest');
+ if(m.schemaVersion!==1||m.kind!=='source-refresh-candidate-review-only'||
+    m.reviewState!=='awaiting-human-preflight-and-source-adjudication'||
+    !HEX64.test(String(m.reviewFingerprint||'')))
+  fail('レビュー用マニフェストの状態と指紋が不正');
+ const fixed=m.currentPinned,candidate=m.proposedSnapshot,diff=m.eventSourceDiff;
+ exactKeys(fixed,['gameToraCommit','umaSimCommit','gameToraTree','umaSimTree'],'fixed');
+ exactKeys(candidate,['gameToraCommit','umaSimCommit','gameToraTree','umaSimTree',
+  'umaSimCardBlob','umaSimSkillBlob'],'proposed');
+ exactKeys(diff,['previousJsonCardFiles','candidateJsonCardFiles','addedCardIds',
+  'modifiedCardIds','removedCardIds','latestKnownThreeJsonPresent',
+  'latestKnownThreeJsonMissing'],'diff');
+ if(fixed.gameToraCommit!==PINS.gameTora.revision||
+    fixed.umaSimCommit!==PINS.umaSim.revision||
+    diff.previousJsonCardFiles!==PINS.gameTora.expectedBaselineCards||
+    !Number.isSafeInteger(diff.candidateJsonCardFiles)||diff.candidateJsonCardFiles<1)
+   fail('既に変更された固定版・不正な対象母集団');
+ for(const value of [fixed.gameToraTree,fixed.umaSimTree,
+  candidate.gameToraCommit,candidate.umaSimCommit,candidate.gameToraTree,
+  candidate.umaSimTree,candidate.umaSimCardBlob,candidate.umaSimSkillBlob])
+  if(!HEX40.test(String(value||'')))fail('出典のGit SHA不正');
+ for(const key of ['addedCardIds','modifiedCardIds','removedCardIds',
+  'latestKnownThreeJsonPresent','latestKnownThreeJsonMissing']){
+  const ids=diff[key];
+  if(!unique(ids)||ids.some(id=>!CARD_ID.test(id))||
+     JSON.stringify(ids)!==JSON.stringify([...ids].sort()))
+   fail('イベントカードIDの候補が不正: '+key);
+ }
+ if(!unique(m.umaSimChangedSourceFiles)||
+    m.umaSimChangedSourceFiles.some(x=>!FILES.includes(x)))
+  fail('対象元ファイルに未知のパス');
+ exactKeys(m.preflight,[
+  'upstreamGitTreeShape','newEventRoutes','eventInternalBranches','skillIds',
+  'wholeEventInventory','chromium','physicalDevices','thirdPartyReuseRights',
+  'publicationRelease'],'preflight');
+ if(m.preflight.upstreamGitTreeShape!=='checked-in-source-watch'||
+    m.preflight.newEventRoutes!=='not-adjudicated'||
+    m.preflight.eventInternalBranches!=='not-adjudicated'||
+    m.preflight.skillIds!=='not-adjudicated'||
+    m.preflight.wholeEventInventory!=='not-run-for-candidate'||
+    m.preflight.chromium!=='not-run-for-candidate'||
+    m.preflight.physicalDevices!=='not-run'||
+    m.preflight.thirdPartyReuseRights!=='not-approved'||
+    m.preflight.publicationRelease!=='not-approved')
+  fail('未実施の検証・配布承認を実施済みとして虚偽表示');
+ const gates=['sourceJsonContentsStored','originalEventChoiceTextStored',
+  'sourceMasterFilesBundled','runtimePinChangesApplied',
+  'deploymentOrEventPublicationApproved','automaticallyMergeable'];
+ exactKeys(m.safeBoundaries,gates,'safeBoundaries');
+ if(gates.some(key=>m.safeBoundaries[key]!==false))
+  fail('正式公開・固定版更新の安全ゲートが破損');
+ if(m.observedRun!==null&&
+   !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/actions\/runs\/[1-9]\d*$/.test(m.observedRun))
+  fail('実行根拠のURL不正');
+ return m;
+}
+if(require.main===module){
+ const fs=require('node:fs');
+ const file=process.argv[2];
+ if(!file||process.argv.length!==3)
+  throw Error('usage: node upstream_refresh_candidate.cjs <candidate-manifest-path>');
+ if(fs.existsSync(file)){
+  const candidate=JSON.parse(fs.readFileSync(file,'utf8'));
+  verifyManifest(candidate);
+  process.stdout.write('UPSTREAM_REFRESH_CANDIDATE_VALIDATED='+candidate.reviewFingerprint+'\n');
+ }else{
+  process.stdout.write('UPSTREAM_REFRESH_CANDIDATE_ABSENT: normal pinned branch\n');
+ }
+}
 module.exports={verifyReport,buildCandidate,manifestText,draftBody,contentDigest,
- BRANCH,FILE_PATH,PR_TITLE};
+ verifyManifest,BRANCH,FILE_PATH,PR_TITLE};
