@@ -59,9 +59,12 @@ function compareProvisionalFacts(source,observed){
  };
  const a=bag(sourceItems),b=bag(parsed);
  let matched=0,missing=0,extra=0;
+ const missingEffectKinds={};
  for(const [k,count] of a){
   matched+=Math.min(count,b.get(k)||0);
-  missing+=Math.max(0,count-(b.get(k)||0));
+  const deficit=Math.max(0,count-(b.get(k)||0));
+  missing+=deficit;
+  if(deficit){const kind=k.split(':')[0];missingEffectKinds[kind]=(missingEffectKinds[kind]||0)+deficit;}
  }
  for(const [k,count] of b)extra+=Math.max(0,count-(a.get(k)||0));
  return {
@@ -70,7 +73,14 @@ function compareProvisionalFacts(source,observed){
   visibleNormalizedNumericPairs:parsed.map(x=>({kind:x.kind,amount:x.amount})),
   visibleUnclassifiedFacts:observed.filter(x=>x.requiresReview).length,
   matchingKindAmountOccurrences:matched,missingComparedToSource:missing,
-  extraComparedToSource:extra,
+  missingEffectKinds,extraComparedToSource:extra,
+  sourceHintLevelOccurrences:sourceItems.filter(x=>x.kind==='skill_hint').length,
+  visibleHintLevelOccurrences:parsed.filter(x=>x.kind==='skill_hint').length,
+  skillHintLevelMultisetMatches:(()=>{
+   const expected=sourceItems.filter(x=>x.kind==='skill_hint').map(x=>x.amount).sort((a,b)=>a-b);
+   const actual=parsed.filter(x=>x.kind==='skill_hint').map(x=>x.amount).sort((a,b)=>a-b);
+   return JSON.stringify(expected)===JSON.stringify(actual);
+  })(),
   effectOrderingOrBranchingVerified:false,skillNumericIdsVerified:false,
   sourceTextIncluded:false,publicationApproved:false
  };
