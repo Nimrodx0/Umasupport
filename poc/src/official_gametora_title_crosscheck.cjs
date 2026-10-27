@@ -18,7 +18,8 @@ function compareTitles(expectedDoc,observed){
   fail('比較元旧イベント構造が既知母数に合致しない');
  const used=new Set();
  let matched=0,correctGroupSize=0,ambiguous=0;
- for(const event of events){
+ const provisionalComparisons=[];
+ for(const [sourceIndex,event] of events.entries()){
   const lookup=key(event.name);
   const index=observed.map((x,i)=>({i,value:key(x.title)}))
    .filter(x=>x.value.includes(lookup)).map(x=>x.i);
@@ -26,6 +27,16 @@ function compareTitles(expectedDoc,observed){
   const ordinal=index[0];used.add(ordinal);matched++;
   if(observed[ordinal].sameGroupSize===(event.section==='arrows'?3:2))
    correctGroupSize++;
+  const referenceRouteCount=Array.isArray(event.choices)?event.choices.reduce((n,choice)=>
+   n+(Array.isArray(choice.outcomes)?choice.outcomes.length:1),0):null;
+  const renderedCandidateRows=Number.isSafeInteger(observed[ordinal].provisionalDetailRows)?
+   observed[ordinal].provisionalDetailRows:null;
+  provisionalComparisons.push({
+   historicalEventOrdinal:sourceIndex+1,renderedEventPosition:ordinal+1,
+   sourceCategory:event.section,referenceRouteCount,renderedCandidateRows,
+   heuristicRowsMatch:referenceRouteCount!==null&&renderedCandidateRows!==null?
+    referenceRouteCount===renderedCandidateRows:null
+  });
  }
  return {
   cardId:'30001',expectedEventTitles:events.length,
@@ -33,6 +44,10 @@ function compareTitles(expectedDoc,observed){
   uniquelyMatchedTitleCount:matched,
   groupSemanticsConsistentCount:correctGroupSize,
   notMatchedOrAmbiguousCount:ambiguous,
+  provisionalComparisons,
+  candidateRowHeuristicMatches:provisionalComparisons.filter(x=>x.heuristicRowsMatch===true).length,
+  candidateRowHeuristicDifferences:provisionalComparisons.filter(x=>x.heuristicRowsMatch===false).length,
+  sourceRoutesAndRenderedRowsSemanticallyEquivalent:false,
   rewardAndOutcomeFactsVerified:false,
   chainTerminationVerified:false,
   resultForPublication:false,
