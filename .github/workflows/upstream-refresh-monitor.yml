@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
   issues: write
   pull-requests: write
 
@@ -179,6 +180,7 @@ jobs:
                 throw Error('Candidate manifest path is not a file');
               previous=f.data;
             }catch(e){if(e.status!==404)throw e;}
+            let candidateChanged=false;
             if(!previous||Buffer.from(previous.content.replace(/\s/g,''),'base64')
               .toString('utf8')!==fileContent){
               await github.rest.repos.createOrUpdateFileContents({
@@ -187,6 +189,7 @@ jobs:
                 content:Buffer.from(fileContent,'utf8').toString('base64'),
                 ...(previous?{sha:previous.sha}:{})
               });
+              candidateChanged=true;
               core.info('Wrote metadata-only candidate manifest');
             }
             if(!draft){
@@ -194,6 +197,7 @@ jobs:
                 owner,repo,head:branch,base:'main',draft:true,
                 title:candidateTool.PR_TITLE,body:candidateBody
               });
+              candidateChanged=true;
               core.notice('Created human-reviewed draft candidate PR: '+pr.data.html_url);
             }else if(!(draft.body||'').includes(
               'fingerprint:'+result.reviewFingerprint+' -->')){
@@ -203,4 +207,14 @@ jobs:
               core.notice('Updated draft candidate PR #'+draft.number);
             }else{
               core.info('Same candidate already in Draft PR #'+draft.number);
+            }
+            // GITHUB_TOKEN-created commits do not usually fire new push/PR
+            // workflows. Explicit dispatch runs read-only core checks against
+            // the actual candidate commit, while this workflow remains the
+            // only privileged writer.
+            if(candidateChanged){
+              await github.rest.actions.createWorkflowDispatch({
+                owner,repo,workflow_id:'ci.yml',ref:branch
+              });
+              core.notice('Dispatched candidate branch core CI for safety checks');
             }
