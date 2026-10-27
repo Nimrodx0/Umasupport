@@ -48,6 +48,44 @@ function visibleHtml(html){
   .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi,' ')
   .replace(/<!--[\s\S]*?-->/g,' ');
 }
+
+function inspectInitialJson(html){
+ const m=/<script\b(?=[^>]*\bid=["']__NEXT_DATA__["'])[^>]*>([\s\S]*?)<\/script\s*>/i.exec(html);
+ if(!m)return {found:false,parsed:false};
+ let root;
+ try{root=JSON.parse(m[1]);}catch{return {found:true,parsed:false};}
+ const counts={eventLikeRecords:0,choiceArrays:0,outcomeArrays:0,
+  effectArrays:0,skillIdFields:0,collectionsWithEventName:0};
+ const queue=[{node:root,depth:0}];
+ let examined=0;
+ while(queue.length&&examined<120000){
+  const {node,depth}=queue.shift();examined++;
+  if(!node||typeof node!=='object'||depth>18)continue;
+  if(Array.isArray(node)){
+   for(const x of node)if(x&&typeof x==='object')queue.push({node:x,depth:depth+1});
+   continue;
+  }
+  const keys=Object.keys(node);
+  const norm=keys.map(x=>x.toLowerCase());
+  if(Array.isArray(node.choices))counts.eventLikeRecords++;
+  if(norm.some(x=>/^events?_?(ja|en)?$|^trainingevents$|^supportevents$/.test(x)))
+   counts.collectionsWithEventName++;
+  for(const key of keys){
+   const lower=key.toLowerCase();
+   const value=node[key];
+   if(/^choices?$/.test(lower)&&Array.isArray(value))counts.choiceArrays++;
+   if(/^outcomes?$/.test(lower)&&Array.isArray(value))counts.outcomeArrays++;
+   if(/^effects?$/.test(lower)&&Array.isArray(value))counts.effectArrays++;
+   if(/^(skill_?id|skillnumericid)$/.test(lower)&&typeof value==='number')
+    counts.skillIdFields++;
+   if(value&&typeof value==='object')queue.push({node:value,depth:depth+1});
+  }
+ }
+ return {found:true,parsed:true,hasPageProps:!!root.props?.pageProps,
+  recordsInspected:examined,limitReached:queue.length>0,counts,
+  eventChoicesAndRewardsVerified:false};
+}
+
 function inspectPage(html,target){
  pageUrl(target);
  const visible=visibleHtml(html);
@@ -73,6 +111,7 @@ function inspectPage(html,target){
   initialHtmlContainsButtons:(visible.match(/<button\b/gi)||[]).length>0,
   scriptTags:scriptCount,
   hydrationHints,
+  initialJsonShape:inspectInitialJson(html),
   eventChoicesAndRewardsVerified:false,
   eventChainDependenciesVerified:false,
   officialSourceReuseApproved:false,
@@ -131,4 +170,4 @@ if(require.main===module){
  probe().then(x=>{process.stdout.write('OFFICIAL_GT_FEASIBILITY='+JSON.stringify(x)+'\n');})
  .catch(e=>{process.stderr.write(String(e.message).slice(0,240)+'\n');process.exitCode=1;});
 }
-module.exports={TARGETS,pageUrl,robotsDisallows,visibleHtml,inspectPage,probe};
+module.exports={TARGETS,pageUrl,robotsDisallows,visibleHtml,inspectInitialJson,inspectPage,probe};
