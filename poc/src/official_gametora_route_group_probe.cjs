@@ -63,6 +63,10 @@ function compareRenderedGroups(event,groups){
   sourceRoutes:reference.length,renderedGroupCandidates:observed.length,
   sourceGroupsWithMatchingFactAndHintSignature:countPairs,
   uniqueRouteGroupAssignment:fullyUnique,
+  uniquelyAssignedRouteLocations:fullyUnique?reference.map((route,index)=>({
+   choiceOrdinal:route.choiceIndex,outcomeOrdinal:route.outcomeIndex,
+   renderedGroupOrdinal:candidateMatches[index][0]
+  })):[],
   unmatchedSourceRoutes:candidateMatches.filter(xs=>xs.length===0).length,
   ambiguousSourceRoutes:candidateMatches.filter(xs=>xs.length>1).length,
   unclassifiedNumericTexts:observed.reduce((s,x)=>s+x.unclassifiedNumericTexts,0),
