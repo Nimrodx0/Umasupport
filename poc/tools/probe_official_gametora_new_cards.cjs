@@ -42,6 +42,25 @@ function summarizeEvents(visible){
   publicationApproved:false
  };
 }
+const PINNED_NEW_CARD_SAMPLE={
+ '30322':Object.freeze({accordionPanelsOpened:6,candidateChoiceGroups:10,
+  visibleOrSeparators:3,candidateOutcomeRoutes:13,skillHintCandidateRows:14,
+  uniquelyMappedUmaSimSkillIdHintRows:14}),
+ '30323':Object.freeze({accordionPanelsOpened:12,candidateChoiceGroups:14,
+  visibleOrSeparators:0,candidateOutcomeRoutes:14,skillHintCandidateRows:4,
+  uniquelyMappedUmaSimSkillIdHintRows:4})
+};
+function verifyPinnedNewCardCandidate(cardId,census){
+ if(!Object.hasOwn(PINNED_NEW_CARD_SAMPLE,cardId))
+  fail('未知の候補カード');
+ const expected=PINNED_NEW_CARD_SAMPLE[cardId];
+ if(Object.entries(expected).some(([name,n])=>census?.[name]!==n))
+  fail('2026-10-27実サイト新サポカの候補トポロジーが変化。要再確認');
+ return {candidateTopologyMatches20261027Sample:true,
+  sourceEvidenceRevalidationStillRequired:true,
+  officialEventPublicationApproved:false};
+}
+
 function summarizeExpandedCensus(rows){
  if(!Array.isArray(rows)||rows.length>20||rows.some(x=>!x||
   !Number.isSafeInteger(x.eventPanelHasContent)||x.eventPanelHasContent<0||x.eventPanelHasContent>1||
@@ -219,6 +238,7 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
     fail('すべての画面開閉パネルを検査できませんでした');
    observed.push({
@@ -227,6 +247,7 @@ async function probe(){
     pageRenderedInChrome:true,
     ...summarizeEvents(counters),
     census,
+    sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
    });
   }
@@ -247,4 +268,4 @@ if(require.main===module){
  probe().then(x=>process.stdout.write('OFFICIAL_GT_NEW_CARDS='+JSON.stringify(x)+'\n'))
  .catch(e=>{process.stderr.write(e.message.slice(0,200)+'\n');process.exitCode=1;});
 }
-module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,probe};
+module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,probe};
