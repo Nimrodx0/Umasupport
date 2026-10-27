@@ -2,7 +2,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {inspect,PINS}=require('../src/upstream_refresh_watch.cjs');
-const {verifyReport,buildCandidate,manifestText,draftBody,contentDigest,
+const {verifyReport,buildCandidate,manifestText,draftBody,contentDigest,verifyManifest,
  FILE_PATH,BRANCH,PR_TITLE}=require('../src/upstream_refresh_candidate.cjs');
 const h=c=>c.repeat(40);
 const trees={
@@ -48,6 +48,7 @@ test('candidate only captures safe new source pins and pending gates, not event 
  assert.match(body,/Draft/);
  assert.match(body,/30322/);
  assert.equal(manifestText(manifest),serialized);
+ assert.deepEqual(verifyManifest(JSON.parse(serialized)),manifest);
  assert.equal(contentDigest(serialized),contentDigest(serialized));
  assert.equal(contentDigest(serialized).length,64);
  assert.ok(FILE_PATH.startsWith('poc/review/'));
@@ -87,4 +88,24 @@ test('same source delta yields identical candidate content even for rerun',()=>{
  noChanges.requiresReview=false;
  assert.throws(()=>verifyReport(noChanges),/検証済みドリフト/);
  assert.throws(()=>draftBody(m1,0),/参照Issue/);
+});
+
+test('candidate CI validation disallows raw upstream payloads, unreviewed promotion and invented preflights',()=>{
+ const r=sample();r.eventData.pinnedCardFiles=PINS.gameTora.expectedBaselineCards;
+ const original=buildCandidate(r,{treeShas:trees});
+ for(const modify of [
+  x=>x.sourceEventRawJson={choices:['not-public']},
+  x=>x.safeBoundaries.runtimePinChangesApplied=true,
+  x=>x.safeBoundaries.originalEventChoiceTextStored=true,
+  x=>x.preflight.wholeEventInventory='passed',
+  x=>x.preflight.publicationRelease='approved',
+  x=>x.currentPinned.gameToraCommit=h('7'),
+  x=>x.proposedSnapshot.gameToraTree='invalid',
+  x=>x.eventSourceDiff.addedCardIds.push('30322'),
+  x=>x.eventSourceDiff.latestKnownThreeJsonMissing.push('not-a-card'),
+  x=>x.umaSimChangedSourceFiles.push('data/unknown.txt')
+ ]){
+  const c=structuredClone(original);modify(c);
+  assert.throws(()=>verifyManifest(c),/出典候補Draft PR検証/);
+ }
 });
