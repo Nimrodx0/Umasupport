@@ -16,6 +16,8 @@ on:
       - 'poc/tests/official_gametora_skill_id_crosswalk.test.cjs'
       - 'poc/src/official_gametora_route_group_probe.cjs'
       - 'poc/tests/official_gametora_route_group_probe.test.cjs'
+      - 'poc/src/official_gametora_choice_outcome_semantics.cjs'
+      - 'poc/tests/official_gametora_choice_outcome_semantics.test.cjs'
 
 permissions:
   contents: read
@@ -43,11 +45,14 @@ jobs:
           node --test poc/tests/official_gametora_skill_id_crosswalk.test.cjs
           node --check poc/src/official_gametora_route_group_probe.cjs
           node --test poc/tests/official_gametora_route_group_probe.test.cjs
+          node --check poc/src/official_gametora_choice_outcome_semantics.cjs
+          node --test poc/tests/official_gametora_choice_outcome_semantics.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
   one-card-browser-ui:
-    runs-on: ubuntu-latest
+    # Pin while ubuntu-latest transitions to 26.04; keep browser proof reproducible.
+    runs-on: ubuntu-24.04
     timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
@@ -56,10 +61,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Chromium
+      - name: Prepare Playwright controller for preinstalled system Chrome
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
-          npx playwright install --with-deps chromium
+          command -v google-chrome || command -v google-chrome-stable
       - name: Retrieve one immutable historical reference card, only in disposable runner
         run: |
           curl --fail --silent --show-error --location --retry 2 --max-time 30 \

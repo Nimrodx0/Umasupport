@@ -10,6 +10,7 @@ const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
+const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -126,7 +127,7 @@ async function inspectEventSections(page){
 
 async function probe(){
  const target=TARGETS[0]; // only the old, already-listed 30001 card
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
   const context=await browser.newContext({locale:'ja-JP'});
   const page=await context.newPage();
@@ -294,17 +295,38 @@ async function probe(){
 
     const allRenderedGroups=[];
     const splitByOrEvents=[];
+    const allChoiceEvidence=[];
+    const labelScopeEvidence=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
       await btn.click({timeout:5000});
      await page.waitForTimeout(950);
+     const historicOrdinal=visible.historicalTitleCrosscheck.provisionalComparisons
+      .find(x=>x.renderedEventPosition===index+1)?.historicalEventOrdinal;
+     const expectedLabels=reference[historicOrdinal-1]?.choices
+      .map(x=>x.label).filter(x=>typeof x==='string'&&x.trim())||[];
+     const labelScopes=await btn.evaluate((button,labels)=>{
+      const normalized=s=>String(s||'').normalize('NFKC')
+       .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
+      const row=normalized(button.parentElement?.innerText||'');
+      const panel=[...button.parentElement.children].find(e=>e.tagName==='DIV');
+      const detail=normalized(panel?.innerText||'');
+      const pageText=normalized(document.body?.innerText||'');
+      return {
+       namedChoiceLabels:labels.length,
+       matchesInCurrentEventContainer:labels.filter(x=>row.includes(normalized(x))).length,
+       matchesInExpandedPanel:labels.filter(x=>detail.includes(normalized(x))).length,
+       matchesInFullDocument:labels.filter(x=>pageText.includes(normalized(x))).length
+      };
+     },expectedLabels);
+     labelScopeEvidence.push(labelScopes);
      const groups=await btn.evaluate(button=>{
       const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
       const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
       const body=section?.children?.[1];
       if(!body)return [];
-      return [...body.children].slice(0,20).flatMap(group=>{
+      return [...body.children].slice(0,20).flatMap((group,outerIndex)=>{
        // A "one-choice, two-outcome" event may render one outer group,
        // with two separate result rows divided by an explicit OR marker.
        // Only split on an actual visible separator, never on source counts.
@@ -339,7 +361,13 @@ async function probe(){
          }
         }
         return {effectTexts:effectTexts.slice(0,50),
-         hintContexts:hintContexts.slice(0,10),splitByVisibleOr};
+         hintContexts:hintContexts.slice(0,10),splitByVisibleOr,
+         outerGroupIndex:outerIndex+1,
+         outerVisibleText:(group.innerText||'').slice(0,2800),
+         outerDirectTextFragments:[group,...group.querySelectorAll('*')].map(el=>
+          [...el.childNodes].filter(x=>x.nodeType===3)
+           .map(x=>x.textContent||'').join('').trim().slice(0,250)).filter(Boolean).slice(0,90),
+         outerOrSeparatorCount:dividers.length};
        });
       });
      });
@@ -356,6 +384,17 @@ async function probe(){
      }));
      allRenderedGroups.push(normalized);
      splitByOrEvents.push(groups.filter(x=>x.splitByVisibleOr).length);
+     const distinct=new Map();
+     for(const group of groups){
+      if(!distinct.has(group.outerGroupIndex))
+       distinct.set(group.outerGroupIndex,{
+        visibleText:group.outerVisibleText,
+        ownTextFragments:group.outerDirectTextFragments,
+        orSeparatorCount:group.outerOrSeparatorCount,
+        routeCandidateCount:groups.filter(g=>g.outerGroupIndex===group.outerGroupIndex).length
+       });
+     }
+     allChoiceEvidence.push([...distinct.values()]);
     }
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
@@ -372,6 +411,38 @@ async function probe(){
      publicationApproved:false,sourceProseIncluded:false
     };
 
+    visible.officialChoiceOutcomeSemanticsPilot={
+     eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
+     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>{
+      const historicalEvent=reference[x.historicalEventOrdinal-1];
+      const semantics=inspectRenderedChoices(
+       historicalEvent,{groups:allChoiceEvidence[x.renderedEventPosition-1]});
+      const route=visible.officialRouteGroupingPilot.comparisons.find(r=>
+       r.historicalEventOrdinal===x.historicalEventOrdinal);
+      return {
+       historicalEventOrdinal:x.historicalEventOrdinal,
+       displayedEventPosition:x.renderedEventPosition,
+       ...semantics,
+       explicitTerminalRouteCheck:correlateExplicitTerminal(historicalEvent,semantics,route),
+       labelScopeEvidence:labelScopeEvidence[x.renderedEventPosition-1]
+      };
+     }),
+     actualGameBranchingVerified:false,
+     publicationApproved:false,
+     sourceProseIncluded:false
+    };
+    const semanticCases=visible.officialChoiceOutcomeSemanticsPilot.comparisons;
+    const verifiedEnd=semanticCases.find(x=>x.historicalEventOrdinal===4);
+    const explicitOr=semanticCases.find(x=>x.historicalEventOrdinal===5);
+    if(semanticCases.length!==5||
+       semanticCases.some(x=>x.choiceCardinalityAgrees!==true||
+        x.alternativeOutcomeStructureAgrees!==true)||
+       verifiedEnd?.explicitTerminalRouteCheck?.explicitTerminalRouteLocationVerified!==true||
+       verifiedEnd.explicitTerminalRouteCheck.routeEvidencePairCount!==1||
+       explicitOr?.sourceChoiceCount!==1||
+       explicitOr?.visibleCandidateRoutes!==2||
+       explicitOr?.visibleOrSeparators!==1)
+     fail('元サイトの選択肢数・OR二結果・経路別明示打ち切りの照合が退行しました');
     const matches=visible.officialRouteGroupingPilot.comparisons;
     if(matches.length!==5||matches.reduce((n,r)=>n+r.sourceRoutes,0)!==9||
        matches.reduce((n,r)=>n+r.renderedGroupCandidates,0)!==9||
