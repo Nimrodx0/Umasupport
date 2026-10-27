@@ -13,8 +13,12 @@ test('fixed allowlist permits only 30322 and 30323, never 30001 or custom URL',(
 });
 test('rendered observation is strictly structural and never approves event contents',()=>{
  const info=summarizeEvents({accordionButtons:8,trainingSections:1,
-  chainSections:1,randomSections:1,outingSections:0});
+  chainSections:1,randomSections:1,outingSections:0,
+  chainHeadings:1,randomHeadings:1,outingHeadings:0,
+  sampledEventPanels:2,sampledPanelsWithNumericEffects:1});
  assert.equal(info.supportEventAccordions,8);
+ assert.equal(info.sampledPanelsWithNumericEffects,1);
+ assert.equal(info.chainHeadingCount,1);
  assert.equal(info.eventRewardRoutesVerified,false);
  assert.equal(info.choiceWordingVerified,false);
  assert.equal(info.independentSkillIdVerified,false);
@@ -24,7 +28,9 @@ test('rendered observation is strictly structural and never approves event conte
 test('unobserved fields do not become a false empty event catalog',()=>{
  assert.throws(()=>summarizeEvents({accordionButtons:0}),/不正/);
  const empty=summarizeEvents({accordionButtons:0,trainingSections:0,
-  chainSections:0,randomSections:0,outingSections:0});
+  chainSections:0,randomSections:0,outingSections:0,
+  chainHeadings:0,randomHeadings:0,outingHeadings:0,
+  sampledEventPanels:0,sampledPanelsWithNumericEffects:0});
  assert.equal(empty.supportEventAccordions,0);
  assert.equal(empty.eventRewardRoutesVerified,false);
 });
