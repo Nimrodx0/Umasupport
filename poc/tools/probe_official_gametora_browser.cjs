@@ -431,6 +431,18 @@ async function probe(){
      publicationApproved:false,
      sourceProseIncluded:false
     };
+    const semanticCases=visible.officialChoiceOutcomeSemanticsPilot.comparisons;
+    const verifiedEnd=semanticCases.find(x=>x.historicalEventOrdinal===4);
+    const explicitOr=semanticCases.find(x=>x.historicalEventOrdinal===5);
+    if(semanticCases.length!==5||
+       semanticCases.some(x=>x.choiceCardinalityAgrees!==true||
+        x.alternativeOutcomeStructureAgrees!==true)||
+       verifiedEnd?.explicitTerminalRouteCheck?.explicitTerminalRouteLocationVerified!==true||
+       verifiedEnd.explicitTerminalRouteCheck.routeEvidencePairCount!==1||
+       explicitOr?.sourceChoiceCount!==1||
+       explicitOr?.visibleCandidateRoutes!==2||
+       explicitOr?.visibleOrSeparators!==1)
+     fail('元サイトの選択肢数・OR二結果・経路別明示打ち切りの照合が退行しました');
     const matches=visible.officialRouteGroupingPilot.comparisons;
     if(matches.length!==5||matches.reduce((n,r)=>n+r.sourceRoutes,0)!==9||
        matches.reduce((n,r)=>n+r.renderedGroupCandidates,0)!==9||
