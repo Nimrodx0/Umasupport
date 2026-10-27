@@ -39,6 +39,15 @@ try{
    'Candidate GT ID changes: added '+g.diff.added.length+
     ', modified '+g.diff.modified.length+
     ', removed '+g.diff.removed.length+'.',
+   'Changed-card parsed numeric facts: '+
+    g.changedCardTopologies.parsedNumericFactsChangedCardIds.length+' cards.',
+   'Same-count changed GT files: '+
+    g.changedCardTopologies.sameCountButDifferentSource.length+
+    ' (numeric facts changed in '+
+    g.changedCardTopologies.sameCountWithParsedNumericFactsChanged.length+
+    ', no parsed numeric change in '+
+    g.changedCardTopologies.sameCountWithNoParsedNumericChange.length+
+    '). All require source review.',
    '',
    'All-stage normal skill name resolution: '+h.uniqueNormalSkillIds+
     '/'+h.hintStageOccurrences+' unique, '+h.missingRegistryNames+
