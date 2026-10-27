@@ -2,6 +2,12 @@ name: Preflight full upstream source candidate
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/upstream-candidate-full-preflight.yml'
+      - 'poc/src/upstream_candidate_full_preflight.cjs'
+      - 'poc/tools/preflight_upstream_refresh_candidate.cjs'
+      - 'poc/tests/upstream_candidate_full_preflight.test.cjs'
   push:
     branches: [main]
     paths:
@@ -17,7 +23,7 @@ jobs:
   pinned-baseline-full-source-smoke:
     # A repeatable actual all-559-card source test on main whenever the
     # preflight adapter changes. Does not create a fake review candidate.
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'main' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
