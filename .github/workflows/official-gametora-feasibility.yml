@@ -1,0 +1,48 @@
+name: Feasibility of direct GameTora support event sourcing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-feasibility.yml'
+      - 'poc/src/official_gametora_probe.cjs'
+      - 'poc/tests/official_gametora_probe.test.cjs'
+      - 'poc/tools/probe_official_gametora_browser.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  limited-official-source-read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate nonpublishing fetch allowlist and offline parser
+        run: |
+          node --check poc/src/official_gametora_probe.cjs
+          node --test poc/tests/official_gametora_probe.test.cjs
+      - name: Read at most three official support-card pages, no source export
+        run: node poc/src/official_gametora_probe.cjs --live
+
+  one-card-browser-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Observe one published support-card page as rendered, no export
+        run: node poc/tools/probe_official_gametora_browser.cjs --live-browser

@@ -21,6 +21,12 @@ GitHub Pages: index.html → poc/live.html
 
 **React / TypeScript / Viteは未導入。** 導入する場合は、[Phase 3](roadmap.md)で既存UIとテストの保守性を比較して判断する。
 
+## イベント取得の将来構成（本番移行前）
+
+長期目標は **GameTora本体 → 独自の事実正規化・監査 → 承認済みイベントDB → Webアプリ**。GameWithは本体サイトに欠ける／疑義がある個別事実の裁定を担う。第三者GitHub GameTora派生JSONは過去版／移行比較資料に降格する。GameTora本体のサイト内API・HTML・JavaScript初期データのうち、利用条件を守って安定して取得できる形が何かはまだ未検証。[限定プローブ](../poc/src/official_gametora_probe.cjs)はその前段階であり、元ページの著作文章を保存・公開しない。
+
+旧監視系は移行前の固定元を保護するため残す。直接取得アダプタでイベント・結果・連続内部の分岐を独立検証し、安定・適法な取得方法と更新監視が成立するまでは旧監視を停止しない。
+
 ## 出典ピンの継続更新監視（監査層）
 
 [日次GitHub Actionsと更新手順](upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueと、未承認Git tree／Git blobだけの候補マニフェストを含む**Draft PR**を作成／更新する。Bot専用候補ブランチからread-only Core CIと候補GT／UmaSim元ファイルの**全件構造preflight**を明示起動する。出典本文は一時Actionsランナー以外に保存しない。ただしB検証のうち、イベント報酬の内容やGT↔UmaSimスキルIDの意味的照合、再利用許可は未実施。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
