@@ -28,6 +28,8 @@ test('compare only normalized kind/value multiset, not result/choice correctness
  assert.equal(r.matchingKindAmountOccurrences,4);
  assert.equal(r.missingComparedToSource,0);
  assert.equal(r.extraComparedToSource,0);
+ assert.equal(r.skillHintLevelMultisetMatches,true);
+ assert.equal(r.visibleHintLevelOccurrences,1);
  assert.equal(r.effectOrderingOrBranchingVerified,false);
  assert.equal(r.skillNumericIdsVerified,false);
  assert.equal(JSON.stringify(r).includes('架空'),false);
@@ -39,5 +41,20 @@ test('missing or changed number remains explicitly unverified',()=>{
  assert.equal(r.missingComparedToSource,1);
  assert.equal(r.extraComparedToSource,1);
  assert.equal(r.visibleUnclassifiedFacts,1);
+ assert.equal(r.missingEffectKinds.speed,1);
+ assert.equal(r.publicationApproved,false);
+});
+
+test('bond and other non-skill effects stay visibly unresolved even if hint levels match',()=>{
+ const old={choices:[{effects:[
+  {type:'skill_hint',value:'+2'},{type:'bond',value:'+5'}
+ ]}]};
+ const r=compareProvisionalFacts(old,['ヒントLv +2'].map(scanOwnText));
+ assert.equal(r.sourceHintLevelOccurrences,1);
+ assert.equal(r.visibleHintLevelOccurrences,1);
+ assert.equal(r.skillHintLevelMultisetMatches,true);
+ assert.deepEqual(r.missingEffectKinds,{bond:1});
+ assert.equal(r.missingComparedToSource,1);
+ assert.equal(r.skillNumericIdsVerified,false);
  assert.equal(r.publicationApproved,false);
 });
