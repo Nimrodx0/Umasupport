@@ -10,6 +10,7 @@ const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
+const {inspectRenderedChoices}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -294,6 +295,7 @@ async function probe(){
 
     const allRenderedGroups=[];
     const splitByOrEvents=[];
+    const allChoiceEvidence=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
@@ -304,7 +306,7 @@ async function probe(){
       const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
       const body=section?.children?.[1];
       if(!body)return [];
-      return [...body.children].slice(0,20).flatMap(group=>{
+      return [...body.children].slice(0,20).flatMap((group,outerIndex)=>{
        // A "one-choice, two-outcome" event may render one outer group,
        // with two separate result rows divided by an explicit OR marker.
        // Only split on an actual visible separator, never on source counts.
@@ -339,7 +341,13 @@ async function probe(){
          }
         }
         return {effectTexts:effectTexts.slice(0,50),
-         hintContexts:hintContexts.slice(0,10),splitByVisibleOr};
+         hintContexts:hintContexts.slice(0,10),splitByVisibleOr,
+         outerGroupIndex:outerIndex+1,
+         outerVisibleText:(group.innerText||'').slice(0,2800),
+         outerDirectTextFragments:[group,...group.querySelectorAll('*')].map(el=>
+          [...el.childNodes].filter(x=>x.nodeType===3)
+           .map(x=>x.textContent||'').join('').trim()).filter(Boolean).slice(0,90),
+         outerOrSeparatorCount:dividers.length};
        });
       });
      });
@@ -356,6 +364,17 @@ async function probe(){
      }));
      allRenderedGroups.push(normalized);
      splitByOrEvents.push(groups.filter(x=>x.splitByVisibleOr).length);
+     const distinct=new Map();
+     for(const group of groups){
+      if(!distinct.has(group.outerGroupIndex))
+       distinct.set(group.outerGroupIndex,{
+        visibleText:group.outerVisibleText,
+        ownTextFragments:group.outerDirectTextFragments,
+        orSeparatorCount:group.outerOrSeparatorCount,
+        routeCandidateCount:groups.filter(g=>g.outerGroupIndex===group.outerGroupIndex).length
+       });
+     }
+     allChoiceEvidence.push([...distinct.values()]);
     }
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
@@ -372,6 +391,20 @@ async function probe(){
      publicationApproved:false,sourceProseIncluded:false
     };
 
+    visible.officialChoiceOutcomeSemanticsPilot={
+     eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
+     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
+      historicalEventOrdinal:x.historicalEventOrdinal,
+      displayedEventPosition:x.renderedEventPosition,
+      ...inspectRenderedChoices(
+       reference[x.historicalEventOrdinal-1],
+       {groups:allChoiceEvidence[x.renderedEventPosition-1]}
+      )
+     })),
+     actualGameBranchingVerified:false,
+     publicationApproved:false,
+     sourceProseIncluded:false
+    };
     const matches=visible.officialRouteGroupingPilot.comparisons;
     if(matches.length!==5||matches.reduce((n,r)=>n+r.sourceRoutes,0)!==9||
        matches.reduce((n,r)=>n+r.renderedGroupCandidates,0)!==9||
