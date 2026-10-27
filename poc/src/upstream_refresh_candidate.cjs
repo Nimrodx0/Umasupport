@@ -237,6 +237,8 @@ if(require.main===module){
   verifyManifest(candidate);
   process.stdout.write('UPSTREAM_REFRESH_CANDIDATE_VALIDATED='+candidate.reviewFingerprint+'\n');
  }else{
+  if(process.env.GITHUB_REF_NAME===BRANCH)
+   throw Error('候補専用ブランチにレビュー用マニフェストが存在しない');
   process.stdout.write('UPSTREAM_REFRESH_CANDIDATE_ABSENT: normal pinned branch\n');
  }
 }
