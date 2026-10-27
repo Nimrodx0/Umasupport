@@ -525,3 +525,8 @@ A＝専用のNode合成変換・無選択／3択・拒否試験、B＝固定GT2,
 [継続更新の出典・動作契約](upstream-refresh-operations.md)／[元の固定Gitツリー4系統の監査](https://github.com/Nimrodx0/Umasupport/actions/runs/40315080036)。日次のGameTora／UmaSim Git blob更新監視に、**10/26追加のR10149・SSR30322・SSR30323の元GTイベントJSONの収録／未収録IDと0/3～3/3の件数**を追加。元データが3枚とも揃ってもイベントの分岐・スキルID照合と配信承認は**別の未実施工程**であるため、`eventTopologyVerified:false`／`publicationApproved:false`と明示する。元固定GTには新3カードが未収録という前提が崩れたら監視を安全に失敗させ、古い母数への黙示的統合を防ぐ。
 
 GitHub Actionsの日次ジョブ要約と出典差分レビューIssueに収録済み・未収録数値IDを別々に示す。Git blobが変わらない毎日の監視では既知の未収録3枚だけを理由にIssueを乱発しない。A：GT0/3・1/3・3/3の合成Gitツリー、B：元4 GitツリーのGit SHA照合、C：非公開イベントのブラウザ表示・Windows/Android実機と元ゲーム内分岐は未検証。**固定GT2,488件、非公開スキル2,512件を無断更新せず、正式公開イベント0件**を維持。
+## Phase 2・Git更新検知からメタデータだけの候補Draft PR作成へ（2026-10-27）
+
+[運用正本](upstream-refresh-operations.md)。前工程のGitHub Actionsが監視する固定GameToraイベントJSONとUmaSimサポカ・スキル辞書で、**対象blobに新規・変更・削除が発生した場合のみ**、既存の単一レビューIssueに続いて **`automation/upstream-refresh-candidate`** ブランチを作成する。候補Draft PRが追加／更新するファイルは `poc/review/upstream-refresh-candidate.v1.json` **1件**。内容は上流コミット、Git tree／Git blob識別子、変更カードID、既知の未収録ID、未実施の検証ゲートのみ。第三者イベント原文・元JSON・画像は含まず、現行の固定ピンやPagesの公開データにも変更を加えない。再検知は同じDraftのマニフェスト差分だけを更新する。人がDraftをReadyにしたり別ファイルの変更を加えた場合はBotが停止する。
+
+本来の全件候補イベント・数値スキルID・分岐を検証する**Bデータpreflightは未自動化**。Botのmetadata Draft作成時に `workflow_dispatch` でread-only Node／Chromium CIを起動するが、このテスト合格は新GTイベントを正式に採用できる証拠ではない。採用PRと第三者素材の公開承認は別工程で、正式公開承認イベント**0件**は変わらない。実上流は監視時点でドリフト0のため、**自動作成される差分候補Draftの本番陽性ケースは未実地検証**（合成テストで候補の生成／非公開ゲート／不正データ拒否を確認）。実ブラウザの新イベント表示・物理端末・元ゲーム分岐の再現は未実施。
