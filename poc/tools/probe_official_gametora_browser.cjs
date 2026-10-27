@@ -4,6 +4,9 @@
  * choice labels, screenshots, HTML, response bodies or JSON are persisted.
  * This does not bypass site protections or run as a recurring crawler.
  */
+const fs=require('node:fs');
+const crypto=require('node:crypto');
+const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -33,6 +36,89 @@ function classifyJson(root){
   }
  }
  return totals;
+}
+
+
+function measureRenderedEventDetails(page){
+ return page.evaluate(()=>{
+  const body=document.body;
+  const panels=[...document.querySelectorAll('[role="dialog"],[role="tabpanel"],[aria-expanded],details,table')];
+  return {
+   dialogs:document.querySelectorAll('[role="dialog"]').length,
+   expandedControls:document.querySelectorAll('[aria-expanded="true"],details[open]').length,
+   collapsedControls:document.querySelectorAll('[aria-expanded="false"],details:not([open])').length,
+   visibleTables:panels.filter(e=>e.tagName==='TABLE'&&e.getClientRects().length).length,
+   visibleElements:document.querySelectorAll('body *').length,
+   bodyTextCharacters:(body.innerText||'').length,
+   headingCount:document.querySelectorAll('h2,h3,h4').length,
+   buttons:document.querySelectorAll('button').length,
+   documentHeight:Math.round(body.scrollHeight)
+  };
+ });
+}
+function eventButtonAncestors(button){
+ let e=button;const rows=[];
+ for(let i=0;i<5&&e;i++,e=e.parentElement){
+  rows.push({
+   tag:e.tagName.toLowerCase(),
+   role:e.getAttribute('role')||null,
+   ariaExpanded:e.getAttribute('aria-expanded'),
+   directChildTags:[...e.children].map(x=>x.tagName.toLowerCase()).slice(0,20),
+   descendantButtons:e.querySelectorAll('button').length,
+   descendantLinks:e.querySelectorAll('a').length,
+   visibleTextLength:(e.innerText||'').length
+  });
+ }
+ return rows;
+}
+
+
+function analyzeExpandedPanel(button){
+ const row=button.parentElement;
+ const panel=[...row?.children||[]].find(e=>e.tagName==='DIV');
+ if(!panel)return {panelFound:false};
+ const elements=[panel,...panel.querySelectorAll('*')];
+ const histogram={};
+ for(const e of elements){
+  const k=e.tagName.toLowerCase();histogram[k]=(histogram[k]||0)+1;
+ }
+ const links=[...panel.querySelectorAll('a[href]')];
+ return {
+  panelFound:true,
+  provisionalDetailRowCount:panel.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild?.children?.[1]?.children?.length??null,
+  panelTag:panel.tagName.toLowerCase(),
+  panelChildTags:[...panel.children].slice(0,30).map(e=>e.tagName.toLowerCase()),
+  totalElements:elements.length,
+  tagHistogram:histogram,
+  panelVisibleTextCharacters:(panel.innerText||'').length,
+  leafTextElements:elements.filter(e=>e.childElementCount===0&&(e.innerText||'').trim()).length,
+  leafElementsWithArabicDigits:elements.filter(e=>e.childElementCount===0&&/[0-9０-９]/.test(e.innerText||'')).length,
+  hyperlinks:links.length,
+  skillLinks:links.filter(e=>/\/(?:umamusume\/)?skills?\//.test(e.getAttribute('href')||'')).length,
+  maxNestedDepth:(function depth(e){return e.children.length?1+Math.max(...[...e.children].map(depth)):1;})(panel)
+
+ };
+}
+async function inspectEventSections(page){
+ const known=page.getByRole('button',{name:/蹄鉄で/}).first();
+ if(await known.count()!==1)return [{knownEventButtonCount:await known.count(),failure:'target-event-not-unique'}];
+ const section=known.locator('xpath=ancestor::section[1]');
+ const buttons=section.locator('button[aria-expanded]');
+ const total=await buttons.count();
+ const events=[];
+ for(let n=0;n<Math.min(total,8);n++){
+  const button=buttons.nth(n);
+  if(await button.getAttribute('aria-expanded')!=='true')
+   await button.click({timeout:5000});
+  await page.waitForTimeout(125);
+  events.push({
+   position:n+1,
+   sameRowAccordionButtons:await button.evaluate(el=>[...el.parentElement.children].filter(x=>x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length),
+   expanded:(await button.getAttribute('aria-expanded'))==='true',
+   panel:await button.evaluate(analyzeExpandedPanel)
+  });
+ }
+ return [{targetSectionFound:true,accordionCount:total,events}];
 }
 
 async function probe(){
@@ -101,12 +187,41 @@ async function probe(){
   const firstKnownEvent=page.getByRole('button',{name:/蹄鉄で/}).first();
   const found=(await firstKnownEvent.count())>0;
   visible.oneKnownEventControlPresent=found;
+  visible.eventDomBefore=await measureRenderedEventDetails(page);
   if(found){
+   visible.knownEventAncestorBefore=await firstKnownEvent.evaluate(eventButtonAncestors);
    const before=text.length;
    await firstKnownEvent.click({timeout:5000});
+   await page.waitForTimeout(600);
    const after=(await page.locator('body').innerText()).length;
    visible.eventExpansionChangedRenderedTextLength=before!==after;
+   visible.eventDomAfter=await measureRenderedEventDetails(page);
+   visible.samePageAfterClick=page.url()===pageUrl(target);
+   visible.knownEventAncestorAfter=await firstKnownEvent.evaluate(eventButtonAncestors).catch(()=>null);
   }else visible.eventExpansionChangedRenderedTextLength=null;
+  visible.allEventSectionStructures=await inspectEventSections(page);
+  if(process.env.GT_REFERENCE_SAMPLE){
+   const raw=fs.readFileSync(process.env.GT_REFERENCE_SAMPLE);
+   const gitSha=crypto.createHash('sha1').update('blob '+raw.byteLength+'\0')
+    .update(raw).digest('hex');
+   if(gitSha!=='6aca60590854f402a67da82c2ffa7295e564b40f')
+    fail('旧サンプルの固定Git blob署名が不一致');
+   const expected=JSON.parse(raw.toString('utf8'));
+   const section=firstKnownEvent.locator('xpath=ancestor::section[1]');
+   const events=section.locator('button[aria-expanded]');
+   const headings=[];
+   for(let index=0;index<await events.count();index++){
+    const button=events.nth(index);
+    headings.push({
+     title:await button.innerText(),
+     sameGroupSize:await button.evaluate(e=>
+      [...e.parentElement.children].filter(x=>
+       x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length),
+     provisionalDetailRows:(await button.evaluate(analyzeExpandedPanel)).provisionalDetailRowCount
+    });
+   }
+   visible.historicalTitleCrosscheck=compareTitles(expected,headings);
+  }
   return visible;
  }finally{await browser.close();}
 }
@@ -116,4 +231,4 @@ if(require.main===module){
  probe().then(result=>process.stdout.write('OFFICIAL_GT_BROWSER='+JSON.stringify(result)+'\n'))
  .catch(e=>{process.stderr.write(String(e.message).slice(0,220)+'\n');process.exitCode=1;});
 }
-module.exports={probe};
+module.exports={probe,classifyJson};

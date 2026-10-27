@@ -8,6 +8,8 @@ on:
       - 'poc/src/official_gametora_probe.cjs'
       - 'poc/tests/official_gametora_probe.test.cjs'
       - 'poc/tools/probe_official_gametora_browser.cjs'
+      - 'poc/src/official_gametora_title_crosscheck.cjs'
+      - 'poc/tests/official_gametora_title_crosscheck.test.cjs'
 
 permissions:
   contents: read
@@ -27,6 +29,8 @@ jobs:
         run: |
           node --check poc/src/official_gametora_probe.cjs
           node --test poc/tests/official_gametora_probe.test.cjs
+          node --check poc/src/official_gametora_title_crosscheck.cjs
+          node --test poc/tests/official_gametora_title_crosscheck.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
@@ -44,5 +48,12 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
-      - name: Observe one published support-card page as rendered, no export
+      - name: Retrieve one immutable historical reference card, only in disposable runner
+        run: |
+          curl --fail --silent --show-error --location --retry 2 --max-time 30 \
+            https://raw.githubusercontent.com/systemless10/UmamusumePS/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30001.json \
+            -o "$RUNNER_TEMP/gt-historical-30001.json"
+      - name: Observe one published support-card page and compare event headings without source export
+        env:
+          GT_REFERENCE_SAMPLE: ${{ runner.temp }}/gt-historical-30001.json
         run: node poc/tools/probe_official_gametora_browser.cjs --live-browser
