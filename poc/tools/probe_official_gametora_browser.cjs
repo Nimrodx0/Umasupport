@@ -69,6 +69,59 @@ function eventButtonAncestors(button){
  return rows;
 }
 
+
+function analyzeExpandedPanel(button){
+ const row=button.parentElement;
+ const panel=[...row?.children||[]].find(e=>e.tagName==='DIV');
+ if(!panel)return {panelFound:false};
+ const elements=[panel,...panel.querySelectorAll('*')];
+ const histogram={};
+ for(const e of elements){
+  const k=e.tagName.toLowerCase();histogram[k]=(histogram[k]||0)+1;
+ }
+ const links=[...panel.querySelectorAll('a[href]')];
+ return {
+  panelFound:true,
+  panelTag:panel.tagName.toLowerCase(),
+  panelChildTags:[...panel.children].slice(0,30).map(e=>e.tagName.toLowerCase()),
+  totalElements:elements.length,
+  tagHistogram:histogram,
+  panelVisibleTextCharacters:(panel.innerText||'').length,
+  leafTextElements:elements.filter(e=>e.childElementCount===0&&(e.innerText||'').trim()).length,
+  leafElementsWithArabicDigits:elements.filter(e=>e.childElementCount===0&&/[0-9０-９]/.test(e.innerText||'')).length,
+  hyperlinks:links.length,
+  skillLinks:links.filter(e=>/\/(?:umamusume\/)?skills?\//.test(e.getAttribute('href')||'')).length,
+  maxNestedDepth:(function depth(e){return e.children.length?1+Math.max(...[...e.children].map(depth)):1;})(panel)
+ };
+}
+async function inspectEventSections(page){
+ const sections=page.locator('section');
+ const out=[];
+ for(let i=0;i<await sections.count();i++){
+  const section=sections.nth(i);
+  const heading=await section.locator('h2').first().innerText().catch(()=>'');
+  const kind=/連続イベント|Chain Events/i.test(heading)?'chain':
+   /ランダムイベント|Random Events/i.test(heading)?'random':null;
+  if(!kind)continue;
+  const buttons=section.locator('button[aria-expanded]');
+  const total=await buttons.count();
+  const events=[];
+  for(let n=0;n<Math.min(total,6);n++){
+   const button=buttons.nth(n);
+   if(await button.getAttribute('aria-expanded')!=='true')
+    await button.click({timeout:5000});
+   await page.waitForTimeout(125);
+   events.push({
+    eventPosition:n+1,
+    expanded:await button.getAttribute('aria-expanded')==='true',
+    panel:await button.evaluate(analyzeExpandedPanel)
+   });
+  }
+  out.push({kind,accordionCount:total,events});
+ }
+ return out;
+}
+
 async function probe(){
  const target=TARGETS[0]; // only the old, already-listed 30001 card
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -147,6 +200,7 @@ async function probe(){
    visible.samePageAfterClick=page.url()===pageUrl(target);
    visible.knownEventAncestorAfter=await firstKnownEvent.evaluate(eventButtonAncestors).catch(()=>null);
   }else visible.eventExpansionChangedRenderedTextLength=null;
+  visible.allEventSectionStructures=await inspectEventSections(page);
   return visible;
  }finally{await browser.close();}
 }
