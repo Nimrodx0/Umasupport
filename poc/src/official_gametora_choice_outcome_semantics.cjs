@@ -76,4 +76,42 @@ function inspectRenderedChoices(event,observation){
   publicationApproved:false
  };
 }
-module.exports={inspectRenderedChoices};
+
+function correlateExplicitTerminal(event,semantics,routeComparison){
+ if(!Array.isArray(event?.choices)||!semantics||!routeComparison||
+    !Array.isArray(semantics.siteTerminalGroupOrdinals)||
+    !Array.isArray(routeComparison.uniquelyAssignedRouteLocations))
+  fail('打ち切り経路の証拠が不正');
+ const terminals=[];
+ for(const [cIndex,choice] of event.choices.entries()){
+  const routes=Array.isArray(choice.outcomes)?choice.outcomes:[choice.effects||[]];
+  for(const [rIndex,effects] of routes.entries()){
+   if(!Array.isArray(effects))fail('結果分岐の構造が不正');
+   if(effects.some(e=>e?.type==='chain_end'))
+    terminals.push({choiceOrdinal:cIndex+1,outcomeOrdinal:rIndex+1});
+  }
+ }
+ const links=routeComparison.uniquelyAssignedRouteLocations;
+ const allObserved=semantics.siteTerminalGroupOrdinals;
+ const safe=routeComparison.uniqueRouteGroupAssignment===true&&
+  semantics.visibleTopLevelGroups===routeComparison.renderedGroupCandidates&&
+  semantics.visibleOrSeparators===0;
+ const located=terminals.map(t=>links.find(x=>x.choiceOrdinal===t.choiceOrdinal&&
+  x.outcomeOrdinal===t.outcomeOrdinal)?.renderedGroupOrdinal).filter(Number.isInteger);
+ const exact=terminals.length>0&&safe&&located.length===terminals.length&&
+  located.length===allObserved.length&&
+  new Set(located).size===located.length&&
+  located.every(x=>allObserved.includes(x));
+ return {
+  sourceTerminalRoutes:terminals.length,
+  originalSiteTerminalGroups:allObserved.length,
+  routeEvidencePairCount:exact?located.length:0,
+  explicitTerminalRouteLocationVerified:exact,
+  noEventTextOrChoiceLabelsExported:true,
+  laterEventReachabilityVerified:false,
+  gameMechanicsVerified:false,
+  publicationApproved:false
+ };
+}
+
+module.exports={inspectRenderedChoices,correlateExplicitTerminal};
