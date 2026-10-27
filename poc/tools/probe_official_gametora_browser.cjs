@@ -7,6 +7,34 @@
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
+function classifyJson(root){
+ const totals={eventKeys:0,choiceArrays:0,outcomeArrays:0,effectArrays:0,
+  numericSkillIdFields:0,recordsWithChoicesAndSection:0};
+ const queue=[root];let idx=0;
+ while(idx<queue.length&&idx<70000){
+  const value=queue[idx++];
+  if(!value||typeof value!=='object')continue;
+  if(Array.isArray(value)){
+   for(const n of value)if(n&&typeof n==='object')queue.push(n);
+   continue;
+  }
+  const keys=Object.keys(value);
+  if(Array.isArray(value.choices)&&('section' in value||'event_id' in value||'id' in value))
+   totals.recordsWithChoicesAndSection++;
+  for(const key of keys){
+   const k=key.toLowerCase(),item=value[key];
+   if(/events?|eventdata|trainingevents/.test(k))totals.eventKeys++;
+   if(/choices?/.test(k)&&Array.isArray(item))totals.choiceArrays++;
+   if(/outcomes?|resultgroups?/.test(k)&&Array.isArray(item))totals.outcomeArrays++;
+   if(/effects?|rewards?/.test(k)&&Array.isArray(item))totals.effectArrays++;
+   if(/^(skill_?id|skillnumericid)$/.test(k)&&typeof item==='number')
+    totals.numericSkillIdFields++;
+   if(item&&typeof item==='object')queue.push(item);
+  }
+ }
+ return totals;
+}
+
 async function probe(){
  const target=TARGETS[0]; // only the old, already-listed 30001 card
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -14,6 +42,7 @@ async function probe(){
   const context=await browser.newContext({locale:'ja-JP'});
   const page=await context.newPage();
   const network={sameOriginFetchOrXhr:0,jsonResponses:0,blockedResponses:0};
+  const jsonTasks=[];
   await page.route('**/*',route=>{
    const req=route.request(),url=new URL(req.url());
    if(!['https:'].includes(url.protocol)||
@@ -26,7 +55,12 @@ async function probe(){
    const req=response.request();
    if(['fetch','xhr'].includes(req.resourceType())){
     network.sameOriginFetchOrXhr++;
-    if((response.headers()['content-type']||'').includes('json'))network.jsonResponses++;
+    if((response.headers()['content-type']||'').includes('json')){
+     network.jsonResponses++;
+     const length=Number(response.headers()['content-length']||0);
+     if(jsonTasks.length<35&&(!length||length<=2*1024*1024))
+      jsonTasks.push(response.json().then(classifyJson).catch(()=>null));
+    }
    }
    if([403,429].includes(response.status()))network.blockedResponses++;
   });
@@ -35,6 +69,10 @@ async function probe(){
   if(response.status()!==200)fail('HTTP '+response.status());
   await page.waitForTimeout(3500);
   const text=await page.locator('body').innerText();
+  const shapes=await Promise.all(jsonTasks);
+  const annotated=shapes.filter(Boolean);
+  const hit=key=>annotated.filter(shape=>shape[key]>0).length;
+  const total=key=>annotated.reduce((sum,shape)=>sum+shape[key],0);
   const visible={
    cardId:target.cardId,
    trainingEventLabelVisible:/育成イベント|Training Events/.test(text),
@@ -43,6 +81,16 @@ async function probe(){
    totalRenderedButtons:await page.locator('button').count(),
    sameOriginFetchOrXhr:network.sameOriginFetchOrXhr,
    jsonResponses:network.jsonResponses,
+   jsonBodiesInspected:annotated.length,
+   responseShapeSignals:{
+    withEventKeys:hit('eventKeys'),
+    withChoiceArrays:hit('choiceArrays'),
+    withOutcomeArrays:hit('outcomeArrays'),
+    withEffectArrays:hit('effectArrays'),
+    withNumericSkillIdFields:hit('numericSkillIdFields'),
+    withEventLikeRecords:hit('recordsWithChoicesAndSection'),
+    eventLikeRecordsTotal:total('recordsWithChoicesAndSection')
+   },
    blockedResponses:network.blockedResponses,
    fullChoiceOutcomeCoverageVerified:false,
    publishing:false
