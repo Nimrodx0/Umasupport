@@ -10,7 +10,7 @@ test('2 distinct site choice labels bind to two authored choices, not two chance
   {label:'最初の選択',effects:[{type:'speed',value:10}]},
   {label:'次の選択',effects:[{type:'guts',value:10},{type:'chain_end'}]}
  ]};
- const r=inspectRenderedChoices(ref,{groups:[group('最初の選択 スピード+10'),group('次の選択 根性+10',[''],0)]});
+ const r=inspectRenderedChoices(ref,{groups:[group('最初の選択 スピード+10'),group('次の選択 根性+10',1,0)]});
  // Recreate with fully valid group arguments to avoid conflating semantics.
  assert.equal(r.choiceCardinalityAgrees,true);
  assert.equal(r.labelMatchCount,2);
