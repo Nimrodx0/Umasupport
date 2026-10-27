@@ -51,7 +51,8 @@ jobs:
         run: node poc/src/official_gametora_probe.cjs --live
 
   one-card-browser-ui:
-    runs-on: ubuntu-latest
+    # Pin while ubuntu-latest transitions to 26.04; keep browser proof reproducible.
+    runs-on: ubuntu-24.04
     timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
