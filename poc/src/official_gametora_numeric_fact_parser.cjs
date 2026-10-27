@@ -66,6 +66,8 @@ function compareProvisionalFacts(source,observed){
  for(const [k,count] of b)extra+=Math.max(0,count-(a.get(k)||0));
  return {
   sourceNumericFacts:sourceItems.length,visibleRecognizedFacts:parsed.length,
+  sourceNormalizedNumericPairs:sourceItems,
+  visibleNormalizedNumericPairs:parsed.map(x=>({kind:x.kind,amount:x.amount})),
   visibleUnclassifiedFacts:observed.filter(x=>x.requiresReview).length,
   matchingKindAmountOccurrences:matched,missingComparedToSource:missing,
   extraComparedToSource:extra,
