@@ -59,6 +59,7 @@ function inspectRenderedChoices(event,observation){
   sourceRandomEitherChoices:expected.filter(c=>c.random_either===true).length,
   visibleOrSeparators,siteExplicitOutcomeLabels,
   sourceTerminalCount,siteExplicitTerminalGroups:visibleTerminalGroups.length,
+  siteTerminalGroupOrdinals:visibleTerminalGroups,
   labelStatuses:siteLabels.map(x=>x.status),
   labelMatchCount:siteLabels.filter(x=>x.status==='one-matching-site-group').length,
   nonemptySourceLabels:nonempty.length,
