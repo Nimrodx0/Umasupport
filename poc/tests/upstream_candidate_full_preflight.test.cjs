@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {loadEvents,compareGt,inspectSource,rosterDiff,skillDiff}=
+const {loadEvents,compareGt,inspectSource,rosterDiff,skillDiff,hintRegistryCoverage}=
  require('../src/upstream_candidate_full_preflight.cjs');
 function event(id,term=false){
  return {id,section:'random',event_type:'pd',name:'SYNTHETIC',
@@ -99,4 +99,26 @@ test('compares all 5 card stages, catches existing source edits and all skill ID
  different[7].name='新しい名称';
  const revisedSkill=skillDiff(normal(skillids),JSON.stringify(different));
  assert.deepEqual(revisedSkill.modified,[skillids[7]]);
+});
+
+test('all five stage hints receive numeric crosswalk classification without guessing same-name IDs',()=>{
+ const ids=makeIds(500);
+ const cardText=cards(ids);
+ const entries=Array.from({length:100},(_,i)=>({
+  id:String(880000+i),name:'別スキル'+i,rarity:'normal',group:i+1
+ }));
+ entries[0].name='末脚';
+ const coverage=hintRegistryCoverage(cardText,JSON.stringify(entries));
+ assert.equal(coverage.hintStageOccurrences,2500);
+ assert.equal(coverage.uniqueNormalSkillIds,2500);
+ assert.equal(coverage.missingRegistryNames,0);
+ assert.equal(coverage.ambiguousOrNonNormalIds,0);
+ entries.push({id:'999999',name:'末脚',rarity:'normal',group:1000});
+ const ambiguous=hintRegistryCoverage(cardText,JSON.stringify(entries));
+ assert.equal(ambiguous.uniqueNormalSkillIds,0);
+ assert.equal(ambiguous.ambiguousOrNonNormalIds,2500);
+ assert.equal(ambiguous.cardsWithUnresolvedHints.length,500);
+ entries.pop();entries[0].name='別の名前';
+ const absent=hintRegistryCoverage(cardText,JSON.stringify(entries));
+ assert.equal(absent.missingRegistryNames,2500);
 });
