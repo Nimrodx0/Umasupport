@@ -34,7 +34,18 @@
 5. **イベント配布・公開承認は別判断**。第三者のイベント文章・選択肢・JSON・画像を無断同梱しない。新しい固定ピンをコードに採用することと、正式公開カタログにイベントを追加することは独立して許可・検証する。最後に[公開ゲート](checker-public-catalog.md)を実行する。
 6. **完了後のIssue整理**。新ピンの全件CIとデプロイを確認して、更新Issueを閉じる。**自動的にはクローズしない**（未判定の残件が存在するため）。
 
-将来、新しい元コミットに対する**全件preflightが自動化・グリーン化したら、固定ピン更新候補のDraft PRを自動生成する**ことは検討できる。ただしDraft PRと正式公開承認は別。現在の実装は「自動検知・差分分類・Issue通知」までであり、**人手による差分事実裁定と新ピン採用は未自動化**。
+## 差分がある場合の候補Draft PR生成（2026-10-27以降）
+
+日次の監視ジョブで対象データのblob差分を検知すると、**レビューIssueの作成・更新に続いて、Gitツリーメタデータだけを記録したDraft PR**を自動作成／更新する。変更がなければ両方とも作らない。
+
+- ブランチ名は `automation/upstream-refresh-candidate` の**1本**。追加されるファイルは `poc/review/upstream-refresh-candidate.v1.json` の**1件だけ**で、ランタイムのGameTora／UmaSim固定ピン、イベントデータ、公開済みカタログ・ユーザー設定は書き換えない。
+- [候補生成・厳格検証器](../poc/src/upstream_refresh_candidate.cjs) は元イベントの選択肢文・報酬・原本JSONを含まない。監視済みの固定と候補のGit commit／tree SHA、UmaSimの2 Git blob SHA、GTの追加・変更・削除ID、既知新3カードの収録／未収録ID、差分ハッシュ、検証未実施の事実だけを収録する。
+- 正式採用には、**対象候補の全件イベント数・結果分岐・終了制御・数値スキルID・独立GameTora→GameWith裁定・公開条件**を先に検証する必要がある。自動作成の候補マニフェストには `not-run-for-candidate`／`not-adjudicated`／`not-approved` を明記し、**Draftのマージを固定ピンの採用とみなさない**。正式採用は別の審査済みPRで行う。
+- 後から同一元カードIDのGit blobが更新された場合も、元blobの指紋が変われば**同じDraft PR**と既存Issueを更新する。差分が同一なら余分なcommitや通知を作らない。既存Draftに人が他のファイルを加えた、またはReady for reviewに変更した場合は**自動書き換えを停止**する。
+- Bot作成のブランチは通常のpush／PRイベントではCIが自動起動しないため、メタデータに変更が生じたときは明示的に `PoC Core Tests` の `workflow_dispatch` を実行する。候補JSONそのものを厳密検査し、元データの追加格納・承認済みの偽装を拒否する。**このread-only Core CIは、候補バージョンの全件イベントを実際に取り込むB検証の代用ではない**。
+- GitHub Actionsの既定権限によりBotのPull Request作成が禁止されている環境では、Repository Settings → Actions → Generalで「Allow GitHub Actions to create and approve pull requests」を有効にする管理者の操作が必要になる場合がある。書き込み権限不足ならジョブは失敗し、既存Issueからレビューの続きを行う。
+
+**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → 候補のread-only CI」まで**。新固定ピンの全面更新・出典の自動裁定・未承認イベントの実公開は実装も許可もしていない。
 
 ## 新3サポカのGameTora元データ収録の監視ゲート（2026-10-26）
 
