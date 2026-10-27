@@ -61,7 +61,7 @@ function compareGt(base,next){
 }
 function inspectSource(source){
  const summaries=[],errors=[];
- let events=0,choices=0,routes=0,hints=0,terminals=0,unresolved=0,review=0,
+ let events=0,choices=0,routes=0,hints=0,terminals=0,grants=0,unresolved=0,review=0,
   cardsNormalized=0;
  const safeRows=[];
  for(const [id,doc] of source.docs){
@@ -74,6 +74,7 @@ function inspectSource(source){
    routes+=row.sourceExpandedRoutes;
    hints+=row.numericParsedHintMentions;
    terminals+=row.explicitChainEndRoutes;
+   grants+=row.directSkillGrantMentions;
    unresolved+=row.unresolvedHintMentions;
    review+=row.reviewQueue.length;
    safeRows.push({
@@ -95,7 +96,7 @@ function inspectSource(source){
    cards:safeRows.map(({sourceOrdinal,...row})=>row),
    totals:{sourceEvents:events,sourceChoices:choices,expandedRoutes:routes,
     rosterCards:safeRows.length,
-    explicitTerminalRoutes:terminals,directSkillGrantMentions:0}
+    explicitTerminalRoutes:terminals,directSkillGrantMentions:grants}
   };
   // Numeric route inventory independently validates the normalizer's event
   // choice and conditional-route decomposition. If it rejects the shape,
@@ -175,13 +176,6 @@ function audit({manifest,baselineGt,candidateGt,baselineRoster,candidateRoster,
   fail('GT全件blob差分と候補レビューmanifestが異なる');
  const roster=rosterDiff(baselineRoster,candidateRoster);
  const skills=skillDiff(baselineSkills,candidateSkills);
- const actualChange=roster.added.length||roster.removed.length||
-  roster.modified.length||skills.added.length||skills.removed.length||
-  skills.modified.length;
- if(Boolean(actualChange)!==manifest.umaSimChangedSourceFiles.length>0){
-  // Not a blocking error for a changed source file with semantically
-  // equivalent JSON/TSV, but preserve this as a review-only signal.
- }
  const baseInventory=inspectSource(base);
  const headInventory=inspectSource(head);
  if(!baseInventory.shapeValidated||baseInventory.cards!==PINS.gameTora.expectedBaselineCards||
