@@ -36,7 +36,7 @@ function inspectRenderedChoices(event,observation){
    matchedVisibleGroup:matches.length===1?matches[0]:null};
  });
  const nonempty=siteLabels.filter(x=>x.status!=='implicit-empty-label');
- const allNonemptyLabelsUniquelyMatched=nonempty.every(x=>x.status==='one-matching-site-group')&&
+ const allNonemptyLabelsUniquelyMatched=nonempty.length>0&&nonempty.every(x=>x.status==='one-matching-site-group')&&
   new Set(nonempty.map(x=>x.matchedVisibleGroup)).size===nonempty.length;
  const possibleOr=observation.groups.map((g,i)=>({group:i+1,or:g.orSeparatorCount,routeCandidates:g.routeCandidateCount}))
   .filter(x=>x.or>0);
