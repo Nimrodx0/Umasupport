@@ -7,6 +7,7 @@
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
+const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -221,6 +222,30 @@ async function probe(){
     });
    }
    visible.historicalTitleCrosscheck=compareTitles(expected,headings);
+   const reference=Object.values(expected.events_ja);
+   const observedFacts=[];
+   for(let index=0;index<await events.count();index++){
+    const ownLines=await events.nth(index).evaluate(button=>{
+     const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
+     if(!panel)return [];
+     return [panel,...panel.querySelectorAll('*')].map(el=>
+      [...el.childNodes].filter(n=>n.nodeType===3)
+       .map(n=>n.textContent||'').join('').trim()).filter(Boolean);
+    });
+    // Keep original wording in process memory only; report only typed numeric facts.
+    observedFacts.push(ownLines.map(scanOwnText).filter(Boolean));
+   }
+   const comparisons=visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
+    sourceOrdinal:x.historicalEventOrdinal,renderedPosition:x.renderedEventPosition,
+    ...compareProvisionalFacts(
+     reference[x.historicalEventOrdinal-1],
+     observedFacts[x.renderedEventPosition-1])
+   }));
+   visible.officialNumericFactPilot={
+    cards:1,eventsCompared:comparisons.length,comparisons,
+    allEffectFactsVerified:false,chainBranchCompletenessVerified:false,
+    approvedForDatabaseIngestion:false
+   };
   }
   return visible;
  }finally{await browser.close();}
