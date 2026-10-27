@@ -3,7 +3,6 @@
  * New-card admission gate, fixed two-card and read-only. Page HTML, source
  * strings, images and JSON do not leave process memory. No event ingest here.
  */
-const {chromium}=require('playwright');
 const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const NEW_CARD_IDS=Object.freeze(['30322','30323']);
 const fail=s=>{throw Error('GameTora新サポカ限定表示検査: '+s);};
@@ -46,6 +45,7 @@ async function ensureAllowedByRobots(){
  return text;
 }
 async function probe(){
+ const {chromium}=require('playwright');
  const targets=validateTargets(TARGETS.filter(t=>NEW_CARD_IDS.includes(t.cardId)));
  const robots=await ensureAllowedByRobots();
  for(const target of targets){
