@@ -14,6 +14,8 @@ on:
       - 'poc/tests/official_gametora_numeric_fact_parser.test.cjs'
       - 'poc/src/official_gametora_skill_id_crosswalk.cjs'
       - 'poc/tests/official_gametora_skill_id_crosswalk.test.cjs'
+      - 'poc/src/official_gametora_route_group_probe.cjs'
+      - 'poc/tests/official_gametora_route_group_probe.test.cjs'
 
 permissions:
   contents: read
@@ -39,6 +41,8 @@ jobs:
           node --test poc/tests/official_gametora_numeric_fact_parser.test.cjs
           node --check poc/src/official_gametora_skill_id_crosswalk.cjs
           node --test poc/tests/official_gametora_skill_id_crosswalk.test.cjs
+          node --check poc/src/official_gametora_route_group_probe.cjs
+          node --test poc/tests/official_gametora_route_group_probe.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
