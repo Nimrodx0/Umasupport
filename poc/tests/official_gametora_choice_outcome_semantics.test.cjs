@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {inspectRenderedChoices}=require('../src/official_gametora_choice_outcome_semantics.cjs');
+const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 function group(label,routeCandidateCount=1,orSeparatorCount=0,extra=[]){
  return {visibleText:label,routeCandidateCount,orSeparatorCount,ownTextFragments:extra};
 }
@@ -54,4 +54,38 @@ test('do not return original source labels or page text, even for unique matches
  assert.doesNotMatch(JSON.stringify(r),/架空/);
  assert.equal(r.publicationApproved,false);
  assert.throws(()=>inspectRenderedChoices({choices:[]},{groups:[]}),/不正/);
+});
+
+test('explicit termination on one numeric-matched displayed route is grounded on site',()=>{
+ const event={choices:[
+  {label:'上',effects:[{type:'speed',value:10}]},
+  {label:'下',effects:[{type:'wisdom',value:10},{type:'chain_end'}]}
+ ]};
+ const sight=inspectRenderedChoices(event,{groups:[
+  group('上 スピード+10',1,0,[]),
+  group('下 賢さ+10 連続イベント打ち切り',1,0,['連続イベント打ち切り'])
+ ]});
+ const route={uniqueRouteGroupAssignment:true,renderedGroupCandidates:2,
+  uniquelyAssignedRouteLocations:[
+   {choiceOrdinal:1,outcomeOrdinal:1,renderedGroupOrdinal:1},
+   {choiceOrdinal:2,outcomeOrdinal:1,renderedGroupOrdinal:2}
+  ]};
+ const result=correlateExplicitTerminal(event,sight,route);
+ assert.equal(result.explicitTerminalRouteLocationVerified,true);
+ assert.equal(result.routeEvidencePairCount,1);
+ assert.equal(result.laterEventReachabilityVerified,false);
+ assert.equal(result.publicationApproved,false);
+});
+test('unobserved termination, ambiguous numeric route and OR splits never certify a terminal',()=>{
+ const event={choices:[{label:'',effects:[{type:'chain_end'}]}]};
+ const route={uniqueRouteGroupAssignment:true,renderedGroupCandidates:1,
+  uniquelyAssignedRouteLocations:[{choiceOrdinal:1,outcomeOrdinal:1,renderedGroupOrdinal:1}]};
+ const missing=inspectRenderedChoices(event,{groups:[group('スピード+10')]});
+ assert.equal(correlateExplicitTerminal(event,missing,route).explicitTerminalRouteLocationVerified,false);
+ const shown=inspectRenderedChoices(event,{groups:[
+  group('連続イベント終了',1,0,['連続イベント終了'])
+ ]});
+ assert.equal(correlateExplicitTerminal(event,shown,{...route,uniqueRouteGroupAssignment:false}).explicitTerminalRouteLocationVerified,false);
+ const withOr={...shown,visibleOrSeparators:1};
+ assert.equal(correlateExplicitTerminal(event,withOr,route).explicitTerminalRouteLocationVerified,false);
 });
