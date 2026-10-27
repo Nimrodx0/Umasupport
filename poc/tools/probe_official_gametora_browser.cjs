@@ -8,6 +8,7 @@ const fs=require('node:fs');
 const crypto=require('node:crypto');
 const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
+const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -250,6 +251,61 @@ async function probe(){
     allEffectFactsVerified:false,chainBranchCompletenessVerified:false,
     approvedForDatabaseIngestion:false
    };
+   if(process.env.GT_SKILL_REGISTRY_SAMPLE){
+    const skillRaw=fs.readFileSync(process.env.GT_SKILL_REGISTRY_SAMPLE);
+    if(crypto.createHash('sha1').update('blob '+skillRaw.byteLength+'\0')
+        .update(skillRaw).digest('hex')!=='0c6ea6d72b037b24ee40860f73b0e86db47aab1d')
+     fail('独立UmaSimスキル辞書のGit blob署名が不一致');
+    const registry=registryFromSkillText(skillRaw.toString('utf8'));
+    const routeMatches=[];
+    for(let index=0;index<await events.count();index++){
+     const eventButton=events.nth(index);
+     if(await eventButton.getAttribute('aria-expanded')!=='true')
+      await eventButton.click({timeout:5000});
+     await page.waitForTimeout(950);
+     const fragments=await eventButton.evaluate(button=>{
+      const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
+      if(!panel)return [];
+      const texts=[];
+      for(const node of [panel,...panel.querySelectorAll('*')]){
+       const own=[...node.childNodes].filter(n=>n.nodeType===3)
+        .map(n=>n.textContent||'').join('').trim();
+       if(!/ヒント|hint/i.test(own)||!/[+＋\-－−]\s*\d/.test(own))continue;
+       // Different ancestors may include skill names in their child span.
+       // Find the *smallest* text context that resolves one numeric ID.
+       const contexts=[];
+       for(let p=node,depth=0;p&&depth<4&&panel.contains(p);p=p.parentElement,depth++){
+        const body=p.innerText||'';
+        if(body.length<=250)contexts.push(body);
+       }
+       texts.push(contexts);
+      }
+      return texts.slice(0,30);
+     });
+     const resolved=fragments.map(contexts=>{
+      const tries=contexts.map(v=>matchContextToId(v,registry));
+      return tries.find(x=>x.status==='unique-verified-name')||
+       tries.find(x=>x.status==='ambiguous-name-or-id')||
+       tries.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+     });
+     routeMatches.push(resolved);
+    }
+    visible.officialSkillIdCrosswalkPilot={
+     registryEntries:registry.count,
+     cards:1,
+     comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
+      sourceOrdinal:x.historicalEventOrdinal,renderedPosition:x.renderedEventPosition,
+      ...summarizeHints(
+       reference[x.historicalEventOrdinal-1],
+       routeMatches[x.renderedEventPosition-1]
+      )
+     })),
+     routeSpecificSkillIdVerified:false,
+     publicationApproved:false,
+     sourceProseIncluded:false
+    };
+   }
+
   }
   return visible;
  }finally{await browser.close();}
