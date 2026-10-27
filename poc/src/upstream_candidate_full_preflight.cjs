@@ -125,6 +125,33 @@ function inspectSource(source){
  };
 }
 /**
+ * Only source-derived structural/numeric facts may leave the ephemeral
+ * analyzer. Titles, labels, original event text and their title fingerprints
+ * must never be serialized into any change report.
+ * This is a provisional parse, NOT independently verified game semantics.
+ */
+function eventNumericFacts(event){
+ return {
+  sourceLocalEventId:event.sourceLocalEventId,
+  section:event.section,
+  sourceChainOrdinal:event.sourceChainOrdinal,
+  nextChainSourceOrdinalCandidate:event.nextChainSourceOrdinalCandidate,
+  choices:event.choices.map(choice=>({
+   sourceLabelWasEmpty:choice.sourceLabelWasEmpty,
+   reportedRandomAlternative:choice.reportedRandomAlternative,
+   reportedProbabilityAvailable:choice.reportedProbabilityAvailable,
+   routes:choice.routes.map(route=>({
+    explicitChainEnd:route.explicitChainEnd,
+    guardKinds:route.guardKinds,
+    numericHintFacts:route.numericHintFacts,
+    directSkillGrantFacts:route.directSkillGrantFacts,
+    effects:route.effects,
+    conditionsRequiringReview:route.conditionsRequiringReview
+   }))
+  }))
+ };
+}
+/**
  * Audit every changed GT file's numeric event topology, never prose.
  * Files with the same blob remain independently covered by whole-source
  * normalization; they do not get a fabricated "change" row.
@@ -136,30 +163,47 @@ function topologyDiff(base,next,blobDiff){
  const rows=[];
  const topology=(doc,id)=>{
   if(!doc)return null;
-  const {docs,blobs}= {docs:new Map([[id,doc]])};
-  const shape=inspectSource({docs});
+  const shape=inspectSource({docs:new Map([[id,doc]])});
   if(!shape.shapeValidated)fail('変更サポカのイベント構造が不正: '+id);
+  const parsed=transformDocument(doc);
   return {
-   events:shape.events,choices:shape.choices,routes:shape.routes,
-   numericHintMentions:shape.numericHintMentions,
-   terminalMentions:shape.terminalMentions,
-   unresolvedHintMentions:shape.unresolvedHintMentions,
-   reviewQueueEntries:shape.reviewQueueEntries
+   summary:{
+    events:shape.events,choices:shape.choices,routes:shape.routes,
+    numericHintMentions:shape.numericHintMentions,
+    terminalMentions:shape.terminalMentions,
+    unresolvedHintMentions:shape.unresolvedHintMentions,
+    reviewQueueEntries:shape.reviewQueueEntries
+   },
+   eventFacts:parsed.events.map(eventNumericFacts)
   };
  };
  for(const id of ids){
-  const before=topology(base.docs.get(id),id);
-  const after=topology(next.docs.get(id),id);
+  const beforeDetail=topology(base.docs.get(id),id);
+  const afterDetail=topology(next.docs.get(id),id);
+  const before=beforeDetail?.summary??null;
+  const after=afterDetail?.summary??null;
+  const changedEventOrdinals=[];
+  const length=Math.max(beforeDetail?.eventFacts.length??0,afterDetail?.eventFacts.length??0);
+  for(let i=0;i<length;i++)
+   if(!equal(beforeDetail?.eventFacts[i]??null,afterDetail?.eventFacts[i]??null))
+    changedEventOrdinals.push(i+1);
   const change=blobDiff.added.includes(id)?'added':
    blobDiff.removed.includes(id)?'removed':'modified';
   rows.push({cardId:id,change,before,after,
-   numericTopologyChanged:JSON.stringify(before)!==JSON.stringify(after)});
+   numericTopologyChanged:!equal(before,after),
+   parsedNumericFactsChanged:changedEventOrdinals.length>0,
+   changedEventOrdinals});
  }
+ const sameCount=rows.filter(x=>x.change==='modified'&&!x.numericTopologyChanged);
  return {affectedCards:rows.length,rows,
   added:rows.filter(x=>x.change==='added').length,
   modified:rows.filter(x=>x.change==='modified').length,
   removed:rows.filter(x=>x.change==='removed').length,
-  sameCountButDifferentSource:rows.filter(x=>x.change==='modified'&&!x.numericTopologyChanged)
+  parsedNumericFactsChangedCardIds:rows.filter(x=>x.parsedNumericFactsChanged).map(x=>x.cardId),
+  sameCountButDifferentSource:sameCount.map(x=>x.cardId),
+  sameCountWithParsedNumericFactsChanged:sameCount.filter(x=>x.parsedNumericFactsChanged)
+   .map(x=>x.cardId),
+  sameCountWithNoParsedNumericChange:sameCount.filter(x=>!x.parsedNumericFactsChanged)
    .map(x=>x.cardId)};
 }
 function rosterDiff(before,after){
