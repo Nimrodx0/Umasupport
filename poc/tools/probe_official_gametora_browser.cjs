@@ -4,6 +4,9 @@
  * choice labels, screenshots, HTML, response bodies or JSON are persisted.
  * This does not bypass site protections or run as a recurring crawler.
  */
+const fs=require('node:fs');
+const crypto=require('node:crypto');
+const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
 const fail=s=>{throw Error('GameToraブラウザ実地調査: '+s);};
@@ -211,6 +214,27 @@ async function probe(){
    visible.knownEventAncestorAfter=await firstKnownEvent.evaluate(eventButtonAncestors).catch(()=>null);
   }else visible.eventExpansionChangedRenderedTextLength=null;
   visible.allEventSectionStructures=await inspectEventSections(page);
+  if(process.env.GT_REFERENCE_SAMPLE){
+   const raw=fs.readFileSync(process.env.GT_REFERENCE_SAMPLE);
+   const gitSha=crypto.createHash('sha1').update('blob '+raw.byteLength+'\0')
+    .update(raw).digest('hex');
+   if(gitSha!=='6aca60590854f402a67da82c2ffa7295e564b40f')
+    fail('旧サンプルの固定Git blob署名が不一致');
+   const expected=JSON.parse(raw.toString('utf8'));
+   const section=firstKnownEvent.locator('xpath=ancestor::section[1]');
+   const events=section.locator('button[aria-expanded]');
+   const headings=[];
+   for(let index=0;index<await events.count();index++){
+    const button=events.nth(index);
+    headings.push({
+     title:await button.innerText(),
+     sameGroupSize:await button.evaluate(e=>
+      [...e.parentElement.children].filter(x=>
+       x.tagName==='BUTTON'&&x.hasAttribute('aria-expanded')).length)
+    });
+   }
+   visible.historicalTitleCrosscheck=compareTitles(expected,headings);
+  }
   return visible;
  }finally{await browser.close();}
 }
