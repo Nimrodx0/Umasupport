@@ -1,5 +1,6 @@
 name: PoC Core Tests
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -77,6 +78,7 @@ jobs:
         run: |
           node --check poc/src/upstream_refresh_candidate.cjs
           node --test poc/tests/upstream_refresh_candidate.test.cjs
+          node poc/src/upstream_refresh_candidate.cjs poc/review/upstream-refresh-candidate.v1.json
       - name: Test daily upstream source drift and issue dedup fingerprint
         run: |
           node --check poc/src/upstream_refresh_watch.cjs
