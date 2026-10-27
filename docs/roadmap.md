@@ -34,7 +34,7 @@ A＝機構テスト、B＝固定元と独立ソースの全件監査、C＝実�
 
 ## 現行方針（参照先）
 
-- イベントの基準： [GameTora由来固定データ](gametora-baseline-event-policy-20261021.md)。GameWithは**疑義のみ裁定**。GameWith-firstの旧案は廃止。
+- イベント基準の変更目標（2026-10-27）： [GameTora本体の直接取得への移行](upstream-refresh-operations.md)を少数カードで実証し、第三者GitHub派生データを検証用へ降格する。**現在の実装基準は依然として[GameTora由来固定データ](gametora-baseline-event-policy-20261021.md)**。未実証のWeb取得を本番に切り替えない。GameWithは**元サイトの疑義・欠損のみ裁定**。GameWith-firstの旧案は廃止。
 - イベント内部の分岐／打ち切りは必要、発生確率や絆等の外部条件は対象外：[要件](requirements.md)・[判断履歴](decisions.md)。
 - 再配布と大規模取得の制約は別々に判断：[イベントデータ権利・取得](event-data-acquisition-rights-20261019.md)。
 - 公開ゲート：[イベント公開審査](checker-public-catalog.md)、[検証計画](verification-plan.md)。 
