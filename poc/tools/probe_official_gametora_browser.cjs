@@ -95,23 +95,8 @@ function analyzeExpandedPanel(button){
   leafElementsWithArabicDigits:elements.filter(e=>e.childElementCount===0&&/[0-9０-９]/.test(e.innerText||'')).length,
   hyperlinks:links.length,
   skillLinks:links.filter(e=>/\/(?:umamusume\/)?skills?\//.test(e.getAttribute('href')||'')).length,
-  maxNestedDepth:(function depth(e){return e.children.length?1+Math.max(...[...e.children].map(depth)):1;})(panel),
-  structuralOutline:(function(){
-   const values=[];
-   function visit(e,depth){
-    if(values.length>=48||depth>11)return;
-    const ownText=[...e.childNodes].filter(x=>x.nodeType===3)
-      .map(x=>x.textContent||'').join('').trim();
-    values.push({
-     level:depth,tag:e.tagName.toLowerCase(),directChildren:e.children.length,
-     ownTextCharacters:ownText.length,hasArabicDigits:/[0-9０-９]/.test(ownText),
-     ownTextHasPlusMinus:/[+-−＋－]/.test(ownText),
-     leaf:e.childElementCount===0
-    });
-    for(const c of e.children)visit(c,depth+1);
-   }
-   visit(panel,0);return values;
-  })()
+  maxNestedDepth:(function depth(e){return e.children.length?1+Math.max(...[...e.children].map(depth)):1;})(panel)
+
  };
 }
 async function inspectEventSections(page){
