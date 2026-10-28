@@ -79,5 +79,17 @@
   "postStageFiveExtraOuting": "not-listed",
   "gamePlayIndependentlyVerified": false,
   "autoPublishAllowed": false,
-  "textOrTitlesIncluded": false
+  "textOrTitlesIncluded": false,
+  "specificLiveSiteEndingTitleAudit": {
+    "auditedOn": "2026-10-28",
+    "matchedExactEditorialEndTitlePositions": [
+      11,
+      null
+    ],
+    "matchedCount": 1,
+    "unmatchedGameWithEndingOrdinal": 2,
+    "unmatchedReason": "no-exact-heading-fingerprint-on-12-visible-original-site-panels",
+    "excludedInference": "absence-of-header-does-not-prove-absence-of-event",
+    "publicationApproved": false
+  }
 }
