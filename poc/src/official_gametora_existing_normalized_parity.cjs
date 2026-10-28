@@ -92,7 +92,9 @@ function renderedRouteFacts(groups){
   return {
    renderedGroupOrdinal:i+1,effectSignature:signature(facts),
    hintSignature:signature(hints),
-   unclassifiedNumeric:observed.filter(x=>x.requiresReview||!types.has(x.kind)).length,
+   unclassifiedNumeric:observed.filter(x=>x.requiresReview||
+    !types.has(x.kind)&&x.kind!=='bond').length,
+   excludedBondNumeric:observed.filter(x=>!x.requiresReview&&x.kind==='bond').length,
    unresolvedHintLinks:group.hintLinks.length-hints.length,
    numericContextResolutions:resolvedWithContext,
    // Diagnostic counts only; never log the effect text from the source site.
@@ -124,6 +126,7 @@ function compareConvertedToSiteEvent(converted,groups){
  for(const row of actual)for(const code of row.ambiguousCauseCodes)
   ambiguousCauses[code]=(ambiguousCauses[code]||0)+1;
  const contextResolutionCount=actual.reduce((n,x)=>n+x.numericContextResolutions,0);
+ const explicitlyExcludedBondFacts=actual.reduce((n,x)=>n+x.excludedBondNumeric,0);
  const parserIssueTotals=Object.fromEntries(
   ['ambiguousKind','multipleNumericAmounts','recognizedButExcluded','unrecognizedEffectKind']
    .map(k=>[k,actual.reduce((n,x)=>n+x.parserIssues[k],0)])
@@ -147,6 +150,7 @@ function compareConvertedToSiteEvent(converted,groups){
   renderedUnclassifiedNumeric:unclassified,
   renderedParserIssueCounts:parserIssueTotals,
   numericKindResolvedByBoundedDOMContext:contextResolutionCount,
+  siteBondNumericFactsOutsideComparedSubset:explicitlyExcludedBondFacts,
   renderedAmbiguousKindCauses:ambiguousCauses,
   renderedUnresolvedHintIds:unresolvedHints,
   visibleNumericProjectionParity:siteNumericProjectionParity,
