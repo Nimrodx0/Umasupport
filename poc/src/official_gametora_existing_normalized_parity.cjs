@@ -91,6 +91,7 @@ function renderedRouteFacts(groups){
       [x.numericId+':'+x.level]:[]);
   return {
    renderedGroupOrdinal:i+1,effectSignature:signature(facts),
+   siteBondFactCount:observed.filter(x=>!x.requiresReview&&x.kind==='bond').length,
    hintSignature:signature(hints),
    unclassifiedNumeric:observed.filter(x=>x.requiresReview||
     !types.has(x.kind)&&x.kind!=='bond').length,
@@ -141,6 +142,9 @@ function compareConvertedToSiteEvent(converted,groups){
   sourceSection:converted.section,
   existingConverterChoiceCount:converted.choices.length,
   existingConverterRouteCount:source.length,
+  existingConverterBondFacts:source.reduce((n,x)=>
+   n+(x.effectSignature.split('|').filter(z=>z.startsWith('bond:')).length),0),
+  directlyParsedSiteBondFacts:actual.reduce((n,x)=>n+x.siteBondFactCount,0),
   renderedRouteCount:actual.length,
   uniquelyMatchedRouteCount:matches.filter(x=>x.length===1).length,
   missingNormalizedRoutes:matches.filter(x=>x.length===0).length,
