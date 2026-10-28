@@ -76,6 +76,10 @@ function compareNumericRoutes(event,observedChoices){
    siteUnresolvedNumericTexts:seen.reduce((n,x)=>n+x.unresolvedNumbers,0),
    sourceExcludedKinds:[...new Set(refRoutes.flatMap(x=>x.notComparedKinds))].sort(),
    siteExcludedKinds:[...new Set(seen.flatMap(x=>x.excludedKinds))].sort(),
+   // Effect-kind and signed-number codes only; never site prose or HTML.
+   numericMismatchDiagnostics:unique?null:{
+    oldTypedNumericSignatures:refRoutes.map(x=>x.signature),
+    siteTypedNumericSignatures:seen.map(x=>x.signature)},
    exactDistinctNumericRouteMatching:unique});
   if(unique)for(const [ri,c] of candidates.entries())
    links.push({choiceOrdinal:ci+1,sourceRouteOrdinal:ri+1,renderedRouteOrdinal:c[0]});
