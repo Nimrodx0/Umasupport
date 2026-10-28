@@ -50,6 +50,12 @@ test('duplicate route coordinates, impossible groups, nonsensical level are reje
  }]),/重複/);
  assert.throws(()=>summarizeCandidateRouteHints([{globalHints:[],routes:'bad'}]),/不正/);
 });
+test('no visible groups are a blocker even with zero reported hint facts',()=>{
+ const r=summarizeCandidateRouteHints([{globalHints:[],routes:[]}]);
+ assert.equal(r.eventsWithAllKnownHintPairsAssigned,0);
+ assert.equal(r.eventsWithoutVisibleRouteGroups,1);
+ assert.equal(r.allCandidateHintIdLevelPairsAssigned,false);
+});
 test('empty visible card cannot be mistaken for verified event data',()=>{
  const r=summarizeCandidateRouteHints([]);
  assert.equal(r.eventPanelsCompared,0);
