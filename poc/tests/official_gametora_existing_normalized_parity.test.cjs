@@ -88,6 +88,26 @@ test('unknown source effect or site numeric marks partial comparison, not data c
  assert.equal(r2.visibleNumericProjectionParity,false);
  assert.equal(r2.renderedUnclassifiedNumeric,1);
 });
+test('explicit website 友情ゲージ numeric effects match pinned source bond, without conflating friendship bonus',()=>{
+ const d=synthetic();
+ d.events_ja['乙'].choices[0].effects.push({type:'bond',value:'+5'});
+ const normalized=transformDocument(d);
+ const result=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ゲージ +5'],hintLinks:[]}
+ ]);
+ assert.equal(result.visibleNumericProjectionParity,true);
+ assert.equal(result.bondNumericValueSourceCompared,true);
+ assert.equal(result.bondRecipientIdentityVerified,false);
+ const wrong=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ゲージ +4'],hintLinks:[]}
+ ]);
+ assert.equal(wrong.visibleNumericProjectionParity,false);
+ assert.equal(wrong.missingNormalizedRoutes,1);
+ const bonus=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ボーナス +5'],hintLinks:[]}
+ ]);
+ assert.equal(bonus.visibleNumericProjectionParity,false);
+});
 test('missing/duplicated title join or wrong source category blocks a false five-event pass',()=>{
  const normalized=transformDocument(synthetic());
  const mismatch=joins();mismatch[1].renderedEventPosition=1;
