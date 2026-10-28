@@ -5,6 +5,8 @@
  */
 const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {registryFromSkillText,matchContextToId}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
+const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const NEW_CARD_IDS=Object.freeze(['30322','30323']);
@@ -183,6 +185,7 @@ async function probe(){
     if(measured.hasSignedEffect)counters.sampledPanelsWithNumericEffects++;
    }
    const allRows=[];
+   const eventRouteHints=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
@@ -192,7 +195,7 @@ async function probe(){
     const view=await eventButton.evaluate(button=>{
      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
      if(!panel)return {eventPanelHasContent:0,choiceGroups:0,orMarkers:0,
-      signedNumericLeaves:0,hintContexts:[]};
+      signedNumericLeaves:0,hintContexts:[],hintOriginalTexts:[]};
      const content=panel.innerText||'';
      const body=panel.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild?.children?.[1];
      const choiceGroups=body?[...body.children]:[];
@@ -210,6 +213,7 @@ async function probe(){
         /^(?:OR|または|又は)$/i.test((el.innerText||'').trim())&&
         el.children.length===0).length,0),
       signedNumericLeaves:ownParts.filter(x=>/[+＋\-－−]\s*\d/.test(x.own)).length,
+      hintOriginalTexts:hints.map(({own})=>own.slice(0,240)),
       hintContexts:hints.map(({el})=>{
        const contexts=[];
        for(let p=el,d=0;p&&panel.contains(p)&&d<5;p=p.parentElement,d++){
@@ -220,6 +224,66 @@ async function probe(){
       })
      };
     });
+    const routePieces=await eventButton.evaluate(button=>{
+     const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+     const body=panel?.firstElementChild?.firstElementChild?.firstElementChild
+      ?.firstElementChild?.children?.[1];
+     if(!body)return [];
+     const groups=[...body.children];
+     return groups.slice(0,30).flatMap((group,choiceIndex)=>{
+      const inner=group.children.length===1?group.firstElementChild:group;
+      const rows=[...inner.children];
+      const separators=rows.map((el,i)=>({el,i})).filter(x=>
+       /^(?:OR|または|又は)$/i.test((x.el.innerText||'').trim()));
+      const allOrLeaves=[...group.querySelectorAll('*')].filter(el=>
+       el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
+      let segments=[[group]],ambiguous=allOrLeaves.length>0;
+      if(separators.length===1){
+       const pos=separators[0].i;
+       if(pos>0&&pos<rows.length-1){
+        segments=[rows.slice(0,pos),rows.slice(pos+1)];
+        ambiguous=false;
+       }
+      }
+      return segments.map((roots,outcomeIndex)=>{
+       const own=[];
+       for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
+        const t=[...el.childNodes].filter(x=>x.nodeType===3)
+         .map(n=>n.textContent||'').join('').trim();
+        if(/ヒント|hint/i.test(t)&&/[+＋\-－−]\s*\d/.test(t)){
+         const contexts=[];
+         for(let p=el,d=0;p&&group.contains(p)&&d<5;p=p.parentElement,d++){
+          const str=p.innerText||'';
+          if(str.length<=240)contexts.push(str);
+         }
+         own.push({text:t.slice(0,240),contexts:contexts.slice(0,5)});
+        }
+       }
+       return {
+        choiceOrdinal:choiceIndex+1,
+        outcomeOrdinal:outcomeIndex+1,
+        unresolvedOr:ambiguous,
+        hints:own.slice(0,60)
+       };
+      });
+     });
+    });
+    const routes=routePieces.map(r=>({
+     choiceOrdinal:r.choiceOrdinal,
+     outcomeOrdinal:r.outcomeOrdinal,
+     unresolvedOr:r.unresolvedOr,
+     hints:r.hints.map(h=>{
+      const fact=scanOwnText(h.text);
+      const level=fact?.kind==='skill_hint'&&Number.isInteger(fact.amount)?
+       fact.amount:null;
+      if(!registry)return {status:'registry-not-loaded',level};
+      const candidates=h.contexts.map(text=>matchContextToId(text,registry));
+      const match=candidates.find(x=>x.status==='unique-verified-name')||
+       candidates.find(x=>x.status==='ambiguous-name-or-id')||
+       candidates.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+      return {...match,level};
+     })
+    }));
     const matched=view.hintContexts.map(contexts=>{
      if(!registry)return {status:'registry-not-loaded'};
      const results=contexts.map(s=>matchContextToId(s,registry));
@@ -227,6 +291,14 @@ async function probe(){
       results.find(x=>x.status==='ambiguous-name-or-id')||
       results.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
     });
+    const global=view.hintContexts.map((contexts,i)=>{
+     const original=view.hintOriginalTexts[i];
+     const parsed=scanOwnText(original);
+     const level=parsed?.kind==='skill_hint'&&Number.isInteger(parsed.amount)?
+      parsed.amount:null;
+     return {...matched[i],level};
+    });
+    eventRouteHints.push({globalHints:global,routes});
     allRows.push({
      eventPanelHasContent:view.eventPanelHasContent,
      choiceGroups:view.choiceGroups,
@@ -238,6 +310,7 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
     fail('すべての画面開閉パネルを検査できませんでした');
@@ -247,6 +320,7 @@ async function probe(){
     pageRenderedInChrome:true,
     ...summarizeEvents(counters),
     census,
+    routeHintBinding,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
    });
