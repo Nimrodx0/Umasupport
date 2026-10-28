@@ -131,7 +131,8 @@ function comparePinnedAppDraftToOriginalSite({draft,siteParity,siteEventGroups,
     // original browser pilot, but it does NOT establish every non-terminal.
     if(actualRoute?.terminal===true&&
        proof?.explicitTerminalRouteCheck?.explicitTerminalRouteLocationVerified===true&&
-       proof.explicitTerminalRouteCheck.routeEvidencePairCount===1)
+       proof.explicitTerminalRouteCheck.routeEvidencePairCount===1&&
+       proof.siteTerminalGroupOrdinals?.includes(link.renderedGroupOrdinal))
       terminalPositivelyCorroborated++;
     compared.push({choiceOrdinal:ci+1,outcomeOrdinal:ri+1,
       runtimePathExists:shape,skillRewardsMatch:payloadMatch,
