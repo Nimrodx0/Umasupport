@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "cardId": "30323",
+  "verifiedOn": "2026-10-28",
+  "gender": "male",
+  "sources": {
+    "gameTora": {
+      "url": "https://gametora.com/ja/umamusume/supports/30323-azuma",
+      "basis": "2026-10-28 Chrome: original page positions and choice-group counts"
+    },
+    "gameWith": {
+      "url": "https://gamewith.jp/uma-musume/article/show/584254",
+      "basis": "2026-10-27 editorial: 1 unlock + 5 outings and two training-end events"
+    },
+    "game8": {
+      "url": "https://game8.jp/umamusume/836270",
+      "basis": "2026-10-26 editorial: stage-five named explicitly as outing stage 5"
+    },
+    "wiki": {
+      "url": "https://wikiwiki.jp/vip_umamusu/%E5%90%BE%E5%A6%BB%E3%80%90%E3%81%84%E3%81%A8%E3%81%A9%E3%82%81%E3%81%A7%E3%81%9F%E3%81%8D%E3%80%81%E3%81%BE%E3%81%A4%E3%82%8A%E3%81%8B%E3%81%AA%E3%80%91",
+      "basis": "2026-10-27 editorial: five ordered entries under consecutive outings, training-end rewards complete vs incomplete"
+    }
+  },
+  "openingEventSiteOrdinal": 8,
+  "openingChoiceOrdinals": [
+    1,
+    2
+  ],
+  "stages": [
+    {
+      "stageOrdinal": 1,
+      "siteEventOrdinal": 2,
+      "siteChoiceGroups": 1
+    },
+    {
+      "stageOrdinal": 2,
+      "siteEventOrdinal": 3,
+      "siteChoiceGroups": 1
+    },
+    {
+      "stageOrdinal": 3,
+      "siteEventOrdinal": 4,
+      "siteChoiceGroups": 2
+    },
+    {
+      "stageOrdinal": 4,
+      "siteEventOrdinal": 5,
+      "siteChoiceGroups": 1
+    },
+    {
+      "stageOrdinal": 5,
+      "siteEventOrdinal": 6,
+      "siteChoiceGroups": 1
+    }
+  ],
+  "stageOrderEvidence": "wiki-consecutive-outings-list-plus-game8-explicit-stage-five",
+  "completionCriterion": "five-outing-stages-completed",
+  "endingBranches": {
+    "source": "wiki-completed-versus-incomplete",
+    "whenFiveCompleted": "completed",
+    "otherwise": "incomplete"
+  },
+  "endingTitles": [
+    {
+      "gameWithListOrdinal": 1,
+      "meaningCandidate": "completed",
+      "normalizedCodePointLength": 9,
+      "titleSha256": "04d4bf5c05543aee627e9da1b1006bf6125d957bc99fe5323580fd0913f45192"
+    },
+    {
+      "gameWithListOrdinal": 2,
+      "meaningCandidate": "incomplete",
+      "normalizedCodePointLength": 8,
+      "titleSha256": "ebb82a78e6001f91c3f9f39619fb78571273a7d61d0d42cb898e4f6e8f86894d"
+    }
+  ],
+  "endingLabelMappingEvidence": "editorial-order-correspondence-not-unique-stage-effect-proof",
+  "earlyTerminationByStageChoices": "not-explicitly-specified",
+  "postStageFiveExtraOuting": "not-listed",
+  "gamePlayIndependentlyVerified": false,
+  "autoPublishAllowed": false,
+  "textOrTitlesIncluded": false
+}
