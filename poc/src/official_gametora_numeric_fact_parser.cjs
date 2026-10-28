@@ -18,11 +18,12 @@ const KINDS=[
  ['mood',/やる気|mood/i]
 ];
 const AMOUNT=/([+＋\-－−])\s*(\d{1,5})(?!\d)/g;
+const matchedEffectKinds=text=>typeof text==='string'?KINDS.filter(([,pattern])=>pattern.test(text)).map(([kind])=>kind):[];
 function scanOwnText(text){
  if(typeof text!=='string')return null;
  const nums=[...text.matchAll(AMOUNT)].map(m=>({sign:/[+＋]/.test(m[1])?1:-1,value:Number(m[2])}));
  if(!nums.length)return null;
- const kinds=KINDS.filter(([,pattern])=>pattern.test(text)).map(([kind])=>kind);
+ const kinds=matchedEffectKinds(text);
  return {
   kind:kinds.length===1?kinds[0]:'unclassified',
   amount:nums.length===1?nums[0].sign*nums[0].value:null,
@@ -85,4 +86,4 @@ function compareProvisionalFacts(source,observed){
   sourceTextIncluded:false,publicationApproved:false
  };
 }
-module.exports={scanOwnText,sourceFacts,compareProvisionalFacts};
+module.exports={scanOwnText,matchedEffectKinds,sourceFacts,compareProvisionalFacts};
