@@ -399,7 +399,7 @@ async function probe(){
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
-    progressionLedger,access,[1,2,3,4,5],1):null;
+    progressionLedger,access,[1,2,3,4,5],1,1):null;
    if(outingProgression&&(
       outingProgression.headingCountMatched!==6||
       outingProgression.stageCount!==5||
