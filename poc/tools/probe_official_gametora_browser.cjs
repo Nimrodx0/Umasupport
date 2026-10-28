@@ -12,6 +12,7 @@ const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/of
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
 const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
 const {buildPinnedCardDraft,comparePinnedAppDraftToOriginalSite}=require('../src/official_gametora_app_schema_parity.cjs');
+const {buildPinnedEffectDraft,comparePinnedEffectsToSite}=require('../src/official_gametora_app_effects_parity.cjs');
 const {compareConvertedCardToSite}=require('../src/official_gametora_existing_normalized_parity.cjs');
 const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
@@ -494,6 +495,27 @@ async function probe(){
        projection.nonSkillAppEffectsParityVerified!==false||
        projection.publicationApproved!==false)
       fail('SSR30001の元サイトと実アプリ用スキル報酬投影に差分');
+    // Full scalar non-skill app shape is produced by a DIFFERENT existing
+    // converter. This compares its own isolated results to site DOM numeric
+    // facts instead of assuming the skill-only projection includes effects.
+    const privateEffectDraft=buildPinnedEffectDraft(expected);
+    visible.originalSiteVsAppEffectsProjection=comparePinnedEffectsToSite({
+      draft:privateEffectDraft,
+      siteParity:visible.existingConverterVsOriginalSitePilot,
+      siteEventGroups:allRenderedGroups
+    });
+    const effectsProof=visible.originalSiteVsAppEffectsProjection;
+    if(effectsProof.eventsCompared!==5||effectsProof.appEffectEvents!==5||
+       effectsProof.matchedEvents!==5||effectsProof.matchedEffectRoutes!==9||
+       effectsProof.siteEffectCount!==31||effectsProof.appEffectCount!==31||
+       effectsProof.matchedEffectCount!==31||
+       effectsProof.siteBondEffectCount!==8||
+       effectsProof.appBondEffectCount!==8||
+       effectsProof.allRenderedNonSkillNumericEffectsMatch!==true||
+       effectsProof.recipientCharIdSourceSiteVerified!==false||
+       effectsProof.fullCombinedAppEventJsonVerified!==false||
+       effectsProof.publicationApproved!==false)
+      fail('SSR30001の元サイト数値と実非スキルアプリ用孤立投影が不一致');
     const semanticCases=visible.officialChoiceOutcomeSemanticsPilot.comparisons;
     const verifiedEnd=semanticCases.find(x=>x.historicalEventOrdinal===4);
     const explicitOr=semanticCases.find(x=>x.historicalEventOrdinal===5);

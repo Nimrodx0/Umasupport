@@ -46,6 +46,10 @@ A＝選択肢候補の計数・矛盾値拒否・新2カードの固定母数退
 
 [実測と変換対象の区別](official-gametora-30001-app-schema-parity-20261028.md)／[PR #249](https://github.com/Nimrodx0/Umasupport/pull/249)。既存GameTora派生固定JSONのSSR30001を**実際の`crosswalk`→`gametora_app_schema_dry_run.project`→`event_schema.validateCatalog`**に通し、元GameTora本体Chromeで独立に読んだヒントID+Lvとアプリ用結果報酬を**5/5イベント、9/9経路、5/5ヒント報酬**照合。元サイト画面の明示的打ち切り1経路も実アプリ用スキーマの対応する経路に一致。サイト選択肢数とOR結果数の表示候補も全5イベントで整合。比較用のモデルは**SSR30001だけの隔離モデル**であり、本番563カードモデルの`hint:` ID寄せや、非スキル報酬`effects[]`まで含む全アプリJSONの等価性を検証したわけではない。元サイト非スキル数値31記載（絆8件）は独立解析済みだが、実アプリの非スキル効果候補への照合は次工程。連続後続条件の独立認定、絆の受け手ID、公開権利も未検証、正式公開イベント0件。
 
+## 2026-10-28：既存SSR30001の非スキル効果31件も元サイトと一致（PR #250）
+
+[非スキルアプリ用候補との直接照合](official-gametora-30001-app-effects-parity-20261028.md)／[PR #250](https://github.com/Nimrodx0/Umasupport/pull/250)。既存旧固定GTのSSR30001を**本物の非スキル変換器`phase2_gt_whole_nonskill_effect_inventory.analyze`**で1カード隔離実行し、実アプリスキーマに適合する`effects[]`候補と、GameTora本体Chromeが独立に抽出した`kind:delta`を比較。**5/5イベント・9/9結果経路・31/31数値効果が一致**し、絆ゲージ8/8件の符号付き値も一致。固定元アプリ候補の絆受け手ID4件はサイト表示側では未検証。スキル用JSONと非スキル用隔離JSONはそれぞれ照合できたが、**単一統合JSONの全フィールド再現、連続内部の到達条件や公開許可はまだ未検証**。正式公開イベント0件。
+
 ## 正確に区別すべき4つの層
 
 1. **出典から抽出できた事実**：固定GameTora由来ファイルに何件あるか。現行ゲームの全件網羅を証明しない。
