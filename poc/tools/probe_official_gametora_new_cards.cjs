@@ -403,6 +403,10 @@ async function probe(){
    if(outingProgression&&(
       outingProgression.headingCountMatched!==6||
       outingProgression.stageCount!==5||
+      outingProgression.originalSiteExactEndTitleMatchCount!==1||
+      outingProgression.endingHeadings[0]?.sourceEventOrdinal!==11||
+      outingProgression.endingHeadings[1]?.sourceEventOrdinal!==null||
+      outingProgression.missingExactTitleDoesNotProveMissingGameEvent!==true||
       completedFiveCandidate?.trainingEndBranchEditorialCandidate!=='completed'||
       completedFiveCandidate?.terminalFlagGenerated!==false||
       completedFiveCandidate?.earlyTerminationStatus!=='unverified'))
