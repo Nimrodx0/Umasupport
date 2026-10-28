@@ -10,7 +10,7 @@
 const {scanOwnText,matchedEffectKinds}=require('./official_gametora_numeric_fact_parser.cjs');
 const fail=s=>{throw Error('既存GT正規化結果と本体DOMの差分: '+s);};
 const types=new Set(['skill_hint','speed','stamina','power','guts','wisdom',
- 'energy','max_energy','skill_points','mood']);
+ 'energy','max_energy','skill_points','mood','bond']);
 const signature=items=>items.slice().sort().join('|');
 function sourceRouteFacts(event){
  if(!event||!Number.isSafeInteger(event.sourceOrdinal)||!Array.isArray(event.choices)||
@@ -30,7 +30,7 @@ function sourceRouteFacts(event){
     if(!effect||typeof effect.type!=='string')fail('数値効果が不正');
     if(types.has(effect.type)&&Number.isSafeInteger(effect.numericValue)){
      facts.push(effect.type+':'+effect.numericValue);
-    }else if(!['bond','chain_end'].includes(effect.type)){
+    }else if(effect.type!=='chain_end'){
      excludedKinds.push(effect.type);
     }
    }
@@ -162,6 +162,7 @@ function compareConvertedToSiteEvent(converted,groups){
   // Bond and recipient identity remain outside this numerical subset.
   // A context clue can classify a bond delta without approving its recipient.
   bondRecipientIdentityVerified:false,
+  bondNumericValueSourceCompared:true,
   originalSiteTerminalFlagsIndependentlyVerified:false,
   outcomesUserChoiceVsChanceVerified:false,
   fullProductionSchemaParityVerified:false,
