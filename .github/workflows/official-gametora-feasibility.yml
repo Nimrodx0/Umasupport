@@ -27,6 +27,9 @@ on:
       - 'poc/tests/official_gametora_new_cards.test.cjs'
       - 'poc/src/official_gametora_new_card_route_hints.cjs'
       - 'poc/tests/official_gametora_new_card_route_hints.test.cjs'
+      - 'poc/review/outing-evidence-30323.v1.json'
+      - 'poc/src/official_gametora_azuma_outing_evidence.cjs'
+      - 'poc/tests/official_gametora_azuma_outing_evidence.test.cjs'
 
 permissions:
   contents: read
@@ -64,6 +67,8 @@ jobs:
           node --test poc/tests/official_gametora_new_cards.test.cjs
           node --check poc/src/official_gametora_new_card_route_hints.cjs
           node --test poc/tests/official_gametora_new_card_route_hints.test.cjs
+          node --check poc/src/official_gametora_azuma_outing_evidence.cjs
+          node --test poc/tests/official_gametora_azuma_outing_evidence.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
