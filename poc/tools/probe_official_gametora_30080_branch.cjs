@@ -10,6 +10,7 @@ const {robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {inspectOne,EXPECTED}=require('../src/official_gametora_old_structural_cohorts.cjs');
 const {inspectSiteTopology}=require('../src/official_gametora_rendered_branch_topology.cjs');
 const {compareNumericRoutes}=require('../src/official_gametora_old_numeric_route_parity.cjs');
+const {siteOnlyNumericDraft,summarizeNumericDraft}=require('../src/official_gametora_site_numeric_draft.cjs');
 const CARD_ID='30080';
 const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
@@ -142,11 +143,15 @@ async function run(path){
   const siteDomDiagnostics=groups.map(g=>g.diagnostic);
   const proof=inspectSiteTopology(event,groups);
   const numericProof=compareNumericRoutes(event,groups.map(g=>g.numericSegments));
+  const independentDraft=siteOnlyNumericDraft({
+   cardId:CARD_ID,siteEventOrdinal:positions[0]+1,groups
+  });
+  const draftSummary=summarizeNumericDraft(independentDraft);
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
    sourceEventsTotal:Object.values(old.events_ja).length,
    uniquelyMatchedEventTitles:positions.length,
-   ...proof,numericRouteParity:numericProof,
+   ...proof,numericRouteParity:numericProof,siteOnlyDraft:draftSummary,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false
@@ -157,6 +162,11 @@ async function run(path){
   // finding, NOT a reason to rewrite the site's observed values from old JSON.
   if(!numericProof.allObservedSignedScalarFactsParsed)
    fail('site-signed-scalar-extraction-incomplete');
+  if(independentDraft.unparsedNumericCount||
+    independentDraft.observedScalarEffectCount!==numericProof.siteScalarEffects||
+    independentDraft.visibleRouteCount!==numericProof.observedResultRoutes||
+    independentDraft.appEventSchemaAdoptable!==false)
+   fail('site-only-draft-incomplete-or-incorrectly-promoted');
   if(!result.exactChoiceAndVisibleRouteCardinality)
    fail('old-source-vs-live-site-choice-route-disagreement');
   return result;
