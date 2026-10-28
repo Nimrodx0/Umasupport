@@ -29,7 +29,8 @@ function summarizeCandidateRouteHints(events){
        !Array.isArray(r.hints)||r.hints.length>60)))
   fail('検証入力が不正');
  let total=0,routeCandidates=0,globalHits=0,attributed=0,completeEvents=0,
-     ambiguousSiteGroups=0,unresolvedGlobal=0,unresolvedLocal=0,missing=0,extra=0;
+     ambiguousSiteGroups=0,withoutAnyVisibleRouteGroups=0,
+     unresolvedGlobal=0,unresolvedLocal=0,missing=0,extra=0;
  let allPairsCompatible=true;
  const eventSummaries=[];
  for(const [i,e] of events.entries()){
@@ -50,7 +51,7 @@ function summarizeCandidateRouteHints(events){
   const unresGlobal=global.length-originalPairs;
   const unresLocal=local.length-locatedPairs;
   const structuralAmbiguity=routes.some(r=>r.unresolvedOr===true);
-  const uniqueAssociation=missingHere===0&&extraHere===0&&
+  const uniqueAssociation=routes.length>0&&missingHere===0&&extraHere===0&&
    unresGlobal===0&&unresLocal===0&&!structuralAmbiguity;
   allPairsCompatible=allPairsCompatible&&uniqueAssociation;
   total++;
@@ -58,6 +59,7 @@ function summarizeCandidateRouteHints(events){
   globalHits+=global.length;
   attributed+=locatedPairs;
   if(uniqueAssociation)completeEvents++;
+  if(routes.length===0)withoutAnyVisibleRouteGroups++;
   if(structuralAmbiguity)ambiguousSiteGroups++;
   unresolvedGlobal+=unresGlobal;
   unresolvedLocal+=unresLocal;
@@ -82,6 +84,7 @@ function summarizeCandidateRouteHints(events){
   unclassifiedRouteHintCandidates:unresolvedLocal,
   missingNormalizedPairs:missing,extraNormalizedPairs:extra,
   eventsWithUnresolvedOrStructure:ambiguousSiteGroups,
+  eventsWithoutVisibleRouteGroups:withoutAnyVisibleRouteGroups,
   allCandidateHintIdLevelPairsAssigned:allPairsCompatible&&total>0,
   events:eventSummaries,
   // Even a perfect observable UI match does not establish event-chain rules
