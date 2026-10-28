@@ -7,6 +7,8 @@ const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.
 const {registryFromSkillText,matchContextToId}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
+const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
+const outingLedger=require('../review/outing-evidence-30323.v1.json');
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const NEW_CARD_IDS=Object.freeze(['30322','30323']);
@@ -214,6 +216,7 @@ async function probe(){
    }
    const allRows=[];
    const eventRouteHints=[];
+   const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
@@ -252,6 +255,27 @@ async function probe(){
       })
      };
     });
+    if(target.cardId==='30323'){
+     const outingView=await eventButton.evaluate(button=>{
+      const title=button.innerText||'';
+      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+      const body=panel?.firstElementChild?.firstElementChild
+       ?.firstElementChild?.firstElementChild?.children?.[1];
+      const groups=body?[...body.children]:[];
+      let unlock=0,terminal=0;
+      for(const group of groups){
+       const effects=(group.innerText||'');
+       if(/(?:お出かけ|おでかけ).{0,8}(?:できるようになる|可能になる|解放される|可能|解放)/i.test(effects))
+        unlock++;
+       if(/(?:お出かけ|おでかけ|連続イベント).{0,8}(?:打ち切り|終了|終わり)/i.test(effects))
+        terminal++;
+      }
+      return {title:title.slice(0,2000),choiceGroups:groups.length,
+       siteExplicitUnlockChoiceGroups:unlock,
+       siteExplicitTerminalChoiceGroups:terminal};
+     });
+     outingEventViews.push(outingView);
+    }
     const routePieces=await eventButton.evaluate(button=>{
      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
      const body=panel?.firstElementChild?.firstElementChild?.firstElementChild
@@ -358,6 +382,16 @@ async function probe(){
    }
    const census=summarizeExpandedCensus(allRows);
    const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
+   const outingEvidence=target.cardId==='30323'?evaluateOutingEvidence(outingLedger,outingEventViews):null;
+   if(outingEvidence&&(
+      outingEvidence.siteMatchingEventHeadings!==6||
+      outingEvidence.siteMatchingHeadingsUniqueAndDistinct!==true||
+      outingEvidence.editorialChoiceCountCorroborated!==6||
+      outingEvidence.siteOutingHeadingsFormContiguousList!==true||
+      outingEvidence.officialSiteExplicitUnlockOnFirstEvent!==2||
+      outingEvidence.bothOriginalSiteChoiceGroupsExplicitlyUnlock!==true||
+      outingEvidence.privateUnlockRouteCandidate?.siteEventOrdinal!==8))
+     fail('SSR30323の6お出かけ見出しと2択の解放出典に差分。承認せず再調査');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
@@ -369,6 +403,7 @@ async function probe(){
     ...summarizeEvents(counters),
     census,
     routeHintBinding,
+    outingEvidence,
     routeIntegrity,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
