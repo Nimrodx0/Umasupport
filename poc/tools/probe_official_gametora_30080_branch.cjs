@@ -104,7 +104,7 @@ async function run(path){
      return null;
     };
     const verifiedSplits=dividers.map(findSplit).filter(Boolean);
-    const segmentRoots=verifiedSplits.length===1?verifiedSplits:[[group]];
+    const segmentRoots=verifiedSplits.length===1?verifiedSplits[0]:[[group]];
     const numericSegments=segmentRoots.map(roots=>{
      const effectTexts=[],effectContexts=[];
      for(const root of roots){
