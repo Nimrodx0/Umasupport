@@ -111,7 +111,7 @@ async function run(path){
       for(const el of [root,...root.querySelectorAll('*')]){
        const own=[...el.childNodes].filter(n=>n.nodeType===3)
         .map(n=>n.textContent||'').join('').trim();
-       if(!/[+＋\\-－−]\\s*\\d/.test(own)||own.length>400)continue;
+       if(!/[+＋\-－−]\s*\d/.test(own)||own.length>400)continue;
        const contexts=[];
        for(let p=el;p&&root.contains(p)&&contexts.length<6;p=p.parentElement){
         const text=(p.innerText||'').trim();
