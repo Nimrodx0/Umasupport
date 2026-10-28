@@ -25,6 +25,11 @@ function validateSequenceLedger(ledger){
    !Number.isSafeInteger(t.normalizedCodePointLength)||t.normalizedCodePointLength<1||
    !/^[a-f0-9]{64}$/.test(t.titleSha256))||
   ledger.endingLabelMappingEvidence!=='editorial-order-correspondence-not-unique-stage-effect-proof'||
+  ledger.specificLiveSiteEndingTitleAudit?.matchedCount!==1||
+  JSON.stringify(ledger.specificLiveSiteEndingTitleAudit.matchedExactEditorialEndTitlePositions)!=='[11,null]'||
+  ledger.specificLiveSiteEndingTitleAudit.unmatchedGameWithEndingOrdinal!==2||
+  ledger.specificLiveSiteEndingTitleAudit.excludedInference!=='absence-of-header-does-not-prove-absence-of-event'||
+  ledger.specificLiveSiteEndingTitleAudit.publicationApproved!==false||
   ledger.earlyTerminationByStageChoices!=='not-explicitly-specified'||
   ledger.gamePlayIndependentlyVerified!==false||
   ledger.textOrTitlesIncluded!==false||ledger.autoPublishAllowed!==false)
@@ -67,6 +72,10 @@ function correlateSequenceEvidence(ledger,outingEvidence,siteEvents){
   orderedOutingSeriesEditoriallySupported:true,
   endingHeadings:endingMatches,
   endingTitlePositionsVerified:twoDistinctEndings,
+  originalSiteExactEndTitleMatchCount:endLocations.length,
+  sourceEndingHeaderGapCount:ledger.endingTitles.length-endLocations.length,
+  missingExactEditorialEndingOrdinal:endingMatches.flatMap((x,i)=>x.uniqueTitleMatch?[]:[i+1]),
+  missingExactTitleDoesNotProveMissingGameEvent:true,
   completeVsIncompleteEndingDistinctionEditoriallySupported:true,
   // Articles list endings in the same order but do not independently
   // demonstrate their exact in-game triggering condition per heading.
