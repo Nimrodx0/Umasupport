@@ -32,6 +32,9 @@ on:
       - 'poc/tests/official_gametora_azuma_outing_evidence.test.cjs'
       - 'poc/src/friend_outing_access_gate.cjs'
       - 'poc/tests/friend_outing_access_gate.test.cjs'
+      - 'poc/review/outing-progression-30323.v1.json'
+      - 'poc/src/azuma_outing_sequence.cjs'
+      - 'poc/tests/azuma_outing_sequence.test.cjs'
 
 permissions:
   contents: read
@@ -73,6 +76,8 @@ jobs:
           node --test poc/tests/official_gametora_azuma_outing_evidence.test.cjs
           node --check poc/src/friend_outing_access_gate.cjs
           node --test poc/tests/friend_outing_access_gate.test.cjs
+          node --check poc/src/azuma_outing_sequence.cjs
+          node --test poc/tests/azuma_outing_sequence.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 
