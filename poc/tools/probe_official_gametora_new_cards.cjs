@@ -186,6 +186,7 @@ async function probe(){
    }
    const allRows=[];
    const eventRouteHints=[];
+   const orTopologyDiagnostics=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
@@ -213,6 +214,17 @@ async function probe(){
         /^(?:OR|または|又は)$/i.test((el.innerText||'').trim())&&
         el.children.length===0).length,0),
       signedNumericLeaves:ownParts.filter(x=>/[+＋\-－−]\s*\d/.test(x.own)).length,
+      orTopology:choiceGroups.map((group,index)=>{
+       const inner=group.children.length===1?group.firstElementChild:group;
+       const rows=[...inner.children];
+       const indexes=rows.map((el,i)=>/^(?:OR|または|又は)$/i.test((el.innerText||'').trim())?i:-1)
+        .filter(i=>i>=0);
+       const leaves=[...group.querySelectorAll('*')].filter(el=>
+        el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
+       return {choiceIndex:index+1,rowCount:rows.length,directOrIndexes:indexes,
+        visibleOrLeaves:leaves.length,
+        rowChildCounts:rows.map(el=>el.children.length).slice(0,16)};
+      }).filter(x=>x.visibleOrLeaves>0),
       hintOriginalTexts:hints.map(({own})=>own.slice(0,240)),
       hintContexts:hints.map(({el})=>{
        const contexts=[];
@@ -299,6 +311,7 @@ async function probe(){
      return {...matched[i],level};
     });
     eventRouteHints.push({globalHints:global,routes});
+    if(view.orTopology.length)orTopologyDiagnostics.push({eventOrdinal:idx+1,groups:view.orTopology});
     allRows.push({
      eventPanelHasContent:view.eventPanelHasContent,
      choiceGroups:view.choiceGroups,
@@ -321,6 +334,7 @@ async function probe(){
     ...summarizeEvents(counters),
     census,
     routeHintBinding,
+    orTopologyDiagnostics,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
    });
