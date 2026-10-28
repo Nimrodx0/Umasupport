@@ -25,7 +25,9 @@ function inspectVisibleRange(document,observation){
  if(matching.length!==1||!/^([+-]\d+)\/([+-]\d+)$/.test(matching[0].value))
   fail('固定元の数値範囲が一意でない');
  const expected=matching[0].value.split('/').map(Number);
- if(expected[0]===expected[1])fail('低高の数値が区別できない');
+ const pinnedValues=id==='30030'?[10,30]:[15,45];
+ if(expected.length!==2||expected.some((n,i)=>n!==pinnedValues[i]))
+  fail('旧固定ソースの範囲数値が確認済み値から変化');
  if(observation?.cardId!==id||observation.targetSourceOrdinal!==spec.event||
   observation.titleMatchCount!==1||!Array.isArray(observation.choiceGroups)||
   observation.choiceGroups.length>12||
