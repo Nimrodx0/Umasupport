@@ -93,3 +93,42 @@ test('unexpected branch, missing or unpinned registry, accidental promotion fail
  b[0].numericSegments[0].effectContexts[1]=['X'.repeat(301)];
  assert.throws(()=>hintOnlyDraft(a.numeric,b,reg),/out-of-bounds/);
 });
+
+test('nearest unique hint row wins over unrelated reward names in broader DOM containers',()=>{
+ const gs=observation();
+ gs[0].numericSegments[0].effectContexts[1]=[
+  '「登山家」のヒントLv +2',
+  '「登山家」のヒントLv +2 と「光速」のヒントLv +3',
+  '周辺のイベント表示「登山家」のヒントLv +2 と「光速」のヒントLv +3'
+ ];
+ const {numeric}=make(gs);
+ const r=hintOnlyDraft(numeric,gs,registry());
+ assert.equal(r.seenHintRows,2);
+ assert.equal(r.uniquelyResolvedHintIdLevelPairs,2);
+ assert.equal(r.unresolvedHintRows,0);
+ assert.deepEqual(r.routeCandidates[0][0].hints.map(h=>[h.numericId,h.level]),[['200516',2]]);
+ assert.equal(r.routeCandidates[0][1].hints.length,0);
+ assert.doesNotMatch(JSON.stringify(r),/登山家|光速|周辺のイベント表示/);
+});
+test('ambiguous local hint row cannot be rescued by a farther unique ancestor',()=>{
+ const gs=observation();
+ gs[0].numericSegments[0].effectContexts[1]=[
+  '「登山家」のヒントLv +2 と「光速」のヒントLv +3',
+  '「登山家」のヒントLv +2'
+ ];
+ const {numeric}=make(gs),r=hintOnlyDraft(numeric,gs,registry());
+ assert.equal(r.routeCandidates[0][0].hints.length,0);
+ assert.deepEqual(r.routeCandidates[0][0].unresolvedHintStatuses,['ambiguous-name-or-id']);
+ assert.equal(r.publicationApproved,false);
+});
+test('duplicate name with distinct IDs remains ambiguous even as nearest row',()=>{
+ const gs=observation();
+ gs[0].numericSegments[0].effectTexts[1]='「重複」のヒントLv +2';
+ gs[0].numericSegments[0].effectContexts[1]=[
+  '「重複」のヒントLv +2',
+  '「重複」のヒントLv +2 ほかの報酬'
+ ];
+ const {numeric}=make(gs),r=hintOnlyDraft(numeric,gs,registry());
+ assert.equal(r.routeCandidates[0][0].hints.length,0);
+ assert.deepEqual(r.routeCandidates[0][0].unresolvedHintStatuses,['ambiguous-name-or-id']);
+});
