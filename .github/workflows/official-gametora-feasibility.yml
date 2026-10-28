@@ -106,5 +106,12 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           command -v google-chrome || command -v google-chrome-stable
+      - name: Retrieve pinned independent UmaSim skill dictionary into disposable runner
+        run: |
+          curl --fail --silent --show-error --location --retry 2 --max-time 30 \
+            https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt \
+            -o "$RUNNER_TEMP/umasim-pinned-new-ssr-skills.json"
       - name: Observe two new original-site SSR card pages, without exporting article content
+        env:
+          GT_SKILL_REGISTRY_SAMPLE: ${{ runner.temp }}/umasim-pinned-new-ssr-skills.json
         run: node poc/tools/probe_official_gametora_new_cards.cjs --live-new-cards
