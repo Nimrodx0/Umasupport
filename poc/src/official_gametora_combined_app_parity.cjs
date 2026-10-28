@@ -114,7 +114,8 @@ function compareCombinedToOriginalSite({
     fail('統合後の選択肢／結果の階層が破損');
    const observed=site[pos-1];
    const siteHintCodes=observed.hintSignature?observed.hintSignature.split('|'):[];
-   const siteEffectCodes=observed.effectSignature?observed.effectSignature.split('|'):[];
+   const siteEffectCodes=observed.effectSignature?
+    observed.effectSignature.split('|').filter(x=>!x.startsWith('skill_hint:')):[];
    const actualHints=Array.isArray(leaf.rewards)?leaf.rewards.map(shortCode):[];
    const actualEffects=(leaf.effects||[]).map(slimEffect);
    const skillMatch=Array.isArray(leaf.rewards)&&actualHints.every(Boolean)&&
