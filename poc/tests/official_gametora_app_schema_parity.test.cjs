@@ -71,6 +71,7 @@ function fixture(){
  const semantics=Array.from({length:5},(_,i)=>({
   historicalEventOrdinal:i+1,choiceCardinalityAgrees:true,
   alternativeOutcomeStructureAgrees:true,
+  siteTerminalGroupOrdinals:i===3?[2]:[],
   explicitTerminalRouteCheck:{
    explicitTerminalRouteLocationVerified:i===3,
    routeEvidencePairCount:i===3?1:0
