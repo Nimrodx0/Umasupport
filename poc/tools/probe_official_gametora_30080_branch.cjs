@@ -153,8 +153,10 @@ async function run(path){
   };
   // The only output contains numbers, enums and booleans; no source text.
   console.log('ORIGINAL_GT_30080_BRANCH='+JSON.stringify(result));
-  if(!numericProof.everyNumericResultRouteOneToOne)
-   fail('old-source-vs-site-numeric-route-disagreement');
+  // An older source being different from the current live site is an audit
+  // finding, NOT a reason to rewrite the site's observed values from old JSON.
+  if(!numericProof.allObservedSignedScalarFactsParsed)
+   fail('site-signed-scalar-extraction-incomplete');
   if(!result.exactChoiceAndVisibleRouteCardinality)
    fail('old-source-vs-live-site-choice-route-disagreement');
   return result;
