@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "purpose": "sample-only-editorial-choice-label-source-corroboration",
   "cardId": "30001",
   "checkedOn": "2026-10-27",
@@ -14,47 +14,65 @@
   "normalizer": "NFKC+trim+UTF8+SHA256",
   "contentIncluded": false,
   "automaticTextPublicationAllowed": false,
-  "trainerGenderVariantCoverage": "default-article-only; alternative trainer-gender wording not fully reviewed",
-  "matchScope": "GameWith editorially displayed choice wording matched to historical example; not to GameTora direct visible wording",
+  "trainerGenderVariantCoverage": "six selected historical labels verified against male GameWith entries; unselected female variants not an input",
+  "matchScope": "Male (trainer) GameWith editorial choices: six historically pinned nonempty choices, not GameTora original site text",
   "choices": [
     {
       "eventOrdinal": 1,
       "choiceOrdinal": 1,
       "labelSha256": "9718de0828ec889eddda0a77d32e92fe26d52323e9ed166309774fc55b6a5fb5",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261724"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261724",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     },
     {
       "eventOrdinal": 1,
       "choiceOrdinal": 2,
       "labelSha256": "a00866373222a0f61ca6e49865f7588d1354c16265ad8dd5ba5240ef6b9d0e61",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261724"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261724",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     },
     {
       "eventOrdinal": 2,
       "choiceOrdinal": 1,
       "labelSha256": "05d9782f90f5a393a900c17485ae1e659a2ccaed7036587c68dde00961c852e9",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261812"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261812",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     },
     {
       "eventOrdinal": 2,
       "choiceOrdinal": 2,
       "labelSha256": "6d8fc326d6ec5e59c79005fd44746f6702b4fa816c97d5f60e805d180b108df5",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261812"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261812",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     },
     {
       "eventOrdinal": 4,
       "choiceOrdinal": 1,
       "labelSha256": "93d7416f3e158e21a5da5723048c99d4359ded80a8048a15f3cae7a7d8131164",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261813"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261813",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     },
     {
       "eventOrdinal": 4,
       "choiceOrdinal": 2,
       "labelSha256": "34330213b223f1b6cae927f55963a64964611f7d96cdc553976c4574a5a93e97",
-      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261813"
+      "gameWithEventPage": "https://gamewith.jp/uma-musume/article/show/261813",
+      "selectedGender": "male",
+      "maleLabelVerifiedInGameWithArticle": true
     }
   ],
   "siteEventChoiceRouteMappingVerifiedForOtherCards": false,
   "publishedChoiceTextCount": 0,
-  "publicationApproved": false
+  "publicationApproved": false,
+  "choiceDisplayPolicy": {
+    "gender": "male",
+    "allowFemaleFallback": false,
+    "genderSelectionUi": false,
+    "unknownMaleLabel": "unresolved"
+  }
 }

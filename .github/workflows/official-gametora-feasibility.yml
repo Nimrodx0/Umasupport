@@ -21,6 +21,8 @@ on:
       - 'poc/review/choice-label-provenance-30001.v1.json'
       - 'poc/tools/verify_choice_label_provenance.cjs'
       - 'poc/tests/choice_label_provenance.test.cjs'
+      - 'poc/src/choice_label_gender_policy.cjs'
+      - 'poc/tests/choice_label_gender_policy.test.cjs'
       - 'poc/tools/probe_official_gametora_new_cards.cjs'
       - 'poc/tests/official_gametora_new_cards.test.cjs'
 
@@ -54,6 +56,8 @@ jobs:
           node --test poc/tests/official_gametora_choice_outcome_semantics.test.cjs
           node --check poc/tools/verify_choice_label_provenance.cjs
           node --test poc/tests/choice_label_provenance.test.cjs
+          node --check poc/src/choice_label_gender_policy.cjs
+          node --test poc/tests/choice_label_gender_policy.test.cjs
           node --check poc/tools/probe_official_gametora_new_cards.cjs
           node --test poc/tests/official_gametora_new_cards.test.cjs
       - name: Read at most three official support-card pages, no source export
