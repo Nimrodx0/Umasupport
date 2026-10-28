@@ -25,8 +25,7 @@ const effectsOf=choice=>Array.isArray(choice.outcomes)?choice.outcomes.flat():ch
 function inspectOne(doc){
  const cardId=String(doc?.id||''),expected=EXPECTED[cardId];
  if(!expected||doc.kind!=='support'||!doc.events_ja||
-  !Array.isArray(Object.values(doc.events_ja))&&
-  (typeof doc.events_ja!=='object'||Array.isArray(doc.events_ja)))
+  typeof doc.events_ja!=='object'||Array.isArray(doc.events_ja))
   fail('旧カードID・元資料が異なる');
  const events=Object.values(doc.events_ja);
  if(events.length!==expected.eventCount||
