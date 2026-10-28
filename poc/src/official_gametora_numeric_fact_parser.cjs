@@ -18,7 +18,15 @@ const KINDS=[
  ['mood',/やる気|mood/i]
 ];
 const AMOUNT=/([+＋\-－−])\s*(\d{1,5})(?!\d)/g;
-const matchedEffectKinds=text=>typeof text==='string'?KINDS.filter(([,pattern])=>pattern.test(text)).map(([kind])=>kind):[];
+const matchedEffectKinds=text=>{
+ if(typeof text!=='string')return [];
+ // "最大体力" and "max energy" must not also match plain "energy".
+ // If the text separately names both effects, scanOwnText still rejects
+ // multiple signed numbers instead of silently combining them.
+ const withoutMaxEnergy=text.replace(/最大体力|max\s*(?:energy|stamina)/gi,'');
+ return KINDS.filter(([kind,pattern])=>
+  pattern.test(kind==='energy'?withoutMaxEnergy:text)).map(([kind])=>kind);
+};
 function scanOwnText(text){
  if(typeof text!=='string')return null;
  const nums=[...text.matchAll(AMOUNT)].map(m=>({sign:/[+＋]/.test(m[1])?1:-1,value:Number(m[2])}));
