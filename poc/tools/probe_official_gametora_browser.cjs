@@ -10,6 +10,8 @@ const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
+const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
+const {compareConvertedCardToSite}=require('../src/official_gametora_existing_normalized_parity.cjs');
 const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
@@ -343,13 +345,19 @@ async function probe(){
         }
        }
        return segments.map(roots=>{
-        const effectTexts=[],hintContexts=[];
+        const effectTexts=[],effectContexts=[],hintContexts=[];
         for(const root of roots){
          for(const el of [root,...root.querySelectorAll('*')]){
           const own=[...el.childNodes].filter(node=>node.nodeType===3)
            .map(node=>node.textContent||'').join('').trim();
           if(!own||!/[+＋\-－−]\s*\d/.test(own))continue;
           effectTexts.push(own);
+          const near=[];
+          for(let p=el,d=0;p&&d<5&&group.contains(p);p=p.parentElement,d++){
+           const value=p.innerText||'';
+           if(value.length<=300)near.push(value);
+          }
+          effectContexts.push(near.slice(0,6));
           if(/ヒント|hint/i.test(own)){
            const contexts=[];
            for(let p=el,d=0;p&&d<5&&group.contains(p);p=p.parentElement,d++){
@@ -361,6 +369,7 @@ async function probe(){
          }
         }
         return {effectTexts:effectTexts.slice(0,50),
+         effectContexts:effectContexts.slice(0,50),
          hintContexts:hintContexts.slice(0,10),splitByVisibleOr,
          outerGroupIndex:outerIndex+1,
          outerVisibleText:(group.innerText||'').slice(0,2800),
@@ -373,6 +382,7 @@ async function probe(){
      });
      const normalized=groups.map(group=>({
       effectTexts:group.effectTexts,
+      effectContexts:group.effectContexts,
       hintLinks:group.hintContexts.map(({own,contexts})=>{
        const level=scanOwnText(own)?.amount;
        const matches=contexts.map(c=>matchContextToId(c,registry));
@@ -410,6 +420,28 @@ async function probe(){
      allEventsHaveVerifiedRouteSemantics:false,
      publicationApproved:false,sourceProseIncluded:false
     };
+
+    // Compare the original site's rendered numeric groups to the ACTUAL
+    // existing UmaSupport converter's output, not just to the old JSON rows.
+    // The same historical pinned input and its SHA were checked above.
+    const existingNormalized=transformDocument(expected);
+    visible.existingConverterVsOriginalSitePilot=compareConvertedCardToSite(
+      existingNormalized,
+      visible.historicalTitleCrosscheck.provisionalComparisons,
+      allRenderedGroups
+    );
+    const intake=visible.existingConverterVsOriginalSitePilot;
+    // Pin both established success AND known gaps. Never call this 9/9 a
+    // complete event-JSON or all-effect match while eight raw numeric leaves
+    // still lack an independently recognized effect kind.
+    if(intake.eventsCompared!==5||intake.sourceRouteCount!==9||
+       intake.siteRouteCount!==9||intake.matchedUniqueRoutes!==9||
+       intake.parityEvents!==1||intake.unresolvedEvents!==4||
+       intake.events.reduce((n,x)=>n+x.renderedUnclassifiedNumeric,0)!==8||
+       intake.allFiveEventNumericProjectionsMatch!==false||
+       intake.fullAppEventJsonReproductionVerified!==false)
+      fail('30001の既存変換済み候補とGameTora本体の9経路一意対応・8未分類数値の固定監査が変化');
+
 
     visible.officialChoiceOutcomeSemanticsPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,

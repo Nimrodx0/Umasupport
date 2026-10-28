@@ -16,6 +16,9 @@ on:
       - 'poc/tests/official_gametora_skill_id_crosswalk.test.cjs'
       - 'poc/src/official_gametora_route_group_probe.cjs'
       - 'poc/tests/official_gametora_route_group_probe.test.cjs'
+      - 'poc/src/official_gametora_existing_normalized_parity.cjs'
+      - 'poc/tests/official_gametora_existing_normalized_parity.test.cjs'
+      - 'poc/src/gametora_whole_event_normalize.cjs'
       - 'poc/src/official_gametora_choice_outcome_semantics.cjs'
       - 'poc/tests/official_gametora_choice_outcome_semantics.test.cjs'
       - 'poc/review/choice-label-provenance-30001.v1.json'
@@ -62,6 +65,8 @@ jobs:
           node --test poc/tests/official_gametora_skill_id_crosswalk.test.cjs
           node --check poc/src/official_gametora_route_group_probe.cjs
           node --test poc/tests/official_gametora_route_group_probe.test.cjs
+          node --check poc/src/official_gametora_existing_normalized_parity.cjs
+          node --test poc/tests/official_gametora_existing_normalized_parity.test.cjs
           node --check poc/src/official_gametora_choice_outcome_semantics.cjs
           node --test poc/tests/official_gametora_choice_outcome_semantics.test.cjs
           node --check poc/tools/verify_choice_label_provenance.cjs
@@ -79,6 +84,9 @@ jobs:
           node --check poc/src/azuma_outing_sequence.cjs
           node --test poc/tests/azuma_outing_sequence.test.cjs
       - name: Read at most three official support-card pages, no source export
+        # New-card website visits are explicit/manual, not a prerequisite for
+        # proving parity against the existing converted 30001 baseline.
+        if: github.event_name == 'workflow_dispatch'
         run: node poc/src/official_gametora_probe.cjs --live
 
   one-card-browser-ui:
@@ -115,6 +123,8 @@ jobs:
         run: node poc/tools/probe_official_gametora_browser.cjs --live-browser
 
   two-new-cards-browser-ui:
+    # Historical-source parity PRs must not repeatedly request fresh cards.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
