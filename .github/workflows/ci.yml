@@ -34,6 +34,8 @@ jobs:
         run: node --check poc/src/gametora_branch_semantics_inventory.cjs && node --test poc/tests/gametora_branch_semantics_inventory.test.cjs
       - name: Verify structural cohort classification for existing GameTora cards (synthetic)
         run: node --check poc/src/official_gametora_old_structural_cohorts.cjs && node --test poc/tests/official_gametora_old_structural_cohorts.test.cjs
+      - name: Check old original-site numeric range observer on synthetic DOM excerpts
+        run: node --check poc/src/official_gametora_old_range_dom.cjs && node --check poc/tools/probe_official_gametora_old_ranges.cjs && node --test poc/tests/official_gametora_old_range_dom.test.cjs
 
       - name: Exercise actual deck aggregator with unpublished GT event choices, outcomes and terminal gates
         run: node --check poc/src/gametora_full_runtime_integration.cjs && node --test poc/tests/gametora_full_runtime_integration.test.cjs
