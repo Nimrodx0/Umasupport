@@ -129,6 +129,17 @@ test('app choice grouping, auto/OR outcomes and rejected source event cannot fak
  assert.equal(p.appSkillRouteParity,false);
  assert.equal(p.appEventsPresent,4);
 });
+test('site-proven terminal position must match the runtime choice, not merely the event',()=>{
+ const q=fixture();
+ const wrong=q.draft.appCard.events[3].choices;
+ delete wrong[1].terminal;
+ wrong[0].terminal=true;
+ const r=comparePinnedAppDraftToOriginalSite({draft:q.draft,siteParity:q.parity,
+  siteEventGroups:q.groups,siteChoiceSemantics:q.semantics});
+ assert.equal(r.appTerminalRoutes,1);
+ assert.equal(r.terminalRouteEvidenceEvents,0);
+ assert.equal(r.appTerminalFlagsFullyConfirmedBySite,false);
+});
 test('source site unobserved, ambiguous or partial route fact cannot pass',()=>{
  const q=fixture();
  q.parity.allFiveEventNumericProjectionsMatch=false;
