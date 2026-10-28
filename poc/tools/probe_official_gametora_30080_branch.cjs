@@ -11,12 +11,25 @@ const {inspectOne,EXPECTED}=require('../src/official_gametora_old_structural_coh
 const {inspectSiteTopology}=require('../src/official_gametora_rendered_branch_topology.cjs');
 const {compareNumericRoutes}=require('../src/official_gametora_old_numeric_route_parity.cjs');
 const {siteOnlyNumericDraft,summarizeNumericDraft}=require('../src/official_gametora_site_numeric_draft.cjs');
+const {registryFromSkillText}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {hintOnlyDraft,summarizeHintDraft}=require('../src/official_gametora_site_hint_draft.cjs');
 const CARD_ID='30080';
 const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
 const fail=code=>{throw Error('GameTora元サイトSSR30080限定分岐: '+code);};
 const key=s=>String(s||'').normalize('NFKC')
  .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
+function loadPinnedIndependentSkillRegistry(){
+ const path=process.env.GT_SKILL_REGISTRY_SAMPLE;
+ if(!path)fail('pinned-independent-skill-dictionary-required');
+ const bytes=fs.readFileSync(path);
+ if(bytes.length>6*1024*1024)fail('pinned-dictionary-oversize');
+ const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\\0')
+  .update(bytes).digest('hex');
+ if(sha!=='0c6ea6d72b037b24ee40860f73b0e86db47aab1d')
+  fail('pinned-independent-skill-dictionary-sha-drift');
+ return registryFromSkillText(bytes.toString('utf8'));
+}
 function loadPinned(path){
  const b=fs.readFileSync(path);
  const blob=crypto.createHash('sha1').update('blob '+b.length+'\0')
@@ -147,11 +160,14 @@ async function run(path){
    cardId:CARD_ID,siteEventOrdinal:positions[0]+1,groups
   });
   const draftSummary=summarizeNumericDraft(independentDraft);
+  const siteHintDraft=hintOnlyDraft(independentDraft,groups,skillRegistry);
+  const hintDraftSummary=summarizeHintDraft(siteHintDraft);
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
    sourceEventsTotal:Object.values(old.events_ja).length,
    uniquelyMatchedEventTitles:positions.length,
    ...proof,numericRouteParity:numericProof,siteOnlyDraft:draftSummary,
+   siteOnlyRouteHintDraft:hintDraftSummary,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false
@@ -167,6 +183,10 @@ async function run(path){
     independentDraft.visibleRouteCount!==numericProof.observedResultRoutes||
     independentDraft.appEventSchemaAdoptable!==false)
    fail('site-only-draft-incomplete-or-incorrectly-promoted');
+  if(siteHintDraft.seenHintRows!==independentDraft.excludedNonScalarNumericCount||
+     siteHintDraft.visibleRouteCount!==independentDraft.visibleRouteCount||
+     siteHintDraft.appEventSchemaAdoptable!==false)
+   fail('site-skill-hint-source-isolation-or-count-drift');
   if(!result.exactChoiceAndVisibleRouteCardinality)
    fail('old-source-vs-live-site-choice-route-disagreement');
   return result;
