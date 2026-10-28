@@ -14,6 +14,7 @@
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
 | SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
 | 次に元サイトと比較する既存GameTora旧カード構造別3枚 | [SSR30030／30041／30080の範囲値・3択・打ち切りを出典固定](official-gametora-existing-structural-cohorts-20261028.md) |
+| GameToraヒント行の局所・親DOMで生じる数値IDの誤曖昧判定を修正 | [SSR30080ヒント1件のスキルID解決と元サイト検証](official-gametora-hint-locality-20261028.md) |
 | 元GameTora結果別のスキルヒントID・Lv候補 | [独立UmaSim数値IDへの結果別照合と未解決ゲート](official-gametora-site-route-hint-candidates-20261028.md) |
 | GameTora元サイトだけを入力とする非公開数値中間候補 | [旧GT非依存の結果別数値変換器と未採用ゲート](official-gametora-site-only-numeric-draft-20261028.md) |
 | SSR30080元サイトの経路別12数値と旧固定の不一致 | [実Chromeで4経路を独立抽出し数値差を記録](official-gametora-30080-numeric-drift-20261028.md) |
