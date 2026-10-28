@@ -299,6 +299,7 @@ async function probe(){
     const splitByOrEvents=[];
     const allChoiceEvidence=[];
     const labelScopeEvidence=[];
+    const orphanNumericStructuralDiagnostics=[];
     for(let index=0;index<await events.count();index++){
      const btn=events.nth(index);
      if((await btn.getAttribute('aria-expanded'))!=='true')
@@ -405,7 +406,66 @@ async function probe(){
        });
      }
      allChoiceEvidence.push([...distinct.values()]);
+     // Metadata-only structural examination of orphan numeric text leaves.
+     // NEVER export card page prose, event names, option text, raw HTML or
+     // URLs: inspected attributes are reduced to safe taxonomy and tag counts.
+     orphanNumericStructuralDiagnostics.push(await btn.evaluate(button=>{
+      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+      const evidence=[];
+      if(!panel)return evidence;
+      const number=/[+＋\-－−]\s*\d{1,5}(?!\d)/;
+      const kinds=/ヒント|hint|スキル|skill|最大体力|max.*energy|体力|energy|スピード|speed|スタミナ|stamina|パワー|power|根性|guts|賢さ|wisdom|wit|絆|bond|friendship|やる気|mood/i;
+      const matchedKind=str=>{
+       const r=/(?:絆|bond|friendship|kizuna)/i;
+       return r.test(str)?'bond':
+        /(?:スキル|skill)/i.test(str)?'skill':
+        /(?:体力|energy)/i.test(str)?'energy':
+        /(?:スピード|speed)/i.test(str)?'speed':
+        /(?:スタミナ|stamina)/i.test(str)?'stamina':
+        /(?:根性|guts)/i.test(str)?'guts':
+        /(?:賢さ|wisdom|wit)/i.test(str)?'wisdom':
+        /(?:パワー|power)/i.test(str)?'power':
+        /(?:やる気|mood)/i.test(str)?'mood':null;
+      };
+      const safeAttrData=el=>{
+       if(!el)return {tag:null};
+       const names=['alt','title','aria-label','data-tooltip','data-title',
+        'src','class','style','data-state','data-testid'];
+       const selected=names.filter(k=>el.hasAttribute(k));
+       const hits=selected.map(k=>matchedKind(el.getAttribute(k)||'')).filter(Boolean);
+       return {tag:el.tagName.toLowerCase(),attrKinds:[...new Set(hits)],
+        attrsPresent:selected,children:el.childElementCount,
+        img:el.querySelectorAll('img').length,
+        svg:el.querySelectorAll('svg').length};
+      };
+      for(const el of [panel,...panel.querySelectorAll('*')]){
+       const own=[...el.childNodes].filter(x=>x.nodeType===3)
+        .map(x=>x.textContent||'').join('').trim();
+       if(!number.test(own)||kinds.test(own))continue;
+       const path=[];
+       for(let p=el,depth=0;p&&panel.contains(p)&&depth<4;p=p.parentElement,depth++){
+        const direct=[...p.children].slice(0,8);
+        const prev=p.previousElementSibling,next=p.nextElementSibling;
+        path.push({depth,element:safeAttrData(p),
+         children:direct.map(safeAttrData),
+         siblings:[safeAttrData(prev),safeAttrData(next)],
+         images:[...p.querySelectorAll('img')].slice(0,5).map(safeAttrData),
+         svg:[...p.querySelectorAll('svg')].slice(0,5).map(safeAttrData)});
+       }
+       evidence.push({path,ownTextNumericOnly:/^[+＋\-－−]\s*\d{1,5}$/.test(own),
+         signedNumberOccurrences:(own.match(/[+＋\-－−]\s*\d{1,5}/g)||[]).length});
+      }
+      return evidence.slice(0,20);
+     }));
+
     }
+    visible.orphanNumericStructuralDiagnostics={
+     totalLeaves:orphanNumericStructuralDiagnostics.flat().length,
+     byEvent:orphanNumericStructuralDiagnostics.map((rows,i)=>({
+      displayedEventOrdinal:i+1,count:rows.length,rows
+     })),
+     allEventTextExcluded:true,allSourceUrlsExcluded:true
+    };
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
      comparisons:visible.historicalTitleCrosscheck.provisionalComparisons.map(x=>({
