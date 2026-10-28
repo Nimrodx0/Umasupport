@@ -6,6 +6,8 @@ on:
       - 'poc/src/official_gametora_rendered_branch_topology.cjs'
       - 'poc/src/official_gametora_old_numeric_route_parity.cjs'
       - 'poc/src/official_gametora_site_numeric_draft.cjs'
+      - 'poc/src/official_gametora_site_hint_draft.cjs'
+      - 'poc/tests/official_gametora_site_hint_draft.test.cjs'
       - 'poc/tests/official_gametora_site_numeric_draft.test.cjs'
       - 'poc/tests/official_gametora_old_numeric_route_parity.test.cjs'
       - 'poc/tests/official_gametora_rendered_branch_topology.test.cjs'
@@ -35,6 +37,8 @@ jobs:
           node --test poc/tests/official_gametora_old_numeric_route_parity.test.cjs
           node --check poc/src/official_gametora_site_numeric_draft.cjs
           node --test poc/tests/official_gametora_site_numeric_draft.test.cjs
+          node --check poc/src/official_gametora_site_hint_draft.cjs
+          node --test poc/tests/official_gametora_site_hint_draft.test.cjs
       - name: Use installed Chrome and Playwright
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
@@ -45,8 +49,16 @@ jobs:
           curl --fail --silent --show-error --location --retry 1 --max-time 30 \
             'https://raw.githubusercontent.com/systemless10/UmamusumePS/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30080.json' \
             -o "$RUNNER_TEMP/gt-old-30080.json"
+      - name: Download only one pinned independent UmaSim skill registry
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-pinned-30080-skills.json"
       - name: Inspect one named event panel on the original GameTora website
         shell: bash
+        env:
+          GT_SKILL_REGISTRY_SAMPLE: ${{ runner.temp }}/umasim-pinned-30080-skills.json
         run: |
           node poc/tools/probe_official_gametora_30080_branch.cjs \
             --live-30080 "$RUNNER_TEMP/gt-old-30080.json"

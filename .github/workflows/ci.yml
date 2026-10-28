@@ -42,6 +42,8 @@ jobs:
         run: node --check poc/src/official_gametora_old_numeric_route_parity.cjs && node --test poc/tests/official_gametora_old_numeric_route_parity.test.cjs
       - name: Verify source-independent provisional GameTora numeric draft without public promotion
         run: node --check poc/src/official_gametora_site_numeric_draft.cjs && node --test poc/tests/official_gametora_site_numeric_draft.test.cjs
+      - name: Verify route-local live-site hint names map only to independent IDs and levels
+        run: node --check poc/src/official_gametora_site_hint_draft.cjs && node --test poc/tests/official_gametora_site_hint_draft.test.cjs
 
       - name: Exercise actual deck aggregator with unpublished GT event choices, outcomes and terminal gates
         run: node --check poc/src/gametora_full_runtime_integration.cjs && node --test poc/tests/gametora_full_runtime_integration.test.cjs

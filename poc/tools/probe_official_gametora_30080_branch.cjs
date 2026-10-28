@@ -11,12 +11,26 @@ const {inspectOne,EXPECTED}=require('../src/official_gametora_old_structural_coh
 const {inspectSiteTopology}=require('../src/official_gametora_rendered_branch_topology.cjs');
 const {compareNumericRoutes}=require('../src/official_gametora_old_numeric_route_parity.cjs');
 const {siteOnlyNumericDraft,summarizeNumericDraft}=require('../src/official_gametora_site_numeric_draft.cjs');
+const {registryFromSkillText}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {hintOnlyDraft,summarizeHintDraft}=require('../src/official_gametora_site_hint_draft.cjs');
 const CARD_ID='30080';
 const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
 const fail=code=>{throw Error('GameTora元サイトSSR30080限定分岐: '+code);};
+let auditStage='not-started';
 const key=s=>String(s||'').normalize('NFKC')
  .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
+function loadPinnedIndependentSkillRegistry(){
+ const path=process.env.GT_SKILL_REGISTRY_SAMPLE;
+ if(!path)fail('pinned-independent-skill-dictionary-required');
+ const bytes=fs.readFileSync(path);
+ if(bytes.length>6*1024*1024)fail('pinned-dictionary-oversize');
+ const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\0')
+  .update(bytes).digest('hex');
+ if(sha!=='0c6ea6d72b037b24ee40860f73b0e86db47aab1d')
+  fail('pinned-independent-skill-dictionary-sha-drift');
+ return registryFromSkillText(bytes.toString('utf8'));
+}
 function loadPinned(path){
  const b=fs.readFileSync(path);
  const blob=crypto.createHash('sha1').update('blob '+b.length+'\0')
@@ -28,9 +42,13 @@ function loadPinned(path){
  return doc;
 }
 async function run(path){
+ auditStage='pinned-input';
  const old=loadPinned(path);
+ auditStage='pinned-registry';
+ const skillRegistry=loadPinnedIndependentSkillRegistry();
  const eventOrdinal=EXPECTED[CARD_ID].expectedBranch.event;
  const event=Object.values(old.events_ja)[eventOrdinal-1];
+ auditStage='robots-policy';
  const robotsResponse=await fetch('https://gametora.com/robots.txt',{
   headers:{'User-Agent':'UmaSupportLab-small-original-site-verification/1'},
   redirect:'error',signal:AbortSignal.timeout(20000)
@@ -39,6 +57,7 @@ async function run(path){
  const robots=await robotsResponse.text();
  if(robots.length>200000||robotsDisallows(robots,new URL(PAGE_URL).pathname).length)
   fail('robots-block-or-oversize');
+ auditStage='chrome-launch';
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage({locale:'ja-JP'});
@@ -53,10 +72,12 @@ async function run(path){
   page.on('response',response=>{
    if([403,429].includes(response.status()))blocked=true;
   });
+  auditStage='navigation';
   const response=await page.goto(PAGE_URL,{waitUntil:'domcontentloaded',timeout:30000});
   if(!response||response.status()!==200||blocked)fail('unexpected-site-response');
   await page.waitForTimeout(3500);
   if(blocked)fail('site-blocked');
+  auditStage='event-matching';
   const buttons=page.locator('section button[aria-expanded]');
   const names=await buttons.allInnerTexts();
   const target=key(event.name);
@@ -68,6 +89,7 @@ async function run(path){
   if(await button.getAttribute('aria-expanded')!=='true')
    await button.click({timeout:6500});
   await page.waitForTimeout(750);
+  auditStage='dom-extraction';
   const groups=await button.evaluate(button=>{
    const panel=[...button.parentElement.children].find(el=>el.tagName==='DIV');
    const section=panel?.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild;
@@ -141,17 +163,22 @@ async function run(path){
    });
   });
   const siteDomDiagnostics=groups.map(g=>g.diagnostic);
+  auditStage='numeric-parsing';
   const proof=inspectSiteTopology(event,groups);
   const numericProof=compareNumericRoutes(event,groups.map(g=>g.numericSegments));
   const independentDraft=siteOnlyNumericDraft({
    cardId:CARD_ID,siteEventOrdinal:positions[0]+1,groups
   });
   const draftSummary=summarizeNumericDraft(independentDraft);
+  auditStage='route-hint-parsing';
+  const siteHintDraft=hintOnlyDraft(independentDraft,groups,skillRegistry);
+  const hintDraftSummary=summarizeHintDraft(siteHintDraft);
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
    sourceEventsTotal:Object.values(old.events_ja).length,
    uniquelyMatchedEventTitles:positions.length,
    ...proof,numericRouteParity:numericProof,siteOnlyDraft:draftSummary,
+   siteOnlyRouteHintDraft:hintDraftSummary,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false
@@ -167,6 +194,10 @@ async function run(path){
     independentDraft.visibleRouteCount!==numericProof.observedResultRoutes||
     independentDraft.appEventSchemaAdoptable!==false)
    fail('site-only-draft-incomplete-or-incorrectly-promoted');
+  if(siteHintDraft.seenHintRows!==independentDraft.excludedNonScalarNumericCount||
+     siteHintDraft.visibleRouteCount!==independentDraft.visibleRouteCount||
+     siteHintDraft.appEventSchemaAdoptable!==false)
+   fail('site-skill-hint-source-isolation-or-count-drift');
   if(!result.exactChoiceAndVisibleRouteCardinality)
    fail('old-source-vs-live-site-choice-route-disagreement');
   return result;
@@ -177,7 +208,8 @@ if(require.main===module){
   fail('explicit-original-site-run-with-pinned-json-required');
  run(process.argv[3]).catch(e=>{
   console.error(/^GameTora元サイトSSR30080限定分岐:/.test(e.message)?e.message:
-   'GameTora元サイトSSR30080限定分岐: browser-or-site-error');
+   'GameTora元サイトSSR30080限定分岐: '+auditStage+'-'+
+     (/^[A-Za-z]+Error$/.test(e.name||'')?e.name:'failure'));
   process.exitCode=1;
  });
 }
