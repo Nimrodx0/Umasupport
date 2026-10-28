@@ -4,7 +4,7 @@ const {inspectCohort}=require('../src/official_gametora_old_structural_cohorts.c
 const pins={
  '30030':'95d6692825af1d7774b0382245016433660509c9',
  '30041':'fda834045267a13bd06d51d39468ac7cb9367136',
- '30080':null
+ '30080':'8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86'
 };
 function main(args){
  if(args.length!==3)throw Error('usage: support_30030.json support_30041.json support_30080.json');
