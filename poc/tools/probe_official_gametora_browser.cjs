@@ -405,6 +405,7 @@ async function probe(){
        });
      }
      allChoiceEvidence.push([...distinct.values()]);
+
     }
     visible.officialRouteGroupingPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
@@ -431,16 +432,19 @@ async function probe(){
       allRenderedGroups
     );
     const intake=visible.existingConverterVsOriginalSitePilot;
-    // Pin both established success AND known gaps. Never call this 9/9 a
-    // complete event-JSON or all-effect match while eight raw numeric leaves
-    // still lack an independently recognized effect kind.
+    // Pin full source-vs-DOM numeric comparisons for five historical
+    // events including eight explicitly labeled bond effects. This does NOT
+    // demonstrate full app JSON, game semantics or rights verification.
     if(intake.eventsCompared!==5||intake.sourceRouteCount!==9||
        intake.siteRouteCount!==9||intake.matchedUniqueRoutes!==9||
-       intake.parityEvents!==1||intake.unresolvedEvents!==4||
-       intake.events.reduce((n,x)=>n+x.renderedUnclassifiedNumeric,0)!==8||
-       intake.allFiveEventNumericProjectionsMatch!==false||
+       intake.parityEvents!==5||intake.unresolvedEvents!==0||
+       intake.events.reduce((n,x)=>n+x.renderedUnclassifiedNumeric,0)!==0||
+       intake.events.reduce((n,x)=>n+x.existingConverterBondFacts,0)!==8||
+       intake.events.reduce((n,x)=>n+x.directlyParsedSiteBondFacts,0)!==8||
+       intake.events.some(x=>x.existingConverterBondFacts!==x.directlyParsedSiteBondFacts)||
+       intake.allFiveEventNumericProjectionsMatch!==true||
        intake.fullAppEventJsonReproductionVerified!==false)
-      fail('30001の既存変換済み候補とGameTora本体の9経路一意対応・8未分類数値の固定監査が変化');
+      fail('30001の既存数値変換候補と本体DOMの5イベント9経路・絆数値8件の全経路照合が変化');
 
 
     visible.officialChoiceOutcomeSemanticsPilot={

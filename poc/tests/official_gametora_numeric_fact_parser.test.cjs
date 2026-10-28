@@ -8,6 +8,10 @@ test('parse signed Japanese and English game effects into label-free numeric fac
  assert.equal(scanOwnText('体力－10').amount,-10);
  assert.equal(scanOwnText('スキル「架空」のヒントLv +2').kind,'skill_hint');
  assert.equal(scanOwnText('絆ゲージ +5').kind,'bond');
+ assert.equal(scanOwnText('友情ゲージ +5').kind,'bond');
+ assert.equal(scanOwnText('友情ゲージ－5').amount,-5);
+ assert.equal(scanOwnText('友情ボーナス +5').kind,'unclassified');
+ assert.equal(scanOwnText('友情トレーニング +5').kind,'unclassified');
  assert.equal(scanOwnText('やる気 +1').kind,'mood');
  assert.equal(scanOwnText('おいしい！'),null);
  assert.equal(scanOwnText('不明 +5').kind,'unclassified');

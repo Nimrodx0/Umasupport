@@ -88,6 +88,26 @@ test('unknown source effect or site numeric marks partial comparison, not data c
  assert.equal(r2.visibleNumericProjectionParity,false);
  assert.equal(r2.renderedUnclassifiedNumeric,1);
 });
+test('explicit website 友情ゲージ numeric effects match pinned source bond, without conflating friendship bonus',()=>{
+ const d=synthetic();
+ d.events_ja['乙'].choices[0].effects.push({type:'bond',value:'+5'});
+ const normalized=transformDocument(d);
+ const result=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ゲージ +5'],hintLinks:[]}
+ ]);
+ assert.equal(result.visibleNumericProjectionParity,true);
+ assert.equal(result.bondNumericValueSourceCompared,true);
+ assert.equal(result.bondRecipientIdentityVerified,false);
+ const wrong=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ゲージ +4'],hintLinks:[]}
+ ]);
+ assert.equal(wrong.visibleNumericProjectionParity,false);
+ assert.equal(wrong.missingNormalizedRoutes,1);
+ const bonus=compareConvertedToSiteEvent(normalized.events[1],[
+  {effectTexts:['スタミナ +5','友情ボーナス +5'],hintLinks:[]}
+ ]);
+ assert.equal(bonus.visibleNumericProjectionParity,false);
+});
 test('missing/duplicated title join or wrong source category blocks a false five-event pass',()=>{
  const normalized=transformDocument(synthetic());
  const mismatch=joins();mismatch[1].renderedEventPosition=1;
@@ -111,14 +131,14 @@ test('bounded same-route numeric context resolves one known kind, never borrows 
  const malformed=parseNumericFactWithLocalContext('+5',['スピード +5',42]);
  assert.equal(malformed.resolvedWithContext,false);
 });
-test('a known out-of-scope bond fact is tracked, not falsely counted as unknown main reward',()=>{
+test('context-located bond cannot silently pass when absent from old normalized numeric route',()=>{
  const normalized=transformDocument(synthetic());
  const groups=[{effectTexts:['スタミナ +5','+5'],effectContexts:[
   ['スタミナ +5'],['+5','絆 +5']],hintLinks:[]}];
  const r=compareConvertedToSiteEvent(normalized.events[1],groups);
- assert.equal(r.uniquelyMatchedRouteCount,1);
- assert.equal(r.siteBondNumericFactsOutsideComparedSubset,1);
+ assert.equal(r.uniquelyMatchedRouteCount,0);
+ assert.equal(r.directlyParsedSiteBondFacts,1);
  assert.equal(r.numericKindResolvedByBoundedDOMContext,1);
- assert.equal(r.visibleNumericProjectionParity,true);
+ assert.equal(r.visibleNumericProjectionParity,false);
  assert.equal(r.bondRecipientIdentityVerified,false);
 });

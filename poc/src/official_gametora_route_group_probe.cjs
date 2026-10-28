@@ -44,7 +44,9 @@ function compareRenderedGroups(event,groups){
     x.hintLinks.some(h=>typeof h?.status!=='string')))
   fail('描画候補グループが不正');
  const observed=groups.map((g,index)=>{
-  const effects=g.effectTexts.map(scanOwnText).filter(f=>f&&f.kind!=='unclassified'&&f.amount!==null);
+  // Legacy fact-signature probe intentionally compares the preexisting subset.
+  // Bond deltas are independently checked by official_gametora_existing_normalized_parity.cjs.
+  const effects=g.effectTexts.map(scanOwnText).filter(f=>f&&f.kind!=='bond'&&f.kind!=='unclassified'&&f.amount!==null);
   const hints=g.hintLinks.filter(x=>x.status==='unique-verified-name'&&
     typeof x.numericId==='string'&&Number.isInteger(x.level)&&x.level>=1);
   return {index:index+1,factualSignature:normSet(effects.map(f=>f.kind+':'+f.amount)),
