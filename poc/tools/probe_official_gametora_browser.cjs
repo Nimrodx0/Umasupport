@@ -10,6 +10,8 @@ const {compareTitles}=require('../src/official_gametora_title_crosscheck.cjs');
 const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
+const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
+const {compareConvertedCardToSite}=require('../src/official_gametora_existing_normalized_parity.cjs');
 const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
 const {TARGETS,pageUrl}=require('../src/official_gametora_probe.cjs');
@@ -410,6 +412,16 @@ async function probe(){
      allEventsHaveVerifiedRouteSemantics:false,
      publicationApproved:false,sourceProseIncluded:false
     };
+
+    // Compare the original site's rendered numeric groups to the ACTUAL
+    // existing UmaSupport converter's output, not just to the old JSON rows.
+    // The same historical pinned input and its SHA were checked above.
+    const existingNormalized=transformDocument(expected);
+    visible.existingConverterVsOriginalSitePilot=compareConvertedCardToSite(
+      existingNormalized,
+      visible.historicalTitleCrosscheck.provisionalComparisons,
+      allRenderedGroups
+    );
 
     visible.officialChoiceOutcomeSemanticsPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
