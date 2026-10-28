@@ -115,7 +115,7 @@ test('production merger rejects cross-route effect swap even if card-level total
  const tmp=a.effects; a.effects=b.effects;b.effects=tmp;
  const combined=combineActualAppDrafts(q);
  assert.equal(combined.mergedNumericEffects,31);
- assert.throws(()=>compareCombinedToOriginalSite(q),/元サイトのスキルと非スキルを共存できない/);
+ assert.throws(()=>compareCombinedToOriginalSite(q),/独立一致した二系統の投影証拠が不完全/);
 });
 test('missing result and inconsistent source terminal cannot be accepted by merger',()=>{
  const q=fixture();
