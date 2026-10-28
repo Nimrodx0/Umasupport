@@ -84,6 +84,11 @@ function evaluateOutingEvidence(ledger,rendered){
  const allSixLocated=matches.every(x=>x.uniqueSiteTitleMatch);
  const distinctLocations=new Set(matches.map(x=>x.matchedSiteEventOrdinal).filter(Number.isInteger));
  const sitesDistinct=distinctLocations.size===matches.filter(x=>x.uniqueSiteTitleMatch).length;
+ const outingPositions=matches.slice(1).map(x=>x.matchedSiteEventOrdinal);
+ const contiguousOutingHeadingRun=outingPositions.every(Number.isInteger)&&
+  outingPositions.every((pos,i)=>i===0||pos===outingPositions[i-1]+1);
+ const siteHeadingOrderMatchesEditorial=outingPositions.every(Number.isInteger)&&
+  outingPositions.every((pos,i)=>i===0||pos>outingPositions[i-1]);
  return {
   cardId:'30323',
   editorialSource:'GameWith',
@@ -93,6 +98,8 @@ function evaluateOutingEvidence(ledger,rendered){
   siteMatchingHeadingsUniqueAndDistinct:allSixLocated&&sitesDistinct,
   editorialChoiceCountCorroborated:matches.filter(x=>x.editorChoiceCountCorroborated).length,
   outgoingEventCandidateCount:matches.length-1,
+  siteOutingHeadingOrderMatchesEditorial:siteHeadingOrderMatchesEditorial,
+  siteOutingHeadingsFormContiguousList:contiguousOutingHeadingRun,
   firstEventBothChoicesExplicitlyEnableOutingsInGameWith:true,
   editorialUnlockFactAdoptableForPrivateCandidate:unlockAdoptable,
   officialSiteExplicitUnlockOnFirstEvent:intro.explicitSiteUnlockGroups,
