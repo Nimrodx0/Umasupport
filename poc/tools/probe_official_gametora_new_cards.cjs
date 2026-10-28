@@ -8,6 +8,7 @@ const {registryFromSkillText,resolveHintContextChain}=require('../src/official_g
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
+const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -221,6 +222,7 @@ async function probe(){
    const allRows=[];
    const eventRouteHints=[];
    const eventDirectGrantDrafts=[];
+   const eventFlowDrafts=[];
    const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
@@ -347,11 +349,27 @@ async function probe(){
           [...el.childNodes].filter(n=>n.nodeType===3)
            .map(n=>n.textContent||'').join('').trim())
           .filter(t=>t.length<=300&&/(?:獲得|習得|取得)/.test(t))
+        ).slice(0,80),
+        flowOwnTexts:roots.flatMap(root=>
+         [root,...root.querySelectorAll('*')].map(el=>
+          [...el.childNodes].filter(n=>n.nodeType===3)
+           .map(n=>n.textContent||'').join('').trim())
+          .filter(t=>t.length<=300&&
+           /(?:連続|イベントチェーン|お出かけ|おでかけ)/.test(t)&&
+           /(?:打ち切り|終了|中断|発生しない|可能|解放|できるようになる)/.test(t))
         ).slice(0,80)
        };
       });
      });
     });
+    const flow=routeFlowCandidates({
+     cardId:target.cardId,siteEventOrdinal:idx+1,
+     routes:routePieces.map(r=>({
+      choiceGroupOrdinal:r.choiceOrdinal,resultOrdinal:r.outcomeOrdinal,
+      unresolvedOr:r.unresolvedOr,flowOwnTexts:r.flowOwnTexts
+     }))
+    });
+    eventFlowDrafts.push(summarizeFlowDraft(flow));
     if(registry){
      // Source-only candidate extraction, historical GT has no input role.
      const direct=siteDirectSkillDraft({cardId:target.cardId,
@@ -399,6 +417,24 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const visibleFlowObservations={
+    panelsInspected:eventFlowDrafts.length,
+    resultRoutesInspected:eventFlowDrafts.reduce((n,d)=>n+d.routes,0),
+    locatedMarkers:eventFlowDrafts.reduce((n,d)=>n+d.locatedMarkerKinds,0),
+    unlocatedMarkers:eventFlowDrafts.reduce((n,d)=>n+d.unlocatedMarkerKinds,0),
+    markerTotals:eventFlowDrafts.reduce((counts,d)=>{
+     for(const [key,value] of Object.entries(d.markerCounts))
+      counts[key]=(counts[key]||0)+value;
+     return counts;
+    },{}),
+    perEvent:eventFlowDrafts.map((d,i)=>({
+     siteEventOrdinal:i+1,resultRoutes:d.routes,
+     markerCounts:d.markerCounts,
+     unlocatedMarkerKinds:d.unlocatedMarkerKinds
+    })),
+    allNextEventDependenciesProven:false,
+    publicationApproved:false
+   };
    const directSkillObservations={
     panelsInspected:eventDirectGrantDrafts.length,
     resultRoutesInspected:eventDirectGrantDrafts.reduce((n,d)=>n+d.resultRoutes,0),
@@ -470,6 +506,7 @@ async function probe(){
     census,
     routeHintBinding,
     directSkillObservations,
+    visibleFlowObservations,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
