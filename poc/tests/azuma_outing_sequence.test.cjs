@@ -80,15 +80,20 @@ test('one unobserved end heading is a source gap, never proof of a missing game 
 });
 test('progression preserves ordered prefix and editorial completion without claiming route termination',()=>{
  const before=evaluateSequenceCandidate(ledger,opening,[]);
- assert.equal(before.nextStageOrdinalCandidate,1);
+ assert.equal(before.nextStageOrdinalCandidate,null);
+ assert.equal(before.outingSeriesState,'locked-before-opening-choice');
+ assert.equal(before.nextStageAccessStatus,'requires-opening-choice');
+ const unlocked=evaluateSequenceCandidate(ledger,opening,[],null,1);
+ assert.equal(unlocked.nextStageOrdinalCandidate,1);
  assert.equal(before.trainingEndBranchEditorialCandidate,'incomplete');
- const after2=evaluateSequenceCandidate(ledger,opening,[1,2]);
+ const after2=evaluateSequenceCandidate(ledger,opening,[1,2],null,1);
  assert.equal(after2.nextStageOrdinalCandidate,3);
- const after3=evaluateSequenceCandidate(ledger,opening,[1,2,3],2);
+ const after3=evaluateSequenceCandidate(ledger,opening,[1,2,3],2,2);
  assert.equal(after3.nextStageOrdinalCandidate,4);
  assert.equal(after3.nextStageAccessStatus,'conditional-choice-continuation-not-independently-verified');
- const completed=evaluateSequenceCandidate(ledger,opening,[1,2,3,4,5],1);
+ const completed=evaluateSequenceCandidate(ledger,opening,[1,2,3,4,5],1,1);
  assert.equal(completed.outingSeriesState,'five-stage-series-completed');
+ assert.equal(completed.simulationOnlyNotPlayerObservation,true);
  assert.equal(completed.trainingEndBranchEditorialCandidate,'completed');
  assert.equal(completed.nextStageOrdinalCandidate,null);
  assert.equal(completed.terminalFlagGenerated,false);
@@ -96,10 +101,12 @@ test('progression preserves ordered prefix and editorial completion without clai
  assert.equal(completed.publicationApproved,false);
 });
 test('unearned stages, unverified opener, unknown third-stage branch and fake game proof fail closed',()=>{
- assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,3]),/飛び/);
- assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2,3]),/未確定/);
- assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2],1),/未確定/);
- assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2,3],3),/未確定/);
- assert.throws(()=>evaluateSequenceCandidate(ledger,{...opening,siteEventOrdinal:7},[]),/一致しない/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,3],null,1),/飛び/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2,3],null,1),/未確定/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2],1,1),/未確定/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1,2,3],3,1),/未確定/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,{...opening,siteEventOrdinal:7},[],null,1),/一致しない/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1]),/飛び/);
+ assert.throws(()=>evaluateSequenceCandidate(ledger,opening,[1],null,3),/飛び/);
  assert.throws(()=>validateSequenceLedger({...ledger,gamePlayIndependentlyVerified:true}),/無根拠/);
 });
