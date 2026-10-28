@@ -108,7 +108,7 @@ function evaluateSequenceCandidate(ledger,opening,completedStages,selectedThirdS
   cardId:'30323',
   assumedOpeningChoiceOrdinal:selectedOpeningChoiceOrdinal,
   simulationOnlyNotPlayerObservation:true,
-  observedStageCompletionPrefix:completedStages.slice(),
+  hypotheticalCompletedStagePrefix:completedStages.slice(),
   fiveStageEditorialSequence:true,
   outingSeriesState:!unlocked?'locked-before-opening-choice':
    complete?'five-stage-series-completed':n===0?'unstarted':'partially-completed',
