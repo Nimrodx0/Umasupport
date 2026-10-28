@@ -345,13 +345,19 @@ async function probe(){
         }
        }
        return segments.map(roots=>{
-        const effectTexts=[],hintContexts=[];
+        const effectTexts=[],effectContexts=[],hintContexts=[];
         for(const root of roots){
          for(const el of [root,...root.querySelectorAll('*')]){
           const own=[...el.childNodes].filter(node=>node.nodeType===3)
            .map(node=>node.textContent||'').join('').trim();
           if(!own||!/[+＋\-－−]\s*\d/.test(own))continue;
           effectTexts.push(own);
+          const near=[];
+          for(let p=el,d=0;p&&d<5&&group.contains(p);p=p.parentElement,d++){
+           const value=p.innerText||'';
+           if(value.length<=300)near.push(value);
+          }
+          effectContexts.push(near.slice(0,6));
           if(/ヒント|hint/i.test(own)){
            const contexts=[];
            for(let p=el,d=0;p&&d<5&&group.contains(p);p=p.parentElement,d++){
@@ -363,6 +369,7 @@ async function probe(){
          }
         }
         return {effectTexts:effectTexts.slice(0,50),
+         effectContexts:effectContexts.slice(0,50),
          hintContexts:hintContexts.slice(0,10),splitByVisibleOr,
          outerGroupIndex:outerIndex+1,
          outerVisibleText:(group.innerText||'').slice(0,2800),
@@ -375,6 +382,7 @@ async function probe(){
      });
      const normalized=groups.map(group=>({
       effectTexts:group.effectTexts,
+      effectContexts:group.effectContexts,
       hintLinks:group.hintContexts.map(({own,contexts})=>{
        const level=scanOwnText(own)?.amount;
        const matches=contexts.map(c=>matchContextToId(c,registry));
