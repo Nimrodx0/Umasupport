@@ -466,6 +466,17 @@ async function probe(){
       outingEvidence.bothOriginalSiteChoiceGroupsExplicitlyUnlock!==true||
       outingEvidence.privateUnlockRouteCandidate?.siteEventOrdinal!==8))
      fail('SSR30323の6お出かけ見出しと2択の解放出典に差分。承認せず再調査');
+   // Two independent choices in SSR30323's opening outing event must both
+   // display unlock on their own SINGLE result, not only at group-title level.
+   // This fixed sample check does not assume access to any later outing stage.
+   if(target.cardId==='30323'){
+    const opening=eventFlowDrafts[7];
+    if(!opening||opening.routes!==2||
+     opening.markerCounts['explicit-outing-unlock']!==2||
+     opening.locatedMarkerKinds!==2||opening.unlocatedMarkerKinds!==0||
+     visibleFlowObservations.resultRoutesInspected!==census.candidateOutcomeRoutes)
+     fail('SSR30323の両選択肢のお出かけ解放表示が結果別に独立していない');
+   }
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
