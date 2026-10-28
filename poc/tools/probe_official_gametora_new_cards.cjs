@@ -4,7 +4,7 @@
  * strings, images and JSON do not leave process memory. No event ingest here.
  */
 const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.cjs');
-const {registryFromSkillText,matchContextToId}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {registryFromSkillText,resolveHintContextChain}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
@@ -351,19 +351,13 @@ async function probe(){
       const level=fact?.kind==='skill_hint'&&Number.isInteger(fact.amount)?
        fact.amount:null;
       if(!registry)return {status:'registry-not-loaded',level};
-      const candidates=h.contexts.map(text=>matchContextToId(text,registry));
-      const match=candidates.find(x=>x.status==='unique-verified-name')||
-       candidates.find(x=>x.status==='ambiguous-name-or-id')||
-       candidates.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+      const match=resolveHintContextChain(h.contexts,registry);
       return {...match,level};
      })
     }));
     const matched=view.hintContexts.map(contexts=>{
      if(!registry)return {status:'registry-not-loaded'};
-     const results=contexts.map(s=>matchContextToId(s,registry));
-     return results.find(x=>x.status==='unique-verified-name')||
-      results.find(x=>x.status==='ambiguous-name-or-id')||
-      results.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+     return resolveHintContextChain(contexts,registry);
     });
     const global=view.hintContexts.map((contexts,i)=>{
      const original=view.hintOriginalTexts[i];
