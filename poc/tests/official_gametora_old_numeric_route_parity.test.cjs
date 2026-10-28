@@ -31,6 +31,8 @@ test('all four routes and all scalar facts are uniquely matched by typed numbers
  assert.equal(result.siteScalarEffects,12);
  assert.equal(result.uniquelyMatchedNumericRoutes,4);
  assert.equal(result.everyNumericResultRouteOneToOne,true);
+ assert.equal(result.allObservedSignedScalarFactsParsed,true);
+ assert.equal(result.historicalValueOrEffectKindDriftObserved,false);
  assert.equal(result.skillHintIdAndLevelVerified,false);
  assert.equal(result.directSkillGrantVerified,false);
  assert.equal(result.bondRecipientIdentityVerified,false);
@@ -47,7 +49,10 @@ test('a permutation of two OR outcome rows is matched by facts not ordinal assum
 test('cross-route swaps, unknown numbers and missing values cannot fake parity',()=>{
  const observed=site();
  observed[0][0].effectTexts[0]='最大体力 +999';
- assert.equal(compareNumericRoutes(oldEvent(),observed).everyNumericResultRouteOneToOne,false);
+ const changed=compareNumericRoutes(oldEvent(),observed);
+ assert.equal(changed.everyNumericResultRouteOneToOne,false);
+ assert.equal(changed.allObservedSignedScalarFactsParsed,true);
+ assert.equal(changed.historicalValueOrEffectKindDriftObserved,true);
  const wrong=site();wrong[0][1].effectTexts.push('謎 +55');
  wrong[0][1].effectContexts.push([]);
  assert.equal(compareNumericRoutes(oldEvent(),wrong).everyNumericResultRouteOneToOne,false);
