@@ -66,6 +66,18 @@ test('ambiguous or absent ending title does not certify condition-to-title map',
  assert.equal(r.endingTitleToCompletionBranchIndependentlyVerified,false);
  assert.throws(()=>correlateSequenceEvidence(copy,{...evidence,siteMatchingEventHeadings:5},views),/不足/);
 });
+test('one unobserved end heading is a source gap, never proof of a missing game event',()=>{
+ const {evidence,copy,views}=pageFixture();
+ views[10].title='見出しなしの別表示';
+ const r=correlateSequenceEvidence(copy,evidence,views);
+ assert.equal(r.originalSiteExactEndTitleMatchCount,1);
+ assert.equal(r.sourceEndingHeaderGapCount,1);
+ assert.deepEqual(r.missingExactEditorialEndingOrdinal,[2]);
+ assert.equal(r.endingHeadings[0].sourceEventOrdinal,10);
+ assert.equal(r.endingHeadings[1].sourceEventOrdinal,null);
+ assert.equal(r.missingExactTitleDoesNotProveMissingGameEvent,true);
+ assert.equal(r.endingTitleToCompletionBranchIndependentlyVerified,false);
+});
 test('progression preserves ordered prefix and editorial completion without claiming route termination',()=>{
  const before=evaluateSequenceCandidate(ledger,opening,[]);
  assert.equal(before.nextStageOrdinalCandidate,1);
