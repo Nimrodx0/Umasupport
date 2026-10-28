@@ -8,6 +8,7 @@ const {registryFromSkillText,matchContextToId}=require('../src/official_gametora
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
+const {evaluateOutingUnlockSelection,verifyBothOpeningChoicesUnlock}=require('../src/friend_outing_access_gate.cjs');
 const outingLedger=require('../review/outing-evidence-30323.v1.json');
 const fs=require('node:fs');
 const crypto=require('node:crypto');
@@ -393,6 +394,21 @@ async function probe(){
       outingEvidence.privateUnlockRouteCandidate?.siteEventOrdinal!==8))
      fail('SSR30323の6お出かけ見出しと2択の解放出典に差分。承認せず再調査');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
+   const access=outingEvidence?.privateUnlockRouteCandidate;
+   const outingGateStates=access?{
+    bothOptionsExplicitlyUnlock:verifyBothOpeningChoicesUnlock(access),
+    noChoice:evaluateOutingUnlockSelection(access,null),
+    option1:evaluateOutingUnlockSelection(access,1),
+    option2:evaluateOutingUnlockSelection(access,2),
+    outingProgressionStillUnresolved:true
+   }:null;
+   if(outingEvidence&&(
+      !outingGateStates?.bothOptionsExplicitlyUnlock||
+      outingGateStates.noChoice.outingUnlocked!==false||
+      outingGateStates.option1.outingUnlocked!==true||
+      outingGateStates.option2.outingUnlocked!==true||
+      outingGateStates.option1.individualOutingStageReachability!=='not-adjudicated'))
+    fail('吾妻のお出かけ候補の解放ゲートと未確認の後続到達を混同しました');
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
     fail('すべての画面開閉パネルを検査できませんでした');
@@ -404,6 +420,7 @@ async function probe(){
     census,
     routeHintBinding,
     outingEvidence,
+    outingGateStates,
     routeIntegrity,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
