@@ -48,7 +48,8 @@ test('a partially missing visual group never becomes a route fact',()=>{
  assert.equal(r.publicationApproved,false);
  assert.throws(()=>compareRenderedGroups(event,[{effectTexts:'bad',hintLinks:[]}]),/不正/);
 });
-\ntest('legacy matched route signatures exclude site bond when baseline deliberately excludes bond',()=>{
+
+test('legacy matched route signatures exclude site bond when baseline deliberately excludes bond',()=>{
  const event={choices:[{effects:[{type:'speed',value:'+10'},{type:'bond',value:'+5'}]}]};
  const actual=[{effectTexts:['スピード +10','友情ゲージ +5'],hintLinks:[]}];
  const r=compareRenderedGroups(event,actual);
