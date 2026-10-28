@@ -14,6 +14,7 @@
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
 | SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
 | 次に元サイトと比較する既存GameTora旧カード構造別3枚 | [SSR30030／30041／30080の範囲値・3択・打ち切りを出典固定](official-gametora-existing-structural-cohorts-20261028.md) |
+| GameTora元サイトの結果別進行表示 | [SSR30323二択のお出かけ解放を結果別に実Chrome照合](official-gametora-visible-flow-20261029.md) |
 | GameTora本体の直接スキル獲得をヒントから区別 | [非公開の効果判定器と新SSR二枚の実サイト検証](official-gametora-direct-skill-candidate-20261029.md) |
 | GameToraヒントIDの局所照合を新SSR二枚へ共通化 | [3カードの元サイト実Chromeと同名・異ID拒否の監査](official-gametora-hint-locality-shared-20261028.md) |
 | GameToraヒント行の局所・親DOMで生じる数値IDの誤曖昧判定を修正 | [SSR30080ヒント1件のスキルID解決と元サイト検証](official-gametora-hint-locality-20261028.md) |
