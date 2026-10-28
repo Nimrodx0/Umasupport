@@ -30,12 +30,12 @@ const joins=()=>Array.from({length:5},(_,i)=>({
  historicalEventOrdinal:i+1,renderedEventPosition:i+1,
  sourceCategory:i<2?'random':'arrows'
 }));
-test('same existing converter reproduces five source events and six route signatures from site-like observations',()=>{
+test('same existing converter reproduces five source events and seven route signatures from site-like observations',()=>{
  const old=synthetic(),converted=transformDocument(old);
  const v=compareConvertedCardToSite(converted,joins(),observed);
  assert.equal(v.eventsCompared,5);
- assert.equal(v.sourceRouteCount,6);
- assert.equal(v.matchedUniqueRoutes,6);
+ assert.equal(v.sourceRouteCount,7);
+ assert.equal(v.matchedUniqueRoutes,7);
  assert.equal(v.parityEvents,5);
  assert.equal(v.allFiveEventNumericProjectionsMatch,true);
  assert.equal(v.events[3].sourceChainTerminals,1);
