@@ -11,6 +11,7 @@ const {scanOwnText,compareProvisionalFacts}=require('../src/official_gametora_nu
 const {registryFromSkillText,matchContextToId,summarizeHints}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {compareRenderedGroups}=require('../src/official_gametora_route_group_probe.cjs');
 const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
+const {buildPinnedCardDraft,comparePinnedAppDraftToOriginalSite}=require('../src/official_gametora_app_schema_parity.cjs');
 const {compareConvertedCardToSite}=require('../src/official_gametora_existing_normalized_parity.cjs');
 const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
@@ -467,6 +468,32 @@ async function probe(){
      publicationApproved:false,
      sourceProseIncluded:false
     };
+    // Execute the actual source->app-schema projection in isolated RAM with
+    // the pinned 30001 old source and the independent UmaSim skill dictionary.
+    // Compare ONLY app skill rewards, branch topology and positive site
+    // terminal-marker locations. Neither source prose nor the unpublished
+    // complete app JSON can enter CI output.
+    const privateAppDraft=buildPinnedCardDraft(expected,skillRaw.toString('utf8'));
+    visible.originalSiteVsAppSkillProjection=comparePinnedAppDraftToOriginalSite({
+      draft:privateAppDraft,
+      siteParity:visible.existingConverterVsOriginalSitePilot,
+      siteEventGroups:allRenderedGroups,
+      siteChoiceSemantics:visible.officialChoiceOutcomeSemanticsPilot.comparisons
+    });
+    const projection=visible.originalSiteVsAppSkillProjection;
+    if(projection.eventsCompared!==5||projection.appEventsPresent!==5||
+       projection.matchedSkillRoutes!==9||
+       projection.matchedHintRewards!==5||projection.siteHintRewards!==5||
+       projection.appHintRewards!==5||projection.websiteParsedBondDeltas!==8||
+       projection.appSkillRouteParity!==true||
+       projection.siteChoiceCardinalityConfirmed!==true||
+       projection.appTerminalRoutes!==1||
+       projection.terminalRouteEvidenceEvents!==1||
+       projection.draftEventsWithRequires!==2||
+       projection.fullAppJsonParityVerified!==false||
+       projection.nonSkillAppEffectsParityVerified!==false||
+       projection.publicationApproved!==false)
+      fail('SSR30001の元サイトと実アプリ用スキル報酬投影に差分');
     const semanticCases=visible.officialChoiceOutcomeSemanticsPilot.comparisons;
     const verifiedEnd=semanticCases.find(x=>x.historicalEventOrdinal===4);
     const explicitOr=semanticCases.find(x=>x.historicalEventOrdinal===5);
