@@ -26,6 +26,10 @@ test('signed review manifest identifies exactly six choices without storing quot
  assert.equal(report.scopedNonemptyHistoricalChoiceLabels,6);
  assert.equal(report.eventsReviewed,3);
  assert.equal(report.genderVariantsExhaustive,false);
+ assert.equal(report.selectedTrainerGender,'male');
+ assert.equal(report.maleVariantChoicePositions,6);
+ assert.equal(report.femaleDisplayFallbackAllowed,false);
+ assert.equal(report.genderSelectionUiEnabled,false);
  assert.equal(report.automaticPublicationAllowed,false);
  assert.doesNotMatch(JSON.stringify(report),/abcdef/);
 });
@@ -43,6 +47,8 @@ test('arbitrary external web links, rights escalation, and bad source population
   {choices:register.choices.map((x,i)=>i===0?{...x,gameWithEventPage:'https://example.com/raw'}:x)},
   {automaticTextPublicationAllowed:true},
   {publicationApproved:true},
+  {choiceDisplayPolicy:{...register.choiceDisplayPolicy,gender:'female'}},
+  {choiceDisplayPolicy:{...register.choiceDisplayPolicy,allowFemaleFallback:true}},
   {choices:register.choices.slice(1)}
  ])assert.throws(()=>reviewChoiceProvenance({...register,...edit},src),/不正/);
  assert.throws(()=>reviewChoiceProvenance(register,{...src,id:30322}),/不正/);
@@ -51,7 +57,18 @@ test('no text stored in the review ledger and only page links + numeric identiti
  const raw=JSON.stringify(ledger);
  assert.equal(ledger.cardId,'30001');
  assert.equal(ledger.choices.length,6);
+ assert.equal(ledger.choices.every(x=>x.selectedGender==='male'&&x.maleLabelVerifiedInGameWithArticle===true),true);
  assert.equal(ledger.choices.every(x=>/^[a-f0-9]{64}$/.test(x.labelSha256)),true);
  assert.equal(raw.includes('ここで全力'),false);
  assert.equal(raw.includes('世界最長'),false);
+});
+
+test('individual female/unknown label sourcing cannot silently enter fixed male display ledger',()=>{
+ const {src,register}=matching();
+ const modified=structuredClone(register);
+ modified.choices[0].selectedGender='female';
+ assert.throws(()=>reviewChoiceProvenance(modified,src),/不正/);
+ modified.choices[0].selectedGender='male';
+ modified.choices[0].maleLabelVerifiedInGameWithArticle=false;
+ assert.throws(()=>reviewChoiceProvenance(modified,src),/不正/);
 });
