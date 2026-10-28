@@ -35,6 +35,8 @@ test('explicit GameWith two-branch unlock only adjudicates matching original-sit
  assert.equal(r.firstEventBothChoicesExplicitlyEnableOutingsInGameWith,true);
  assert.equal(r.editorialUnlockFactAdoptableForPrivateCandidate,true);
  assert.equal(r.officialSiteExplicitUnlockOnFirstEvent,1);
+ assert.equal(r.privateUnlockRouteCandidate,null);
+ assert.equal(r.siteEffectTypeIndependentlyCorroborated,false);
  assert.equal(r.playSequenceAndOutingReachabilityVerified,false);
  assert.equal(r.outingEndStateVerified,false);
  assert.equal(r.publicationApproved,false);
@@ -61,4 +63,24 @@ test('unknown display data or too many claimed explicit markers is rejected',()=
   title:'anything',choiceGroups:1,siteExplicitUnlockChoiceGroups:0,
   siteExplicitTerminalChoiceGroups:2
  }]),/不正/);
+});
+
+
+test('site and GameWith both explicitly confirm two opening choices; graph remains private and sequence unknown',()=>{
+ const copy=structuredClone(pinned);
+ copy.titles.forEach((x,i)=>{x.sha256=sha(String.fromCharCode(65+i));x.length=1;});
+ const r=evaluateOutingEvidence(copy,[{
+  title:'A',choiceGroups:2,
+  siteExplicitUnlockChoiceGroups:2,
+  siteExplicitTerminalChoiceGroups:0
+ }]);
+ assert.equal(r.bothOriginalSiteChoiceGroupsExplicitlyUnlock,true);
+ assert.deepEqual(r.privateUnlockRouteCandidate,{
+  cardId:'30323',siteEventOrdinal:1,choiceOrdinals:[1,2],
+  effectKind:'enable-outings',conditionalOnPlayerChoice:true,
+  outingEventSequenceVerified:false,outingClosureVerified:false,
+  publicationApproved:false
+ });
+ assert.equal(r.playSequenceAndOutingReachabilityVerified,false);
+ assert.equal(r.siteEffectTypeIndependentlyCorroborated,true);
 });
