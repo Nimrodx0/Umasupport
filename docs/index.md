@@ -12,6 +12,7 @@
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
+| SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
 | GameTora本体直接取得・不足する選択肢文言の出典検証 | [公式サイト直接取得の限定実証](official-gametora-direct-feasibility-20261027.md) / [GameWithの選択肢だけ補完・新SSR閲覧](official-gametora-choice-label-and-new-cards-20261027.md) |
 | 公開時のイベント監査・権利 | [checker-public-catalog.md](checker-public-catalog.md) / [event-data-acquisition-rights-20261019.md](event-data-acquisition-rights-20261019.md) |
 | 実装コマンド | [poc/README.md](../poc/README.md) |
