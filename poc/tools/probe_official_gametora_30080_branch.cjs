@@ -10,7 +10,7 @@ const {robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {inspectOne,EXPECTED}=require('../src/official_gametora_old_structural_cohorts.cjs');
 const {inspectSiteTopology}=require('../src/official_gametora_rendered_branch_topology.cjs');
 const CARD_ID='30080';
-const URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
+const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
 const fail=code=>{throw Error('GameTora元サイトSSR30080限定分岐: '+code);};
 const key=s=>String(s||'').normalize('NFKC')
@@ -35,7 +35,7 @@ async function run(path){
  });
  if(robotsResponse.status!==200)fail('robots-unavailable');
  const robots=await robotsResponse.text();
- if(robots.length>200000||robotsDisallows(robots,new URL(URL).pathname).length)
+ if(robots.length>200000||robotsDisallows(robots,new URL(PAGE_URL).pathname).length)
   fail('robots-block-or-oversize');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
@@ -51,7 +51,7 @@ async function run(path){
   page.on('response',response=>{
    if([403,429].includes(response.status()))blocked=true;
   });
-  const response=await page.goto(URL,{waitUntil:'domcontentloaded',timeout:30000});
+  const response=await page.goto(PAGE_URL,{waitUntil:'domcontentloaded',timeout:30000});
   if(!response||response.status()!==200||blocked)fail('unexpected-site-response');
   await page.waitForTimeout(3500);
   if(blocked)fail('site-blocked');
