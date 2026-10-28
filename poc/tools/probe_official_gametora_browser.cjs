@@ -430,6 +430,18 @@ async function probe(){
       visible.historicalTitleCrosscheck.provisionalComparisons,
       allRenderedGroups
     );
+    const intake=visible.existingConverterVsOriginalSitePilot;
+    // Pin both established success AND known gaps. Never call this 9/9 a
+    // complete event-JSON or all-effect match while eight raw numeric leaves
+    // still lack an independently recognized effect kind.
+    if(intake.eventsCompared!==5||intake.sourceRouteCount!==9||
+       intake.siteRouteCount!==9||intake.matchedUniqueRoutes!==9||
+       intake.parityEvents!==1||intake.unresolvedEvents!==4||
+       intake.events.reduce((n,x)=>n+x.renderedUnclassifiedNumeric,0)!==8||
+       intake.allFiveEventNumericProjectionsMatch!==false||
+       intake.fullAppEventJsonReproductionVerified!==false)
+      fail('30001の既存変換済み候補とGameTora本体の9経路一意対応・8未分類数値の固定監査が変化');
+
 
     visible.officialChoiceOutcomeSemanticsPilot={
      eventCount:visible.historicalTitleCrosscheck.provisionalComparisons.length,
