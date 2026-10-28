@@ -53,15 +53,37 @@ function sourceRouteFacts(event){
  }
  return result;
 }
+function parseNumericFactWithLocalContext(own,contexts=[]){
+ const direct=scanOwnText(own);
+ if(!direct||!direct.requiresReview)return {fact:direct,resolvedWithContext:false};
+ if(direct.kind!=='unclassified'||direct.count!==1||direct.amount===null||
+  !Array.isArray(contexts)||contexts.length>6||
+  contexts.some(t=>typeof t!=='string'||t.length>300))
+  return {fact:direct,resolvedWithContext:false};
+ const usable=contexts.map(scanOwnText)
+  .filter(x=>x&&!x.requiresReview&&x.count===1&&x.amount===direct.amount&&
+    (types.has(x.kind)||x.kind==='bond'));
+ // If two enclosing ancestors assign distinct effect kinds, do not guess.
+ const signatures=new Set(usable.map(x=>x.kind+':'+x.amount));
+ return signatures.size===1?{fact:usable[0],resolvedWithContext:true}:
+  {fact:direct,resolvedWithContext:false};
+}
 function renderedRouteFacts(groups){
  if(!Array.isArray(groups)||groups.length>60||
   groups.some(g=>!g||!Array.isArray(g.effectTexts)||!Array.isArray(g.hintLinks)||
+   (g.effectContexts!==undefined&&(!Array.isArray(g.effectContexts)||
+     g.effectContexts.length!==g.effectTexts.length||
+     g.effectContexts.some(a=>!Array.isArray(a)||a.length>6||
+      a.some(t=>typeof t!=='string'||t.length>300))))||
    g.effectTexts.length>80||
    g.effectTexts.some(x=>typeof x!=='string'||x.length>400)||
    g.hintLinks.some(x=>typeof x?.status!=='string')))
   fail('GameTora本体の経路観測形式が不正');
  return groups.map((group,i)=>{
-  const observed=group.effectTexts.map(scanOwnText).filter(Boolean);
+  const analyzed=group.effectTexts.map((t,i)=>
+   parseNumericFactWithLocalContext(t,group.effectContexts?.[i]||[]));
+  const observed=analyzed.map(x=>x.fact).filter(Boolean);
+  const resolvedWithContext=analyzed.filter(x=>x.resolvedWithContext).length;
   const facts=observed.filter(x=>!x.requiresReview&&x.amount!==null&&types.has(x.kind))
    .map(x=>x.kind+':'+x.amount);
   const hints=group.hintLinks.flatMap(x=>x.status==='unique-verified-name'&&
@@ -72,6 +94,7 @@ function renderedRouteFacts(groups){
    hintSignature:signature(hints),
    unclassifiedNumeric:observed.filter(x=>x.requiresReview||!types.has(x.kind)).length,
    unresolvedHintLinks:group.hintLinks.length-hints.length,
+   numericContextResolutions:resolvedWithContext,
    // Diagnostic counts only; never log the effect text from the source site.
    ambiguousCauseCodes:group.effectTexts.filter(t=>scanOwnText(t)?.kind==='unclassified').map(t=>{
     const kinds=matchedEffectKinds(t);
@@ -100,6 +123,7 @@ function compareConvertedToSiteEvent(converted,groups){
  const ambiguousCauses={};
  for(const row of actual)for(const code of row.ambiguousCauseCodes)
   ambiguousCauses[code]=(ambiguousCauses[code]||0)+1;
+ const contextResolutionCount=actual.reduce((n,x)=>n+x.numericContextResolutions,0);
  const parserIssueTotals=Object.fromEntries(
   ['ambiguousKind','multipleNumericAmounts','recognizedButExcluded','unrecognizedEffectKind']
    .map(k=>[k,actual.reduce((n,x)=>n+x.parserIssues[k],0)])
@@ -122,6 +146,7 @@ function compareConvertedToSiteEvent(converted,groups){
   convertedSourceUnmappedKinds:uncertainSource,
   renderedUnclassifiedNumeric:unclassified,
   renderedParserIssueCounts:parserIssueTotals,
+  numericKindResolvedByBoundedDOMContext:contextResolutionCount,
   renderedAmbiguousKindCauses:ambiguousCauses,
   renderedUnresolvedHintIds:unresolvedHints,
   visibleNumericProjectionParity:siteNumericProjectionParity,
@@ -130,8 +155,8 @@ function compareConvertedToSiteEvent(converted,groups){
    renderedGroupOrdinal:matches[i][0]
   })):[],
   sourceChainTerminals:source.filter(x=>x.hasExplicitChainEnd).length,
-  // Bond delta can be matched; bond recipient identity still cannot be
-  // reconstructed from the current visible numeric text alone.
+  // Bond and recipient identity remain outside this numerical subset.
+  // A context clue can classify a bond delta without approving its recipient.
   bondRecipientIdentityVerified:false,
   originalSiteTerminalFlagsIndependentlyVerified:false,
   outcomesUserChoiceVsChanceVerified:false,
@@ -183,4 +208,4 @@ function compareConvertedCardToSite(converted,joins,groupsByDisplayedEvent){
   noSourceProseIncluded:true
  };
 }
-module.exports={sourceRouteFacts,renderedRouteFacts,compareConvertedToSiteEvent,compareConvertedCardToSite};
+module.exports={parseNumericFactWithLocalContext,sourceRouteFacts,renderedRouteFacts,compareConvertedToSiteEvent,compareConvertedCardToSite};
