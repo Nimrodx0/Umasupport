@@ -10,6 +10,8 @@ test('a normalized title substring has one SHA match without logging text',()=>{
  assert.equal(textContainsFingerprint('SSR - '+title+' (イベント)',hash),true);
  assert.equal(textContainsFingerprint('別のイベント',hash),false);
  assert.doesNotMatch(JSON.stringify(hash),/架空/);
+ const alt={length:4,sha256:sha(normalize('試験ーー'))};
+ assert.equal(textContainsFingerprint('試験――',alt),true);
 });
 test('pinned six names have complete and unambiguous editorial provenance schema',()=>{
  assert.equal(validateLedger(pinned).titles.length,6);
