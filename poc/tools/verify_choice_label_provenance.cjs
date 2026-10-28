@@ -7,6 +7,7 @@
 const crypto=require('node:crypto');
 const fs=require('node:fs');
 const path=require('node:path');
+const {selectMaleChoiceLabel}=require('../src/choice_label_gender_policy.cjs');
 const ledgerPath=path.resolve(__dirname,'../review/choice-label-provenance-30001.v1.json');
 const fail=s=>{throw Error('GameWith選択肢出典検証: '+s);};
 const isSha=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
@@ -46,10 +47,13 @@ function reviewChoiceProvenance(ledger,reference,expectedCardId='30001'){
    fail('旧固定元に有効な文言がない');
   // Hash ensures the approved editorial source reference is not silently
   // transferred to another choice in a future snapshot.
+  const selected=selectMaleChoiceLabel({genderVariants:{male:choice.label}});
+  if(selected.status!=='male-label-selected'||selected.gender!=='male')
+   fail('選択肢の男性表示名が未確認');
   report.push({
    eventOrdinal:item.eventOrdinal,
    choiceOrdinal:item.choiceOrdinal,
-   historicalLabelFingerprintMatches:digest(choice.label)===item.labelSha256,
+   historicalLabelFingerprintMatches:digest(selected.label)===item.labelSha256,
    editorialGameWithPagePresent:true,
    originalGameToraDisplayedTextMatches:false, // 0/6 in the scoped browser audit
    explicitTextForPublicAppApproved:false
