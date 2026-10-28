@@ -13,6 +13,7 @@ const {compareRenderedGroups}=require('../src/official_gametora_route_group_prob
 const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
 const {buildPinnedCardDraft,comparePinnedAppDraftToOriginalSite}=require('../src/official_gametora_app_schema_parity.cjs');
 const {buildPinnedEffectDraft,comparePinnedEffectsToSite}=require('../src/official_gametora_app_effects_parity.cjs');
+const {compareCombinedToOriginalSite}=require('../src/official_gametora_combined_app_parity.cjs');
 const {compareConvertedCardToSite}=require('../src/official_gametora_existing_normalized_parity.cjs');
 const {inspectRenderedChoices,correlateExplicitTerminal}=require('../src/official_gametora_choice_outcome_semantics.cjs');
 const {chromium}=require('playwright');
@@ -516,6 +517,26 @@ async function probe(){
        effectsProof.fullCombinedAppEventJsonVerified!==false||
        effectsProof.publicationApproved!==false)
       fail('SSR30001の元サイト数値と実非スキルアプリ用孤立投影が不一致');
+    // Reuse the REAL Phase2 mergeEvent() over two already independently
+    // verified app-schema projections. The full unpublished merged event JSON
+    // never leaves RAM, only strict metrics and known unverified fields.
+    visible.originalSiteVsCombinedAppProjection=compareCombinedToOriginalSite({
+      skillDraft:privateAppDraft,
+      effectDraft:privateEffectDraft,
+      siteParity:visible.existingConverterVsOriginalSitePilot,
+      siteEventGroups:allRenderedGroups,
+      siteChoiceSemantics:visible.officialChoiceOutcomeSemanticsPilot.comparisons
+    });
+    const joined=visible.originalSiteVsCombinedAppProjection;
+    if(joined.sameRouteSkillAndEffectParity!==true||
+       joined.events!==5||joined.routes!==9||joined.hints!==5||
+       joined.numericEffects!==31||joined.bondNumericEffects!==8||
+       joined.sourceConfirmedTerminalRoutes!==1||
+       joined.existingRequiresUnchangedCount!==2||
+       joined.fullApplicationJSONEquivalent!==false||
+       joined.siteHasProvenFullChainReachability!==false||
+       joined.publicationApproved!==false)
+      fail('既存SSR30001の実結合済みアプリ形式と元サイト31非スキル効果・5ヒントの同経路照合が不一致');
     const semanticCases=visible.officialChoiceOutcomeSemanticsPilot.comparisons;
     const verifiedEnd=semanticCases.find(x=>x.historicalEventOrdinal===4);
     const explicitOr=semanticCases.find(x=>x.historicalEventOrdinal===5);
