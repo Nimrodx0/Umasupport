@@ -14,6 +14,10 @@
 
 **重要な注意：** この段階ではスキルヒント候補を `rewards[]` に昇格しない。表示を認識できなかった直接獲得スキル、確率、選択肢の意味、お出かけ進行や連続イベントの後続 `requires` は未解決。現在の `siteOnlyNumericDraft` は報酬なしと断定しないために `skillRewardsStatus:'unresolved'` のまま。新しいヒント候補も `appEventSchemaAdoptable:false`、`publicationApproved:false` とする。
 
+## 元GameToraサイトの実測（SSR30080の一イベント）
+
+[実Chromeの成功ジョブ #122744838353](https://github.com/Nimrodx0/Umasupport/actions/runs/40667275681)で、画面上の対象イベントは第6番目、外側3グループ・4経路・スカラー12件と再確認した。表示されたスキルヒント行は**1件**で、結果別の配置は保持できたが、固定独立UmaSim辞書との一意照合は**0/1件**。未解決理由コードは **`ambiguous-name-or-id` 1件**。スキル名の候補または数値IDの同名多重性を現時点で一つへ解消できないため、数値ID・Lvペアを創作しない。旧派生GTからIDを逆流させず、追加の公開候補は作らない。
+
 ## 検証基準
 
 A：同一結果の名称・Lvだけを結び、ORの隣の結果を汚染しない。辞書に存在しない名称・同名別ID・矛盾した2つのスキル候補・不正なLv・分岐位置不一致・長すぎるDOM文脈を不合格／未解決とする。
