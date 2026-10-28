@@ -453,6 +453,20 @@ async function probe(){
          svg:[...p.querySelectorAll('svg')].slice(0,5).map(safeAttrData)});
        }
        evidence.push({path,ownTextNumericOnly:/^[+＋\-－−]\s*\d{1,5}$/.test(own),
+         controlledVocabularySignals:{
+          containsFriendChar:/友/.test(own),
+          containsBondAlternative:/親密|親愛|親しみ|友好|好感|信頼|親交/.test(own),
+          containsFriendship:/友情/.test(own),
+          containsGauge:/ゲージ/.test(own),
+          containsSupport:/サポート/.test(own),
+          containsPoint:/[Pp][Tt]|ポイント/.test(own),
+          containsPlusStatement:/アップ|上昇|増加/.test(own),
+          containsPercent:/[%％]/.test(own),
+          containsLatin:/[A-Za-z]/.test(own),
+          containsKana:/[ァ-ヿ]/.test(own),
+          containsOtherKanji:/[一-鿿]/.test(own),
+          containsWhitespace:/\s/.test(own)
+         },
          signedNumberOccurrences:(own.match(/[+＋\-－−]\s*\d{1,5}/g)||[]).length});
       }
       return evidence.slice(0,20);
