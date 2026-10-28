@@ -25,6 +25,8 @@ on:
       - 'poc/tests/choice_label_gender_policy.test.cjs'
       - 'poc/tools/probe_official_gametora_new_cards.cjs'
       - 'poc/tests/official_gametora_new_cards.test.cjs'
+      - 'poc/src/official_gametora_new_card_route_hints.cjs'
+      - 'poc/tests/official_gametora_new_card_route_hints.test.cjs'
 
 permissions:
   contents: read
@@ -60,6 +62,8 @@ jobs:
           node --test poc/tests/choice_label_gender_policy.test.cjs
           node --check poc/tools/probe_official_gametora_new_cards.cjs
           node --test poc/tests/official_gametora_new_cards.test.cjs
+          node --check poc/src/official_gametora_new_card_route_hints.cjs
+          node --test poc/tests/official_gametora_new_card_route_hints.test.cjs
       - name: Read at most three official support-card pages, no source export
         run: node poc/src/official_gametora_probe.cjs --live
 

@@ -2,7 +2,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {TARGETS}=require('../src/official_gametora_probe.cjs');
-const {validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate}=
+const {validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,verifyPinnedNewCardRouteBinding}=
  require('../tools/probe_official_gametora_new_cards.cjs');
 test('fixed allowlist permits only 30322 and 30323, never 30001 or custom URL',()=>{
  const targets=TARGETS.filter(t=>t.cardId!=='30001');
@@ -76,4 +76,28 @@ test('pin actual observed new SSR candidate topology so source drift cannot sile
  assert.throws(()=>verifyPinnedNewCardCandidate('30322',{...a,skillHintCandidateRows:13}),/要再確認/);
  assert.throws(()=>verifyPinnedNewCardCandidate('30323',a),/要再確認/);
  assert.throws(()=>verifyPinnedNewCardCandidate('30321',a),/未知/);
+});
+
+test('fixed new-SSR route/hint sample refuses any silent route or ID-level drift',()=>{
+ const census={candidateOutcomeRoutes:13,skillHintCandidateRows:14,
+  uniquelyMappedUmaSimSkillIdHintRows:14};
+ const route={
+  candidateRoutesObserved:13,wholePanelHintCandidates:14,
+  hintIdLevelCandidatesBoundToRoute:14,
+  eventsWithUnresolvedOrStructure:0,eventsWithoutVisibleRouteGroups:1,
+  missingNormalizedPairs:0,extraNormalizedPairs:0,
+  unclassifiedWholePanelHintCandidates:0,unclassifiedRouteHintCandidates:0
+ };
+ const r=verifyPinnedNewCardRouteBinding('30322',census,route);
+ assert.equal(r.sampleRouteIdLevelMultisetVerified,true);
+ assert.equal(r.incompletePanelsStillExcludedFromCompleteClaim,true);
+ assert.equal(r.actualGameRouteSemanticsVerified,false);
+ assert.equal(r.automaticPublicationAllowed,false);
+ assert.throws(()=>verifyPinnedNewCardRouteBinding('30322',census,
+  {...route,candidateRoutesObserved:10}),/再調査/);
+ assert.throws(()=>verifyPinnedNewCardRouteBinding('30322',census,
+  {...route,hintIdLevelCandidatesBoundToRoute:13}),/再調査/);
+ assert.throws(()=>verifyPinnedNewCardRouteBinding('30322',census,
+  {...route,eventsWithUnresolvedOrStructure:1}),/再調査/);
+ assert.throws(()=>verifyPinnedNewCardRouteBinding('30321',census,route),/再調査/);
 });

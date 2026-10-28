@@ -5,6 +5,8 @@
  */
 const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {registryFromSkillText,matchContextToId}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
+const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const NEW_CARD_IDS=Object.freeze(['30322','30323']);
@@ -59,6 +61,34 @@ function verifyPinnedNewCardCandidate(cardId,census){
  return {candidateTopologyMatches20261027Sample:true,
   sourceEvidenceRevalidationStillRequired:true,
   officialEventPublicationApproved:false};
+}
+
+const PINNED_ROUTE_BINDING={
+ '30322':Object.freeze({candidateRoutesObserved:13,
+  wholePanelHintCandidates:14,hintIdLevelCandidatesBoundToRoute:14,
+  eventsWithUnresolvedOrStructure:0,eventsWithoutVisibleRouteGroups:1}),
+ '30323':Object.freeze({candidateRoutesObserved:14,
+  wholePanelHintCandidates:4,hintIdLevelCandidatesBoundToRoute:4,
+  eventsWithUnresolvedOrStructure:0,eventsWithoutVisibleRouteGroups:1})
+};
+function verifyPinnedNewCardRouteBinding(cardId,census,routes){
+ const expected=PINNED_ROUTE_BINDING[cardId];
+ if(!expected||!routes||!census||
+    Object.entries(expected).some(([k,n])=>routes[k]!==n)||
+    census.candidateOutcomeRoutes!==routes.candidateRoutesObserved||
+    census.skillHintCandidateRows!==routes.wholePanelHintCandidates||
+    census.uniquelyMappedUmaSimSkillIdHintRows!==routes.hintIdLevelCandidatesBoundToRoute||
+    routes.missingNormalizedPairs!==0||routes.extraNormalizedPairs!==0||
+    routes.unclassifiedWholePanelHintCandidates!==0||
+    routes.unclassifiedRouteHintCandidates!==0)
+  fail('新SSR画面の候補経路またはヒントID/Lvの対応に差分。元サイトを再調査');
+ return {
+  sampleRouteIdLevelMultisetVerified:true,
+  incompletePanelsStillExcludedFromCompleteClaim:true,
+  actualGameRouteSemanticsVerified:false,
+  maleChoiceTextPublicationApproved:false,
+  automaticPublicationAllowed:false
+ };
 }
 
 function summarizeExpandedCensus(rows){
@@ -183,6 +213,7 @@ async function probe(){
     if(measured.hasSignedEffect)counters.sampledPanelsWithNumericEffects++;
    }
    const allRows=[];
+   const eventRouteHints=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
@@ -192,7 +223,7 @@ async function probe(){
     const view=await eventButton.evaluate(button=>{
      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
      if(!panel)return {eventPanelHasContent:0,choiceGroups:0,orMarkers:0,
-      signedNumericLeaves:0,hintContexts:[]};
+      signedNumericLeaves:0,hintContexts:[],hintOriginalTexts:[]};
      const content=panel.innerText||'';
      const body=panel.firstElementChild?.firstElementChild?.firstElementChild?.firstElementChild?.children?.[1];
      const choiceGroups=body?[...body.children]:[];
@@ -210,6 +241,7 @@ async function probe(){
         /^(?:OR|または|又は)$/i.test((el.innerText||'').trim())&&
         el.children.length===0).length,0),
       signedNumericLeaves:ownParts.filter(x=>/[+＋\-－−]\s*\d/.test(x.own)).length,
+      hintOriginalTexts:hints.map(({own})=>own.slice(0,240)),
       hintContexts:hints.map(({el})=>{
        const contexts=[];
        for(let p=el,d=0;p&&panel.contains(p)&&d<5;p=p.parentElement,d++){
@@ -220,6 +252,85 @@ async function probe(){
       })
      };
     });
+    const routePieces=await eventButton.evaluate(button=>{
+     const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+     const body=panel?.firstElementChild?.firstElementChild?.firstElementChild
+      ?.firstElementChild?.children?.[1];
+     if(!body)return [];
+     const groups=[...body.children];
+     return groups.slice(0,30).flatMap((group,choiceIndex)=>{
+      const inner=group.children.length===1?group.firstElementChild:group;
+      const rows=[...inner.children];
+      const separators=rows.map((el,i)=>({el,i})).filter(x=>
+       /^(?:OR|または|又は)$/i.test((x.el.innerText||'').trim()));
+      const allOrLeaves=[...group.querySelectorAll('*')].filter(el=>
+       el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
+      let segments=[[group]],ambiguous=allOrLeaves.length>0;
+      if(separators.length===1){
+       const pos=separators[0].i;
+       if(pos>0&&pos<rows.length-1){
+        segments=[rows.slice(0,pos),rows.slice(pos+1)];
+        ambiguous=false;
+       }
+      }else if(allOrLeaves.length===1){
+       // Some newly released cards nest an OR into a reward row instead
+       // of placing it among the direct children of the choice group.
+       // Find a *structurally explicit* delimiter with nonempty siblings
+       // on both sides. Do not fabricate branch counts from old mirrors.
+       const orLeaf=allOrLeaves[0];
+       let at=orLeaf;
+       while(at&&group.contains(at.parentElement)){
+        const parent=at.parentElement;
+        const siblings=[...parent.children];
+        const index=siblings.indexOf(at);
+        if(index>0&&index<siblings.length-1&&
+           /^(?:OR|または|又は)$/i.test((at.innerText||'').trim())){
+         segments=[siblings.slice(0,index),siblings.slice(index+1)];
+         ambiguous=false;
+         break;
+        }
+        at=parent;
+       }
+      }
+      return segments.map((roots,outcomeIndex)=>{
+       const own=[];
+       for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
+        const t=[...el.childNodes].filter(x=>x.nodeType===3)
+         .map(n=>n.textContent||'').join('').trim();
+        if(/ヒント|hint/i.test(t)&&/[+＋\-－−]\s*\d/.test(t)){
+         const contexts=[];
+         for(let p=el,d=0;p&&group.contains(p)&&d<5;p=p.parentElement,d++){
+          const str=p.innerText||'';
+          if(str.length<=240)contexts.push(str);
+         }
+         own.push({text:t.slice(0,240),contexts:contexts.slice(0,5)});
+        }
+       }
+       return {
+        choiceOrdinal:choiceIndex+1,
+        outcomeOrdinal:outcomeIndex+1,
+        unresolvedOr:ambiguous,
+        hints:own.slice(0,60)
+       };
+      });
+     });
+    });
+    const routes=routePieces.map(r=>({
+     choiceOrdinal:r.choiceOrdinal,
+     outcomeOrdinal:r.outcomeOrdinal,
+     unresolvedOr:r.unresolvedOr,
+     hints:r.hints.map(h=>{
+      const fact=scanOwnText(h.text);
+      const level=fact?.kind==='skill_hint'&&Number.isInteger(fact.amount)?
+       fact.amount:null;
+      if(!registry)return {status:'registry-not-loaded',level};
+      const candidates=h.contexts.map(text=>matchContextToId(text,registry));
+      const match=candidates.find(x=>x.status==='unique-verified-name')||
+       candidates.find(x=>x.status==='ambiguous-name-or-id')||
+       candidates.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+      return {...match,level};
+     })
+    }));
     const matched=view.hintContexts.map(contexts=>{
      if(!registry)return {status:'registry-not-loaded'};
      const results=contexts.map(s=>matchContextToId(s,registry));
@@ -227,6 +338,14 @@ async function probe(){
       results.find(x=>x.status==='ambiguous-name-or-id')||
       results.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
     });
+    const global=view.hintContexts.map((contexts,i)=>{
+     const original=view.hintOriginalTexts[i];
+     const parsed=scanOwnText(original);
+     const level=parsed?.kind==='skill_hint'&&Number.isInteger(parsed.amount)?
+      parsed.amount:null;
+     return {...matched[i],level};
+    });
+    eventRouteHints.push({globalHints:global,routes});
     allRows.push({
      eventPanelHasContent:view.eventPanelHasContent,
      choiceGroups:view.choiceGroups,
@@ -238,6 +357,8 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
+   const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
     fail('すべての画面開閉パネルを検査できませんでした');
@@ -247,6 +368,8 @@ async function probe(){
     pageRenderedInChrome:true,
     ...summarizeEvents(counters),
     census,
+    routeHintBinding,
+    routeIntegrity,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
    });
@@ -268,4 +391,4 @@ if(require.main===module){
  probe().then(x=>process.stdout.write('OFFICIAL_GT_NEW_CARDS='+JSON.stringify(x)+'\n'))
  .catch(e=>{process.stderr.write(e.message.slice(0,200)+'\n');process.exitCode=1;});
 }
-module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,probe};
+module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,verifyPinnedNewCardRouteBinding,probe};
