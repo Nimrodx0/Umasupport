@@ -173,12 +173,40 @@ async function run(path){
   auditStage='route-hint-parsing';
   const siteHintDraft=hintOnlyDraft(independentDraft,groups,skillRegistry);
   const hintDraftSummary=summarizeHintDraft(siteHintDraft);
+  // Pinned ONE-EVENT QA sample, never a default for the generic converter.
+  // A site update must be investigated rather than silently changing the ID.
+  const pinnedHint=hintDraftSummary.hintCandidates;
+  if(siteHintDraft.seenHintRows!==1||
+     siteHintDraft.uniquelyResolvedHintIdLevelPairs!==1||
+     siteHintDraft.unresolvedHintRows!==0||
+     pinnedHint.length!==1||pinnedHint[0].numericId!=='202032'||
+     pinnedHint[0].level!==1||pinnedHint[0].choiceGroupOrdinal!==3||
+     pinnedHint[0].resultOrdinal!==1)
+   fail('one-event-site-hint-id-level-or-route-drift');
+  // Numeric/status-only profile of each independently visible hint leaf.
+  // Never print its skill name, context, URL, article text or HTML.
+  const hintContextProfiles=groups.flatMap((g,gi)=>g.numericSegments.flatMap((segment,ri)=>
+   segment.effectTexts.flatMap((own,i)=>{
+    const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
+    const {matchContextToId}=require('../src/official_gametora_skill_id_crosswalk.cjs');
+    const fact=scanOwnText(own);
+    if(fact?.kind!=='skill_hint')return [];
+    return [{group:gi+1,result:ri+1,
+     ownLength:own.length,contextLengths:segment.effectContexts[i].map(t=>t.length),
+     contextMatches:segment.effectContexts[i].map(t=>{
+      const x=matchContextToId(t,skillRegistry);
+      return {status:x.status,possibleNames:x.possibleNames||0,
+       possibleNumericIds:x.possibleNumericIds||0};
+     })}];
+   })
+  ));
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
    sourceEventsTotal:Object.values(old.events_ja).length,
    uniquelyMatchedEventTitles:positions.length,
    ...proof,numericRouteParity:numericProof,siteOnlyDraft:draftSummary,
    siteOnlyRouteHintDraft:hintDraftSummary,
+   hintContextProfiles,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false

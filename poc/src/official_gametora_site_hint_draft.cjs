@@ -51,8 +51,16 @@ function hintOnlyDraft(numericDraft,groups,registry){
     const distinct=new Set(candidates
      .filter(x=>x.status==='unique-verified-name')
      .map(x=>x.numericId));
+    // The DOM yields an ordered ancestor chain: own hint row first, then
+    // progressively wider containers. An outer container may list other
+    // rewards. It cannot veto a uniquely identified nearest hint row.
+    // Ambiguity at or closer than the first unique row, or a second unique ID
+    // anywhere in the ancestry, remains a hard block.
+    const firstUnique=candidates.findIndex(x=>x.status==='unique-verified-name');
+    const ambiguousAtOrCloser=firstUnique>=0&&
+     candidates.slice(0,firstUnique).some(x=>x.status==='ambiguous-name-or-id');
     const ambiguous=candidates.some(x=>x.status==='ambiguous-name-or-id');
-    if(distinct.size===1&&!ambiguous){
+    if(distinct.size===1&&firstUnique>=0&&!ambiguousAtOrCloser){
      const numericId=[...distinct][0];
      hintCandidates.push({
       source:'gametora-visible-hint',
