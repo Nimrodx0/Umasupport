@@ -256,6 +256,25 @@ async function probe(){
         segments=[rows.slice(0,pos),rows.slice(pos+1)];
         ambiguous=false;
        }
+      }else if(allOrLeaves.length===1){
+       // Some newly released cards nest an OR into a reward row instead
+       // of placing it among the direct children of the choice group.
+       // Find a *structurally explicit* delimiter with nonempty siblings
+       // on both sides. Do not fabricate branch counts from old mirrors.
+       const orLeaf=allOrLeaves[0];
+       let at=orLeaf;
+       while(at&&group.contains(at.parentElement)){
+        const parent=at.parentElement;
+        const siblings=[...parent.children];
+        const index=siblings.indexOf(at);
+        if(index>0&&index<siblings.length-1&&
+           /^(?:OR|または|又は)$/i.test((at.innerText||'').trim())){
+         segments=[siblings.slice(0,index),siblings.slice(index+1)];
+         ambiguous=false;
+         break;
+        }
+        at=parent;
+       }
       }
       return segments.map((roots,outcomeIndex)=>{
        const own=[];
