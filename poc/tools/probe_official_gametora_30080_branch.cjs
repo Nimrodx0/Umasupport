@@ -9,6 +9,7 @@ const {chromium}=require('playwright');
 const {robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {inspectOne,EXPECTED}=require('../src/official_gametora_old_structural_cohorts.cjs');
 const {inspectSiteTopology}=require('../src/official_gametora_rendered_branch_topology.cjs');
+const {compareNumericRoutes}=require('../src/official_gametora_old_numeric_route_parity.cjs');
 const CARD_ID='30080';
 const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
@@ -93,9 +94,39 @@ async function run(path){
      }
      return false;
     }).length;
+    const findSplit=el=>{
+     for(let p=el;p&&p!==group;p=p.parentElement){
+      const siblings=[...(p.parentElement?.children||[])];
+      const i=siblings.indexOf(p);
+      if(i>0&&i<siblings.length-1)
+       return [siblings.slice(0,i),siblings.slice(i+1)];
+     }
+     return null;
+    };
+    const verifiedSplits=dividers.map(findSplit).filter(Boolean);
+    const segmentRoots=verifiedSplits.length===1?verifiedSplits[0]:[[group]];
+    const numericSegments=segmentRoots.map(roots=>{
+     const effectTexts=[],effectContexts=[];
+     for(const root of roots){
+      for(const el of [root,...root.querySelectorAll('*')]){
+       const own=[...el.childNodes].filter(n=>n.nodeType===3)
+        .map(n=>n.textContent||'').join('').trim();
+       if(!/[+＋\-－−]\s*\d/.test(own)||own.length>400)continue;
+       const contexts=[];
+       for(let p=el;p&&root.contains(p)&&contexts.length<6;p=p.parentElement){
+        const text=(p.innerText||'').trim();
+        if(text.length&&text.length<=300)contexts.push(text);
+       }
+       effectTexts.push(own);effectContexts.push(contexts);
+      }
+     }
+     return {effectTexts:effectTexts.slice(0,80),
+      effectContexts:effectContexts.slice(0,80)};
+    });
     return {
      visibleText:(group.innerText||'').slice(0,3000),
      ownTextFragments:fragments.slice(0,100).map(x=>x.slice(0,250)),
+     numericSegments,
      routeCandidateCount:verifiedOr+1,
      orSeparatorCount:verifiedOr,
      // Structural-only diagnostics, never a copy of words or HTML.
@@ -110,17 +141,22 @@ async function run(path){
   });
   const siteDomDiagnostics=groups.map(g=>g.diagnostic);
   const proof=inspectSiteTopology(event,groups);
+  const numericProof=compareNumericRoutes(event,groups.map(g=>g.numericSegments));
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
    sourceEventsTotal:Object.values(old.events_ja).length,
    uniquelyMatchedEventTitles:positions.length,
-   ...proof,
+   ...proof,numericRouteParity:numericProof,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false
   };
   // The only output contains numbers, enums and booleans; no source text.
   console.log('ORIGINAL_GT_30080_BRANCH='+JSON.stringify(result));
+  // An older source being different from the current live site is an audit
+  // finding, NOT a reason to rewrite the site's observed values from old JSON.
+  if(!numericProof.allObservedSignedScalarFactsParsed)
+   fail('site-signed-scalar-extraction-incomplete');
   if(!result.exactChoiceAndVisibleRouteCardinality)
    fail('old-source-vs-live-site-choice-route-disagreement');
   return result;

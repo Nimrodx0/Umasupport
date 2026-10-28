@@ -62,3 +62,14 @@ test('bond and other non-skill effects stay visibly unresolved even if hint leve
  assert.equal(r.skillNumericIdsVerified,false);
  assert.equal(r.publicationApproved,false);
 });
+
+test('maximum energy is one effect kind, not both max energy and plain energy',()=>{
+ assert.deepEqual(scanOwnText('最大体力 +4'),{
+  kind:'max_energy',amount:4,count:1,requiresReview:false
+ });
+ assert.deepEqual(scanOwnText('Max Energy +4'),{
+  kind:'max_energy',amount:4,count:1,requiresReview:false
+ });
+ assert.equal(scanOwnText('体力 +10').kind,'energy');
+ assert.equal(scanOwnText('最大体力 +4、体力 +10').requiresReview,true);
+});
