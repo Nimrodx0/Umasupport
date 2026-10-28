@@ -87,7 +87,7 @@ function correlateSequenceEvidence(ledger,outingEvidence,siteEvents){
   sourceTextIncluded:false
  };
 }
-function evaluateSequenceCandidate(ledger,opening,completedStages,selectedThirdStageChoice=null){
+function evaluateSequenceCandidate(ledger,opening,completedStages,selectedThirdStageChoice=null,selectedOpeningChoiceOrdinal=null){
  validateSequenceLedger(ledger);
  validateOutingUnlockEvidence(opening);
  if(opening.cardId!=='30323'||opening.siteEventOrdinal!==8||
@@ -97,18 +97,25 @@ function evaluateSequenceCandidate(ledger,opening,completedStages,selectedThirdS
   completedStages.some((n,i)=>n!==i+1)||
   selectedThirdStageChoice!==null&&![1,2].includes(selectedThirdStageChoice)||
   completedStages.length>=3&&selectedThirdStageChoice===null||
-  completedStages.length<3&&selectedThirdStageChoice!==null)
+  completedStages.length<3&&selectedThirdStageChoice!==null||
+  selectedOpeningChoiceOrdinal!==null&&![1,2].includes(selectedOpeningChoiceOrdinal)||
+  completedStages.length>0&&selectedOpeningChoiceOrdinal===null)
   fail('進行済みのお出かけに飛び・重複・未確定の3段階目選択肢');
  const n=completedStages.length,complete=n===5;
- const next=n<5?ledger.stages[n].stageOrdinal:null;
+ const unlocked=selectedOpeningChoiceOrdinal!==null;
+ const next=unlocked&&n<5?ledger.stages[n].stageOrdinal:null;
  return {
-  cardId:'30323',observedStageCompletionPrefix:completedStages.slice(),
+  cardId:'30323',
+  assumedOpeningChoiceOrdinal:selectedOpeningChoiceOrdinal,
+  simulationOnlyNotPlayerObservation:true,
+  observedStageCompletionPrefix:completedStages.slice(),
   fiveStageEditorialSequence:true,
-  outingSeriesState:complete?'five-stage-series-completed':
-   n===0?'unstarted':'partially-completed',
+  outingSeriesState:!unlocked?'locked-before-opening-choice':
+   complete?'five-stage-series-completed':n===0?'unstarted':'partially-completed',
   nextStageOrdinalCandidate:next,
   nextStageSiteEventOrdinal:next?ledger.stages[n].siteEventOrdinal:null,
-  nextStageAccessStatus:complete?'no-additional-outing-stage-listed':
+  nextStageAccessStatus:!unlocked?'requires-opening-choice':
+   complete?'no-additional-outing-stage-listed':
     n>=3?'conditional-choice-continuation-not-independently-verified':
     'requires-prior-stages-and-unlock',
   trainingEndBranchEditorialCandidate:complete?'completed':'incomplete',
