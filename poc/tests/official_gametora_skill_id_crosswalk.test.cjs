@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {registryFromSkillText,matchContextToId,summarizeHints}=
+const {registryFromSkillText,matchContextToId,resolveHintContextChain,summarizeHints}=
  require('../src/official_gametora_skill_id_crosswalk.cjs');
 function fixture(){
  const entries=Array.from({length:100},(_,i)=>({id:String(800000+i),
@@ -57,4 +57,36 @@ test('historical reference can only confirm aggregate ID frequency, not route or
  assert.equal(r.outcomeAndChoicePairingVerified,false);
  assert.equal(r.publicationApproved,false);
  assert.doesNotMatch(JSON.stringify(r),/登山家/);
+});
+
+test('shared locality resolver accepts a narrow unique hint row despite ambiguous wide parents',()=>{
+ const reg=fixture();
+ const result=resolveHintContextChain([
+  '「登山家」のヒントLv +1',
+  '「登山家」のヒントLv +1 と「上り坂」のヒントLv +2',
+  '他の効果も含む「登山家」のヒントLv +1 と「上り坂」のヒントLv +2'
+ ],reg);
+ assert.deepEqual(result,{status:'unique-verified-name',numericId:'200516',rarity:'rare'});
+ assert.doesNotMatch(JSON.stringify(result),/登山家|上り坂|他の効果/);
+});
+test('shared resolver rejects competing unique IDs and ambiguity nearer than a valid outer name',()=>{
+ const reg=fixture();
+ assert.equal(resolveHintContextChain([
+  '「登山家」のヒントLv +1',
+  '「上り坂」のヒントLv +2'
+ ],reg).status,'conflicting-skill-ids');
+ assert.equal(resolveHintContextChain([
+  '「登山家」のヒントLv +1 と「上り坂」のヒントLv +2',
+  '「登山家」のヒントLv +1'
+ ],reg).status,'ambiguous-name-or-id');
+ assert.equal(resolveHintContextChain([
+  '「練習上手」のヒントLv +1'
+ ],reg).status,'ambiguous-name-or-id');
+});
+test('shared resolver rejects invalid ancestry and cannot infer an absent skill',()=>{
+ const reg=fixture();
+ assert.throws(()=>resolveHintContextChain('text',reg),/不正/);
+ assert.throws(()=>resolveHintContextChain(['x'.repeat(301)],reg),/不正/);
+ assert.deepEqual(resolveHintContextChain([],reg),{status:'name-not-found'});
+ assert.equal(resolveHintContextChain(['体力 +5'],reg).status,'name-not-found');
 });

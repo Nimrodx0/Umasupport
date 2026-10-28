@@ -52,6 +52,34 @@ function matchContextToId(context,registry){
  return {status:'unique-verified-name',numericId:record.id,
   rarity:record.rarity};
 }
+/*
+ * DOM ancestry goes from the smallest hint-owning element to broad parents.
+ * Broader containers may list unrelated skill rewards. They cannot override
+ * the nearest unique hint row. Independent distinct unique IDs or ambiguity
+ * closer to the hint row remain unsafe. Returned objects contain no prose.
+ */
+function resolveHintContextChain(contexts,registry){
+ if(!Array.isArray(contexts)||contexts.length>6||
+    contexts.some(c=>typeof c!=='string'||c.length>300)||
+    !(registry?.byName instanceof Map))
+  failure('局所ヒントDOMの文脈系列が不正');
+ const states=contexts.map(text=>matchContextToId(text,registry));
+ const named=states.filter(x=>x.status==='unique-verified-name');
+ const ids=new Set(named.map(x=>x.numericId));
+ if(ids.size>1)return {status:'conflicting-skill-ids'};
+ const nearest=states.findIndex(x=>x.status==='unique-verified-name');
+ if(nearest>=0){
+  if(states.slice(0,nearest).some(x=>x.status==='ambiguous-name-or-id'))
+   return {status:'ambiguous-name-or-id'};
+  const winner=states[nearest];
+  return {status:'unique-verified-name',numericId:winner.numericId,
+   rarity:winner.rarity};
+ }
+ if(states.some(x=>x.status==='ambiguous-name-or-id'))
+  return {status:'ambiguous-name-or-id'};
+ return states.find(x=>x.status!=='not-a-hint')||{status:'name-not-found'};
+}
+
 function summarizeHints(referenceEvent,observed){
  if(!referenceEvent||!Array.isArray(referenceEvent.choices)||
     !Array.isArray(observed)||observed.length>40)
@@ -88,4 +116,4 @@ function summarizeHints(referenceEvent,observed){
   noProseIncluded:true
  };
 }
-module.exports={registryFromSkillText,matchContextToId,summarizeHints};
+module.exports={registryFromSkillText,matchContextToId,resolveHintContextChain,summarizeHints};

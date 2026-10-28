@@ -5,7 +5,7 @@
  * full skill reward or event-schema compiler. No old GT event input.
  */
 const {scanOwnText}=require('./official_gametora_numeric_fact_parser.cjs');
-const {matchContextToId}=require('./official_gametora_skill_id_crosswalk.cjs');
+const {resolveHintContextChain}=require('./official_gametora_skill_id_crosswalk.cjs');
 const error=code=>{throw Error('GameTora直接スキルヒント候補: '+code);};
 const unique=a=>[...new Set(a)];
 function hintOnlyDraft(numericDraft,groups,registry){
@@ -45,23 +45,11 @@ function hintOnlyDraft(numericDraft,groups,registry){
      unresolvedStatuses.push('hint-level-not-confirmed');
      continue;
     }
-    // Only ancestors of this specific effect fragment; NEVER outer choice
-    // text or another result's skill hints.
-    const candidates=contexts.map(context=>matchContextToId(context,registry));
-    const distinct=new Set(candidates
-     .filter(x=>x.status==='unique-verified-name')
-     .map(x=>x.numericId));
-    // The DOM yields an ordered ancestor chain: own hint row first, then
-    // progressively wider containers. An outer container may list other
-    // rewards. It cannot veto a uniquely identified nearest hint row.
-    // Ambiguity at or closer than the first unique row, or a second unique ID
-    // anywhere in the ancestry, remains a hard block.
-    const firstUnique=candidates.findIndex(x=>x.status==='unique-verified-name');
-    const ambiguousAtOrCloser=firstUnique>=0&&
-     candidates.slice(0,firstUnique).some(x=>x.status==='ambiguous-name-or-id');
-    const ambiguous=candidates.some(x=>x.status==='ambiguous-name-or-id');
-    if(distinct.size===1&&firstUnique>=0&&!ambiguousAtOrCloser){
-     const numericId=[...distinct][0];
+    // The shared resolver applies nearest-first DOM locality and detects
+    // conflicting IDs across all ancestor levels without exporting names.
+    const hint=resolveHintContextChain(contexts,registry);
+    if(hint.status==='unique-verified-name'){
+     const numericId=hint.numericId;
      hintCandidates.push({
       source:'gametora-visible-hint',
       numericId,level,choiceGroupOrdinal:ci+1,resultOrdinal:ri+1
@@ -69,8 +57,9 @@ function hintOnlyDraft(numericDraft,groups,registry){
      resolved++;
     }else{
      unresolved++;
-     unresolvedStatuses.push(distinct.size>1?'conflicting-skill-ids':
-      ambiguous?'ambiguous-name-or-id':'skill-name-not-uniquely-resolved');
+     unresolvedStatuses.push(hint.status==='conflicting-skill-ids'?
+      'conflicting-skill-ids':hint.status==='ambiguous-name-or-id'?
+      'ambiguous-name-or-id':'skill-name-not-uniquely-resolved');
     }
    }
    const advertisedHintRows=original.nonScalarKinds.includes('skill_hint');
