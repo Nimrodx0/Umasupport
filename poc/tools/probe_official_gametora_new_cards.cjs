@@ -63,6 +63,34 @@ function verifyPinnedNewCardCandidate(cardId,census){
   officialEventPublicationApproved:false};
 }
 
+const PINNED_ROUTE_BINDING={
+ '30322':Object.freeze({candidateRoutesObserved:13,
+  wholePanelHintCandidates:14,hintIdLevelCandidatesBoundToRoute:14,
+  eventsWithUnresolvedOrStructure:0,eventsWithoutVisibleRouteGroups:1}),
+ '30323':Object.freeze({candidateRoutesObserved:14,
+  wholePanelHintCandidates:4,hintIdLevelCandidatesBoundToRoute:4,
+  eventsWithUnresolvedOrStructure:0,eventsWithoutVisibleRouteGroups:1})
+};
+function verifyPinnedNewCardRouteBinding(cardId,census,routes){
+ const expected=PINNED_ROUTE_BINDING[cardId];
+ if(!expected||!routes||!census||
+    Object.entries(expected).some(([k,n])=>routes[k]!==n)||
+    census.candidateOutcomeRoutes!==routes.candidateRoutesObserved||
+    census.skillHintCandidateRows!==routes.wholePanelHintCandidates||
+    census.uniquelyMappedUmaSimSkillIdHintRows!==routes.hintIdLevelCandidatesBoundToRoute||
+    routes.missingNormalizedPairs!==0||routes.extraNormalizedPairs!==0||
+    routes.unclassifiedWholePanelHintCandidates!==0||
+    routes.unclassifiedRouteHintCandidates!==0)
+  fail('新SSR画面の候補経路またはヒントID/Lvの対応に差分。元サイトを再調査');
+ return {
+  sampleRouteIdLevelMultisetVerified:true,
+  incompletePanelsStillExcludedFromCompleteClaim:true,
+  actualGameRouteSemanticsVerified:false,
+  maleChoiceTextPublicationApproved:false,
+  automaticPublicationAllowed:false
+ };
+}
+
 function summarizeExpandedCensus(rows){
  if(!Array.isArray(rows)||rows.length>20||rows.some(x=>!x||
   !Number.isSafeInteger(x.eventPanelHasContent)||x.eventPanelHasContent<0||x.eventPanelHasContent>1||
@@ -186,7 +214,6 @@ async function probe(){
    }
    const allRows=[];
    const eventRouteHints=[];
-   const orTopologyDiagnostics=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
@@ -214,17 +241,6 @@ async function probe(){
         /^(?:OR|または|又は)$/i.test((el.innerText||'').trim())&&
         el.children.length===0).length,0),
       signedNumericLeaves:ownParts.filter(x=>/[+＋\-－−]\s*\d/.test(x.own)).length,
-      orTopology:choiceGroups.map((group,index)=>{
-       const inner=group.children.length===1?group.firstElementChild:group;
-       const rows=[...inner.children];
-       const indexes=rows.map((el,i)=>/^(?:OR|または|又は)$/i.test((el.innerText||'').trim())?i:-1)
-        .filter(i=>i>=0);
-       const leaves=[...group.querySelectorAll('*')].filter(el=>
-        el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
-       return {choiceIndex:index+1,rowCount:rows.length,directOrIndexes:indexes,
-        visibleOrLeaves:leaves.length,
-        rowChildCounts:rows.map(el=>el.children.length).slice(0,16)};
-      }).filter(x=>x.visibleOrLeaves>0),
       hintOriginalTexts:hints.map(({own})=>own.slice(0,240)),
       hintContexts:hints.map(({el})=>{
        const contexts=[];
@@ -330,7 +346,6 @@ async function probe(){
      return {...matched[i],level};
     });
     eventRouteHints.push({globalHints:global,routes});
-    if(view.orTopology.length)orTopologyDiagnostics.push({eventOrdinal:idx+1,groups:view.orTopology});
     allRows.push({
      eventPanelHasContent:view.eventPanelHasContent,
      choiceGroups:view.choiceGroups,
@@ -343,6 +358,7 @@ async function probe(){
    }
    const census=summarizeExpandedCensus(allRows);
    const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
+   const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
     fail('すべての画面開閉パネルを検査できませんでした');
@@ -353,7 +369,7 @@ async function probe(){
     ...summarizeEvents(counters),
     census,
     routeHintBinding,
-    orTopologyDiagnostics,
+    routeIntegrity,
     sourceDrift:drift,
     umaSimSkillRegistryPinned:!!registry
    });
@@ -375,4 +391,4 @@ if(require.main===module){
  probe().then(x=>process.stdout.write('OFFICIAL_GT_NEW_CARDS='+JSON.stringify(x)+'\n'))
  .catch(e=>{process.stderr.write(e.message.slice(0,200)+'\n');process.exitCode=1;});
 }
-module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,probe};
+module.exports={validateTargets,summarizeEvents,summarizeExpandedCensus,verifyPinnedNewCardCandidate,verifyPinnedNewCardRouteBinding,probe};
