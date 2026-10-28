@@ -106,6 +106,9 @@ function summarizeHintDraft(hintDraft){
   unresolvedHintRows:hintDraft.unresolvedHintRows,
   // Count routes with candidate evidence, not an assertion of complete rewards.
   routesWithResolvedHints:hintDraft.routeCandidates.flat().filter(x=>x.hints.length).length,
+  unresolvedReasonCounts:hintDraft.routeCandidates.flat()
+   .flatMap(x=>x.unresolvedHintStatuses)
+   .reduce((counts,reason)=>({...counts,[reason]:(counts[reason]||0)+1}),{}),
   hintCandidates:hintDraft.routeCandidates.flat().flatMap(x=>x.hints),
   fullSkillRewardsVerified:false,appEventSchemaAdoptable:false,
   sourceWebsiteProseExported:false,publicationApproved:false};
