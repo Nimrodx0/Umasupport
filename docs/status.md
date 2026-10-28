@@ -4,7 +4,7 @@
 
 ## 2026-10-28：GameTora本体の結果別ヒントを独立UmaSim辞書へ照合する非公開候補（PR #257）
 
-[単一イベントの実サイト照合と安全な限界](official-gametora-site-route-hint-candidates-20261028.md)／[限定Chrome実験](https://github.com/Nimrodx0/Umasupport/actions/runs/40667126854)。従来SSR30080の本体表示**3グループ・4結果候補・符号付きスカラー12件**に対して、結果別のスキルヒント候補生成器を追加。使い捨てランナーで取得した固定独立UmaSim辞書をGit blob SHAで検査し、同じDOMのヒント名称・Lvと数値IDの候補を区別する。限定実Chromeで**ヒント表示1行、ID一意照合0行、未解決1行**を観測。旧GT由来JSONのスキルIDは一切補完せず、別結果へ推測移動もしない。A＝6つの合成試験、B＝SSR30080の**1イベントのみ**／固定UmaSim辞書、C＝GameTora実Chromeの該当結果別ヒント観測。正式な `rewards[]`、連続イベント内部の到達条件、選択肢文言、実ゲームの意味、公開権利は未検証。**非公開中間候補のままで正式公開イベント0件**は不変。
+[単一イベントの実サイト照合と安全な限界](official-gametora-site-route-hint-candidates-20261028.md)／[限定Chrome実験](https://github.com/Nimrodx0/Umasupport/actions/runs/40667126854)。従来SSR30080の本体表示**3グループ・4結果候補・符号付きスカラー12件**に対して、結果別のスキルヒント候補生成器を追加。使い捨てランナーで取得した固定独立UmaSim辞書をGit blob SHAで検査し、同じDOMのヒント名称・Lvと数値IDの候補を区別する。限定実Chromeで**ヒント表示1行、ID一意照合0行、未解決1行（`ambiguous-name-or-id`）**を観測。旧GT由来JSONのスキルIDは一切補完せず、別結果へ推測移動もしない。A＝6つの合成試験、B＝SSR30080の**1イベントのみ**／固定UmaSim辞書、C＝GameTora実Chromeの該当結果別ヒント観測。正式な `rewards[]`、連続イベント内部の到達条件、選択肢文言、実ゲームの意味、公開権利は未検証。**非公開中間候補のままで正式公開イベント0件**は不変。
 
 ## 2026-10-28：GameToraサイト由来だけの非公開数値中間候補生成器（PR #256）
 
