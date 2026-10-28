@@ -7,7 +7,7 @@
  * This is not source-text extraction, a public catalog, or proof that a visual
  * group represents an in-game user choice rather than a random outcome.
  */
-const {scanOwnText}=require('./official_gametora_numeric_fact_parser.cjs');
+const {scanOwnText,matchedEffectKinds}=require('./official_gametora_numeric_fact_parser.cjs');
 const fail=s=>{throw Error('既存GT正規化結果と本体DOMの差分: '+s);};
 const types=new Set(['skill_hint','speed','stamina','power','guts','wisdom',
  'energy','max_energy','skill_points','mood']);
@@ -73,6 +73,10 @@ function renderedRouteFacts(groups){
    unclassifiedNumeric:observed.filter(x=>x.requiresReview||!types.has(x.kind)).length,
    unresolvedHintLinks:group.hintLinks.length-hints.length,
    // Diagnostic counts only; never log the effect text from the source site.
+   ambiguousCauseCodes:group.effectTexts.filter(t=>scanOwnText(t)?.kind==='unclassified').map(t=>{
+    const kinds=matchedEffectKinds(t);
+    return kinds.length?kinds.slice().sort().join('+'):'NO_KNOWN_EFFECT_KIND';
+   }),
    parserIssues:{
     ambiguousKind:observed.filter(x=>x.kind==='unclassified').length,
     multipleNumericAmounts:observed.filter(x=>x.count!==1).length,
@@ -93,6 +97,9 @@ function compareConvertedToSiteEvent(converted,groups){
  const uncertainSource=source.reduce((n,x)=>n+x.ignoredOrUnparsedEffectKinds.length,0);
  const unclassified=actual.reduce((n,x)=>n+x.unclassifiedNumeric,0);
  const unresolvedHints=actual.reduce((n,x)=>n+x.unresolvedHintLinks,0);
+ const ambiguousCauses={};
+ for(const row of actual)for(const code of row.ambiguousCauseCodes)
+  ambiguousCauses[code]=(ambiguousCauses[code]||0)+1;
  const parserIssueTotals=Object.fromEntries(
   ['ambiguousKind','multipleNumericAmounts','recognizedButExcluded','unrecognizedEffectKind']
    .map(k=>[k,actual.reduce((n,x)=>n+x.parserIssues[k],0)])
@@ -115,6 +122,7 @@ function compareConvertedToSiteEvent(converted,groups){
   convertedSourceUnmappedKinds:uncertainSource,
   renderedUnclassifiedNumeric:unclassified,
   renderedParserIssueCounts:parserIssueTotals,
+  renderedAmbiguousKindCauses:ambiguousCauses,
   renderedUnresolvedHintIds:unresolvedHints,
   visibleNumericProjectionParity:siteNumericProjectionParity,
   routeLinks:unique?source.map((s,i)=>({
