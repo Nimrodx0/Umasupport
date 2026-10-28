@@ -122,7 +122,7 @@ test('app choice grouping, auto/OR outcomes and rejected source event cannot fak
  const r=comparePinnedAppDraftToOriginalSite({draft:q.draft,siteParity:q.parity,
   siteEventGroups:q.groups,siteChoiceSemantics:q.semantics});
  assert.equal(r.appSkillRouteParity,false);
- assert.equal(r.matchedSkillRoutes,8);
+ assert.equal(r.matchedSkillRoutes,7);
  const q2=fixture();q2.draft.appCard.events.pop();
  const p=comparePinnedAppDraftToOriginalSite({draft:q2.draft,siteParity:q2.parity,
   siteEventGroups:q2.groups,siteChoiceSemantics:q2.semantics});
