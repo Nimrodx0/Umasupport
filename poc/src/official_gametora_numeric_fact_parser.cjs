@@ -14,7 +14,7 @@ const KINDS=[
  ['power',/パワー|power/i],
  ['guts',/根性|guts/i],
  ['wisdom',/賢さ|wisdom|wit/i],
- ['bond',/絆|bond|friendship/i],
+ ['bond',/絆|友情ゲージ|bond|friendship\s*gauge/i],
  ['mood',/やる気|mood/i]
 ];
 const AMOUNT=/([+＋\-－−])\s*(\d{1,5})(?!\d)/g;
