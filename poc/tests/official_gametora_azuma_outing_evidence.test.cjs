@@ -31,6 +31,8 @@ test('explicit GameWith two-branch unlock only adjudicates matching original-sit
    siteExplicitTerminalChoiceGroups:0}));
  const r=evaluateOutingEvidence(copy,render);
  assert.equal(r.siteMatchingEventHeadings,6);
+ assert.equal(r.siteOutingHeadingsFormContiguousList,true);
+ assert.equal(r.siteOutingHeadingOrderMatchesEditorial,true);
  assert.equal(r.editorialChoiceCountCorroborated,6);
  assert.equal(r.firstEventBothChoicesExplicitlyEnableOutingsInGameWith,true);
  assert.equal(r.editorialUnlockFactAdoptableForPrivateCandidate,true);
@@ -50,6 +52,7 @@ test('duplicate or missing heading blocks private unlock attribution',()=>{
   title:'A',choiceGroups:2,siteExplicitUnlockChoiceGroups:0,siteExplicitTerminalChoiceGroups:0}]);
  assert.equal(r.editorialUnlockFactAdoptableForPrivateCandidate,false);
  assert.equal(r.siteMatchingHeadingsUniqueAndDistinct,false);
+ assert.equal(r.siteOutingHeadingsFormContiguousList,false);
  const uncorroborated=evaluateOutingEvidence(copy,[{
   title:'A',choiceGroups:1,siteExplicitUnlockChoiceGroups:0,siteExplicitTerminalChoiceGroups:0}]);
  assert.equal(uncorroborated.editorialUnlockFactAdoptableForPrivateCandidate,false);
