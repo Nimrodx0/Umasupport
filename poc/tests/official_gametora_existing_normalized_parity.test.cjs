@@ -2,7 +2,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {transformDocument}=require('../src/gametora_whole_event_normalize.cjs');
-const {compareConvertedToSiteEvent,compareConvertedCardToSite}=
+const {parseNumericFactWithLocalContext,compareConvertedToSiteEvent,compareConvertedCardToSite}=
  require('../src/official_gametora_existing_normalized_parity.cjs');
 const entry=(name,section,choices)=>({name,section,choices});
 const synthetic=()=>({kind:'support',id:30001,events_ja:{
@@ -95,4 +95,30 @@ test('missing/duplicated title join or wrong source category blocks a false five
  const bad=joins();bad[3].sourceCategory='random';
  assert.throws(()=>compareConvertedCardToSite(normalized,bad,observed),/カテゴリ/);
  assert.throws(()=>compareConvertedCardToSite(normalized,joins(),observed.slice(0,4)),/一致しない/);
+});
+
+
+test('bounded same-route numeric context resolves one known kind, never borrows conflicting branches',()=>{
+ const good=parseNumericFactWithLocalContext('+5',['+5','絆 +5']);
+ assert.equal(good.resolvedWithContext,true);
+ assert.equal(good.fact.kind,'bond');
+ const ambiguous=parseNumericFactWithLocalContext('+5',['スピード +5','絆 +5']);
+ assert.equal(ambiguous.resolvedWithContext,false);
+ const numericDisagree=parseNumericFactWithLocalContext('+5',['スピード +10']);
+ assert.equal(numericDisagree.resolvedWithContext,false);
+ const twoNumbers=parseNumericFactWithLocalContext('+5',['スピード +5、スタミナ +5']);
+ assert.equal(twoNumbers.resolvedWithContext,false);
+ const malformed=parseNumericFactWithLocalContext('+5',['スピード +5',42]);
+ assert.equal(malformed.resolvedWithContext,false);
+});
+test('a known out-of-scope bond fact is tracked, not falsely counted as unknown main reward',()=>{
+ const normalized=transformDocument(synthetic());
+ const groups=[{effectTexts:['スタミナ +5','+5'],effectContexts:[
+  ['スタミナ +5'],['+5','絆 +5']],hintLinks:[]}];
+ const r=compareConvertedToSiteEvent(normalized.events[1],groups);
+ assert.equal(r.uniquelyMatchedRouteCount,1);
+ assert.equal(r.siteBondNumericFactsOutsideComparedSubset,1);
+ assert.equal(r.numericKindResolvedByBoundedDOMContext,1);
+ assert.equal(r.visibleNumericProjectionParity,true);
+ assert.equal(r.bondRecipientIdentityVerified,false);
 });
