@@ -10,7 +10,7 @@
 const {scanOwnText}=require('./official_gametora_numeric_fact_parser.cjs');
 const fail=s=>{throw Error('既存GT正規化結果と本体DOMの差分: '+s);};
 const types=new Set(['skill_hint','speed','stamina','power','guts','wisdom',
- 'energy','max_energy','skill_points','mood','bond']);
+ 'energy','max_energy','skill_points','mood']);
 const signature=items=>items.slice().sort().join('|');
 function sourceRouteFacts(event){
  if(!event||!Number.isSafeInteger(event.sourceOrdinal)||!Array.isArray(event.choices)||
@@ -30,7 +30,7 @@ function sourceRouteFacts(event){
     if(!effect||typeof effect.type!=='string')fail('数値効果が不正');
     if(types.has(effect.type)&&Number.isSafeInteger(effect.numericValue)){
      facts.push(effect.type+':'+effect.numericValue);
-    }else if(effect.type!=='chain_end'){
+    }else if(!['bond','chain_end'].includes(effect.type)){
      excludedKinds.push(effect.type);
     }
    }
@@ -71,7 +71,14 @@ function renderedRouteFacts(groups){
    renderedGroupOrdinal:i+1,effectSignature:signature(facts),
    hintSignature:signature(hints),
    unclassifiedNumeric:observed.filter(x=>x.requiresReview||!types.has(x.kind)).length,
-   unresolvedHintLinks:group.hintLinks.length-hints.length
+   unresolvedHintLinks:group.hintLinks.length-hints.length,
+   // Diagnostic counts only; never log the effect text from the source site.
+   parserIssues:{
+    ambiguousKind:observed.filter(x=>x.kind==='unclassified').length,
+    multipleNumericAmounts:observed.filter(x=>x.count!==1).length,
+    recognizedButExcluded:observed.filter(x=>!x.requiresReview&&!types.has(x.kind)).length,
+    unrecognizedEffectKind:observed.filter(x=>!types.has(x.kind)&&x.kind!=='unclassified').length
+   }
   };
  });
 }
@@ -86,6 +93,10 @@ function compareConvertedToSiteEvent(converted,groups){
  const uncertainSource=source.reduce((n,x)=>n+x.ignoredOrUnparsedEffectKinds.length,0);
  const unclassified=actual.reduce((n,x)=>n+x.unclassifiedNumeric,0);
  const unresolvedHints=actual.reduce((n,x)=>n+x.unresolvedHintLinks,0);
+ const parserIssueTotals=Object.fromEntries(
+  ['ambiguousKind','multipleNumericAmounts','recognizedButExcluded','unrecognizedEffectKind']
+   .map(k=>[k,actual.reduce((n,x)=>n+x.parserIssues[k],0)])
+ );
  // Exactly the same subset as the older raw-source probe, now sourced from
  // the actual existing app-normalizer output, not from a parallel input parser.
  const siteNumericProjectionParity=unique&&uncertainSource===0&&
@@ -103,6 +114,7 @@ function compareConvertedToSiteEvent(converted,groups){
   surplusRenderedRoutes:unique?0:Math.max(0,actual.length-new Set(matches.flat()).size),
   convertedSourceUnmappedKinds:uncertainSource,
   renderedUnclassifiedNumeric:unclassified,
+  renderedParserIssueCounts:parserIssueTotals,
   renderedUnresolvedHintIds:unresolvedHints,
   visibleNumericProjectionParity:siteNumericProjectionParity,
   routeLinks:unique?source.map((s,i)=>({
