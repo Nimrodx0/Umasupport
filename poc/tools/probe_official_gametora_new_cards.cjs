@@ -383,6 +383,15 @@ async function probe(){
    const census=summarizeExpandedCensus(allRows);
    const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
    const outingEvidence=target.cardId==='30323'?evaluateOutingEvidence(outingLedger,outingEventViews):null;
+   if(outingEvidence&&(
+      outingEvidence.siteMatchingEventHeadings!==6||
+      outingEvidence.siteMatchingHeadingsUniqueAndDistinct!==true||
+      outingEvidence.editorialChoiceCountCorroborated!==6||
+      outingEvidence.siteOutingHeadingsFormContiguousList!==true||
+      outingEvidence.officialSiteExplicitUnlockOnFirstEvent!==2||
+      outingEvidence.bothOriginalSiteChoiceGroupsExplicitlyUnlock!==true||
+      outingEvidence.privateUnlockRouteCandidate?.siteEventOrdinal!==8))
+     fail('SSR30323の6お出かけ見出しと2択の解放出典に差分。承認せず再調査');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const drift=verifyPinnedNewCardCandidate(target.cardId,census);
    if(census.accordionPanelsOpened!==await eventButtons.count())
