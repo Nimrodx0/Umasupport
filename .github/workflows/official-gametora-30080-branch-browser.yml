@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/official-gametora-30080-branch-browser.yml'
       - 'poc/src/official_gametora_rendered_branch_topology.cjs'
+      - 'poc/src/official_gametora_old_numeric_route_parity.cjs'
+      - 'poc/tests/official_gametora_old_numeric_route_parity.test.cjs'
       - 'poc/tests/official_gametora_rendered_branch_topology.test.cjs'
       - 'poc/tools/probe_official_gametora_30080_branch.cjs'
   workflow_dispatch:
@@ -27,6 +29,8 @@ jobs:
           node --check poc/src/official_gametora_rendered_branch_topology.cjs
           node --check poc/tools/probe_official_gametora_30080_branch.cjs
           node --test poc/tests/official_gametora_rendered_branch_topology.test.cjs
+          node --check poc/src/official_gametora_old_numeric_route_parity.cjs
+          node --test poc/tests/official_gametora_old_numeric_route_parity.test.cjs
       - name: Use installed Chrome and Playwright
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
