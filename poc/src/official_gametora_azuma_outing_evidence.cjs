@@ -69,6 +69,18 @@ function evaluateOutingEvidence(ledger,rendered){
  });
  const intro=matches[0];
  const unlockAdoptable=intro.uniqueSiteTitleMatch&&intro.editorChoiceCountCorroborated;
+ const bothSiteBranchesExplicitlyUnlock=unlockAdoptable&&
+  intro.observedChoiceGroups===2&&intro.explicitSiteUnlockGroups===2;
+ const privateUnlockRouteCandidate=bothSiteBranchesExplicitlyUnlock?{
+  cardId:'30323',
+  siteEventOrdinal:intro.matchedSiteEventOrdinal,
+  choiceOrdinals:[1,2],
+  effectKind:'enable-outings',
+  conditionalOnPlayerChoice:true,
+  outingEventSequenceVerified:false,
+  outingClosureVerified:false,
+  publicationApproved:false
+ }:null;
  const allSixLocated=matches.every(x=>x.uniqueSiteTitleMatch);
  const distinctLocations=new Set(matches.map(x=>x.matchedSiteEventOrdinal).filter(Number.isInteger));
  const sitesDistinct=distinctLocations.size===matches.filter(x=>x.uniqueSiteTitleMatch).length;
@@ -84,12 +96,14 @@ function evaluateOutingEvidence(ledger,rendered){
   firstEventBothChoicesExplicitlyEnableOutingsInGameWith:true,
   editorialUnlockFactAdoptableForPrivateCandidate:unlockAdoptable,
   officialSiteExplicitUnlockOnFirstEvent:intro.explicitSiteUnlockGroups,
+  bothOriginalSiteChoiceGroupsExplicitlyUnlock:bothSiteBranchesExplicitlyUnlock,
+  privateUnlockRouteCandidate,
   headingMatches:matches,
   // Even editorial order does not prove game turn-by-turn reachability,
   // outing 5 completion, or a random early termination rule.
   playSequenceAndOutingReachabilityVerified:false,
   outingEndStateVerified:false,
-  siteEffectTypeIndependentlyCorroborated:false,
+  siteEffectTypeIndependentlyCorroborated:bothSiteBranchesExplicitlyUnlock,
   genderOtherThanMaleAllowed:false,
   publicationApproved:false,
   noSourceProseIncluded:true
