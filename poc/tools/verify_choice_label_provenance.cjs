@@ -13,7 +13,11 @@ const isSha=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
 const norm=s=>String(s).normalize('NFKC').trim();
 const digest=s=>crypto.createHash('sha256').update(norm(s),'utf8').digest('hex');
 function reviewChoiceProvenance(ledger,reference,expectedCardId='30001'){
- if(ledger?.schemaVersion!==1||ledger.cardId!==expectedCardId||
+ if(ledger?.schemaVersion!==2||ledger.cardId!==expectedCardId||
+    ledger.choiceDisplayPolicy?.gender!=='male'||
+    ledger.choiceDisplayPolicy.allowFemaleFallback!==false||
+    ledger.choiceDisplayPolicy.genderSelectionUi!==false||
+    ledger.choiceDisplayPolicy.unknownMaleLabel!=='unresolved'||
     !Array.isArray(ledger.choices)||ledger.choices.length!==6||
     !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(ledger.gameWithCardPage)||
     ledger.automaticTextPublicationAllowed!==false||ledger.contentIncluded!==false||
@@ -30,6 +34,7 @@ function reviewChoiceProvenance(ledger,reference,expectedCardId='30001'){
   if(!Number.isSafeInteger(item?.eventOrdinal)||item.eventOrdinal<1||
      item.eventOrdinal>events.length||
      !Number.isSafeInteger(item.choiceOrdinal)||item.choiceOrdinal<1||
+     item.selectedGender!=='male'||item.maleLabelVerifiedInGameWithArticle!==true||
      !isSha(item.labelSha256)||
      !/^https:\/\/gamewith\.jp\/uma-musume\/article\/show\/\d+$/.test(item.gameWithEventPage))
     fail('選択肢出典・イベント位置の値が不正');
@@ -59,6 +64,10 @@ function reviewChoiceProvenance(ledger,reference,expectedCardId='30001'){
   digestMismatches:mismatch.length,
   eventsReviewed:new Set(report.map(x=>x.eventOrdinal)).size,
   originalSiteTextVerificationCount:0,
+  selectedTrainerGender:'male',
+  femaleDisplayFallbackAllowed:false,
+  genderSelectionUiEnabled:false,
+  maleVariantChoicePositions:report.length,
   genderVariantsExhaustive:false,
   editorialTextProvenanceOnly:true,
   choiceLabelCodeIncluded:false,
