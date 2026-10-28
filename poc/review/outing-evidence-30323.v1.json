@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "cardId": "30323",
+  "kind": "friend-outing-editorial-corroboration",
+  "checkedOn": "2026-10-28",
+  "canonicalGender": "male",
+  "site": "https://gametora.com/ja/umamusume/supports/30323-azuma",
+  "exceptionReference": "https://gamewith.jp/uma-musume/article/show/584254",
+  "headlineNormalizer": "NFKC-remove-whitespace-SHA256-codepoints",
+  "source": "GameWith-editorial-section-おでかけイベント",
+  "titles": [
+    {
+      "editorialOrder": 1,
+      "kind": "outing-unlock-event",
+      "length": 9,
+      "sha256": "befc1a84480a871d8b00bb50a2d91187022ab7b2d34d2a3e4821ddeb19c1d14a",
+      "editorialChoiceCount": 2
+    },
+    {
+      "editorialOrder": 2,
+      "kind": "outing-stage-candidate",
+      "length": 9,
+      "sha256": "1803a483dbe38dfb9f77f3db0ee4fdd9ecc849bf6a1f50b908f608342fcd9a6c",
+      "editorialChoiceCount": 1
+    },
+    {
+      "editorialOrder": 3,
+      "kind": "outing-stage-candidate",
+      "length": 7,
+      "sha256": "1647e3c7ad5a78df0b6ca44600058ba35bf6e1b66db07cbec7ae01daa9dba883",
+      "editorialChoiceCount": 1
+    },
+    {
+      "editorialOrder": 4,
+      "kind": "outing-stage-candidate",
+      "length": 7,
+      "sha256": "538bca914392ceafd36d12ec4fd9beab80c96a7cd18524bfeb1fda18e388969d",
+      "editorialChoiceCount": 2
+    },
+    {
+      "editorialOrder": 5,
+      "kind": "outing-stage-candidate",
+      "length": 6,
+      "sha256": "bfc97bafff94ed664dbbdbc7002ac21b01bf0b6c76b39e8ee215d4a60679b9f7",
+      "editorialChoiceCount": 1
+    },
+    {
+      "editorialOrder": 6,
+      "kind": "outing-stage-candidate",
+      "length": 10,
+      "sha256": "7bbb4490a1941d4f8246a1448590d086576036a29c4be4eac095bf2d4d6a27cb",
+      "editorialChoiceCount": 1
+    }
+  ],
+  "gameWithExplicitOutingUnlockChoiceOrdinals": [
+    1,
+    2
+  ],
+  "editorialOrderIsConfirmedPlayableStageDependency": false,
+  "gameToraSiteOutingUnlockEffectToBeChecked": true,
+  "realGameSequenceIndependentlyVerified": false,
+  "includeEventNamesOrChoiceProse": false,
+  "automaticPublicationAllowed": false
+}
