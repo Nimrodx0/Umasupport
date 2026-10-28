@@ -1,0 +1,46 @@
+name: Audit pinned old GameTora structural parity cohorts (no site crawl)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-old-structural-cohorts.yml'
+      - 'poc/src/official_gametora_old_structural_cohorts.cjs'
+      - 'poc/tests/official_gametora_old_structural_cohorts.test.cjs'
+      - 'poc/tools/audit_official_gametora_old_structural_cohorts.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-existing-card-shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate structural cohort selection and negative tests
+        run: |
+          node --check poc/src/official_gametora_old_structural_cohorts.cjs
+          node --check poc/tools/audit_official_gametora_old_structural_cohorts.cjs
+          node --test poc/tests/official_gametora_old_structural_cohorts.test.cjs
+      - name: Download exactly three OLD immutable reference cards to private runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          rev=6e38b54af4fad397ff4491e63007a90705a4fe67
+          for id in 30030 30041 30080; do
+            curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+              "https://raw.githubusercontent.com/systemless10/UmamusumePS/$rev/server/data/events/gametora/support_$id.json" \
+              -o "$RUNNER_TEMP/gt-old-$id.json"
+          done
+      - name: Audit old reference card structures without original prose
+        shell: bash
+        run: |
+          node poc/tools/audit_official_gametora_old_structural_cohorts.cjs \
+            "$RUNNER_TEMP/gt-old-30030.json" \
+            "$RUNNER_TEMP/gt-old-30041.json" \
+            "$RUNNER_TEMP/gt-old-30080.json"

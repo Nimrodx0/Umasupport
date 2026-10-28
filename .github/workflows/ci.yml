@@ -32,6 +32,8 @@ jobs:
         run: python3 -m unittest discover -s poc/tests -p 'test_verify_skill_master.py' -v
       - name: Audit GT result-vs-OR branch categories (synthetic source)
         run: node --check poc/src/gametora_branch_semantics_inventory.cjs && node --test poc/tests/gametora_branch_semantics_inventory.test.cjs
+      - name: Verify structural cohort classification for existing GameTora cards (synthetic)
+        run: node --check poc/src/official_gametora_old_structural_cohorts.cjs && node --test poc/tests/official_gametora_old_structural_cohorts.test.cjs
 
       - name: Exercise actual deck aggregator with unpublished GT event choices, outcomes and terminal gates
         run: node --check poc/src/gametora_full_runtime_integration.cjs && node --test poc/tests/gametora_full_runtime_integration.test.cjs
