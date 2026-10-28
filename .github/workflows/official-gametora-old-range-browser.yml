@@ -1,0 +1,51 @@
+name: Observe original GameTora numeric ranges on two old SSR cards
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-old-range-browser.yml'
+      - 'poc/src/official_gametora_old_range_dom.cjs'
+      - 'poc/tests/official_gametora_old_range_dom.test.cjs'
+      - 'poc/tools/probe_official_gametora_old_ranges.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  limited-older-card-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify range classification and strict negative examples
+        run: |
+          node --check poc/src/official_gametora_old_range_dom.cjs
+          node --check poc/tools/probe_official_gametora_old_ranges.cjs
+          node --test poc/tests/official_gametora_old_range_dom.test.cjs
+      - name: Prepare installed Chrome and Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Download two pinned old GameTora references to temporary runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          rev=6e38b54af4fad397ff4491e63007a90705a4fe67
+          for id in 30030 30041; do
+            curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+              "https://raw.githubusercontent.com/systemless10/UmamusumePS/$rev/server/data/events/gametora/support_$id.json" \
+              -o "$RUNNER_TEMP/gt-old-$id.json"
+          done
+      - name: Check only the two designated original-site event panels
+        env:
+          GT_OLD_30030: ${{ runner.temp }}/gt-old-30030.json
+          GT_OLD_30041: ${{ runner.temp }}/gt-old-30041.json
+        shell: bash
+        run: |
+          node poc/tools/probe_official_gametora_old_ranges.cjs \
+            --live-old-ranges "$GT_OLD_30030" "$GT_OLD_30041"
