@@ -6,7 +6,7 @@
  */
 const crypto=require('node:crypto');
 const fail=s=>{throw Error('吾妻お出かけイベント出典照合: '+s);};
-const normalize=s=>String(s??'').normalize('NFKC').replace(/\s+/gu,'');
+const normalize=s=>String(s??'').normalize('NFKC').replace(/\s+/gu,'').replace(/[ーｰ‐‑‒–—―−]/gu,'-');
 const sha=s=>crypto.createHash('sha256').update(s,'utf8').digest('hex');
 const isSha=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
 function textContainsFingerprint(rendered,reference){
