@@ -24,7 +24,7 @@ function loadPinnedIndependentSkillRegistry(){
  if(!path)fail('pinned-independent-skill-dictionary-required');
  const bytes=fs.readFileSync(path);
  if(bytes.length>6*1024*1024)fail('pinned-dictionary-oversize');
- const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\\0')
+ const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\0')
   .update(bytes).digest('hex');
  if(sha!=='0c6ea6d72b037b24ee40860f73b0e86db47aab1d')
   fail('pinned-independent-skill-dictionary-sha-drift');
