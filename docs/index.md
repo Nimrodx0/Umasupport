@@ -14,6 +14,7 @@
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
 | SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
 | 次に元サイトと比較する既存GameTora旧カード構造別3枚 | [SSR30030／30041／30080の範囲値・3択・打ち切りを出典固定](official-gametora-existing-structural-cohorts-20261028.md) |
+| SSR30080元サイトの外側3選択肢・内部OR4候補・明示打ち切りの限定照合 | [旧30080の実ChromeのDOM構造検証と未確認ラベル](official-gametora-30080-site-branch-20261028.md) |
 | SSR30030／30041の元GameTora画面での数値範囲の限定照合 | [旧2枚の実Chromeで+10/+30・+15/+45を確認](official-gametora-old-range-direct-site-20261028.md) |
 | 既存SSR30001のGameTora本体とスキル＋非スキルの実統合イベントJSON照合 | [5イベント・9経路・36報酬記載](official-gametora-30001-combined-app-parity-20261028.md) |
 | 既存SSR30001のGameTora本体と非スキル効果の実アプリ用投影の照合 | [9経路・非スキル効果31/31件](official-gametora-30001-app-effects-parity-20261028.md) |
