@@ -74,21 +74,41 @@ async function run(path){
    return [...body.children].slice(0,20).map(group=>{
     const inner=group.children.length===1?group.firstElementChild:group;
     const rows=[...inner.children];
-    const dividers=rows.map((el,i)=>({el,i})).filter(({el})=>
-     /^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
-    const actualOr=dividers.filter(({i})=>i>0&&i<rows.length-1).length;
-    // An unexplained OR separator does not become a fabricated extra route.
-    const fragments=[group,...group.querySelectorAll('*')].map(el=>
+    const elements=[group,...group.querySelectorAll('*')];
+    const fragments=elements.map(el=>
      [...el.childNodes].filter(n=>n.nodeType===3)
       .map(n=>n.textContent||'').join('').trim()).filter(Boolean);
+    const dividers=elements.filter(el=>{
+     const own=[...el.childNodes].filter(n=>n.nodeType===3)
+      .map(n=>n.textContent||'').join('').trim();
+     return /^(?:OR|または|又は)$/i.test(own);
+    });
+    // A divider must have visible structure on both sides: do not turn
+    // arbitrary text about "or" into an imaginary result route.
+    const verifiedOr=dividers.filter(el=>{
+     for(let p=el;p&&p!==group;p=p.parentElement){
+      const siblings=[...(p.parentElement?.children||[])];
+      const i=siblings.indexOf(p);
+      if(i>0&&i<siblings.length-1)return true;
+     }
+     return false;
+    }).length;
     return {
      visibleText:(group.innerText||'').slice(0,3000),
      ownTextFragments:fragments.slice(0,100).map(x=>x.slice(0,250)),
-     routeCandidateCount:actualOr+1,
-     orSeparatorCount:actualOr
+     routeCandidateCount:verifiedOr+1,
+     orSeparatorCount:verifiedOr,
+     // Structural-only diagnostics, never a copy of words or HTML.
+     diagnostic:{directChildCount:group.children.length,
+      innerChildCount:rows.length,elementCount:elements.length,
+      explicitOrTextNodes:dividers.length,verifiedOrSeparators:verifiedOr,
+      standaloneOutcomeLabels:fragments.filter(x=>
+       /^(?:成功|失敗|大成功|成功時|失敗時|success|failure)$/i.test(x)).length,
+      signedNumberFragments:fragments.filter(x=>/[+＋\-－−]\s*\d/.test(x)).length}
     };
    });
   });
+  const siteDomDiagnostics=groups.map(g=>g.diagnostic);
   const proof=inspectSiteTopology(event,groups);
   const result={
    cardId:CARD_ID,sourceEventOrdinal:eventOrdinal,
@@ -96,7 +116,7 @@ async function run(path){
    uniquelyMatchedEventTitles:positions.length,
    ...proof,
    independentOriginalSiteRead:true,
-   historicalReferenceBlobVerified:true,
+   historicalReferenceBlobVerified:true,siteDomDiagnostics,
    publicationApproved:false
   };
   // The only output contains numbers, enums and booleans; no source text.
