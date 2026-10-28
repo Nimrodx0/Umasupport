@@ -6,7 +6,7 @@
   "canonicalGender": "male",
   "site": "https://gametora.com/ja/umamusume/supports/30323-azuma",
   "exceptionReference": "https://gamewith.jp/uma-musume/article/show/584254",
-  "headlineNormalizer": "NFKC-remove-whitespace-SHA256-codepoints",
+  "headlineNormalizer": "NFKC-remove-whitespace-fold-horizontal-dashes-SHA256-codepoints",
   "source": "GameWith-editorial-section-おでかけイベント",
   "titles": [
     {
@@ -48,7 +48,7 @@
       "editorialOrder": 6,
       "kind": "outing-stage-candidate",
       "length": 10,
-      "sha256": "7bbb4490a1941d4f8246a1448590d086576036a29c4be4eac095bf2d4d6a27cb",
+      "sha256": "7a77b13bcd191e457897513b971e007fe7964b97103eabefed740c190b6285d6",
       "editorialChoiceCount": 1
     }
   ],
