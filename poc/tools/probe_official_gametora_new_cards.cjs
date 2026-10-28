@@ -7,6 +7,7 @@ const {TARGETS,pageUrl,robotsDisallows}=require('../src/official_gametora_probe.
 const {registryFromSkillText,resolveHintContextChain}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
+const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -219,6 +220,7 @@ async function probe(){
    }
    const allRows=[];
    const eventRouteHints=[];
+   const eventDirectGrantDrafts=[];
    const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
@@ -337,11 +339,30 @@ async function probe(){
         choiceOrdinal:choiceIndex+1,
         outcomeOrdinal:outcomeIndex+1,
         unresolvedOr:ambiguous,
-        hints:own.slice(0,60)
+        hints:own.slice(0,60),
+        // Take only small own-text fragments from each verified result.
+        // Never mix text from the enclosing alternative outcome.
+        directOwnTexts:roots.flatMap(root=>
+         [root,...root.querySelectorAll('*')].map(el=>
+          [...el.childNodes].filter(n=>n.nodeType===3)
+           .map(n=>n.textContent||'').join('').trim())
+          .filter(t=>t.length<=300&&/(?:獲得|習得|取得)/.test(t))
+        ).slice(0,80)
        };
       });
      });
     });
+    if(registry){
+     // Source-only candidate extraction, historical GT has no input role.
+     const direct=siteDirectSkillDraft({cardId:target.cardId,
+      siteEventOrdinal:idx+1,registry,
+      routes:routePieces.map(r=>({
+       choiceGroupOrdinal:r.choiceOrdinal,resultOrdinal:r.outcomeOrdinal,
+       unresolvedOr:r.unresolvedOr,directOwnTexts:r.directOwnTexts
+      }))
+     });
+     eventDirectGrantDrafts.push(summarizeDirectSkillDraft(direct));
+    }
     const routes=routePieces.map(r=>({
      choiceOrdinal:r.choiceOrdinal,
      outcomeOrdinal:r.outcomeOrdinal,
@@ -378,6 +399,25 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const directSkillObservations={
+    panelsInspected:eventDirectGrantDrafts.length,
+    resultRoutesInspected:eventDirectGrantDrafts.reduce((n,d)=>n+d.resultRoutes,0),
+    explicitDirectLikeOwnLeaves:eventDirectGrantDrafts.reduce((n,d)=>
+     n+d.explicitDirectLikeLeafTexts,0),
+    uniquelyMatchedDirectGrantCandidates:eventDirectGrantDrafts.reduce((n,d)=>
+     n+d.unapprovedDirectSkillCandidates,0),
+    unresolvedDirectLikeOwnLeaves:eventDirectGrantDrafts.reduce((n,d)=>
+     n+d.unresolvedDirectLikeLeafTexts,0),
+    perEvent:eventDirectGrantDrafts.map((d,i)=>({
+     siteEventOrdinal:i+1,
+     resultRoutes:d.resultRoutes,explicitDirectLikeOwnLeaves:d.explicitDirectLikeLeafTexts,
+     uniqueCandidateCount:d.unapprovedDirectSkillCandidates,
+     unresolvedCount:d.unresolvedDirectLikeLeafTexts,
+     unresolvedReasons:d.reasonCounts
+    })),
+    fullSkillRewardCoverageVerified:false,
+    directSkillCandidatePublicationApproved:false
+   };
    const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
    const outingEvidence=target.cardId==='30323'?evaluateOutingEvidence(outingLedger,outingEventViews):null;
    const outingProgression=outingEvidence?correlateSequenceEvidence(progressionLedger,outingEvidence,outingEventViews):null;
@@ -429,6 +469,7 @@ async function probe(){
     ...summarizeEvents(counters),
     census,
     routeHintBinding,
+    directSkillObservations,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
