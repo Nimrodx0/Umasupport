@@ -53,16 +53,17 @@ function comparePinnedEffectsToSite({draft,siteParity,siteEventGroups}){
   !Array.isArray(siteParity.events)||siteParity.events.length!==5)
   fail('実サイトの全数値経路と元非スキル隔離投影の証拠不足');
  const byEvent=new Map(draft.isolatedAppCard.events.map(e=>[e.id,e]));
- const comparisons=[];
+ const comparisons=[],seenSource=new Set(),seenRendered=new Set();
  let appEffectCount=0,siteEffectCount=0,matchedEffectCount=0,matchedRoutes=0,
   appBondEffectCount=0,siteBondEffectCount=0,recipientEvidenceNotOnSite=0,
   terminalPathsInEffectDraft=0,missingEventProjections=0;
  for(const join of siteParity.events){
   const n=join.sourceOrdinal,display=join.displayedEventOrdinal;
-  if(!Number.isInteger(n)||n<1||n>5||
-    !Number.isInteger(display)||display<1||display>5||
+  if(!Number.isInteger(n)||n<1||n>5||seenSource.has(n)||
+    !Number.isInteger(display)||display<1||display>5||seenRendered.has(display)||
     !Array.isArray(join.routeLinks)||join.routeLinks.length!==join.renderedRouteCount)
    fail('元イベント・サイトの経路紐付けが不正');
+  seenSource.add(n);seenRendered.add(display);
   const id='gt:30001:'+String(n).padStart(3,'0')+':effect-only';
   const event=byEvent.get(id);
   if(!event){missingEventProjections++;comparisons.push({
@@ -70,14 +71,16 @@ function comparePinnedEffectsToSite({draft,siteParity,siteEventGroups}){
    skippedBecauseEffectCandidateNotEligible:true
   });continue;}
   const site=renderedRouteFacts(siteEventGroups[display-1]);
-  const routeStatuses=[];
+  const routeStatuses=[],usedSiteRoutes=new Set(),usedSourceRoutes=new Set();
   let same=0;
   for(const link of join.routeLinks){
    const ci=link.sourceChoiceOrdinal,ri=link.sourceOutcomeOrdinal;
    if(!Number.isInteger(ci)||ci<1||!Number.isInteger(ri)||ri<1||
+    usedSiteRoutes.has(link.renderedGroupOrdinal)||usedSourceRoutes.has(ci+':'+ri)||
     !Number.isInteger(link.renderedGroupOrdinal)||
     link.renderedGroupOrdinal<1||link.renderedGroupOrdinal>site.length)
     fail('経路ID・結果番号が不正');
+   usedSiteRoutes.add(link.renderedGroupOrdinal);usedSourceRoutes.add(ci+':'+ri);
    const group=site[link.renderedGroupOrdinal-1];
    const part=event.type==='auto'?ci===1?event:null:event.choices?.[ci-1];
    const leaf=part?.outcomes?part.outcomes[ri-1]:ri===1?part:null;
