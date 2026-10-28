@@ -86,6 +86,10 @@ function compareNumericRoutes(event,observedChoices){
  }
  const all=rows.every(x=>x.exactDistinctNumericRouteMatching&&
   x.expectedScalarEffects===x.observedScalarEffects);
+ const fullyParsed=rows.every(x=>x.siteUnresolvedNumericTexts===0&&
+  x.expectedScalarEffects===x.observedScalarEffects&&
+  x.observedRoutes===x.referenceRoutes);
+
  return {
   referenceChoices:reference.length,referenceResultRoutes:reference.flat().length,
   observedResultRoutes:observedChoices.flat().length,
@@ -93,6 +97,9 @@ function compareNumericRoutes(event,observedChoices){
   siteScalarEffects:rows.reduce((n,x)=>n+x.observedScalarEffects,0),
   uniquelyMatchedNumericRoutes:links.length,
   everyNumericResultRouteOneToOne:all,
+  // Pure extraction works even when the historical reference is stale.
+  allObservedSignedScalarFactsParsed:fullyParsed,
+  historicalValueOrEffectKindDriftObserved:fullyParsed&&!all,
   rows,links:all?links:[],
   skillHintIdAndLevelVerified:false,
   directSkillGrantVerified:false,
