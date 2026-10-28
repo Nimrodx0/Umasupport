@@ -80,7 +80,7 @@ test('zero observed direct rewards is NOT evidence of no direct rewards',()=>{
  assert.equal(summarizeDirectSkillDraft(x).siteTextScanCompletenessVerified,false);
 });
 test('bad registry, route identifiers, oversized text and duplicated coordinates are rejected',()=>{
- assert.throws(()=>classifyAwardLeaf('text',null),/不正/);
+ assert.throws(()=>classifyAwardLeaf('text',null),/bad-leaf-or-registry/);
  assert.throws(()=>siteDirectSkillDraft({cardId:'x',siteEventOrdinal:1,
   routes:[],registry:reg()}),/invalid/);
  assert.throws(()=>siteDirectSkillDraft({cardId:'30322',siteEventOrdinal:1,
