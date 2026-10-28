@@ -8,6 +8,8 @@ const {registryFromSkillText,matchContextToId}=require('../src/official_gametora
 const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
+const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
+const progressionLedger=require('../review/outing-progression-30323.v1.json');
 const {evaluateOutingUnlockSelection,verifyBothOpeningChoicesUnlock}=require('../src/friend_outing_access_gate.cjs');
 const outingLedger=require('../review/outing-evidence-30323.v1.json');
 const fs=require('node:fs');
@@ -384,6 +386,7 @@ async function probe(){
    const census=summarizeExpandedCensus(allRows);
    const routeHintBinding=summarizeCandidateRouteHints(eventRouteHints);
    const outingEvidence=target.cardId==='30323'?evaluateOutingEvidence(outingLedger,outingEventViews):null;
+   const outingProgression=outingEvidence?correlateSequenceEvidence(progressionLedger,outingEvidence,outingEventViews):null;
    if(outingEvidence&&(
       outingEvidence.siteMatchingEventHeadings!==6||
       outingEvidence.siteMatchingHeadingsUniqueAndDistinct!==true||
@@ -395,6 +398,19 @@ async function probe(){
      fail('SSR30323の6お出かけ見出しと2択の解放出典に差分。承認せず再調査');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
+   const completedFiveCandidate=access?evaluateSequenceCandidate(
+    progressionLedger,access,[1,2,3,4,5],1,1):null;
+   if(outingProgression&&(
+      outingProgression.headingCountMatched!==6||
+      outingProgression.stageCount!==5||
+      outingProgression.originalSiteExactEndTitleMatchCount!==1||
+      outingProgression.endingHeadings[0]?.sourceEventOrdinal!==11||
+      outingProgression.endingHeadings[1]?.sourceEventOrdinal!==null||
+      outingProgression.missingExactTitleDoesNotProveMissingGameEvent!==true||
+      completedFiveCandidate?.trainingEndBranchEditorialCandidate!=='completed'||
+      completedFiveCandidate?.terminalFlagGenerated!==false||
+      completedFiveCandidate?.earlyTerminationStatus!=='unverified'))
+     fail('SSR30323の5段階順序と未確認終了分岐の区別に差分');
    const outingGateStates=access?{
     bothOptionsExplicitlyUnlock:verifyBothOpeningChoicesUnlock(access),
     noChoice:evaluateOutingUnlockSelection(access,null),
@@ -420,6 +436,8 @@ async function probe(){
     census,
     routeHintBinding,
     outingEvidence,
+    outingProgression,
+    fiveStageCompletionPreview:completedFiveCandidate,
     outingGateStates,
     routeIntegrity,
     sourceDrift:drift,
