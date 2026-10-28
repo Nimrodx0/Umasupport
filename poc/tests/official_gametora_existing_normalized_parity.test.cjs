@@ -131,14 +131,14 @@ test('bounded same-route numeric context resolves one known kind, never borrows 
  const malformed=parseNumericFactWithLocalContext('+5',['スピード +5',42]);
  assert.equal(malformed.resolvedWithContext,false);
 });
-test('a known out-of-scope bond fact is tracked, not falsely counted as unknown main reward',()=>{
+test('context-located bond cannot silently pass when absent from old normalized numeric route',()=>{
  const normalized=transformDocument(synthetic());
  const groups=[{effectTexts:['スタミナ +5','+5'],effectContexts:[
   ['スタミナ +5'],['+5','絆 +5']],hintLinks:[]}];
  const r=compareConvertedToSiteEvent(normalized.events[1],groups);
- assert.equal(r.uniquelyMatchedRouteCount,1);
- assert.equal(r.siteBondNumericFactsOutsideComparedSubset,1);
+ assert.equal(r.uniquelyMatchedRouteCount,0);
+ assert.equal(r.directlyParsedSiteBondFacts,1);
  assert.equal(r.numericKindResolvedByBoundedDOMContext,1);
- assert.equal(r.visibleNumericProjectionParity,true);
+ assert.equal(r.visibleNumericProjectionParity,false);
  assert.equal(r.bondRecipientIdentityVerified,false);
 });
