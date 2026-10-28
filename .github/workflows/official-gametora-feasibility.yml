@@ -18,6 +18,10 @@ on:
       - 'poc/tests/official_gametora_route_group_probe.test.cjs'
       - 'poc/src/official_gametora_existing_normalized_parity.cjs'
       - 'poc/tests/official_gametora_existing_normalized_parity.test.cjs'
+      - 'poc/src/official_gametora_app_schema_parity.cjs'
+      - 'poc/tests/official_gametora_app_schema_parity.test.cjs'
+      - 'poc/src/gametora_app_schema_dry_run.cjs'
+      - 'poc/src/gametora_event_skill_crosswalk.cjs'
       - 'poc/src/gametora_whole_event_normalize.cjs'
       - 'poc/src/official_gametora_choice_outcome_semantics.cjs'
       - 'poc/tests/official_gametora_choice_outcome_semantics.test.cjs'
@@ -67,6 +71,8 @@ jobs:
           node --test poc/tests/official_gametora_route_group_probe.test.cjs
           node --check poc/src/official_gametora_existing_normalized_parity.cjs
           node --test poc/tests/official_gametora_existing_normalized_parity.test.cjs
+          node --check poc/src/official_gametora_app_schema_parity.cjs
+          node --test poc/tests/official_gametora_app_schema_parity.test.cjs
           node --check poc/src/official_gametora_choice_outcome_semantics.cjs
           node --test poc/tests/official_gametora_choice_outcome_semantics.test.cjs
           node --check poc/tools/verify_choice_label_provenance.cjs
