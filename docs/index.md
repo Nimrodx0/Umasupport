@@ -13,6 +13,7 @@
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
 | SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
+| 既存SSR30001のGameTora本体とスキル＋非スキルの実統合イベントJSON照合 | [5イベント・9経路・36報酬記載](official-gametora-30001-combined-app-parity-20261028.md) |
 | 既存SSR30001のGameTora本体と非スキル効果の実アプリ用投影の照合 | [9経路・非スキル効果31/31件](official-gametora-30001-app-effects-parity-20261028.md) |
 | 既存SSR30001のGameTora本体と実アプリ用スキルイベント投影の照合 | [5イベント・9経路・スキル報酬5件](official-gametora-30001-app-schema-parity-20261028.md) |
 | 既存変換済みGameToraデータと元サイト直接取得の等価性検証 | [SSR30001の5イベント9経路と8未分類数値](official-gametora-existing-normalized-parity-20261028.md) |
