@@ -37,6 +37,8 @@ function rawPanelCensus(button){
   .map(n=>n.textContent||'').join('').trim();
  const leaves=body?[body,...body.querySelectorAll('*')]:[];
  const text=leaves.map(own).filter(Boolean);
+ const fullPanelLeaves=panel?[panel,...panel.querySelectorAll('*')]:[];
+ const allPanelOwn=fullPanelLeaves.map(own).filter(Boolean);
  return {
   panelVisible:!!panel,
   bodyFound:!!body,
@@ -44,6 +46,9 @@ function rawPanelCensus(button){
   orLeafCount:leaves.filter(el=>el.children.length===0&&
    /^(?:OR|または|又は)$/i.test((el.innerText||'').trim())).length,
   signedOwnTextCount:text.filter(t=>/[+＋\-－−]\s*\d/.test(t)).length,
+  panelSignedOwnTextCount:allPanelOwn.filter(t=>/[+＋\-－−]\s*\d/.test(t)).length,
+  panelHintLikeOwnTextCount:allPanelOwn.filter(t=>/(?:ヒント|hint)/i.test(t)&&
+   /[+＋\-－−]\s*\d/.test(t)).length,
   directLikeOwnTextCount:text.filter(t=>/(?:獲得|習得|取得)/.test(t)).length,
   explicitFlowOwnTextCount:text.filter(t=>
    /(?:連続|イベントチェーン|お出かけ|おでかけ)/.test(t)&&
@@ -142,27 +147,35 @@ async function inspect({ids,skillFile}={}){
     if(blocked)fail('監査中に元サイトが取得制限');
     const raw=await button.evaluate(rawPanelCensus);
     if(!raw.panelVisible)fail('パネルが存在しない');
+    const base={ordinal:i+1,panelSignedLeaves:raw.panelSignedOwnTextCount,
+     panelHintLikeLeaves:raw.panelHintLikeOwnTextCount};
+    let pieces;
+    try{pieces=await button.evaluate(extractRoutePieces);}
+    catch{
+     // Error messages can include source content. Report only the failing
+     // pipeline stage and structural counts; never export the exception.
+     events.push({...base,status:'dom-extractor-rejected',
+      rawGroups:raw.bodyGroupCount,rawOrLeaves:raw.orLeafCount,
+      rawSignedLeaves:raw.signedOwnTextCount,discrepancies:['parser-error']});
+     continue;
+    }
+    const compared=compareIndependentCensus(raw,pieces);
     try{
-     const pieces=await button.evaluate(extractRoutePieces);
-     const compared=compareIndependentCensus(raw,pieces);
      const observed=assembleLiveEvent({
       cardId:item.cardId,siteEventOrdinal:i+1,routePieces:pieces,registry
      });
      observations.push(observed);
      const summary=summarizeLiveEvent(observed);
-     events.push({ordinal:i+1,status:summary.status,
-      ...compared,
+     events.push({...base,status:summary.status,...compared,
       unparsedNumericFacts:summary.unparsedNumericFacts??null,
       excludedNonScalarNumericFacts:summary.excludedNonScalarNumericFacts??null,
       unresolvedHintRows:summary.unresolvedHintRows??null,
       unresolvedDirectLikeTexts:summary.unresolvedDirectLikeTexts??null,
       flowMarkers:summary.visibleFlowMarkers??null});
     }catch{
-     // An arbitrary DOM/parser error is never a "no reward" or a successful
-     // conversion. Do not accidentally log raw source prose in exceptions.
-     events.push({ordinal:i+1,status:'generic-parser-rejected',
-      rawGroups:raw.bodyGroupCount,rawOrLeaves:raw.orLeafCount,
-      rawSignedLeaves:raw.signedOwnTextCount,discrepancies:['parser-error']});
+     // A card with even one unassembled event cannot pass projection.
+     events.push({...base,status:'event-assembler-rejected',...compared,
+      discrepancies:[...compared.discrepancies,'assembler-error']});
     }
    }
    if(events.length!==count)fail('全パネルを調査できなかった');
