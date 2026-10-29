@@ -7,7 +7,7 @@
 ## 現行のデータの扱い
 
 - **通常ヒントとスキル辞書**：UmaSimの公開元を起動時に取得し、形式検査とIndexedDBキャッシュを使います。
-- **イベント候補**：GameTora由来データを基準に数値・結果分岐を内部で整理し、GameWithは矛盾・欠損などの個別裁定に用います。旧GameWith-first全面収集方針は撤回済みです。
+- **イベント候補**：2026-10-29以降の主経路は第三者GitHub `systemless10/UmamusumePS` が構造化したGameTora由来JSON。元GameTora HTMLからの直接取得は未完成のまま開発保留です。GameWithは矛盾・欠損などの個別裁定に用い、全件GameWith-first方針には戻しません。
 - **正式公開イベント**：内部の技術変換・プレビューとは独立し、イベント公開審査と権利・正確性の確認が必要です。試験変換件数がそのままゲーム内の正確性・網羅性を表すことはありません。
 - **本文・画像の取扱い**：第三者のイベント原文、選択肢文章、画像、無承認のマスターDBはそのまま再配布しません。
 
@@ -32,7 +32,7 @@
 | 最新の実測・残件・CI根拠 | [開発状況](docs/status.md) |
 | 機構／データ／実環境の合格条件 | [検証計画](docs/verification-plan.md) |
 | アプリ構成・イベントデータ契約 | [設計](docs/architecture.md) / [イベントスキーマ](docs/event-schema.md) |
-| イベント取得元の採用方針 | [GameToraを基準としたデータ方針](docs/gametora-baseline-event-policy-20261021.md) |
+| イベント取得元の採用方針 | [GitHub派生DB主経路への復帰と製品完成の方針](docs/derived-github-primary-restart-20261029.md) / [GameTora由来基準の扱い](docs/gametora-baseline-event-policy-20261021.md) |
 | 過去の実装・調査 | [開発履歴](docs/development-history.md) / [文書アーカイブ](docs/archive/) |
 | AI開発時の作業ルール | [AGENTS.md](AGENTS.md) |
 
