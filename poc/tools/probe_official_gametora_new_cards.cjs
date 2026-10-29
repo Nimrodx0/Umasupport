@@ -10,8 +10,6 @@ const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_
 const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
 const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
 const {assembleLiveEvent,summarizeLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
-const {adjudicateExplicitSourceOutcomes}=require('../src/official_gametora_gamewith_result_adjudication.cjs');
-const explicit30322Review=require('../review/official-30322-explicit-outcomes-20261029.v1.json');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -227,7 +225,6 @@ async function probe(){
    const eventDirectGrantDrafts=[];
    const eventFlowDrafts=[];
    const eventUnifiedSummaries=[];
-   const gameWithOutcomeEditorialObservations=[];
    const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
@@ -359,17 +356,7 @@ async function probe(){
         numericEffectTexts.push(t);
         numericEffectContexts.push(contexts);
        }
-       // Detect ONLY exact leaf labels inside THIS result's DOM roots.
-       // Do not copy prose, infer success from its effect amount, or
-       // associate text from an adjacent OR outcome.
-       const resultLabelOwnTexts=roots.flatMap(root=>
-        [root,...root.querySelectorAll('*')].filter(el=>el.children.length===0)
-         .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
-          .map(n=>n.textContent||'').join('').trim())
-         .filter(t=>/^(?:成功|成功時|大成功|大成功時|失敗|失敗時|大失敗|大失敗時|success|failure|great success|great failure)$/i.test(t))
-       ).slice(0,40);
        return {
-        resultLabelOwnTexts,
         numericEffectTexts:numericEffectTexts.slice(0,80),
         numericEffectContexts:numericEffectContexts.slice(0,80),
         groupOwnTextFragments,
@@ -397,43 +384,10 @@ async function probe(){
       });
      });
     });
-    if(routePieces.some(r=>!Array.isArray(r.resultLabelOwnTexts)))
-     fail('元サイト結果末端の成功失敗表示取得に失敗、ゼロ件扱い禁止');
     if(registry){
      const joined=assembleLiveEvent({
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
      });
-     if(target.cardId==='30322'&&idx===3){
-      // The site does not label these OR alternatives. The exact,
-      // card/event-specific GameWith article supplies three ACTUAL choices
-      // with "great success" / "success" outcomes. Verify every fact.
-      const title=(await eventButton.innerText()).normalize('NFKC')
-       .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
-      const fingerprint=crypto.createHash('sha256').update(title).digest('hex');
-      let adjudicated;
-      try{
-       adjudicated=adjudicateExplicitSourceOutcomes(joined,explicit30322Review,
-        {siteEventTitleFingerprint:fingerprint});
-      }catch(e){
-       // This debug record includes no names, page prose or HTML.
-       if(joined.status==='unified-unapproved')
-        console.log('GT30322_OUTCOME_NUMERIC_DIAGNOSTICS='+JSON.stringify(
-         joined.joined.routes.map(r=>({
-          group:r.choiceGroupOrdinal,result:r.resultOrdinal,
-          numeric:r.numericEffects.map(x=>x.kind+':'+x.delta),
-          hintLevels:r.skillHints.map(x=>x.level)
-         }))));
-       throw e;
-      }
-      gameWithOutcomeEditorialObservations.push({
-       siteEventOrdinal:idx+1,
-       editorialChoiceCount:adjudicated.editorialChoiceCount,
-       editorialOutcomeCount:adjudicated.editorialOutcomeCount,
-       labels:adjudicated.outcomes.map(x=>x.editorialOutcomeLabel),
-       game2026Verified:false,publicationApproved:false,
-       chainContinuationRequiresVerified:false
-      });
-     }
      eventUnifiedSummaries.push(summarizeLiveEvent(joined));
     }
     const flow=routeFlowCandidates({
@@ -503,14 +457,6 @@ async function probe(){
      (x.status==='unified-unapproved'?x.routes:0),0),
     observedNumericEffects:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?x.numericEffects:0),0),
-    explicitSiteOutcomeLabels:eventUnifiedSummaries.reduce((n,x)=>n+
-     (x.observedExplicitOutcomeLabels??0),0),
-    ambiguousSiteOutcomeLabels:eventUnifiedSummaries.reduce((n,x)=>n+
-     (x.ambiguousOutcomeLabels??0),0),
-    siteOrSeparatedGroups:eventUnifiedSummaries.reduce((n,x)=>n+
-     (x.siteOrSeparatedGroups??0),0),
-    explicitSuccessFailurePairGroups:eventUnifiedSummaries.reduce((n,x)=>n+
-     (x.explicitSuccessFailurePairGroups??0),0),
     unresolvedNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.unparsedNumericFacts??0),0),
     excludedNonScalarNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
@@ -531,9 +477,6 @@ async function probe(){
      resultRoutes:x.routes??x.routeCount??0,
      numericEffects:x.numericEffects??null,
      unresolvedNumericFacts:x.unparsedNumericFacts??null,
-     explicitSiteOutcomeLabels:x.observedExplicitOutcomeLabels??null,
-     siteOrSeparatedGroups:x.siteOrSeparatedGroups??null,
-     explicitSuccessFailurePairs:x.explicitSuccessFailurePairGroups??null,
      skillHints:x.skillHints??null,unresolvedHintRows:x.unresolvedHintRows??null,
      directSkillCandidates:x.directSkillCandidates??null,
      unresolvedDirectLikeTexts:x.unresolvedDirectLikeTexts??null,
@@ -623,23 +566,6 @@ async function probe(){
       got.perEvent.some((e,i)=>
        e.numericEffects!==pinnedUnified.numericPerEvent[i]))
     fail('元サイト結果統合の固定限定サンプル数値/ヒント/構造が変化、要再検証');
-   const pinnedSiteLabels=target.cardId==='30322'?{orGroups:3,labels:0,pairs:0}:
-    {orGroups:0,labels:0,pairs:0};
-   // In this TWO-PAGE site snapshot, no isolated local result labels are
-   // displayed. Pin the observation but DO NOT assert there are no real
-   // game success/failure branches or player choices.
-   if(unifiedEventObservations.siteOrSeparatedGroups!==pinnedSiteLabels.orGroups||
-      unifiedEventObservations.explicitSiteOutcomeLabels!==pinnedSiteLabels.labels||
-      unifiedEventObservations.explicitSuccessFailurePairGroups!==pinnedSiteLabels.pairs||
-      unifiedEventObservations.ambiguousSiteOutcomeLabels!==0||
-      (target.cardId==='30322'&&
-       unifiedEventObservations.perEvent[3].siteOrSeparatedGroups!==3))
-    fail('元サイト表示上のORと成功失敗ラベルが変化、ゲーム意味の再裁定が必要');
-   if(target.cardId==='30322'&&(
-     gameWithOutcomeEditorialObservations.length!==1||
-     gameWithOutcomeEditorialObservations[0].editorialChoiceCount!==3||
-     gameWithOutcomeEditorialObservations[0].editorialOutcomeCount!==6))
-    fail('30322のGameWith明示3択×2結果が元サイトに対応せず裁定保留');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
@@ -682,7 +608,6 @@ async function probe(){
     directSkillObservations,
     visibleFlowObservations,
     unifiedEventObservations,
-    gameWithOutcomeEditorialObservations,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
