@@ -269,3 +269,29 @@ test('stale pending ID not in current UmaSim roster is rejected',()=>{
   existingCatalog:catalog(),pendingCardIds:['40001'],candidates:[]}),
  /前回保留と現行UmaSim名簿が不一致/);
 });
+
+test('offline intake CLI planner carries forward staged but unpublished card on next day',()=>{
+ const {plan}=require('../tools/plan_new_card_event_intake.cjs');
+ const old=Array.from({length:500},(_,i)=>String(10000+i))
+  .flatMap(id=>Array.from({length:5},(_,stage)=>supportRow(id,stage))).join('\n')+'\n';
+ const latest=old+Array.from({length:5},(_,stage)=>supportRow('30323',stage)).join('\n')+'\n';
+ const base={schemaVersion:1,cards:[]};
+ const day1=plan({previousSupportText:old,currentSupportText:latest,
+  existingCatalog:base,candidates:[candidate('30323')]});
+ assert.deepEqual(day1.newlyObservedIds,['30323']);
+ assert.deepEqual(day1.readyIds,['30323']);
+ assert.deepEqual(day1.carryForwardPendingIds,['30323']);
+ const day2=plan({previousSupportText:latest,currentSupportText:latest,
+  existingCatalog:base,candidates:[candidate('30323')],
+  pendingCardIds:day1.carryForwardPendingIds});
+ assert.deepEqual(day2.newlyObservedIds,[]);
+ assert.deepEqual(day2.readyIds,['30323']);
+ assert.deepEqual(day2.carryForwardPendingIds,['30323']);
+ const afterPublish=plan({previousSupportText:latest,currentSupportText:latest,
+  existingCatalog:{schemaVersion:1,cards:[
+   {cardId:'30323',coverageStatus:'partial',events:[newEvent('30323')]}
+  ]},candidates:[],pendingCardIds:day2.carryForwardPendingIds});
+ assert.deepEqual(afterPublish.alreadyImportedIds,[]);
+ assert.deepEqual(afterPublish.carryForwardPendingIds,[]);
+ assert.equal(afterPublish.oldCatalogCardCount,1);
+});
