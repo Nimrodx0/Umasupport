@@ -1,0 +1,104 @@
+name: Bounded R and SR original-GameTora generic adapter sampling
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-r-sr-source-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  r-and-sr-original-site:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify generic source URL and status gate
+        run: |
+          node --check poc/tools/probe_official_gametora_target_cards.cjs
+          node --test poc/tests/official_gametora_new_card_locator.test.cjs
+          node --test poc/tests/official_gametora_source_diagnostics.test.cjs
+      - name: Prepare Chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Read pinned independent skill registry
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-skill-data.txt"
+      - name: Prepare isolated historical R/SR diagnostic fixture (not genuinely new cards)
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const plan={
+            dataKind:'new-card-event-intake-plan',version:1,
+            publicationApproved:false,sourceEventsPublishedAutomatically:false,
+            existingDatabaseUnchanged:true,publishedEventsChanged:0,
+            existingCatalogDigest:'0'.repeat(64),
+            newlyObservedIds:['10016','20075'],alreadyImportedIds:[],
+            carryForwardPendingIds:['10016','20075']
+          };
+          fs.writeFileSync(process.env.RUNNER_TEMP+'/historical-r-sr-diagnostic.json',
+            JSON.stringify(plan));
+          NODE
+      - name: Visit at most two R and SR pages from the source listing
+        run: |
+          node poc/tools/probe_official_gametora_target_cards.cjs \
+            --live --plan "$RUNNER_TEMP/historical-r-sr-diagnostic.json" \
+            --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/r-sr-structure-only.txt"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const output=fs.readFileSync(process.env.RUNNER_TEMP+'/r-sr-structure-only.txt',
+            'utf8').trim();
+          const prefix='GT_NEW_CARD_READONLY_PROBE=';
+          if(!output.startsWith(prefix))throw Error('No generic original-site result');
+          const p=JSON.parse(output.slice(prefix.length));
+          if(p.dataKind!=='gametora-new-card-listing-probe'||p.version!==1||
+             JSON.stringify(p.selectedCardIds)!==JSON.stringify(['10016','20075'])||
+             JSON.stringify(p.pendingCardIds)!==JSON.stringify(['10016','20075'])||
+             p.sourceSiteCardVisitsPerformed>2||
+             p.existingDatabaseUnchanged!==true||
+             p.sourceSiteTextCopied!==false||p.publicationApproved!==false||
+             !Array.isArray(p.results)||p.results.length!==2||
+             p.results.some(x=>x.publicationApproved!==false))
+            throw Error('R/SR read-only, two-visit and publication guard failed');
+          // Source observation from 2026-10-29. Fail on drift instead of
+          // quietly turning a changed R/SR site into a verified event.
+          const expected=[
+            {id:'10016',panels:2,shaped:2,unresolved:0,routes:4,numeric:9,hints:1},
+            {id:'20075',panels:5,shaped:4,unresolved:1,routes:7,numeric:16,hints:2}
+          ];
+          if(p.sourceSiteCardVisitsPerformed!==2)
+            throw Error('Actual R/SR pages were not both visited; manual recheck');
+          for(let i=0;i<expected.length;i++){
+            const g=p.results[i],e=expected[i];
+            if(g.cardId!==e.id||g.status!=='private-schema-only'||
+               g.sourceEventPanels!==e.panels||g.schemaShapedEvents!==e.shaped||
+               g.skippedOrAmbiguousEvents!==e.unresolved||
+               g.schemaShapedResults!==e.routes||
+               g.numericEffects!==e.numeric||g.skillHints!==e.hints||
+               g.pendingEventCount!==e.panels||
+               g.existingDatabaseTouched!==false||g.publicationApproved!==false)
+              throw Error('R/SR source shape changed: '+e.id);
+          }
+          // A page absent from the observed listing does not prove the card
+          // or event absent. A partially parsed page never means complete.
+          console.log('GT_R_SR_BOUNDED_DIAGNOSTIC='+JSON.stringify({
+            visited:p.sourceSiteCardVisitsPerformed,entries:p.results.map(x=>({
+              id:x.cardId,status:x.status,panels:x.sourceEventPanels??null,
+              shapedEvents:x.schemaShapedEvents??null,
+              unresolved:x.skippedOrAmbiguousEvents??null,
+              outcomeRoutes:x.schemaShapedResults??null,
+              numeric:x.numericEffects??null,hints:x.skillHints??null
+            })),publicationApproved:false,adapterGatePassed:false
+          }));
+          NODE
