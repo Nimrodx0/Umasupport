@@ -17,13 +17,16 @@ const validId=x=>typeof x==='string'&&/^[1-9]\d*$/.test(x)&&Number.isSafeInteger
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const CANONICAL_SOURCE_SHA='b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec';
 const CANONICAL_SOURCE_REV='cf9366f6a487bd8f197b53d8a11981207beb9f6c';
-function crosswalk({candidate,skillText,model,supplemental}){
+function crosswalk({candidate,skillText,model,supplemental,
+ sourceRevision=POLICY.baselineRevision,skillRevision=CANONICAL_SOURCE_REV}){
  if(POLICY.schemaVersion!==2||POLICY.baselineSource!=='GameTora-derived'||
     POLICY.canonicalExceptionSource!=='GameWith'||POLICY.automaticPublicationAllowed!==false)
    fail('正本設定と違う');
  if(!obj(candidate)||candidate.dataKind!=='gametora-whole-event-numeric-candidate'||
     candidate.releaseApproved!==false||candidate.noEventCanPublishFromThisCandidate!==true||
-    candidate.sourcePins?.gameToraDerived!==POLICY.baselineRevision||
+    candidate.sourcePins?.gameToraDerived!==sourceRevision||
+     !/^[a-f0-9]{40}$/.test(sourceRevision)||
+     !/^[a-f0-9]{40}$/.test(skillRevision)||
     !Array.isArray(candidate.cards)||!obj(candidate.totals))
    fail('固定GameTora由来の未承認中間DBが必要');
  if(!obj(model)||!obj(model.skillById)||!Array.isArray(model.cards))
@@ -199,8 +202,8 @@ function crosswalk({candidate,skillText,model,supplemental}){
  if(locations.length!==counts.numericHintMentions+counts.directSkillGrantMentions)
   fail('全報酬位置を保持できていません');
  return {schemaVersion:1,dataKind:'gametora-event-skill-crosswalk-draft',
-  sourcePins:{gameToraDerived:POLICY.baselineRevision,
-   umaSimSkills:CANONICAL_SOURCE_REV,umaSimSkillsSha256:CANONICAL_SOURCE_SHA},
+  sourcePins:{gameToraDerived:sourceRevision,
+   umaSimSkills:skillRevision,umaSimSkillsSha256:sha(skillText)},
   sourceSkillRegistryCount:raw.count,sourceProseIncluded:false,
   crosswalkDoesNotVerifyRouteConditions:true,requiresSeparatePublicationReview:true,
   releaseApproved:false,gameVerified:false,
