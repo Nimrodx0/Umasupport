@@ -58,6 +58,26 @@ function rawPanelCensus(button){
   panelHasText:!!(panel?.innerText||'').trim()
  };
 }
+function classifyAssemblerRejection(error){
+ // Never return the error message itself: upstream contexts may contain
+ // source text. Match only stable codes written by our own modules.
+ const message=String(error?.message||'');
+ if(message.includes('site-local-hint-id-level-route-drift'))
+  return 'independent-hint-id-level-route-mismatch';
+ if(message.includes('visible-branch-not-separated'))
+  return 'visible-route-separation-error';
+ if(message.includes('scope-or-registry-invalid'))
+  return 'scope-or-skill-registry-invalid';
+ if(message.includes('route-position-gap-duplicate-or-reordering'))
+  return 'result-coordinate-integrity-error';
+ if(message.includes('group-text-out-of-bounds'))
+  return 'group-text-boundary-error';
+ if(message.includes('same-group-provenance-mismatch'))
+  return 'same-group-provenance-error';
+ if(message.includes('not-a-provisional-site-draft'))
+  return 'invalid-private-numeric-draft';
+ return 'unclassified-assembler-error';
+}
 function compareIndependentCensus(census,pieces){
  if(!Array.isArray(pieces))fail('結果行が不正');
  const groups=new Set(pieces.map(r=>r.choiceOrdinal)).size;
@@ -172,9 +192,10 @@ async function inspect({ids,skillFile}={}){
       unresolvedHintRows:summary.unresolvedHintRows??null,
       unresolvedDirectLikeTexts:summary.unresolvedDirectLikeTexts??null,
       flowMarkers:summary.visibleFlowMarkers??null});
-    }catch{
+    }catch(error){
      // A card with even one unassembled event cannot pass projection.
      events.push({...base,status:'event-assembler-rejected',...compared,
+      assemblerRejectionCode:classifyAssemblerRejection(error),
       discrepancies:[...compared.discrepancies,'assembler-error']});
     }
    }
@@ -211,4 +232,4 @@ async function main(args){
 if(require.main===module)main(process.argv.slice(2)).catch(e=>{
  process.stderr.write(String(e.message).slice(0,240)+'\n');process.exitCode=1;
 });
-module.exports={COHORT,parseCardScope,compareIndependentCensus,rawPanelCensus,inspect};
+module.exports={COHORT,parseCardScope,compareIndependentCensus,rawPanelCensus,inspect,classifyAssemblerRejection};
