@@ -46,10 +46,12 @@ function extractRoutePieces(button){
         at=parent;
        }
       }
-      const groupOwnTextFragments=[group,...group.querySelectorAll('*')]
+      const fragments=[group,...group.querySelectorAll('*')]
        .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
         .map(n=>n.textContent||'').join('').trim())
-       .filter(t=>t.length>0).slice(0,100).map(t=>t.slice(0,250));
+       .filter(t=>t.length>0);
+      if(fragments.length>100)throw Error('GameTora結果グループの文字列件数上限、黙って切り捨てません');
+      const groupOwnTextFragments=fragments.map(t=>t.slice(0,250));
       return segments.map((roots,outcomeIndex)=>{
        const own=[];
        for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
@@ -77,30 +79,35 @@ function extractRoutePieces(button){
         numericEffectTexts.push(t);
         numericEffectContexts.push(contexts);
        }
-       return {
-        numericEffectTexts:numericEffectTexts.slice(0,80),
-        numericEffectContexts:numericEffectContexts.slice(0,80),
-        groupOwnTextFragments,
-        choiceOrdinal:choiceIndex+1,
-        outcomeOrdinal:outcomeIndex+1,
-        unresolvedOr:ambiguous,
-        hints:own.slice(0,60),
-        // Take only small own-text fragments from each verified result.
-        // Never mix text from the enclosing alternative outcome.
-        directOwnTexts:roots.flatMap(root=>
+       const directOwnTexts=roots.flatMap(root=>
          [root,...root.querySelectorAll('*')].map(el=>
           [...el.childNodes].filter(n=>n.nodeType===3)
            .map(n=>n.textContent||'').join('').trim())
           .filter(t=>t.length<=300&&/(?:獲得|習得|取得)/.test(t))
-        ).slice(0,80),
-        flowOwnTexts:roots.flatMap(root=>
+        );
+       const flowOwnTexts=roots.flatMap(root=>
          [root,...root.querySelectorAll('*')].map(el=>
           [...el.childNodes].filter(n=>n.nodeType===3)
            .map(n=>n.textContent||'').join('').trim())
           .filter(t=>t.length<=300&&
            /(?:連続|イベントチェーン|お出かけ|おでかけ)/.test(t)&&
            /(?:打ち切り|終了|中断|発生しない|可能|解放|できるようになる)/.test(t))
-        ).slice(0,80)
+        );
+       if(numericEffectTexts.length>80||own.length>60||
+          directOwnTexts.length>80||flowOwnTexts.length>80)
+        throw Error('GameTora結果内の効果やヒントの件数が上限超過、黙って省略しません');
+       return {
+        numericEffectTexts,
+        numericEffectContexts,
+        groupOwnTextFragments,
+        choiceOrdinal:choiceIndex+1,
+        outcomeOrdinal:outcomeIndex+1,
+        unresolvedOr:ambiguous,
+        hints:own,
+        // Take only small own-text fragments from each verified result.
+        // Never mix text from the enclosing alternative outcome.
+        directOwnTexts,
+        flowOwnTexts
        };
       });
      });
