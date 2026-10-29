@@ -112,7 +112,11 @@ function assembleLiveEvent({cardId,siteEventOrdinal,routePieces,registry}={}){
   const extra=[...actualSet].filter(x=>!expectedSet.has(x)).length;
   fail('site-local-hint-id-level-route-drift:event-'+siteEventOrdinal+
    ':independent-'+independentHints.length+':resolved-'+original.length+
-   ':unified-'+hinted.length+':missed-'+missed+':extra-'+extra);
+   ':unified-'+hinted.length+':site-hint-rows-'+hintDraft.seenHintRows+
+   ':site-unresolved-'+hintDraft.unresolvedHintRows+
+   ':site-reasons-'+hintDraft.routeCandidates.flat().flatMap(x=>
+    x.unresolvedHintStatuses).join(',')+
+   ':missed-'+missed+':extra-'+extra);
  }
  return {
   status:'unified-unapproved',cardId:String(cardId),siteEventOrdinal,
