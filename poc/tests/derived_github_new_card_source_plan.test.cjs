@@ -44,7 +44,8 @@ test('prefer structured GitHub source; missing new JSON remains in pending queue
 test('next day can retry pending even with no new roster delta',()=>{
  const first=plan();
  const second=plan({
-  discovery:discovery([]),pendingCardIds:first.carryForwardPendingIds,
+  discovery:{...discovery([]),existingCardIds:['30001','30030','30322','30323']},
+  pendingCardIds:first.carryForwardPendingIds,
   sourceTree:tree(['30322','30323'])
  });
  assert.deepEqual(second.waitingIds,[]);
