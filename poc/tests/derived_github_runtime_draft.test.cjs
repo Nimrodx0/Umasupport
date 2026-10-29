@@ -54,13 +54,14 @@ function args(doc=source()){
 test('version-pinned source yields skill-only app-schema draft with proper result/terminal/dependency',()=>{
  const a=args(),res=projectDerivedCardDraft(a);
  assert.equal(res.census.sourceEvents,4);
- assert.equal(res.census.modeledEvents,3);
- assert.equal(res.census.excludedEvents,1);
- assert.equal(res.census.modeledSkills,3);
+ assert.equal(res.census.modeledEvents,4);
+ assert.equal(res.census.excludedEvents,0);
+ assert.equal(res.census.modeledSkills,5);
  assert.equal(res.census.modeledDirectGrants,1);
  assert.equal(res.census.nonSkillSourceEffectsOmitted,2);
- assert.deepEqual(res.pendingEvents.map(x=>x.reason),
-  ['AMBIGUOUS_OR_UNSUPPORTED_SOURCE_FACT']);
+ assert.deepEqual(res.pendingEvents,[]);
+ assert.equal(res.census.modeledExclusiveHintGroups,1);
+ assert.equal(res.census.modeledExclusiveHintOptions,2);
  const ev=res.draftCatalog.cards[0].events;
  assert.equal(ev[0].type,'choice');
  assert.deepEqual(ev[0].choices[0].rewards,[{
@@ -70,6 +71,16 @@ test('version-pinned source yields skill-only app-schema draft with proper resul
  assert.equal(ev[1].choices[1].terminal,true);
  assert.deepEqual(ev[2].requires,{all:[{eventId:ev[1].id}]});
  assert.equal(ev[2].rewards[0].kind,'obtained');
+ assert.equal(ev[3].type,'auto');
+ assert.equal(ev[3].outcomes.length,2);
+ assert.deepEqual(ev[3].outcomes.map(x=>x.rewards[0].skillId),
+  ['skill:200532','skill:201272']);
+ assert.deepEqual(ev[3].outcomes.map(x=>x.rewards[0].level),[2,3]);
+ const firstOption={[ev[3].id]:ev[3].outcomes[0].id};
+ const optionRoutes=core.directRoutes({id:'30026',hints:[],events:[ev[3]]},
+  {stage:4,choices:{},outcomes:firstOption});
+ assert.equal(optionRoutes.length,1);
+ assert.equal(optionRoutes[0].skillId,'skill:200532');
  const skillById=Object.fromEntries(JSON.parse(skills()).map(x=>[
   'skill:'+x.id,{id:'skill:'+x.id,name:x.name}]));
  validateEvents(ev,{skillById});
@@ -91,11 +102,10 @@ test('a bad predecessor quarantines dependent chain stage rather than marking it
  doc.events_ja.b.choices[0].effects=[{type:'branch_flag'}];
  delete doc.events_ja.b.choices[0].outcomes;
  const res=projectDerivedCardDraft(args(doc));
- assert.equal(res.census.modeledEvents,1);
+ assert.equal(res.census.modeledEvents,2);
  assert.deepEqual(res.pendingEvents.map(x=>x.reason),[
   'AMBIGUOUS_OR_UNSUPPORTED_SOURCE_FACT',
-  'CHAIN_PREDECESSOR_NOT_PROJECTED',
-  'AMBIGUOUS_OR_UNSUPPORTED_SOURCE_FACT'
+  'CHAIN_PREDECESSOR_NOT_PROJECTED'
  ]);
  assert.equal(res.draftCatalog.cards[0].events[0].id,'gt-30026-event-001');
 });
@@ -120,5 +130,41 @@ test('source with unmodeled conditional section is withheld but unrelated event 
  doc.events_ja.a.section='dates_random';
  const res=projectDerivedCardDraft(args(doc));
  assert.equal(res.pendingEvents[0].reason,'UNSUPPORTED_EVENT_SECTION');
- assert.equal(res.census.modeledEvents,2);
+ assert.equal(res.census.modeledEvents,3);
+});
+
+test('alternative hint with source-defined options becomes mutually exclusive outcomes',()=>{
+ const d=source();
+ d.events_ja.d.choices[0].effects=[
+  {type:'skill_hint',skill_id:400000,value:'+1'},
+  {type:'skill_hint_or',options:[
+   {skill_id:200532,value:'+2'},{skill_id:201272,value:'+3'}]}
+ ];
+ const res=projectDerivedCardDraft(args(d)),last=res.draftCatalog.cards[0].events.at(-1);
+ assert.equal(last.outcomes.length,2);
+ assert.equal(res.census.modeledExclusiveHintGroups,1);
+ for(const out of last.outcomes){
+  assert.equal(out.rewards.length,2);
+  assert.equal(out.rewards[0].skillId,'skill:400000');
+ }
+ const selected={[last.id]:last.outcomes[1].id};
+ const selectedRoutes=core.directRoutes({id:'30026',hints:[],events:[last]},
+  {stage:4,choices:{},outcomes:selected});
+ assert.equal(selectedRoutes.length,2);
+ assert.deepEqual(selectedRoutes.map(x=>x.skillId),['skill:400000','skill:201272']);
+});
+test('unknown or ranged OR option quarantines entire event, never supplies both skills',()=>{
+ for(const options of [
+  [{skill_id:200532,value:'+2'},{skill_id:888888,value:'+1'}],
+  [{skill_id:200532,value:'+1/+2'},{skill_id:201272,value:'+3'}],
+  [{skill_id:200532,value:'+1'},{skill_id:200532,value:'+2'}]
+ ]){
+  const d=source();d.events_ja.d.choices[0].effects=[{
+   type:'skill_hint_or',options}];
+  const res=projectDerivedCardDraft(args(d));
+  assert.equal(res.census.modeledEvents,3);
+  assert.equal(res.census.modeledExclusiveHintGroups,0);
+  assert.equal(res.pendingEvents.length,1);
+  assert.equal(res.pendingEvents[0].reason,'EXCLUSIVE_HINT_OPTION_UNRESOLVED');
+ }
 });
