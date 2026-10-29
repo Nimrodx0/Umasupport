@@ -12,6 +12,7 @@
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
+| 構造化GitHub派生イベント559枚の全件変換監査 | [2,488イベントの暫定変換・保留を種類別集計](derived-github-whole-roster-app-draft-audit-20261029.md) |
 | 派生JSONの排他的スキルヒント候補（skill_hint_or） | [元のORを複数の確定報酬に誤合算せず結果へ展開](derived-github-exclusive-hint-alternatives-20261029.md) |
 | GitHub派生JSONから実アプリの非公開イベント形式へ | [R/SR/SSR 3枚の固定JSONを用いた結果別スキル・連続到達変換](derived-github-app-schema-draft-20261029.md) |
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
