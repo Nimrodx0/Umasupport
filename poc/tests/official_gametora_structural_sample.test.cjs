@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {parseCardScope,compareIndependentCensus}=
+const {parseCardScope,compareIndependentCensus,classifyAssemblerRejection}=
  require('../tools/probe_official_gametora_structural_sample.cjs');
 
 const raw=(groups,ors,signed)=>({
@@ -37,4 +37,13 @@ test('fail-open-shaped omissions are exposed instead of counting as validated',(
   orLeafCount:0,signedOwnTextCount:0
  },[]);
  assert.deepEqual(absent.discrepancies,['nonempty-panel-without-recognized-body']);
+});
+
+test('assembler rejection categories never reveal input source text',()=>{
+ const a=classifyAssemblerRejection(new Error(
+  'GameTora新サポカ実表示統合: site-local-hint-id-level-route-drift:unknown-source-text'));
+ assert.equal(a,'independent-hint-id-level-route-mismatch');
+ assert.equal(classifyAssemblerRejection(new Error('Some copyrighted text here')),
+  'unclassified-assembler-error');
+ assert.doesNotMatch(a,/unknown-source-text/);
 });
