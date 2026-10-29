@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/workflows/official-gametora-new-card-hint-locality-browser.yml'
       - 'poc/src/official_gametora_skill_id_crosswalk.cjs'
+      - 'poc/src/official_gametora_live_event_assembler.cjs'
+      - 'poc/src/official_gametora_site_unified_draft.cjs'
+      - 'poc/src/official_gametora_site_numeric_draft.cjs'
+      - 'poc/src/official_gametora_site_hint_draft.cjs'
+      - 'poc/tests/official_gametora_live_event_assembler.test.cjs'
       - 'poc/src/official_gametora_direct_skill_draft.cjs'
       - 'poc/src/official_gametora_site_flow_draft.cjs'
       - 'poc/tests/official_gametora_site_flow_draft.test.cjs'
@@ -38,6 +43,8 @@ jobs:
           node --test poc/tests/official_gametora_direct_skill_draft.test.cjs
           node --check poc/src/official_gametora_site_flow_draft.cjs
           node --test poc/tests/official_gametora_site_flow_draft.test.cjs
+          node --check poc/src/official_gametora_live_event_assembler.cjs
+          node --test poc/tests/official_gametora_live_event_assembler.test.cjs
       - name: Prepare preinstalled Chrome browser controller
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
