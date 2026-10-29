@@ -636,4 +636,10 @@ function projectedResultsAreIncorrect(event,parts){
    !(Array.isArray(event.effects)||Array.isArray(event.statusEffects)||Array.isArray(event.dynamicEffects)||
      event.effects===undefined));
 }
-module.exports={analyze};
+function isKnownSourceEffectType(type){
+ return SKILL_TYPES.has(type)||CONTROL_TYPES.has(type)||TYPES.has(type)||
+  STATUS_TYPES.has(type)||type==='all_stats'||type==='random_stats'||
+  type==='all_disc'||type==='mt'||type==='full_energy'||
+  Object.hasOwn(SCENARIO_RESOURCES,type)||Object.hasOwn(CONTEXT_OPERATIONS,type);
+}
+module.exports={analyze,isKnownSourceEffectType};
