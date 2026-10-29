@@ -51,6 +51,8 @@ jobs:
           node --check poc/src/official_gametora_new_card_locator.cjs
           node --check poc/tools/probe_official_gametora_target_cards.cjs
           node --test poc/tests/official_gametora_new_card_locator.test.cjs
+          node --test poc/tests/official_gametora_structural_sample.test.cjs
+          node --check poc/tools/probe_official_gametora_structural_sample.cjs
       - name: Verify card-agnostic original GameTora DOM extraction and private event-schema projection
         run: |
           node --check poc/src/official_gametora_route_dom_extractor.cjs
