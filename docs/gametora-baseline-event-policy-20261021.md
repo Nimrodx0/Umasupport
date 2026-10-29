@@ -1,5 +1,7 @@
 # Event policy: GameTora baseline, GameWith adjudicator (2026-10-21)
 
+**Update (2026-10-29):** The user reconfirmed this document's structured **third-party GitHub GameTora-derived JSON as the PRIMARY event source**. The separate plan to replace it with GameTora website HTML extraction (2026-10-27) is superseded and the incomplete direct adapter is paused. See [current development policy](derived-github-primary-restart-20261029.md). GameWith remains an individual exception adjudicator. Publication permissions and release review are still separate.
+
 ## Decision and correction
 
 **GameTora-derived event JSON is the foundation of the Umasupport support-card event database.** GameWith is **not** an upstream source from which we reconstruct every card and event. Its role is the designated *tie-breaker/adjudicator* for **specific doubts** in the GameTora base: missing rows, conflicting reward numbers, ambiguous event identity, conditional termination or results that cannot be interpreted consistently.
