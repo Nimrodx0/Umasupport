@@ -17,7 +17,8 @@ const ordinary=new Set(['speed','stamina','power','guts','wisdom',
  'energy','max_energy','mood','bond','skill_points','aptitude_points',
  'all_stats','random_stats']);
 const supported=new Set(['random','arrows']);
-const reviewException=new Set(['DIRECT_SKILL_GRANT_REQUIRES_REVIEW']);
+const reviewException=new Set(['DIRECT_SKILL_GRANT_REQUIRES_REVIEW',
+ 'SKILL_HINT_EFFECT_UNRESOLVED']);
 // These intermediate objects MUST NOT be sent to the public event loader:
 // events retain an explicit quarantine field which verifyRelease rejects.
 function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
@@ -32,7 +33,8 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
  const events=[],pending=[],census={sourceEvents:src.sourceEventCount,
   sourceChoices:src.sourceChoiceCount,sourceRoutes:src.sourceExpandedRoutes,
   modeledEvents:0,modeledRoutes:0,modeledSkills:0,
-  modeledDirectGrants:0,nonSkillSourceEffectsOmitted:0,
+  modeledDirectGrants:0,modeledExclusiveHintGroups:0,
+  modeledExclusiveHintOptions:0,nonSkillSourceEffectsOmitted:0,
   excludedEvents:0};
  const chain=new Map();
  const reject=(e,code)=>{
@@ -54,7 +56,8 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
    reject(e,'NO_SOURCE_CHOICES');continue;
   }
   const choices=[];
-  let reason=null,routeCount=0,skillCount=0,directCount=0,nonSkills=0;
+  let reason=null,routeCount=0,skillCount=0,directCount=0,nonSkills=0,
+   orGroupCount=0,orOptionCount=0;
   for(const ch of e.choices){
    if(!Array.isArray(ch.routes)||!ch.routes.length){
     reason='MISSING_RESULT_ROUTE';break;
@@ -81,7 +84,10 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
      nonSkills++;
     }
     if(reason)break;
+    const exclusive=route.numericHintFacts.filter(h=>h.originType==='skill_hint_or');
+    if(exclusive.length>1){reason='MULTIPLE_EXCLUSIVE_HINT_GROUPS';break;}
     for(const hint of route.numericHintFacts){
+     if(hint.originType==='skill_hint_or')continue;
      if(hint.originType!=='skill_hint'||hint.numericFactParsed!==true||
         !Number.isInteger(hint.level)||hint.level<1||hint.level>20||
         !/^\d+$/.test(hint.skillNumericId||'')){
@@ -116,9 +122,45 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
      skillCount++;directCount++;
     }
     if(reason)break;
-    outs.push({id:route.routeId,label:'結果'+route.routeOrdinal+'（仮）',
-     rewards,...(terminals.length?{terminal:true}:{})});
-    routeCount++;
+    if(exclusive.length){
+     // GameTora's skill_hint_or describes ONE skill from a list, not all
+     // hints at once. Multiply only this one route into neutral, exclusive
+     // outcomes. Never guess chances, value ranges or missing option IDs.
+     const options=exclusive[0].alternatives;
+     if(!Array.isArray(options)||options.length<2||options.length>8){
+      reason='EXCLUSIVE_HINT_OPTIONS_INVALID';break;
+     }
+     const optionIds=new Set();
+     const alternatives=[];
+     for(let ai=0;ai<options.length;ai++){
+      const option=options[ai],id=option?.skillNumericId;
+      if(option?.numericFactParsed!==true||
+         option.levelRange!==undefined||
+         !Number.isInteger(option.level)||option.level<1||option.level>20||
+         !/^\\d+$/.test(id||'')||
+         !registry.byId.has(id)||
+         !['normal','rare'].includes(registry.byId.get(id).rarity)||
+         optionIds.has(id)||knownRewards.has(route.routeOrdinal+':skill:'+id)){
+       reason='EXCLUSIVE_HINT_OPTION_UNRESOLVED';break;
+      }
+      optionIds.add(id);
+      const found=registry.byId.get(id);
+      alternatives.push({id:route.routeId+'-or-'+String(ai+1).padStart(2,'0'),
+       label:'結果'+route.routeOrdinal+'・候補'+(ai+1)+'（仮）',
+       rewards:[...rewards,{skillId:'skill:'+id,
+        verifiedSkillName:found.name,level:option.level}],
+       ...(terminals.length?{terminal:true}:{})});
+     }
+     if(reason)break;
+     outs.push(...alternatives);
+     skillCount+=alternatives.length;
+     orGroupCount++;orOptionCount+=alternatives.length;
+     routeCount+=alternatives.length;
+    }else{
+     outs.push({id:route.routeId,label:'結果'+route.routeOrdinal+'（仮）',
+      rewards,...(terminals.length?{terminal:true}:{})});
+     routeCount++;
+    }
    }
    if(reason)break;
    if(outs.length===1){
@@ -151,6 +193,8 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
   census.modeledRoutes+=routeCount;
   census.modeledSkills+=skillCount;
   census.modeledDirectGrants+=directCount;
+  census.modeledExclusiveHintGroups+=orGroupCount;
+  census.modeledExclusiveHintOptions+=orOptionCount;
   census.nonSkillSourceEffectsOmitted+=nonSkills;
  }
  if(census.modeledEvents+census.excludedEvents!==census.sourceEvents||
