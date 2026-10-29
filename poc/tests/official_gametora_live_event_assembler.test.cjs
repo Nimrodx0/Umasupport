@@ -53,7 +53,8 @@ test('assemble four separate sources by original observed route positions',()=>{
  assert.equal(v.visibleFlowMarkers,2);
  assert.deepEqual(v.routeSummary[0],{
   group:1,result:1,numericalFacts:1,hints:1,
-  directCandidates:1,flowMarkers:[],unlocatedFlowMarkers:[]
+  directCandidates:1,flowMarkers:[],unlocatedFlowMarkers:[],
+  siteOutcomeLabel:null
  });
  assert.deepEqual(v.routeSummary[1].flowMarkers,['explicit-chain-stop']);
  assert.deepEqual(v.routeSummary[2].flowMarkers,['explicit-outing-unlock']);
@@ -62,6 +63,20 @@ test('assemble four separate sources by original observed route positions',()=>{
  assert.ok(!Object.hasOwn(a.joined.routes[0],'rewards'));
  assert.ok(!Object.hasOwn(a.joined.routes[0],'requires'));
  assert.doesNotMatch(JSON.stringify(v),/登山家|星空|スキルPt|体力/);
+});
+test('explicit result-local success/failure labels remain observational on original routes',()=>{
+ const a=sample();
+ a[0].resultLabelOwnTexts=['成功'];
+ a[1].resultLabelOwnTexts=['失敗'];
+ const joined=run(a),v=summarizeLiveEvent(joined);
+ assert.equal(v.observedExplicitOutcomeLabels,2);
+ assert.equal(v.explicitSuccessFailurePairGroups,1);
+ assert.equal(v.siteOrSeparatedGroups,1);
+ assert.deepEqual(v.routeSummary.map(r=>r.siteOutcomeLabel),
+  ['success','failure',null]);
+ assert.equal(joined.outcomeEvidence.playerChoiceSemanticsVerified,false);
+ assert.equal(joined.outcomeEvidence.nextEventReachabilityVerified,false);
+ assert.equal(joined.joined.appEventSchemaAdoptable,false);
 });
 test('empty or unresolved OR layout is explicit skip not a false zero-reward event',()=>{
  const a=run([]);
