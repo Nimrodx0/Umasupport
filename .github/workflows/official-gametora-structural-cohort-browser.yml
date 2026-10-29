@@ -1,0 +1,106 @@
+name: Limited original-GameTora cross-structure adapter diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-structural-cohort-browser.yml'
+      - 'poc/tools/probe_official_gametora_structural_sample.cjs'
+      - 'poc/tests/official_gametora_structural_sample.test.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/src/official_gametora_live_event_assembler.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-diverse-structure-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline scope, independent-census and diagnostic tests
+        run: |
+          node --test poc/tests/official_gametora_structural_sample.test.cjs
+          node --check poc/tools/probe_official_gametora_structural_sample.cjs
+      - name: Prepare Chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Obtain pinned independent UmaSim skill registry
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-skill-data.txt"
+      - name: Inspect two distinct numeric-range source cards (maximum two per run)
+        run: |
+          node poc/tools/probe_official_gametora_structural_sample.cjs \
+            --live --cards 30030,30041 --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/range-structural-report.txt"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const data=fs.readFileSync(process.env.RUNNER_TEMP+'/range-structural-report.txt','utf8').trim();
+          const prefix='GT_CROSS_COHORT_DIAGNOSTIC=';
+          if(!data.startsWith(prefix))throw Error('Diagnostic summary absent');
+          const report=JSON.parse(data.slice(prefix.length));
+          if(report.visitedCardPages!==2||report.results.length!==2||
+             report.adapterGatePassed!==false||report.publicationApproved!==false||
+             report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
+            throw Error('Nonpublic bounded diagnostic contract not met');
+          const expected=[
+            {id:'30030',panels:5,unified:5,routes:9,numeric:20,hints:2,flow:0},
+            {id:'30041',panels:5,unified:5,routes:8,numeric:19,hints:1,flow:0}
+          ];
+          for(let i=0;i<expected.length;i++){
+            const e=expected[i],got=report.results[i];
+            if(got.cardId!==e.id||got.sourceEventPanels!==e.panels||
+              got.routeBearingPanels!==e.unified||got.nonUnifiedPanels!==0||
+              got.independentCensusMismatchPanels!==0||
+              got.projection?.schemaShapedEvents!==e.unified||
+              got.projection?.schemaShapedResults!==e.routes||
+              got.projection?.numericEffects!==e.numeric||
+              got.projection?.skillHints!==e.hints||
+              got.projection?.flowMarkers!==e.flow||
+              got.projection?.pendingEventCount!==e.panels||
+              got.eventDiagnostics.some(row=>row.discrepancies?.length)||
+              got.publicationApproved!==false||got.complete!==false)
+               throw Error('Nonpublic source structure drift, verify manually: '+e.id);
+          }
+          console.log(JSON.stringify(report));
+          NODE
+      - name: Inspect three-choice and terminal structure (one more source card)
+        run: |
+          node poc/tools/probe_official_gametora_structural_sample.cjs \
+            --live --cards 30080 --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/branch-structural-report.txt"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const data=fs.readFileSync(process.env.RUNNER_TEMP+'/branch-structural-report.txt','utf8').trim();
+          const prefix='GT_CROSS_COHORT_DIAGNOSTIC=';
+          if(!data.startsWith(prefix))throw Error('Diagnostic summary absent');
+          const report=JSON.parse(data.slice(prefix.length));
+          if(report.visitedCardPages!==1||report.results.length!==1||
+             report.adapterGatePassed!==false||report.publicationApproved!==false||
+             report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
+            throw Error('Nonpublic bounded diagnostic contract not met');
+          const got=report.results[0];
+          if(got.cardId!=='30080'||got.sourceEventPanels!==12||
+             got.routeBearingPanels!==11||got.nonUnifiedPanels!==1||
+             got.independentCensusMismatchPanels!==1||
+             got.projection?.schemaShapedEvents!==11||
+             got.projection?.schemaShapedResults!==22||
+             got.projection?.numericEffects!==48||
+             got.projection?.skillHints!==4||
+             got.projection?.flowMarkers!==4||
+             got.projection?.pendingEventCount!==12||
+             got.eventDiagnostics.filter(x=>x.status!=='unified-unapproved')
+              .some(x=>x.ordinal!==1||x.status!=='no-visible-result-groups')||
+             got.publicationApproved!==false||got.complete!==false)
+            throw Error('Old three-choice source diagnostic drift: manual review required');
+          console.log(JSON.stringify(report));
+          NODE

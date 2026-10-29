@@ -102,7 +102,14 @@ function assembleLiveEvent({cardId,siteEventOrdinal,routePieces,registry}={}){
   }));
  // Strict comparator against the older route-local, independently observed
  // hint rows. Route association cannot be silently dropped or reassigned.
- if(original.length!==independentHints.length||
+ // A hint whose visible name or level cannot be uniquely mapped is an
+ // explicit PRIVATE unresolved fact, not a reason to discard the entire
+ // event's independently located numeric/flow routes. Both readers must
+ // still agree on EVERY raw hint row, resolved occurrence, ID+Lv and route.
+ // A truly mismatched resolved hint or a silently omitted raw row fails.
+ const independentlyUnresolved=independentHints.length-original.length;
+ if(independentHints.length!==hintDraft.seenHintRows||
+    independentlyUnresolved!==hintDraft.unresolvedHintRows||
     keys(original)!==keys(hinted)||
     hinted.length!==hintDraft.uniquelyResolvedHintIdLevelPairs){
   const expectedSet=new Set(original.map(x=>x.choiceGroupOrdinal+':'+x.resultOrdinal+

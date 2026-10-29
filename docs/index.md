@@ -17,6 +17,7 @@
 | 過去の別工程の調査（現行変換要件ではない）：SSR30322のGameWith結果名 | [3択×大成功／成功、6結果21数値・12ヒントの編集採用](official-gametora-30322-gamewith-result-adjudication-20261029.md) |
 | 過去の表示ラベル実験（現行変換要件ではない） | [新SSR2枚のOR3組・結果ラベル0の実Chrome監査](official-gametora-site-outcome-label-evidence-20261029.md) |
 | GameToraの新カード共通DOM抽出と非公開イベントDB形式への変換 | [2カード・18パネル・27結果の共通構造投影](official-gametora-generic-new-card-site-projection-20261029.md) |
+| 汎用変換器の構造別実Chrome診断（SSR30030・30041・30080） | [全22パネル・2件のヒントID未確証を保留した共通統合・残1件](official-gametora-structural-adapter-audit-20261029.md) |
 | 新サポカの検出と既存イベントDBへの増分追加 | [GameTora新カードの追記専用ゲート・完成条件・保留](new-card-event-incremental-intake-20261029.md) |
 | GameTora新SSR二枚に四系統の結果別統合を拡大 | [実Chromeの16イベント・27結果・108数値行・18ヒント照合](official-gametora-new-card-unified-live-20261029.md) |
 | GameTora本体の数値・ヒント・直接スキル・進行マーカーを結果別に統合 | [SSR30080の4系統厳格結合と非公開ゲート](official-gametora-unified-site-route-draft-20261029.md) |
