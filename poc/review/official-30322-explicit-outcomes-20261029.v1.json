@@ -177,5 +177,6 @@
   "nextEventRequiresVerified": false,
   "appEventSchemaAdoptable": false,
   "publicationApproved": false,
-  "eventTitleNormalizedSha256": "fa5283cd62b1dc8cecd57f94d0176262cd3fff664b11a88af216c0dc911e048c"
+  "eventTitleNormalizedSha256": "fa5283cd62b1dc8cecd57f94d0176262cd3fff664b11a88af216c0dc911e048c",
+  "gametoraSiteCheckedAt": "2026-10-29"
 }
