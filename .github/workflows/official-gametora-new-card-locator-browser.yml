@@ -1,0 +1,81 @@
+name: Limited real-browser check of generic new-card GameTora locator
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-new-card-locator-browser.yml'
+      - 'poc/src/official_gametora_new_card_locator.cjs'
+      - 'poc/tools/probe_official_gametora_target_cards.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/src/official_gametora_private_schema_projection.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-listing-and-two-cards:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline adapter and security tests
+        run: |
+          node --test poc/tests/official_gametora_new_card_locator.test.cjs
+          node --check poc/tools/probe_official_gametora_target_cards.cjs
+      - name: Prepare Chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Obtain pinned independent skill registry in disposable runner
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-skill-data.txt"
+      - name: Prepare a read-only synthetic new-card selection envelope
+        run: |
+          node -e 'const fs=require("fs");fs.writeFileSync(process.env.RUNNER_TEMP+"/intake-fixture.json",JSON.stringify({dataKind:"new-card-event-intake-plan",version:1,publicationApproved:false,sourceEventsPublishedAutomatically:false,existingDatabaseUnchanged:true,publishedEventsChanged:0,existingCatalogDigest:"0".repeat(64),newlyObservedIds:["30322","30323"],alreadyImportedIds:[],carryForwardPendingIds:["30322","30323"]}));'
+      - name: Visit one source listing and at most two known support pages
+        env:
+          CI: 'true'
+        run: |
+          node poc/tools/probe_official_gametora_target_cards.cjs \
+            --live --plan "$RUNNER_TEMP/intake-fixture.json" \
+            --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/new-card-structure-only.log"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const text=fs.readFileSync(process.env.RUNNER_TEMP+'/new-card-structure-only.log','utf8').trim();
+          const prefix='GT_NEW_CARD_READONLY_PROBE=';
+          if(!text.startsWith(prefix))throw Error('No generic source probe output');
+          const report=JSON.parse(text.slice(prefix.length));
+          const expected=[
+            {id:'30322',panels:6,events:5,results:13,numeric:40,hints:14,flow:0},
+            {id:'30323',panels:12,events:11,results:14,numeric:68,hints:4,flow:2}
+          ];
+          if(report.results?.length!==2||report.sourceSiteCardVisitsPerformed!==2||
+             report.publicationApproved!==false||report.existingDatabaseUnchanged!==true||
+             report.sourceSiteTextCopied!==false||
+             JSON.stringify(report.pendingCardIds)!==JSON.stringify(['30322','30323']))
+            throw Error('Generic probe has incomplete or mistakenly approved site input');
+          for(let i=0;i<expected.length;i++){
+           const got=report.results[i],exp=expected[i];
+           if(got.cardId!==exp.id||got.status!=='private-schema-only'||
+              got.sourceEventPanels!==exp.panels||
+              got.schemaShapedEvents!==exp.events||
+              got.schemaShapedResults!==exp.results||
+              got.numericEffects!==exp.numeric||
+              got.skillHints!==exp.hints||
+              got.flowMarkers!==exp.flow||
+              got.skippedOrAmbiguousEvents!==1||
+              got.pendingEventCount!==exp.panels||
+              got.publicationApproved!==false)
+            throw Error('Observed GameTora source sample changed: '+exp.id);
+          }
+          console.log('Verified generic source listing and two historical limited source snapshots; all events remain unpublished.');
+          NODE
