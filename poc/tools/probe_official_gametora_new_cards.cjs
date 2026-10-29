@@ -587,6 +587,18 @@ async function probe(){
       got.perEvent.some((e,i)=>
        e.numericEffects!==pinnedUnified.numericPerEvent[i]))
     fail('元サイト結果統合の固定限定サンプル数値/ヒント/構造が変化、要再検証');
+   const pinnedSiteLabels=target.cardId==='30322'?{orGroups:3,labels:0,pairs:0}:
+    {orGroups:0,labels:0,pairs:0};
+   // In this TWO-PAGE site snapshot, no isolated local result labels are
+   // displayed. Pin the observation but DO NOT assert there are no real
+   // game success/failure branches or player choices.
+   if(unifiedEventObservations.siteOrSeparatedGroups!==pinnedSiteLabels.orGroups||
+      unifiedEventObservations.explicitSiteOutcomeLabels!==pinnedSiteLabels.labels||
+      unifiedEventObservations.explicitSuccessFailurePairGroups!==pinnedSiteLabels.pairs||
+      unifiedEventObservations.ambiguousSiteOutcomeLabels!==0||
+      (target.cardId==='30322'&&
+       unifiedEventObservations.perEvent[3].siteOrSeparatedGroups!==3))
+    fail('元サイト表示上のORと成功失敗ラベルが変化、ゲーム意味の再裁定が必要');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
