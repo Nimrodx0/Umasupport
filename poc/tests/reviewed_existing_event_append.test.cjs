@@ -6,6 +6,8 @@ const {HINT_NAMES}=require('../src/phase2_eight_event_review_view.cjs');
 const {rehearseApprovedExistingEvents:rehearse,validatePacket}=
  require('../src/reviewed_existing_event_append.cjs');
 const {verifyRelease,digest}=require('../src/event_release_gate.cjs');
+const publicCatalog=require('../src/public_event_catalog.js');
+const core=require('../src/core.js');
 const actual=require('../data/reviewed_events.v1.json');
 const approvals=require('../config/event-release-approvals.v1.json');
 const clone=x=>structuredClone(x);
@@ -136,4 +138,25 @@ test('an edited or removed previously published event must never be overwritten'
  fake.entries[0].eventSha256=digest(other.cards[0].events[0]);
  assert.throws(()=>rehearse({...input,existingCatalog:other,
   existingApprovals:fake,decisions:d}),/上書きは禁止/);
+});
+
+test('one staged REAL GameWith-adjudicated skill event runs through production attach and explicit choice aggregation',()=>{
+ const input=fixture();
+ const id='usl:30318:random:5';
+ const approved=select(input.packet,['30318',id]);
+ const out=rehearse({...input,decisions:approved});
+ const live=clone(input.model);
+ // Restore cardById and cards[] reference identity as live_loader.buildModel does.
+ live.cards=input.model.cards.map(c=>clone(c));
+ live.cardById=Object.fromEntries(live.cards.map(c=>[c.id,c]));
+ const summary=publicCatalog.attach(live,out.catalog,{skillText:input.skillText});
+ assert.equal(summary.eventsWithRecords,1);
+ const card=live.cardById['30318'];
+ assert.equal(card.events.length,1);
+ const before=core.directRoutes(card,{stage:4,choices:{}});
+ assert.equal(before.length,0);
+ const after=core.directRoutes(card,{stage:4,choices:{[id]:'option2'}});
+ assert.deepEqual(after.map(x=>[x.skillId,x.level]),[['skill:200152',1]]);
+ assert.equal(out.status,'ready-for-explicit-publication');
+ assert.equal(actual.cards.length,0);
 });
