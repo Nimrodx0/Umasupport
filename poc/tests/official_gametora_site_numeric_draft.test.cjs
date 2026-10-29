@@ -90,3 +90,17 @@ test('max energy and normal energy are distinct site types without old-source co
  const x=siteOnlyNumericDraft(a);
  assert.equal(x.candidates[0].routeCandidates[0].effects[0].kind,'max_energy');
 });
+
+test('slash-range leaf remains an unresolved effect and cannot become a guaranteed scalar',()=>{
+ const x=args();
+ const route=x.groups[0].numericSegments[0];
+ route.effectTexts[0]='体力 +10/20';
+ route.effectContexts[0]=['体力 +10']; // even a plausible parent must not pick +10
+ const result=siteOnlyNumericDraft(x);
+ const first=result.candidates[0].routeCandidates[0];
+ assert.equal(first.issues.includes('unresolved-numeric'),true);
+ assert.equal(first.effects.some(effect=>effect.kind==='energy'&&effect.delta===10),false);
+ assert.equal(result.reviewReasons.includes('unparsed-numeric-effects'),true);
+ assert.equal(result.appEventSchemaAdoptable,false);
+ assert.equal(result.publicationApproved,false);
+});
