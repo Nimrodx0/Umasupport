@@ -79,7 +79,8 @@ function emptyLedger(){
   baselineRosterCommit:BASELINE,sourceRepository:SOURCE,
   cards:[],publicationApproved:false,sourceProseIncluded:false};
 }
-function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,stage,existingCatalog}={}){
+function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,stage,existingCatalog,
+ reusedUnchangedCardIds=[]}={}){
  verifyLedger(previous);
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.publicationApproved!==false||
@@ -100,6 +101,24 @@ function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,sta
  const pending=new Map(stage.stage.pending.map(x=>[x.cardId,x]));
  const original=new Map(previous.cards.map(x=>[x.cardId,x]));
  const targets=sourcePlan.targetIds.filter(x=>!imported.has(x));
+ // An unchanged Git blob previously converted and reviewed has no reason
+ // to be re-downloaded; preserve that exact metadata and its review issues.
+ if(!Array.isArray(reusedUnchangedCardIds)||
+    reusedUnchangedCardIds.some(x=>!id(x))||
+    !unique(reusedUnchangedCardIds))
+  fail('変更なし再利用IDが不正／重複');
+ const reused=new Set(reusedUnchangedCardIds);
+ for(const cardId of reused){
+  const old=original.get(cardId),source=planned.get(cardId);
+  if(!targets.includes(cardId)||!old||
+     !['awaiting-review','awaiting-source-resolution'].includes(old.status)||
+     source?.status!=='source-blob-present-needs-validation'||
+     old.sourceBlobSha!==source.sourceBlobSha||
+     !sha(old.sourceCommit)||!sha(old.sourceBlobSha)||
+     staged.has(cardId)||
+     pending.get(cardId)?.reason!=='derived-github-source-not-fetched')
+   fail('変更なしカードの元ファイル履歴・保留状態が不一致');
+ }
  if(targets.some(x=>!planned.has(x)||staged.has(x)===pending.has(x))||
     staged.size+pending.size!==targets.length||
     JSON.stringify(stage.carryForwardPendingIds)!==
@@ -115,6 +134,10 @@ function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,sta
  }
  const cards=targets.map(cardId=>{
   const row=planned.get(cardId),st=staged.get(cardId),error=pending.get(cardId);
+  if(reused.has(cardId)){
+   if(reviews.has(cardId))fail('再利用カードに新しい要確認が混入');
+   return JSON.parse(JSON.stringify(original.get(cardId)));
+  }
   let status,sourceEvents=null,modeledEvents=null,excludedEvents=null;
   if(st){
    if(row.status!=='source-blob-present-needs-validation')
