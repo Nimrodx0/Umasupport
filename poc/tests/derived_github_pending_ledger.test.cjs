@@ -24,7 +24,8 @@ function doc(cardId,malformed=false){
 }
 const sha=x=>x.repeat(40);
 function simulate({prev=emptyLedger(),current=['30001','30322','30323'],
-  inserted=['30322'],complete=['30322'],imported=[],tamper=false,reused=[]}={}){
+  inserted=['30322'],complete=['30322'],imported=[],tamper=false,reused=[],
+  skillRegistryBlobSha=sha('d')}={}){
  const original={schemaVersion:1,cards:imported.map(cardId=>({cardId,events:[]}))};
  const discovery=discoverNewCards({
   previousRosterIds:['30001',...(prev.cards.length?['30322','30323']:[])],
@@ -45,7 +46,8 @@ function simulate({prev=emptyLedger(),current=['30001','30322','30323'],
   sourcePlan:plan,sourceDocuments,pendingCardIds:prev.cards.map(x=>x.cardId),
   skillText:skillText(),skillRevision:sha('c')});
  const ledger=reconcilePendingLedger({previous:prev,discovery,sourcePlan:plan,
-  stage,existingCatalog:original,reusedUnchangedCardIds:reused});
+  stage,existingCatalog:original,reusedUnchangedCardIds:reused,
+  skillRegistryBlobSha});
  return {ledger,discovery,plan,stage,original};
 }
 test('metadata-only ledger survives a second run with no fresh added cards',()=>{
@@ -137,4 +139,14 @@ test('reject unchanged reuse when pending state was never successfully converted
  const first=simulate({complete:[]});
  assert.throws(()=>simulate({prev:first.ledger,complete:[],
   reused:['30322']}),/元ファイル履歴・保留状態/);
+});
+
+test('skill registry changes also invalidate event conversion cache',()=>{
+ const first=simulate();
+ assert.throws(()=>simulate({prev:first.ledger,complete:[],
+  reused:['30322'],skillRegistryBlobSha:sha('e')}),
+  /元ファイル履歴・保留状態/);
+ const changed=simulate({prev:first.ledger,skillRegistryBlobSha:sha('e')});
+ assert.equal(changed.ledger.cards[0].skillRegistryBlobSha,sha('e'));
+ assert.notDeepEqual(changed.ledger.cards[0],first.ledger.cards[0]);
 });
