@@ -1,10 +1,13 @@
 # 開発状況（時点付きスナップショット）
 
+## 2026-10-29：以前のGameTora全件変換器を新サポカへ再利用（PR #280）
+
+[既存2,488＋GameWith補完8件の変換資産の再利用](derived-github-canonical-single-card-adapter-20261029.md)。旧 `gametora_whole_event_normalize`→`gametora_event_skill_crosswalk`→`gametora_app_schema_dry_run` を、GitHub完全treeとblob SHA検査後の**新サポカ1枚**に適用する主経路へ変更。以前追加した独立 `derived_github_runtime_draft` は旧比較／監査用のみとなり、新カード増分ステージからは使用しない。既存のイベントDBは再生成・上書きしない。スキル中心の投影であっても、既存の非スキル効果分類で未知コードを保留し、元データの疑義・連続順序と変換除外理由を個別位置の要確認として記録する。元DBのGameWith補正との完全一致は合格条件としない。新カード実運用・審査済み正式追記・物理端末は未完了。
+
 ## 2026-10-29：GitHub派生JSONのイベント変換を既存増分審査ステージへ接続（PR #279）
 
 [固定出典・レビュー待ち・保留の接続と安全性](derived-github-new-card-review-staging-20261029.md)。新規UmaSimカードのID差分と持越保留→完全なGit treeで検証した第三者GitHubの対象 `support_<ID>.json`→数値スキル辞書・スキル中心の非公開アプリイベント投影→既存 `new_card_event_incremental.stageNewCardEvents` へ接続した。GitHub版はコミット・カードblob SHA・パス必須。未掲載・未Fetch・変換失敗・イベント内未解決を分離し、別のモデル化可能カードを独立して編集待ちに進める。4歴史カードの人工差分実験では**R10016、SR20075の2枚が編集待ち、SSR30010、SSR30030の2枚が保留**。4枚とも正式追記前なので次回繰越。未承認 `sourceKind` は公開ゲートで拒否し、既存DB不変。新カードの本番日次ジョブ・権利審査・承認済みイベント初回収録・物理端末検証は未実施。GameTora本体HTML直接抽出は保留。
 
-# 開発状況（時点付きスナップショット）
 
 ## 2026-10-29：派生GitHub DB全559枚の実データ変換監査と条件付き特殊イベントの共通対応（PR #278）
 
