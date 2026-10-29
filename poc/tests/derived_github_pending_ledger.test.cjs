@@ -7,6 +7,7 @@ const {stageDerivedGitHubNewCards}=require('../src/derived_github_staging_bridge
 const {emptyLedger,verifyLedger,reconcilePendingLedger}=
  require('../src/derived_github_pending_ledger.cjs');
 const {blobSha}=require('../src/derived_github_card_event_preflight.cjs');
+const {pendingTargetIds}=require('../src/derived_github_pending_refresh.cjs');
 function skillText(){return JSON.stringify([
  {id:'200532',name:'Independent numeric skill',rarity:'normal',group:20053},
  ...Array.from({length:105},(_,i)=>({id:String(400000+i),
@@ -23,7 +24,7 @@ function doc(cardId,malformed=false){
 }
 const sha=x=>x.repeat(40);
 function simulate({prev=emptyLedger(),current=['30001','30322','30323'],
-  inserted=['30322'],complete=['30322'],imported=[],tamper=false}={}){
+  inserted=['30322'],complete=['30322'],imported=[],tamper=false,reused=[]}={}){
  const original={schemaVersion:1,cards:imported.map(cardId=>({cardId,events:[]}))};
  const discovery=discoverNewCards({
   previousRosterIds:['30001',...(prev.cards.length?['30322','30323']:[])],
@@ -44,7 +45,7 @@ function simulate({prev=emptyLedger(),current=['30001','30322','30323'],
   sourcePlan:plan,sourceDocuments,pendingCardIds:prev.cards.map(x=>x.cardId),
   skillText:skillText(),skillRevision:sha('c')});
  const ledger=reconcilePendingLedger({previous:prev,discovery,sourcePlan:plan,
-  stage,existingCatalog:original});
+  stage,existingCatalog:original,reusedUnchangedCardIds:reused});
  return {ledger,discovery,plan,stage,original};
 }
 test('metadata-only ledger survives a second run with no fresh added cards',()=>{
@@ -102,4 +103,38 @@ test('ledger rejects arbitrary source text, fake approvals, duplicates and out-o
   reason:'SUSPICIOUS',origin:'source-normalization'}]};
  assert.throws(()=>reconcilePendingLedger({...first,stage,previous:emptyLedger(),
   existingCatalog:first.original,sourcePlan:first.plan}),/追加対象外/);
+});
+
+test('UmaSim-first: do not even query third-party events when every new ID is already imported',()=>{
+ const d={dataKind:'new-umamusume-support-card-ids',schemaVersion:1,
+  publicationApproved:false,addedCardIds:[],existingCardIds:['30001','30322']};
+ assert.deepEqual(pendingTargetIds({discovery:d,existingCatalog:{
+  schemaVersion:1,cards:[{cardId:'30001',events:[]}]}}),[]);
+ assert.deepEqual(pendingTargetIds({discovery:{...d,addedCardIds:['30323'],
+  existingCardIds:['30001','30322']},existingCatalog:{
+   schemaVersion:1,cards:[{cardId:'30001'},{cardId:'30323'}]}}),[]);
+ assert.deepEqual(pendingTargetIds({discovery:{...d,addedCardIds:['30323'],
+  existingCardIds:['30001','30322']},existingCatalog:{
+   schemaVersion:1,cards:[{cardId:'30001'}]}}),['30323']);
+});
+test('same checked source blob retains converted event count and review reasons without download',()=>{
+ const first=simulate();
+ const repeat=simulate({prev:first.ledger,complete:[],reused:['30322']});
+ assert.deepEqual(repeat.ledger.cards[0],first.ledger.cards[0]);
+ assert.equal(repeat.ledger.cards[0].status,'awaiting-review');
+ assert.equal(repeat.stage.stage.pending[0].reason,'derived-github-source-not-fetched');
+ assert.throws(()=>simulate({prev:first.ledger,complete:[],
+  reused:['30322'],tamper:true}),/元ファイル履歴・保留状態/);
+ const unresolved=simulate({prev:first.ledger,tamper:true,
+  inserted:['30322','30323'],complete:['30322','30323']});
+ const repeated=simulate({prev:unresolved.ledger,inserted:['30322','30323'],
+  complete:[],tamper:true,reused:['30322','30323']});
+ assert.deepEqual(repeated.ledger,unresolved.ledger);
+ assert.equal(repeated.ledger.cards[0].status,'awaiting-source-resolution');
+ assert.equal(repeated.ledger.cards[0].reviewItems.length>0,true);
+});
+test('reject unchanged reuse when pending state was never successfully converted',()=>{
+ const first=simulate({complete:[]});
+ assert.throws(()=>simulate({prev:first.ledger,complete:[],
+  reused:['30322']}),/元ファイル履歴・保留状態/);
 });
