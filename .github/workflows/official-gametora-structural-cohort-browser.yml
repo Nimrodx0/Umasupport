@@ -1,0 +1,73 @@
+name: Limited original-GameTora cross-structure adapter diagnostic
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-structural-cohort-browser.yml'
+      - 'poc/tools/probe_official_gametora_structural_sample.cjs'
+      - 'poc/tests/official_gametora_structural_sample.test.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/src/official_gametora_live_event_assembler.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-diverse-structure-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline scope, independent-census and diagnostic tests
+        run: |
+          node --test poc/tests/official_gametora_structural_sample.test.cjs
+          node --check poc/tools/probe_official_gametora_structural_sample.cjs
+      - name: Prepare Chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Obtain pinned independent UmaSim skill registry
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-skill-data.txt"
+      - name: Inspect two distinct numeric-range source cards (maximum two per run)
+        run: |
+          node poc/tools/probe_official_gametora_structural_sample.cjs \
+            --live --cards 30030,30041 --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/range-structural-report.txt"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const data=fs.readFileSync(process.env.RUNNER_TEMP+'/range-structural-report.txt','utf8').trim();
+          const prefix='GT_CROSS_COHORT_DIAGNOSTIC=';
+          if(!data.startsWith(prefix))throw Error('Diagnostic summary absent');
+          const report=JSON.parse(data.slice(prefix.length));
+          if(report.visitedCardPages!==2||report.results.length!==2||
+             report.adapterGatePassed!==false||report.publicationApproved!==false||
+             report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
+            throw Error('Nonpublic bounded diagnostic contract not met');
+          console.log(JSON.stringify(report));
+          NODE
+      - name: Inspect three-choice and terminal structure (one more source card)
+        run: |
+          node poc/tools/probe_official_gametora_structural_sample.cjs \
+            --live --cards 30080 --skills "$RUNNER_TEMP/umasim-skill-data.txt" \
+            > "$RUNNER_TEMP/branch-structural-report.txt"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const data=fs.readFileSync(process.env.RUNNER_TEMP+'/branch-structural-report.txt','utf8').trim();
+          const prefix='GT_CROSS_COHORT_DIAGNOSTIC=';
+          if(!data.startsWith(prefix))throw Error('Diagnostic summary absent');
+          const report=JSON.parse(data.slice(prefix.length));
+          if(report.visitedCardPages!==1||report.results.length!==1||
+             report.adapterGatePassed!==false||report.publicationApproved!==false||
+             report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
+            throw Error('Nonpublic bounded diagnostic contract not met');
+          console.log(JSON.stringify(report));
+          NODE
