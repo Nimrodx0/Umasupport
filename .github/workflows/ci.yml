@@ -53,6 +53,8 @@ jobs:
           node --test poc/tests/derived_github_new_card_source_plan.test.cjs
           node --check poc/src/derived_github_card_event_preflight.cjs
           node --test poc/tests/derived_github_card_event_preflight.test.cjs
+          node --check poc/src/derived_github_runtime_draft.cjs
+          node --test poc/tests/derived_github_runtime_draft.test.cjs
       - name: Verify bounded listing-based lookup of truly new GameTora support cards
         run: |
           node --check poc/src/official_gametora_new_card_locator.cjs
