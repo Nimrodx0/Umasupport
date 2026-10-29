@@ -45,13 +45,15 @@ const POLICY=require('../config/event-source-priority.v1.json');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const fail=x=>{throw Error('GameToraイベント実行形式草稿: '+x);};
 const f=(c,e,o,r,i)=>JSON.stringify([c,e,o,r,i]);
-function project({candidate,crosswalk,skillText,model,supplemental,historicalPreview,independent2026Preview}){
+function project({candidate,crosswalk,skillText,model,supplemental,historicalPreview,independent2026Preview,
+ sourceRevision=POLICY.baselineRevision}){
  if(candidate?.dataKind!=='gametora-whole-event-numeric-candidate'||
     candidate.releaseApproved!==false||candidate.noEventCanPublishFromThisCandidate!==true||
-    candidate.sourcePins?.gameToraDerived!==POLICY.baselineRevision||
+    candidate.sourcePins?.gameToraDerived!==sourceRevision||
+     !/^[a-f0-9]{40}$/.test(sourceRevision)||
     crosswalk?.dataKind!=='gametora-event-skill-crosswalk-draft'||
     crosswalk.releaseApproved!==false||
-    crosswalk.sourcePins?.gameToraDerived!==POLICY.baselineRevision||
+    crosswalk.sourcePins?.gameToraDerived!==sourceRevision||
     !Array.isArray(candidate.cards)||!Array.isArray(crosswalk.locations)||
     !obj(model?.skillById)||!Array.isArray(model?.cards))
   fail('未承認GameTora入力とスキルID対応の出典が不正');
