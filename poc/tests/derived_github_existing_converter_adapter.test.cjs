@@ -77,3 +77,31 @@ test('source blob tampering and independent numeric source without commit fail c
  modified.results[0].sourceBlobSha='0'.repeat(40);
  assert.throws(()=>project({...x,plan:modified}),/source-blob-content-not-identical/);
 });
+
+test('unknown new source effect is a pending position, not a silently empty awarded event',()=>{
+ const x=input({
+  a:{section:'random',name:'do not copy',choices:[
+   {label:'',effects:[{type:'unknown_from_new_version'}]}]},
+  b:{section:'random',name:'unrelated safe',choices:[
+   {label:'',effects:[{type:'skill_hint',skill_id:200532,value:'+1'}]}]}
+ });
+ const r=project(x);
+ assert.equal(r.census.modeledEvents,1);
+ assert.equal(r.census.excludedEvents,1);
+ assert.equal(r.census.unknownSourceEffectEvents,1);
+ assert.equal(r.pendingEvents[0].reason,'UNKNOWN_SOURCE_EFFECT_TYPE');
+ assert.ok(r.reviewItems.some(x=>x.reason==='UNKNOWN_SOURCE_EFFECT_TYPE'));
+ assert.equal(r.draftCatalog.cards[0].events.length,1);
+ assert.equal(r.publicationApproved,false);
+});
+test('canonical OR hint outcomes are exclusive; one original option is not two guaranteed skills',()=>{
+ const x=input({a:{section:'random',name:'do not copy OR',choices:[
+  {label:'',effects:[{type:'skill_hint_or',options:[
+   {skill_id:200532,value:'+1'},{skill_id:201272,value:'+2'}]}]}]}});
+ const r=project(x);
+ assert.equal(r.census.modeledEvents,1);
+ const variants=r.draftCatalog.cards[0].events[0].outcomes;
+ assert.equal(variants.length,2);
+ assert.equal(variants.every(x=>x.rewards.length===1),true);
+ assert.equal(new Set(variants.map(v=>v.rewards[0].skillId)).size,2);
+});
