@@ -65,12 +65,14 @@ async function refresh({
  if(plan.candidateIds.length>maxTargetCards||
     plan.targetIds.length>maxTargetCards)
   fail('対象新カード数が上限超過。無制限の外部データ取得は禁止');
+ const skillRegistryBlobSha=gitBlobSha(skillText);
  const oldById=new Map(previousLedger.cards.map(x=>[x.cardId,x]));
  const reusedUnchangedCardIds=plan.candidateIds.filter(id=>{
   const old=oldById.get(id),newSource=plan.results.find(x=>x.cardId===id);
   return !!old&&
    ['awaiting-review','awaiting-source-resolution'].includes(old.status)&&
-   old.sourceBlobSha===newSource.sourceBlobSha;
+   old.sourceBlobSha===newSource.sourceBlobSha&&
+   old.skillRegistryBlobSha===skillRegistryBlobSha;
  });
  const reusedSet=new Set(reusedUnchangedCardIds);
  const sources={},failures=[];
@@ -96,13 +98,14 @@ async function refresh({
   skillText,skillRevision,pendingCardIds});
  const ledger=reconcilePendingLedger({
   previous:previousLedger,discovery,sourcePlan:plan,stage,existingCatalog,
-  reusedUnchangedCardIds});
+  reusedUnchangedCardIds,skillRegistryBlobSha});
  return {ledger,summary:{
   previousRosterCount:discovery.previousRosterCount,
   currentRosterCount:discovery.currentRosterCount,
   discoveredNewCardIds:discovery.addedCardIds,
   sourceCommit:plan.primarySourceCommit,sourceTreeSha:plan.sourceTreeSha,
   independentlyPinnedSkillCommit:skillRevision,
+  skillRegistryBlobSha,
   catalogAlreadyImportedIds:stage.stage.alreadyImportedIds,
   missingSourceIds:plan.waitingIds,
   fetchFailedIds:failures,
