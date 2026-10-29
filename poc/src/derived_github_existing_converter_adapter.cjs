@@ -90,7 +90,9 @@ function projectExistingConverterForNewCard({
   reason:issue.reason,origin:'source-normalization'});
  for(const issue of rejected)reviewItems.push({
   sourceOrdinal:issue.sourceOrdinal,reason:issue.reason,
-  origin:'schema-projection'});
+  origin:issue.reason==='UNKNOWN_SOURCE_EFFECT_TYPE'||
+    issue.reason==='PREDECESSOR_REQUIRES_REVIEW'?
+     'source-effect-vocabulary':'schema-projection'});
  for(const e of card.events)
   if(e.nextStageMeaning==='SOURCE_PRESENTATION_ORDER_NOT_INDEPENDENTLY_VERIFIED')
    reviewItems.push({sourceOrdinal:e.sourceOrdinal,
@@ -106,7 +108,9 @@ function projectExistingConverterForNewCard({
   unknownSourceEffectEvents:unknownByEventId.size,
   reviewItems:reviewItems.length,
   sourceSectionCounts:normalized.sectionCounts,
-  projectionReasons:converted.report.excludedReasons};
+  projectionReasons:Object.fromEntries(Object.entries(rejected.reduce((out,r)=>{
+   out[r.reason]=(out[r.reason]||0)+1;return out;
+  },{})).sort(([a],[b])=>a.localeCompare(b)))};
  if(census.modeledEvents+census.excludedEvents!==census.sourceEvents||
     new Set(events.map(e=>e.id)).size!==events.length||
     events.some(e=>e.sourceKind!=='derived-github-unreviewed'))
