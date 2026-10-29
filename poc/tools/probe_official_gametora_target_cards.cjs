@@ -157,7 +157,9 @@ async function main(args){
  if(args.length!==5||args[0]!=='--live'||args[1]!=='--plan'||
     args[3]!=='--skills')
   fail('使い方: --live --plan intake-plan.json --skills pinned-skill_data.txt');
- const plan=JSON.parse(fs.readFileSync(args[2],'utf8'));
+ const input=fs.readFileSync(args[2],'utf8').trim();
+ const prefix='NEW_CARD_EVENT_INTAKE_PLAN=';
+ const plan=JSON.parse(input.startsWith(prefix)?input.slice(prefix.length):input);
  const outcome=await inspect({plan,skillFile:args[4]});
  process.stdout.write('GT_NEW_CARD_READONLY_PROBE='+JSON.stringify(outcome)+'\n');
 }
