@@ -10,6 +10,7 @@
  * A GameTora observation is not an approval. This module does not fetch,
  * scrape, grant rights, update a source pin, overwrite files, or publish.
  */
+const crypto=require('node:crypto');
 const {validateCatalog}=require('./event_schema.js');
 const {parseSupportCards}=require('./live_loader.js');
 const {verifyRelease,canonical}=require('./event_release_gate.cjs');
@@ -17,6 +18,7 @@ const fail=s=>{throw Error('新サポカイベント増分取り込み: '+s);};
 const cardId=id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id);
 const plain=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const clone=x=>JSON.parse(JSON.stringify(x));
+const sha256=x=>crypto.createHash('sha256').update(canonical(x)).digest('hex');
 function ids(input,label){
  if(!Array.isArray(input)||input.some(x=>!cardId(x))||
     new Set(input).size!==input.length)
@@ -114,7 +116,7 @@ function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
   ready,
   // Stage is never itself an approved public catalog.
   existingCardCount:already.length,
-  existingCatalogShaCanonical:canonical(existingCatalog),
+  existingCatalogDigest:sha256(existingCatalog),
   publicationApproved:false,appEventSchemaAdoptable:false
  };
 }
@@ -160,7 +162,7 @@ function appendApprovedNewCards({
  // No mutation, no file writes, no silent fallback on error.
  validateCatalog(merged,model);
  verifyRelease(merged,approvals);
- if(canonical(existingCatalog)!==stage.existingCatalogShaCanonical||
+ if(sha256(existingCatalog)!==stage.existingCatalogDigest||
     canonical(merged.cards.slice(0,existingCatalog.cards.length))!==
     canonical(existingCatalog.cards)||
     canonical(approvals.entries.slice(0,existingApprovals.entries.length))!==
