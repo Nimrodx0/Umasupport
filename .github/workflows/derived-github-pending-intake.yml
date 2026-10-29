@@ -1,0 +1,176 @@
+name: Track new UmaSim support cards awaiting GameTora-derived event intake
+
+on:
+  schedule:
+    # 03:40 UTC = 12:40 JST; GitHub scheduled jobs may run late.
+    - cron: '40 3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/derived-github-pending-intake.yml'
+      - 'poc/src/derived_github_pending_ledger.cjs'
+      - 'poc/src/derived_github_pending_refresh.cjs'
+      - 'poc/tools/refresh_derived_github_pending_ledger.cjs'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: derived-github-new-card-pending-ledger
+  cancel-in-progress: false
+
+jobs:
+  update-new-card-pending:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify metadata-only ledger and replay logic
+        run: |
+          node --test poc/tests/derived_github_pending_ledger.test.cjs
+      - name: Read complete source tree, current full-roster commit and last pending issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const previous=require('./poc/src/derived_github_pending_ledger.cjs');
+            const [source,uma]=await Promise.all([
+              github.rest.repos.getCommit({
+                owner:'systemless10',repo:'UmamusumePS',ref:'main'}),
+              github.rest.repos.getCommit({
+                owner:'mee1080',repo:'umasim',ref:'main'})
+            ]);
+            const tree=(await github.rest.git.getTree({
+              owner:'systemless10',repo:'UmamusumePS',
+              tree_sha:source.data.commit.tree.sha,recursive:'1'
+            })).data;
+            if(tree.truncated!==false||!Array.isArray(tree.tree)||
+               !tree.tree.length)throw Error('GitHub recursive source tree incomplete');
+            const temp=process.env.RUNNER_TEMP;
+            fs.writeFileSync(temp+'/pending-gt-tree.json',JSON.stringify(tree));
+            fs.writeFileSync(temp+'/pending-heads.json',JSON.stringify({
+              sourceCommit:source.data.sha,skillCommit:uma.data.sha
+            }));
+            const title='New support cards pending GameTora-derived event intake';
+            const open=await github.paginate(github.rest.issues.listForRepo,{
+              owner:context.repo.owner,repo:context.repo.repo,
+              state:'open',per_page:100});
+            const matches=open.filter(x=>!x.pull_request&&x.title===title);
+            if(matches.length>1)throw Error('Multiple active new-card ledger issues');
+            const issue=matches[0];
+            const mark='<!-- UMASUPPORT_DERIVED_PENDING_LEDGER_V1\n';
+            let old=previous.emptyLedger();
+            if(issue){
+              const body=issue.body||'';
+              const a=body.indexOf(mark);
+              const b=body.indexOf('\n-->',a+mark.length);
+              if(a<0||b<0||body.indexOf(mark,a+mark.length)!==-1)
+                throw Error('Existing pending issue state marker missing or duplicated');
+              old=previous.verifyLedger(JSON.parse(body.slice(a+mark.length,b)));
+            }
+            fs.writeFileSync(temp+'/pending-before.json',JSON.stringify(old));
+            fs.writeFileSync(temp+'/pending-issue.json',
+              JSON.stringify(issue?{number:issue.number}:{}));
+      - name: Download pinned base/full current UmaSim inputs to ephemeral runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          read -r GT_SHA UMA_SHA < <(node -e "const h=require(process.env.RUNNER_TEMP+'/pending-heads.json'); console.log(h.sourceCommit+' '+h.skillCommit)")
+          [[ "$GT_SHA" =~ ^[0-9a-f]{40}$ ]] && [[ "$UMA_SHA" =~ ^[0-9a-f]{40}$ ]]
+          curl --fail --location --silent --show-error --retry 2 --max-time 60 \
+            'https://raw.githubusercontent.com/mee1080/umasim/91952973eb334ae530b8cd76541bce8a01a141cd/data/support_card.txt' \
+            -o "$RUNNER_TEMP/pending-baseline-roster.txt"
+          curl --fail --location --silent --show-error --retry 2 --max-time 60 \
+            "https://raw.githubusercontent.com/mee1080/umasim/$UMA_SHA/data/support_card.txt" \
+            -o "$RUNNER_TEMP/pending-latest-roster.txt"
+          curl --fail --location --silent --show-error --retry 2 --max-time 60 \
+            "https://raw.githubusercontent.com/mee1080/umasim/$UMA_SHA/data/skill_data.txt" \
+            -o "$RUNNER_TEMP/pending-latest-skills.txt"
+      - name: Fetch only new pinned card JSONs, validate and reconcile pending issue metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          read -r GT_SHA UMA_SHA < <(node -e "const h=require(process.env.RUNNER_TEMP+'/pending-heads.json'); console.log(h.sourceCommit+' '+h.skillCommit)")
+          node poc/tools/refresh_derived_github_pending_ledger.cjs \
+            "$RUNNER_TEMP/pending-baseline-roster.txt" \
+            "$RUNNER_TEMP/pending-latest-roster.txt" \
+            "$RUNNER_TEMP/pending-latest-skills.txt" \
+            "$RUNNER_TEMP/pending-gt-tree.json" \
+            "$GT_SHA" "$UMA_SHA" \
+            "$RUNNER_TEMP/pending-before.json" "$RUNNER_TEMP/pending-after"
+      - name: Update a single public numeric-ID-only pending issue if status changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {verifyLedger}=require('./poc/src/derived_github_pending_ledger.cjs');
+            const temp=process.env.RUNNER_TEMP;
+            const previous=verifyLedger(JSON.parse(
+              fs.readFileSync(temp+'/pending-before.json','utf8')));
+            const next=verifyLedger(JSON.parse(
+              fs.readFileSync(temp+'/pending-after.ledger.json','utf8')));
+            const summary=JSON.parse(
+              fs.readFileSync(temp+'/pending-after.summary.json','utf8'));
+            const prior=JSON.parse(
+              fs.readFileSync(temp+'/pending-issue.json','utf8'));
+            const owner=context.repo.owner,repo=context.repo.repo;
+            const title='New support cards pending GameTora-derived event intake';
+            core.info('NEW_CARD_INTAKE_SUMMARY='+JSON.stringify(summary));
+            await core.summary.addHeading('New-card-only event intake (metadata)')
+              .addTable([
+                [{data:'Pending status',header:true},{data:'Cards',header:true}],
+                ...Object.entries(summary.states).map(([s,count])=>[s,String(count)])
+              ])
+              .addRaw('New cards: '+summary.discoveredNewCardIds.join(', ')+
+                '; review flags: '+summary.reviewIssues+
+                '. Existing catalog untouched; no automatic event publication.')
+              .write();
+            if(JSON.stringify(previous)===JSON.stringify(next)){
+              core.info('No pending-card metadata changes; leave Issue unchanged');
+              return;
+            }
+            if(next.cards.length===0){
+              if(prior.number)await github.rest.issues.update({
+                owner,repo,issue_number:prior.number,
+                state:'closed',state_reason:'completed'});
+              core.info('No unimported new cards; old Issue closed if present');
+              return;
+            }
+            const marker='<!-- UMASUPPORT_DERIVED_PENDING_LEDGER_V1\n'+
+              JSON.stringify(next)+'\n-->';
+            const lines=[
+              'This is an automated, **metadata-only** pending ledger for newly added UmaSim support cards.',
+              'Event text, choice descriptions, source JSON, private drafts and copyrighted prose are not stored here.',
+              'GameTora-derived GitHub JSON is the default source. GameWith is consulted only to resolve specific flagged facts.',
+              'A successfully converted card stays pending until actually appended under the separate approval gate.',
+              'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
+              '',
+              '| Card ID | State | Source events | Converted | Pending | Review flags |',
+              '| --- | --- | ---: | ---: | ---: | ---: |',
+              ...next.cards.map(r=>'| '+r.cardId+' | '+r.status+
+                ' | '+(r.sourceEvents??'unknown')+
+                ' | '+(r.modeledEvents??'unknown')+
+                ' | '+(r.excludedEvents??'unknown')+
+                ' | '+r.reviewItems.length+' |'),
+              '',
+              'Review coordinates and reason codes are embedded below for durable next-run replay.',
+              marker
+            ];
+            const body=lines.join('\n');
+            if(body.length>62000)throw Error('Pending issue metadata exceeds GitHub issue limit');
+            if(prior.number){
+              await github.rest.issues.update({
+                owner,repo,issue_number:prior.number,body});
+              core.notice('Updated new-card pending Issue #'+prior.number);
+            }else{
+              const created=await github.rest.issues.create({
+                owner,repo,title,body});
+              core.notice('Created new-card pending Issue: '+created.data.html_url);
+            }

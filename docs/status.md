@@ -1,5 +1,10 @@
 # 開発状況（時点付きスナップショット）
 
+## 2026-10-29：新サポカの要確認・未取込を日次継続するIssue台帳（PR #282）
+
+[継続取得の設計と状態機械](derived-github-daily-pending-ledger-20261029.md)。旧563枚の固定UmaSim名簿と実行時の最新全名簿差分から新カードを検出し、完全な第三者Git treeで存在した**新カードJSONだけ**を取得。既存変換器で独自イベントスキーマへ投影し、未知・欠落・部分変換・編集待ちを区別して数値ID／理由コードのみGitHub Issueへ保持し、翌日再試行する機構・workflowを追加。部分変換の正常部分は非公開メモリに保持する。既存DB・公開承認・ユーザー設定は不変。**正式収録を自動実行する仕組みではなく、公開イベント0件から変わらない**。A＝人工カード回帰、B＝実行時のソース版・名簿・個別blob検証、C＝CIとActions実行。実際の定期実行結果は別途確認が必要。Windows／Android物理端末とGameWithの個別裁定・実登録は未実施。
+
+
 ## 2026-10-29：以前のGameTora全件変換器を新サポカへ再利用（PR #280）
 
 [既存2,488＋GameWith補完8件の変換資産の再利用](derived-github-canonical-single-card-adapter-20261029.md)。旧 `gametora_whole_event_normalize`→`gametora_event_skill_crosswalk`→`gametora_app_schema_dry_run` を、GitHub完全treeとblob SHA検査後の**新サポカ1枚**に適用する主経路へ変更。以前追加した独立 `derived_github_runtime_draft` は旧比較／監査用のみとなり、新カード増分ステージからは使用しない。既存のイベントDBは再生成・上書きしない。スキル中心の投影であっても、既存の非スキル効果分類で未知コードを保留し、元データの疑義・連続順序と変換除外理由を個別位置の要確認として記録する。元DBのGameWith補正との完全一致は合格条件としない。新カード実運用・審査済み正式追記・物理端末は未完了。

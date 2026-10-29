@@ -43,7 +43,7 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 **増分取り込みの実装状況（2026-10-29）**：`derived_github_new_card_source_plan` → `derived_github_card_event_preflight` → `derived_github_existing_converter_adapter` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents`。**既存の** `gametora_whole_event_normalize`・`gametora_event_skill_crosswalk`・`gametora_app_schema_dry_run` を、新カード1枚の固定GitHub JSONへ再利用する。以前の `derived_github_runtime_draft` は実績記録として保持するが、現在の新カード主経路では使用しない。元JSONの不明点や未変換事項は要確認記録に区別して残し、既存DBは書き換えない。[設計と検証](derived-github-canonical-single-card-adapter-20261029.md)。
 
-この接続は**非公開の技術候補とレビュー待ち**を扱う。日次実運用、永続保留台帳、GameWithの疑義裁定、レビュー後の正式追記、実機による収録検証はまだ完成していない。公開のイベントDBに新サポカを自動追加する処理ではない。
+この接続は**非公開の技術候補とレビュー待ち**を扱う。\n\n**2026-10-29：継続保留の実装**：`derived_github_pending_refresh.cjs` → `derived_github_pending_ledger.cjs` → `.github/workflows/derived-github-pending-intake.yml` により、最新UmaSimの新ID差分と前回の未取込カードを再試行する。GitHub Issueには数値ID・出典blob・変換数・要確認理由のみを保存し、イベント本文・非公開草稿は保存しない。既存DBは読み取り専用。日次ワークフローの稼働証拠と実際のGameWith裁定・承認後追記は別工程。[設計・運用境界](derived-github-daily-pending-ledger-20261029.md)。\n\n公開のイベントDBに新サポカを自動追加する処理ではない。
 
 ## 出典ピンの継続更新監視（監査層）
 
