@@ -46,6 +46,7 @@ jobs:
       - name: Apply exact blob check, source schema projection and quarantine (no source prose)
         env:
           PIN: 62ec54e754f903e347da807d30aad40e53d794d2
+          SKILL_PIN: 910dd79f046710245e0cc88a09c5c92b1044897e
         run: |
           node - <<'NODE'
           'use strict';
