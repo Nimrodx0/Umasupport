@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  one-pinned-card-read-only:
+  three-pinned-cards-read-only:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Download only pinned public GitHub source metadata and one existing card
+      - name: Download pinned GitHub source metadata and three historical sample cards
         env:
           PIN: 62ec54e754f903e347da807d30aad40e53d794d2
           SKILL_PIN: 910dd79f046710245e0cc88a09c5c92b1044897e
