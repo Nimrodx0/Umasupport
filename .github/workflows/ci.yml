@@ -61,6 +61,7 @@ jobs:
           node --check poc/src/derived_github_pending_ledger.cjs
           node --check poc/src/derived_github_pending_refresh.cjs
           node --check poc/tools/refresh_derived_github_pending_ledger.cjs
+          node --check poc/tools/plan_umasim_first_pending_intake.cjs
           node --test poc/tests/derived_github_pending_ledger.test.cjs
           node --check poc/src/derived_github_full_roster_draft_audit.cjs
           node --check poc/tools/audit_derived_github_full_roster_draft.cjs

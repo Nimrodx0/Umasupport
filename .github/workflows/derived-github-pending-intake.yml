@@ -12,6 +12,7 @@ on:
       - 'poc/src/derived_github_pending_ledger.cjs'
       - 'poc/src/derived_github_pending_refresh.cjs'
       - 'poc/tools/refresh_derived_github_pending_ledger.cjs'
+      - 'poc/tools/plan_umasim_first_pending_intake.cjs'
 
 permissions:
   contents: read
@@ -35,28 +36,18 @@ jobs:
       - name: Verify metadata-only ledger and replay logic
         run: |
           node --test poc/tests/derived_github_pending_ledger.test.cjs
-      - name: Read complete source tree, current full-roster commit and last pending issue
+      - name: Read latest UmaSim commit and the previous pending-card Issue
         uses: actions/github-script@v7
         with:
           script: |
             const fs=require('node:fs');
             const previous=require('./poc/src/derived_github_pending_ledger.cjs');
-            const [source,uma]=await Promise.all([
-              github.rest.repos.getCommit({
-                owner:'systemless10',repo:'UmamusumePS',ref:'main'}),
-              github.rest.repos.getCommit({
-                owner:'mee1080',repo:'umasim',ref:'main'})
-            ]);
-            const tree=(await github.rest.git.getTree({
-              owner:'systemless10',repo:'UmamusumePS',
-              tree_sha:source.data.commit.tree.sha,recursive:'1'
-            })).data;
-            if(tree.truncated!==false||!Array.isArray(tree.tree)||
-               !tree.tree.length)throw Error('GitHub recursive source tree incomplete');
+            const uma=await github.rest.repos.getCommit({
+              owner:'mee1080',repo:'umasim',ref:'main'
+            });
             const temp=process.env.RUNNER_TEMP;
-            fs.writeFileSync(temp+'/pending-gt-tree.json',JSON.stringify(tree));
             fs.writeFileSync(temp+'/pending-heads.json',JSON.stringify({
-              sourceCommit:source.data.sha,skillCommit:uma.data.sha
+              skillCommit:uma.data.sha
             }));
             const title='New support cards pending GameTora-derived event intake';
             const open=await github.paginate(github.rest.issues.listForRepo,{
@@ -82,18 +73,57 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          read -r GT_SHA UMA_SHA < <(node -e "const h=require(process.env.RUNNER_TEMP+'/pending-heads.json'); console.log(h.sourceCommit+' '+h.skillCommit)")
-          [[ "$GT_SHA" =~ ^[0-9a-f]{40}$ ]] && [[ "$UMA_SHA" =~ ^[0-9a-f]{40}$ ]]
+          UMA_SHA=$(node -e "const h=require(process.env.RUNNER_TEMP+'/pending-heads.json'); console.log(h.skillCommit)")
+          [[ "$UMA_SHA" =~ ^[0-9a-f]{40}$ ]]
           curl --fail --location --silent --show-error --retry 2 --max-time 60 \
             'https://raw.githubusercontent.com/mee1080/umasim/91952973eb334ae530b8cd76541bce8a01a141cd/data/support_card.txt' \
             -o "$RUNNER_TEMP/pending-baseline-roster.txt"
           curl --fail --location --silent --show-error --retry 2 --max-time 60 \
             "https://raw.githubusercontent.com/mee1080/umasim/$UMA_SHA/data/support_card.txt" \
             -o "$RUNNER_TEMP/pending-latest-roster.txt"
+      - name: Check UmaSim unsupported support IDs before contacting event DB
+        id: targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node poc/tools/plan_umasim_first_pending_intake.cjs \
+            "$RUNNER_TEMP/pending-baseline-roster.txt" \
+            "$RUNNER_TEMP/pending-latest-roster.txt" \
+            "$RUNNER_TEMP/pending-before.json" \
+            "$RUNNER_TEMP/pending-after" "$GITHUB_OUTPUT"
+      - name: Fetch third-party Git tree only for unimported UmaSim cards
+        if: steps.targets.outputs.needs_source == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const source=await github.rest.repos.getCommit({
+              owner:'systemless10',repo:'UmamusumePS',ref:'main'
+            });
+            const tree=(await github.rest.git.getTree({
+              owner:'systemless10',repo:'UmamusumePS',
+              tree_sha:source.data.commit.tree.sha,recursive:'1'
+            })).data;
+            if(tree.truncated!==false||!Array.isArray(tree.tree)||
+               !tree.tree.length)throw Error('GitHub recursive source tree incomplete');
+            const temp=process.env.RUNNER_TEMP;
+            const heads=JSON.parse(fs.readFileSync(temp+'/pending-heads.json','utf8'));
+            fs.writeFileSync(temp+'/pending-gt-tree.json',JSON.stringify(tree));
+            fs.writeFileSync(temp+'/pending-heads.json',JSON.stringify({
+              ...heads,sourceCommit:source.data.sha
+            }));
+      - name: Fetch independent UmaSim numeric skill registry only if source needed
+        if: steps.targets.outputs.needs_source == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          UMA_SHA=$(node -e "const h=require(process.env.RUNNER_TEMP+'/pending-heads.json'); console.log(h.skillCommit)")
+          [[ "$UMA_SHA" =~ ^[0-9a-f]{40}$ ]]
           curl --fail --location --silent --show-error --retry 2 --max-time 60 \
             "https://raw.githubusercontent.com/mee1080/umasim/$UMA_SHA/data/skill_data.txt" \
             -o "$RUNNER_TEMP/pending-latest-skills.txt"
       - name: Fetch only new pinned card JSONs, validate and reconcile pending issue metadata
+        if: steps.targets.outputs.needs_source == 'true'
         shell: bash
         run: |
           set -euo pipefail
