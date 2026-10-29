@@ -104,7 +104,8 @@ test('ledger rejects arbitrary source text, fake approvals, duplicates and out-o
  const stage={...first.stage,reviewItems:[{cardId:'30001',sourceOrdinal:1,
   reason:'SUSPICIOUS',origin:'source-normalization'}]};
  assert.throws(()=>reconcilePendingLedger({...first,stage,previous:emptyLedger(),
-  existingCatalog:first.original,sourcePlan:first.plan}),/追加対象外/);
+  existingCatalog:first.original,sourcePlan:first.plan,
+  skillRegistryBlobSha:sha('d')}),/追加対象外/);
 });
 
 test('UmaSim-first: do not even query third-party events when every new ID is already imported',()=>{
