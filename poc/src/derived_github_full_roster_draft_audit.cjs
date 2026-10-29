@@ -40,11 +40,38 @@ function auditDerivedRoster({sourceTree,sourceCommit,records,skillText}={}){
   modeledDirectGrantMentions:0,modeledExclusiveHintGroups:0,
   modeledExclusiveHintOptions:0,nonSkillSourceEffectsOmitted:0,
   modeledResultRoutes:0,sourceResultRoutes:0};
- const reasons=new Map(),byCard=[];
+ const reasons=new Map(),byCard=[],sourceSections=new Map(),modeledSections=new Map(),pendingSections=new Map();
+ const sectionReasonCounts=new Map();
+ const supportedSections=new Set(['random','arrows','special','dates','dates_random','unspecified']);
  for(const cardId of all){
   const data=projectDerivedCardDraft({plan,cardId,
    sourceText:byId.get(cardId),skillText});
   const c=data.census;
+  // Only source SECTION CODES are classified, never source titles/labels.
+  // This links each source ordinal to the corresponding private converter
+  // decision without reproducing original event content.
+  const doc=JSON.parse(byId.get(cardId));
+  const sectionData=doc.events_ja&&Object.keys(doc.events_ja).length?
+   doc.events_ja:doc.events;
+  const sections=Object.values(sectionData).map(ev=>
+   supportedSections.has(ev?.section)?ev.section:
+    ev?.section===undefined?'unspecified':'unknown');
+  if(sections.length!==c.sourceEvents)fail('source-section-count-mismatch');
+  const modeledPositions=new Set(data.draftCatalog.cards[0].events.map(ev=>ev.id));
+  const pendingByOrdinal=new Map(data.pendingEvents.map(ev=>[ev.sourceOrdinal,ev.reason]));
+  for(let i=0;i<sections.length;i++){
+   const label=sections[i],ordinal=i+1;
+   counter(sourceSections,label);
+   const eventId='gt-'+cardId+'-event-'+String(ordinal).padStart(3,'0');
+   if(modeledPositions.has(eventId))counter(modeledSections,label);
+   else{
+    const reason=pendingByOrdinal.get(ordinal);
+    if(!reason)fail('unexplained-source-event-position');
+    counter(pendingSections,label);
+    const cohort=sectionReasonCounts.get(label)||new Map();
+    counter(cohort,reason);sectionReasonCounts.set(label,cohort);
+   }
+  }
   totals.sourceEvents+=c.sourceEvents;
   totals.modeledEvents+=c.modeledEvents;
   totals.pendingEvents+=c.excludedEvents;
@@ -78,7 +105,12 @@ function auditDerivedRoster({sourceTree,sourceCommit,records,skillText}={}){
   sourceCommit,sourceTreeSha:sourceTree.sha,
   population:'all-structured-github-card-json-present-in-pinned-snapshot',
   historicAllCardsAsNewIsSyntheticAuditFixture:true,
-  totals,reasonCounts:sorted(reasons),cards:byCard,
+  totals,reasonCounts:sorted(reasons),
+  sectionCounts:{source:sorted(sourceSections),modeled:sorted(modeledSections),
+   pending:sorted(pendingSections)},
+  reasonCountsBySection:Object.fromEntries([...sectionReasonCounts]
+   .sort(([a],[b])=>a.localeCompare(b)).map(([section,m])=>[section,sorted(m)])),
+  cards:byCard,
   sourceEventProseCopied:false,rawEventEffectsCopied:false,
   privateRuntimeEventsExposed:false,
   gameWideCompletenessVerified:false,gameSemanticsVerified:false,
