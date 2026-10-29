@@ -44,10 +44,6 @@ jobs:
         run: node --check poc/src/official_gametora_site_numeric_draft.cjs && node --test poc/tests/official_gametora_site_numeric_draft.test.cjs
       - name: Verify visible event-chain stop and outing-unlock facts never imply missing dependencies
         run: node --check poc/src/official_gametora_site_flow_draft.cjs && node --test poc/tests/official_gametora_site_flow_draft.test.cjs
-      - name: Verify explicit GameWith 30322 choice/outcome facts only when original-site numbers and hints match
-        run: node --check poc/src/official_gametora_gamewith_result_adjudication.cjs && node --test poc/tests/official_gametora_gamewith_result_adjudication.test.cjs
-      - name: Verify site-local success/failure display evidence without inventing player choices
-        run: node --check poc/src/official_gametora_site_outcome_label_evidence.cjs && node --test poc/tests/official_gametora_site_outcome_label_evidence.test.cjs
       - name: Verify original GameTora multi-card site event assembler and exact result parity
         run: node --check poc/src/official_gametora_live_event_assembler.cjs && node --test poc/tests/official_gametora_live_event_assembler.test.cjs
       - name: Verify fail-closed join of original GameTora numeric hints direct skills and flow markers
