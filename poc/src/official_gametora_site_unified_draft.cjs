@@ -42,7 +42,15 @@ function buildUnifiedSiteDraft({numericDraft,hintDraft,directDraft,flowDraft}={}
  if(!Array.isArray(hintDraft.routeCandidates)||
     !Array.isArray(directDraft.routeCandidates)||
     !Array.isArray(flowDraft.routes)||
-    numericDraft.candidates.length!==hintDraft.routeCandidates.length)
+    numericDraft.visibleGroupCount!==numericDraft.candidates.length||
+    hintDraft.visibleGroupCount!==numericDraft.visibleGroupCount||
+    numericDraft.candidates.length!==hintDraft.routeCandidates.length||
+    hintDraft.seenHintRows!==
+     hintDraft.uniquelyResolvedHintIdLevelPairs+hintDraft.unresolvedHintRows||
+    directDraft.directLikeTexts!==
+     directDraft.uniquelyMatchedDirectSkillCandidates+directDraft.unresolvedDirectLikeTexts||
+    flowDraft.visibleMarkerKinds!==
+     flowDraft.locatedVisibleMarkerKinds+flowDraft.unlocatedVisibleMarkerKinds)
   fail('route-group-count-mismatch');
  const base=numericDraft.candidates.flatMap((g,gi)=>{
   if(g.visibleGroupOrdinal!==gi+1||!Array.isArray(g.routeCandidates)||
@@ -101,8 +109,9 @@ function buildUnifiedSiteDraft({numericDraft,hintDraft,directDraft,flowDraft}={}
  });
  const allowedMarkers=new Set(['explicit-chain-stop','explicit-outing-unlock',
   'explicit-outing-stop']);
- if(f.visibleMarkerKinds.some(x=>!allowedMarkers.has(x)))
-  fail('unsupported-flow-marker');
+ if(f.visibleMarkerKinds.some(x=>!allowedMarkers.has(x))||
+    new Set(f.visibleMarkerKinds).size!==f.visibleMarkerKinds.length)
+  fail('unsupported-or-duplicated-flow-marker');
  markerCount+=f.visibleMarkerKinds.length;
  // A marker in an unresolved OR is NOT assigned to any outcome.
  const flowMarkers=f.safelyAttributedToResult?
