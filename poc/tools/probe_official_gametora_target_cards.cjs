@@ -100,7 +100,7 @@ async function inspect({plan,skillFile}={}){
     continue;
    }
    allowed(entry.url);
-   if(cardVisits)await page.waitForTimeout(6000);
+   await page.waitForTimeout(6000);
    blocked=false;
    await goto(entry.url);
    cardVisits++;
