@@ -9,6 +9,7 @@ const {scanOwnText}=require('../src/official_gametora_numeric_fact_parser.cjs');
 const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_route_hints.cjs');
 const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
 const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
+const {assembleLiveEvent,summarizeLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -223,6 +224,7 @@ async function probe(){
    const eventRouteHints=[];
    const eventDirectGrantDrafts=[];
    const eventFlowDrafts=[];
+   const eventUnifiedSummaries=[];
    const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
@@ -323,6 +325,10 @@ async function probe(){
         at=parent;
        }
       }
+      const groupOwnTextFragments=[group,...group.querySelectorAll('*')]
+       .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
+        .map(n=>n.textContent||'').join('').trim())
+       .filter(t=>t.length>0).slice(0,100).map(t=>t.slice(0,250));
       return segments.map((roots,outcomeIndex)=>{
        const own=[];
        for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
@@ -337,7 +343,23 @@ async function probe(){
          own.push({text:t.slice(0,240),contexts:contexts.slice(0,5)});
         }
        }
+       const numericEffectTexts=[],numericEffectContexts=[];
+       for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
+        const t=[...el.childNodes].filter(n=>n.nodeType===3)
+         .map(n=>n.textContent||'').join('').trim();
+        if(!/[+＋\\-－−]\\s*\\d/.test(t)||t.length>400)continue;
+        const contexts=[];
+        for(let p=el;p&&root.contains(p)&&contexts.length<6;p=p.parentElement){
+         const text=(p.innerText||'').trim();
+         if(text.length&&text.length<=300)contexts.push(text);
+        }
+        numericEffectTexts.push(t);
+        numericEffectContexts.push(contexts);
+       }
        return {
+        numericEffectTexts:numericEffectTexts.slice(0,80),
+        numericEffectContexts:numericEffectContexts.slice(0,80),
+        groupOwnTextFragments,
         choiceOrdinal:choiceIndex+1,
         outcomeOrdinal:outcomeIndex+1,
         unresolvedOr:ambiguous,
@@ -362,6 +384,12 @@ async function probe(){
       });
      });
     });
+    if(registry){
+     const joined=assembleLiveEvent({
+      cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
+     });
+     eventUnifiedSummaries.push(summarizeLiveEvent(joined));
+    }
     const flow=routeFlowCandidates({
      cardId:target.cardId,siteEventOrdinal:idx+1,
      routes:routePieces.map(r=>({
@@ -417,6 +445,37 @@ async function probe(){
     });
    }
    const census=summarizeExpandedCensus(allRows);
+   const unifiedEventObservations={
+    panelsInspected:eventUnifiedSummaries.length,
+    eventPanelsJoined:eventUnifiedSummaries.filter(
+     x=>x.status==='unified-unapproved').length,
+    eventsWithNoVisibleResultGroups:eventUnifiedSummaries.filter(
+     x=>x.status==='no-visible-result-groups').length,
+    eventsWithUnresolvedOrLayout:eventUnifiedSummaries.filter(
+     x=>x.status==='unresolved-or-layout').length,
+    resultsJoined:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.status==='unified-unapproved'?x.routes:0),0),
+    observedNumericEffects:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.status==='unified-unapproved'?x.numericEffects:0),0),
+    resolvedHintIdLevelPairs:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.status==='unified-unapproved'?x.skillHints:0),0),
+    explicitDirectSkillCandidates:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.status==='unified-unapproved'?x.directSkillCandidates:0),0),
+    locatedProgressMarkers:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.status==='unified-unapproved'?
+      Object.values(x.locatedFlowMarkers).reduce((sum,v)=>sum+v,0):0),0),
+    perEvent:eventUnifiedSummaries.map(x=>({
+     siteEventOrdinal:x.siteEventOrdinal,status:x.status,
+     resultRoutes:x.routes??x.routeCount??0,
+     numericEffects:x.numericEffects??null,
+     skillHints:x.skillHints??null,directSkillCandidates:x.directSkillCandidates??null,
+     locatedFlowMarkers:x.locatedFlowMarkers??null
+    })),
+    sourceProseNotExported:true,
+    allEventRewardsVerified:false,
+    continuationRequiresVerified:false,
+    publicationApproved:false
+   };
    const visibleFlowObservations={
     panelsInspected:eventFlowDrafts.length,
     resultRoutesInspected:eventFlowDrafts.reduce((n,d)=>n+d.routes,0),
@@ -518,6 +577,7 @@ async function probe(){
     routeHintBinding,
     directSkillObservations,
     visibleFlowObservations,
+    unifiedEventObservations,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
