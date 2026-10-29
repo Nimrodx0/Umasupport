@@ -14,6 +14,7 @@
 | データの出典と現行イベント収録方針 | [data-sources.md](data-sources.md) / [GameTora基準とGameWith例外裁定](gametora-baseline-event-policy-20261021.md) |
 | SSR30323吾妻のお出かけ解放と経路の限定出典照合 | [見出し6件・両選択肢の解放](official-gametora-azuma-outing-20261028.md) |
 | 次に元サイトと比較する既存GameTora旧カード構造別3枚 | [SSR30030／30041／30080の範囲値・3択・打ち切りを出典固定](official-gametora-existing-structural-cohorts-20261028.md) |
+| SSR30322のGameTora表示ORとGameWithの実結果区分を具体照合 | [3択×大成功／成功、6結果21数値・12ヒントの編集採用](official-gametora-30322-gamewith-result-adjudication-20261029.md) |
 | GameTora本体の結果局所「成功・失敗」表示とOR構造の区別 | [新SSR2枚のOR3組・結果ラベル0の実Chrome監査](official-gametora-site-outcome-label-evidence-20261029.md) |
 | GameTora新SSR二枚に四系統の結果別統合を拡大 | [実Chromeの16イベント・27結果・108数値行・18ヒント照合](official-gametora-new-card-unified-live-20261029.md) |
 | GameTora本体の数値・ヒント・直接スキル・進行マーカーを結果別に統合 | [SSR30080の4系統厳格結合と非公開ゲート](official-gametora-unified-site-route-draft-20261029.md) |
