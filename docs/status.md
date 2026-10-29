@@ -1,5 +1,10 @@
 # 開発状況（時点付きスナップショット）
 
+## 2026-10-29：UmaSimで未対応カードを判定してからイベント元へアクセス（PR #285）
+
+[設計と更新条件](derived-github-daily-pending-ledger-20261029.md)。日次取り込みをUmaSim全名簿＋前回未取込Issue＋既存公開DBの比較から開始する。未対応新カードが**0枚なら第三者GameTora派生GitHubのHEAD／tree／イベントJSONへアクセスしない**。未対応カードがあるときだけGitツリーから当該カードのJSON有無とGit blobを確認する。以前に技術変換済みのカードは、同じイベントJSON **かつ同じ独立UmaSimスキル辞書のGit blob** の場合は元JSONを再取得・再変換せず、要確認項目と結果をそのまま持越する。元イベント・スキル辞書いずれか更新なら再変換。既存イベントDBへの追記・再生成・公開承認は行わない。A＝対象0枚／持越／同一blob／変更blob・辞書変更の人工テスト、C＝GitHub Actions実行／Core・Chromium回帰を確認する。現実の新サポカ3枚（10149、30322、30323）はソースJSON未掲載のため、掲載確認のtreeメタデータのみ継続する。
+
+
 ## 2026-10-29：初回の実行で新カード3枚を保留に記録
 
 [初回の新カード日次取り込みActions](https://github.com/Nimrodx0/Umasupport/actions/runs/40846374598) PASS、[継続管理Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) 作成。旧固定UmaSim**563枚**と現在のUmaSim main**566枚**を実データ比較し、追加カードIDは**10149・30322・30323**の3枚。実行時の第三者GitHub `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67` の完全Git treeには**3枚ともイベントJSONが未掲載**だったため、3枚をすべて `awaiting-source-json` として永続Issueに登録。元JSONの取り込み成功・報酬の確証・現行ゲーム全カード網羅を意味しない。Issueは3枚分の数値ID・理由のみで、元サイト文面・選択肢・未公開イベントは含まない。既存DB不変。新規イベントの正式追記は0件。
