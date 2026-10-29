@@ -457,10 +457,18 @@ async function probe(){
      (x.status==='unified-unapproved'?x.routes:0),0),
     observedNumericEffects:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?x.numericEffects:0),0),
+    unresolvedNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.unparsedNumericFacts??0),0),
+    excludedNonScalarNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.excludedNonScalarNumericFacts??0),0),
     resolvedHintIdLevelPairs:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?x.skillHints:0),0),
+    unresolvedHintRows:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.unresolvedHintRows??0),0),
     explicitDirectSkillCandidates:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?x.directSkillCandidates:0),0),
+    unresolvedDirectLikeTexts:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.unresolvedDirectLikeTexts??0),0),
     locatedProgressMarkers:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?
       Object.values(x.locatedFlowMarkers).reduce((sum,v)=>sum+v,0):0),0),
@@ -468,7 +476,10 @@ async function probe(){
      siteEventOrdinal:x.siteEventOrdinal,status:x.status,
      resultRoutes:x.routes??x.routeCount??0,
      numericEffects:x.numericEffects??null,
-     skillHints:x.skillHints??null,directSkillCandidates:x.directSkillCandidates??null,
+     unresolvedNumericFacts:x.unparsedNumericFacts??null,
+     skillHints:x.skillHints??null,unresolvedHintRows:x.unresolvedHintRows??null,
+     directSkillCandidates:x.directSkillCandidates??null,
+     unresolvedDirectLikeTexts:x.unresolvedDirectLikeTexts??null,
      locatedFlowMarkers:x.locatedFlowMarkers??null
     })),
     sourceProseNotExported:true,
@@ -536,6 +547,25 @@ async function probe(){
      visibleFlowObservations.resultRoutesInspected!==census.candidateOutcomeRoutes)
      fail('SSR30323の両選択肢のお出かけ解放表示が結果別に独立していない');
    }
+   // A one-time source-visible regression sample, not "all rewards found".
+   // Every missing panel remains explicitly excluded, never empty rewards.
+   const pinnedUnified=target.cardId==='30322'?
+    {panels:6,joined:5,missing:1,routes:13,numeric:40,hints:14,unlock:0,
+     numericPerEvent:[null,4,7,21,5,3]}:
+    {panels:12,joined:11,missing:1,routes:14,numeric:68,hints:4,unlock:2,
+     numericPerEvent:[null,7,5,9,6,6,7,10,6,3,4,5]};
+   const got=unifiedEventObservations;
+   if(got.panelsInspected!==pinnedUnified.panels||
+      got.eventPanelsJoined!==pinnedUnified.joined||
+      got.eventsWithNoVisibleResultGroups!==pinnedUnified.missing||
+      got.eventsWithUnresolvedOrLayout!==0||
+      got.resultsJoined!==pinnedUnified.routes||
+      got.observedNumericEffects!==pinnedUnified.numeric||
+      got.resolvedHintIdLevelPairs!==pinnedUnified.hints||
+      got.locatedProgressMarkers!==pinnedUnified.unlock||
+      got.perEvent.some((e,i)=>
+       e.numericEffects!==pinnedUnified.numericPerEvent[i]))
+    fail('元サイト結果統合の固定限定サンプル数値/ヒント/構造が変化、要再検証');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
