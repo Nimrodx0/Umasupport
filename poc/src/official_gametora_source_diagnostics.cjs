@@ -19,7 +19,7 @@ function classifyNumericLeaf(text,contexts=[]){
  // A slash/range containing an unsigned second value is easily mistaken
  // for one scalar by the current AMOUNT matcher. Until explicitly modeled,
  // preserve it as an unknown alternative, never a single awarded amount.
- if(/(?:[+＋\\-－−]\\s*)?\\d{1,5}\\s*[/／～〜]\\s*(?:[+＋\\-－−]\\s*)?\\d{1,5}(?!\\d)/.test(text))
+ if(/(?:[+＋\-－−]\s*)?\d{1,5}\s*[/／～〜]\s*(?:[+＋\-－−]\s*)?\d{1,5}(?!\d)/.test(text))
   return 'numeric-range-or-alternative';
  const interpreted=parseNumericFactWithLocalContext(text,contexts);
  const fact=interpreted.fact;
