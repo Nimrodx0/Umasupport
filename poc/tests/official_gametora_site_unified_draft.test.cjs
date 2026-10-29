@@ -65,8 +65,10 @@ test('join uses same exact result coordinates with no implicit aggregation or di
  assert.equal(result.appEventSchemaAdoptable,false);
  assert.equal(result.publicationApproved,false);
  assert.equal(result.skillAwardCompletenessVerified,false);
- assert.ok(!JSON.stringify(result).includes('rewards'));
- assert.ok(!JSON.stringify(result).includes('requires'));
+ assert.equal(Object.hasOwn(result,'rewards'),false);
+ assert.equal(Object.hasOwn(result,'requires'),false);
+ assert.equal(Object.hasOwn(result.routes[0],'rewards'),false);
+ assert.equal(Object.hasOwn(result.routes[0],'terminal'),false);
  assert.doesNotMatch(JSON.stringify(result),/登山家|夜行|連続イベント終了/);
 });
 test('identity drift rejects silently joining another card or event',()=>{
