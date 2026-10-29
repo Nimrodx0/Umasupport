@@ -137,7 +137,7 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
       if(option?.numericFactParsed!==true||
          option.levelRange!==undefined||
          !Number.isInteger(option.level)||option.level<1||option.level>20||
-         !/^\\d+$/.test(id||'')||
+         !/^\d+$/.test(id||'')||
          !registry.byId.has(id)||
          !['normal','rare'].includes(registry.byId.get(id).rarity)||
          optionIds.has(id)||knownRewards.has(route.routeOrdinal+':skill:'+id)){
