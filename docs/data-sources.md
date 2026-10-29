@@ -1,5 +1,8 @@
 # データソースと検証状態
 
+**イベント取得の現行判断（2026-10-29）：** 主経路は[`systemless10/UmamusumePS`のGameTora派生構造化JSON](https://github.com/systemless10/UmamusumePS/tree/main/server/data/events/gametora)、元GameTora HTMLからの汎用直接取得は未完成のまま保留。通常ヒント／スキル辞書のUmaSim直接読込・IndexedDBキャッシュは変更しない。[正式な製品完成計画](derived-github-primary-restart-20261029.md)／[元資料採用ルール](gametora-baseline-event-policy-20261021.md)。以降にある2026-10-16当時の候補・順位は履歴であり現行の優先順位ではない。
+
+
 最終確認：2026-10-16
 
 | ソース | 利用目的 | 確認できたこと／残る課題 |

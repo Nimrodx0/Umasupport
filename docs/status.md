@@ -1,5 +1,10 @@
 # 開発状況（時点付きスナップショット）
 
+## 2026-10-29：派生GitHubイベントDBを主経路に復帰、直接取得器は保留
+
+[現行の決定と製品完成計画](derived-github-primary-restart-20261029.md)。利用者がGameTora本体のHTML汎用直接取得を未完成のまま開発保留とし、`systemless10/UmamusumePS` の構造化GameTora派生JSONを新カードイベント更新の主経路に戻すことを確定。2026-10-27以降の元サイト直接取得への移行と、2026-10-29の直接取得器完成先行ゲートは**製品完成の必須条件から撤回**。既存の直接取得実績・ツールは保管。既存イベントDBの全置換は禁止し、UmaSim差分の追加IDのみ対象として欠損を継続保留する。新しい `poc/src/derived_github_new_card_source_plan.cjs` は**完全なGit treeメタデータだけ**で新IDのJSON有無・未着・収録済みを分類し、新カード保留IDを翌日にも渡す。 同時に `poc/src/derived_github_card_event_preflight.cjs` が対象JSONの**Git blob SHA一致を確認したうえで既存GameTora派生イベント変換器を通す**非公開事前検査を追加し、カード／イベント／選択肢／結果の件数と未解決条件を返す。読み取り専用CLI `poc/tools/plan_derived_github_new_cards.cjs` も追加。**独自イベントJSONへの完全変換と公開承認はまだ未実装**。A＝人工Git treeと例外テストのCI対象、B＝新GitHub全件イベントの実取り込みは未実施、C＝既存ブラウザ回帰は実アプリ完成の証拠ではない。公開イベント0件は現時点で変更なし。次は既存の固定GTイベント変換器を利用したJSON本文→独自イベントDBへの接続、イベントの実公開収録、F-01〜F-09のPages受け入れを優先。
+
+
 ## 2026-10-29：GameTora元サイトでR・SR2枚に汎用取得器を適用（PR #274）
 
 [実サイトのR/SR限定監査](official-gametora-r-sr-source-sample-20261029.md)／[Chrome検証 #40818542569](https://github.com/Nimrodx0/Umasupport/actions/runs/40818542569)。SSRに偏っていた構造検証を拡張。GameTora一覧でリンクを発見した既存R10016・SR20075を**カード固有の変換器の変更なし**で取得。R10016は2表示パネル中2、非公開の結果4・数値9・ヒント1。SR20075は5パネル中4、結果7・数値16・ヒント2、**1パネルの変換保留**。この出力はサポカが新規登場したことを表さない合成診断であり、表示にない効果や報酬を補わず、すべて正式公開0件・既存DB無変更。A＝既存の汎用機構回帰、B＝このR/SR2枚の限定構造観測、C＝GitHub Actions実Chrome。SR保留パネルの原因、表示全行の独立意味照合、内部連続進行・他のカード型・反復安定性・Windows/Android実機は未完、[先行ゲート](verification-plan.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)は未通過。
