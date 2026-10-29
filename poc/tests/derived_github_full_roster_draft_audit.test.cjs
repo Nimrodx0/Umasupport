@@ -36,6 +36,8 @@ test('audit all pinned source cards, preserve failures and emit only numeric rea
  assert.equal(res.totals.cardsWithPendingEvents,1);
  assert.equal(res.totals.modeledSkillMentions,1);
  assert.deepEqual(res.reasonCounts,{UNSUPPORTED_EFFECT_KIND:1});
+ assert.deepEqual(res.sectionCounts,{source:{random:2},modeled:{random:1},pending:{random:1}});
+ assert.deepEqual(res.reasonCountsBySection,{random:{UNSUPPORTED_EFFECT_KIND:1}});
  assert.deepEqual(res.cards.map(x=>x.cardId),['10016','30030']);
  assert.equal(res.historicAllCardsAsNewIsSyntheticAuditFixture,true);
  assert.equal(res.gameWideCompletenessVerified,false);
