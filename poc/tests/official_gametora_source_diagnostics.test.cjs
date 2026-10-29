@@ -9,8 +9,10 @@ test('numeric observation reports distinct root causes without emitting source p
  assert.equal(classifyNumericLeaf('スキルPt +10 / +20'),'numeric-range-or-alternative');
  assert.equal(classifyNumericLeaf('体力 +10 ・スピード +5'),'multiple-signed-numbers');
  assert.equal(classifyNumericLeaf('未登録効果 +12'),'unclassified-effect-kind');
+ // A matching *ancestor* can make an otherwise unclassified leaf look
+ // locally classifiable. Record this as contextual, not independently proven.
  assert.equal(classifyNumericLeaf('新しい効果 +5',['『未知スキル』ヒントLv +5']),
-  'unclassified-hint-related');
+  'resolved-by-unique-local-context');
  assert.equal(classifyNumericLeaf('何もない'),'not-signed-numeric');
 });
 test('source-only numeric summary retains route coordinates and no raw text',()=>{
