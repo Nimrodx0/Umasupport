@@ -14,6 +14,7 @@ const {buildModel}=require('../src/live_loader.js');
 const {rehearseApprovedExistingEvents}=
  require('../src/reviewed_existing_event_append.cjs');
 const {verifyRelease}=require('../src/event_release_gate.cjs');
+const copy=x=>JSON.parse(JSON.stringify(x));
 const fail=x=>{throw Error('通常8イベント・初回公開審査CLI: '+x);};
 const root=path.resolve(__dirname,'../..');
 function run(args){
@@ -34,14 +35,33 @@ function run(args){
   process.stdout.write('EVENT_REVIEW_STATUS='+JSON.stringify(result)+'\n');
   return result;
  }
- if(mode!=='rehearse'||args.length!==5)
-  fail('usage: status | rehearse <support_card.txt> <skill_data.txt> <decisions.json> <output-directory>');
- const [rosterFile,skillFile,decisionFile,destDir]=args.slice(1);
+ const worksheet=mode==='worksheet';
+ if(!(worksheet&&args.length===2)&&!(mode==='rehearse'&&args.length===5))
+  fail('usage: status | worksheet <outside-repo-directory> | rehearse <support_card.txt> <skill_data.txt> <decisions.json> <outside-repo-directory>');
+ const destDir=worksheet?args[1]:args[4];
  // Require a pre-existing separate directory that is NOT inside this
  // public repository, including through symlinks.
  const dest=fs.realpathSync(path.resolve(destDir));
  if(dest===root||dest.startsWith(root+path.sep))
   fail('レビュー候補や承認判断を公開リポジトリ内へ書き込めません');
+ if(worksheet){
+  const template={schemaVersion:1,entries:packet.approvalWorksheet.entries.map(row=>({
+   cardId:row.cardId,eventId:row.eventId,eventSha256:row.eventSha256,
+   reviewer:null,reviewedAt:null,
+   checks:{...row.checks},evidence:copy(row.evidence),
+   publicationBasis:null
+  }))};
+  const directory=fs.mkdtempSync(path.join(dest,'umasupport-review-worksheet-'));
+  fs.chmodSync(directory,0o700);
+  const file=path.join(directory,'decisions.template.json');
+  fs.writeFileSync(file,JSON.stringify(template,null,2)+'\\n',
+   {flag:'wx',mode:0o600});
+  process.stdout.write('EVENT_REVIEW_WORKSHEET='+JSON.stringify({
+   templateFile:file,candidateEvents:template.entries.length,
+   signedReviewEvents:0,publicationExecuted:false})+'\\n');
+  return template;
+ }
+ const [rosterFile,skillFile,decisionFile]=args.slice(1);
  const read=p=>fs.readFileSync(path.resolve(p),'utf8');
  const roster=read(rosterFile);
  const model=buildModel(roster);
