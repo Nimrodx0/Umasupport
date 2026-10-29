@@ -466,6 +466,10 @@ jobs:
           node --check poc/src/phase2_eight_release_candidate.cjs
           node --check poc/tools/report_phase2_eight_release_candidate.cjs
           node --test poc/tests/phase2_eight_release_candidate.test.cjs
+          node --check poc/src/reviewed_existing_event_append.cjs
+          node --check poc/tools/rehearse_phase2_existing_event_release.cjs
+          node --test poc/tests/reviewed_existing_event_append.test.cjs
+          node poc/tools/rehearse_phase2_existing_event_release.cjs status
           node poc/tools/report_phase2_eight_release_candidate.cjs
           node poc/tools/verify_event_release.cjs
 
