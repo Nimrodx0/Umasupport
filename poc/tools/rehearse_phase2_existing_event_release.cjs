@@ -54,11 +54,11 @@ function run(args){
   const directory=fs.mkdtempSync(path.join(dest,'umasupport-review-worksheet-'));
   fs.chmodSync(directory,0o700);
   const file=path.join(directory,'decisions.template.json');
-  fs.writeFileSync(file,JSON.stringify(template,null,2)+'\\n',
+  fs.writeFileSync(file,JSON.stringify(template,null,2)+'\n',
    {flag:'wx',mode:0o600});
   process.stdout.write('EVENT_REVIEW_WORKSHEET='+JSON.stringify({
    templateFile:file,candidateEvents:template.entries.length,
-   signedReviewEvents:0,publicationExecuted:false})+'\\n');
+   signedReviewEvents:0,publicationExecuted:false})+'\n');
   return template;
  }
  const [rosterFile,skillFile,decisionFile]=args.slice(1);
