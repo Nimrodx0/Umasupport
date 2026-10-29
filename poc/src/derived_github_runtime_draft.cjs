@@ -27,12 +27,13 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
   registry=parseSource(skillText);
   src=transformDocument(JSON.parse(sourceText));
  }catch{fail('validated-source-or-skill-registry-invalid');}
+ const skillById=Object.fromEntries([...registry.byId.values()].map(x=>[
+  'skill:'+x.id,{id:'skill:'+x.id,name:x.name}]));
  const events=[],pending=[],census={sourceEvents:src.sourceEventCount,
   sourceChoices:src.sourceChoiceCount,sourceRoutes:src.sourceExpandedRoutes,
   modeledEvents:0,modeledRoutes:0,modeledSkills:0,
   modeledDirectGrants:0,nonSkillSourceEffectsOmitted:0,
   excludedEvents:0};
- const parsedById=new Map();
  const chain=new Map();
  const reject=(e,code)=>{
   pending.push({sourceOrdinal:e.sourceOrdinal,eventId:e.eventId,reason:code});
@@ -140,15 +141,12 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
   // approval evidence. It cannot leak into a released event.
   ev.sourceKind='derived-github-unreviewed';
   try{
-   const skillById=Object.fromEntries([...registry.byId.values()].map(x=>[
-    'skill:'+x.id,{id:'skill:'+x.id,name:x.name}]));
    validateEvents([...events,ev],{skillById});
   }catch{
    reject(e,'APP_SCHEMA_VALIDATION_FAILED');continue;
   }
   events.push(ev);
   if(isChain)chain.set(e.sourceChainOrdinal,e.eventId);
-  parsedById.set(e.eventId,e);
   census.modeledEvents++;
   census.modeledRoutes+=routeCount;
   census.modeledSkills+=skillCount;
