@@ -347,7 +347,7 @@ async function probe(){
        for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
         const t=[...el.childNodes].filter(n=>n.nodeType===3)
          .map(n=>n.textContent||'').join('').trim();
-        if(!/[+＋\\-－−]\\s*\\d/.test(t)||t.length>400)continue;
+        if(!/[+＋\-－−]\s*\d/.test(t)||t.length>400)continue;
         const contexts=[];
         for(let p=el;p&&root.contains(p)&&contexts.length<6;p=p.parentElement){
          const text=(p.innerText||'').trim();
