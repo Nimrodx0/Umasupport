@@ -6,6 +6,7 @@ const {registryFromSkillText}=
 const {assembleLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
 const {projectSiteEvent,projectNewCardSite,summarizeCardProjection}=
  require('../src/official_gametora_private_schema_projection.cjs');
+const {validateEvents}=require('../src/event_schema.js');
 const {discoverNewCards,stageNewCardEvents}=
  require('../src/new_card_event_incremental.cjs');
 const registry=registryFromSkillText(JSON.stringify([
@@ -136,4 +137,19 @@ test('source stop is strictly positive, not default false or invented next event
  assert.equal(Object.hasOwn(event.choices[0].outcomes[0],'terminal'),false);
  assert.equal(Object.hasOwn(event,'requires'),false);
  assert.equal(Object.hasOwn(event.choices[1],'requires'),false);
+});
+
+test('projected numeric reward paths fit actual app event validator in memory',()=>{
+ const projected=projectSiteEvent(assembled());
+ const mockModel={skillById:{
+  'skill:200516':{id:'skill:200516',name:'synthetic hint'},
+  'skill:200517':{id:'skill:200517',name:'synthetic direct'}
+ }};
+ assert.doesNotThrow(()=>validateEvents(
+  [projected.previewEvent],mockModel,'30324'
+ ));
+ // Passing a structural validator NEVER lifts source or release gates.
+ assert.equal(projected.gameChoiceSemanticsVerified,false);
+ assert.equal(projected.publicationApproved,false);
+ assert.equal(projected.appEventSchemaAdoptable,false);
 });
