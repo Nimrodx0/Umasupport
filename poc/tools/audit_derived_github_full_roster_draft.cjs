@@ -48,6 +48,8 @@ function run([repoDir,commit,skillPath]){
  process.stdout.write('DERIVED_GITHUB_FULL_ROSTER_APP_DRAFT_AUDIT='+
   JSON.stringify({sourceCommit:commit,totals:result.totals,
    reasonCounts:result.reasonCounts,
+   sectionCounts:result.sectionCounts,
+   reasonCountsBySection:result.reasonCountsBySection,
    gameSemanticsVerified:false,publicationApproved:false})+'\n');
 }
 if(require.main===module)try{run(process.argv.slice(2));}catch(error){
