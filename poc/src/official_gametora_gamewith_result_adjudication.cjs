@@ -10,6 +10,7 @@
  * "success" is categorically distinct from the website's unlabelled OR.
  */
 const fail=x=>{throw Error('GameTora→GameWith結果意味裁定: '+x);};
+const {evaluateException}=require('./event_exception_adjudication.cjs');
 const isInt=x=>Number.isSafeInteger(x);
 const bag=items=>items.map(x=>String(x)).sort().join('|');
 const effects=items=>bag(items.map(x=>x.kind+':'+x.delta));
@@ -40,6 +41,24 @@ function adjudicateExplicitSourceOutcomes(event,review,{siteEventTitleFingerprin
  if(typeof siteEventTitleFingerprint!=='string'||
     review.eventTitleNormalizedSha256!==siteEventTitleFingerprint)
   fail('event-title-identity-not-confirmed');
+ // Apply the repository-wide GameTora -> GameWith exception policy.
+ // The explicitly adopted fact here is the *three player choices and
+ // outcome types*, NOT a full collection of GameWith reward text.
+ const sourceDecision=evaluateException({
+  cardId:review.cardId,sourceEventOrdinal:review.siteEventOrdinal,
+  baseline:'MISSING',
+  gtWebsite:{url:review.gametoraSiteUrl,
+   checkedAt:review.gametoraSiteCheckedAt,status:'EVENT_DETAIL'},
+  gameWith:{url:review.gameWithArticleUrl,
+   checkedAt:review.articleCheckedOn,factStatus:'EXPLICIT',
+   facts:{playerSelectableChoiceCount:review.expectedPlayerChoices,
+    reportedEffects:[],reportedSkillHints:[]}},
+  proposedDecision:'ADOPT'
+ });
+ if(!sourceDecision.editorialDecisionComplete||
+    sourceDecision.publicationApproved!==false||
+    sourceDecision.chainDependencyCompletenessVerified!==false)
+  fail('site-exception-editorial-policy-rejected');
  if(!isInt(review.expectedPlayerChoices)||review.expectedPlayerChoices<1||
     !Array.isArray(review.groups)||
     review.groups.length!==review.expectedPlayerChoices||
@@ -97,6 +116,7 @@ function adjudicateExplicitSourceOutcomes(event,review,{siteEventTitleFingerprin
   outcomes:rows,
   // Does NOT verify an entire event, full reward coverage or reachability.
   playerChoiceAndOutcomeTypesEditoriallyVerified:true,
+  siteFirstGameWithExceptionContractVerified:true,
   allSkillAwardsVerified:false,chainContinuationRequiresVerified:false,
   inGameResultProbabilityVerified:false,sourceProseExported:false,
   game2026Verified:false,publicationApproved:false,
