@@ -51,6 +51,8 @@ function verifyLedger(x){
      !STATUS.has(row.status)||
      row.sourceBlobSha!==null&&!sha(row.sourceBlobSha)||
      row.sourceCommit!==null&&!sha(row.sourceCommit)||
+     row.skillRegistryBlobSha!==undefined&&
+      row.skillRegistryBlobSha!==null&&!sha(row.skillRegistryBlobSha)||
      !Array.isArray(row.reviewItems)||row.reviewItems.length>400||
      !int(row.sourceEvents)&&row.sourceEvents!==null||
      !int(row.modeledEvents)&&row.modeledEvents!==null||
@@ -65,7 +67,8 @@ function verifyLedger(x){
      row.status==='awaiting-source-resolution'&&
       (row.sourceEvents===null||row.excludedEvents===0)||
      Object.keys(row).some(k=>!['cardId','status','sourceBlobSha','sourceCommit',
-       'sourceEvents','modeledEvents','excludedEvents','reviewItems'].includes(k)))
+       'sourceEvents','modeledEvents','excludedEvents','reviewItems',
+       'skillRegistryBlobSha'].includes(k)))
     fail('保留カードの順序／版／状態／保存フィールドが不正');
   for(const item of row.reviewItems)verifyReview(item);
   if(row.sourceEvents!==null&&row.reviewItems.some(i=>i.sourceOrdinal>row.sourceEvents))
@@ -80,8 +83,9 @@ function emptyLedger(){
   cards:[],publicationApproved:false,sourceProseIncluded:false};
 }
 function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,stage,existingCatalog,
- reusedUnchangedCardIds=[]}={}){
+ reusedUnchangedCardIds=[],skillRegistryBlobSha}={}){
  verifyLedger(previous);
+ if(!sha(skillRegistryBlobSha))fail('独立スキル辞書のGit blobが未検証');
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.publicationApproved!==false||
     sourcePlan?.dataKind!=='derived-github-new-card-source-plan'||
@@ -115,6 +119,7 @@ function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,sta
      source?.status!=='source-blob-present-needs-validation'||
      old.sourceBlobSha!==source.sourceBlobSha||
      !sha(old.sourceCommit)||!sha(old.sourceBlobSha)||
+     old.skillRegistryBlobSha!==skillRegistryBlobSha||
      staged.has(cardId)||
      pending.get(cardId)?.reason!=='derived-github-source-not-fetched')
    fail('変更なしカードの元ファイル履歴・保留状態が不一致');
@@ -169,7 +174,8 @@ function reconcilePendingLedger({previous=emptyLedger(),discovery,sourcePlan,sta
    (a.routeOrdinal||0)-(b.routeOrdinal||0)||
    cmp(a.reason,b.reason)||cmp(a.origin,b.origin));
   return {cardId,status,sourceBlobSha,sourceCommit,
-   sourceEvents,modeledEvents,excludedEvents,reviewItems};
+   sourceEvents,modeledEvents,excludedEvents,reviewItems,
+   skillRegistryBlobSha:sourceEvents===null?null:skillRegistryBlobSha};
  });
  return verifyLedger({...emptyLedger(),cards});
 }
