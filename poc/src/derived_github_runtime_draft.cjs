@@ -4,8 +4,9 @@
  * structured GitHub GameTora source. The output is intentionally not
  * consumable by the public release gate. No third-party prose is copied.
  *
- * This adapter currently covers ordinary "random" and "arrows" events,
- * not outings, scenario triggers, alternative hints or prior-result flags.
+ * This adapter covers ordinary random/arrows plus source-labeled special and
+ * dates_random events as CONDITIONAL availability. It does NOT infer the
+ * internal sequencing of dates/outing events or prior-result flags.
  * Unsupported or ambiguous events are explicitly quarantined.
  */
 const {validateDerivedCardSource}=require('./derived_github_card_event_preflight.cjs');
@@ -16,7 +17,8 @@ const fail=s=>{throw Error('派生GitHub→アプリ草稿: '+s);};
 const ordinary=new Set(['speed','stamina','power','guts','wisdom',
  'energy','max_energy','mood','bond','skill_points','aptitude_points',
  'all_stats','random_stats']);
-const supported=new Set(['random','arrows']);
+const supported=new Set(['random','arrows','special','dates_random']);
+const conditionalSectionKinds={special:'special-trigger',dates_random:'outing-random'};
 const reviewException=new Set(['DIRECT_SKILL_GRANT_REQUIRES_REVIEW',
  'SKILL_HINT_EFFECT_UNRESOLVED']);
 // These intermediate objects MUST NOT be sent to the public event loader:
@@ -179,6 +181,8 @@ function projectDerivedCardDraft({plan,cardId,sourceText,skillText}={}){
      {rewards:choices[0].rewards})}:
    {id:e.eventId,name:e.displayName,type:'choice',choices};
   if(isChain&&previous)ev.requires={all:[{eventId:previous}]};
+  if(Object.hasOwn(conditionalSectionKinds,e.section))
+   ev.availabilityKind=conditionalSectionKinds[e.section];
   // This quarantine marker is rejected even if someone manually fabricates
   // approval evidence. It cannot leak into a released event.
   ev.sourceKind='derived-github-unreviewed';
