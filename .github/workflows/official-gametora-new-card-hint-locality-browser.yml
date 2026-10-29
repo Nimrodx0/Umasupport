@@ -7,6 +7,9 @@ on:
       - 'poc/src/official_gametora_skill_id_crosswalk.cjs'
       - 'poc/src/official_gametora_live_event_assembler.cjs'
       - 'poc/src/official_gametora_site_outcome_label_evidence.cjs'
+      - 'poc/src/official_gametora_gamewith_result_adjudication.cjs'
+      - 'poc/review/official-30322-explicit-outcomes-20261029.v1.json'
+      - 'poc/tests/official_gametora_gamewith_result_adjudication.test.cjs'
       - 'poc/tests/official_gametora_site_outcome_label_evidence.test.cjs'
       - 'poc/src/official_gametora_site_unified_draft.cjs'
       - 'poc/src/official_gametora_site_numeric_draft.cjs'
@@ -49,6 +52,8 @@ jobs:
           node --test poc/tests/official_gametora_live_event_assembler.test.cjs
           node --check poc/src/official_gametora_site_outcome_label_evidence.cjs
           node --test poc/tests/official_gametora_site_outcome_label_evidence.test.cjs
+          node --check poc/src/official_gametora_gamewith_result_adjudication.cjs
+          node --test poc/tests/official_gametora_gamewith_result_adjudication.test.cjs
       - name: Prepare preinstalled Chrome browser controller
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
