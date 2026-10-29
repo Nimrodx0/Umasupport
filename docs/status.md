@@ -1,5 +1,11 @@
 # 開発状況（時点付きスナップショット）
 
+## 2026-10-29：初回の実行で新カード3枚を保留に記録
+
+[初回の新カード日次取り込みActions](https://github.com/Nimrodx0/Umasupport/actions/runs/40846374598) PASS、[継続管理Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) 作成。旧固定UmaSim**563枚**と現在のUmaSim main**566枚**を実データ比較し、追加カードIDは**10149・30322・30323**の3枚。実行時の第三者GitHub `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67` の完全Git treeには**3枚ともイベントJSONが未掲載**だったため、3枚をすべて `awaiting-source-json` として永続Issueに登録。元JSONの取り込み成功・報酬の確証・現行ゲーム全カード網羅を意味しない。Issueは3枚分の数値ID・理由のみで、元サイト文面・選択肢・未公開イベントは含まない。既存DB不変。新規イベントの正式追記は0件。
+
+[PR #282 のA/C](https://github.com/Nimrodx0/Umasupport/actions/runs/40846182069) と [main反映後Core CI](https://github.com/Nimrodx0/Umasupport/actions/runs/40846374629) はPASS。mainの[Pages配信](https://github.com/Nimrodx0/Umasupport/actions/runs/40846373930)もPASS。実端末の新イベント取込確認・GameWithの個別補完は未実施。出典JSONが未掲載の間、変換器の実新カード動作は保留であり、既存カードを用いた固定実データ回帰のみ確認済み。
+
 ## 2026-10-29：新サポカの要確認・未取込を日次継続するIssue台帳（PR #282）
 
 [継続取得の設計と状態機械](derived-github-daily-pending-ledger-20261029.md)。旧563枚の固定UmaSim名簿と実行時の最新全名簿差分から新カードを検出し、完全な第三者Git treeで存在した**新カードJSONだけ**を取得。既存変換器で独自イベントスキーマへ投影し、未知・欠落・部分変換・編集待ちを区別して数値ID／理由コードのみGitHub Issueへ保持し、翌日再試行する機構・workflowを追加。部分変換の正常部分は非公開メモリに保持する。既存DB・公開承認・ユーザー設定は不変。**正式収録を自動実行する仕組みではなく、公開イベント0件から変わらない**。A＝人工カード回帰、B＝実行時のソース版・名簿・個別blob検証、C＝CIとActions実行。実際の定期実行結果は別途確認が必要。Windows／Android物理端末とGameWithの個別裁定・実登録は未実施。
