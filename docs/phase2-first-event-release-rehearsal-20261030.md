@@ -1,0 +1,51 @@
+# 2026-10-30：既存カード・初回実イベント公開の審査リハーサル
+
+## この工程の対象・元データ
+
+固定GameTora基礎データに欠損したSSR30318〜30321の**通常8イベント（各カードの位置4／5、計16選択・数値スキルヒント4行）**は、従来の[GameWith個別数値裁定](phase2-three-ssr-final-editorial-adoption-20261022.md)を経て[本番イベントv1形式の未署名候補](phase2-eight-release-schema-candidate-20261023.md)へ整理済み。既存の `phase2_eight_release_candidate.build()` を主たる入力とし、収録を一から作り直さない。通常イベントだけを扱い、未確認の連続12イベントへ操作・報酬を創作しない。
+
+この8件は、当初の旧563カード名簿には存在するが、**公開独自DBがまだ空のため未収録**という対象。UmaSimに新しいカードIDが増えたことを前提とする `new_card_event_incremental.appendApprovedNewCards` へ、無理に「新サポカ」として渡さない。
+
+## 実装した工程
+
+1. `poc/src/reviewed_existing_event_append.cjs` が既存の8件候補・対応する候補イベントSHA・未承認レビュー票を照合。全件を自動承認しない。
+2. レビューが**明示されたイベントのみ**、カードID・イベントID・本文SHAが一致するか確認。6項目（カード、イベント、選択、結果、依存、公開）にすべて根拠URL・編集者・審査日・公開利用判断が必要。これは既存の `event_release_gate.verifyRelease` の厳密な公開契約を再利用する。
+3. 元の `poc/data/reviewed_events.v1.json` と `poc/config/event-release-approvals.v1.json` を変更せず読み込み、同じカードの既存イベントは順序・本文を保持して承認済みの差分だけ追記。初回0件からでも、1件追加からでも、同じカードの残り1件を後日追加可能。既に収録済みでイベント本文・承認が**両方同一**なら再追加しない。衝突・改変・古い承認を拒否する。
+4. 実アプリの `public_event_catalog.preflight` で実行形式・スキル数値ID・照合名／階層・未選択と結果構造を再検査した上で、正式な承認台帳と公開カタログの**両方をセット**で返す。コードはローカルの候補生成器であり**公開コミット・GitHub Pages配信・Issueコメント・PRマージのどれも実行しない**。
+5. `poc/tools/rehearse_phase2_existing_event_release.cjs` はローカル端末または許可された隔離環境で実行する。シナリオ・承認は作業者の判断が必要なため、GitHubの通常CIには**架空の署名だけ**を渡して検証し、実承認を自動生成しない。
+
+## コマンド
+
+レビュー対象の数値IDとイベントSHAのみを表示：
+
+~~~sh
+node poc/tools/rehearse_phase2_existing_event_release.cjs status
+~~~
+
+非公開の一時ディレクトリへ、**6項目すべて未承認**・参照URL記録済みの審査票を出力（ここで得た `decisions.template.json` は承認済みではない）：
+
+~~~sh
+node poc/tools/rehearse_phase2_existing_event_release.cjs worksheet /tmp/my-private-review
+~~~
+
+実際に編集者が各レビュー項目、対象イベントSHAと根拠・公開利用判断を個別に確認した後、許可できたイベントの行のみを**別ファイル** `decisions.json` に残し、未承認のイベント行は除去。審査資料の具体的内容と権利の判断を確認しないままチェックを真にしてはならない。
+
+実出典のUmaSim `support_card.txt` と `skill_data.txt` を、適切に取得して版とともに用意し、読み込む場合：
+
+~~~sh
+node poc/tools/rehearse_phase2_existing_event_release.cjs rehearse \
+  /private-data/support_card.txt /private-data/skill_data.txt \
+  /private-data/decisions.json /tmp/my-private-review
+~~~
+
+結果は公開リポジトリの外に作られた、権限を絞った別ディレクトリの `reviewed_events.staged.json` と `event_release_approvals.staged.json` **だけ**。本番の2ファイルは触らない。公開コミットに反映するのは人手で選択・承認した実データについて、二つのファイルの差分を改めて点検した後の別作業である。
+
+## 合格条件・試験の限界
+
+| 領域 | A：機構 | B：実データ | C：動作環境 |
+|---|---|---|---|
+| 初回1イベント | 既存8件の本物の編集候補・イベントSHAを選択し、合成の**テスト専用審査票**を入力して独自イベントスキーマ・公開ゲート・本番読込器が矛盾なく動作するか確認 | 4カード／8イベント／16選択／4ヒントは既存のGameWith裁定済み編集候補。人手による**公開判断自体はまだ0件** | Node CIのテストを通過させる。実公開Pagesにはデータを載せず、Windows／Androidでの正式公開イベント操作は未実施 |
+| 追加の2件目／他カード | 既存イベント・承認の不変、同一イベント再実行で二重追加しない、途中からの別イベント追加、改竄や未署名を拒否 | この8件の候補だけ。GT元2,488イベントの全件公開準備が完了したという証拠ではない | CIの人工レビュー経由試験で検証 |
+| 最終公開 | **未実施**。編集者が個別にレビューし、利用根拠を明示して正式なJSON2ファイルを更新する作業が別途必要 | 正式公開0イベントは不変 | 実データでPages/Windows/Androidを検証してから完成 |
+
+**禁止する短絡**：8件が「技術的に有効」「GameWith編集採用済み」「ブラウザの試用版で操作できる」ことと、「公開利用の判断・人手承認が揃った」ことを同一視しない。既存の2,496件の非公開変換も、無審査で一括公開できることを意味しない。既存データを再生成せず、次の1件を公開承認できた時点でこの追記器を用いる。
