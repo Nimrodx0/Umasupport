@@ -1,5 +1,11 @@
 'use strict';
 /*
+ * LEGACY OCT-29 COMPARISON ADAPTER ONLY, NOT THE NEW-CARD INTAKE PATH.
+ * New-card intake uses derived_github_existing_converter_adapter.cjs,
+ * which reuses gametora_app_schema_dry_run.cjs and its existing crosswalk.
+ * Keep this module for historical regression/audit; do not extend it in
+ * parallel with the original mature converter.
+ *
  * A per-card, unapproved app-SCHEMA draft from an exact Git blob-bound
  * structured GitHub GameTora source. The output is intentionally not
  * consumable by the public release gate. No third-party prose is copied.

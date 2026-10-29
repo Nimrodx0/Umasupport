@@ -6,6 +6,10 @@ on:
       - '.github/workflows/derived-github-full-roster-draft.yml'
       - 'poc/src/derived_github_full_roster_draft_audit.cjs'
       - 'poc/src/derived_github_runtime_draft.cjs'
+      - 'poc/src/derived_github_existing_converter_adapter.cjs'
+      - 'poc/src/gametora_app_schema_dry_run.cjs'
+      - 'poc/src/gametora_event_skill_crosswalk.cjs'
+      - 'poc/tools/audit_derived_github_canonical_sample.cjs'
       - 'poc/src/derived_github_card_event_preflight.cjs'
       - 'poc/tools/audit_derived_github_full_roster_draft.cjs'
       - 'poc/tests/derived_github_full_roster_draft_audit.test.cjs'
@@ -41,6 +45,12 @@ jobs:
             -o "$RUNNER_TEMP/umasim-skills.txt"
       - name: Verify numeric-only full-roster auditor using artificial source events
         run: node --test umasupport/poc/tests/derived_github_full_roster_draft_audit.test.cjs
+      - name: Test existing canonical converter on four real GitHub card JSONs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node umasupport/poc/tools/audit_derived_github_canonical_sample.cjs \
+            gt-derived "$RUNNER_TEMP/umasim-skills.txt"
       - name: Audit ALL pinned GitHub event JSON files without exporting source event content
         shell: bash
         run: |

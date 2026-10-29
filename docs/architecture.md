@@ -41,9 +41,9 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 **GameTora本体HTMLの共通直接取得器は未完成のまま開発保留**。従来のPlaywright DOM抽出試作とその監査は削除せず、主経路のランタイム、収録機能の先行条件、CI必須のオンライン取得には組み込まない。GameWithは特定の欠損／疑義を個別編集裁定する補助資料として維持する。第三者GitHub派生JSON自体の存在は公開可能性の保証ではなく、本文の再配布や権利問題も別途審査する。
 
-`poc/src/new_card_event_incremental.cjs` は既存イベントカタログ不変・保留・承認後追加の機構を持つが、**現時点では元GameTora HTML直接抽出から作った候補を受け付ける古いインターフェース**。派生GitHub JSONを入力とする候補変換・結合は新たに実装しなければならず、主経路を切り替えたという決定だけで本番イベント収録が動作するとはみなさない。[完成計画](derived-github-primary-restart-20261029.md)。
+**増分取り込みの実装状況（2026-10-29）**：`derived_github_new_card_source_plan` → `derived_github_card_event_preflight` → `derived_github_existing_converter_adapter` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents`。**既存の** `gametora_whole_event_normalize`・`gametora_event_skill_crosswalk`・`gametora_app_schema_dry_run` を、新カード1枚の固定GitHub JSONへ再利用する。以前の `derived_github_runtime_draft` は実績記録として保持するが、現在の新カード主経路では使用しない。元JSONの不明点や未変換事項は要確認記録に区別して残し、既存DBは書き換えない。[設計と検証](derived-github-canonical-single-card-adapter-20261029.md)。
 
-**2026-10-29補足：** 主経路の実装では `derived_github_new_card_source_plan` → `derived_github_runtime_draft` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents` のメモリ内レビュー待ち境界を接続済み。これは依然として**非公開の技術候補**であり、正式なイベント収録・日次保留台帳の永続化・公開審査は未完成。[接続設計と実測](derived-github-new-card-review-staging-20261029.md)。
+この接続は**非公開の技術候補とレビュー待ち**を扱う。日次実運用、永続保留台帳、GameWithの疑義裁定、レビュー後の正式追記、実機による収録検証はまだ完成していない。公開のイベントDBに新サポカを自動追加する処理ではない。
 
 ## 出典ピンの継続更新監視（監査層）
 
