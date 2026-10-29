@@ -5,6 +5,9 @@ on:
     paths:
       - 'poc/src/derived_github_runtime_draft.cjs'
       - 'poc/src/derived_github_staging_bridge.cjs'
+      - 'poc/src/derived_github_existing_converter_adapter.cjs'
+      - 'poc/src/gametora_app_schema_dry_run.cjs'
+      - 'poc/src/gametora_event_skill_crosswalk.cjs'
       - 'poc/src/new_card_event_incremental.cjs'
       - 'poc/src/derived_github_card_event_preflight.cjs'
       - '.github/workflows/derived-github-sample-preflight.yml'
@@ -48,7 +51,7 @@ jobs:
           'use strict';
           const fs=require('node:fs');
           const {planDerivedNewCardIntake}=require('./poc/src/derived_github_new_card_source_plan.cjs');
-          const {projectDerivedCardDraft}=require('./poc/src/derived_github_runtime_draft.cjs');
+          const {projectExistingConverterForNewCard}=require('./poc/src/derived_github_existing_converter_adapter.cjs');
           const folder=process.env.RUNNER_TEMP;
           const tree=JSON.parse(fs.readFileSync(folder+'/source-tree.json','utf8'));
           const skillText=fs.readFileSync(folder+'/numeric-skills.txt','utf8');
@@ -66,7 +69,8 @@ jobs:
             });
             if(JSON.stringify(plan.candidateIds)!==JSON.stringify([id]))
               throw Error('Historical sample missing from exact structured GitHub tree');
-            const result=projectDerivedCardDraft({plan,cardId:id,sourceText,skillText});
+            const result=projectExistingConverterForNewCard({plan,cardId:id,sourceText,
+              skillText,skillRevision:process.env.SKILL_PIN});
             const c=result.census;
             if(c.sourceEvents<1||
                c.sourceEvents!==c.modeledEvents+c.excludedEvents||
@@ -80,8 +84,7 @@ jobs:
             samples.push({id,sourceEvents:c.sourceEvents,
               modeledEvents:c.modeledEvents,
               quarantinedEvents:c.excludedEvents,
-              modeledSkillMentions:c.modeledSkills,
-              modeledDirectGrants:c.modeledDirectGrants,
+              reviewItems:c.reviewItems,
               quarantineReasons:reasons});
           }
           console.log('DERIVED_GITHUB_APP_DRAFT_SAMPLES='+JSON.stringify({
@@ -102,7 +105,8 @@ jobs:
           const sourceDocuments=Object.fromEntries(['10016','20075','30010','30030']
             .map(id=>[id,fs.readFileSync(folder+'/card-'+id+'.json','utf8')]));
           const staged=stageDerivedGitHubNewCards({
-            discovery,existingCatalog,sourcePlan,sourceDocuments,skillText
+            discovery,existingCatalog,sourcePlan,sourceDocuments,skillText,
+            skillRevision:process.env.SKILL_PIN
           });
           if(JSON.stringify(staged.newlyModeledCardIds)!==
                JSON.stringify(['10016','20075'])||
