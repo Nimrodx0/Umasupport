@@ -292,7 +292,7 @@ async function probe(){
      outingEventViews.push(outingView);
     }
     const routePieces=await eventButton.evaluate(extractRoutePieces);
-
+    if(registry){
      const joined=assembleLiveEvent({
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
      });
