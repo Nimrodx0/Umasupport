@@ -53,7 +53,7 @@ function stageDerivedGitHubNewCards({
     typeof sourceDocuments[cardId]!=='string')
    fail('document-outside-eligible-pinned-source');
  }
- const candidates=[],failed=new Set(),reviewItems=[];
+ const candidates=[],failed=new Set(),reviewItems=[],partialDrafts=[];
  for(const cardId of targets){
   const row=byPlan.get(cardId),sourceText=sourceDocuments[cardId];
   if(row.status!=='source-blob-present-needs-validation'||
@@ -67,6 +67,17 @@ function stageDerivedGitHubNewCards({
    fail('result-source-lineage-mismatch');
   for(const issue of projected.reviewItems)
    reviewItems.push({cardId,...issue});
+  // Keep the usable portion of an incomplete source card available for
+  // subsequent *private* issue adjudication, without passing it to the
+  // all-or-nothing public append gate or writing it to a durable issue.
+  if(projected.census.excludedEvents>0)
+   partialDrafts.push({
+    cardId,sourceBlobSha:row.sourceBlobSha,
+    sourceEventCount:projected.census.sourceEvents,
+    modeledEvents:projected.draftCatalog.cards[0].events,
+    pendingEvents:projected.pendingEvents,
+    publicationApproved:false,sourceProseIncluded:false
+   });
   candidates.push({source:'GameTora-derived-GitHub',cardId,
    sourceRevision:sourcePlan.primarySourceCommit,
    sourceBlobSha:row.sourceBlobSha,sourcePath:row.sourcePath,
@@ -95,7 +106,7 @@ function stageDerivedGitHubNewCards({
   // independent publication review AND actual append to the public DB.
   carryForwardPendingIds:[...stage.targetNewIds],
   newlyModeledCardIds:stage.ready.map(x=>x.cardId),
-  reviewItems,
+  partialDrafts,reviewItems,
   publicationApproved:false,
   allModeledEventsEditoriallyReviewed:false,
   existingDatabaseUnchanged:true,
