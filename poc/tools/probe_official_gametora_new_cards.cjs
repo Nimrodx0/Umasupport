@@ -356,7 +356,17 @@ async function probe(){
         numericEffectTexts.push(t);
         numericEffectContexts.push(contexts);
        }
+       // Detect ONLY exact leaf labels inside THIS result's DOM roots.
+       // Do not copy prose, infer success from its effect amount, or
+       // associate text from an adjacent OR outcome.
+       const resultLabelOwnTexts=roots.flatMap(root=>
+        [root,...root.querySelectorAll('*')].filter(el=>el.children.length===0)
+         .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
+          .map(n=>n.textContent||'').join('').trim())
+         .filter(t=>/^(?:成功|成功時|大成功|大成功時|失敗|失敗時|大失敗|大失敗時|success|failure|great success|great failure)$/i.test(t))
+       ).slice(0,40);
        return {
+        resultLabelOwnTexts,
         numericEffectTexts:numericEffectTexts.slice(0,80),
         numericEffectContexts:numericEffectContexts.slice(0,80),
         groupOwnTextFragments,
@@ -457,6 +467,14 @@ async function probe(){
      (x.status==='unified-unapproved'?x.routes:0),0),
     observedNumericEffects:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.status==='unified-unapproved'?x.numericEffects:0),0),
+    explicitSiteOutcomeLabels:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.observedExplicitOutcomeLabels??0),0),
+    ambiguousSiteOutcomeLabels:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.ambiguousOutcomeLabels??0),0),
+    siteOrSeparatedGroups:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.siteOrSeparatedGroups??0),0),
+    explicitSuccessFailurePairGroups:eventUnifiedSummaries.reduce((n,x)=>n+
+     (x.explicitSuccessFailurePairGroups??0),0),
     unresolvedNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
      (x.unparsedNumericFacts??0),0),
     excludedNonScalarNumericFacts:eventUnifiedSummaries.reduce((n,x)=>n+
@@ -477,6 +495,9 @@ async function probe(){
      resultRoutes:x.routes??x.routeCount??0,
      numericEffects:x.numericEffects??null,
      unresolvedNumericFacts:x.unparsedNumericFacts??null,
+     explicitSiteOutcomeLabels:x.observedExplicitOutcomeLabels??null,
+     siteOrSeparatedGroups:x.siteOrSeparatedGroups??null,
+     explicitSuccessFailurePairs:x.explicitSuccessFailurePairGroups??null,
      skillHints:x.skillHints??null,unresolvedHintRows:x.unresolvedHintRows??null,
      directSkillCandidates:x.directSkillCandidates??null,
      unresolvedDirectLikeTexts:x.unresolvedDirectLikeTexts??null,
