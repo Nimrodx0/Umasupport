@@ -2,7 +2,7 @@
 /*
  * Incremental new-card admission:
  * - Discover NEW UmaSim support IDs from previous/current complete rosters.
- * - Stage only card-scoped GameTora-original-site normalized event candidates.
+ * - Stage version-pinned structured GitHub candidates alongside legacy site drafts.
  * - Append approved NEW cards to an existing event catalog, byte-equivalent
  *   for all old card/event objects, and validate the combined result BEFORE
  *   allowing any writer to persist it.
