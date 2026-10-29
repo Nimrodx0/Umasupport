@@ -16,9 +16,9 @@ function doc(cardId,malformed=false){
  return JSON.stringify({kind:'support',id:Number(cardId),events_ja:{
   first:{section:'arrows',name:'NEVER LEAK THIRD PARTY EVENT NAME',
    choices:[{label:'DO NOT STORE PRIVATE OPTION',effects:[
-    {type:malformed?'unknown_effect':'skill_hint',skill_id:200532,value:'+1'}]}]},
+    {type:'skill_hint',skill_id:200532,value:'+1'}]}]},
   second:{section:'arrows',name:'DO NOT STORE SOURCE',
-   choices:[{label:'',effects:[{type:'skill_hint',skill_id:200532,value:'+2'}]}]}
+   choices:[{label:'',effects:[{type:malformed?'unknown_effect':'skill_hint',skill_id:200532,value:'+2'}]}]}
  }});
 }
 const sha=x=>x.repeat(40);
@@ -66,7 +66,12 @@ test('one ambiguous card stays pending while another advances and prior imported
  const changed=simulate({prev:first.ledger,inserted:['30322','30323'],
   complete:['30322','30323'],tamper:true});
  assert.equal(changed.ledger.cards[0].status,'awaiting-source-resolution');
- assert.equal(changed.ledger.cards[0].excludedEvents,2);
+ assert.equal(changed.ledger.cards[0].excludedEvents,1);
+ assert.equal(changed.ledger.cards[0].modeledEvents,1);
+ assert.equal(changed.stage.partialDrafts.length,1);
+ assert.equal(changed.stage.partialDrafts[0].modeledEvents.length,1);
+ assert.equal(changed.stage.partialDrafts[0].pendingEvents.length,1);
+ assert.equal(changed.stage.partialDrafts[0].publicationApproved,false);
  assert.equal(changed.ledger.cards[1].status,'awaiting-review');
  assert.ok(changed.ledger.cards[0].reviewItems.length>0);
  const after=simulate({prev:changed.ledger,inserted:['30322','30323'],
