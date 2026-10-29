@@ -63,8 +63,9 @@ test('stage rejects partial source instead of inventing empty rewards',()=>{
   existingApprovals:approvedOld(),
   newApprovals:{schemaVersion:1,entries:[approval('30323',newEvent('30323'))]},
   model});
- assert.equal(committed.status,'pending');
- assert.equal(committed.catalog,null);
+ assert.equal(committed.status,'partial-append');
+ assert.deepEqual(committed.catalog.cards.map(x=>x.cardId),['30001','30323']);
+ assert.deepEqual(committed.pending.map(x=>x.cardId),['30322']);
  assert.equal(committed.existingCatalogUnchanged,true);
 });
 test('append two NEW approved cards while preserving existing blocks exactly',()=>{
@@ -215,4 +216,82 @@ test('real public skill bridge validates original numeric skill ID and name on a
   existingCatalog:catalog(),candidates:bad,
   existingApprovals:approvedOld(),newApprovals:wrongApproval,
   model,skillText:registry}),/名称照合が失敗/);
+});
+
+test('pending new card stays eligible on later runs without a fresh roster diff',()=>{
+ const today=discoverNewCards({
+  previousRosterIds:['30001','30322','30323'],
+  currentRosterIds:['30001','30322','30323']
+ });
+ assert.deepEqual(today.addedCardIds,[]);
+ const old=catalog();
+ const alreadyImported=newEvent('30323');
+ old.cards.push({cardId:'30323',coverageStatus:'partial',
+  events:[structuredClone(alreadyImported)]});
+ const existingApprovals=approvedOld();
+ existingApprovals.entries.push(approval('30323',alreadyImported));
+ const stage=stageNewCardEvents({discovery:today,existingCatalog:old,
+  pendingCardIds:['30322'],candidates:[candidate('30322')]});
+ assert.deepEqual(stage.targetNewIds,['30322']);
+ assert.deepEqual(stage.ready.map(x=>x.cardId),['30322']);
+ const result=appendApprovedNewCards({discovery:today,existingCatalog:old,
+  pendingCardIds:['30322'],candidates:[candidate('30322')],
+  existingApprovals,newApprovals:{schemaVersion:1,
+   entries:[approval('30322',newEvent('30322'))]},model});
+ assert.equal(result.status,'ready-to-append');
+ assert.deepEqual(result.catalog.cards.map(x=>x.cardId),
+  ['30001','30323','30322']);
+ assert.equal(result.pending.length,0);
+ assert.equal(result.catalog.cards[1].events[0].id,'gt:30323:1');
+});
+test('already imported new IDs are ignored on repeated fixed-roster comparison',()=>{
+ const old=catalog();
+ for(const id of ['30322','30323'])
+  old.cards.push({cardId:id,coverageStatus:'partial',events:[newEvent(id)]});
+ const approvals=approvedOld();
+ for(const id of ['30322','30323'])
+  approvals.entries.push(approval(id,newEvent(id)));
+ const plan=stageNewCardEvents({discovery:discovery(),
+  existingCatalog:old,pendingCardIds:['30322','30323'],candidates:[]});
+ assert.deepEqual(plan.alreadyImportedIds,['30322','30323']);
+ assert.deepEqual(plan.targetNewIds,[]);
+ const result=appendApprovedNewCards({discovery:discovery(),
+  existingCatalog:old,pendingCardIds:['30322','30323'],candidates:[],
+  existingApprovals:approvals,newApprovals:{schemaVersion:1,entries:[]},model});
+ assert.equal(result.status,'unchanged');
+ assert.equal(result.catalog.cards.length,3);
+ assert.throws(()=>stageNewCardEvents({discovery:discovery(),
+  existingCatalog:old,pendingCardIds:['30322'],
+  candidates:[candidate('30322')]}),/置換・追加対象外/);
+});
+test('stale pending ID not in current UmaSim roster is rejected',()=>{
+ assert.throws(()=>stageNewCardEvents({discovery:discovery(),
+  existingCatalog:catalog(),pendingCardIds:['40001'],candidates:[]}),
+ /前回保留と現行UmaSim名簿が不一致/);
+});
+
+test('offline intake CLI planner carries forward staged but unpublished card on next day',()=>{
+ const {plan}=require('../tools/plan_new_card_event_intake.cjs');
+ const old=Array.from({length:500},(_,i)=>String(10000+i))
+  .flatMap(id=>Array.from({length:5},(_,stage)=>supportRow(id,stage))).join('\n')+'\n';
+ const latest=old+Array.from({length:5},(_,stage)=>supportRow('30323',stage)).join('\n')+'\n';
+ const base={schemaVersion:1,cards:[]};
+ const day1=plan({previousSupportText:old,currentSupportText:latest,
+  existingCatalog:base,candidates:[candidate('30323')]});
+ assert.deepEqual(day1.newlyObservedIds,['30323']);
+ assert.deepEqual(day1.readyIds,['30323']);
+ assert.deepEqual(day1.carryForwardPendingIds,['30323']);
+ const day2=plan({previousSupportText:latest,currentSupportText:latest,
+  existingCatalog:base,candidates:[candidate('30323')],
+  pendingCardIds:day1.carryForwardPendingIds});
+ assert.deepEqual(day2.newlyObservedIds,[]);
+ assert.deepEqual(day2.readyIds,['30323']);
+ assert.deepEqual(day2.carryForwardPendingIds,['30323']);
+ const afterPublish=plan({previousSupportText:latest,currentSupportText:latest,
+  existingCatalog:{schemaVersion:1,cards:[
+   {cardId:'30323',coverageStatus:'partial',events:[newEvent('30323')]}
+  ]},candidates:[],pendingCardIds:day2.carryForwardPendingIds});
+ assert.deepEqual(afterPublish.alreadyImportedIds,[]);
+ assert.deepEqual(afterPublish.carryForwardPendingIds,[]);
+ assert.equal(afterPublish.oldCatalogCardCount,1);
 });
