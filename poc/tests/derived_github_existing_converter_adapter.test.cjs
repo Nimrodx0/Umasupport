@@ -73,7 +73,7 @@ test('source blob tampering and independent numeric source without commit fail c
   /source-blob-content-not-identical/);
  assert.throws(()=>project({...x,skillRevision:null}),
   /version-pinned-independent-skill-registry-required/);
- assert.throws(()=>project({...x,plan:{
-  ...x.plan,primarySourceCommit:'0'.repeat(40)
- }}),/source-blob-content|card-not-source-pinned|source-plan-scope-invalid|normalized-card-source-drift/);
+ const modified=structuredClone(x.plan);
+ modified.results[0].sourceBlobSha='0'.repeat(40);
+ assert.throws(()=>project({...x,plan:modified}),/source-blob-content-not-identical/);
 });
