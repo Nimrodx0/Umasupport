@@ -104,8 +104,16 @@ function assembleLiveEvent({cardId,siteEventOrdinal,routePieces,registry}={}){
  // hint rows. Route association cannot be silently dropped or reassigned.
  if(original.length!==independentHints.length||
     keys(original)!==keys(hinted)||
-    hinted.length!==hintDraft.uniquelyResolvedHintIdLevelPairs)
-  fail('site-local-hint-id-level-route-drift');
+    hinted.length!==hintDraft.uniquelyResolvedHintIdLevelPairs){
+  const expectedSet=new Set(original.map(x=>x.choiceGroupOrdinal+':'+x.resultOrdinal+
+   ':'+signature(x))),actualSet=new Set(hinted.map(x=>x.choiceGroupOrdinal+
+   ':'+x.resultOrdinal+':'+signature(x)));
+  const missed=[...expectedSet].filter(x=>!actualSet.has(x)).length;
+  const extra=[...actualSet].filter(x=>!expectedSet.has(x)).length;
+  fail('site-local-hint-id-level-route-drift:event-'+siteEventOrdinal+
+   ':independent-'+independentHints.length+':resolved-'+original.length+
+   ':unified-'+hinted.length+':missed-'+missed+':extra-'+extra);
+ }
  return {
   status:'unified-unapproved',cardId:String(cardId),siteEventOrdinal,
   numericDraft,hintDraft,directDraft,flowDraft,joined,
