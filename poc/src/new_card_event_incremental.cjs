@@ -11,6 +11,7 @@
  * scrape, grant rights, update a source pin, overwrite files, or publish.
  */
 const {validateCatalog}=require('./event_schema.js');
+const {parseSupportCards}=require('./live_loader.js');
 const {verifyRelease,canonical}=require('./event_release_gate.cjs');
 const fail=s=>{throw Error('新サポカイベント増分取り込み: '+s);};
 const cardId=id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id);
@@ -36,6 +37,16 @@ function discoverNewCards({previousRosterIds,currentRosterIds}={}){
   existingCardIds:old.slice().sort(),
   sourceEventFactsVerified:false,publicationApproved:false
  };
+}
+function discoverNewCardsFromUmaSim({previousSupportText,currentSupportText}={}){
+ const previous=parseSupportCards(previousSupportText);
+ const current=parseSupportCards(currentSupportText);
+ const delta=discoverNewCards({
+  previousRosterIds:[...previous.cards.keys()],
+  currentRosterIds:[...current.cards.keys()]
+ });
+ return {...delta,source:'UmaSim-support_card.txt',
+  previousRosterStageRows:previous.lines,currentRosterStageRows:current.lines};
 }
 function checkCandidate(c,id){
  if(!plain(c)||c.cardId!==id||
@@ -161,4 +172,5 @@ function appendApprovedNewCards({
   existingCatalogUnchanged:true,
   catalog:merged,approvals};
 }
-module.exports={discoverNewCards,stageNewCardEvents,appendApprovedNewCards};
+module.exports={discoverNewCards,discoverNewCardsFromUmaSim,
+ stageNewCardEvents,appendApprovedNewCards};
