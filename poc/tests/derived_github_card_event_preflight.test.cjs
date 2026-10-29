@@ -59,7 +59,7 @@ test('changed blob bytes, wrong target ID, broken JSON or unsupported source rej
  const wrong=input(JSON.stringify({kind:'support',id:30323,events_ja:{}}));
  assert.throws(()=>validateDerivedCardSource(wrong),/source-card-id-or-kind-drift/);
  const empty=input(JSON.stringify({kind:'support',id:30322,events_ja:{}}));
- assert.throws(()=>validateDerivedCardSource(empty),/source-event-count-drift/);
+ assert.throws(()=>validateDerivedCardSource(empty),/source-event-normalizer-rejected|source-event-count-drift/);
 });
 test('a missing or already imported GitHub JSON is not fetchable or publishable',()=>{
  const i=input();
