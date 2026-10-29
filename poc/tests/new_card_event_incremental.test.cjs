@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {discoverNewCards,stageNewCardEvents,appendApprovedNewCards}=
+const {discoverNewCards,discoverNewCardsFromUmaSim,stageNewCardEvents,appendApprovedNewCards}=
  require('../src/new_card_event_incremental.cjs');
 const {digest}=require('../src/event_release_gate.cjs');
 const model={cards:[{id:'30001'},{id:'30322'},{id:'30323'}],
@@ -161,4 +161,25 @@ test('unapproved event draft never bypasses publication verification',()=>{
    approval('30322',item.events[0]),approval('30323',newEvent('30323'))]},
   model};
  assert.throws(()=>appendApprovedNewCards(input),/未照合報酬|未承認/);
+});
+
+function supportRow(id,stage){
+ const f=Array(62).fill('0');
+ f[0]=id;f[1]='[Synthetic]カタログ'+id;f[3]='2';
+ f[4]=String(stage);f[6]='スピード';f[59]='末脚';
+ return f.join('\t');
+}
+test('actual live UmaSim TSV parser discovers any new five-digit card ID',()=>{
+ const old=Array.from({length:500},(_,i)=>String(10000+i))
+  .flatMap(id=>Array.from({length:5},(_,stage)=>supportRow(id,stage)));
+ const next=old.concat(Array.from({length:5},(_,stage)=>supportRow('30323',stage)));
+ const delta=discoverNewCardsFromUmaSim({
+  previousSupportText:old.join('\n')+'\n',
+  currentSupportText:next.join('\n')+'\n'
+ });
+ assert.deepEqual(delta.addedCardIds,['30323']);
+ assert.equal(delta.previousRosterCount,500);
+ assert.equal(delta.currentRosterCount,501);
+ assert.equal(delta.previousRosterStageRows,2500);
+ assert.equal(delta.currentRosterStageRows,2505);
 });
