@@ -10,6 +10,8 @@ const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_
 const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
 const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
 const {assembleLiveEvent,summarizeLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
+const {adjudicateExplicitSourceOutcomes}=require('../src/official_gametora_gamewith_result_adjudication.cjs');
+const explicit30322Review=require('../review/official-30322-explicit-outcomes-20261029.v1.json');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -225,6 +227,7 @@ async function probe(){
    const eventDirectGrantDrafts=[];
    const eventFlowDrafts=[];
    const eventUnifiedSummaries=[];
+   const gameWithOutcomeEditorialObservations=[];
    const outingEventViews=[];
    for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
     const eventButton=eventButtons.nth(idx);
@@ -400,6 +403,37 @@ async function probe(){
      const joined=assembleLiveEvent({
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
      });
+     if(target.cardId==='30322'&&idx===3){
+      // The site does not label these OR alternatives. The exact,
+      // card/event-specific GameWith article supplies three ACTUAL choices
+      // with "great success" / "success" outcomes. Verify every fact.
+      const title=(await eventButton.innerText()).normalize('NFKC')
+       .replace(/[\s\p{P}\p{S}]/gu,'').toLowerCase();
+      const fingerprint=crypto.createHash('sha256').update(title).digest('hex');
+      let adjudicated;
+      try{
+       adjudicated=adjudicateExplicitSourceOutcomes(joined,explicit30322Review,
+        {siteEventTitleFingerprint:fingerprint});
+      }catch(e){
+       // This debug record includes no names, page prose or HTML.
+       if(joined.status==='unified-unapproved')
+        console.log('GT30322_OUTCOME_NUMERIC_DIAGNOSTICS='+JSON.stringify(
+         joined.joined.routes.map(r=>({
+          group:r.choiceGroupOrdinal,result:r.resultOrdinal,
+          numeric:r.numericEffects.map(x=>x.kind+':'+x.delta),
+          hintLevels:r.skillHints.map(x=>x.level)
+         }))));
+       throw e;
+      }
+      gameWithOutcomeEditorialObservations.push({
+       siteEventOrdinal:idx+1,
+       editorialChoiceCount:adjudicated.editorialChoiceCount,
+       editorialOutcomeCount:adjudicated.editorialOutcomeCount,
+       labels:adjudicated.outcomes.map(x=>x.editorialOutcomeLabel),
+       game2026Verified:false,publicationApproved:false,
+       chainContinuationRequiresVerified:false
+      });
+     }
      eventUnifiedSummaries.push(summarizeLiveEvent(joined));
     }
     const flow=routeFlowCandidates({
@@ -601,6 +635,11 @@ async function probe(){
       (target.cardId==='30322'&&
        unifiedEventObservations.perEvent[3].siteOrSeparatedGroups!==3))
     fail('元サイト表示上のORと成功失敗ラベルが変化、ゲーム意味の再裁定が必要');
+   if(target.cardId==='30322'&&(
+     gameWithOutcomeEditorialObservations.length!==1||
+     gameWithOutcomeEditorialObservations[0].editorialChoiceCount!==3||
+     gameWithOutcomeEditorialObservations[0].editorialOutcomeCount!==6))
+    fail('30322のGameWith明示3択×2結果が元サイトに対応せず裁定保留');
    const routeIntegrity=verifyPinnedNewCardRouteBinding(target.cardId,census,routeHintBinding);
    const access=outingEvidence?.privateUnlockRouteCandidate;
    const completedFiveCandidate=access?evaluateSequenceCandidate(
@@ -643,6 +682,7 @@ async function probe(){
     directSkillObservations,
     visibleFlowObservations,
     unifiedEventObservations,
+    gameWithOutcomeEditorialObservations,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
