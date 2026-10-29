@@ -1,0 +1,78 @@
+name: Limited derived-GitHub source to app draft sample
+
+on:
+  pull_request:
+    paths:
+      - 'poc/src/derived_github_runtime_draft.cjs'
+      - 'poc/src/derived_github_card_event_preflight.cjs'
+      - '.github/workflows/derived-github-sample-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  one-pinned-card-read-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download only pinned public GitHub source metadata and one existing card
+        env:
+          PIN: 62ec54e754f903e347da807d30aad40e53d794d2
+          SKILL_PIN: 910dd79f046710245e0cc88a09c5c92b1044897e
+        run: |
+          curl -fLSs --retry 1 --max-time 35 \
+            "https://api.github.com/repos/systemless10/UmamusumePS/git/trees/$PIN?recursive=1" \
+            -o "$RUNNER_TEMP/source-tree.json"
+          curl -fLSs --retry 1 --max-time 35 \
+            "https://raw.githubusercontent.com/systemless10/UmamusumePS/$PIN/server/data/events/gametora/support_30030.json" \
+            -o "$RUNNER_TEMP/one-card.json"
+          curl -fLSs --retry 1 --max-time 35 \
+            "https://raw.githubusercontent.com/mee1080/umasim/$SKILL_PIN/data/skill_data.txt" \
+            -o "$RUNNER_TEMP/numeric-skills.txt"
+      - name: Apply exact blob check, source schema projection and quarantine (no source prose)
+        env:
+          PIN: 62ec54e754f903e347da807d30aad40e53d794d2
+        run: |
+          node - <<'NODE'
+          'use strict';
+          const fs=require('node:fs');
+          const {planDerivedNewCardIntake}=require('./poc/src/derived_github_new_card_source_plan.cjs');
+          const {projectDerivedCardDraft}=require('./poc/src/derived_github_runtime_draft.cjs');
+          const folder=process.env.RUNNER_TEMP;
+          const tree=JSON.parse(fs.readFileSync(folder+'/source-tree.json','utf8'));
+          const sourceText=fs.readFileSync(folder+'/one-card.json','utf8');
+          const skillText=fs.readFileSync(folder+'/numeric-skills.txt','utf8');
+          const plan=planDerivedNewCardIntake({
+            discovery:{dataKind:'new-umamusume-support-card-ids',schemaVersion:1,
+              publicationApproved:false,addedCardIds:['30030'],
+              existingCardIds:['30001']},
+            existingCatalog:{schemaVersion:1,cards:[]},
+            sourceTree:tree,sourceCommit:process.env.PIN
+          });
+          if(JSON.stringify(plan.candidateIds)!==JSON.stringify(['30030']))
+            throw Error('Existing source card missing in complete source tree');
+          const result=projectDerivedCardDraft({plan,cardId:'30030',sourceText,skillText});
+          const c=result.census;
+          if(c.sourceEvents!==5||
+             c.sourceEvents!==c.modeledEvents+c.excludedEvents||
+             result.publicationApproved!==false||
+             result.completeCardReadyForPublication!==false||
+             result.sourceLabelsCopied!==false)
+            throw Error('Source fixture event census or quarantine changed');
+          console.log('DERIVED_GITHUB_APP_DRAFT_SAMPLE='+JSON.stringify({
+            sourceCardId:result.cardId,sourceEventCount:c.sourceEvents,
+            modeledEventCount:c.modeledEvents,quarantinedEventCount:c.excludedEvents,
+            modeledSkillMentions:c.modeledSkills,
+            modeledDirectGrants:c.modeledDirectGrants,
+            publicationApproved:false,
+            // This is a structural test, not independent gameplay verification.
+            sourceSemanticsIndependentlyVerified:false
+          }));
+          NODE
