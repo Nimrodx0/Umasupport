@@ -33,7 +33,7 @@ test('fail closed on malformed, mutated or already imported new-card plan',()=>{
   {carryForwardPendingIds:['30322','30322']},
   {alreadyImportedIds:['30322']},
   {newlyObservedIds:['30001']}
- ])assert.throws(()=>selectIntakeTargets({...p,...patch}),/不正|一致|禁止/);
+ ])assert.throws(()=>selectIntakeTargets({...p,...patch}),/不正|一致|禁止|正規形式/);
  assert.throws(()=>selectIntakeTargets(p,{limit:3}),/最大2枚/);
 });
 test('canonical URL is exact GameTora Japanese support-card route',()=>{
