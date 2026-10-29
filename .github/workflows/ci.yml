@@ -49,6 +49,7 @@ jobs:
       - name: Test new-card GitHub structured source plan and persistent pending IDs
         run: |
           node --check poc/src/derived_github_new_card_source_plan.cjs
+          node --check poc/tools/plan_derived_github_new_cards.cjs
           node --test poc/tests/derived_github_new_card_source_plan.test.cjs
       - name: Verify bounded listing-based lookup of truly new GameTora support cards
         run: |
