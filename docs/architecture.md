@@ -43,6 +43,8 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 `poc/src/new_card_event_incremental.cjs` は既存イベントカタログ不変・保留・承認後追加の機構を持つが、**現時点では元GameTora HTML直接抽出から作った候補を受け付ける古いインターフェース**。派生GitHub JSONを入力とする候補変換・結合は新たに実装しなければならず、主経路を切り替えたという決定だけで本番イベント収録が動作するとはみなさない。[完成計画](derived-github-primary-restart-20261029.md)。
 
+**2026-10-29補足：** 主経路の実装では `derived_github_new_card_source_plan` → `derived_github_runtime_draft` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents` のメモリ内レビュー待ち境界を接続済み。これは依然として**非公開の技術候補**であり、正式なイベント収録・日次保留台帳の永続化・公開審査は未完成。[接続設計と実測](derived-github-new-card-review-staging-20261029.md)。
+
 ## 出典ピンの継続更新監視（監査層）
 
 [日次GitHub Actionsと更新手順](upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueと、未承認Git tree／Git blobだけの候補マニフェストを含む**Draft PR**を作成／更新する。Bot専用候補ブランチからread-only Core CIと候補GT／UmaSim元ファイルの**全件構造preflight**を明示起動する。出典本文は一時Actionsランナー以外に保存しない。ただしB検証のうち、イベント報酬の内容やGT↔UmaSimスキルIDの意味的照合、再利用許可は未実施。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
