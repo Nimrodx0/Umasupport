@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  three-pinned-cards-read-only:
+  four-pinned-cards-read-only:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Download pinned GitHub source metadata and three historical sample cards
+      - name: Download pinned GitHub source metadata and four historical sample cards
         env:
           PIN: 62ec54e754f903e347da807d30aad40e53d794d2
           SKILL_PIN: 910dd79f046710245e0cc88a09c5c92b1044897e
@@ -30,7 +30,7 @@ jobs:
           curl -fLSs --retry 1 --max-time 35 \
             "https://api.github.com/repos/systemless10/UmamusumePS/git/trees/$PIN?recursive=1" \
             -o "$RUNNER_TEMP/source-tree.json"
-          for id in 10016 20075 30030; do
+          for id in 10016 20075 30010 30030; do
             curl -fLSs --retry 1 --max-time 35 \
               "https://raw.githubusercontent.com/systemless10/UmamusumePS/$PIN/server/data/events/gametora/support_${id}.json" \
               -o "$RUNNER_TEMP/card-${id}.json"
@@ -53,7 +53,7 @@ jobs:
           // Representative R/SR/SSR historical source samples only.
           // None of them is claimed to be a newly released card.
           const samples=[];
-          for(const id of ['10016','20075','30030']){
+          for(const id of ['10016','20075','30010','30030']){
             const sourceText=fs.readFileSync(folder+'/card-'+id+'.json','utf8');
             const plan=planDerivedNewCardIntake({
               discovery:{dataKind:'new-umamusume-support-card-ids',schemaVersion:1,
