@@ -1,0 +1,50 @@
+name: Audit entire pinned GameTora-derived GitHub catalog to private app schema
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/derived-github-full-roster-draft.yml'
+      - 'poc/src/derived_github_full_roster_draft_audit.cjs'
+      - 'poc/src/derived_github_runtime_draft.cjs'
+      - 'poc/src/derived_github_card_event_preflight.cjs'
+      - 'poc/tools/audit_derived_github_full_roster_draft.cjs'
+      - 'poc/tests/derived_github_full_roster_draft_audit.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-complete-derived-json-readonly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: umasupport
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: systemless10/UmamusumePS
+          ref: 62ec54e754f903e347da807d30aad40e53d794d2
+          path: gt-derived
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve independent pinned UmaSim numeric skill registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLsS --retry 2 --max-time 90 \
+            "https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt" \
+            -o "$RUNNER_TEMP/umasim-skills.txt"
+      - name: Verify numeric-only full-roster auditor using artificial source events
+        run: node --test umasupport/poc/tests/derived_github_full_roster_draft_audit.test.cjs
+      - name: Audit ALL pinned GitHub event JSON files without exporting source event content
+        shell: bash
+        run: |
+          set -euo pipefail
+          node umasupport/poc/tools/audit_derived_github_full_roster_draft.cjs \
+            gt-derived 62ec54e754f903e347da807d30aad40e53d794d2 \
+            "$RUNNER_TEMP/umasim-skills.txt"

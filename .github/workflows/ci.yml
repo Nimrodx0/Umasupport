@@ -55,6 +55,9 @@ jobs:
           node --test poc/tests/derived_github_card_event_preflight.test.cjs
           node --check poc/src/derived_github_runtime_draft.cjs
           node --test poc/tests/derived_github_runtime_draft.test.cjs
+          node --check poc/src/derived_github_full_roster_draft_audit.cjs
+          node --check poc/tools/audit_derived_github_full_roster_draft.cjs
+          node --test poc/tests/derived_github_full_roster_draft_audit.test.cjs
       - name: Verify bounded listing-based lookup of truly new GameTora support cards
         run: |
           node --check poc/src/official_gametora_new_card_locator.cjs

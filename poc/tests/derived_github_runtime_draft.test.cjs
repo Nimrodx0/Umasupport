@@ -127,7 +127,7 @@ test('wrong Git blob or missing numeric registry skill fails closed',()=>{
 });
 test('source with unmodeled conditional section is withheld but unrelated event remains usable',()=>{
  const doc=source();
- doc.events_ja.a.section='dates_random';
+ doc.events_ja.a.section='dates';
  const res=projectDerivedCardDraft(args(doc));
  assert.equal(res.pendingEvents[0].reason,'UNSUPPORTED_EVENT_SECTION');
  assert.equal(res.census.modeledEvents,3);
@@ -167,4 +167,39 @@ test('unknown or ranged OR option quarantines entire event, never supplies both 
   assert.equal(res.pendingEvents.length,1);
   assert.equal(res.pendingEvents[0].reason,'EXCLUSIVE_HINT_OPTION_UNRESOLVED');
  }
+});
+
+test('source-labeled special and random outing routes remain contextual, not unconditional',()=>{
+ const d=source();
+ d.events_ja.a.section='special';
+ d.events_ja.d.section='dates_random';
+ const r=projectDerivedCardDraft(args(d));
+ assert.equal(r.census.modelledEvents,undefined);
+ assert.equal(r.census.modeledEvents,4);
+ const [special,,,outingRandom]=r.draftCatalog.cards[0].events;
+ assert.equal(special.availabilityKind,'special-trigger');
+ assert.equal(outingRandom.availabilityKind,'outing-random');
+ const specialCard={id:'30026',hints:[],events:[special]};
+ const route1=core.directRoutes(specialCard,{stage:4,choices:{
+  [special.id]:special.choices[0].id}});
+ assert.equal(route1.length,1);
+ assert.equal(route1[0].conditional,true);
+ assert.match(route1[0].condition,/特殊イベントの発生時/);
+ const route2=core.directRoutes({id:'30026',hints:[],events:[outingRandom]},{stage:4,choices:{},
+  outcomes:{[outingRandom.id]:outingRandom.outcomes[0].id}});
+ assert.equal(route2.length,1);
+ assert.equal(route2[0].conditional,true);
+ assert.match(route2[0].condition,/お出かけ中のランダムイベント発生時/);
+});
+test('guarded special effect is still withheld, no automatic guaranteed reward',()=>{
+ const d=source();
+ d.events_ja.a.section='special';
+ d.events_ja.a.choices=[{label:'',segments:[
+  {when:[{kind:'scripted'}],effects:[
+   {type:'skill_hint',skill_id:200532,value:'+1'}]}
+ ]}];
+ const r=projectDerivedCardDraft(args(d));
+ assert.equal(r.pendingEvents.some(x=>
+  x.sourceOrdinal===1&&x.reason==='AMBIGUOUS_OR_UNSUPPORTED_SOURCE_FACT'),true);
+ assert.equal(r.draftCatalog.cards[0].events.some(x=>x.id==='gt-30026-event-001'),false);
 });
