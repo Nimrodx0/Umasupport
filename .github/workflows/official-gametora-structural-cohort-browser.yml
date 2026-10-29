@@ -52,6 +52,25 @@ jobs:
              report.adapterGatePassed!==false||report.publicationApproved!==false||
              report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
             throw Error('Nonpublic bounded diagnostic contract not met');
+          const expected=[
+            {id:'30030',panels:5,unified:5,routes:9,numeric:20,hints:2,flow:0},
+            {id:'30041',panels:5,unified:5,routes:8,numeric:19,hints:1,flow:0}
+          ];
+          for(let i=0;i<expected.length;i++){
+            const e=expected[i],got=report.results[i];
+            if(got.cardId!==e.id||got.sourceEventPanels!==e.panels||
+              got.routeBearingPanels!==e.unified||got.nonUnifiedPanels!==0||
+              got.independentCensusMismatchPanels!==0||
+              got.projection?.schemaShapedEvents!==e.unified||
+              got.projection?.schemaShapedResults!==e.routes||
+              got.projection?.numericEffects!==e.numeric||
+              got.projection?.skillHints!==e.hints||
+              got.projection?.flowMarkers!==e.flow||
+              got.projection?.pendingEventCount!==e.panels||
+              got.eventDiagnostics.some(row=>row.discrepancies?.length)||
+              got.publicationApproved!==false||got.complete!==false)
+               throw Error('Nonpublic source structure drift, verify manually: '+e.id);
+          }
           console.log(JSON.stringify(report));
           NODE
       - name: Inspect three-choice and terminal structure (one more source card)
@@ -69,5 +88,19 @@ jobs:
              report.adapterGatePassed!==false||report.publicationApproved!==false||
              report.sourceTextCopied!==false||report.existingDatabaseUnchanged!==true)
             throw Error('Nonpublic bounded diagnostic contract not met');
+          const got=report.results[0];
+          if(got.cardId!=='30080'||got.sourceEventPanels!==12||
+             got.routeBearingPanels!==11||got.nonUnifiedPanels!==1||
+             got.independentCensusMismatchPanels!==1||
+             got.projection?.schemaShapedEvents!==11||
+             got.projection?.schemaShapedResults!==22||
+             got.projection?.numericEffects!==48||
+             got.projection?.skillHints!==4||
+             got.projection?.flowMarkers!==4||
+             got.projection?.pendingEventCount!==12||
+             got.eventDiagnostics.filter(x=>x.status!=='unified-unapproved')
+              .some(x=>x.ordinal!==1||x.status!=='no-visible-result-groups')||
+             got.publicationApproved!==false||got.complete!==false)
+            throw Error('Old three-choice source diagnostic drift: manual review required');
           console.log(JSON.stringify(report));
           NODE
