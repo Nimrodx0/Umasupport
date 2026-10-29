@@ -30,9 +30,11 @@ jobs:
           curl -fLSs --retry 1 --max-time 35 \
             "https://api.github.com/repos/systemless10/UmamusumePS/git/trees/$PIN?recursive=1" \
             -o "$RUNNER_TEMP/source-tree.json"
-          curl -fLSs --retry 1 --max-time 35 \
-            "https://raw.githubusercontent.com/systemless10/UmamusumePS/$PIN/server/data/events/gametora/support_30030.json" \
-            -o "$RUNNER_TEMP/one-card.json"
+          for id in 10016 20075 30030; do
+            curl -fLSs --retry 1 --max-time 35 \
+              "https://raw.githubusercontent.com/systemless10/UmamusumePS/$PIN/server/data/events/gametora/support_${id}.json" \
+              -o "$RUNNER_TEMP/card-${id}.json"
+          done
           curl -fLSs --retry 1 --max-time 35 \
             "https://raw.githubusercontent.com/mee1080/umasim/$SKILL_PIN/data/skill_data.txt" \
             -o "$RUNNER_TEMP/numeric-skills.txt"
@@ -47,32 +49,41 @@ jobs:
           const {projectDerivedCardDraft}=require('./poc/src/derived_github_runtime_draft.cjs');
           const folder=process.env.RUNNER_TEMP;
           const tree=JSON.parse(fs.readFileSync(folder+'/source-tree.json','utf8'));
-          const sourceText=fs.readFileSync(folder+'/one-card.json','utf8');
           const skillText=fs.readFileSync(folder+'/numeric-skills.txt','utf8');
-          const plan=planDerivedNewCardIntake({
-            discovery:{dataKind:'new-umamusume-support-card-ids',schemaVersion:1,
-              publicationApproved:false,addedCardIds:['30030'],
-              existingCardIds:['30001']},
-            existingCatalog:{schemaVersion:1,cards:[]},
-            sourceTree:tree,sourceCommit:process.env.PIN
-          });
-          if(JSON.stringify(plan.candidateIds)!==JSON.stringify(['30030']))
-            throw Error('Existing source card missing in complete source tree');
-          const result=projectDerivedCardDraft({plan,cardId:'30030',sourceText,skillText});
-          const c=result.census;
-          if(c.sourceEvents!==5||
-             c.sourceEvents!==c.modeledEvents+c.excludedEvents||
-             result.publicationApproved!==false||
-             result.completeCardReadyForPublication!==false||
-             result.sourceLabelsCopied!==false)
-            throw Error('Source fixture event census or quarantine changed');
-          console.log('DERIVED_GITHUB_APP_DRAFT_SAMPLE='+JSON.stringify({
-            sourceCardId:result.cardId,sourceEventCount:c.sourceEvents,
-            modeledEventCount:c.modeledEvents,quarantinedEventCount:c.excludedEvents,
-            modeledSkillMentions:c.modeledSkills,
-            modeledDirectGrants:c.modeledDirectGrants,
-            publicationApproved:false,
-            // This is a structural test, not independent gameplay verification.
+          // Representative R/SR/SSR historical source samples only.
+          // None of them is claimed to be a newly released card.
+          const samples=[];
+          for(const id of ['10016','20075','30030']){
+            const sourceText=fs.readFileSync(folder+'/card-'+id+'.json','utf8');
+            const plan=planDerivedNewCardIntake({
+              discovery:{dataKind:'new-umamusume-support-card-ids',schemaVersion:1,
+                publicationApproved:false,addedCardIds:[id],
+                existingCardIds:['30001']},
+              existingCatalog:{schemaVersion:1,cards:[]},
+              sourceTree:tree,sourceCommit:process.env.PIN
+            });
+            if(JSON.stringify(plan.candidateIds)!==JSON.stringify([id]))
+              throw Error('Historical sample missing from exact structured GitHub tree');
+            const result=projectDerivedCardDraft({plan,cardId:id,sourceText,skillText});
+            const c=result.census;
+            if(c.sourceEvents<1||
+               c.sourceEvents!==c.modeledEvents+c.excludedEvents||
+               result.publicationApproved!==false||
+               result.completeCardReadyForPublication!==false||
+               result.sourceLabelsCopied!==false)
+              throw Error('Source event census or quarantine changed');
+            const reasons={};
+            for(const item of result.pendingEvents)
+              reasons[item.reason]=(reasons[item.reason]||0)+1;
+            samples.push({id,sourceEvents:c.sourceEvents,
+              modeledEvents:c.modeledEvents,
+              quarantinedEvents:c.excludedEvents,
+              modeledSkillMentions:c.modeledSkills,
+              modeledDirectGrants:c.modeledDirectGrants,
+              quarantineReasons:reasons});
+          }
+          console.log('DERIVED_GITHUB_APP_DRAFT_SAMPLES='+JSON.stringify({
+            samples,publicationApproved:false,
             sourceSemanticsIndependentlyVerified:false
           }));
           NODE
