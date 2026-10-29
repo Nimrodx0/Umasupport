@@ -73,3 +73,15 @@ test('maximum energy is one effect kind, not both max energy and plain energy',(
  assert.equal(scanOwnText('体力 +10').kind,'energy');
  assert.equal(scanOwnText('最大体力 +4、体力 +10').requiresReview,true);
 });
+
+test('a slash-delimited range must never silently become its first scalar',()=>{
+ for(const value of ['体力 +10/20','スキルPt +10 / +20',
+  'スタミナ -10～-20','根性 +5／+15']){
+  const fact=scanOwnText(value);
+  assert.equal(fact.requiresReview,true);
+  assert.equal(fact.amount,null);
+ }
+ assert.deepEqual(scanOwnText('体力 +10'),{
+  kind:'energy',amount:10,count:1,requiresReview:false
+ });
+});
