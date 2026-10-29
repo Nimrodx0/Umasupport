@@ -5,6 +5,13 @@ on:
     # 03:40 UTC = 12:40 JST; GitHub scheduled jobs may run late.
     - cron: '40 3 * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/derived-github-pending-intake.yml'
+      - 'poc/src/derived_github_pending_ledger.cjs'
+      - 'poc/src/derived_github_pending_refresh.cjs'
+      - 'poc/tools/refresh_derived_github_pending_ledger.cjs'
 
 permissions:
   contents: read
