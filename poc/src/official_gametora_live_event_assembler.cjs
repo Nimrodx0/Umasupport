@@ -138,8 +138,12 @@ function summarizeLiveEvent(result){
  const x=result.summary;
  return {cardId:x.cardId,siteEventOrdinal:x.siteEventOrdinal,
   status:result.status,groups:x.groups,routes:x.routes,
-  numericEffects:x.numericEffects,skillHints:x.skillHints,
+  numericEffects:x.numericEffects,
+  unparsedNumericFacts:result.numericDraft.unparsedNumericCount,
+  excludedNonScalarNumericFacts:result.numericDraft.excludedNonScalarNumericCount,
+  skillHints:x.skillHints,unresolvedHintRows:result.hintDraft.unresolvedHintRows,
   directSkillCandidates:x.directSkillCandidates,
+  unresolvedDirectLikeTexts:result.directDraft.unresolvedDirectLikeTexts,
   visibleFlowMarkers:x.observedFlowMarkers,
   locatedFlowMarkers:x.locatedFlowMarkers,
   reviewReasonCounts:x.routeSummary.flatMap(r=>r.reviewReasons)
