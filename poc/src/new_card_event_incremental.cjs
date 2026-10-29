@@ -52,6 +52,21 @@ function discoverNewCardsFromUmaSim({previousSupportText,currentSupportText}={})
 }
 function checkCandidate(c,id,derivedSourcePlan){
  const derived=c?.source==='GameTora-derived-GitHub';
+ if(derived){
+  const matches=derivedSourcePlan?.results?.filter(x=>x.cardId===id);
+  if(derivedSourcePlan?.dataKind!=='derived-github-new-card-source-plan'||
+     derivedSourcePlan.version!==1||
+     derivedSourcePlan.primarySourceRepository!=='systemless10/UmamusumePS'||
+     derivedSourcePlan.publicationApproved!==false||
+     !/^[a-f0-9]{40}$/.test(derivedSourcePlan.primarySourceCommit||'')||
+     !Array.isArray(matches)||matches.length!==1||
+     matches[0].status!=='source-blob-present-needs-validation'||
+     c.sourceRevision!==derivedSourcePlan.primarySourceCommit||
+     c.sourceBlobSha!==matches[0].sourceBlobSha||
+     c.sourcePath!==matches[0].sourcePath||
+     c.sourcePath!=='server/data/events/gametora/support_'+id+'.json')
+   fail('固定GitHub出典と対象カード候補が不一致: '+id);
+ }
  if(!plain(c)||c.cardId!==id||
     !(c.source==='GameTora-original-site'||derived)||
     c.sourceSiteTextCopied!==false||
