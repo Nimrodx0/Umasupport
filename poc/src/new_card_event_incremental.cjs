@@ -50,16 +50,19 @@ function discoverNewCardsFromUmaSim({previousSupportText,currentSupportText}={})
  return {...delta,source:'UmaSim-support_card.txt',
   previousRosterStageRows:previous.lines,currentRosterStageRows:current.lines};
 }
-function checkCandidate(c,id){
+function checkCandidate(c,id,derivedSourcePlan){
+ const derived=c?.source==='GameTora-derived-GitHub';
  if(!plain(c)||c.cardId!==id||
-    c.source!=='GameTora-original-site'||
+    !(c.source==='GameTora-original-site'||derived)||
     c.sourceSiteTextCopied!==false||
     c.publicationApproved!==false||c.appEventSchemaAdoptable!==false||
     !Array.isArray(c.events)||
-    !Number.isSafeInteger(c.siteEventPanelCount)||c.siteEventPanelCount<1||
+    (derived?(!Number.isSafeInteger(c.sourceEventCount)||c.sourceEventCount<1):
+      (!Number.isSafeInteger(c.siteEventPanelCount)||c.siteEventPanelCount<1))||
     !Number.isSafeInteger(c.convertedEventCount)||c.convertedEventCount<0||
     !Number.isSafeInteger(c.unresolvedEventCount)||c.unresolvedEventCount<0||
-    c.siteEventPanelCount!==c.convertedEventCount+c.unresolvedEventCount||
+    (derived?c.sourceEventCount!==c.convertedEventCount+c.unresolvedEventCount:
+      c.siteEventPanelCount!==c.convertedEventCount+c.unresolvedEventCount)||
     c.convertedEventCount!==c.events.length)
   fail('GameTora元サイトカード別入力・件数・非公開フラグが不正: '+id);
  if(c.unresolvedEventCount||!c.events.length)return 'unresolved';
