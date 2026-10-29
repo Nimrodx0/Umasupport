@@ -73,7 +73,9 @@ function checkCandidate(c,id){
  }
  return 'complete';
 }
-function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
+function stageNewCardEvents({
+ discovery,existingCatalog,candidates,pendingCardIds=[]
+}={}){
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.schemaVersion!==1||
     discovery.publicationApproved!==false||
@@ -82,21 +84,31 @@ function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
   fail('増分候補の名簿・既存DBが不正');
  const added=ids(discovery.addedCardIds,'追加対象');
  const known=ids(discovery.existingCardIds,'既存名簿');
+ const pendingFromPreviousRun=ids(pendingCardIds,'前回未取込');
  const already=ids(existingCatalog.cards.map(x=>x?.cardId),'既存DB');
- const knownSet=new Set(known),existingSet=new Set(already);
- if(already.some(x=>!knownSet.has(x)))
-  fail('既存DBカードIDが基準名簿にありません');
+ const rosterSet=new Set([...known,...added]),existingSet=new Set(already);
+ if(added.some(x=>known.includes(x))||
+    already.some(x=>!rosterSet.has(x))||
+    pendingFromPreviousRun.some(x=>!rosterSet.has(x)))
+  fail('今回の新カード候補・前回保留と現行UmaSim名簿が不一致');
+ // New support cards remain eligible on later runs even if yesterday's
+ // "new ID" roster difference becomes empty. Persist the unresolved queue
+ // separately. An already imported card must NOT be offered to the converter
+ // again simply because a fixed historical roster pin is still in use.
+ const targetIds=[...new Set([...added,...pendingFromPreviousRun])]
+  .filter(x=>!existingSet.has(x)).sort();
+ const addedSet=new Set(targetIds);
  const seen=new Set();
  const byId=new Map();
  for(const c of candidates){
   if(!cardId(c?.cardId)||seen.has(c.cardId))fail('追加候補に不正／重複カードID');
   seen.add(c.cardId);
   byId.set(c.cardId,c);
-  if(!added.includes(c.cardId)||existingSet.has(c.cardId))
+  if(!addedSet.has(c.cardId))
    fail('既存カードの置換・追加対象外の混入は禁止: '+c.cardId);
  }
  const pending=[],ready=[];
- for(const id of added){
+ for(const id of targetIds){
   const candidate=byId.get(id);
   if(!candidate){
    pending.push({cardId:id,reason:'not-yet-fetched'});
@@ -112,8 +124,10 @@ function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
  }
  return {
   dataKind:'new-card-event-append-stage',schemaVersion:1,
-  discoveredNewIds:[...added],pending,
-  ready,
+  discoveredNewIds:[...added],
+  targetNewIds:targetIds,
+  alreadyImportedIds:added.filter(x=>existingSet.has(x)),
+  pending,ready,
   // Stage is never itself an approved public catalog.
   existingCardCount:already.length,
   existingCatalogDigest:sha256(existingCatalog),
@@ -122,23 +136,23 @@ function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
 }
 function appendApprovedNewCards({
  discovery,existingCatalog,candidates,existingApprovals,
- newApprovals,model,skillText=null
+ newApprovals,model,skillText=null,pendingCardIds=[]
 }={}){
- const stage=stageNewCardEvents({discovery,existingCatalog,candidates});
+ const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds});
  if(!plain(existingApprovals)||existingApprovals.schemaVersion!==1||
     !Array.isArray(existingApprovals.entries)||
     !plain(newApprovals)||newApprovals.schemaVersion!==1||
     !Array.isArray(newApprovals.entries))
   fail('既存と新規の公開承認証跡が必要');
- if(stage.pending.length)
-  return {status:'pending',newCardIds:stage.discoveredNewIds,
+ if(stage.pending.length&&!stage.ready.length)
+  return {status:'pending',newCardIds:stage.targetNewIds,
    pending:stage.pending,existingCatalogUnchanged:true,
    catalog:null,approvals:null};
  if(!stage.ready.length){
   if(newApprovals.entries.length)fail('追加対象なしで新規承認証跡が存在する');
   preflight(model,existingCatalog,{skillText,fullRegistry:false});
   verifyRelease(existingCatalog,existingApprovals);
-  return {status:'unchanged',newCardIds:[],existingCatalogUnchanged:true,
+  return {status:'unchanged',newCardIds:[],pending:[],existingCatalogUnchanged:true,
    catalog:clone(existingCatalog),approvals:clone(existingApprovals)};
  }
  const readyIds=new Set(stage.ready.map(x=>x.cardId));
@@ -168,7 +182,9 @@ function appendApprovedNewCards({
     canonical(approvals.entries.slice(0,existingApprovals.entries.length))!==
     canonical(existingApprovals.entries))
   fail('既存DBまたは承認履歴に変更が生じました');
- return {status:'ready-to-append',newCardIds:stage.discoveredNewIds,
+ return {status:stage.pending.length?'partial-append':'ready-to-append',
+  newCardIds:stage.ready.map(x=>x.cardId),
+  pending:stage.pending,
   appendedCardCount:stage.ready.length,
   appendedEventCount:expectedCount,
   existingCatalogUnchanged:true,
