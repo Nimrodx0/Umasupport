@@ -10,6 +10,7 @@
 const {stageNewCardEvents}=require('./new_card_event_incremental.cjs');
 const {projectExistingConverterForNewCard}=require('./derived_github_existing_converter_adapter.cjs');
 const fail=s=>{throw Error('派生GitHub増分接続: '+s);};
+const {parseSource}=require('./skill_bridge.js');
 const id=x=>typeof x==='string'&&/^[1-9]\d{4}$/.test(x);
 function stageDerivedGitHubNewCards({
  discovery,existingCatalog,sourcePlan,
@@ -23,9 +24,13 @@ function stageDerivedGitHubNewCards({
     !Array.isArray(sourcePlan.results)||!Array.isArray(sourcePlan.targetIds)||
     !Array.isArray(discovery.addedCardIds)||
     !Array.isArray(pendingCardIds)||typeof skillText!=='string'||
+    !/^[a-f0-9]{40}$/.test(skillRevision||'')||
     sourceDocuments===null||typeof sourceDocuments!=='object'||
     Array.isArray(sourceDocuments))
   fail('versioned-GitHub-plan-or-roster-invalid');
+ // An entire invalid independent registry is a run-level failure, not a
+ // permanent source-card defect to be carried forward one ID at a time.
+ parseSource(skillText);
  const incoming=[...discovery.addedCardIds].sort();
  const declared=[...sourcePlan.detectedNewCardIds].sort();
  if(incoming.length!==declared.length||
