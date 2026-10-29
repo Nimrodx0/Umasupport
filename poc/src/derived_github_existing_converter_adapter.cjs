@@ -1,0 +1,90 @@
+'use strict';
+/*
+ * Single-card entrypoint for the ORIGINAL mature GameTora-derived conversion
+ * pipeline. No second parsing/projecting implementation is maintained here.
+ * Technical conversion, issue reporting and publication are distinct.
+ */
+const {validateDerivedCardSource}=require('./derived_github_card_event_preflight.cjs');
+const {transformDocument}=require('./gametora_whole_event_normalize.cjs');
+const {crosswalk}=require('./gametora_event_skill_crosswalk.cjs');
+const {project}=require('./gametora_app_schema_dry_run.cjs');
+const fail=code=>{throw Error('既存GameTora変換器・新カード入口: '+code);};
+function projectExistingConverterForNewCard({
+ plan,cardId,sourceText,skillText,skillRevision
+}={}){
+ const pin=validateDerivedCardSource({plan,cardId,sourceText});
+ if(typeof skillRevision!=='string'||!/^[a-f0-9]{40}$/.test(skillRevision))
+  fail('version-pinned-independent-skill-registry-required');
+ let normalized;
+ try{normalized=transformDocument(JSON.parse(sourceText));}
+ catch{fail('normalized-card-invalid');}
+ if(normalized.cardId!==cardId||normalized.sourceEventCount!==pin.observedEvents)
+  fail('normalized-card-source-drift');
+ const {reviewQueue,effectTypeCounts,...card}=normalized;
+ const counts={rosterCards:1,
+  sourceEvents:normalized.sourceEventCount,
+  sourceChoices:normalized.sourceChoiceCount,
+  expandedRoutes:normalized.sourceExpandedRoutes,
+  numericHintMentions:normalized.numericParsedHintMentions,
+  unresolvedHintMentions:normalized.unresolvedHintMentions,
+  directSkillGrantMentions:normalized.directSkillGrantMentions};
+ const candidate={schemaVersion:1,dataKind:'gametora-whole-event-numeric-candidate',
+  sourcePins:{gameToraDerived:plan.primarySourceCommit},
+  releaseApproved:false,noEventCanPublishFromThisCandidate:true,
+  originalSourceTextIncluded:false,totals:counts,cards:[card]};
+ // The existing crosswalk and projector require a model, but a new card
+ // does not yet exist in the runtime DB. Validate it in a disposable isolated
+ // card model instead of modifying (or fabricating hints in) the existing DB.
+ const runtimeCard={id:cardId,hints:[],events:[]};
+ const model={cards:[runtimeCard],cardById:{[cardId]:runtimeCard},
+  skills:[],skillById:{},meta:{}};
+ const linked=crosswalk({candidate,model,skillText,
+  sourceRevision:plan.primarySourceCommit,skillRevision});
+ const converted=project({candidate,crosswalk:linked,model,skillText,
+  sourceRevision:plan.primarySourceCommit});
+ const row=converted.dryRunUnpreparedCatalog.cards.find(c=>c.cardId===cardId);
+ const events=(row?.events||[]).map(e=>({
+  ...e,sourceKind:'derived-github-unreviewed'
+ }));
+ const rejected=converted.report.excludedSourcePositions;
+ const reviewItems=[];
+ for(const issue of reviewQueue)reviewItems.push({
+  sourceOrdinal:issue.sourceOrdinal,
+  ...(issue.choiceOrdinal?{choiceOrdinal:issue.choiceOrdinal}:{}),
+  ...(issue.routeOrdinal?{routeOrdinal:issue.routeOrdinal}:{}),
+  reason:issue.reason,origin:'source-normalization'});
+ for(const issue of rejected)reviewItems.push({
+  sourceOrdinal:issue.sourceOrdinal,reason:issue.reason,
+  origin:'schema-projection'});
+ for(const e of card.events)
+  if(e.nextStageMeaning==='SOURCE_PRESENTATION_ORDER_NOT_INDEPENDENTLY_VERIFIED')
+   reviewItems.push({sourceOrdinal:e.sourceOrdinal,
+    reason:'CHAIN_ORDER_REQUIRES_CONFIRMATION',origin:'source-chain-order'});
+ const census={
+  sourceEvents:normalized.sourceEventCount,
+  sourceChoices:normalized.sourceChoiceCount,
+  sourceRoutes:normalized.sourceExpandedRoutes,
+  modeledEvents:events.length,
+  excludedEvents:rejected.length,
+  sourceReviewItems:reviewQueue.length,
+  reviewItems:reviewItems.length,
+  sourceSectionCounts:normalized.sectionCounts,
+  projectionReasons:converted.report.excludedReasons};
+ if(census.modeledEvents+census.excludedEvents!==census.sourceEvents||
+    new Set(events.map(e=>e.id)).size!==events.length||
+    events.some(e=>e.sourceKind!=='derived-github-unreviewed'))
+  fail('single-card-conservation-failed');
+ return {dataKind:'derived-github-existing-converter-single-card-draft',
+  version:1,cardId,sourceCommit:plan.primarySourceCommit,
+  sourceBlobSha:pin.sourceBlobSha,
+  independentSkillCommit:skillRevision,
+  sourceConverter:'gametora_app_schema_dry_run.project',
+  draftCatalog:{schemaVersion:1,cards:[{cardId,coverageStatus:'partial',events}]},
+  pendingEvents:rejected.map(x=>({sourceOrdinal:x.sourceOrdinal,
+   eventId:x.eventId,reason:x.reason})),
+  reviewItems,census,
+  sourceLabelsCopied:false,publicationApproved:false,
+  completeCardReadyForPublication:false,
+  existingDatabaseUnchanged:true};
+}
+module.exports={projectExistingConverterForNewCard};
