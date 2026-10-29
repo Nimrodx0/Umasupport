@@ -92,7 +92,7 @@ function checkCandidate(c,id,derivedSourcePlan){
  return 'complete';
 }
 function stageNewCardEvents({
- discovery,existingCatalog,candidates,pendingCardIds=[]
+ discovery,existingCatalog,candidates,pendingCardIds=[],derivedSourcePlan=null
 }={}){
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.schemaVersion!==1||
@@ -132,9 +132,13 @@ function stageNewCardEvents({
    pending.push({cardId:id,reason:'not-yet-fetched'});
    continue;
   }
-  if(checkCandidate(candidate,id)==='unresolved'){
-   pending.push({cardId:id,reason:'gametora-source-unresolved',
-    sourceEventPanelCount:candidate.siteEventPanelCount,
+  if(checkCandidate(candidate,id,derivedSourcePlan)==='unresolved'){
+   pending.push({cardId:id,
+    reason:candidate.source==='GameTora-derived-GitHub'?
+      'derived-github-source-unresolved':'gametora-source-unresolved',
+    ...(candidate.source==='GameTora-derived-GitHub'?
+      {sourceEventCount:candidate.sourceEventCount,sourceBlobSha:candidate.sourceBlobSha}:
+      {sourceEventPanelCount:candidate.siteEventPanelCount}),
     unresolvedEventCount:candidate.unresolvedEventCount});
   }else{
    ready.push({cardId:id,coverageStatus:'partial',events:clone(candidate.events)});
