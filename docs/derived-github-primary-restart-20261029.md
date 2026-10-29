@@ -37,4 +37,6 @@
 
 本方針変更の最初の実装は `derived_github_new_card_source_plan.cjs`。このモジュールは**GitHub treeのSHAとパスだけ**から、候補／不在／収録済みを安全に分け、完全でないtreeや対象外カード、同一カード重複、現行名簿から消えたIDを拒否する。新カードが1回目に不在でも、保留IDを渡した次回には新規名簿差分が0件でも取得候補へ復帰できる。テストは人工Git treeで、実イベントの取り込み・公開を意味しない。
 
-残件は、実上流Git treeを供給するワークフローへの接続、GitHubの該当JSONを独自スキーマへ変換する結合、承認済みデータの初回追加、アプリ全機能の本番Pages受け入れである。**直接取得器の実装継続はここに含まない**。
+さらに `derived_github_card_event_preflight.cjs` を追加。固定Gitツリーに記録されたカードのGit blob SHAと取得したJSON原文のバイト列を照合してから、既存 `gametora_whole_event_normalize.transformDocument` で全イベント・選択／排他的結果・ヒント／直接付与・明示打ち切りの**非公開構造件数**を検証する。原文章やイベント本文は外部に返さず、**正式な公開用イベントJSONは生成しない**。`poc/tools/plan_derived_github_new_cards.cjs` は `--tree`、`--commit`、`--discovery`、`--catalog`（任意で `--pending`）を受けるネット接続・DB書き換えなしの入口である。
+
+残件は、実上流Git treeを供給するワークフローへの接続、GitHubの該当JSONを**公開アプリ用イベントスキーマへ完全に変換**する結合、承認済みデータの初回追加、アプリ全機能の本番Pages受け入れである。**直接取得器の実装継続はここに含まない**。
