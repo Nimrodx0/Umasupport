@@ -2,7 +2,7 @@
 /*
  * Incremental new-card admission:
  * - Discover NEW UmaSim support IDs from previous/current complete rosters.
- * - Stage only card-scoped GameTora-original-site normalized event candidates.
+ * - Stage version-pinned structured GitHub candidates alongside legacy site drafts.
  * - Append approved NEW cards to an existing event catalog, byte-equivalent
  *   for all old card/event objects, and validate the combined result BEFORE
  *   allowing any writer to persist it.
@@ -50,16 +50,34 @@ function discoverNewCardsFromUmaSim({previousSupportText,currentSupportText}={})
  return {...delta,source:'UmaSim-support_card.txt',
   previousRosterStageRows:previous.lines,currentRosterStageRows:current.lines};
 }
-function checkCandidate(c,id){
+function checkCandidate(c,id,derivedSourcePlan){
+ const derived=c?.source==='GameTora-derived-GitHub';
+ if(derived){
+  const matches=derivedSourcePlan?.results?.filter(x=>x.cardId===id);
+  if(derivedSourcePlan?.dataKind!=='derived-github-new-card-source-plan'||
+     derivedSourcePlan.version!==1||
+     derivedSourcePlan.primarySourceRepository!=='systemless10/UmamusumePS'||
+     derivedSourcePlan.publicationApproved!==false||
+     !/^[a-f0-9]{40}$/.test(derivedSourcePlan.primarySourceCommit||'')||
+     !Array.isArray(matches)||matches.length!==1||
+     matches[0].status!=='source-blob-present-needs-validation'||
+     c.sourceRevision!==derivedSourcePlan.primarySourceCommit||
+     c.sourceBlobSha!==matches[0].sourceBlobSha||
+     c.sourcePath!==matches[0].sourcePath||
+     c.sourcePath!=='server/data/events/gametora/support_'+id+'.json')
+   fail('固定GitHub出典と対象カード候補が不一致: '+id);
+ }
  if(!plain(c)||c.cardId!==id||
-    c.source!=='GameTora-original-site'||
+    !(c.source==='GameTora-original-site'||derived)||
     c.sourceSiteTextCopied!==false||
     c.publicationApproved!==false||c.appEventSchemaAdoptable!==false||
     !Array.isArray(c.events)||
-    !Number.isSafeInteger(c.siteEventPanelCount)||c.siteEventPanelCount<1||
+    (derived?(!Number.isSafeInteger(c.sourceEventCount)||c.sourceEventCount<1):
+      (!Number.isSafeInteger(c.siteEventPanelCount)||c.siteEventPanelCount<1))||
     !Number.isSafeInteger(c.convertedEventCount)||c.convertedEventCount<0||
     !Number.isSafeInteger(c.unresolvedEventCount)||c.unresolvedEventCount<0||
-    c.siteEventPanelCount!==c.convertedEventCount+c.unresolvedEventCount||
+    (derived?c.sourceEventCount!==c.convertedEventCount+c.unresolvedEventCount:
+      c.siteEventPanelCount!==c.convertedEventCount+c.unresolvedEventCount)||
     c.convertedEventCount!==c.events.length)
   fail('GameTora元サイトカード別入力・件数・非公開フラグが不正: '+id);
  if(c.unresolvedEventCount||!c.events.length)return 'unresolved';
@@ -74,7 +92,7 @@ function checkCandidate(c,id){
  return 'complete';
 }
 function stageNewCardEvents({
- discovery,existingCatalog,candidates,pendingCardIds=[]
+ discovery,existingCatalog,candidates,pendingCardIds=[],derivedSourcePlan=null
 }={}){
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.schemaVersion!==1||
@@ -114,9 +132,13 @@ function stageNewCardEvents({
    pending.push({cardId:id,reason:'not-yet-fetched'});
    continue;
   }
-  if(checkCandidate(candidate,id)==='unresolved'){
-   pending.push({cardId:id,reason:'gametora-source-unresolved',
-    sourceEventPanelCount:candidate.siteEventPanelCount,
+  if(checkCandidate(candidate,id,derivedSourcePlan)==='unresolved'){
+   pending.push({cardId:id,
+    reason:candidate.source==='GameTora-derived-GitHub'?
+      'derived-github-source-unresolved':'gametora-source-unresolved',
+    ...(candidate.source==='GameTora-derived-GitHub'?
+      {sourceEventCount:candidate.sourceEventCount,sourceBlobSha:candidate.sourceBlobSha}:
+      {sourceEventPanelCount:candidate.siteEventPanelCount}),
     unresolvedEventCount:candidate.unresolvedEventCount});
   }else{
    ready.push({cardId:id,coverageStatus:'partial',events:clone(candidate.events)});
@@ -136,9 +158,9 @@ function stageNewCardEvents({
 }
 function appendApprovedNewCards({
  discovery,existingCatalog,candidates,existingApprovals,
- newApprovals,model,skillText=null,pendingCardIds=[]
+ newApprovals,model,skillText=null,pendingCardIds=[],derivedSourcePlan=null
 }={}){
- const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds});
+ const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds,derivedSourcePlan});
  if(!plain(existingApprovals)||existingApprovals.schemaVersion!==1||
     !Array.isArray(existingApprovals.entries)||
     !plain(newApprovals)||newApprovals.schemaVersion!==1||

@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'poc/src/derived_github_runtime_draft.cjs'
+      - 'poc/src/derived_github_staging_bridge.cjs'
+      - 'poc/src/new_card_event_incremental.cjs'
       - 'poc/src/derived_github_card_event_preflight.cjs'
       - '.github/workflows/derived-github-sample-preflight.yml'
   workflow_dispatch:
@@ -85,5 +87,36 @@ jobs:
           console.log('DERIVED_GITHUB_APP_DRAFT_SAMPLES='+JSON.stringify({
             samples,publicationApproved:false,
             sourceSemanticsIndependentlyVerified:false
+          }));
+          const {discoverNewCards}=require('./poc/src/new_card_event_incremental.cjs');
+          const {stageDerivedGitHubNewCards}=require('./poc/src/derived_github_staging_bridge.cjs');
+          const discovery=discoverNewCards({
+            previousRosterIds:['30001'],
+            currentRosterIds:['30001','10016','20075','30010','30030']
+          });
+          const existingCatalog={schemaVersion:1,cards:[]};
+          const sourcePlan=planDerivedNewCardIntake({
+            discovery,existingCatalog,sourceTree:tree,
+            sourceCommit:process.env.PIN
+          });
+          const sourceDocuments=Object.fromEntries(['10016','20075','30010','30030']
+            .map(id=>[id,fs.readFileSync(folder+'/card-'+id+'.json','utf8')]));
+          const staged=stageDerivedGitHubNewCards({
+            discovery,existingCatalog,sourcePlan,sourceDocuments,skillText
+          });
+          if(JSON.stringify(staged.newlyModeledCardIds)!==
+               JSON.stringify(['10016','20075'])||
+             JSON.stringify(staged.stage.pending.map(x=>x.cardId))!==
+               JSON.stringify(['30010','30030'])||
+             staged.carryForwardPendingIds.length!==4||
+             staged.publicationApproved!==false||
+             staged.stage.ready.some(c=>c.events.some(e=>
+               e.sourceKind!=='derived-github-unreviewed')))
+            throw Error('Structured GitHub append staging did not quarantine or carry IDs');
+          console.log('DERIVED_GITHUB_PRIVATE_NEW_CARD_STAGING='+JSON.stringify({
+            technicallyModelableCards:staged.newlyModeledCardIds,
+            incompleteCards:staged.stage.pending.map(x=>x.cardId),
+            keepPendingUntilReviewed:staged.carryForwardPendingIds.length,
+            publicationApproved:false,syntheticHistoricalNewCardFixture:true
           }));
           NODE
