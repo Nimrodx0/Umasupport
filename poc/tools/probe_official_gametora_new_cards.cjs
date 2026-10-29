@@ -11,6 +11,8 @@ const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_
 const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
 const {assembleLiveEvent,summarizeLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
 const {extractRoutePieces}=require('../src/official_gametora_route_dom_extractor.cjs');
+const {projectNewCardSite,summarizeCardProjection}=
+ require('../src/official_gametora_private_schema_projection.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -226,8 +228,11 @@ async function probe(){
    const eventDirectGrantDrafts=[];
    const eventFlowDrafts=[];
    const eventUnifiedSummaries=[];
+   const siteEventObservations=[];
    const outingEventViews=[];
-   for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
+   const originalEventPanelCount=await eventButtons.count();
+   if(originalEventPanelCount>20)fail('元GameTora画面のイベントパネルが20件を超え、黙った欠落を禁止');
+   for(let idx=0;idx<originalEventPanelCount;idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
      await eventButton.click({timeout:5000});
@@ -292,6 +297,7 @@ async function probe(){
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
      });
      eventUnifiedSummaries.push(summarizeLiveEvent(joined));
+     siteEventObservations.push(joined);
     }
     const flow=routeFlowCandidates({
      cardId:target.cardId,siteEventOrdinal:idx+1,
@@ -347,7 +353,24 @@ async function probe(){
      unresolvedSkillIdHints:matched.filter(x=>x.status!=='unique-verified-name').length
     });
    }
+   // This is a model-shaped PRIVATE projection of exactly the site-visible
+   // results. Its intake candidate deliberately has 0 approved events.
+   // No success/failure labelling, GameWith, or historical mirrored JSON.
+   const siteProjection=registry?projectNewCardSite({
+    cardId:target.cardId,
+    siteEventPanelCount:originalEventPanelCount,
+    eventObservations:siteEventObservations
+   }):null;
+   const siteProjectionSummary=siteProjection?
+    summarizeCardProjection(siteProjection):null;
    const census=summarizeExpandedCensus(allRows);
+   if(siteProjectionSummary&&(
+     siteProjectionSummary.sourceEventPanels!==originalEventPanelCount||
+     siteProjectionSummary.schemaShapedEvents!==eventUnifiedSummaries.filter(
+      x=>x.status==='unified-unapproved').length||
+     siteProjectionSummary.schemaShapedResults!==eventUnifiedSummaries.reduce((n,x)=>n+
+      (x.status==='unified-unapproved'?x.routes:0),0)))
+    fail('GameTora元サイトの結果経路から暫定DB形状への変換件数が変化');
    const unifiedEventObservations={
     panelsInspected:eventUnifiedSummaries.length,
     eventPanelsJoined:eventUnifiedSummaries.filter(
@@ -511,6 +534,7 @@ async function probe(){
     directSkillObservations,
     visibleFlowObservations,
     unifiedEventObservations,
+    privateSchemaProjection:siteProjectionSummary,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
