@@ -158,9 +158,9 @@ function stageNewCardEvents({
 }
 function appendApprovedNewCards({
  discovery,existingCatalog,candidates,existingApprovals,
- newApprovals,model,skillText=null,pendingCardIds=[]
+ newApprovals,model,skillText=null,pendingCardIds=[],derivedSourcePlan=null
 }={}){
- const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds});
+ const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds,derivedSourcePlan});
  if(!plain(existingApprovals)||existingApprovals.schemaVersion!==1||
     !Array.isArray(existingApprovals.entries)||
     !plain(newApprovals)||newApprovals.schemaVersion!==1||
