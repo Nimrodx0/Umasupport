@@ -46,6 +46,12 @@ jobs:
         run: node --check poc/src/official_gametora_site_flow_draft.cjs && node --test poc/tests/official_gametora_site_flow_draft.test.cjs
       - name: Verify append-only incremental event intake for newly released support cards
         run: node --check poc/src/new_card_event_incremental.cjs && node --check poc/tools/plan_new_card_event_intake.cjs && node --test poc/tests/new_card_event_incremental.test.cjs
+      - name: Verify card-agnostic original GameTora DOM extraction and private event-schema projection
+        run: |
+          node --check poc/src/official_gametora_route_dom_extractor.cjs
+          node --test poc/tests/official_gametora_route_dom_extractor.test.cjs
+          node --check poc/src/official_gametora_private_schema_projection.cjs
+          node --test poc/tests/official_gametora_private_schema_projection.test.cjs
       - name: Verify GameTora-only generic conversion and neutral result numbering
         run: node --test poc/tests/gametora_generic_converter_scope.test.cjs
       - name: Verify original GameTora multi-card site event assembler and exact result parity
