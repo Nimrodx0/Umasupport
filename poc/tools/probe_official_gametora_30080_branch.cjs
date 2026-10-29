@@ -215,6 +215,24 @@ async function run(path){
   const unifiedSummary=summarizeUnifiedSiteDraft(siteUnifiedDraft);
   const directSummary=summarizeDirectSkillDraft(siteDirectDraft);
   const flowSummary=summarizeFlowDraft(siteFlowDraft);
+  // One published page, one named event: pin the observed route evidence.
+  // This does not establish complete in-game reward or continuation semantics.
+  const expectedVisibleFlow=[
+   ['explicit-outing-unlock'],['explicit-outing-unlock'],
+   ['explicit-outing-unlock'],['explicit-chain-stop']
+  ];
+  if(unifiedSummary.groups!==3||unifiedSummary.routes!==4||
+     unifiedSummary.numericEffects!==12||unifiedSummary.skillHints!==1||
+     directSummary.explicitDirectLikeLeafTexts!==2||
+     directSummary.unapprovedDirectSkillCandidates!==0||
+     directSummary.unresolvedDirectLikeLeafTexts!==2||
+     unifiedSummary.observedFlowMarkers!==4||
+     unifiedSummary.routeSummary.some((r,i)=>
+      r.flowMarkers.join(',')!==expectedVisibleFlow[i].join(','))||
+     unifiedSummary.routeSummary[3].hints!==1||
+     unifiedSummary.routeSummary.some((r,i)=>r.group!==
+      [1,1,2,3][i]||r.result!==[1,2,1,1][i]))
+   fail('pinned-single-event-unified-route-evidence-drift');
   if(unifiedSummary.routes!==independentDraft.visibleRouteCount||
      unifiedSummary.numericEffects!==independentDraft.observedScalarEffectCount||
      unifiedSummary.skillHints!==siteHintDraft.uniquelyResolvedHintIdLevelPairs||
