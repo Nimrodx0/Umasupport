@@ -37,7 +37,8 @@ function setup(){
  const sourcePlan=planDerivedNewCardIntake({discovery,existingCatalog:catalog,
   sourceTree,sourceCommit:'b'.repeat(40)});
  return {discovery,existingCatalog:catalog,sourcePlan,
-  sourceDocuments:{10016:d1,30030:d2},skillText:registry()};
+  sourceDocuments:{10016:d1,30030:d2},skillText:registry(),
+  skillRevision:'c'.repeat(40)};
 }
 test('real Git blob-bound candidate goes into review staging, missing and incomplete cards stay pending',()=>{
  const x=setup(),before=JSON.stringify(x.existingCatalog);
