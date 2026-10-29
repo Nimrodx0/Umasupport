@@ -44,6 +44,8 @@ jobs:
         run: node --check poc/src/official_gametora_site_numeric_draft.cjs && node --test poc/tests/official_gametora_site_numeric_draft.test.cjs
       - name: Verify visible event-chain stop and outing-unlock facts never imply missing dependencies
         run: node --check poc/src/official_gametora_site_flow_draft.cjs && node --test poc/tests/official_gametora_site_flow_draft.test.cjs
+      - name: Verify fail-closed join of original GameTora numeric hints direct skills and flow markers
+        run: node --check poc/src/official_gametora_site_unified_draft.cjs && node --test poc/tests/official_gametora_site_unified_draft.test.cjs
       - name: Verify strict direct-skill award wording never conflates a hint with a granted skill
         run: node --check poc/src/official_gametora_direct_skill_draft.cjs && node --test poc/tests/official_gametora_direct_skill_draft.test.cjs
       - name: Verify route-local live-site hint names map only to independent IDs and levels

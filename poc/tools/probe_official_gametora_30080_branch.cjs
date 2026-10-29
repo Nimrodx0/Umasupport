@@ -13,6 +13,9 @@ const {compareNumericRoutes}=require('../src/official_gametora_old_numeric_route
 const {siteOnlyNumericDraft,summarizeNumericDraft}=require('../src/official_gametora_site_numeric_draft.cjs');
 const {registryFromSkillText}=require('../src/official_gametora_skill_id_crosswalk.cjs');
 const {hintOnlyDraft,summarizeHintDraft}=require('../src/official_gametora_site_hint_draft.cjs');
+const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
+const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
+const {buildUnifiedSiteDraft,summarizeUnifiedSiteDraft}=require('../src/official_gametora_site_unified_draft.cjs');
 const CARD_ID='30080';
 const PAGE_URL='https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa';
 const BLOB='8ce27e74dd18de7a08efa6a0bcf53d5be7a59a86';
@@ -146,7 +149,23 @@ async function run(path){
      return {effectTexts:effectTexts.slice(0,80),
       effectContexts:effectContexts.slice(0,80)};
     });
+    // These leaf fragments derive from the EXACT SAME result roots as
+    // numericSegments. They cannot be reassigned by title, name, or old GT.
+    const resultOwnSegments=segmentRoots.map(roots=>{
+     const leaves=roots.flatMap(root=>[root,...root.querySelectorAll('*')]
+      .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
+       .map(n=>n.textContent||'').join('').trim())
+      .filter(t=>t.length>0&&t.length<=300));
+     return {
+      directOwnTexts:leaves.filter(t=>/(?:獲得|習得|取得)/.test(t)).slice(0,80),
+      flowOwnTexts:leaves.filter(t=>
+       /(?:連続|イベントチェーン|お出かけ|おでかけ)/.test(t)&&
+       /(?:打ち切り|終了|中断|発生しない|可能|解放|できるようになる)/.test(t)).slice(0,80),
+      unresolvedOr:verifiedOr>0&&verifiedSplits.length!==1
+     };
+    });
     return {
+     resultOwnSegments,
      visibleText:(group.innerText||'').slice(0,3000),
      ownTextFragments:fragments.slice(0,100).map(x=>x.slice(0,250)),
      numericSegments,
@@ -173,6 +192,55 @@ async function run(path){
   auditStage='route-hint-parsing';
   const siteHintDraft=hintOnlyDraft(independentDraft,groups,skillRegistry);
   const hintDraftSummary=summarizeHintDraft(siteHintDraft);
+  auditStage='site-unified-route-join';
+  const resultOwnRoutes=groups.flatMap((g,gi)=>g.resultOwnSegments.map((r,ri)=>({
+   choiceGroupOrdinal:gi+1,resultOrdinal:ri+1,
+   directOwnTexts:r.directOwnTexts,
+   flowOwnTexts:r.flowOwnTexts,
+   unresolvedOr:r.unresolvedOr
+  })));
+  const siteDirectDraft=siteDirectSkillDraft({
+   cardId:CARD_ID,siteEventOrdinal:positions[0]+1,
+   registry:skillRegistry,
+   routes:resultOwnRoutes
+  });
+  const siteFlowDraft=routeFlowCandidates({
+   cardId:CARD_ID,siteEventOrdinal:positions[0]+1,
+   routes:resultOwnRoutes
+  });
+  const siteUnifiedDraft=buildUnifiedSiteDraft({
+   numericDraft:independentDraft,hintDraft:siteHintDraft,
+   directDraft:siteDirectDraft,flowDraft:siteFlowDraft
+  });
+  const unifiedSummary=summarizeUnifiedSiteDraft(siteUnifiedDraft);
+  const directSummary=summarizeDirectSkillDraft(siteDirectDraft);
+  const flowSummary=summarizeFlowDraft(siteFlowDraft);
+  // One published page, one named event: pin the observed route evidence.
+  // This does not establish complete in-game reward or continuation semantics.
+  const expectedVisibleFlow=[
+   ['explicit-outing-unlock'],['explicit-outing-unlock'],
+   ['explicit-outing-unlock'],['explicit-chain-stop']
+  ];
+  if(unifiedSummary.groups!==3||unifiedSummary.routes!==4||
+     unifiedSummary.numericEffects!==12||unifiedSummary.skillHints!==1||
+     directSummary.explicitDirectLikeLeafTexts!==2||
+     directSummary.unapprovedDirectSkillCandidates!==0||
+     directSummary.unresolvedDirectLikeLeafTexts!==2||
+     unifiedSummary.observedFlowMarkers!==4||
+     unifiedSummary.routeSummary.some((r,i)=>
+      r.flowMarkers.join(',')!==expectedVisibleFlow[i].join(','))||
+     unifiedSummary.routeSummary[3].hints!==1||
+     unifiedSummary.routeSummary.some((r,i)=>r.group!==
+      [1,1,2,3][i]||r.result!==[1,2,1,1][i]))
+   fail('pinned-single-event-unified-route-evidence-drift');
+  if(unifiedSummary.routes!==independentDraft.visibleRouteCount||
+     unifiedSummary.numericEffects!==independentDraft.observedScalarEffectCount||
+     unifiedSummary.skillHints!==siteHintDraft.uniquelyResolvedHintIdLevelPairs||
+     unifiedSummary.directSkillCandidates!==siteDirectDraft.uniquelyMatchedDirectSkillCandidates||
+     siteUnifiedDraft.appEventSchemaAdoptable!==false||
+     siteUnifiedDraft.publicationApproved!==false)
+   fail('site-unified-identity-or-count-drift');
+
   // Pinned ONE-EVENT QA sample, never a default for the generic converter.
   // A site update must be investigated rather than silently changing the ID.
   const pinnedHint=hintDraftSummary.hintCandidates;
@@ -206,6 +274,8 @@ async function run(path){
    uniquelyMatchedEventTitles:positions.length,
    ...proof,numericRouteParity:numericProof,siteOnlyDraft:draftSummary,
    siteOnlyRouteHintDraft:hintDraftSummary,
+   siteOnlyDirectGrantDraft:directSummary,siteOnlyFlowDraft:flowSummary,
+   siteOnlyUnifiedDraft:unifiedSummary,
    hintContextProfiles,
    independentOriginalSiteRead:true,
    historicalReferenceBlobVerified:true,siteDomDiagnostics,

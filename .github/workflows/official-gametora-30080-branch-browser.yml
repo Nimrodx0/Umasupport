@@ -7,6 +7,8 @@ on:
       - 'poc/src/official_gametora_old_numeric_route_parity.cjs'
       - 'poc/src/official_gametora_site_numeric_draft.cjs'
       - 'poc/src/official_gametora_site_hint_draft.cjs'
+      - 'poc/src/official_gametora_site_unified_draft.cjs'
+      - 'poc/tests/official_gametora_site_unified_draft.test.cjs'
       - 'poc/tests/official_gametora_site_hint_draft.test.cjs'
       - 'poc/tests/official_gametora_site_numeric_draft.test.cjs'
       - 'poc/tests/official_gametora_old_numeric_route_parity.test.cjs'
@@ -39,6 +41,8 @@ jobs:
           node --test poc/tests/official_gametora_site_numeric_draft.test.cjs
           node --check poc/src/official_gametora_site_hint_draft.cjs
           node --test poc/tests/official_gametora_site_hint_draft.test.cjs
+          node --check poc/src/official_gametora_site_unified_draft.cjs
+          node --test poc/tests/official_gametora_site_unified_draft.test.cjs
       - name: Use installed Chrome and Playwright
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
