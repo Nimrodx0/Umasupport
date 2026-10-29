@@ -124,7 +124,6 @@ function rehearseApprovedExistingEvents({
  const release=verifyRelease(catalog,approvals);
  if(canonical(existingCatalog)!==oldCatalog||
     canonical(existingApprovals)!==oldApprovals||
-    canonical(catalog.cards.slice(0,0))!=='[]'||
     canonical(approvals.entries.slice(0,existingApprovals.entries.length))!==
       canonical(existingApprovals.entries))
   fail('元の承認証跡や公開DB入力に変更が生じた');
