@@ -39,7 +39,7 @@ function simulate({prev=emptyLedger(),current=['30001','30322','30323'],
   pendingCardIds:prev.cards.map(x=>x.cardId),
   sourceTree,sourceCommit:sha('b')});
  const sourceDocuments=Object.fromEntries(complete.map(id=>[id,docs[id]])
-  .filter(([id,text])=>typeof text==='string'));
+  .filter(([id,text])=>typeof text==='string'&&plan.candidateIds.includes(id)));
  const stage=stageDerivedGitHubNewCards({discovery,existingCatalog:original,
   sourcePlan:plan,sourceDocuments,pendingCardIds:prev.cards.map(x=>x.cardId),
   skillText:skillText(),skillRevision:sha('c')});
