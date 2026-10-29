@@ -27,20 +27,30 @@
     "allowPendingOnlyWhenGameWithFactNotEstablished": true
   },
   "freshCardSourceLookup": {
-    "version": 1,
-    "strategy": "delayed-website-before-gamewith",
-    "websiteCheckAfterDays": 7,
-    "gameWithCheckAfterDays": 21,
+    "version": 2,
+    "strategy": "derived-github-primary",
+    "manualExceptionOnly": true,
     "autoPromotePins": false,
     "autoPublish": false
   },
   "futureDirectSource": {
-    "status": "feasibility-in-progress",
+    "status": "paused-incomplete-not-release-blocking",
     "targetPrimary": "https://gametora.com",
     "downstreamException": "GameWith",
-    "derivedGitHubRole": "historical-baseline-and-cross-check-only-after-feasibility",
+    "derivedGitHubRole": "primary-structured-event-source",
     "fullScaleAcquisitionAuthorized": false,
     "autoSourceSwitchAllowed": false,
+    "automaticPublicationAllowed": false
+  },
+  "currentEventIntake": {
+    "version": 1,
+    "sourceType": "GameTora-derived-structured-GitHub-JSON",
+    "repository": "systemless10/UmamusumePS",
+    "pathPattern": "server/data/events/gametora/support_<ID>.json",
+    "updateMode": "new-card-only-append",
+    "missingCardPolicy": "persist-pending-and-continue-other-cards",
+    "directWebsiteHtmlAdapter": "paused-not-a-prerequisite",
+    "manualExceptionSource": "GameWith",
     "automaticPublicationAllowed": false
   }
 }
