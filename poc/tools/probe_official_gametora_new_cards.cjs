@@ -394,6 +394,8 @@ async function probe(){
       });
      });
     });
+    if(routePieces.some(r=>!Array.isArray(r.resultLabelOwnTexts)))
+     fail('元サイト結果末端の成功失敗表示取得に失敗、ゼロ件扱い禁止');
     if(registry){
      const joined=assembleLiveEvent({
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
