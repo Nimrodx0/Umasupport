@@ -114,7 +114,7 @@ jobs:
              JSON.stringify(staged.stage.pending.map(x=>x.cardId))!==
                JSON.stringify(['30030'])||
              staged.carryForwardPendingIds.length!==4||
-   !staged.reviewItems.some(x=>x.cardId==='30010')||
+             !staged.reviewItems.some(x=>x.cardId==='30010')||
              staged.publicationApproved!==false||
              staged.stage.ready.some(c=>c.events.some(e=>
                e.sourceKind!=='derived-github-unreviewed')))
