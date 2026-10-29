@@ -73,8 +73,10 @@ test('missing downloaded blob is separate from GitHub JSON missing',()=>{
  assert.equal(out.stage.pending[0].reason,'derived-github-source-not-fetched');
 });
 test('reject substituted plan and out-of-scope or already imported document',()=>{
- const x=setup();x.sourcePlan.primarySourceCommit='c'.repeat(40);
- assert.deepEqual(stageDerivedGitHubNewCards(x).newlyModeledCardIds,[]);
+ const x=setup();
+ x.sourcePlan.results.find(r=>r.cardId==='10016').sourceBlobSha='0'.repeat(40);
+ assert.equal(stageDerivedGitHubNewCards(x).stage.pending[0].reason,
+  'derived-github-card-validation-failed');
  const y=setup();y.sourceDocuments[99999]=doc('99999');
  assert.throws(()=>stageDerivedGitHubNewCards(y),/document-outside-eligible-pinned-source/);
  const z=setup();z.sourcePlan.detectedNewCardIds=[];
@@ -116,9 +118,9 @@ test('even a fully projected derived GitHub stage cannot bypass human release ap
  const model={cards:[{id:'30001'},{id:'10016'}],
   cardById:{30001:{id:'30001'},10016:{id:'10016'}},
   skillById:{}};
- const v=appendApprovedNewCards({discovery:x.discovery,
+ assert.throws(()=>appendApprovedNewCards({discovery:x.discovery,
   existingCatalog:x.existingCatalog,candidates:[fake],
   existingApprovals:{schemaVersion:1,entries:[]},newApprovals:approvals,
-  model,skillText:registry(),derivedSourcePlan:x.sourcePlan});
- assert.equal(v.status,'pending','only card 10016 ready, others remain absent and cannot be published');
+  model,skillText:registry(),derivedSourcePlan:x.sourcePlan}),
+  /未照合報酬の草稿は公開できません/);
 });
