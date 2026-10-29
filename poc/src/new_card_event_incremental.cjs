@@ -11,7 +11,7 @@
  * scrape, grant rights, update a source pin, overwrite files, or publish.
  */
 const crypto=require('node:crypto');
-const {validateCatalog}=require('./event_schema.js');
+const {preflight}=require('./public_event_catalog.js');
 const {parseSupportCards}=require('./live_loader.js');
 const {verifyRelease,canonical}=require('./event_release_gate.cjs');
 const fail=s=>{throw Error('新サポカイベント増分取り込み: '+s);};
@@ -122,7 +122,7 @@ function stageNewCardEvents({discovery,existingCatalog,candidates}={}){
 }
 function appendApprovedNewCards({
  discovery,existingCatalog,candidates,existingApprovals,
- newApprovals,model
+ newApprovals,model,skillText=null
 }={}){
  const stage=stageNewCardEvents({discovery,existingCatalog,candidates});
  if(!plain(existingApprovals)||existingApprovals.schemaVersion!==1||
@@ -136,7 +136,7 @@ function appendApprovedNewCards({
    catalog:null,approvals:null};
  if(!stage.ready.length){
   if(newApprovals.entries.length)fail('追加対象なしで新規承認証跡が存在する');
-  validateCatalog(existingCatalog,model);
+  preflight(model,existingCatalog,{skillText,fullRegistry:false});
   verifyRelease(existingCatalog,existingApprovals);
   return {status:'unchanged',newCardIds:[],existingCatalogUnchanged:true,
    catalog:clone(existingCatalog),approvals:clone(existingApprovals)};
@@ -160,7 +160,7 @@ function appendApprovedNewCards({
   entries:[...clone(existingApprovals.entries),...clone(newApprovals.entries)]};
  // Validate both content and per-event human evidence before returning.
  // No mutation, no file writes, no silent fallback on error.
- validateCatalog(merged,model);
+ preflight(model,merged,{skillText,fullRegistry:false});
  verifyRelease(merged,approvals);
  if(sha256(existingCatalog)!==stage.existingCatalogDigest||
     canonical(merged.cards.slice(0,existingCatalog.cards.length))!==
