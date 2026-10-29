@@ -12,8 +12,6 @@ const {buildUnifiedSiteDraft,summarizeUnifiedSiteDraft}=
  require('./official_gametora_site_unified_draft.cjs');
 const {scanOwnText}=require('./official_gametora_numeric_fact_parser.cjs');
 const {resolveHintContextChain}=require('./official_gametora_skill_id_crosswalk.cjs');
-const {siteOutcomeLabelEvidence,summarizeSiteOutcomeLabelEvidence}=
- require('./official_gametora_site_outcome_label_evidence.cjs');
 const fail=s=>{throw Error('GameTora新サポカ実表示統合: '+s);};
 const good=x=>Number.isSafeInteger(x)&&x>0;
 const signature=x=>x.numericId+':'+x.level;
@@ -91,20 +89,6 @@ function assembleLiveEvent({cardId,siteEventOrdinal,routePieces,registry}={}){
  const flowDraft=routeFlowCandidates({cardId,siteEventOrdinal,routes:flowRoutes});
  const joined=buildUnifiedSiteDraft({numericDraft,hintDraft,directDraft,flowDraft});
  const summary=summarizeUnifiedSiteDraft(joined);
- const outcomeEvidence=siteOutcomeLabelEvidence({
-  cardId,siteEventOrdinal,
-  routes:routePieces.map(r=>({
-   choiceOrdinal:r.choiceOrdinal,outcomeOrdinal:r.outcomeOrdinal,
-   unresolvedOr:r.unresolvedOr,
-   resultLabelOwnTexts:r.resultLabelOwnTexts??[]
-  }))
- });
- if(outcomeEvidence.inspectedResultRoutes!==joined.visibleRouteCount||
-    outcomeEvidence.routes.some((r,i)=>
-     r.choiceGroupOrdinal!==joined.routes[i].choiceGroupOrdinal||
-     r.resultOrdinal!==joined.routes[i].resultOrdinal))
-  fail('site-result-label-coordinate-drift');
- const outcomeEvidenceSummary=summarizeSiteOutcomeLabelEvidence(outcomeEvidence);
  const hinted=joined.routes.flatMap(r=>r.skillHints.map(h=>({
   choiceGroupOrdinal:r.choiceGroupOrdinal,resultOrdinal:r.resultOrdinal,
   numericId:h.numericId,level:h.level
@@ -137,7 +121,7 @@ function assembleLiveEvent({cardId,siteEventOrdinal,routePieces,registry}={}){
  return {
   status:'unified-unapproved',cardId:String(cardId),siteEventOrdinal,
   numericDraft,hintDraft,directDraft,flowDraft,joined,
-  summary,outcomeEvidence,outcomeEvidenceSummary,
+  summary,
   // Every emitted candidate stays non-public and cannot be loaded by app.
   publicationApproved:false,appEventSchemaAdoptable:false
  };
@@ -151,9 +135,7 @@ function summarizeLiveEvent(result){
   status:result.status,routeCount:result.routeCount,
   publicationApproved:false,appEventSchemaAdoptable:false
  };
- const x=result.summary,e=result.outcomeEvidenceSummary;
- if(!e||e.inspectedResultRoutes!==x.routes)
-  fail('site-result-label-count-drift');
+ const x=result.summary;
  return {cardId:x.cardId,siteEventOrdinal:x.siteEventOrdinal,
   status:result.status,groups:x.groups,routes:x.routes,
   numericEffects:x.numericEffects,
@@ -162,10 +144,6 @@ function summarizeLiveEvent(result){
   skillHints:x.skillHints,unresolvedHintRows:result.hintDraft.unresolvedHintRows,
   directSkillCandidates:x.directSkillCandidates,
   unresolvedDirectLikeTexts:result.directDraft.unresolvedDirectLikeTexts,
-  observedExplicitOutcomeLabels:e.explicitlyLabelledResultRoutes,
-  ambiguousOutcomeLabels:e.ambiguousLabelledRoutes,
-  siteOrSeparatedGroups:e.orSeparatedGroupCount,
-  explicitSuccessFailurePairGroups:e.explicitlyLabelledSuccessFailurePairGroups,
   visibleFlowMarkers:x.observedFlowMarkers,
   locatedFlowMarkers:x.locatedFlowMarkers,
   reviewReasonCounts:x.routeSummary.flatMap(r=>r.reviewReasons)
@@ -173,9 +151,7 @@ function summarizeLiveEvent(result){
   routeSummary:x.routeSummary.map(r=>({
    group:r.group,result:r.result,numericalFacts:r.numericalFacts,
    hints:r.hints,directCandidates:r.directCandidates,
-   flowMarkers:r.flowMarkers,unlocatedFlowMarkers:r.unlocatedFlowMarkers,
-   siteOutcomeLabel:e.labelsByResult.find(x=>
-    x.group===r.group&&x.result===r.result)?.label??null
+   flowMarkers:r.flowMarkers,unlocatedFlowMarkers:r.unlocatedFlowMarkers
   })),
   allSkillAwardsVerified:false,continuationRequiresVerified:false,
   publicationApproved:false,appEventSchemaAdoptable:false};
