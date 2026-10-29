@@ -110,3 +110,29 @@ test('do not present raw source prose or any public event schema output',()=>{
  assert.throws(()=>summarizeLiveEvent({...a,publicationApproved:true}),/only-unapproved/);
  assert.ok(!Object.hasOwn(a.joined.routes[1],'terminal'));
 });
+
+test('unresolved site hint stays private without discarding independent numeric routes',()=>{
+ const a=sample();
+ const unknown='「辞書に存在しない独自名」のヒントLv +1';
+ a[0].numericEffectTexts[1]=unknown;
+ a[0].numericEffectContexts[1]=[unknown];
+ a[0].hints=[{text:unknown,contexts:[unknown]}];
+ const result=run(a),summary=summarizeLiveEvent(result);
+ assert.equal(result.status,'unified-unapproved');
+ assert.equal(result.hintDraft.seenHintRows,1);
+ assert.equal(result.hintDraft.unresolvedHintRows,1);
+ assert.equal(summary.routes,3);
+ assert.equal(summary.numericEffects,3);
+ assert.equal(summary.skillHints,0);
+ assert.equal(result.joined.routes[0].allAwardsExhaustive,false);
+ assert.ok(result.joined.routes[0].unresolvedReasons.includes('hint-facts-unresolved'));
+ assert.equal(result.publicationApproved,false);
+ assert.equal(result.appEventSchemaAdoptable,false);
+ assert.doesNotMatch(JSON.stringify(summary),/辞書に存在しない独自名/);
+});
+test('unparsed hint in independent DOM cannot silently disappear from numeric route reader',()=>{
+ const a=sample();
+ a[0].numericEffectTexts=['体力 +15'];
+ a[0].numericEffectContexts=[['体力 +15']];
+ assert.throws(()=>run(a),/site-local-hint-id-level-route-drift/);
+});
