@@ -1,0 +1,49 @@
+name: Limited real-browser check of generic new-card GameTora locator
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/official-gametora-new-card-locator-browser.yml'
+      - 'poc/src/official_gametora_new_card_locator.cjs'
+      - 'poc/tools/probe_official_gametora_target_cards.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/src/official_gametora_private_schema_projection.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-listing-and-two-cards:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline adapter and security tests
+        run: |
+          node --test poc/tests/official_gametora_new_card_locator.test.cjs
+          node --check poc/tools/probe_official_gametora_target_cards.cjs
+      - name: Prepare Chrome
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Obtain pinned independent skill registry in disposable runner
+        run: |
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 \
+            'https://raw.githubusercontent.com/mee1080/umasim/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt' \
+            -o "$RUNNER_TEMP/umasim-skill-data.txt"
+      - name: Prepare a read-only synthetic new-card selection envelope
+        run: |
+          node -e 'const fs=require("fs");fs.writeFileSync(process.env.RUNNER_TEMP+"/intake-fixture.json",JSON.stringify({dataKind:"new-card-event-intake-plan",version:1,publicationApproved:false,sourceEventsPublishedAutomatically:false,existingDatabaseUnchanged:true,publishedEventsChanged:0,existingCatalogDigest:"0".repeat(64),newlyObservedIds:["30322","30323"],alreadyImportedIds:[],carryForwardPendingIds:["30322","30323"]}));'
+      - name: Visit one source listing and at most two known support pages
+        env:
+          CI: 'true'
+        run: |
+          node poc/tools/probe_official_gametora_target_cards.cjs \
+            --live --plan "$RUNNER_TEMP/intake-fixture.json" \
+            --skills "$RUNNER_TEMP/umasim-skill-data.txt"
