@@ -15,6 +15,8 @@ const {assembleLiveEvent,summarizeLiveEvent}=
  require('../src/official_gametora_live_event_assembler.cjs');
 const {projectNewCardSite,summarizeCardProjection}=
  require('../src/official_gametora_private_schema_projection.cjs');
+const {summarizeNumericPieces,categorizePanelGeometry}=
+ require('../src/official_gametora_source_diagnostics.cjs');
 
 const COHORT=Object.freeze(['30030','30041','30080']);
 const fail=message=>{throw Error('GameTora構造別限定監査: '+message);};
@@ -40,6 +42,13 @@ function rawPanelCensus(button){
  const fullPanelLeaves=panel?[panel,...panel.querySelectorAll('*')]:[];
  const allPanelOwn=fullPanelLeaves.map(own).filter(Boolean);
  return {
+  panelElementCount:fullPanelLeaves.length,
+  panelOwnTextNodes:allPanelOwn.length,
+  panelDirectChildren:panel?.children.length||0,
+  panelImages:fullPanelLeaves.filter(el=>el.tagName==='IMG').length,
+  panelLinks:fullPanelLeaves.filter(el=>el.tagName==='A').length,
+  panelTables:fullPanelLeaves.filter(el=>el.tagName==='TABLE').length,
+  panelButtons:fullPanelLeaves.filter(el=>el.tagName==='BUTTON').length,
   panelVisible:!!panel,
   bodyFound:!!body,
   bodyGroupCount:body?.children.length||0,
@@ -168,7 +177,11 @@ async function inspect({ids,skillFile}={}){
     const raw=await button.evaluate(rawPanelCensus);
     if(!raw.panelVisible)fail('パネルが存在しない');
     const base={ordinal:i+1,panelSignedLeaves:raw.panelSignedOwnTextCount,
-     panelHintLikeLeaves:raw.panelHintLikeOwnTextCount};
+     panelHintLikeLeaves:raw.panelHintLikeOwnTextCount,
+     panelGeometryClass:categorizePanelGeometry(raw),
+     panelGeometry:{elements:raw.panelElementCount,textNodes:raw.panelOwnTextNodes,
+      directChildren:raw.panelDirectChildren,images:raw.panelImages,
+      links:raw.panelLinks,tables:raw.panelTables,buttons:raw.panelButtons}};
     let pieces;
     try{pieces=await button.evaluate(extractRoutePieces);}
     catch{
@@ -180,6 +193,7 @@ async function inspect({ids,skillFile}={}){
      continue;
     }
     const compared=compareIndependentCensus(raw,pieces);
+    const numericDiagnostics=summarizeNumericPieces(pieces);
     try{
      const observed=assembleLiveEvent({
       cardId:item.cardId,siteEventOrdinal:i+1,routePieces:pieces,registry
@@ -187,6 +201,7 @@ async function inspect({ids,skillFile}={}){
      observations.push(observed);
      const summary=summarizeLiveEvent(observed);
      events.push({...base,status:summary.status,...compared,
+      numericDiagnostics,
       unparsedNumericFacts:summary.unparsedNumericFacts??null,
       excludedNonScalarNumericFacts:summary.excludedNonScalarNumericFacts??null,
       unresolvedHintRows:summary.unresolvedHintRows??null,
@@ -195,7 +210,7 @@ async function inspect({ids,skillFile}={}){
     }catch(error){
      // A card with even one unassembled event cannot pass projection.
      events.push({...base,status:'event-assembler-rejected',...compared,
-      assemblerRejectionCode:classifyAssemblerRejection(error),
+      numericDiagnostics,assemblerRejectionCode:classifyAssemblerRejection(error),
       discrepancies:[...compared.discrepancies,'assembler-error']});
     }
    }

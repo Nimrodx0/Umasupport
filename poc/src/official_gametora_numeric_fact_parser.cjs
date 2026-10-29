@@ -18,6 +18,7 @@ const KINDS=[
  ['mood',/やる気|mood/i]
 ];
 const AMOUNT=/([+＋\-－−])\s*(\d{1,5})(?!\d)/g;
+const NUMERIC_ALTERNATIVE=/(?:[+＋\-－−]\s*)?\d{1,5}\s*[/／～〜]\s*(?:[+＋\-－−]\s*)?\d{1,5}(?!\d)/;
 const matchedEffectKinds=text=>{
  if(typeof text!=='string')return [];
  // "最大体力" and "max energy" must not also match plain "energy".
@@ -34,9 +35,15 @@ function scanOwnText(text){
  const kinds=matchedEffectKinds(text);
  return {
   kind:kinds.length===1?kinds[0]:'unclassified',
-  amount:nums.length===1?nums[0].sign*nums[0].value:null,
+  amount:nums.length===1&&!NUMERIC_ALTERNATIVE.test(text)?
+   nums[0].sign*nums[0].value:null,
   count:nums.length,
-  requiresReview:kinds.length!==1||nums.length!==1
+  // A site label such as "+10/20" contains a second unsigned number;
+  // treating only the leading signed +10 as a complete reward would be
+  // incorrect. Without structurally separate results, defer the *whole*
+  // numeric effect rather than guessing the first alternative.
+  requiresReview:kinds.length!==1||nums.length!==1||
+   NUMERIC_ALTERNATIVE.test(text)
  };
 }
 function sourceFacts(event){
