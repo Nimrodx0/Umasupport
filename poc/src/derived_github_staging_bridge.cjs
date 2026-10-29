@@ -8,12 +8,12 @@
  * existing public release gate MUST reject even with fake approvals.
  */
 const {stageNewCardEvents}=require('./new_card_event_incremental.cjs');
-const {projectDerivedCardDraft}=require('./derived_github_runtime_draft.cjs');
+const {projectExistingConverterForNewCard}=require('./derived_github_existing_converter_adapter.cjs');
 const fail=s=>{throw Error('派生GitHub増分接続: '+s);};
 const id=x=>typeof x==='string'&&/^[1-9]\d{4}$/.test(x);
 function stageDerivedGitHubNewCards({
  discovery,existingCatalog,sourcePlan,
- sourceDocuments={},skillText,pendingCardIds=[]
+ sourceDocuments={},skillText,skillRevision,pendingCardIds=[]
 }={}){
  if(discovery?.dataKind!=='new-umamusume-support-card-ids'||
     discovery.schemaVersion!==1||discovery.publicationApproved!==false||
@@ -48,18 +48,20 @@ function stageDerivedGitHubNewCards({
     typeof sourceDocuments[cardId]!=='string')
    fail('document-outside-eligible-pinned-source');
  }
- const candidates=[],failed=new Set();
+ const candidates=[],failed=new Set(),reviewItems=[];
  for(const cardId of targets){
   const row=byPlan.get(cardId),sourceText=sourceDocuments[cardId];
   if(row.status!=='source-blob-present-needs-validation'||
      sourceText===undefined)continue;
   let projected;
-  try{projected=projectDerivedCardDraft({plan:sourcePlan,cardId,
-   sourceText,skillText});}
+  try{projected=projectExistingConverterForNewCard({plan:sourcePlan,cardId,
+   sourceText,skillText,skillRevision});}
   catch{failed.add(cardId);continue;}
   if(projected.sourceCommit!==sourcePlan.primarySourceCommit||
      projected.sourceBlobSha!==row.sourceBlobSha)
    fail('result-source-lineage-mismatch');
+  for(const issue of projected.reviewItems)
+   reviewItems.push({cardId,...issue});
   candidates.push({source:'GameTora-derived-GitHub',cardId,
    sourceRevision:sourcePlan.primarySourceCommit,
    sourceBlobSha:row.sourceBlobSha,sourcePath:row.sourcePath,
@@ -88,6 +90,7 @@ function stageDerivedGitHubNewCards({
   // independent publication review AND actual append to the public DB.
   carryForwardPendingIds:[...stage.targetNewIds],
   newlyModeledCardIds:stage.ready.map(x=>x.cardId),
+  reviewItems,
   publicationApproved:false,
   allModeledEventsEditoriallyReviewed:false,
   existingDatabaseUnchanged:true,
