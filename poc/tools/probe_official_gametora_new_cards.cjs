@@ -10,6 +10,9 @@ const {summarizeCandidateRouteHints}=require('../src/official_gametora_new_card_
 const {siteDirectSkillDraft,summarizeDirectSkillDraft}=require('../src/official_gametora_direct_skill_draft.cjs');
 const {routeFlowCandidates,summarizeFlowDraft}=require('../src/official_gametora_site_flow_draft.cjs');
 const {assembleLiveEvent,summarizeLiveEvent}=require('../src/official_gametora_live_event_assembler.cjs');
+const {extractRoutePieces}=require('../src/official_gametora_route_dom_extractor.cjs');
+const {projectNewCardSite,summarizeCardProjection}=
+ require('../src/official_gametora_private_schema_projection.cjs');
 const {evaluateOutingEvidence}=require('../src/official_gametora_azuma_outing_evidence.cjs');
 const {correlateSequenceEvidence,evaluateSequenceCandidate}=require('../src/azuma_outing_sequence.cjs');
 const progressionLedger=require('../review/outing-progression-30323.v1.json');
@@ -225,8 +228,11 @@ async function probe(){
    const eventDirectGrantDrafts=[];
    const eventFlowDrafts=[];
    const eventUnifiedSummaries=[];
+   const siteEventObservations=[];
    const outingEventViews=[];
-   for(let idx=0;idx<Math.min(await eventButtons.count(),20);idx++){
+   const originalEventPanelCount=await eventButtons.count();
+   if(originalEventPanelCount>20)fail('元GameTora画面のイベントパネルが20件を超え、黙った欠落を禁止');
+   for(let idx=0;idx<originalEventPanelCount;idx++){
     const eventButton=eventButtons.nth(idx);
     if((await eventButton.getAttribute('aria-expanded'))!=='true')
      await eventButton.click({timeout:5000});
@@ -285,110 +291,13 @@ async function probe(){
      });
      outingEventViews.push(outingView);
     }
-    const routePieces=await eventButton.evaluate(button=>{
-     const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
-     const body=panel?.firstElementChild?.firstElementChild?.firstElementChild
-      ?.firstElementChild?.children?.[1];
-     if(!body)return [];
-     const groups=[...body.children];
-     return groups.slice(0,30).flatMap((group,choiceIndex)=>{
-      const inner=group.children.length===1?group.firstElementChild:group;
-      const rows=[...inner.children];
-      const separators=rows.map((el,i)=>({el,i})).filter(x=>
-       /^(?:OR|または|又は)$/i.test((x.el.innerText||'').trim()));
-      const allOrLeaves=[...group.querySelectorAll('*')].filter(el=>
-       el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
-      let segments=[[group]],ambiguous=allOrLeaves.length>0;
-      if(separators.length===1){
-       const pos=separators[0].i;
-       if(pos>0&&pos<rows.length-1){
-        segments=[rows.slice(0,pos),rows.slice(pos+1)];
-        ambiguous=false;
-       }
-      }else if(allOrLeaves.length===1){
-       // Some newly released cards nest an OR into a reward row instead
-       // of placing it among the direct children of the choice group.
-       // Find a *structurally explicit* delimiter with nonempty siblings
-       // on both sides. Do not fabricate branch counts from old mirrors.
-       const orLeaf=allOrLeaves[0];
-       let at=orLeaf;
-       while(at&&group.contains(at.parentElement)){
-        const parent=at.parentElement;
-        const siblings=[...parent.children];
-        const index=siblings.indexOf(at);
-        if(index>0&&index<siblings.length-1&&
-           /^(?:OR|または|又は)$/i.test((at.innerText||'').trim())){
-         segments=[siblings.slice(0,index),siblings.slice(index+1)];
-         ambiguous=false;
-         break;
-        }
-        at=parent;
-       }
-      }
-      const groupOwnTextFragments=[group,...group.querySelectorAll('*')]
-       .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)
-        .map(n=>n.textContent||'').join('').trim())
-       .filter(t=>t.length>0).slice(0,100).map(t=>t.slice(0,250));
-      return segments.map((roots,outcomeIndex)=>{
-       const own=[];
-       for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
-        const t=[...el.childNodes].filter(x=>x.nodeType===3)
-         .map(n=>n.textContent||'').join('').trim();
-        if(/ヒント|hint/i.test(t)&&/[+＋\-－−]\s*\d/.test(t)){
-         const contexts=[];
-         for(let p=el,d=0;p&&group.contains(p)&&d<5;p=p.parentElement,d++){
-          const str=p.innerText||'';
-          if(str.length<=240)contexts.push(str);
-         }
-         own.push({text:t.slice(0,240),contexts:contexts.slice(0,5)});
-        }
-       }
-       const numericEffectTexts=[],numericEffectContexts=[];
-       for(const root of roots)for(const el of [root,...root.querySelectorAll('*')]){
-        const t=[...el.childNodes].filter(n=>n.nodeType===3)
-         .map(n=>n.textContent||'').join('').trim();
-        if(!/[+＋\-－−]\s*\d/.test(t)||t.length>400)continue;
-        const contexts=[];
-        for(let p=el;p&&root.contains(p)&&contexts.length<6;p=p.parentElement){
-         const text=(p.innerText||'').trim();
-         if(text.length&&text.length<=300)contexts.push(text);
-        }
-        numericEffectTexts.push(t);
-        numericEffectContexts.push(contexts);
-       }
-       return {
-        numericEffectTexts:numericEffectTexts.slice(0,80),
-        numericEffectContexts:numericEffectContexts.slice(0,80),
-        groupOwnTextFragments,
-        choiceOrdinal:choiceIndex+1,
-        outcomeOrdinal:outcomeIndex+1,
-        unresolvedOr:ambiguous,
-        hints:own.slice(0,60),
-        // Take only small own-text fragments from each verified result.
-        // Never mix text from the enclosing alternative outcome.
-        directOwnTexts:roots.flatMap(root=>
-         [root,...root.querySelectorAll('*')].map(el=>
-          [...el.childNodes].filter(n=>n.nodeType===3)
-           .map(n=>n.textContent||'').join('').trim())
-          .filter(t=>t.length<=300&&/(?:獲得|習得|取得)/.test(t))
-        ).slice(0,80),
-        flowOwnTexts:roots.flatMap(root=>
-         [root,...root.querySelectorAll('*')].map(el=>
-          [...el.childNodes].filter(n=>n.nodeType===3)
-           .map(n=>n.textContent||'').join('').trim())
-          .filter(t=>t.length<=300&&
-           /(?:連続|イベントチェーン|お出かけ|おでかけ)/.test(t)&&
-           /(?:打ち切り|終了|中断|発生しない|可能|解放|できるようになる)/.test(t))
-        ).slice(0,80)
-       };
-      });
-     });
-    });
+    const routePieces=await eventButton.evaluate(extractRoutePieces);
     if(registry){
      const joined=assembleLiveEvent({
       cardId:target.cardId,siteEventOrdinal:idx+1,routePieces,registry
      });
      eventUnifiedSummaries.push(summarizeLiveEvent(joined));
+     siteEventObservations.push(joined);
     }
     const flow=routeFlowCandidates({
      cardId:target.cardId,siteEventOrdinal:idx+1,
@@ -444,7 +353,24 @@ async function probe(){
      unresolvedSkillIdHints:matched.filter(x=>x.status!=='unique-verified-name').length
     });
    }
+   // This is a model-shaped PRIVATE projection of exactly the site-visible
+   // results. Its intake candidate deliberately has 0 approved events.
+   // No success/failure labelling, GameWith, or historical mirrored JSON.
+   const siteProjection=registry?projectNewCardSite({
+    cardId:target.cardId,
+    siteEventPanelCount:originalEventPanelCount,
+    eventObservations:siteEventObservations
+   }):null;
+   const siteProjectionSummary=siteProjection?
+    summarizeCardProjection(siteProjection):null;
    const census=summarizeExpandedCensus(allRows);
+   if(siteProjectionSummary&&(
+     siteProjectionSummary.sourceEventPanels!==originalEventPanelCount||
+     siteProjectionSummary.schemaShapedEvents!==eventUnifiedSummaries.filter(
+      x=>x.status==='unified-unapproved').length||
+     siteProjectionSummary.schemaShapedResults!==eventUnifiedSummaries.reduce((n,x)=>n+
+      (x.status==='unified-unapproved'?x.routes:0),0)))
+    fail('GameTora元サイトの結果経路から暫定DB形状への変換件数が変化');
    const unifiedEventObservations={
     panelsInspected:eventUnifiedSummaries.length,
     eventPanelsJoined:eventUnifiedSummaries.filter(
@@ -608,6 +534,7 @@ async function probe(){
     directSkillObservations,
     visibleFlowObservations,
     unifiedEventObservations,
+    privateSchemaProjection:siteProjectionSummary,
     outingEvidence,
     outingProgression,
     fiveStageCompletionPreview:completedFiveCandidate,
