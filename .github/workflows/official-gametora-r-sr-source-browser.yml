@@ -71,6 +71,25 @@ jobs:
              !Array.isArray(p.results)||p.results.length!==2||
              p.results.some(x=>x.publicationApproved!==false))
             throw Error('R/SR read-only, two-visit and publication guard failed');
+          // Source observation from 2026-10-29. Fail on drift instead of
+          // quietly turning a changed R/SR site into a verified event.
+          const expected=[
+            {id:'10016',panels:2,shaped:2,unresolved:0,routes:4,numeric:9,hints:1},
+            {id:'20075',panels:5,shaped:4,unresolved:1,routes:7,numeric:16,hints:2}
+          ];
+          if(p.sourceSiteCardVisitsPerformed!==2)
+            throw Error('Actual R/SR pages were not both visited; manual recheck');
+          for(let i=0;i<expected.length;i++){
+            const g=p.results[i],e=expected[i];
+            if(g.cardId!==e.id||g.status!=='private-schema-only'||
+               g.sourceEventPanels!==e.panels||g.schemaShapedEvents!==e.shaped||
+               g.skippedOrAmbiguousEvents!==e.unresolved||
+               g.schemaShapedResults!==e.routes||
+               g.numericEffects!==e.numeric||g.skillHints!==e.hints||
+               g.pendingEventCount!==e.panels||
+               g.existingDatabaseTouched!==false||g.publicationApproved!==false)
+              throw Error('R/SR source shape changed: '+e.id);
+          }
           // A page absent from the observed listing does not prove the card
           // or event absent. A partially parsed page never means complete.
           console.log('GT_R_SR_BOUNDED_DIAGNOSTIC='+JSON.stringify({
