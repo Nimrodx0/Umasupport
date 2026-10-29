@@ -179,13 +179,13 @@ test('source-labeled special and random outing routes remain contextual, not unc
  const [special,,,outingRandom]=r.draftCatalog.cards[0].events;
  assert.equal(special.availabilityKind,'special-trigger');
  assert.equal(outingRandom.availabilityKind,'outing-random');
- const card={id:'30026',hints:[],events:[special,outingRandom]};
- const route1=core.directRoutes(card,{stage:4,choices:{
+ const specialCard={id:'30026',hints:[],events:[special]};
+ const route1=core.directRoutes(specialCard,{stage:4,choices:{
   [special.id]:special.choices[0].id}});
  assert.equal(route1.length,1);
  assert.equal(route1[0].conditional,true);
  assert.match(route1[0].condition,/特殊イベントの発生時/);
- const route2=core.directRoutes(card,{stage:4,choices:{},
+ const route2=core.directRoutes({id:'30026',hints:[],events:[outingRandom]},{stage:4,choices:{},
   outcomes:{[outingRandom.id]:outingRandom.outcomes[0].id}});
  assert.equal(route2.length,1);
  assert.equal(route2[0].conditional,true);
