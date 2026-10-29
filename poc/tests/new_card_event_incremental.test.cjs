@@ -183,3 +183,36 @@ test('actual live UmaSim TSV parser discovers any new five-digit card ID',()=>{
  assert.equal(delta.previousRosterStageRows,2500);
  assert.equal(delta.currentRosterStageRows,2505);
 });
+
+test('real public skill bridge validates original numeric skill ID and name on append',()=>{
+ const registry=JSON.stringify(Array.from({length:101},(_,i)=>({
+  id:String(300000+i),name:'合成数値スキル'+i,rarity:'normal',group:i
+ })));
+ const newCards=[candidate('30322'),candidate('30323')];
+ newCards[0].events[0].choices[0].outcomes[0].rewards=[{
+  skillId:'skill:300000',verifiedSkillName:'合成数値スキル0',level:1
+ }];
+ const incoming={schemaVersion:1,entries:[
+  approval('30322',newCards[0].events[0]),
+  approval('30323',newCards[1].events[0])
+ ]};
+ const next=appendApprovedNewCards({discovery:discovery(),
+  existingCatalog:catalog(),candidates:newCards,
+  existingApprovals:approvedOld(),newApprovals:incoming,
+  model,skillText:registry});
+ assert.equal(next.status,'ready-to-append');
+ assert.equal(next.catalog.cards[1].events[0].choices[0].outcomes[0]
+  .rewards[0].skillId,'skill:300000');
+ assert.equal(next.existingCatalogUnchanged,true);
+ const bad=structuredClone(newCards);
+ bad[0].events[0].choices[0].outcomes[0].rewards[0].verifiedSkillName=
+  '違うスキル';
+ const wrongApproval={schemaVersion:1,entries:[
+  approval('30322',bad[0].events[0]),
+  approval('30323',bad[1].events[0])
+ ]};
+ assert.throws(()=>appendApprovedNewCards({discovery:discovery(),
+  existingCatalog:catalog(),candidates:bad,
+  existingApprovals:approvedOld(),newApprovals:wrongApproval,
+  model,skillText:registry}),/名称照合が失敗/);
+});
