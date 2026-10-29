@@ -26,8 +26,9 @@ function build(){
  // The source review pack checks fixed GameWith facts, headers, ordinals,
  // source SHA and the fact that all eight are still outside publication.
  const view=buildView();
- if(verifyRelease(currentPublished,currentApprovals).publicEvents!==0)
-  fail('既存公開データが変わっています。新規追加方式を再審査してください');
+ // A later review run must still be usable AFTER the first event is
+ // published. Verified existing entries remain immutable in the appender.
+ const existing=verifyRelease(currentPublished,currentApprovals);
  const cards=[],reviews=[],checked=[];
  let totalChoices=0,totalHints=0;
  for(const card of view.cards){
@@ -113,7 +114,7 @@ function build(){
   sourceNarrativeOrChoiceProseIncluded:false,
   generatedFromReviewedFacts:true,
   catalog,approvalWorksheet:{schemaVersion:1,entries:reviews},
-  summary:{cards:4,events:8,choices:16,hints:4,approvedEvents:0}};
+  summary:{cards:4,events:8,choices:16,hints:4,approvedEvents:existing.publicEvents}};
 }
 function dryRunWithSkillText(skillText){
  const packet=build();

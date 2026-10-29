@@ -13,6 +13,7 @@
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
 | 既存GameTora全件変換器の新カード単位での再利用 | [旧2,488イベント変換器と今回の固定Git blob増分接続](derived-github-canonical-single-card-adapter-20261029.md) |
+| **既存カードの実イベントを初めて正式収録するための審査リハーサル** | [4カード・通常8イベント、未承認審査票、1件からの安全な追記](phase2-first-event-release-rehearsal-20261030.md) |
 | 新サポカの継続更新と要確認事項を翌日も引き継ぐ台帳 | [カードID単位のGitHub Issue・Git blob追跡・日次再試行](derived-github-daily-pending-ledger-20261029.md) |
 | 新カードのGitHub派生JSONから増分レビュー待ちまで | [固定Git blob・未掲載／不正／未変換の分岐と継続保留](derived-github-new-card-review-staging-20261029.md) |
 | 構造化GitHub派生イベント559枚の全件変換監査 | [2,488イベントの暫定変換・保留を種類別集計](derived-github-whole-roster-app-draft-audit-20261029.md) |
