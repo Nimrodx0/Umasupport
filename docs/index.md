@@ -8,6 +8,7 @@
 | 製品の最終要件と対象外 | [requirements.md](requirements.md) |
 | 利用者による確定決定・撤回の履歴 | [decisions.md](decisions.md) |
 | 今後の作業順序と完了ゲート | [roadmap.md](roadmap.md) |
+| **既存Phase 2・2,512非公開候補の残件** | [出典差異の後続裁定](phase2-2511-residual-source-gaps-20261023.md)／[Checker未同定のP0/P1/P2](phase2-remaining-checker-skill-impact-20261023.md)／[10/26非スキル効果の保留16件](phase2-outing-unlock-terminal-batch-20261026.md) |
 | 現在の状況と根拠リンク | [status.md](status.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |

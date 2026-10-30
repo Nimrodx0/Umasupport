@@ -47,7 +47,13 @@ test('current requirements and roadmap do not reactivate superseded HTML intake'
  assert.equal((roadmap.match(/^### 現在の製品完成への作業順/gm)||[]).length,1);
  assert.match(roadmap,/他Phaseの横断検証（上記とは別の優先順ではない）/);
  assert.match(roadmap,/2,512イベント/);
- assert.match(roadmap,/2,125件／保留363件/);
+ assert.match(roadmap,/既存カードのPhase 2は、2026-10-23〜26に全件検証した非公開563カード・2,512イベント/);
+ assert.match(roadmap,/SSR30240の連続3段階/);
+ assert.match(roadmap,/P2未同定11位置/);
+ assert.match(roadmap,/2,512との件数差の解消、363件の再実装、既存DBの作り直しを今後の作業にしない/);
+ assert.doesNotMatch(roadmap,/対象ソースと版、出典にないイベント、既に採用した編集事実、保留の位置を対応付ける/);
+ assert.match(read('AGENTS.md'),/既存Phase 2を再作成しない/);
+ assert.match(read('docs/derived-github-whole-roster-app-draft-audit-20261029.md'),/履歴・現行の工程外/);
  assert.match(verification,/以下は2026-10-29に撤回した直接取得先行条件の履歴/);
 });
 test('dated evidence and old complete texts are preserved in dedicated documents',()=>{
