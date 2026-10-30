@@ -31,8 +31,6 @@ const counters=()=>({
 });
 const allowedEvent=new Set(['id','name','type','choices','rewards','outcomes',
  'requires','availabilityKind','effects','statusEffects','dynamicEffects','terminal']);
-const allowedChoice=new Set(['id','label','rewards','outcomes','requires',
- 'terminal','effects','statusEffects','dynamicEffects']);
 const allowedOutcome=new Set(['id','label','rewards','outcomes','effects','statusEffects',
  'dynamicEffects','terminal','requires']);
 const allowedReward=new Set(['skillId','verifiedSkillName','kind','level','condition']);
