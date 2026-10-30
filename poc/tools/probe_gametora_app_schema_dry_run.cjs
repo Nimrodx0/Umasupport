@@ -12,7 +12,7 @@ const {gitBlobSha,INDEPENDENT_SKILLS_BLOB}=
 const supplemental=require('../data/curation/supplemental_skills.v1.json');
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
 const fail=x=>{throw Error('GameToraイベント実行スキーマ検証: '+x);};
-function main(args){
+async function main(args){
  if(![5,7,8].includes(args.length))
   fail('usage: <numeric-candidate> <crosswalk> <skill_data.txt> <support_card.txt> <numeric-summary-output> [historical-report.json private-historical-records.json] OR [numeric-historical-report.json pinned-2026-skills.json independent-fingerprint-report.json]');
  const [candidateFile,crosswalkFile,skillFile,rosterFile,out,
@@ -309,6 +309,16 @@ function main(args){
       sampledProductionEffectRoutes:liveEffects,
       sampledProductionStatusRoutes:liveStatusOperations,
       sampledProductionDynamicRoutes:liveDynamic,publicEventsAdded:0}));
+     // Exercise the real 2,512-event catalog through the actual browser-local
+     // file parser in RAM. Compare each card's event body and unselected /
+     // selected skill paths to the already accepted production loader.
+     const {makeBundle,accept:acceptPrivateLocal}=
+      require('../src/phase2_private_local_real_acceptance.cjs');
+     const localBundle=makeBundle(privateEventCatalog);
+     const localAcceptance=await acceptPrivateLocal({
+      catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
+     },{strict:true});
+     console.log('PHASE2_2512_REAL_LOCAL_IMPORT='+JSON.stringify(localAcceptance));
      // Optional, EXPLICIT local-only export after every existing whole-2512
      // validation. Never create artifacts in public repo, Actions or by default.
      // This is the exact FINAL catalog after all existing overlays.
@@ -321,18 +331,7 @@ function main(args){
       if(home===repoRoot||home.startsWith(repoRoot+path.sep)||
          !fs.statSync(home).isDirectory())
        fail('非公開イベントの書き出し先はGit管理外の既存ディレクトリに指定');
-      const pinned=require('../config/event-source-priority.v1.json');
-      const bundle={schemaVersion:1,
-       dataKind:'umasupport-phase2-private-local-catalog',
-       sourceRevision:pinned.baselineRevision,
-       publicationApproved:false,reviewedEventsPublished:0,
-       noAutomaticRuntimeAdoption:true,
-       sourceNarrativeOrChoiceProseIncluded:false,
-       fullEventRewardOrChainCoverageVerified:false,
-       sourceDatasetPublished:false,
-       catalogSha256:hash(JSON.stringify(privateEventCatalog)),
-       summary:{cards:summary.cardsWithRecords,events:attached.eventsWithRecords},
-       catalog:privateEventCatalog};
+      const bundle=localBundle;
       const localDir=fs.mkdtempSync(path.join(home,'umasupport-2512-private-'));
       fs.chmodSync(localDir,0o700);
       const localPath=path.join(localDir,'private-events.local.json');
@@ -481,6 +480,6 @@ function main(args){
  console.log('Publication remains disabled. Runtime-compatible catalog is ephemeral and discarded.');
 }
 if(require.main===module){
- try{main(process.argv.slice(2));}catch(e){console.error(e.message);process.exitCode=1;}
+ main(process.argv.slice(2)).catch(e=>{console.error(e.stack||e.message);process.exitCode=1;});
 }
 module.exports={main};
