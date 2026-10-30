@@ -319,6 +319,15 @@ async function main(args){
       catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
      },{strict:true});
      console.log('PHASE2_2512_REAL_LOCAL_IMPORT='+JSON.stringify(localAcceptance));
+     // Surface inventory stays in CI RAM. Print only field/viability counts,
+     // never source event headings, option dialogue, or reward prose.
+     const {assess:assessPublicationSurface}=
+      require('../src/phase2_publication_surface_audit.cjs');
+     const fieldAudit=assessPublicationSurface({
+      catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
+     },{strict:true});
+     console.log('PHASE2_2512_PUBLICATION_SURFACE='+JSON.stringify(fieldAudit));
+
      // Optional browser acceptance with the REAL 2,512 catalog. Pass the
      // in-memory bundle to Chromium's file chooser, not a tracked file or CI artifact.
      if(process.env.UMASUPPORT_PRIVATE_REAL_BROWSER_TEST==='true'){
