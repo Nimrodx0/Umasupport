@@ -22,13 +22,14 @@ function candidateId(cardId,ordinal){
   fail('対象外のサポカまたはイベント位置');
  return 'usl:'+cardId+':random:'+ordinal;
 }
-function build(){
- // The source review pack checks fixed GameWith facts, headers, ordinals,
- // source SHA and the fact that all eight are still outside publication.
- const view=buildView();
- // A later review run must still be usable AFTER the first event is
- // published. Verified existing entries remain immutable in the appender.
- const existing=verifyRelease(currentPublished,currentApprovals);
+function build({published=currentPublished,approvals=currentApprovals}={}){
+ // Verify the exact current publication state BEFORE building a review
+ // packet. This must continue to work after one (or more) of the eight
+ // candidates has already been explicitly published.
+ const existing=verifyRelease(published,approvals);
+ // The source review pack validates fixed GameWith facts, ordinals, and
+ // input digests. Already-published events remain immutable in the appender.
+ const view=buildView({published,approvals});
  const cards=[],reviews=[],checked=[];
  let totalChoices=0,totalHints=0;
  for(const card of view.cards){
