@@ -54,7 +54,7 @@ test('current requirements and roadmap do not reactivate superseded HTML intake'
  assert.match(roadmap,/既存DBの一括利用と例外管理を主工程にする/);
  assert.match(roadmap,/2,512件を1件ずつ手動承認することを製品完成の前提条件にしない/);
  assert.match(roadmap,/元サイト／元GitHubから読み込んでローカルで正規化/);
- assert.match(roadmap,/現行の.event_release_gate.cjs.との整合/);
+ assert.match(roadmap,/現在の.event_release_gate.cjs.との整合/);
  assert.match(read('AGENTS.md'),/既存DBの一括利用と例外管理が主工程/);
  assert.match(read('docs/decisions.md'),/1件ずつ人手承認して公開DBへ追記する手順を必須としない/);
  assert.match(read('docs/phase2-first-event-release-rehearsal-20261030.md'),/後続方針：この実装は補助ツール/);
