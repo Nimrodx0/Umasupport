@@ -6,6 +6,7 @@ const {HINT_NAMES}=require('../src/phase2_eight_event_review_view.cjs');
 const {rehearseApprovedExistingEvents:rehearse,validatePacket}=
  require('../src/reviewed_existing_event_append.cjs');
 const {verifyRelease,digest}=require('../src/event_release_gate.cjs');
+const {reviewProgress}=require('../tools/rehearse_phase2_existing_event_release.cjs');
 const publicCatalog=require('../src/public_event_catalog.js');
 const core=require('../src/core.js');
 const actual=require('../data/reviewed_events.v1.json');
@@ -137,7 +138,7 @@ test('an edited or removed previously published event must never be overwritten'
  const fake=clone(first.approvals);
  fake.entries[0].eventSha256=digest(other.cards[0].events[0]);
  assert.throws(()=>rehearse({...input,existingCatalog:other,
-  existingApprovals:fake,decisions:d}),/上書きは禁止/);
+  existingApprovals:fake,decisions:d}),/上書きは禁止|固定編集候補と一致しない/);
 });
 
 test('one staged REAL GameWith-adjudicated skill event runs through production attach and explicit choice aggregation',()=>{
@@ -159,4 +160,64 @@ test('one staged REAL GameWith-adjudicated skill event runs through production a
  assert.deepEqual(after.map(x=>[x.skillId,x.level]),[['skill:200152',1]]);
  assert.equal(out.status,'ready-for-explicit-publication');
  assert.equal(actual.cards.length,0);
+});
+
+test('fresh candidate generation after first public event permits the second review without rewriting the first',()=>{
+ const input=fixture();
+ const firstKey=['30318','usl:30318:random:5'];
+ const laterKey=['30318','usl:30318:random:4'];
+ const first=rehearse({...input,decisions:select(input.packet,firstKey)});
+ const existing=JSON.stringify({catalog:first.catalog,approvals:first.approvals});
+ // A genuinely NEW packet build must work after a prior approved catalog.
+ // Merely reusing the pre-publication packet would hide this regression.
+ const fresh=build({published:first.catalog,approvals:first.approvals});
+ assert.equal(fresh.summary.approvedEvents,1);
+ assert.equal(fresh.catalog.cards.length,4);
+ assert.equal(fresh.approvalWorksheet.entries.length,8);
+ const progress=reviewProgress(fresh,first.catalog,first.approvals);
+ assert.equal(progress.pending.length,7);
+ assert.equal(progress.alreadyPublished.length,1);
+ assert.equal(progress.rows.find(x=>x.eventId===firstKey[1]).reviewStatus,
+  'ALREADY_PUBLISHED_WITH_APPROVAL');
+ assert.equal(progress.rows.find(x=>x.eventId===laterKey[1]).reviewStatus,
+  'PENDING_HUMAN_RELEASE_REVIEW');
+ const second=rehearse({...input,packet:fresh,
+  existingCatalog:first.catalog,existingApprovals:first.approvals,
+  decisions:select(fresh,laterKey)});
+ assert.equal(second.approvedNewEvents,1);
+ assert.equal(second.pendingReviewEvents,6);
+ assert.equal(verifyRelease(second.catalog,second.approvals).publicEvents,2);
+ assert.equal(second.catalog.cards[0].events[0].id,firstKey[1]);
+ assert.equal(JSON.stringify({catalog:first.catalog,approvals:first.approvals}),existing);
+ // The same exact candidate and signed approval remain idempotent.
+ const replay=build({published:second.catalog,approvals:second.approvals});
+ const p2=reviewProgress(replay,second.catalog,second.approvals);
+ assert.equal(p2.alreadyPublished.length,2);
+ assert.equal(p2.pending.length,6);
+});
+test('all eight approved in a synthetic fixture remain reproducible with zero unsigned pending candidates',()=>{
+ const input=fixture();
+ const pairs=input.packet.approvalWorksheet.entries.map(e=>[e.cardId,e.eventId]);
+ const stage=rehearse({...input,decisions:select(input.packet,...pairs)});
+ assert.equal(stage.approvedNewEvents,8);
+ const after=build({published:stage.catalog,approvals:stage.approvals});
+ const progress=reviewProgress(after,stage.catalog,stage.approvals);
+ assert.equal(after.summary.approvedEvents,8);
+ assert.equal(progress.alreadyPublished.length,8);
+ assert.equal(progress.pending.length,0);
+ assert.equal(actual.cards.length,0,'synthetic approved fixture must never publish');
+});
+test('a valid old approval that no longer matches the original candidate is rejected for follow-up',()=>{
+ const input=fixture();
+ const stage=rehearse({...input,decisions:select(input.packet,
+  ['30318','usl:30318:random:5'])});
+ const drift=clone(stage.catalog);
+ drift.cards[0].events[0].name+=' (mutated)';
+ const changedLedger=clone(stage.approvals);
+ changedLedger.entries[0].eventSha256=digest(drift.cards[0].events[0]);
+ // Such a pair passes the generic release SHA consistency gate, but
+ // its content conflicts with the pinned GameWith-derived candidate.
+ assert.equal(verifyRelease(drift,changedLedger).publicEvents,1);
+ assert.throws(()=>reviewProgress(input.packet,drift,changedLedger),
+  /固定編集候補のSHA/);
 });

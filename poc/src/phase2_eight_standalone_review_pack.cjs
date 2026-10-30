@@ -34,12 +34,11 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
  published=PUBLISHED,approvals=APPROVALS}={}){
  const p=readiness({four:remaining,ssr30321:duramente,
   centralLedger:ledger,published,releaseApprovals:approvals});
+ const existing=verifyRelease(published,approvals);
  if(p.summary.trackedPriorityEventPositions!==28||
-  p.summary.publicEventsAlreadyApproved!==0||
+  p.summary.publicEventsAlreadyApproved!==existing.publicEvents||
   p.summary.releaseReadyPositions!==0)
-  fail('重点28件の公開不許可ゲートと整合しない');
- if(verifyRelease(published,approvals).publicEvents!==0)
-  fail('公開イベントの現行状態を未反映');
+  fail('重点28件の公開不許可ゲート・既存承認台帳と整合しない');
  const source3=review3(remaining),source1=review1(duramente);
  if(source3.summary.provisionalStandaloneEvents!==6||
     source1.summary.provisionalStandaloneEvents!==2||
@@ -155,7 +154,7 @@ function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
    unpublishedSourceChainStages:12,
    sourceEventPositionsAdjudicated:8,publicDisplayLabelsApproved:0,
    reportedAdditionalOutcomeBranches:0,
-   currentlyPublishedEvents:0,approvedForPublication:0},
+   currentlyPublishedEvents:existing.publicEvents,approvedForPublication:0},
   model};
 }
 function replay({cardId,sourceOrdinal,choiceOrdinal=null}={},options={}){
