@@ -100,3 +100,23 @@ test('canonical documentation cross-links resolve on disk',()=>{
  }
  assert.ok(checked>25,'Verify every known cross-file reference');
 });
+
+test('automatic delivery priority is coherent, and unapproved private source is never silently fetched',()=>{
+ const plan=read('docs/phase2-event-delivery-route-assessment-20261030.md');
+ const roadmap=read('docs/roadmap.md');
+ const decisions=read('docs/decisions.md');
+ const app=read('poc/live.html');
+ const approved=JSON.parse(read('poc/data/reviewed_events.v1.json'));
+ assert.match(plan,/ユーザーがアプリを開けば自動的にイベントを使える状態/);
+ assert.match(plan,/ライセンス表示/);
+ assert.match(plan,/文化庁/);
+ assert.match(plan,/元データの再利用許可を意味しない/);
+ assert.match(plan,/既存の同一オリジン公開ローダー/);
+ assert.match(plan,/元文の転記を一括許可しない/);
+ assert.match(roadmap,/最優先：自動提供方法・利用条件/);
+ assert.match(decisions,/一般利用者が非公開JSONを都度生成・選択するのではなく/);
+ assert.match(app,/UmaPublicEventCatalog\.loadVerified/);
+ assert.doesNotMatch(app,/raw\.githubusercontent\.com\/systemless10/);
+ assert.doesNotMatch(app,/gametora\.com\/umamusume\/supports/);
+ assert.deepEqual(approved.cards,[],'未審査の2,512件を公開元へ黙って投入しない');
+});
