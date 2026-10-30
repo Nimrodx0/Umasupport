@@ -319,6 +319,17 @@ async function main(args){
       catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
      },{strict:true});
      console.log('PHASE2_2512_REAL_LOCAL_IMPORT='+JSON.stringify(localAcceptance));
+     // Optional browser acceptance with the REAL 2,512 catalog. Pass the
+     // in-memory bundle to Chromium's file chooser, not a tracked file or CI artifact.
+     if(process.env.UMASUPPORT_PRIVATE_REAL_BROWSER_TEST==='true'){
+      const {run:runRealBrowser}=
+       require('../tests/browser_private_2512_real_in_memory.cjs');
+      const browserAcceptance=await runRealBrowser({
+       bundle:localBundle,skillText:result.dryRunMergedSkillText,
+       supportText:roster.toString('utf8')
+      });
+      console.log('PHASE2_2512_REAL_CHROMIUM_IMPORT='+JSON.stringify(browserAcceptance));
+     }
      // Optional, EXPLICIT local-only export after every existing whole-2512
      // validation. Never create artifacts in public repo, Actions or by default.
      // This is the exact FINAL catalog after all existing overlays.
