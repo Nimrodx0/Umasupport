@@ -23,6 +23,8 @@ jobs:
           node --check poc/src/private_local_event_preview.js
           node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
           node --test poc/tests/private_local_event_preview.test.cjs
+          node --check poc/src/phase2_private_local_real_acceptance.cjs
+          node --test poc/tests/phase2_private_local_real_acceptance.test.cjs
       - name: Enforce derived-GitHub primary and manual-only source exceptions
         run: node --test poc/tests/upstream_event_source_triage.test.cjs
 
