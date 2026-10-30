@@ -33,7 +33,7 @@ const allowedEvent=new Set(['id','name','type','choices','rewards','outcomes',
  'requires','availabilityKind','effects','statusEffects','dynamicEffects','terminal']);
 const allowedChoice=new Set(['id','label','rewards','outcomes','requires',
  'terminal','effects','statusEffects','dynamicEffects']);
-const allowedOutcome=new Set(['id','label','rewards','effects','statusEffects',
+const allowedOutcome=new Set(['id','label','rewards','outcomes','effects','statusEffects',
  'dynamicEffects','terminal','requires']);
 const allowedReward=new Set(['skillId','verifiedSkillName','kind','level','condition']);
 function attributes(obj,allowed,total){
@@ -186,10 +186,10 @@ function assess({catalog,model,skillText},{strict=true}={}){
      'source-title-available-but-reuse-not-cleared':'no',
    userCanMatchInGameChoiceWords:'no-source-dialogue-in-baseline'};
  }
- if(strict&&(!total.choiceEvents||!total.skillRewards))
-  fail('選択式イベントまたは報酬が0件');
- // Unclassified attributes stay explicitly in the audit until separately
- // assessed. Never silently label any unknown content publishable.
+ if(strict&&(!total.choiceEvents||!total.skillRewards||
+   total.unsupportedAttributes>0))
+  fail('未分類属性があります。属性名と件数='+JSON.stringify(total.unclassifiedFieldNames));
+ // Never silently label unclassified content publishable.
  return {status:'PHASE2_2512_PUBLICATION_SURFACE_AUDITED',
   sourceCatalogSha256:original,total,simulated,
   contract:{sourceContentLogged:false,sourceDataPublished:false,
