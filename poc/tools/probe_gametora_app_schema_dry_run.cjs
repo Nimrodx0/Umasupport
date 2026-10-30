@@ -327,6 +327,17 @@ async function main(args){
       catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
      },{strict:true});
      console.log('PHASE2_2512_PUBLICATION_SURFACE='+JSON.stringify(fieldAudit));
+     // User-selected product shape: preserve all fixed event titles; remove
+     // every choice/outcome free-text label via original positional names.
+     // In-memory trial only. Exact production release gate MUST still reject
+     // the resulting unapproved catalog (no public release or artifact).
+     const {project:projectPrivateTitles,verifyPrivate:verifyTitleFormat}=
+      require('../src/phase2_title_choice_projection.cjs');
+     const titleReview=verifyTitleFormat({
+      catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
+     },{strict:true});
+     console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
+
 
      // Optional browser acceptance with the REAL 2,512 catalog. Pass the
      // in-memory bundle to Chromium's file chooser, not a tracked file or CI artifact.
@@ -338,6 +349,16 @@ async function main(args){
        supportText:roster.toString('utf8')
       });
       console.log('PHASE2_2512_REAL_CHROMIUM_IMPORT='+JSON.stringify(browserAcceptance));
+      // The same real 2,512 events, now in the agreed title-retained /
+      // placeholder-only shape. Chromium's file picker receives RAM bytes.
+      const titleProjected=projectPrivateTitles(privateEventCatalog);
+      const titleBrowser=await runRealBrowser({
+       bundle:makeBundle(titleProjected.catalog),
+       skillText:result.dryRunMergedSkillText,
+       supportText:roster.toString('utf8')
+      });
+      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CHROMIUM='+JSON.stringify(titleBrowser));
+
      }
      // Optional, EXPLICIT local-only export after every existing whole-2512
      // validation. Never create artifacts in public repo, Actions or by default.
