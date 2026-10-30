@@ -88,14 +88,14 @@ async function run({bundle,skillText,supportText,validateProvisionalLabels=false
     const scan=(part)=>{
      for(const out of part.outcomes||[]){
       outcomeLabels++;
-      if(!/^結果[1-9]\\d*（仮）$/.test(out.label))incorrectOutcomes++;
+      if(!/^結果[1-9][0-9]*（仮）$/.test(out.label))incorrectOutcomes++;
       scan(out);
      }
     };
     for(const e of events){
      for(const ch of e.choices||[]){
       choiceLabels++;
-      if(!/^選択肢[1-9]\\d*（仮）$/.test(ch.label))incorrectChoices++;
+      if(!/^選択肢[1-9][0-9]*（仮）$/.test(ch.label))incorrectChoices++;
       scan(ch);
      }
      if(e.type==='auto')scan(e);
