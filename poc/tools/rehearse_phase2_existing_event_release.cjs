@@ -13,24 +13,52 @@ const {build}=require('../src/phase2_eight_release_candidate.cjs');
 const {buildModel}=require('../src/live_loader.js');
 const {rehearseApprovedExistingEvents}=
  require('../src/reviewed_existing_event_append.cjs');
-const {verifyRelease}=require('../src/event_release_gate.cjs');
+const {verifyRelease,digest}=require('../src/event_release_gate.cjs');
 const copy=x=>JSON.parse(JSON.stringify(x));
 const fail=x=>{throw Error('通常8イベント・初回公開審査CLI: '+x);};
 const root=path.resolve(__dirname,'../..');
+// Pure source-identity reconciliation for a partially published catalog.
+// Never infer approval from the candidate packet: only the exact signed
+// public catalog + approval ledger count as published.
+function reviewProgress(packet,published,approvals){
+ const existing=verifyRelease(published,approvals);
+ const byKey=new Map();
+ for(const card of published.cards)
+  for(const event of card.events)
+   byKey.set(JSON.stringify([card.cardId,event.id]),digest(event));
+ const seen=new Set(),rows=[];
+ for(const entry of packet.approvalWorksheet.entries){
+  const key=JSON.stringify([entry.cardId,entry.eventId]);
+  if(seen.has(key))fail('レビュー候補のイベントIDが重複');
+  seen.add(key);
+  const approved=byKey.get(key);
+  if(approved!==undefined&&approved!==entry.eventSha256)
+   fail('承認済みイベントと固定編集候補のSHAが違います: '+key);
+  rows.push({
+   cardId:entry.cardId,eventId:entry.eventId,
+   sourceOrdinal:entry.sourceOrdinal,digest:entry.eventSha256,
+   reviewStatus:approved===undefined?'PENDING_HUMAN_RELEASE_REVIEW':
+    'ALREADY_PUBLISHED_WITH_APPROVAL'
+  });
+ }
+ return {existing,rows,pending:rows.filter(r=>
+  r.reviewStatus==='PENDING_HUMAN_RELEASE_REVIEW'),
+  alreadyPublished:rows.filter(r=>
+   r.reviewStatus==='ALREADY_PUBLISHED_WITH_APPROVAL')};
+}
 function run(args){
  const mode=args[0];
  const packet=build();
  const pub=require('../data/reviewed_events.v1.json');
  const prior=require('../config/event-release-approvals.v1.json');
- const existing=verifyRelease(pub,prior);
+ const progress=reviewProgress(packet,pub,prior);
  if(mode==='status'&&args.length===1){
-  const reviewIds=packet.approvalWorksheet.entries.map(x=>({
-   cardId:x.cardId,eventId:x.eventId,sourceOrdinal:x.sourceOrdinal,
-   digest:x.eventSha256,reviewStatus:'PENDING_HUMAN_RELEASE_REVIEW'
-  }));
   const result={source:'phase2_eight_release_candidate.build',
-   cardIds:[...new Set(reviewIds.map(x=>x.cardId))],candidateEvents:reviewIds.length,
-   publicEvents:existing.publicEvents,events:reviewIds,
+   cardIds:[...new Set(progress.rows.map(x=>x.cardId))],
+   candidateEvents:progress.rows.length,
+   pendingHumanReviewEvents:progress.pending.length,
+   alreadyPublishedCandidateEvents:progress.alreadyPublished.length,
+   publicEvents:progress.existing.publicEvents,events:progress.rows,
    publicationApproved:false,existingCatalogUnchanged:true};
   process.stdout.write('EVENT_REVIEW_STATUS='+JSON.stringify(result)+'\n');
   return result;
@@ -45,7 +73,10 @@ function run(args){
  if(dest===root||dest.startsWith(root+path.sep))
   fail('レビュー候補や承認判断を公開リポジトリ内へ書き込めません');
  if(worksheet){
-  const template={schemaVersion:1,entries:packet.approvalWorksheet.entries.map(row=>({
+  const pendingKeys=new Set(progress.pending.map(row=>JSON.stringify([row.cardId,row.eventId])));
+  if(!pendingKeys.size)fail('通常8イベントに未審査の候補はありません');
+  const template={schemaVersion:1,entries:packet.approvalWorksheet.entries.filter(row=>
+   pendingKeys.has(JSON.stringify([row.cardId,row.eventId]))).map(row=>({
    cardId:row.cardId,eventId:row.eventId,eventSha256:row.eventSha256,
    reviewer:null,reviewedAt:null,
    checks:{...row.checks},evidence:copy(row.evidence),
@@ -57,7 +88,8 @@ function run(args){
   fs.writeFileSync(file,JSON.stringify(template,null,2)+'\n',
    {flag:'wx',mode:0o600});
   process.stdout.write('EVENT_REVIEW_WORKSHEET='+JSON.stringify({
-   templateFile:file,candidateEvents:template.entries.length,
+   templateFile:file,pendingReviewEvents:template.entries.length,
+   alreadyPublishedCandidateEvents:progress.alreadyPublished.length,
    signedReviewEvents:0,publicationExecuted:false})+'\n');
   return template;
  }
@@ -99,4 +131,4 @@ if(require.main===module){
  catch(err){process.stderr.write('EVENT_RELEASE_REHEARSAL_FAILED: '+
   String(err.message)+'\n');process.exitCode=1;}
 }
-module.exports={run};
+module.exports={run,reviewProgress};
