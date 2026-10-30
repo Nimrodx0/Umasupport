@@ -18,6 +18,11 @@ jobs:
           node-version: '22'
       - name: Validate documentation responsibilities, archive and canonical links
         run: node --test poc/tests/documentation_policy.test.cjs
+      - name: Validate pinned private full 2512-event local import without publishing data
+        run: |
+          node --check poc/src/private_local_event_preview.js
+          node --check poc/tools/probe_gametora_app_schema_dry_run.cjs
+          node --test poc/tests/private_local_event_preview.test.cjs
       - name: Enforce derived-GitHub primary and manual-only source exceptions
         run: node --test poc/tests/upstream_event_source_triage.test.cjs
 
@@ -557,5 +562,7 @@ jobs:
         run: node poc/tests/browser_skill_smoke.cjs
       - name: Browser-test opt-in SSR30311 candidate routes and isolated settings
         run: node poc/tests/browser_event_preview_smoke.cjs
+      - name: Browser-test explicit full 2512-event offline file import and isolation
+        run: node poc/tests/browser_private_local_event_preview.cjs
       - name: Browser-test all pinned source choice facts in 398-card/879-event opt-in mode
         run: node poc/tests/browser_checker_facts_smoke.cjs
