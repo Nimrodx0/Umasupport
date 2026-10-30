@@ -54,6 +54,10 @@ test('current requirements and roadmap do not reactivate superseded HTML intake'
  assert.doesNotMatch(roadmap,/対象ソースと版、出典にないイベント、既に採用した編集事実、保留の位置を対応付ける/);
  assert.match(read('AGENTS.md'),/既存Phase 2を再作成しない/);
  assert.match(read('docs/derived-github-whole-roster-app-draft-audit-20261029.md'),/履歴・現行の工程外/);
+ assert.match(roadmap,/SSR30240.*明示保留済み/);
+ assert.match(roadmap,/出典未掲載は当該位置だけ保留し、他の作業へ進む/);
+ assert.match(read('docs/phase2-30240-gamewith-gap-utools-only-replay-20261022.md'),/2026-10-30 再確認：元資料未掲載のため明示保留/);
+ assert.match(read('docs/phase2-remaining-checker-skill-impact-20261023.md'),/P2の11位置だけがイベント同定未完/);
  assert.match(verification,/以下は2026-10-29に撤回した直接取得先行条件の履歴/);
 });
 test('dated evidence and old complete texts are preserved in dedicated documents',()=>{
