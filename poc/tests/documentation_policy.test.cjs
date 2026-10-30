@@ -33,6 +33,23 @@ test('public entry and roadmap have stable headings and current source precedenc
  }
  assert.doesNotMatch(read('README.md'),/イベントデータはGameWithを優先資料に/);
 });
+test('current requirements and roadmap do not reactivate superseded HTML intake',()=>{
+ const req=read('docs/requirements.md');
+ const roadmap=read('docs/roadmap.md');
+ const verification=read('docs/verification-plan.md');
+ const decisions=read('docs/decisions.md');
+ assert.match(req,/現行の主入力は第三者GitHubの構造化GameTora派生JSON/);
+ assert.match(req,/2026-10-27のGameTora本体直接取得方針（2026-10-29撤回）/);
+ assert.doesNotMatch(req,/この工程の唯一のイベント情報入力はGameTora本体/);
+ assert.doesNotMatch(req,/GameTora本体に表示された\*\*新カードのイベントだけ\*\*/);
+ assert.match(decisions,/現行.*GameTora派生JSONを主経路/);
+ assert.match(roadmap,/現在の製品完成への作業順（正本）/);
+ assert.equal((roadmap.match(/^### 現在の製品完成への作業順/gm)||[]).length,1);
+ assert.match(roadmap,/他Phaseの横断検証（上記とは別の優先順ではない）/);
+ assert.match(roadmap,/2,512イベント/);
+ assert.match(roadmap,/2,125件／保留363件/);
+ assert.match(verification,/以下は2026-10-29に撤回した直接取得先行条件の履歴/);
+});
 test('dated evidence and old complete texts are preserved in dedicated documents',()=>{
  const status=read('docs/status.md');
  assert.match(status,/\*\*(?:最新)?測定日：20\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])。\*\*/);

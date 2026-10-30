@@ -7,11 +7,11 @@
 | 種類 | 取得先 | 取得・保存 | 現状 |
 |---|---|---|---|
 | サポカ・通常ヒント | UmaSim `data/support_card.txt` | 起動時に利用者のブラウザが直接取得し、検証済みテキストをIndexedDBへ | 実装・基本の復旧実機確認済み |
-| 数値スキル・金白階層 | UmaSim `data/skill_data.txt` | 起動時に直接取得し、構造を全件検証してIndexedDBへ。失敗時は安全にフォールバック | 実装・Node実ソース結合確認済み。最新Pages上の実機検証は未完 |
+| 数値スキル・金白階層 | UmaSim `data/skill_data.txt` | 起動時に直接取得し、構造を全件検証してIndexedDBへ。失敗時は安全にフォールバック | 実装済み。2026-10-17の[配信Pages/Linux Chromium実ソース試験](pages-browser-acceptance-20261017.md)に合格（Windows／Android物理端末は未確認） |
 | 実ゲームイベント | 同一オリジン `poc/data/reviewed_events.v1.json` | 事前に人手レビューした独自JSONを配信、読込時に全件検証 | 基盤実装。実イベント承認・公開は**0件** |
 | 編集したデッキ・設定 | ブラウザのlocalStorage | 現行形式・参照IDを検証して保存 | 開発段階の旧保存形式移行なし |
 
-第三者データのそのままの同梱・再配布は原則行わない。実イベントの元文章・選択肢全文は、公開可否を確認しないままGitHubへコピーしない。UmaUmaCheckerはSSR・SRの入力候補、欠損・新規はGameWith個別資料で確認する方針。[イベント公開手順](checker-public-catalog.md)を参照。
+第三者データのそのままの同梱・再配布は原則行わない。実イベントの元文章・選択肢全文は、公開可否を確認しないままGitHubへコピーしない。**新カードの主なイベント候補はGameTora由来の第三者GitHub構造化JSON**から事前取得・審査し、GameWithは欠損・疑義の個別裁定に利用する。これは**ブラウザ起動時に第三者JSONを直接読み込む設計ではない**。[現行出典](derived-github-primary-restart-20261029.md)・[イベント公開手順](checker-public-catalog.md)を参照。
 
 ## 起動時の手順と異常時
 
@@ -35,6 +35,6 @@ CORS、HTTP負荷、提供元利用条件、形式変更、配信停止に関す
 
 **2026-10-16の[Node.js実ソース統合試験](https://github.com/Nimrodx0/Umasupport/actions/runs/38927481224)**：`support_card.txt` と `skill_data.txt` を結合し、サポカ563、通常ヒント4,015、統合スキル836、金325中322構造対応／3白なしを確認。Nodeでの成功は画面やIndexedDBの新辞書の実機動作を証明しない。
 
-**未実施**：最新スキル辞書と階層のPages／スマホ動作、異なるブラウザの回帰、上流利用条件・停止時の長期対応、公開イベント実データの読込と障害復旧、アプリHTML/JSの完全オフライン起動。
+**引き続き未実施**：Windows／Android等の物理端末でのスキル辞書・階層受入、異なるブラウザの全条件回帰、上流利用条件・停止時の長期対応、**承認済み実イベントを伴う**読込・障害復旧、アプリHTML/JSの完全オフライン起動。2026-10-17の[Linux Chromium実Pages試験](pages-browser-acceptance-20261017.md)はこれらの実機受け入れの代替ではない。
 
 本書は方針と検証状況を示す。工程完了・合否は [検証計画](verification-plan.md) に従って判定する。
