@@ -64,7 +64,7 @@ async function main(){
    name:'invalid-private.json',mimeType:'application/json',
    buffer:Buffer.from(JSON.stringify(corrupt))
   });
-  await page.locator('#private-local-import-feedback').getByText(/読込を拒否しました/).waitFor();
+  await page.waitForFunction(()=>document.getElementById('private-local-import-feedback')?.textContent.includes('読込を拒否しました'));
   assert.equal(await page.locator('main.app').count(),0);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.cardById['30001'].events.length),0);
   await page.locator('#private-local-event-file').setInputFiles({
