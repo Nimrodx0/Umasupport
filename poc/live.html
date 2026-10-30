@@ -5,7 +5,7 @@
 <div id="app"></div>
 <script src="./src/core.js"></script><script src="./src/deck_events.js"></script><script src="./src/skill_table.js"></script><script src="./src/card_search.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_hierarchy.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/settings.js"></script><script src="./src/source_health.js"></script>
 <script src="./src/event_schema.js"></script><script src="./src/public_event_catalog.js"></script>
-<script src="./src/community_candidate_preview.js"></script><script src="./src/checker_choice_fact_preview.js"></script><script src="./src/checker_result_preview.js"></script><script src="./src/event_preview_loader.js"></script>
+<script src="./src/community_candidate_preview.js"></script><script src="./src/checker_choice_fact_preview.js"></script><script src="./src/checker_result_preview.js"></script><script src="./src/event_preview_loader.js"></script><script src="./src/private_local_event_preview.js"></script>
 <script>
 (async function(){
  const status=document.getElementById('bootstrap-status');
@@ -63,10 +63,57 @@
        msg+='。金白対応データを表示できません';
      }
    }
+   const startApp=()=>{
+     const script=document.createElement('script');script.src='./src/live_app.js';
+     script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
+     document.body.appendChild(script);
+   };
    // Candidate catalog is never loaded unless an explicit URL parameter requests it.
    const previewId=UmaDevEventPreview.requested(window.location.search);
    window.UmaPreviewRequested=previewId;
    window.UmaPreviewActive=false;
+   if(previewId==='local'){
+     // Local files NEVER enter public event cache, localStorage or the site.
+     // Stay at the file chooser until the complete 2,512-event bundle passes
+     // the same runtime preflight used by the fixed offline pipeline.
+     status.textContent=msg+'。非公開イベントを読み込むにはローカルJSONを選択してください。';
+     status.dataset.mode=result.mode;
+     const panel=document.createElement('section');
+     panel.id='private-local-import-panel';
+     panel.setAttribute('role','region');
+     panel.setAttribute('aria-label','ローカルイベント一括読込');
+     panel.style.cssText='max-width:1100px;margin:10px auto;padding:20px;border:1px solid #999;border-radius:10px';
+     const label=document.createElement('label');
+     label.textContent='非公開イベントJSON（2,512件）を選択：';
+     const input=document.createElement('input');
+     input.id='private-local-event-file';input.type='file';
+     input.accept='.json,application/json';
+     const feedback=document.createElement('p');feedback.id='private-local-import-feedback';
+     feedback.setAttribute('role','status');
+     feedback.textContent='選択したファイルはこのブラウザ内でのみ解析します。サーバーへアップロードしません。公開承認済みのデータではありません。';
+     label.appendChild(input);
+     panel.append(label,feedback);
+     status.insertAdjacentElement('afterend',panel);
+     input.addEventListener('change',async()=>{
+       const file=input.files?.[0];if(!file)return;
+       input.disabled=true;feedback.textContent='全件のID・分岐・ハッシュを検証しています…';
+       try{
+         const local=await UmaPrivateLocalEventPreview.activate(window.UmaDemoData,{
+           text:await file.text(),skillText});
+         window.UmaPreviewActive=true;
+         window.UmaPrivateLocalEventDigest=local.catalogSha256;
+         panel.remove();
+         status.textContent=msg+'。【ローカル非公開試用】'+local.records+
+          'イベント / '+local.cards+'カードを一括読込。正式公開済み0件。';
+         startApp();
+       }catch(err){
+         console.warn('ローカル非公開イベントの一括読込を拒否',err);
+         feedback.textContent='読込を拒否しました。'+String(err.message||err);
+         input.value='';input.disabled=false;
+       }
+     });
+     return;
+   }
    if(previewId){
      try {
        const candidate=await UmaDevEventPreview.activate(window.UmaDemoData,{cardId:previewId,skillText});
@@ -82,9 +129,7 @@
    }
    status.textContent=msg+'。カード '+window.UmaDemoData.cards.length+'枚。'+(result.fetchedAt?'データ取得: '+result.fetchedAt:'');
    status.dataset.mode=result.mode;
-   const script=document.createElement('script');script.src='./src/live_app.js';
-   script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
-   document.body.appendChild(script);
+   startApp();
  }catch(err){status.textContent=String(err.message||err)+'。接続状況をご確認ください。';status.dataset.mode='error';}
 })();
 </script>

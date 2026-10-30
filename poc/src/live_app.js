@@ -3,7 +3,8 @@
 const data=window.UmaDemoData, core=window.UmaCore;
 // Preview event selections must not modify the normal-production saved decks.
 const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
- (window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':
+ (window.UmaPreviewRequested==='local'?'-event-preview-local-'+String(window.UmaPrivateLocalEventDigest||'missing').slice(0,16):
+  window.UmaPreviewRequested==='expanded'?'-event-preview-expanded':
    window.UmaPreviewRequested==='facts'?'-event-preview-facts':
    window.UmaPreviewRequested==='results'?'-event-preview-results':
    window.UmaPreviewRequested?'-event-preview':'');

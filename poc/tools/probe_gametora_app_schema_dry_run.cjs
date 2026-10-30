@@ -309,6 +309,40 @@ function main(args){
       sampledProductionEffectRoutes:liveEffects,
       sampledProductionStatusRoutes:liveStatusOperations,
       sampledProductionDynamicRoutes:liveDynamic,publicEventsAdded:0}));
+     // Optional, EXPLICIT local-only export after every existing whole-2512
+     // validation. Never create artifacts in public repo, Actions or by default.
+     // This is the exact FINAL catalog after all existing overlays.
+     if(process.env.UMASUPPORT_PRIVATE_LOCAL_EXPORT_DIR){
+      if(process.env.GITHUB_ACTIONS==='true')
+       fail('GitHub Actionsから非公開2512件の書き出しはしません');
+      const home=fs.realpathSync(path.resolve(
+       process.env.UMASUPPORT_PRIVATE_LOCAL_EXPORT_DIR));
+      const repoRoot=path.resolve(__dirname,'../..');
+      if(home===repoRoot||home.startsWith(repoRoot+path.sep)||
+         !fs.statSync(home).isDirectory())
+       fail('非公開イベントの書き出し先はGit管理外の既存ディレクトリに指定');
+      const pinned=require('../config/event-source-priority.v1.json');
+      const bundle={schemaVersion:1,
+       dataKind:'umasupport-phase2-private-local-catalog',
+       sourceRevision:pinned.baselineRevision,
+       publicationApproved:false,reviewedEventsPublished:0,
+       noAutomaticRuntimeAdoption:true,
+       sourceNarrativeOrChoiceProseIncluded:false,
+       fullEventRewardOrChainCoverageVerified:false,
+       sourceDatasetPublished:false,
+       catalogSha256:hash(JSON.stringify(privateEventCatalog)),
+       summary:{cards:summary.cardsWithRecords,events:attached.eventsWithRecords},
+       catalog:privateEventCatalog};
+      const localDir=fs.mkdtempSync(path.join(home,'umasupport-2512-private-'));
+      fs.chmodSync(localDir,0o700);
+      const localPath=path.join(localDir,'private-events.local.json');
+      fs.writeFileSync(localPath,JSON.stringify(bundle)+'\n',
+       {flag:'wx',mode:0o600});
+      console.log('PHASE2_PRIVATE_LOCAL_BUNDLE_WRITTEN='+JSON.stringify({
+       directory:localDir,cards:bundle.summary.cards,events:bundle.summary.events,
+       sha256:bundle.catalogSha256,publicEventsAdded:0,
+       localOnly:true,sourceNarrativeOrChoiceProseIncluded:false}));
+     }
     }
 
 
