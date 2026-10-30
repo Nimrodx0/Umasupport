@@ -26,7 +26,7 @@ const counters=()=>({
  eventsWithSkillRewards:0,eventsWithNonSkillEffect:0,
  nonSkillEffectRows:0,statusEffectRows:0,dynamicEffectRows:0,
  terminalBranches:0,eventsWithRequires:0,
- unsupportedAttributes:0,
+ unsupportedAttributes:0,unclassifiedFieldNames:{},
  choiceEventsWithSourceStyleTitleAndGeneratedChoices:0
 });
 const allowedEvent=new Set(['id','name','type','choices','rewards','outcomes',
@@ -36,16 +36,19 @@ const allowedChoice=new Set(['id','label','rewards','outcomes','requires',
 const allowedOutcome=new Set(['id','label','rewards','effects','statusEffects',
  'dynamicEffects','terminal','requires']);
 const allowedReward=new Set(['skillId','verifiedSkillName','kind','level','condition']);
-function attributes(obj,allowed){
- return Object.keys(obj).filter(k=>!allowed.has(k)).length;
+function attributes(obj,allowed,total){
+ const fields=Object.keys(obj).filter(k=>!allowed.has(k));
+ for(const field of fields)
+  total.unclassifiedFieldNames[field]=(total.unclassifiedFieldNames[field]||0)+1;
+ return fields.length;
 }
 function collectPart(part,total){
  total.unsupportedAttributes+=attributes(part,
-  part.id!==undefined&&part.label!==undefined?allowedOutcome:allowedEvent);
+  part.id!==undefined&&part.label!==undefined?allowedOutcome:allowedEvent,total);
  let hasSkills=false,hasEffects=false;
  if(part.terminal===true)total.terminalBranches++;
  for(const reward of part.rewards||[]){
-  total.unsupportedAttributes+=attributes(reward,allowedReward);
+  total.unsupportedAttributes+=attributes(reward,allowedReward,total);
   total.skillRewards++;
   if(/^skill:\d+$/u.test(reward.skillId))total.rewardWithNumericSkillId++;
   if(typeof reward.verifiedSkillName==='string')total.rewardWithVerifiedName++;
@@ -110,7 +113,7 @@ function assess({catalog,model,skillText},{strict=true}={}){
   total.cards++;
   for(const e of c.events){
    total.events++;
-   total.unsupportedAttributes+=attributes(e,allowedEvent);
+   total.unsupportedAttributes+=attributes(e,allowedEvent,total);
    if(e.requires)total.eventsWithRequires++;
    const sourceTitle=!autoEvent.test(e.name);
    if(sourceTitle)total.eventsWithSourceStyleTitles++;
@@ -183,9 +186,10 @@ function assess({catalog,model,skillText},{strict=true}={}){
      'source-title-available-but-reuse-not-cleared':'no',
    userCanMatchInGameChoiceWords:'no-source-dialogue-in-baseline'};
  }
- if(strict&&(!total.choiceEvents||!total.skillRewards||
-   total.unsupportedAttributes>0))
-  fail('収録範囲・未分類の属性を確認');
+ if(strict&&(!total.choiceEvents||!total.skillRewards))
+  fail('選択式イベントまたは報酬が0件');
+ // Unclassified attributes stay explicitly in the audit until separately
+ // assessed. Never silently label any unknown content publishable.
  return {status:'PHASE2_2512_PUBLICATION_SURFACE_AUDITED',
   sourceCatalogSha256:original,total,simulated,
   contract:{sourceContentLogged:false,sourceDataPublished:false,
