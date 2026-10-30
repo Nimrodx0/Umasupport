@@ -70,6 +70,16 @@ function rehearseApprovedExistingEvents({
   previous.set(key(c.cardId,e.id),digest(e));
  for(const a of existingApprovals.entries)
   priorApproval.set(key(a.cardId,a.eventId),a);
+ // A later review may start from a catalog that already contains some
+ // of these eight candidates. Those exact approved events are NOT pending.
+ // Reject a conflicting edition even when it is not selected for this run.
+ let alreadyPublishedCandidateEvents=0;
+ for(const [k,source] of events){
+  if(!previous.has(k))continue;
+  if(previous.get(k)!==source.digest||!priorApproval.has(k))
+   fail('既存の承認済みイベントが固定編集候補と一致しない: '+k);
+  alreadyPublishedCandidateEvents++;
+ }
  const decisionsByKey=new Map();
  for(const a of decisions.entries){
   if(!isObj(a)||Object.keys(a).some(k=>!APPROVAL_FIELDS.includes(k))||
@@ -84,7 +94,8 @@ function rehearseApprovedExistingEvents({
  }
  if(decisionsByKey.size===0)
   return {status:'pending-human-approval',approvedNewEvents:0,
-   pendingReviewEvents:events.size,existingDatabaseUnchanged:true,
+   pendingReviewEvents:events.size-alreadyPublishedCandidateEvents,
+   alreadyPublishedCandidateEvents,existingDatabaseUnchanged:true,
    catalog:null,approvals:null};
  const newBlocks=new Map(),newApprovalEntries=[],addedKeys=[];
  for(const sourceCard of packet.catalog.cards){
@@ -137,8 +148,8 @@ function rehearseApprovedExistingEvents({
  }
  return {status:addedKeys.length?'ready-for-explicit-publication':'unchanged',
   approvedNewEvents:addedKeys.length,
-  pendingReviewEvents:events.size-decisionsByKey.size,
-  addedEventKeys:addedKeys,
+  pendingReviewEvents:events.size-alreadyPublishedCandidateEvents-addedKeys.length,
+  alreadyPublishedCandidateEvents,addedEventKeys:addedKeys,
   catalog,approvals,existingDatabaseUnchanged:true,
   release,loader:{cards:prepared.summary.cardsWithRecords,
    events:prepared.summary.eventsWithRecords}};
