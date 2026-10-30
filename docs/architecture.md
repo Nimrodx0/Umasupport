@@ -32,7 +32,7 @@ poc/src/derived_github_new_card_source_plan.cjs
     ↓ JSON存在／未入手／既存DBに収録済みを分類（未入手は次回保留）
 既存のGameTora派生イベント全件変換器・編集監査（今後の接続）
     ↓ スキルID・結果位置・連続内部条件を独立スキーマへ照合
-出典・内容・権利・個別公開承認ゲート
+出典・内容・対象データと利用方法に即した公開条件の検証（公開前）
     ↓ 追加対象の新カードだけ検証し、既存カードを無変更
 poc/data/reviewed_events.v1.json（GitHub Pages）
     ↓
@@ -43,7 +43,13 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 **増分取り込みの実装状況（2026-10-29）**：`derived_github_new_card_source_plan` → `derived_github_card_event_preflight` → `derived_github_existing_converter_adapter` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents`。**既存の** `gametora_whole_event_normalize`・`gametora_event_skill_crosswalk`・`gametora_app_schema_dry_run` を、新カード1枚の固定GitHub JSONへ再利用する。以前の `derived_github_runtime_draft` は実績記録として保持するが、現在の新カード主経路では使用しない。元JSONの不明点や未変換事項は要確認記録に区別して残し、既存DBは書き換えない。[設計と検証](derived-github-canonical-single-card-adapter-20261029.md)。
 
-この接続は**非公開の技術候補とレビュー待ち**を扱う。\n\n**2026-10-29：継続保留の実装**：`derived_github_pending_refresh.cjs` → `derived_github_pending_ledger.cjs` → `.github/workflows/derived-github-pending-intake.yml` により、最新UmaSimの新ID差分と前回の未取込カードを再試行する。GitHub Issueには数値ID・出典blob・変換数・要確認理由のみを保存し、イベント本文・非公開草稿は保存しない。既存DBは読み取り専用。日次ワークフローの稼働証拠と実際のGameWith裁定・承認後追記は別工程。[設計・運用境界](derived-github-daily-pending-ledger-20261029.md)。\n\n公開のイベントDBに新サポカを自動追加する処理ではない。
+この接続は**非公開の技術候補とレビュー待ち**を扱う。
+
+**既存563カード・2,512イベントの主経路（2026-10-30方針）**：過去に全件検証した `phase2_2512_private_effect_join.cjs` および `public_event_catalog.preflight/attach` で**非公開の使い捨てモデル**へ一括受け入れする既存工程を継続し、新変換経路で作り直さない。SSR30240の連続3段階、Checkerの11未同定元位置、非スキル16保留等は別の例外台帳に区別し、見つからない報酬を0として確定しない。現在の `public_event_catalog` は署名済み公開JSON用のローダーで、開発用の `attach` が成功しても一般利用者のサイトへ提供されたことにはならない。
+
+**将来の利用可能化の入口**：(1) 適法に取得できる出典を利用時に参照し、加工済みデータをサイトで再配布しない方式（アクセス条件、CORS、キャッシュ、速度・更新を要実証）、または (2) 公開可能な事実情報だけを独自形式のJSONとして配布する方式（権利・表現・出典版・更新時の承認設計が必要）。2,512件を**1イベントずつ人手承認する工程は主経路ではない**。既存の厳格なイベント別公開ゲートと8件追記リハーサルは補助ツールとして維持し、本番用の共通バッチ公開ゲートへの変更は別PRで検証する。現状の公開イベント0件は変わらない。
+
+**2026-10-29：継続保留の実装**：`derived_github_pending_refresh.cjs` → `derived_github_pending_ledger.cjs` → `.github/workflows/derived-github-pending-intake.yml` により、最新UmaSimの新ID差分と前回の未取込カードを再試行する。GitHub Issueには数値ID・出典blob・変換数・要確認理由のみを保存し、イベント本文・非公開草稿は保存しない。既存DBは読み取り専用。日次ワークフローの稼働証拠と実際のGameWith裁定・承認後追記は別工程。[設計・運用境界](derived-github-daily-pending-ledger-20261029.md)。\n\n公開のイベントDBに新サポカを自動追加する処理ではない。
 
 ## 出典ピンの継続更新監視（監査層）
 
