@@ -8,6 +8,7 @@
 | 製品の最終要件と対象外 | [requirements.md](requirements.md) |
 | 利用者による確定決定・撤回の履歴 | [decisions.md](decisions.md) |
 | 今後の作業順序と完了ゲート | [roadmap.md](roadmap.md) |
+| **Phase 2の現在の未解決事項と後続裁定** | [既存563カードのイベント残件台帳](phase2-open-items.md) |
 | 現在の状況と根拠リンク | [status.md](status.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
