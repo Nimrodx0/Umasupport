@@ -9,7 +9,7 @@
  */
 const loader=require('./public_event_catalog.js');
 const core=require('./core.js');
-const {verifyRelease}=require('./event_release_gate.cjs');
+const {verifyRelease,canonical}=require('./event_release_gate.cjs');
 const crypto=require('node:crypto');
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
@@ -159,7 +159,7 @@ function normalizedLogic(catalog){
   if(Object.hasOwn(e,'label'))delete e.label;
  };
  for(const card of data.cards)for(const e of card.events)clean(e);
- return sha(data);
+ return crypto.createHash('sha256').update(canonical(data)).digest('hex');
 }
 function verifyPrivate({catalog,model,skillText},{strict=true}={}){
  if(!Array.isArray(model?.cards)||typeof skillText!=='string'||!skillText)
