@@ -107,7 +107,7 @@ test('automatic delivery priority is coherent, and unapproved private source is 
  const decisions=read('docs/decisions.md');
  const app=read('poc/live.html');
  const approved=JSON.parse(read('poc/data/reviewed_events.v1.json'));
- assert.match(plan,/利用者がアプリを開けば自動的にイベントを使える状態/);
+ assert.match(plan,/ユーザーがアプリを開けば自動的にイベントを使える状態/);
  assert.match(plan,/ライセンス表示/);
  assert.match(plan,/文化庁/);
  assert.match(plan,/元データの再利用許可を意味しない/);
