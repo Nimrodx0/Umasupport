@@ -357,7 +357,7 @@ async function main(args){
       const titleBrowser=await runRealBrowser({
        bundle:makeBundle(titleProjected.catalog),
        skillText:result.dryRunMergedSkillText,
-       supportText:roster.toString('utf8')
+       supportText:roster.toString('utf8'),validateProvisionalLabels:true
       });
       console.log('PHASE2_2512_TITLE_PLACEHOLDER_CHROMIUM='+JSON.stringify(titleBrowser));
 
