@@ -40,7 +40,7 @@ function pickSkillChoice(bundle){
  }
  throw Error('実全件から普通のヒントを持つ独立選択式イベントを選べません');
 }
-async function run({bundle,skillText,supportText}){
+async function run({bundle,skillText,supportText,validateProvisionalLabels=false}){
  if(bundle?.summary?.cards!==563||bundle?.summary?.events!==2512||
     typeof skillText!=='string'||typeof supportText!=='string')
   throw Error('実出典2,512件と辞書が必要');
@@ -81,11 +81,49 @@ async function run({bundle,skillText,supportText}){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
   assert.equal(await page.evaluate(()=>window.UmaPreviewActive),true);
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/未承認イベントの試用モード/);
+  if(validateProvisionalLabels){
+   const checked=await page.evaluate(({cardId,eventId})=>{
+    const events=window.UmaDemoData.cards.flatMap(c=>c.events);
+    let choiceLabels=0,outcomeLabels=0,incorrectChoices=0,incorrectOutcomes=0;
+    const scan=(part)=>{
+     for(const out of part.outcomes||[]){
+      outcomeLabels++;
+      if(!/^結果[1-9][0-9]*（仮）$/.test(out.label))incorrectOutcomes++;
+      scan(out);
+     }
+    };
+    for(const e of events){
+     for(const ch of e.choices||[]){
+      choiceLabels++;
+      if(!/^選択肢[1-9][0-9]*（仮）$/.test(ch.label))incorrectChoices++;
+      scan(ch);
+     }
+     if(e.type==='auto')scan(e);
+    }
+    return {events:events.length,choiceLabels,outcomeLabels,
+     incorrectChoices,incorrectOutcomes,
+     sampleTitle:window.UmaDemoData.cardById[cardId].events
+      .find(e=>e.id===eventId)?.name};
+   },{cardId:sample.cardId,eventId:sample.eventId});
+   // Do not print original headings even on assertion failure.
+   const expected=bundle.catalog.cards.find(c=>c.cardId===sample.cardId).events
+    .find(e=>e.id===sample.eventId).name;
+   if(checked.events!==2512||checked.choiceLabels!==3269||
+      checked.outcomeLabels!==512||checked.incorrectChoices!==0||
+      checked.incorrectOutcomes!==0||checked.sampleTitle!==expected)
+    throw Error('ブラウザでイベント見出し保持・全仮称の表記契約が不一致');
+  }
   const realCard=await page.evaluate(id=>window.UmaDemoData.cardById[id].name,sample.cardId);
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
   await page.locator('#picker-search').fill(realCard);
   await page.locator('button[data-action="set-card"][data-id="'+sample.cardId+'"]').click();
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  if(validateProvisionalLabels){
+   const names=await page.locator('input[data-event-choice][data-event="'+sample.eventId+'"]')
+    .evaluateAll(els=>els.map(el=>el.closest('label')?.innerText||''));
+   if(!names.some(x=>x.includes('選択肢1（仮）')))
+    throw Error('実ブラウザのイベント編集UIに選択肢の仮称が表示されていない');
+  }
   await page.locator('input[data-event-choice][data-event="'+sample.eventId+'"][value="'+sample.choiceId+'"]').click();
   const selected=await page.evaluate(({cardId,eventId})=>{
    const key='uma-support-lab-runtime-umasim-v1-event-preview-local-'+
@@ -113,6 +151,7 @@ async function run({bundle,skillText,supportText}){
    cards:563,events:2512,oneRealSelectedSkillRouteValidated:true,
    normalSettingsUnchanged:true,normalPublicCatalogUnchanged:true,
    sourceDataNotUploaded:true,sourceDataWrittenToDisk:false,
+   fullProvisionalLabelContractVerified:validateProvisionalLabels,
    publicationApproved:false};
  }finally{
   await browser?.close();

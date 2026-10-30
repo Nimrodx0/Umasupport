@@ -130,6 +130,8 @@ on:
       - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
       - 'poc/src/phase2_private_local_real_acceptance.cjs'
       - 'poc/src/phase2_publication_surface_audit.cjs'
+      - 'poc/src/phase2_title_choice_projection.cjs'
+      - 'poc/tests/phase2_title_choice_projection.test.cjs'
       - 'poc/tests/phase2_publication_surface_audit.test.cjs'
       - 'poc/src/private_local_event_preview.js'
       - 'poc/tests/phase2_private_local_real_acceptance.test.cjs'
