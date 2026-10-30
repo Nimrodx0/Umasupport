@@ -51,6 +51,14 @@ test('current requirements and roadmap do not reactivate superseded HTML intake'
  assert.match(roadmap,/SSR30240の連続3段階/);
  assert.match(roadmap,/P2未同定11位置/);
  assert.match(roadmap,/2,512との件数差の解消、363件の再実装、既存DBの作り直しを今後の作業にしない/);
+ assert.match(roadmap,/既存DBの一括利用と例外管理を主工程にする/);
+ assert.match(roadmap,/2,512件を1件ずつ手動承認することを製品完成の前提条件にしない/);
+ assert.match(roadmap,/元サイト／元GitHubから読み込んでローカルで正規化/);
+ assert.match(roadmap,/現行の.event_release_gate.cjs.との整合/);
+ assert.match(read('AGENTS.md'),/既存DBの一括利用と例外管理が主工程/);
+ assert.match(read('docs/decisions.md'),/1件ずつ人手承認して公開DBへ追記する手順を必須としない/);
+ assert.match(read('docs/phase2-first-event-release-rehearsal-20261030.md'),/後続方針：この実装は補助ツール/);
+ assert.match(verification,/2,512件を1件ずつ人手承認する手順は主工程ではない/);
  assert.doesNotMatch(roadmap,/対象ソースと版、出典にないイベント、既に採用した編集事実、保留の位置を対応付ける/);
  assert.match(read('AGENTS.md'),/既存Phase 2を再作成しない/);
  assert.match(read('docs/derived-github-whole-roster-app-draft-audit-20261029.md'),/履歴・現行の工程外/);
