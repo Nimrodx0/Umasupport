@@ -336,6 +336,9 @@ async function main(args){
      const titleReview=verifyTitleFormat({
       catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
      },{strict:true});
+     const titleProjected=projectPrivateTitles(privateEventCatalog);
+     if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
+      fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
 
 
@@ -351,7 +354,6 @@ async function main(args){
       console.log('PHASE2_2512_REAL_CHROMIUM_IMPORT='+JSON.stringify(browserAcceptance));
       // The same real 2,512 events, now in the agreed title-retained /
       // placeholder-only shape. Chromium's file picker receives RAM bytes.
-      const titleProjected=projectPrivateTitles(privateEventCatalog);
       const titleBrowser=await runRealBrowser({
        bundle:makeBundle(titleProjected.catalog),
        skillText:result.dryRunMergedSkillText,
@@ -372,7 +374,9 @@ async function main(args){
       if(home===repoRoot||home.startsWith(repoRoot+path.sep)||
          !fs.statSync(home).isDirectory())
        fail('非公開イベントの書き出し先はGit管理外の既存ディレクトリに指定');
-      const bundle=localBundle;
+      // Only the agreed title-preserving provisional-choice format is exported.
+      // This remains a private user-selected developer file, not publication.
+      const bundle=makeBundle(titleProjected.catalog);
       const localDir=fs.mkdtempSync(path.join(home,'umasupport-2512-private-'));
       fs.chmodSync(localDir,0o700);
       const localPath=path.join(localDir,'private-events.local.json');
