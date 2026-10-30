@@ -42,17 +42,6 @@ function selectedConfig(card){
  }
  return {stage:4,choices,outcomes};
 }
-function countRoutes(model){
- let checked=0,baselineRoutes=0,selectedRoutes=0;
- for(const card of model.cards){
-  const blank={stage:4,choices:{},outcomes:{}};
-  baselineRoutes+=core.directRoutes(card,blank).filter(x=>x.source==='event').length;
-  selectedRoutes+=core.directRoutes(card,selectedConfig(card))
-   .filter(x=>x.source==='event').length;
-  checked++;
- }
- return {checkedCards:checked,baselineRoutes,selectedRoutes};
-}
 async function accept({catalog,model,skillText},{strict=true}={}){
  if(!model||!Array.isArray(model.cards)||model.cards.length!==EXPECTED.cards||
     typeof skillText!=='string'||!skillText.trim())
