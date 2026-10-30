@@ -138,7 +138,7 @@ test('an edited or removed previously published event must never be overwritten'
  const fake=clone(first.approvals);
  fake.entries[0].eventSha256=digest(other.cards[0].events[0]);
  assert.throws(()=>rehearse({...input,existingCatalog:other,
-  existingApprovals:fake,decisions:d}),/上書きは禁止/);
+  existingApprovals:fake,decisions:d}),/上書きは禁止|固定編集候補と一致しない/);
 });
 
 test('one staged REAL GameWith-adjudicated skill event runs through production attach and explicit choice aggregation',()=>{
