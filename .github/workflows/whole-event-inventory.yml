@@ -131,6 +131,7 @@ on:
       - 'poc/src/phase2_private_local_real_acceptance.cjs'
       - 'poc/src/private_local_event_preview.js'
       - 'poc/tests/phase2_private_local_real_acceptance.test.cjs'
+      - 'poc/tests/browser_private_2512_real_in_memory.cjs'
       - 'poc/src/gametora_branch_semantics_inventory.cjs'
       - 'poc/tests/gametora_branch_semantics_inventory.test.cjs'
       - 'poc/src/gametora_schema_blocker_diagnostics.cjs'
@@ -166,6 +167,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Chromium for real-data in-memory file chooser acceptance
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
       - name: Download two version-pinned public source files
         shell: bash
         run: |
@@ -420,6 +425,7 @@ jobs:
           UMASUPPORT_GT_EVENT_DIR: gt-snapshot/server/data/events/gametora
           UMASUPPORT_GT_BASELINE_REPORT: whole-event-output/gametora_app_schema_no_historical.v1.json
           UMASUPPORT_GT_NONSKILL_EFFECT_PRIVATE_FILE: whole-event-output/phase2_gt_nonskill_effects_private.v1.json
+          UMASUPPORT_PRIVATE_REAL_BROWSER_TEST: 'true'
           UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT: whole-event-output/gametora_unsigned_release_review.v1.json
           UMASUPPORT_GT_CROSS_SOURCE_QUEUE: whole-event-output/phase2_completeness_exceptions.v1.json
           UMASUPPORT_GT_TRIAGE_OUTPUT: whole-event-output/phase2_cross_source_release_triage.v1.json
