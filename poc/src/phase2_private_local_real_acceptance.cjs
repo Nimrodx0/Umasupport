@@ -63,6 +63,7 @@ async function accept({catalog,model,skillText},{strict=true}={}){
     checked.catalogSha256!==bundle.catalogSha256||
     hash(JSON.stringify(fresh))!==original)
   fail('実出典全件の読込前検証が原子性を満たさない');
+ const rejectedModel=JSON.parse(JSON.stringify(fresh));
  // Important: this IS the real browser local-file parser and attach logic,
  // not a second reimplementation of the event schema.
  const attached=await preview.activate(fresh,{text:raw,skillText});
@@ -110,11 +111,11 @@ async function accept({catalog,model,skillText},{strict=true}={}){
   fail('固定全件の件数・スキル経路・元モデル保存則が不正');
  // Check rejection against the REAL input content and preserve the good model.
  const corrupted={...bundle,catalogSha256:'0'.repeat(64)};
- const originalAfter=hash(JSON.stringify(fresh));
+ const originalAfter=hash(JSON.stringify(rejectedModel));
  let rejected=false;
- try{await preview.verifyBundle(JSON.stringify(corrupted),fresh,skillText);}
+ try{await preview.verifyBundle(JSON.stringify(corrupted),rejectedModel,skillText);}
  catch(e){if(!/SHA-256/.test(String(e)))throw e;rejected=true;}
- if(!rejected||hash(JSON.stringify(fresh))!==originalAfter)
+ if(!rejected||hash(JSON.stringify(rejectedModel))!==originalAfter)
   fail('改ざんした実データSHAを拒否できない');
  return {status:'REAL_2512_PRIVATE_LOCAL_IMPORT_PASS',
   cards:compared,events:comparedEvents,autoEvents,choiceEvents,
