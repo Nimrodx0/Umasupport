@@ -82,3 +82,55 @@ test('cache retains the last validated dictionary after an invalid update or off
  assert.equal(offline.mode,'cached');
  await assert.rejects(bridge.load({store:{get:async()=>null},fetchImpl:async()=>{throw Error('offline')}}),/検証済みキャッシュもありません/);
 });
+
+test('historical numeric event reward survives a moving registry without guessing a live hint ID',()=>{
+ const current=skills();
+ const historical=JSON.stringify([
+  ...JSON.parse(current),
+  {id:'200801',name:'過去のイベント専用スキル',rarity:'rare',group:20080}
+ ]);
+ const model=fixture();
+ model.skillById['hint:過去のイベント専用スキル']={
+  id:'hint:過去のイベント専用スキル',name:'過去のイベント専用スキル'};
+ const approved=catalog([ref('200801','過去のイベント専用スキル')]);
+ assert.throws(()=>publicEvents.preflight(model,approved,{skillText:current,fullRegistry:true}),
+  /未照合/);
+ const summary=publicEvents.attach(model,approved,{
+  skillText:current,pinnedSkillText:historical,fullRegistry:true});
+ assert.equal(summary.eventsWithRecords,1);
+ const eventReward=model.cardById['30001'].events[0].rewards[0];
+ assert.equal(eventReward.skillId,'skill:200801',
+  'Missing live ID must not merge into a same-name live hint');
+ assert.equal(model.skillById['skill:200801'].sourceStatus,'umasim-pinned-event-reward');
+ assert.equal(model.skillById['skill:200801'].name,'過去のイベント専用スキル');
+ assert.equal(model.meta.skillHierarchy.totalRare,1,'Live hierarchy must exclude pinned-only rewards');
+ const broken=catalog([ref('200801','誤った名称')]);
+ assert.throws(()=>publicEvents.preflight(fixture(),broken,{
+  skillText:current,pinnedSkillText:historical,fullRegistry:true}),/名称照合が失敗/);
+});
+
+test('pinned skill download validates exact immutable bytes and never trusts corrupt cache',async()=>{
+ const {webcrypto,createHash}=require('node:crypto');
+ const text=skills(),sha=createHash('sha256').update(text).digest('hex');
+ const url='https://example.org/version-pinned/skill_data.txt';
+ let record=null,calls=0;
+ const store={get:async()=>record,put:async item=>{record=item}};
+ const args={store,sourceUrl:url,expectedSha256:sha,subtle:webcrypto.subtle};
+ const fetchImpl=async()=>{
+  calls++;
+  return {ok:true,text:async()=>text};
+ };
+ const first=await bridge.loadPinned({...args,fetchImpl,now:()=>'fixed-time'});
+ assert.equal(first.mode,'online');
+ assert.equal(record.sourceUrl,url);
+ assert.equal(record.fetchedAt,'fixed-time');
+ assert.equal((await bridge.loadPinned({...args,fetchImpl:async()=>{throw Error('unexpected network')}})).mode,'cached');
+ assert.equal(calls,1);
+ record={...record,text:record.text+' '};
+ await assert.rejects(bridge.loadPinned({...args,fetchImpl:async()=>{throw Error('offline')}}),/offline/);
+ record=null;
+ await assert.rejects(bridge.loadPinned({...args,fetchImpl:async()=>({ok:true,text:async()=>text+' '})}),/SHA-256/);
+ assert.equal(record,null,'Bad upstream bytes must not poison cache');
+ const stateless=await bridge.loadPinned({...args,store:{get:async()=>{throw Error('denied')},put:async()=>{throw Error('denied')}},fetchImpl});
+ assert.equal(stateless.mode,'online');
+});

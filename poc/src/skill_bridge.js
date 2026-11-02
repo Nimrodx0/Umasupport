@@ -8,6 +8,12 @@ const hierarchy=typeof module!=='undefined'&&module.exports
   ?require('./skill_hierarchy.js'):g.UmaSkillHierarchy;
 const SOURCE_URL='https://raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt';
 const CACHE_KEY='umasupport/umasim/skill_data.txt/v1';
+// Release #309 verified its event reward IDs against this immutable 2026 snapshot.
+// The moving UmaSim main registry remains authoritative for ordinary live hints.
+const PINNED_SOURCE_REVISION='cf9366f6a487bd8f197b53d8a11981207beb9f6c';
+const PINNED_URL='https://raw.githubusercontent.com/mee1080/umasim/'+PINNED_SOURCE_REVISION+'/data/skill_data.txt';
+const PINNED_SHA256='b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec';
+const PINNED_CACHE_KEY='umasupport/umasim/skill_data.txt/'+PINNED_SOURCE_REVISION;
 function parseSource(text){
   if(typeof text!=='string')throw Error('スキル辞書はテキストである必要があります');
   let raw;
@@ -26,22 +32,29 @@ function parseSource(text){
   }
   return {byId,byName,count:raw.length};
 }
-function prepare(model,catalog,text,{fullRegistry=false}={}){
+function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null}={}){
   if(!model||!isObject(model.skillById))throw Error('スキル照合用モデルが不正');
   if(!catalog||!Array.isArray(catalog.cards))return {catalog,skills:[],matchedHints:0};
   // JSON-safe public catalogs are cloned, so failed validation never mutates input or model.
   const converted=JSON.parse(JSON.stringify(catalog));
   let source=typeof text==='string'&&fullRegistry?parseSource(text):null,matchedHints=0;
+  // The published catalog was checked against this fixed dictionary. Verify the
+  // same facts at runtime instead of allowing changes on UmaSim/main to erase it.
+  const pinned=typeof pinnedSkillText==='string'?parseSource(pinnedSkillText):null;
   const skills=new Map();
   function mapReward(reward){
     if(!isObject(reward)||typeof reward.skillId!=='string')return;
     const match=numericKey.exec(reward.skillId);
     if(!match)return;
-    if(!source){
-      if(typeof text!=='string')throw Error('数値スキルIDを検証するための辞書がありません');
-      source=parseSource(text);
-    }
-    const record=source.byId.get(match[1]);
+    if(!source&&typeof text==='string')source=parseSource(text);
+    const liveRecord=source?.byId.get(match[1]);
+    const historicalRecord=pinned?.byId.get(match[1]);
+    // If an old ID is removed or reassigned, the reviewed source snapshot wins.
+    // Such legacy rewards stay separate from current-hint name reconciliation.
+    const historical=!!historicalRecord&&(!liveRecord||
+      liveRecord.name!==historicalRecord.name||
+      liveRecord.rarity!==historicalRecord.rarity);
+    const record=historicalRecord||liveRecord;
     if(!record)throw Error('数値スキルIDが未照合: '+reward.skillId);
      if(reward.kind==='negative'?record.rarity!=='minus':
         !['normal','rare'].includes(record.rarity))
@@ -51,7 +64,8 @@ function prepare(model,catalog,text,{fullRegistry=false}={}){
       throw Error('数値スキルIDの名称照合が失敗: '+reward.skillId);
     delete reward.verifiedSkillName;
     const hintId='hint:'+record.name;
-    if(reward.kind!=='negative'&&source.byName.get(record.name).length===1&&Object.hasOwn(model.skillById,hintId)){
+    if(reward.kind!=='negative'&&!historical&&!!liveRecord&&
+       source.byName.get(record.name)?.length===1&&Object.hasOwn(model.skillById,hintId)){
       reward.skillId=hintId;
       matchedHints++;
     } else {
@@ -60,7 +74,8 @@ function prepare(model,catalog,text,{fullRegistry=false}={}){
         if(normalize(model.skillById[key].name)!==record.name)
           throw Error('既存スキルのIDと名称に矛盾: '+key);
       }else skills.set(key,{id:key,name:record.name,tier:record.rarity==='minus'?'negative':record.rarity==='rare'?'gold':'white',
-        lowerId:null,sourceNumericId:record.id,sourceStatus:'umasim-id-matched'});
+        lowerId:null,sourceNumericId:record.id,
+        sourceStatus:historical?'umasim-pinned-event-reward':'umasim-id-matched'});
       reward.skillId=key;
     }
   }
@@ -109,7 +124,48 @@ async function load({fetchImpl=g.fetch?.bind(g),store=g.UmaLiveLoader?.indexedDb
   }catch(e){failure=new Error(String(failure)+'; cache: '+String(e));}
   throw Error('スキル辞書を取得できず、検証済みキャッシュもありません。'+String(failure));
 }
-const api={SOURCE_URL,CACHE_KEY,parseSource,prepare,load};
+// Only accept the historical skill dictionary when its entire source bytes
+// match the release-pinned digest. Cache uses a separate revision-specific key.
+async function loadPinned({
+ fetchImpl=g.fetch?.bind(g),
+ store=g.UmaLiveLoader?.indexedDbStore(g.indexedDB,PINNED_CACHE_KEY),
+ sourceUrl=PINNED_URL,expectedSha256=PINNED_SHA256,
+ subtle=g.crypto?.subtle,now=()=>new Date().toISOString(),timeoutMs=12000
+}={}){
+ if(!subtle||typeof subtle.digest!=='function')
+  throw Error('固定イベント辞書のSHA-256検証機能がありません');
+ const verify=async text=>{
+  if(typeof text!=='string')throw Error('固定イベント辞書がテキストではありません');
+  const bytes=new TextEncoder().encode(text);
+  const digest=Array.from(new Uint8Array(await subtle.digest('SHA-256',bytes)))
+   .map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(digest!==expectedSha256)throw Error('固定イベント辞書のSHA-256が不一致');
+  parseSource(text);
+  return text;
+ };
+ // The upstream revision is immutable; verified cache is the first choice.
+ try{
+  const record=await store?.get();
+  if(record?.sourceUrl===sourceUrl){
+   await verify(record.text);
+   return {text:record.text,mode:'cached',fetchedAt:record.fetchedAt||null};
+  }
+ }catch(_){/* Reject invalid cache; try the immutable upstream snapshot. */}
+ if(!fetchImpl)throw Error('固定イベント辞書のFetch APIが利用できません');
+ const controller=typeof AbortController!=='undefined'?new AbortController():null;
+ const timeout=controller?setTimeout(()=>controller.abort(),timeoutMs):null;
+ try{
+  const response=await fetchImpl(sourceUrl,{cache:'no-store',
+   ...(controller?{signal:controller.signal}:{})});
+  if(!response.ok)throw Error('固定イベント辞書 HTTP '+response.status);
+  const text=await verify(await response.text());
+  const fetchedAt=now();
+  try{await store?.put({text,fetchedAt,sourceUrl});}
+  catch(_){/* Verified network data is usable in private browsing. */}
+  return {text,mode:'online',fetchedAt};
+ }finally{if(timeout!==null)clearTimeout(timeout);}
+}
+const api={SOURCE_URL,CACHE_KEY,parseSource,prepare,load,loadPinned,PINNED_URL,PINNED_SHA256,PINNED_CACHE_KEY};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillBridge=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

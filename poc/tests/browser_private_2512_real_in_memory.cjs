@@ -59,7 +59,10 @@ async function run({bundle,skillText,supportText,validateProvisionalLabels=false
    const url=r.url();
    if(!url.startsWith(base)&&
       !url.includes('raw.githubusercontent.com/mee1080/umasim/main/data/support_card.txt')&&
-      !url.includes('raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt'))
+      !url.includes('raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt')&&
+      // The fixed event dictionary is also fulfilled by the local skill route.
+      // It must not escape this read-only, in-memory Chromium audit.
+      !url.includes('raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt'))
     unexpectedRequests.push(url);
   });
   await page.route('**/data/support_card.txt',r=>r.fulfill({
