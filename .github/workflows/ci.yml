@@ -46,6 +46,8 @@ jobs:
           node --test poc/tests/phase2_gt_fixed_source_provenance.test.cjs
           node --check poc/src/phase2_gt2487_release.cjs
           node --test poc/tests/phase2_gt2487_release.test.cjs
+          node --check poc/src/current_public_event_approvals.cjs
+          node --test poc/tests/current_public_event_approvals.test.cjs
       - name: Enforce derived-GitHub primary and manual-only source exceptions
         run: node --test poc/tests/upstream_event_source_triage.test.cjs
 
