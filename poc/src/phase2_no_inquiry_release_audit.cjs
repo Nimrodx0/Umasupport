@@ -94,8 +94,9 @@ function report({catalog,projection,lineage},{strict=false}={}){
   }
  }
  const sum=name=>Object.values(groups).reduce((n,r)=>n+r[name],0);
- if(sum('events')!==raw.size||sum('outcomePositions')!==
-   (Object.values(groups).reduce((n,r)=>n+r.outcomePositions,0)))
+ if(sum('events')!==raw.size||sum('choicePositions')!==
+    project(catalog).counts.choices||sum('outcomePositions')!==
+    project(catalog).counts.outcomes)
   fail('計測対象イベント数に欠落');
  if(strict&&(raw.size!==2512||sum('eventTitlesRetained')!==2512||
     groups.gtDerived.events!==2487||
