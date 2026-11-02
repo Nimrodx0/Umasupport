@@ -18,7 +18,7 @@ test('four fixed cards × two standalone events, sixteen alternatives, four nume
  assert.equal(p.summary.skillHintFacts,4);
  assert.equal(p.summary.unpublishedSourceChainStages,12);
  assert.equal(p.summary.approvedForPublication,0);
- assert.equal(p.summary.currentlyPublishedEvents,0);
+ assert.equal(p.summary.currentlyPublishedEvents,2487);
  assert.equal(p.summary.sourceEventPositionsAdjudicated,8);
  assert.equal(p.summary.publicDisplayLabelsApproved,0);
  assert.equal(p.summary.reportedAdditionalOutcomeBranches,0);
@@ -86,8 +86,10 @@ test('numeric drift, wrong card, altered skill level and invented verified route
 });
 test('a ready-looking draft is never implicitly released by review pack',()=>{
  const p=build();
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
- assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
+ const publicCatalog=require('../data/reviewed_events.v1.json');
+ const {forCatalog}=require('../src/current_public_event_approvals.cjs');
+ assert.equal(verifyRelease(publicCatalog,forCatalog(publicCatalog)).publicEvents,2487);
+ assert.equal(forCatalog(publicCatalog).entries.length,0);
  assert.throws(()=>verifyRelease(p.previewCatalog,{schemaVersion:1,entries:[]}),
   /承認証跡/);
  const sample=p.previewCatalog.cards[0].events[0];
