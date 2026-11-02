@@ -13,8 +13,8 @@ const CACHE_KEY='umasupport/public/reviewed_events.v1.json/v1';
 function sourceStore(){
  return g.UmaLiveLoader?.indexedDbStore(g.indexedDB,CACHE_KEY);
 }
-function preflight(model,catalog,{skillText=null,pinnedSkillText=null,fullRegistry=false}={}){
- const prepared=bridge.prepare(model,catalog,skillText,{fullRegistry,pinnedSkillText});
+function preflight(model,catalog,{skillText=null,pinnedSkillText=null,fullRegistry=false,allowReviewedLegacy=false}={}){
+ const prepared=bridge.prepare(model,catalog,skillText,{fullRegistry,pinnedSkillText,allowReviewedLegacy});
  const candidateSkills={...model.skillById,
    ...Object.fromEntries(prepared.skills.map(s=>[s.id,s]))};
  for(const patch of prepared.skillPatches||[]){
@@ -27,9 +27,9 @@ function preflight(model,catalog,{skillText=null,pinnedSkillText=null,fullRegist
  return {prepared,summary};
 }
 
-function attach(model,catalog,{skillText=null,pinnedSkillText=null,fullRegistry=false}={}){
+function attach(model,catalog,{skillText=null,pinnedSkillText=null,fullRegistry=false,allowReviewedLegacy=false}={}){
  // Resolve numeric rewards before validation, but do not modify model if any check fails.
- const {prepared,summary}=preflight(model,catalog,{skillText,pinnedSkillText,fullRegistry});
+ const {prepared,summary}=preflight(model,catalog,{skillText,pinnedSkillText,fullRegistry,allowReviewedLegacy});
  for(const skill of prepared.skills){
    if(!Array.isArray(model.skills))model.skills=[];
    model.skills.push(skill);
@@ -62,7 +62,7 @@ async function load({fetchImpl=g.fetch?.bind(g),url=URL}={}){
 }
 
 async function loadVerified({
- fetchImpl=g.fetch?.bind(g),store=sourceStore(),url=URL,model,skillText=null,pinnedSkillText=null,
+ fetchImpl=g.fetch?.bind(g),store=sourceStore(),url=URL,model,skillText=null,pinnedSkillText=null,allowReviewedLegacy=false,
  now=()=>new Date().toISOString(),timeoutMs=12000
 }={}){
  if(!model||!model.skillById||!model.cardById)
@@ -72,7 +72,7 @@ async function loadVerified({
  const validate=text=>{
   if(typeof text!=='string')throw Error('イベントJSONの本文が不正');
   const parsed=JSON.parse(text);
-  preflight(model,parsed,{skillText,pinnedSkillText,fullRegistry});
+  preflight(model,parsed,{skillText,pinnedSkillText,fullRegistry,allowReviewedLegacy});
   return parsed;
  };
  const controller=typeof AbortController!=='undefined'?new AbortController():null;
