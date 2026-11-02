@@ -54,6 +54,11 @@ async function main(){
    status:200,contentType:'text/plain',body:supports()}));
   await page.route('**/data/skill_data.txt',r=>r.fulfill({
    status:200,contentType:'text/plain',body:sample.skillText}));
+  // Synthetic file-import tests must not load real approved GT2487 events
+  // into an artificial skill/card model or the import preflight will reject.
+  await page.route('**/reviewed_events.v1.json',r=>r.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({schemaVersion:1,cards:[]})}));
   const base='http://127.0.0.1:'+web.address().port;
   await page.goto(base+'/poc/live.html?eventPreview=local',{waitUntil:'load'});
   await page.locator('#private-local-event-file').waitFor();
