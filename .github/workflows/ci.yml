@@ -40,6 +40,8 @@ jobs:
           node --test poc/tests/phase2_no_inquiry_release_audit.test.cjs
           node --check poc/src/phase2_provenance_string_surface.cjs
           node --test poc/tests/phase2_provenance_string_surface.test.cjs
+          node --check poc/src/phase2_factual_review_worksheet.cjs
+          node --test poc/tests/phase2_factual_review_worksheet.test.cjs
       - name: Enforce derived-GitHub primary and manual-only source exceptions
         run: node --test poc/tests/upstream_event_source_triage.test.cjs
 
