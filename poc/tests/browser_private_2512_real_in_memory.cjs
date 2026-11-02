@@ -66,6 +66,12 @@ async function run({bundle,skillText,supportText,validateProvisionalLabels=false
    status:200,contentType:'text/plain',body:supportText}));
   await page.route('**/data/skill_data.txt',r=>r.fulfill({
    status:200,contentType:'text/plain',body:skillText}));
+  // Exercise private 2,512-event import against an empty *test* public
+  // catalog, never against the existing owner-approved GT2487 release.
+  // The latter remains independently validated in fixed-source CI.
+  await page.route('**/reviewed_events.v1.json',r=>r.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({schemaVersion:1,cards:[]})}));
   await page.goto(base+'/poc/live.html?eventPreview=local',{waitUntil:'load'});
   await page.locator('#private-local-event-file').waitFor({timeout:20000});
   assert.equal(await page.locator('main.app').count(),0);
