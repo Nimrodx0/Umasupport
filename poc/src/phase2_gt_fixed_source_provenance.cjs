@@ -31,7 +31,7 @@ function audit({documents,projectedCatalog},{strict=false}={}){
   sourceChoiceOutcomeNodes:0,sourceOutcomeLabelNonempty:0,
   sourceSectionClassifications:0,
   sourceOriginalOrdinalEmbeddedInEventId:0,
-  sourceEventsWithUnexplainedEmptyChoiceLists:0
+  sourceEventsWithEmptyChoiceLists:0
  };
  const sections=new Set();
  function nestedOutcomes(part,depth=0){
@@ -67,8 +67,12 @@ function audit({documents,projectedCatalog},{strict=false}={}){
   if(byId.size!==got.length)fail('元位置ベースのイベントIDが重複');
   for(let i=0;i<entries.length;i++){
    const [title,event]=entries[i],id=eventKey(cardId,i+1);
-   if(!obj(event)||!Array.isArray(event.choices)||
-      !event.choices.length||!byId.has(id))fail('元イベントの位置対応が不正');
+   if(!obj(event)||!Array.isArray(event.choices)||!byId.has(id))
+    fail('元イベントの位置対応が不正');
+   if(!event.choices.length){
+    n.sourceEventsWithEmptyChoiceLists++;
+    fail('元イベントに選択肢が存在しない');
+   }
    n.sourceEvents++;n.sourceOriginalOrdinalEmbeddedInEventId++;
    const sourceTitle=event.name||title;
    if(typeof sourceTitle!=='string'||!normalize(sourceTitle))fail('元見出しが空');
@@ -106,7 +110,7 @@ function audit({documents,projectedCatalog},{strict=false}={}){
    sourceEventOrdinalUsedForPrivateEventIdentity:true,
    sourceHeadingsReusedForEventRecognition:true,
    sourceEditorialSectionLabelsReproducedInPublicCandidate:false,
-   originalSourceChoicesPublished:false,
+   originalSourceChoiceTextPresentOnlyInPrivateSource:true,
    potentialOriginalityNeedsManualAssessment:true,
    sourceAccessAndReuseRightsVerified:false,
    publicationApproved:false,
