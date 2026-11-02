@@ -58,7 +58,7 @@ test('a copied v2 review cannot be abused to approve unrelated 2-event sample',(
 test('review states original factual description, not invented licensing',()=>{
  assert.equal(review.cohorts.length,1);
  assert.equal(review.cohorts[0].expectedEvents,2487);
- assert.equal(review.cohorts[0].selector.excludedEventKeys.length,1);
+ assert.deepEqual(review.cohorts[0].selector,{eventIdPrefix:'gt-'});
  assert.equal(review.cohorts[0].review.publicationBasis.kind,'original-factual-description');
  assert.equal(review.cohorts[0].review.sourceRevision,
   '6e38b54af4fad397ff4491e63007a90705a4fe67');
