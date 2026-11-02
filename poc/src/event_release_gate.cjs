@@ -36,11 +36,9 @@ function hasDraftOnlyFacts(value){
  if(Object.keys(value).some(key=>QUARANTINE_FIELDS.has(key)))return true;
  return Object.values(value).some(hasDraftOnlyFacts);
 }
-function verifyRelease(catalog,approvals){
+function indexPublished(catalog){
  if(!obj(catalog)||catalog.schemaVersion!==1||!Array.isArray(catalog.cards))
   fail('公開カタログが不正');
- if(!obj(approvals)||approvals.schemaVersion!==1||!Array.isArray(approvals.entries))
-  fail('レビュー証跡が不正');
  const published=new Map(),seenCards=new Set();
  for(const card of catalog.cards){
   if(!obj(card)||!nonempty(card.cardId)||seenCards.has(card.cardId)||
@@ -56,6 +54,15 @@ function verifyRelease(catalog,approvals){
    published.set(key,digest(event));
   }
  }
+ return published;
+}
+function verifyRelease(catalog,approvals){
+ if(approvals?.schemaVersion===2)
+  return require('./event_release_cohorts.cjs').verifyCohortRelease(catalog,approvals);
+ if(!obj(approvals)||approvals.schemaVersion!==1||!Array.isArray(approvals.entries))
+  fail('レビュー証跡が不正');
+ const published=indexPublished(catalog);
+ const seenCards=new Set(catalog.cards.map(c=>c.cardId));
  const reviewed=new Set();
  for(const item of approvals.entries){
   if(!obj(item)||!nonempty(item.cardId)||!nonempty(item.eventId))
@@ -86,4 +93,4 @@ function verifyRelease(catalog,approvals){
  }
  return {publicCards:seenCards.size,publicEvents:published.size,reviewedEvents:reviewed.size};
 }
-module.exports={verifyRelease,digest,canonical};
+module.exports={verifyRelease,digest,canonical,secureUrl,indexPublished};
