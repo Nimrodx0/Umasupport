@@ -72,7 +72,8 @@ test('synthetic signed ONE real numeric-hint event runs through exact applicatio
  assert.equal(verifyRelease(a.catalog,a.approvals).publicEvents,1);
  assert.equal(JSON.stringify({catalog:input.existingCatalog,
   approvals:input.existingApprovals}),original);
- assert.deepEqual(actual,{schemaVersion:1,cards:[]});
+ assert.equal(verifyRelease(actual,
+   require('../src/current_public_event_approvals.cjs').forCatalog(actual)).publicEvents,2487);
 });
 test('replay is idempotent and later event can append to the SAME existing card',()=>{
  const input=fixture(),id='30318',b='usl:30318:random:5',a='usl:30318:random:4';
