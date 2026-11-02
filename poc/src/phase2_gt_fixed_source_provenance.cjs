@@ -41,11 +41,19 @@ function audit({documents,projectedCatalog},{strict=false}={}){
   if(children===undefined)return;
   if(!Array.isArray(children))fail('元結果一覧の形式が不正');
   for(const item of children){
-   if(!obj(item))fail('元結果項目が不正');
    n.sourceChoiceOutcomeNodes++;
-   if(typeof item.label==='string'&&item.label.trim())
-    n.sourceOutcomeLabelNonempty++;
-   nestedOutcomes(item,depth+1);
+   if(Array.isArray(item)){
+    // The actual pinned GameTora derivative has arrays of effect objects
+    // as exclusive outcome alternatives, not necessarily labelled objects.
+    for(const effect of item){
+     if(!obj(effect))fail('元結果内の効果が不正');
+     nestedOutcomes(effect,depth+1);
+    }
+   }else if(obj(item)){
+    if(typeof item.label==='string'&&item.label.trim())
+     n.sourceOutcomeLabelNonempty++;
+    nestedOutcomes(item,depth+1);
+   }else fail('元結果項目が不正');
   }
  }
  for(const doc of documents){
