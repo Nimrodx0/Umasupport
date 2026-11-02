@@ -371,6 +371,14 @@ async function main(args){
       curatedOnlyEventPositions:curatedOnlyEventIds.length,
       sourceTextIncluded:false}));
 
+     // Read-only assessment of where even factual values depend on the
+     // third-party snapshot's selection/order and short game text. This
+     // does NOT assert a right to publish: no titles or catalog in logs.
+     const noInquiryReport=require('../src/phase2_no_inquiry_release_audit.cjs')
+      .report({catalog:privateEventCatalog,projection:titleProjected.catalog,
+       lineage:history},{strict:true});
+     console.log('PHASE2_2512_NO_INQUIRY_DEPENDENCIES='+
+      JSON.stringify(noInquiryReport));
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
