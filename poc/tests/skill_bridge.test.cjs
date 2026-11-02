@@ -134,3 +134,41 @@ test('pinned skill download validates exact immutable bytes and never trusts cor
  const stateless=await bridge.loadPinned({...args,store:{get:async()=>{throw Error('denied')},put:async()=>{throw Error('denied')}},fetchImpl});
  assert.equal(stateless.mode,'online');
 });
+
+test('exact GT2487 released historical skill whitelist is complete and preserves ID/name pairs',()=>{
+ const publicCatalog=require('../data/reviewed_events.v1.json');
+ const expected=bridge.REVIEWED_LEGACY_SKILL_NAMES;
+ assert.equal(Object.keys(expected).length,30);
+ const approved=new Map();
+ const scan=part=>{
+  if(!part||typeof part!=='object')return;
+  if(Array.isArray(part)){part.forEach(scan);return;}
+  const id=typeof part.skillId==='string'&&part.skillId.startsWith('skill:')
+    ?part.skillId.slice(6):null;
+  if(id&&Object.hasOwn(expected,id)){
+   const previous=approved.get(id);
+   assert.ok(!previous||previous===part.verifiedSkillName,
+    'Published historical ID has conflicting names: '+id);
+   approved.set(id,part.verifiedSkillName);
+  }
+  for(const child of Object.values(part))if(typeof child==='object')scan(child);
+ };
+ for(const card of publicCatalog.cards)for(const event of card.events)scan(event);
+ assert.deepEqual(Object.fromEntries([...approved].sort()),
+  Object.fromEntries(Object.entries(expected).sort()));
+ const model=fixture();
+ model.skillById['hint:先行駆け引き']={id:'hint:先行駆け引き',name:'先行駆け引き'};
+ const approvedEvent=catalog([ref('200801','先行駆け引き')]);
+ assert.throws(()=>publicEvents.preflight(fixture(),approvedEvent,
+  {skillText:skills(),fullRegistry:true}),/未照合/,
+  'Unapproved or private previews must never inherit the released legacy exception');
+ const count=publicEvents.attach(model,approvedEvent,{skillText:skills(),fullRegistry:true,allowReviewedLegacy:true});
+ assert.equal(count.eventsWithRecords,1);
+ assert.equal(model.cardById['30001'].events[0].rewards[0].skillId,'skill:200801');
+ assert.equal(model.skillById['skill:200801'].tier,'unknown');
+ assert.equal(model.skillById['skill:200801'].sourceStatus,'reviewed-legacy-master-id-only');
+ assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('200801','他の名前')]),
+  {skillText:skills(),allowReviewedLegacy:true}),/未照合/);
+ assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('999999','未知のスキル')]),
+  {skillText:skills()}),/未照合/);
+});

@@ -343,6 +343,11 @@ jobs:
             --output "$RUNNER_TEMP/event-inputs/skill_data.txt" \
             "https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt"
           echo "b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec  $RUNNER_TEMP/event-inputs/skill_data.txt" | sha256sum --check
+      - name: Accept all 2487 published events with the exact source-pinned browser runtime
+        run: |
+          node umasupport/poc/tools/verify_gt2487_runtime_acceptance.cjs \
+            "$RUNNER_TEMP/event-inputs/support_card.txt" \
+            "$RUNNER_TEMP/event-inputs/skill_data.txt"
       - name: Verify synthetic GameTora skill crosswalk tests
         run: node --test umasupport/poc/tests/gametora_event_skill_crosswalk.test.cjs
       - name: Crosswalk all 1681 numeric event hints with pinned 2139 skill registry records

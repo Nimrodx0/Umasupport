@@ -45,9 +45,9 @@
    }
    try {
      const source=await UmaPublicEventCatalog.loadVerified({
-       model:window.UmaDemoData,skillText,pinnedSkillText});
+       model:window.UmaDemoData,skillText,pinnedSkillText,allowReviewedLegacy:true});
      const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,source.catalog,
-       {skillText,pinnedSkillText,fullRegistry:!!skillText});
+       {skillText,pinnedSkillText,fullRegistry:!!skillText,allowReviewedLegacy:true});
      window.UmaDemoData.meta.runtimeSources.events={
        mode:source.mode==='cached'?'cached':'reviewed',
        url:UmaPublicEventCatalog.URL,

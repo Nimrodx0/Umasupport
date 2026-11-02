@@ -32,7 +32,46 @@ function parseSource(text){
   }
   return {byId,byName,count:raw.length};
 }
-function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null}={}){
+// Thirty numeric skill identities in the exact user-approved GT2487 catalog
+// are absent from the frozen 2026 UmaSim dictionary: 28 were independently
+// crosschecked with the SHA-pinned 2025 game master and 2 have separate
+// ID/name evidence in poc/data/curation/supplemental_skills.v1.json.
+// Names below are the unique, already-published, owner-reviewed ID/name pairs,
+// NOT an inferred current skill registry. Do not guess rarity/hierarchy.
+// Cohort signature: 9cfb7f3241c1c94250605ef418260eef4080404debcfeea46738ba24bc756d2e
+const REVIEWED_LEGACY_SKILL_NAMES=Object.freeze({
+  "200781": "トリック(後)",
+  "200791": "逃げ駆け引き",
+  "200801": "先行駆け引き",
+  "200811": "差し駆け引き",
+  "200821": "追込駆け引き",
+  "200831": "逃げけん制",
+  "200851": "逃げためらい",
+  "200861": "先行けん制",
+  "200871": "先行焦り",
+  "200881": "先行ためらい",
+  "200891": "差しけん制",
+  "200901": "差し焦り",
+  "200911": "差しためらい",
+  "200921": "追込けん制",
+  "200931": "追込焦り",
+  "200941": "追込ためらい",
+  "201012": "後方釘付",
+  "201022": "抜け駆け禁止",
+  "201121": "千里眼",
+  "201122": "ホークアイ",
+  "201152": "束縛",
+  "201162": "ささやき",
+  "201302": "リスタート",
+  "201372": "かく乱",
+  "201431": "大局観",
+  "201432": "読解力",
+  "201442": "鋭い眼光",
+  "201472": "お見通し",
+  "201501": "天命士",
+  "201512": "まなざし"
+});
+function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null,allowReviewedLegacy=false}={}){
   if(!model||!isObject(model.skillById))throw Error('スキル照合用モデルが不正');
   if(!catalog||!Array.isArray(catalog.cards))return {catalog,skills:[],matchedHints:0};
   // JSON-safe public catalogs are cloned, so failed validation never mutates input or model.
@@ -55,7 +94,26 @@ function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null}={}
       liveRecord.name!==historicalRecord.name||
       liveRecord.rarity!==historicalRecord.rarity);
     const record=historicalRecord||liveRecord;
-    if(!record)throw Error('数値スキルIDが未照合: '+reward.skillId);
+    if(!record){
+      // A closed, explicitly enumerated compatibility set. Unknown IDs and
+      // any altered approved name remain errors. Never merge these ID-only
+      // records into hints by name or invent a gold/white rank.
+      const reviewed=Object.hasOwn(REVIEWED_LEGACY_SKILL_NAMES,match[1])
+        ?REVIEWED_LEGACY_SKILL_NAMES[match[1]]:null;
+      if(!allowReviewedLegacy||!reviewed||reward.kind!==undefined&&reward.kind!=='hint'||
+          normalize(reward.verifiedSkillName)!==normalize(reviewed))
+        throw Error('数値スキルIDが未照合: '+reward.skillId);
+      const key='skill:'+match[1];
+      if(model.skillById[key]&&normalize(model.skillById[key].name)!==normalize(reviewed))
+        throw Error('承認済み旧スキルの名称が現行モデルと矛盾: '+key);
+      if(!model.skillById[key])skills.set(key,{
+        id:key,name:reviewed,tier:'unknown',lowerId:null,sourceNumericId:match[1],
+        sourceStatus:'reviewed-legacy-master-id-only'
+      });
+      delete reward.verifiedSkillName;
+      reward.skillId=key;
+      return;
+    }
      if(reward.kind==='negative'?record.rarity!=='minus':
         !['normal','rare'].includes(record.rarity))
        throw Error('報酬種別と数値スキル分類が不一致: '+reward.skillId);
@@ -165,7 +223,7 @@ async function loadPinned({
   return {text,mode:'online',fetchedAt};
  }finally{if(timeout!==null)clearTimeout(timeout);}
 }
-const api={SOURCE_URL,CACHE_KEY,parseSource,prepare,load,loadPinned,PINNED_URL,PINNED_SHA256,PINNED_CACHE_KEY};
+const api={SOURCE_URL,CACHE_KEY,parseSource,prepare,load,loadPinned,PINNED_URL,PINNED_SHA256,PINNED_CACHE_KEY,REVIEWED_LEGACY_SKILL_NAMES};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillBridge=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
