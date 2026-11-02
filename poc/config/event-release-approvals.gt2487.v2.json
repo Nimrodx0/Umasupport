@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 2,
+  "cohorts": [
+    {
+      "id": "gt-derived-factual-2026-11-02-first-release",
+      "selector": {
+        "eventIdPrefix": "gt-",
+        "excludedEventKeys": [
+          {
+            "cardId": "30080",
+            "eventId": "gt-30080-event-006"
+          }
+        ]
+      },
+      "expectedEvents": 2487,
+      "eventsSha256": "9cfb7f3241c1c94250605ef418260eef4080404debcfeea46738ba24bc756d2e",
+      "review": {
+        "reviewer": "project-owner (release decision 2026-11-02; technical evidence prepared in repository)",
+        "reviewedAt": "2026-11-02",
+        "sourceRevision": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+        "accessMethod": "authorized-access",
+        "checks": {
+          "card": true,
+          "event": true,
+          "choices": true,
+          "outcomes": true,
+          "dependencies": true,
+          "publication": true,
+          "sourceAccessTerms": true,
+          "databaseReuse": true,
+          "gameMaterialAndTitles": true,
+          "choiceWording": true
+        },
+        "evidence": {
+          "card": [
+            "https://github.com/systemless10/UmamusumePS/tree/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora",
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488"
+          ],
+          "event": [
+            "https://github.com/systemless10/UmamusumePS/tree/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora",
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488",
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-source-lineage-exception-map-20261102.md"
+          ],
+          "choices": [
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md",
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488"
+          ],
+          "outcomes": [
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md",
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488"
+          ],
+          "dependencies": [
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-source-lineage-exception-map-20261102.md",
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488"
+          ],
+          "publication": [
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md",
+            "https://umamusume.jp/derivativework_guidelines"
+          ],
+          "sourceAccessTerms": [
+            "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md"
+          ],
+          "databaseReuse": [
+            "https://www.cric.or.jp/db/domestic/a1_index.html",
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md"
+          ],
+          "gameMaterialAndTitles": [
+            "https://umamusume.jp/derivativework_guidelines",
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md"
+          ],
+          "choiceWording": [
+            "https://github.com/Nimrodx0/Umasupport/actions/runs/41408576488",
+            "https://github.com/Nimrodx0/Umasupport/blob/main/docs/phase2-no-inquiry-publication-assessment-20261102.md"
+          ]
+        },
+        "publicationBasis": {
+          "kind": "original-factual-description",
+          "reason": "Owner authorized a noncommercial, nonofficial factual-lookup release on 2026-11-02. Publish the 2,487 fixed GT-derived events without tracked cross-source editorial changes, retaining only short event identifiers/names, independent generated choice/outcome placeholders, game facts, skill IDs and numeric effects. This is an assessed factual-use rationale, NOT a blanket right to reproduce GameTora/Cygames expressions or source JSON. No GameWith-adjusted event or curated additions are covered.",
+          "scope": "Only the exact 2,487 hash-pinned GT-derived event records selected here; no original option/result speech, source article text, images, source JSON, GameWith-edited SSR30080/6, curated usl: records, paid distribution, game manipulation or unapproved additions."
+        }
+      }
+    }
+  ],
+  "entries": []
+}
