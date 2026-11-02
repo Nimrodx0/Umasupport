@@ -8,7 +8,7 @@ const {audit,replay}=require('../src/phase2_chain_manual_replay.cjs');
 const {replay:replay30221}=require('../src/phase2_30221_missing_chain_intake.cjs');
 const core=require('../src/core.js');
 const published=require('../data/reviewed_events.v1.json');
-const approvals=require('../config/event-release-approvals.v1.json');
+const approvals=require('../src/current_public_event_approvals.cjs').forCatalog(published);
 const output=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../preview/phase2-chain-stages.v1.json'),'utf8'));
 test('publicly viewable but nonapproved numeric preview matches the curated 12-stage source exactly',()=>{
  const expected=build();
@@ -37,8 +37,8 @@ test('publicly viewable but nonapproved numeric preview matches the curated 12-s
   [2,2,0],[2,2,0],[2,2,0],[2,0,0],[0,0,0]
  ]);
  assert.ok(stages.every(s=>s.manualReachedRequired&&s.priorStageDependenceVerified===false));
- assert.deepEqual(published,{schemaVersion:1,cards:[]});
- assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(published,approvals).publicEvents,2487);
+ assert.equal(approvals.schemaVersion,2);
 });
 test('all 15 numeric stages remain isolated from their unverified preceding stages',()=>{
  const facts=audit();
