@@ -15,6 +15,39 @@ const review=require('../config/event-release-approvals.gt2487.v2.json');
 const SOURCE_SHA='9cfb7f3241c1c94250605ef418260eef4080404debcfeea46738ba24bc756d2e';
 const EXCEPTION_KEY=JSON.stringify(['30080','gt-30080-event-006']);
 const fail=s=>{throw Error('GT 2487公開準備: '+s);};
+function filterApproved(normalized,selector){
+ if(!normalized||!Array.isArray(normalized.cards)||
+    selector?.eventIdPrefix!=='gt-'||
+    !Array.isArray(selector.excludedEventKeys))fail('公開用選択範囲が不正');
+ const excluded=new Set(selector.excludedEventKeys.map(x=>
+  JSON.stringify([x.cardId,x.eventId])));
+ const matched=new Set();
+ const selected={schemaVersion:1,cards:normalized.cards.map(c=>({
+  cardId:c.cardId,coverageStatus:'partial',
+  events:c.events.filter(e=>{
+   const key=JSON.stringify([c.cardId,e.id]);
+   if(excluded.has(key)){matched.add(key);return false;}
+   return e.id.startsWith('gt-');
+  })
+ })).filter(c=>c.events.length)};
+ if(matched.size!==excluded.size)fail('保留対象のイベントIDが候補に存在しません');
+ const available=new Set(selected.cards.flatMap(c=>c.events.map(e=>
+  JSON.stringify([c.cardId,e.id]))));
+ // Prevent dangling dependencies in event and any nested choice/result stage.
+ function check(value,cardId){
+  if(Array.isArray(value)){for(const x of value)check(x,cardId);return;}
+  if(!value||typeof value!=='object')return;
+  if(value.requires!==undefined)check(value.requires,cardId);
+  if(typeof value.eventId==='string'&&
+     !available.has(JSON.stringify([cardId,value.eventId])))
+   fail('除外イベントを参照する先行条件が残るため公開できません');
+  for(const [k,v] of Object.entries(value))
+   if(k!=='requires')check(v,cardId);
+ }
+ for(const c of selected.cards)for(const e of c.events)check(e,c.cardId);
+ return selected;
+}
+
 function select({catalog,lineage},{strict=true}={}){
  if(!catalog||!lineage)fail('固定2512候補・系譜が不足');
  // Wording is removed before any record can reach a writable output.
@@ -34,39 +67,17 @@ function select({catalog,lineage},{strict=true}={}){
     review.cohorts[0].eventsSha256!==cohort.eventsSha256||
     review.cohorts[0].expectedEvents!==cohort.expectedEvents)
   fail('ユーザーの公開承認対象と実候補集合の範囲・内容SHAが異なる');
- const excluded=new Set(cohort.selector.excludedEventKeys.map(x=>
-  JSON.stringify([x.cardId,x.eventId])));
- const selected={schemaVersion:1,cards:normalized.cards.map(c=>({
-  cardId:c.cardId,
-  coverageStatus:'partial',
-  events:c.events.filter(e=>e.id.startsWith('gt-')&&
-   !excluded.has(JSON.stringify([c.cardId,e.id])))
- })).filter(c=>c.events.length)};
+ const selected=filterApproved(normalized,cohort.selector);
  const n=selected.cards.reduce((x,c)=>x+c.events.length,0);
- if(n!==2487||selected.cards.some(c=>!c.events.length||
-    c.events.some(e=>e.id.startsWith('usl:'))))fail('公開対象件数・GT系統が不正');
+ if(n!==2487)fail('公開対象件数・GT系統が不正');
  const checked=inventory(selected,[{eventIdPrefix:'gt-'}]);
  if(checked.uncovered!==0||checked.groups[0]?.events!==2487||
     checked.groups[0].eventsSha256!==cohort.eventsSha256)
   fail('除外した25件が公開候補へ混入またはイベントSHAが変化');
- const available=new Set(selected.cards.flatMap(c=>c.events.map(e=>
-  JSON.stringify([c.cardId,e.id]))));
- const orphans=[];
- function verifyRefs(value,cardId){
-  if(Array.isArray(value)){for(const x of value)verifyRefs(x,cardId);return;}
-  if(!value||typeof value!=='object')return;
-  if(typeof value.eventId==='string'&&
-     !available.has(JSON.stringify([cardId,value.eventId])))
-   orphans.push(true);
-  for(const v of Object.values(value))verifyRefs(v,cardId);
- }
- for(const c of selected.cards)for(const e of c.events)
-  verifyRefs(e.requires,c.cardId);
- if(orphans.length)fail('除外イベントを参照する先行条件が残るため公開できません');
  return {catalog:selected,
   summary:{sourceEvents:work.totalEvents,selectedEvents:n,excludedEvents:25,
    cards:selected.cards.length,cohortSha256:checked.groups[0].eventsSha256,
-   unresolvedReferences:orphans.length,rightsApprovedByAlgorithm:false}};
+   unresolvedReferences:0,rightsApprovedByAlgorithm:false}};
 }
 function build({catalog,lineage,model,skillText},{strict=true}={}){
  const selected=select({catalog,lineage},{strict});
@@ -81,4 +92,4 @@ function build({catalog,lineage,model,skillText},{strict=true}={}){
   report:{...selected.summary,...release.report,excludedEditorEvents:24,
    excludedCrossSourceGTEvents:1,publicationMode:'owner-authorized-gt-factual-only'}};
 }
-module.exports={select,build};
+module.exports={filterApproved,select,build};
