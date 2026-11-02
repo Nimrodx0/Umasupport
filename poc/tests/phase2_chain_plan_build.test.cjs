@@ -26,7 +26,9 @@ test('source-bound planning data equals generated JSON, without individual route
  assert.ok(all.every(x=>x.setsNextStageFlag===true&&
   x.terminal===false&&x.rule==='NO_EXPLICIT_CHAIN_END'&&
   x.continuation==='ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF'));
- assert.deepEqual(release,{schemaVersion:1,cards:[]});
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  release,require('../src/current_public_event_approvals.cjs').forCatalog(release)
+ ).publicEvents,2487);
  assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
 });
 test('event flags are enforced by the real core, regardless of event appearance RNG',()=>{
