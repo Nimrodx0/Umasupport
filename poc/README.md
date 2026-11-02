@@ -4,7 +4,7 @@
 
 **現行公開版はHTML/CSS/JavaScriptの直接取得型PoC。React/TypeScript/Viteは未導入。** 旧v8.1のPythonビルド・実データ同梱版は履歴として以下に残す。
 
-> 最新の進捗・工程完了ゲート：[ロードマップ](../docs/roadmap.md)／[検証計画](../docs/verification-plan.md)。現行`poc/live.html`はサポカ通常ヒントと金白スキル辞書の取得に対応し、イベント公開DBの実イベントは**0件**。2026-10-16の実ソースNode結合試験は成功したが、最新の階層画面のPages／スマホ検証は未完。以降の旧記述はその機能を実装した当時の状態を説明する場合がある。
+> 最新の進捗・工程完了ゲート：[ロードマップ](../docs/roadmap.md)／[検証計画](../docs/verification-plan.md)。現行`poc/live.html`はサポカ通常ヒントと金白スキル辞書の取得に対応し、イベント公開DBには2026-11-02に利用者が承認したGT由来**2,487件**を初回公開済み（残り25件は除外）。2026-10-16の実ソースNode結合試験は成功したが、最新の階層画面のPages／スマホ検証は未完。以降の旧記述はその機能を実装した当時の状態を説明する場合がある。
 
 ## 公開できる動作デモ
 
@@ -59,7 +59,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 - [`live.html`](live.html) はUmaSimの通常ヒントを外部公開元から取得する移行PoC。ゲームデータ自体をこのレポジトリに含めない。
 - 起動時取得→検証→IndexedDBキャッシュ。失敗したときは検証済みの前回データを使用。利用者向け更新ボタンはない。
-- 金白スキル階層は実装・Node実ソース検証済みで最新ブラウザ確認待ち。実イベント報酬は未収録（0件）。初回利用にはネット接続が必要。
+- 金白スキル階層は実装・Node実ソース検証済みで最新ブラウザ確認待ち。GT由来2,487件のイベント候補を正式公開JSONから起動時に検証・自動読込する。GameWith等による25件の編集例外は初回公開対象外。初回利用にはネット接続が必要。
 - テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDB保存・サポカデータ取得先遮断時復旧・再取得は2026-10-16のPages実ブラウザで確認済み。スキル辞書側の実機検証は未完。
 - [設計と未解決課題](../docs/runtime-data-loading.md)。
 
@@ -73,7 +73,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 ## イベント分岐のテスト
 
-`src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**`live_loader.js` が作る初期モデルにはイベントを含めず（events: []）、後段の `public_event_catalog.js` が公開レビュー済みイベントJSONを検証後に結合する。現行公開JSONの実イベントは0件。**
+`src/event_schema.js` で明示的なカード／スキルID照合と、イベントの循環・未定義親・打ち切りを検証する。`src/core.js` では親イベントの連続到達、複数前提条件、結果別の条件付き報酬を扱う。`tests/events.test.cjs` のテストはすべて架空カード・架空スキルを使用している。**`live_loader.js` が作る初期モデルにはイベントを含めず（events: []）、後段の `public_event_catalog.js` が公開レビュー済みイベントJSONを検証後に結合する。現行の公開JSONには固定GT由来2,487イベントを収録（実ゲームの全イベント網羅を意味しない）。**
 
 ## 実イベント候補の監査とレビュー付き変換
 
