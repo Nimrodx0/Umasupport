@@ -384,6 +384,13 @@ async function main(args){
      const surface=require('../src/phase2_provenance_string_surface.cjs')
       .inspect({catalog:titleProjected.catalog},{strict:true});
      console.log('PHASE2_2512_STRING_EXPOSURE='+JSON.stringify(surface));
+     // The next document is a NON-approving review worksheet. It contains
+     // only cohort fingerprints, exact exception IDs and pending checks.
+     // Never insert this into an approval ledger as if reviews existed.
+     const reviewWorksheet=require('../src/phase2_factual_review_worksheet.cjs')
+      .worksheet({catalog:titleProjected.catalog,lineage:history},{strict:true});
+     console.log('PHASE2_2512_FACTUAL_REVIEW_WORKSHEET='+
+      JSON.stringify(reviewWorksheet));
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
