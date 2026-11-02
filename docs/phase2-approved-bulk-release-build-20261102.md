@@ -1,0 +1,61 @@
+# Phase 2：承認済みイベントの一括公開JSON生成（2026-11-02）
+
+## 目的と現状
+
+イベント名を維持し、選択肢・結果は「選択肢N（仮）」「結果N（仮）」に統一するユーザー確定仕様を、既存の **GitHub Pages同一オリジン** `poc/data/reviewed_events.v1.json` へ安全に渡す。これまで **非公開563カード・2,512イベントの技術的受け入れ**、**出典候補の2,487 GT系列／GameWith補正1／他の編集24の分離**、**公開ゲートv1/v2** は存在したが、**公開ファイルを書き出す工程は一括審査と直接接続していなかった**。
+
+このため `poc/src/approved_event_release_build.cjs` と、明示指定でしか書き込まない `poc/tools/build_approved_event_catalog.cjs` を追加する。
+
+**今回も正式公開イベントは0件。** 出典データの再利用、原著作物・選択的DB構成、サイト利用規約、ゲーム由来の短いイベント名・数値の扱いは最終承認されていない。技術的なJSON生成を許可したという意味ではない。
+
+## 出力までの必須条件
+
+入力は、最終候補JSON、**実際に審査された内容と範囲**が入った承認台帳（従来のv1個別、またはv2集合＋個別例外）、実サポカ名簿、スキル辞書。
+
+1. **原文の混入排除**：厳密な既存フィールド一覧を持つ `phase2_title_choice_projection.project` に通す。イベントの短い見出しとID・後続分岐・報酬・数値効果を残し、選択肢・結果のラベルは原文であってもすべて独自の番号付き仮称へ置き換える。未知の `story`・`dialogue`・文字列属性・自由文条件はエラー。これは同一の長いイベント見出しそのものの権利を決定するものではない。
+2. **最終表示形に紐づく審査**：変換後の正式カタログに `verifyRelease` を適用する。変換前の元文言を対象にした承認署名や、対象イベントの欠落・追加／報酬差分・出典条件不足は失敗。
+3. **本番スキル辞書・サポカ照合**：`public_event_catalog.preflight` が全カードID・スキルID／名称・ヒントLv・後続条件を既存実行スキーマで確認。失敗なら出力なし。
+4. **冪等性**：変換済みのJSONを再度投影して同じイベント内容・選択肢ID・仮称・件数になることを照合。
+5. **出力時の安全条件**：標準は読み取り・監査のみ。書き込み時は `--publish-approved` と `--output <.../reviewed_events.v1.json>` の**両方**が必要、0件は出版出力不可。すべて検査終了後に同一フォルダの一時ファイルへ書き、アトミックに置換。途中失敗時に既存公開JSONを変更しない。
+
+この方式は法律上の許諾を機械的に発生させず、**事前に独立して審査されていることが前提**。公開処理は外部サイトを一括スクレイピングせず、承認や元データを自動生成しない。
+
+## 使用例（許諾確認後のみに使用）
+
+以下は今後、利用条件が確認されてv2審査台帳の人手証跡が揃った場合の操作イメージ。**現時点の実2,512件には適用不可。**
+
+```sh
+# ステージング：書き込まず全条件を確認する
+node poc/tools/build_approved_event_catalog.cjs \
+  --candidate /private/phase2-normalized-candidate.json \
+  --approvals /private/event-release-approvals.v2.json \
+  --support /private/support_card.txt \
+  --skills /private/skill_data.txt
+
+# 条件成立後だけ、承認された同じ内容を公開用の固定パスへアトミック出力
+node poc/tools/build_approved_event_catalog.cjs \
+  --candidate /private/phase2-normalized-candidate.json \
+  --approvals /private/event-release-approvals.v2.json \
+  --support /private/support_card.txt \
+  --skills /private/skill_data.txt \
+  --publish-approved \
+  --output poc/data/reviewed_events.v1.json
+```
+
+`/private/...` は説明用であり、実環境に存在することやそのパスでのデータ受領を主張するものではない。実際の公開では、**承認台帳も公開ブランチの検証可能な場所に配置**し、既存の `verify_event_release.cjs` とPages展開CIの必須チェックを維持すること。
+
+## 検証と未了事項
+
+- **A 技術**：人工563カード・2,512イベントのv2集合承認で、最終表示の原文排除・スキルID／Lv、承認SHAの連動、書き込み後の再検査、承認不足時の既存ファイル非破壊を検証。
+- **B 固定出典**：本番候補2,512イベントと実サポカ・スキル辞書を投入し、**空のv2承認台帳では一括出版器が必ず拒否する**ことをRAM内の固定全件CIで確認。利用許諾は未確定。
+- **C 実公開**：本番の `poc/data/reviewed_events.v1.json` へのイベント書き込みは**行っていない**。既存の自動読込・Chromiumテストは維持。**実端末で2,512イベント公開版を検証したとは言わない**。
+
+### 残る本質的な作業
+
+ソフトウェア面では**「候補→表記統一→一括審査→実辞書検証→公開JSON→既存自動読込」**を接続できるようになった。しかし、入力の公開根拠そのものはコードだけでは創出できない。
+
+とくに固定GT系列2,487件は、派生GitHubスナップショットの利用ライセンスがプログラム実装だけでなく元のイベントデータまで与えられているか、GameToraから来る短い見出し・創作性あるDB選択・配置・数値効果の元構造まで自由に独自アプリで公開できるか、公開元の確認が必要。GameWith編集25位置は別の取得・利用条件で判断する。
+
+- [GameTora CLA](https://gametora.com/docs/cla)：寄稿者がGameToraに付与する許諾は第三者の包括的なデータ再配布許可とは直結しない。
+- [著作権情報センター](https://www.cric.or.jp/qa/hajime/hajime1.html)：事実と通常の短い題名は保護されにくいが、データベースの創作的構成は別問題。
+- [GameWith.jp お問い合わせ](https://gamewith.jp/help/show/feedback_home/)：事実補正の引用条件・データ再利用について別途確認が必要。`gamewith.net` 向けの[二次創作ガイドライン](https://gamewith.net/guidelines)は `gamewith.jp` のコンテンツへ適用しないと明記されている。
