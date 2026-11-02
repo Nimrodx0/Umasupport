@@ -133,6 +133,9 @@ on:
       - 'poc/src/phase2_title_choice_projection.cjs'
       - 'poc/src/phase2_source_lineage_audit.cjs'
       - 'poc/src/approved_event_release_build.cjs'
+      - 'poc/src/phase2_gt2487_release.cjs'
+      - 'poc/tests/phase2_gt2487_release.test.cjs'
+      - 'poc/config/event-release-approvals.gt2487.v2.json'
       - 'poc/tools/build_approved_event_catalog.cjs'
       - 'poc/tests/approved_event_release_build.test.cjs'
       - 'poc/tests/phase2_source_lineage_audit.test.cjs'
@@ -154,6 +157,13 @@ on:
       - 'docs/phase2-whole-chain-topology-20261020.md'
       - '.github/workflows/whole-event-inventory.yml'
       - 'docs/phase2-whole-event-intake-plan-20261020.md'
+  push:
+    branches: [main]
+    paths:
+      - 'poc/src/phase2_gt2487_release.cjs'
+      - 'poc/config/event-release-approvals.gt2487.v2.json'
+      - 'poc/tools/probe_gametora_app_schema_dry_run.cjs'
+      - '.github/workflows/whole-event-inventory.yml'
   workflow_dispatch:
 
 permissions:
@@ -411,6 +421,8 @@ jobs:
           node --test umasupport/poc/tests/phase2_private_local_real_acceptance.test.cjs
       - name: Verify synthetic source-to-runtime app schema conversion
         run: node --test umasupport/poc/tests/gametora_app_schema_dry_run.test.cjs
+      - name: Verify exact GT2487 release cohort selection and nested dependency isolation
+        run: node --test umasupport/poc/tests/phase2_gt2487_release.test.cjs
       - name: Independently freeze current UmaSim and curated IDs without 2025 historical preview
         run: |
           node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
@@ -438,6 +450,7 @@ jobs:
           UMASUPPORT_GT_REVIEW_QUEUE_OUTPUT: whole-event-output/gametora_unsigned_release_review.v1.json
           UMASUPPORT_GT_CROSS_SOURCE_QUEUE: whole-event-output/phase2_completeness_exceptions.v1.json
           UMASUPPORT_GT_TRIAGE_OUTPUT: whole-event-output/phase2_cross_source_release_triage.v1.json
+          UMASUPPORT_GT_2487_RELEASE_STAGING: ${{ runner.temp }}/gt2487-approved.json
         run: |
           node umasupport/poc/tools/probe_gametora_app_schema_dry_run.cjs \
             whole-event-output/gametora_whole_event_numeric_candidate.v1.json \
@@ -468,3 +481,73 @@ jobs:
           name: whole-event-provisional-index
           path: whole-event-output/*.json
           retention-days: 30
+      - name: Pass verified owner-approved 2487 catalog only to protected main-release job
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gt2487-approved-release
+          path: ${{ runner.temp }}/gt2487-approved.json
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-gt2487:
+    # PR checks never have a token capable of writing public event data.
+    # Only a successful exact-pinned full source audit on main can publish.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Nimrodx0/Umasupport'
+    needs: whole-event-inventory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: gt2487-approved-release
+          path: ${{ runner.temp }}/gt2487-publication
+      - name: Check signed v2 approval, source cardinality, and retain all old public events
+        shell: bash
+        run: |
+          set -euo pipefail
+          sourcefile="${{ runner.temp }}/gt2487-publication/gt2487-approved.json"
+          test -s "$sourcefile"
+          node poc/tools/verify_event_release.cjs "$sourcefile" poc/config/event-release-approvals.gt2487.v2.json
+          node - "$sourcefile" <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const {assertRetainsPublished}=require('./poc/src/approved_event_release_build.cjs');
+          const prior=JSON.parse(fs.readFileSync('poc/data/reviewed_events.v1.json','utf8'));
+          const next=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const count=next.cards.reduce((n,c)=>n+c.events.length,0);
+          assert.equal(count,2487);
+          assert.equal(next.cards.every(c=>c.coverageStatus==='partial'&&
+            c.events.every(e=>e.id.startsWith('gt-')&&
+              !(c.cardId==='30080'&&e.id==='gt-30080-event-006'))),true);
+          assertRetainsPublished(prior,next);
+          console.log('FIRST_GT2487_PUBLICATION_VALIDATED',JSON.stringify({count,cards:next.cards.length}));
+          NODE
+      - name: Commit reviewed JSON to main after successful entire workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$GITHUB_SHA" || {
+            echo "::error::main moved after source audit; refusing stale publication"
+            exit 1
+          }
+          cp "${{ runner.temp }}/gt2487-publication/gt2487-approved.json" poc/data/reviewed_events.v1.json
+          node poc/tools/verify_event_release.cjs poc/data/reviewed_events.v1.json poc/config/event-release-approvals.gt2487.v2.json
+          git diff --check
+          git add poc/data/reviewed_events.v1.json
+          if git diff --staged --quiet; then
+            echo "Approved public catalog is already identical; nothing to change"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'release: publish verified factual GT2487 events'
+          git push origin HEAD:main
