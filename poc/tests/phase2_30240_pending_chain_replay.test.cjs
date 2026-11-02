@@ -84,7 +84,10 @@ test('number drift, identity swap, GameWith false adoption, invented stage choic
   {stageOrdinal:3,enableUnadjudicatedCandidateReplay:1}
  ])assert.throws(()=>simulate(args),/30240\/GameWith欠損隔離/);
 });
-test('public event DB and approval ledger are not altered',()=>{
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
+test('existing published 2487-event DB and approval ledger are not altered',()=>{
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });

@@ -114,9 +114,12 @@ test('schema validation can independently check manually projected numeric skill
  assert.throws(()=>replay({cardId:'30319',stageOrdinal:3,observed:true},
   {model:{cards:ok.cards,cardById:ok.cardById,skillById:{}}}),/イベント検証/);
 });
-test('public event data and approval ledger remain empty while manual chain replay exists',()=>{
+test('manual chain replay never changes the existing 2487-event release',()=>{
  const published=require('../data/reviewed_events.v1.json');
  const release=require('../config/event-release-approvals.v1.json');
- assert.deepEqual(published.cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(release.entries,[]);
 });

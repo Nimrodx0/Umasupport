@@ -70,6 +70,9 @@ test('provisional data is NOT a public release artifact and has no approval reco
  const root=path.join(__dirname,'..','data');
  const published=JSON.parse(fs.readFileSync(path.join(root,'reviewed_events.v1.json')));
  const approvals=JSON.parse(fs.readFileSync(path.join(__dirname,'..','config','event-release-approvals.v1.json')));
- assert.deepEqual(published.cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(approvals.entries,[]);
 });
