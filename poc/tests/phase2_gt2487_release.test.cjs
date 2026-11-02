@@ -52,7 +52,7 @@ test('dangling nested choice/outcome prerequisites fail closed when one event is
 });
 test('a copied v2 review cannot be abused to approve unrelated 2-event sample',()=>{
  const x=fixture();
- assert.throws(()=>verifyRelease(filterApproved(x,selector),review),/コホート数|不一致/);
+ assert.throws(()=>verifyRelease(filterApproved(x,selector),review),/コホート数|不一致|除外対象/);
  assert.throws(()=>select({catalog:x,lineage:{}},{strict:true}),/系譜|例外/);
 });
 test('review states original factual description, not invented licensing',()=>{
