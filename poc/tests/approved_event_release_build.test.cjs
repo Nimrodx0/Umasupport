@@ -94,6 +94,18 @@ test('command defaults to read-only and only a validated explicitly named destin
  assert.throws(()=>options([...inputs,'--publish-approved','--output','unsafe.json']),/ファイル名/);
  assert.equal(options([...inputs,'--publish-approved','--output','/tmp/reviewed_events.v1.json']).publishApproved,true);
 });
+function syntheticSupports(){
+ const lines=[];
+ for(let i=0;i<563;i++)for(let stage=0;stage<5;stage++){
+  const fields=Array(62).fill('0');
+  fields[0]=String(30001+i);
+  fields[1]='サポカ'+fields[0];
+  fields[3]='3';fields[4]=String(stage);fields[6]='スピード';
+  fields[59]='架空ヒント';
+  lines.push(fields.join('\\t'));
+ }
+ return lines.join('\\n')+'\\n';
+}
 test('CLI does not create or overwrite an output if the approval ledger is empty',async()=>{
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'uma-approved-event-cli-'));
  const f=fixture();
@@ -104,13 +116,42 @@ test('CLI does not create or overwrite an output if the approval ledger is empty
   await Promise.all([
    fs.writeFile(cat,JSON.stringify(f.bundle.catalog)),
    fs.writeFile(proof,JSON.stringify({schemaVersion:2,cohorts:[],entries:[]})),
-   fs.writeFile(support,'short intentionally invalid input'),
+   fs.writeFile(support,syntheticSupports()),
    fs.writeFile(skills,f.skillText),
    fs.writeFile(output,'prior approved catalog remains intact')
   ]);
   await assert.rejects(()=>run(['--candidate',cat,'--approvals',proof,
    '--support',support,'--skills',skills,'--output',output,
-   '--publish-approved']),/サポカデータが短すぎます|カードデータが短すぎます/);
+   '--publish-approved']),/未承認/);
   assert.equal(await fs.readFile(output,'utf8'),'prior approved catalog remains intact');
+ }finally{await fs.rm(dir,{recursive:true,force:true});}
+});
+
+test('CLI atomic approved write works with invented 563-card 2512-event dataset, and later tampering never overwrites it',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'uma-approved-event-success-'));
+ const f=fixture(),clean=project(f.bundle.catalog).catalog;
+ const approvals=syntheticApprovals(clean);
+ const c=path.join(dir,'candidate.json'),a=path.join(dir,'approval.json'),
+  su=path.join(dir,'support.txt'),sk=path.join(dir,'skill.txt'),
+  out=path.join(dir,'reviewed_events.v1.json');
+ const args=['--candidate',c,'--approvals',a,'--support',su,
+  '--skills',sk,'--publish-approved','--output',out];
+ try{
+  await Promise.all([
+   fs.writeFile(c,JSON.stringify(f.bundle.catalog)),
+   fs.writeFile(a,JSON.stringify(approvals)),
+   fs.writeFile(su,syntheticSupports()),
+   fs.writeFile(sk,f.skillText)
+  ]);
+  const r=await run(args);
+  assert.equal(r.events,2512);
+  assert.equal(r.outputWritten,true);
+  const published=await fs.readFile(out,'utf8');
+  assert.deepEqual(JSON.parse(published),clean);
+  const bad=clone(f.bundle.catalog);
+  bad.cards[0].events[0].name='未承認の見出し';
+  await fs.writeFile(c,JSON.stringify(bad));
+  await assert.rejects(()=>run(args),/SHA不一致/);
+  assert.equal(await fs.readFile(out,'utf8'),published);
  }finally{await fs.rm(dir,{recursive:true,force:true});}
 });
