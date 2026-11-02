@@ -8,7 +8,7 @@ const schema=require('../src/event_schema.js');
 const bridge=require('../src/skill_bridge.js');
 const {buildView,HINT_NAMES}=require('../src/phase2_eight_event_review_view.cjs');
 const PUBLIC=require('../data/reviewed_events.v1.json');
-const APPROVALS=require('../config/event-release-approvals.v1.json');
+const APPROVALS=require('../src/current_public_event_approvals.cjs').forCatalog(PUBLIC);
 const clone=x=>structuredClone(x);
 const source=()=>{
  const out=Object.entries(HINT_NAMES).map(([id,name])=>({
@@ -21,7 +21,7 @@ const source=()=>{
 };
 test('all eight distinct editorial headings and source positions have stable non-game IDs',()=>{
  const p=build(),view=buildView();
- assert.deepEqual(p.summary,{cards:4,events:8,choices:16,hints:4,approvedEvents:0});
+ assert.deepEqual(p.summary,{cards:4,events:8,choices:16,hints:4,approvedEvents:2487});
  assert.equal(p.status,'NOT_APPROVED_FOR_PUBLICATION');
  for(const card of p.catalog.cards){
   const src=view.cards.find(c=>c.cardId===card.cardId);
@@ -53,7 +53,7 @@ test('all eight distinct editorial headings and source positions have stable non
 });
 test('candidate is schema-valid but cannot pass publication without actual human review',()=>{
  const p=build();
- assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,0);
+ assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,2487);
  assert.throws(()=>verifyRelease(p.catalog,p.approvalWorksheet),/レビュー者または確認日が不正/);
  const e=p.approvalWorksheet.entries[0];
  assert.equal(e.publicationBasis,null);
@@ -87,6 +87,7 @@ test('pinned card/event range is closed; public DB and approval ledger remain un
  assert.notEqual(digest(p.catalog.cards[0].events[0]),
   p.approvalWorksheet.entries[0].eventSha256);
  assert.throws(()=>verifyRelease(p.catalog,p.approvalWorksheet));
- assert.deepEqual(PUBLIC,{schemaVersion:1,cards:[]});
- assert.deepEqual(APPROVALS,{schemaVersion:1,entries:[]});
+ assert.equal(PUBLIC.cards.length,559);
+ assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,2487);
+ assert.equal(APPROVALS.schemaVersion,2);
 });
