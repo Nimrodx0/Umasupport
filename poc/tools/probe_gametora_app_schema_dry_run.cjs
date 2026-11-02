@@ -337,6 +337,40 @@ async function main(args){
       catalog:privateEventCatalog,model,skillText:result.dryRunMergedSkillText
      },{strict:true});
      const titleProjected=projectPrivateTitles(privateEventCatalog);
+     const {build:auditLineage}=
+      require('../src/phase2_source_lineage_audit.cjs');
+     const history=auditLineage({
+      baseline:enriched.catalog,
+      stages:[
+       {name:'gamewith-30080-and-eight',category:'cross-source-editorial',
+        catalog:combined.catalog},
+       {name:'curated-fifteen-chain-stages',category:'cross-source-editorial',
+        catalog:withChains.catalog},
+       {name:'checker-30180-skill-hint',category:'cross-source-editorial',
+        catalog:withSpecial.catalog},
+       {name:'gt-non-skill-effects',category:'structured-source-enrichment',
+        catalog:merged.catalog},
+       {name:'gt-30028-correlated-range',category:'structured-source-enrichment',
+        catalog:withRanges.catalog},
+       {name:'gt-numeric-only-ranges',category:'structured-source-enrichment',
+        catalog:numericOnly.catalog},
+       {name:'gt-30010-conditional-hint-or',category:'structured-source-enrichment',
+        catalog:numericAndOr.catalog},
+       {name:'gt-30090-terminal-bond',category:'structured-source-enrichment',
+        catalog:terminalBond.catalog},
+       {name:'user-choice-placeholder-labels',category:'display-only',
+        catalog:titleProjected.catalog}
+      ],
+      finalCatalog:titleProjected.catalog
+     },{strict:true});
+     const {crossSourceGtExceptionIds,curatedOnlyEventIds,
+      technicalGtSelector,...publicLineage}=history;
+     console.log('PHASE2_2512_SOURCE_LINEAGE='+JSON.stringify({
+      ...publicLineage,
+      crossSourceGtExceptionIds,
+      curatedOnlyEventPositions:curatedOnlyEventIds.length,
+      sourceTextIncluded:false}));
+
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
