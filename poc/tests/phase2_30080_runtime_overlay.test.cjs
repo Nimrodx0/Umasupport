@@ -94,6 +94,9 @@ test('source, canonical row, signed content hash or special context changes caus
 });
 test('the actual public event DB and approvals are never touched',()=>{
  apply(fixture());
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });
