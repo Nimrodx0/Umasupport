@@ -64,7 +64,7 @@ test('one exact source-level signature per invented cohort validates only exact 
   x=>x.cards[1].events[0].id='gt-30002-event-999'
  ]){
   const tampered=clone(c);change(tampered);
-  assert.throws(()=>verifyRelease(tampered,a),/SHA不一致|未承認/);
+  assert.throws(()=>verifyRelease(tampered,a),/SHA不一致|未承認|対象イベントが存在しない/);
  }
 });
 test('missing, overlapping or wrongly scoped cohort signatures never pass',()=>{
@@ -82,6 +82,28 @@ test('missing, overlapping or wrongly scoped cohort signatures never pass',()=>{
  assert.throws(()=>verifyRelease(c,f),/SHA不一致/);
  const g=ledger(c);g.cohorts[0].selector.cardIds=['99999'];
  assert.throws(()=>verifyRelease(c,g),/存在しない/);
+});
+test('an adjudicated event can be excluded from a broad cohort and independently reviewed',()=>{
+ const c=catalog(),excluded={cardId:'30001',eventId:'gt-30001-event-001'};
+ const c1={eventIdPrefix:'gt-',excludedEventKeys:[excluded]};
+ const groups=inventory(c,[c1,{eventIdPrefix:'usl:'}]);
+ assert.equal(groups.groups[0].events,1);
+ assert.equal(groups.uncovered,1);
+ const reviewed={schemaVersion:2,cohorts:[
+  {...cohort(c,'gt-other','gt-'),selector:c1,
+   expectedEvents:groups.groups[0].events,
+   eventsSha256:groups.groups[0].eventsSha256},
+  cohort(c,'curated','usl:')
+ ],entries:[v1Entry(c.cards[0].events[0],'30001')]};
+ assert.equal(verifyRelease(c,reviewed).reviewedEvents,3);
+ const noException=clone(reviewed);noException.entries=[];
+ assert.throws(()=>verifyRelease(c,noException),/未承認/);
+ const misScoped=clone(reviewed);
+ misScoped.cohorts[0].selector.excludedEventKeys=[{cardId:'30002',eventId:'usl:30002:chain:1'}];
+ assert.throws(()=>verifyRelease(c,misScoped),/コホート外/);
+ const duplicate=clone(reviewed);
+ duplicate.cohorts[0].selector.excludedEventKeys.push(clone(excluded));
+ assert.throws(()=>verifyRelease(c,duplicate),/重複/);
 });
 test('unsupported rights conclusions and lacking source provenance cannot authorize a cohort',()=>{
  const c=catalog();
