@@ -37,10 +37,8 @@ function build({baseline,stages,finalCatalog},{strict=true}={}){
   if(!eventId.startsWith('gt-'))fail('GT固定の技術母集団に異なるID系列');
  let previous=first;
  const history=new Map([...first.keys()].map(key=>[key,new Set(['pinned-gt-snapshot'])]));
- const addedByCategory={};
- const modifiedByCategory={};
  const reports=[],seenNames=new Set();
- for(const [i,step] of stages.entries()){
+ for(const step of stages){
   if(!obj(step)||typeof step.name!=='string'||!step.name||
      seenNames.has(step.name)||!TYPES.includes(step.category))
    fail('変換段階名・出典種類が不正');
@@ -61,8 +59,6 @@ function build({baseline,stages,finalCatalog},{strict=true}={}){
   }
   if(step.category==='display-only'&&added.length)
    fail('表示変更時に新しいイベントが混入した');
-  addedByCategory[step.category]=(addedByCategory[step.category]||0)+added.length;
-  modifiedByCategory[step.category]=(modifiedByCategory[step.category]||0)+modified.length;
   const changed=[...added,...modified].sort();
   reports.push({stage:step.name,category:step.category,
    eventsBefore:previous.size,eventsAfter:next.size,
