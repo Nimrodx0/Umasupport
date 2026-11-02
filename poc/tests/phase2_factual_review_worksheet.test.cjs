@@ -18,7 +18,12 @@ function sample(){
  }]};
  const lineage={
   crossSourceGtExceptionIds:[{cardId:'30080',eventId:'gt-30080-event-001'}],
-  curatedOnlyEventIds:[{cardId:'30080',eventId:'usl:30080:curated:001'}]
+  curatedOnlyEventIds:[{cardId:'30080',eventId:'usl:30080:curated:001'}],
+  categories:[{name:'demo-editorial-step',category:'cross-source-editorial',
+    changedEventIds:[
+      {cardId:'30080',eventId:'gt-30080-event-001'},
+      {cardId:'30080',eventId:'usl:30080:curated:001'}
+    ]}]
  };
  return {catalog:project(raw).catalog,lineage};
 }
@@ -33,8 +38,9 @@ test('creates exact source batches for technical review, never a rights/approval
  assert.equal(w.remainingUnknownEventKeys,0);
  assert.equal(w.checks.noApprovalRecordsGenerated,true);
  assert.equal(w.checks.usableAsV2ApprovalLedger,false);
- assert.equal(w.cohorts[1].rightsAssessment,'must-partition-by-source-before-approval');
+ assert.equal(w.cohorts[1].rightsAssessment,'source-method-must-be-confirmed-before-approval');
  assert.equal(Object.hasOwn(w.cohorts[0],'review'),false);
+ assert.equal(w.cohorts[1].sourceTransformStep,'demo-editorial-step');
  assert.equal(w.cohorts[0].eventsSha256,
    inventory(data.catalog,[w.cohorts[0].selector]).groups[0].eventsSha256);
  assert.throws(()=>verifyRelease(data.catalog,w),/レビュー証跡/);
@@ -58,6 +64,9 @@ test('source exception cannot be silently omitted, duplicated, or conflated',()=
  duplicated.lineage.curatedOnlyEventIds.push(
   duplicated.lineage.curatedOnlyEventIds[0]);
  assert.throws(()=>worksheet(duplicated),/重複/);
+ const missingHistory=sample();
+ missingHistory.lineage.categories[0].changedEventIds=[];
+ assert.throws(()=>worksheet(missingHistory),/工程が網羅/);
  const wrong=sample();
  wrong.lineage.curatedOnlyEventIds=[{cardId:'30080',
   eventId:'gt-30080-event-002'}];
