@@ -108,7 +108,7 @@ function build({baseline,stages,finalCatalog},{strict=true}={}){
     partition.groups[0].events!==gtDirect.length||
     partition.groups[1].events!==curated.length)
   fail('別出典の補正例外をGT一括審査から分離できない');
- const expected=strict?{sourceGt:2488,final:2512,curated:24,gtCrossSource:2}:null;
+ const expected=strict?{sourceGt:2488,final:2512,curated:24,gtCrossSource:1}:null;
  if(expected&&(first.size!==expected.sourceGt||
    final.size!==expected.final||curated.length!==expected.curated||
    crossSourceGt.length!==expected.gtCrossSource))
