@@ -71,7 +71,7 @@ const REVIEWED_LEGACY_SKILL_NAMES=Object.freeze({
   "201501": "天命士",
   "201512": "まなざし"
 });
-function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null}={}){
+function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null,allowReviewedLegacy=false}={}){
   if(!model||!isObject(model.skillById))throw Error('スキル照合用モデルが不正');
   if(!catalog||!Array.isArray(catalog.cards))return {catalog,skills:[],matchedHints:0};
   // JSON-safe public catalogs are cloned, so failed validation never mutates input or model.
@@ -100,7 +100,7 @@ function prepare(model,catalog,text,{fullRegistry=false,pinnedSkillText=null}={}
       // records into hints by name or invent a gold/white rank.
       const reviewed=Object.hasOwn(REVIEWED_LEGACY_SKILL_NAMES,match[1])
         ?REVIEWED_LEGACY_SKILL_NAMES[match[1]]:null;
-      if(!reviewed||reward.kind!==undefined&&reward.kind!=='hint'||
+      if(!allowReviewedLegacy||!reviewed||reward.kind!==undefined&&reward.kind!=='hint'||
           normalize(reward.verifiedSkillName)!==normalize(reviewed))
         throw Error('数値スキルIDが未照合: '+reward.skillId);
       const key='skill:'+match[1];
