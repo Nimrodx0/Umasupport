@@ -47,6 +47,11 @@ async function mock(page){
   status:200,contentType:'text/plain',body:fixtureSupports}));
  await page.route('**/data/skill_data.txt',r=>r.fulfill({
   status:200,contentType:'text/plain',body:skills}));
+ // This preview uses fabricated card identifiers, not the real approved
+ // GT2487 catalog. Isolate the synthetic fixture before loading the app.
+ await page.route('**/reviewed_events.v1.json',r=>r.fulfill({
+  status:200,contentType:'application/json',
+  body:JSON.stringify({schemaVersion:1,cards:[]})}));
 }
 async function boot(page,url){
  await page.goto(url,{waitUntil:'load'});
