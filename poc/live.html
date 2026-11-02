@@ -32,11 +32,22 @@
      console.warn('スキル辞書を取得できません',skillError);
      msg+='。金白対応データは未取得（通常ヒントは利用できます）';
    }
+   // Preserve already-reviewed numeric event IDs when the moving UmaSim
+   // main registry drops or renames an entry. This fixed edition is SHA-256
+   // verified independently; normal hints and the hierarchy stay live.
+   let pinnedSkillText=null;
+   try{
+     const pinned=await UmaSkillBridge.loadPinned();
+     pinnedSkillText=pinned.text;
+   }catch(pinnedError){
+     console.warn('固定イベント用スキル辞書を検証できません',pinnedError);
+     msg+='。固定イベント辞書を確認できません';
+   }
    try {
      const source=await UmaPublicEventCatalog.loadVerified({
-       model:window.UmaDemoData,skillText});
+       model:window.UmaDemoData,skillText,pinnedSkillText});
      const summary=UmaPublicEventCatalog.attach(window.UmaDemoData,source.catalog,
-       {skillText,fullRegistry:!!skillText});
+       {skillText,pinnedSkillText,fullRegistry:!!skillText});
      window.UmaDemoData.meta.runtimeSources.events={
        mode:source.mode==='cached'?'cached':'reviewed',
        url:UmaPublicEventCatalog.URL,
