@@ -9,7 +9,7 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const crypto=require('node:crypto');
-const {prepare}=require('../src/approved_event_release_build.cjs');
+const {prepare,assertRetainsPublished}=require('../src/approved_event_release_build.cjs');
 const {buildModel}=require('../src/live_loader.js');
 function options(args){
  const allowed=['--candidate','--approvals','--support','--skills','--output'];
@@ -55,6 +55,16 @@ async function run(argv=process.argv.slice(2)){
   if(report.events===0)
    throw Error('0件を明示出版モードで出力することはできません');
   const output=path.resolve(opt.output);
+  // The new approval ledger validates the candidate. Independently protect
+  // events already published by an earlier reviewed catalog. A missing target
+  // means first publication; any unreadable/invalid existing file fails closed.
+  let prior;
+  try{
+   prior=JSON.parse(await fs.readFile(output,'utf8'));
+  }catch(e){
+   if(e.code!=='ENOENT')throw Error('既存公開JSONを検査できません: '+e.message);
+  }
+  if(prior!==undefined)assertRetainsPublished(prior,catalog);
   const temp=output+'.approved-staging-'+crypto.randomBytes(8).toString('hex');
   try{
    // Fully validate before writing a SINGLE byte. Atomic rename ensures a
