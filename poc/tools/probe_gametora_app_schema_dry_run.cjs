@@ -379,6 +379,11 @@ async function main(args){
        lineage:history},{strict:true});
      console.log('PHASE2_2512_NO_INQUIRY_DEPENDENCIES='+
       JSON.stringify(noInquiryReport));
+     // Inspect ALL surviving string leaves, not only known title/choice fields.
+     // Report contains aggregate numbers and fixed risk tokens only.
+     const surface=require('../src/phase2_provenance_string_surface.cjs')
+      .inspect({catalog:titleProjected.catalog},{strict:true});
+     console.log('PHASE2_2512_STRING_EXPOSURE='+JSON.stringify(surface));
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
