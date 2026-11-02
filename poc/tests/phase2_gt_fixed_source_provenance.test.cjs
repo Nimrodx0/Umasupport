@@ -61,3 +61,15 @@ test('fallback names and incorrect source pages are counted without assuming leg
  assert.equal(r.counts.sourceTitleFromKeyFallback,2);
  assert.equal(r.findings.pageUrlIsProvenanceNotProofOfDirectWebAccess,true);
 });
+
+test('supports real GameTora outcomes as arrays of effect objects',()=>{
+ const x=source();
+ x.documents[0].events_ja['原サイトの見出しA'].choices[1].outcomes=[
+  [{type:'energy',value:10},{type:'skill_hint',skill_id:123,value:2}],
+  [{type:'energy',value:5}]
+ ];
+ const r=audit(x);
+ assert.equal(r.counts.sourceChoiceOutcomeNodes,2);
+ assert.equal(r.counts.sourceOutcomeLabelNonempty,0);
+ assert.equal(r.counts.matchedProjectedGtEvents,2);
+});
