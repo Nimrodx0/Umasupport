@@ -27,8 +27,10 @@ function fixture(){
    rarity:'normal',group:90000+i
   }))
  ]);
- return {packet,model,skillText,existingCatalog:clone(actual),
-  existingApprovals:clone(approvals)};
+ // V1 individual-append tests must use a synthetic empty predecessor.
+ // The real signed V2 GT2487 catalog is tested independently.
+ return {packet,model,skillText,existingCatalog:{schemaVersion:1,cards:[]},
+  existingApprovals:{schemaVersion:1,entries:[]}};
 }
 function syntheticDecision(packet,cardId,eventId){
  const candidate=packet.catalog.cards.find(c=>c.cardId===cardId)
@@ -54,7 +56,7 @@ test('real eight-candidate worksheet is PENDING; no silent publication results',
  assert.equal(result.catalog,null);
  assert.equal(result.approvals,null);
  assert.equal(result.pendingReviewEvents,8);
- assert.equal(actual.cards.length,0);
+ assert.equal(actual.cards.length,559);
  assert.equal(approvals.entries.length,0);
 });
 test('synthetic signed ONE real numeric-hint event runs through exact application loader and release gate',()=>{
