@@ -162,7 +162,7 @@ test('one staged REAL GameWith-adjudicated skill event runs through production a
  const after=core.directRoutes(card,{stage:4,choices:{[id]:'option2'}});
  assert.deepEqual(after.map(x=>[x.skillId,x.level]),[['skill:200152',1]]);
  assert.equal(out.status,'ready-for-explicit-publication');
- assert.equal(actual.cards.length,0);
+ assert.equal(actual.cards.length,559);
 });
 
 test('fresh candidate generation after first public event permits the second review without rewriting the first',()=>{
@@ -208,7 +208,7 @@ test('all eight approved in a synthetic fixture remain reproducible with zero un
  assert.equal(after.summary.approvedEvents,8);
  assert.equal(progress.alreadyPublished.length,8);
  assert.equal(progress.pending.length,0);
- assert.equal(actual.cards.length,0,'synthetic approved fixture must never publish');
+ assert.equal(actual.cards.length,559,'synthetic approved fixture must not alter the real 2487-event release');
 });
 test('a valid old approval that no longer matches the original candidate is rejected for follow-up',()=>{
  const input=fixture();
