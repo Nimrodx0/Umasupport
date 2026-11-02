@@ -395,6 +395,28 @@ async function main(args){
      }
      if(!emptyV2Refused)
       fail('未承認の実2512イベントがv2空台帳で公開可能になっています');
+     // Full release compiler is intentionally exercised against REAL 2512
+     // candidate data and an empty approval ledger. It must fail before
+     // returning a publishable artifact or writing any file.
+     let compilerBlocked=false;
+     try{
+      require('../src/approved_event_release_build.cjs').prepare({
+       candidate:privateEventCatalog,
+       approvals:{schemaVersion:2,cohorts:[],entries:[]},
+       model,skillText:result.dryRunMergedSkillText
+      });
+     }catch(e){
+      if(!String(e.message).includes('未承認'))throw e;
+      compilerBlocked=true;
+     }
+     if(!compilerBlocked)
+      fail('実2512件の一括出版器が未承認候補を拒否できませんでした');
+     console.log('PHASE2_2512_APPROVED_BULK_BUILDER_BLOCKED='+JSON.stringify({
+      actualCandidateEvents:2512,
+      titlesRetained:2512,
+      unapprovedCompilerRefused:compilerBlocked,
+      publicEventsAdded:0
+     }));
      console.log('PHASE2_2512_RELEASE_COHORT_WORKLIST='+JSON.stringify({
       sourceRevision:require('../config/event-source-priority.v1.json').baselineRevision,
       technicalScopes:[
