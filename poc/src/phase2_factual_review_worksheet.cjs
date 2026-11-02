@@ -35,23 +35,49 @@ function worksheet({catalog,lineage},{strict=false}={}){
  const cross=only(lineage.crossSourceGtExceptionIds,'gt-',records);
  const curated=only(lineage.curatedOnlyEventIds,'usl:',records);
  if([...cross].some(k=>curated.has(k)))fail('編集元分類が重複');
- // The existing V2 selectors CANNOT isolate one arbitrary event within a
- // card by its exact ID. Reserve that GT-with-GameWith exception for V1.
- const gtSelector={
-  eventIdPrefix:'gt-',excludedEventKeys:lineage.crossSourceGtExceptionIds
- };
- const editorialSelector={eventIdPrefix:'usl:'};
- const partition=inventory(catalog,[gtSelector,editorialSelector]);
+ // An exact event can be a V1 exception. The broader eventIdPrefix
+ // cohort intentionally excludes it. Editorial additions must be grouped
+ // by the ACTUAL step that added them, not one fictitious shared license.
+ if(!Array.isArray(lineage.categories))fail('編集追加の出典工程が不足');
+ const gtSelector={eventIdPrefix:'gt-',
+  excludedEventKeys:lineage.crossSourceGtExceptionIds};
+ const claimed=new Set(),editorial=[];
+ for(const stage of lineage.categories){
+  if(stage.category!=='cross-source-editorial')continue;
+  if(!Array.isArray(stage.changedEventIds))fail('出典補正の変更一覧が欠落');
+  const ids=stage.changedEventIds.filter(x=>x?.eventId?.startsWith('usl:'));
+  if(!ids.length)continue;
+  const unique=new Set();
+  for(const row of ids){
+   const k=key(row);
+   if(!curated.has(k)||claimed.has(k)||unique.has(k))
+    fail('編集追加が別工程と重複または既知対象外');
+   unique.add(k);claimed.add(k);
+  }
+  const excluded=lineage.curatedOnlyEventIds.filter(x=>!unique.has(key(x)));
+  editorial.push({
+   stage:stage.name,
+   selector:{eventIdPrefix:'usl:',
+    ...(excluded.length?{excludedEventKeys:excluded}:{})},
+   events:unique.size
+  });
+ }
+ if(editorial.length===0||claimed.size!==curated.size)
+  fail('編集追加24件の各取得工程が網羅されていない');
+ const partition=inventory(catalog,
+  [gtSelector,...editorial.map(x=>x.selector)]);
  if(partition.uncovered!==cross.size||
-    partition.groups[1].events!==curated.size||
+    partition.groups[0].events+editorial.reduce((n,x)=>n+x.events,0)+
+       cross.size!==records.size||
+    editorial.some((x,i)=>partition.groups[i+1].events!==x.events)||
     [...curated].some(k=>!partition.matchedKeys.has(k))||
     [...cross].some(k=>partition.matchedKeys.has(k)))
   fail('レビュー対象が他の系列へ混入、または未分類');
  if(strict&&(records.size!==2512||partition.groups[0].events!==2487||
-    curated.size!==24||cross.size!==1))
+    curated.size!==24||cross.size!==1||
+    editorial.length!==3||
+    editorial.map(x=>x.events).join(',')!=='8,15,1'))
   fail('実固定母集団の審査単位を変更できません');
- // Public URLs are not included as 'approved evidence': reviewers must
- // decide whether each actually supports the relevant claim.
  const pending=['sourceAccessTerms','databaseReuse','gameMaterialAndTitles','choiceWording'];
  return {
   schemaVersion:1,
@@ -71,16 +97,17 @@ function worksheet({catalog,lineage},{strict=false}={}){
     sourceAccessMethod:'fixed-public-GitHub-snapshot-not-a-license',
     outstandingChecks:pending
    },
-   {
-    id:'editorial-additions-not-a-unified-rights-cohort',
-    selector:editorialSelector,
-    expectedEvents:partition.groups[1].events,
-    eventsSha256:partition.groups[1].eventsSha256,
-    sourceClassification:'mixed-cross-source-additions',
-    rightsAssessment:'must-partition-by-source-before-approval',
-    sourceAccessMethod:'source-method-not-proven-as-uniform',
+   ...editorial.map((group,i)=>({
+    id:'editorial-step-'+String(i+1),
+    sourceTransformStep:group.stage,
+    selector:group.selector,
+    expectedEvents:partition.groups[i+1].events,
+    eventsSha256:partition.groups[i+1].eventsSha256,
+    sourceClassification:'same-editorial-step-not-a-license-cohort',
+    rightsAssessment:'source-method-must-be-confirmed-before-approval',
+    sourceAccessMethod:'individual-step-upstream-terms-unverified',
     outstandingChecks:pending
-   }
+   }))
   ],
   individualExceptionReviewsPending:lineage.crossSourceGtExceptionIds.map(x=>({
    cardId:x.cardId,eventId:x.eventId,
