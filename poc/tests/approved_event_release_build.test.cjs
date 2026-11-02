@@ -102,9 +102,9 @@ function syntheticSupports(){
   fields[1]='サポカ'+fields[0];
   fields[3]='3';fields[4]=String(stage);fields[6]='スピード';
   fields[59]='架空ヒント';
-  lines.push(fields.join('\\t'));
+  lines.push(fields.join(String.fromCharCode(9)));
  }
- return lines.join('\\n')+'\\n';
+ return lines.join(String.fromCharCode(10))+String.fromCharCode(10);
 }
 test('CLI does not create or overwrite an output if the approval ledger is empty',async()=>{
  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'uma-approved-event-cli-'));
