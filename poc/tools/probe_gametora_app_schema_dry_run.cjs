@@ -400,6 +400,24 @@ async function main(args){
       .worksheet({catalog:titleProjected.catalog,lineage:history},{strict:true});
      console.log('PHASE2_2512_FACTUAL_REVIEW_WORKSHEET='+
       JSON.stringify(reviewWorksheet));
+     // Owner-approved FIRST release cohort only: no GameWith-edited or added
+     // events. Temp file stays outside checkout and is never uploaded on PR.
+     if(process.env.UMASUPPORT_GT_2487_RELEASE_STAGING){
+      const staging=path.resolve(process.env.UMASUPPORT_GT_2487_RELEASE_STAGING);
+      const runner=path.resolve(process.env.RUNNER_TEMP||'');
+      if(!process.env.RUNNER_TEMP||
+         staging!==path.join(runner,'gt2487-approved.json'))
+       fail('GT 2487の出力は明示したCI一時領域のみに限定');
+      const release=require('../src/phase2_gt2487_release.cjs').build({
+       catalog:privateEventCatalog,lineage:history,model,
+       skillText:result.dryRunMergedSkillText
+      },{strict:true});
+      fs.writeFileSync(staging,JSON.stringify(release.catalog,null,2)+'\n',
+       {encoding:'utf8',flag:'wx',mode:0o600});
+      console.log('PHASE2_GT_2487_APPROVED_STAGING='+
+       JSON.stringify({...release.report,privateStagingOnly:true,
+        originalSourceProsePublished:false}));
+     }
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
