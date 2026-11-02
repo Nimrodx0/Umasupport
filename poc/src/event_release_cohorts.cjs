@@ -19,7 +19,7 @@ const RIGHTS=['sourceAccessTerms','databaseReuse','gameMaterialAndTitles','choic
 const CHECKS=[...CATEGORIES,...RIGHTS];
 const BASIS=['permission','open-license','original-factual-description'];
 const ACCESS=['reviewed-no-new-access','authorized-access'];
-const SOURCE_REV=/^[a-f0-9]{40}$/;
+const SOURCE_REV=/^(?:[a-f0-9]{40}|sha256:[a-f0-9]{64})$/;
 const exact=(input,allowed,where)=>{
  if(!obj(input)||Object.keys(input).some(k=>!allowed.includes(k)))
   fail(where+': 未定義フィールドまたは形式');
