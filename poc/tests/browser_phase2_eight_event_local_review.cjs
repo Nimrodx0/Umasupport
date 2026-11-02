@@ -13,8 +13,22 @@ async function main(){
   browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  const requestFailures=[];
+  page.on('requestfailed',request=>requestFailures.push(
+   request.url()+' '+(request.failure()?.errorText||'request-failed')));
   await page.goto(base+'/',{waitUntil:'load'});
-  await page.locator('html[data-ready="true"]').waitFor({timeout:20000});
+  try{
+   await page.waitForFunction(()=>['true','error'].includes(
+    document.documentElement.dataset.ready),null,{timeout:25000});
+  }catch(error){
+   const status=await page.locator('#bootstrap').innerText().catch(()=>'(missing)');
+   throw Error('Local eight-event review did not initialize: '+status+
+    '; browser errors='+JSON.stringify(errors)+
+    '; request failures='+JSON.stringify(requestFailures),{cause:error});
+  }
+  assert.equal(await page.locator('html').getAttribute('data-ready'),'true',
+   'Local review rejected: '+await page.locator('#bootstrap').innerText()+
+   '; errors='+JSON.stringify(errors));
   assert.equal(await page.locator('section.card').count(),4);
   assert.equal(await page.locator('article.event').count(),8);
   assert.equal(await page.locator('button[data-choice="option1"]').count(),8);
