@@ -159,13 +159,13 @@ test('exact GT2487 released historical skill whitelist is complete and preserves
  const model=fixture();
  model.skillById['hint:先行駆け引き']={id:'hint:先行駆け引き',name:'先行駆け引き'};
  const approvedEvent=catalog([ref('200801','先行駆け引き')]);
- const count=publicEvents.attach(model,approvedEvent,{skillText:skills(),fullRegistry:true});
+ const count=publicEvents.attach(model,approvedEvent,{skillText:skills(),fullRegistry:true,allowReviewedLegacy:true});
  assert.equal(count.eventsWithRecords,1);
  assert.equal(model.cardById['30001'].events[0].rewards[0].skillId,'skill:200801');
  assert.equal(model.skillById['skill:200801'].tier,'unknown');
  assert.equal(model.skillById['skill:200801'].sourceStatus,'reviewed-legacy-master-id-only');
  assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('200801','他の名前')]),
-  {skillText:skills()}),/未照合/);
+  {skillText:skills(),allowReviewedLegacy:true}),/未照合/);
  assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('999999','未知のスキル')]),
   {skillText:skills()}),/未照合/);
 });
