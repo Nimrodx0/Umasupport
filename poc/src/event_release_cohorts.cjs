@@ -38,7 +38,7 @@ function inventory(catalog,selectors){
  const indexed=indexPublished(catalog),keys=[...indexed.keys()];
  const used=new Set(),groups=[];
  for(const selector of selectors){
-  exact(selector,['eventIdPrefix','cardIds'],'適用範囲');
+  exact(selector,['eventIdPrefix','cardIds','excludedEventKeys'],'適用範囲');
   if(typeof selector.eventIdPrefix!=='string'||
     !/^[a-z][a-z0-9:-]{2,49}$/u.test(selector.eventIdPrefix))
    fail('空または広すぎるイベントID接頭辞');
@@ -46,7 +46,21 @@ function inventory(catalog,selectors){
      !selector.cardIds.length||selector.cardIds.some(x=>!nonempty(x))||
      new Set(selector.cardIds).size!==selector.cardIds.length))
    fail('カードID範囲が不正');
-  const selected=keys.filter(k=>matched(k,selector)).sort();
+  const excluded=new Set();
+  if(selector.excludedEventKeys!==undefined){
+   if(!Array.isArray(selector.excludedEventKeys)||!selector.excludedEventKeys.length)
+    fail('除外するイベントID一覧が不正');
+   for(const x of selector.excludedEventKeys){
+    exact(x,['cardId','eventId'],'除外イベントID');
+    if(!nonempty(x.cardId)||!nonempty(x.eventId))
+     fail('除外イベントIDの形式が不正');
+    const k=JSON.stringify([x.cardId,x.eventId]);
+    if(excluded.has(k)||!indexed.has(k)||!matched(k,selector))
+     fail('除外対象が重複またはコホート外');
+    excluded.add(k);
+   }
+  }
+  const selected=keys.filter(k=>matched(k,selector)&&!excluded.has(k)).sort();
   if(!selected.length)fail('対象イベントが存在しない');
   for(const k of selected){
    if(used.has(k))fail('審査コホートが重複');
