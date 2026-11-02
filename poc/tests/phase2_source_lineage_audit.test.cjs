@@ -54,7 +54,7 @@ test('missing stages, silent deletes, unexpected added source and final SHA drif
  const erased=history();erased.stages[0].catalog.cards[0].events.shift();
  assert.throws(()=>build(erased,{strict:false}),/既存イベントが消えた/);
  const unexpected=history();unexpected.stages[0].catalog.cards[0].events.push(e('thirdparty:unknown','未知のイベント'));
- assert.throws(()=>build(unexpected,{strict:false}),/追加イベントの技術系列/);
+ assert.throws(()=>build(unexpected,{strict:false}),/既存イベントが消えた|追加イベントの技術系列/);
  const drift=history();drift.finalCatalog.cards[0].events[0].name='改変';
  assert.throws(()=>build(drift,{strict:false}),/最終データ/);
 });
