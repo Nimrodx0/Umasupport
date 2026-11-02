@@ -79,7 +79,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 `node poc/tools/audit_events.cjs` は開発者向けコマンド。UmaSimと `umamusume-data` の3ファイルを公開元へ直接GETし、ID照合・レコード件数・隔離理由を表示する。元JSONをGitHubへ保存しない。`--local support_card.txt supports.json events.json` でローカル監査も可能。
 
-`src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。公開版の承認済み実イベントは0件のまま。
+`src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。2026-11-02の初回公開ではGT直接系統2,487イベントを承認済みとして配信し、別出典25イベントは引き続き未公開。
 
 [照合記録](../docs/event-source-audit.md)。
 
@@ -105,7 +105,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 詳しくは [公開イベントDB手順](../docs/checker-public-catalog.md)。CLI：node poc/tools/build_checker_catalog.cjs（読み取り専用、SSR・SRの元ファイルから実カード名厳密照合とイベント候補件数）。ローカル入力：--local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json。エイリアスは --aliases、レビュー済みイベントは --review と --output のセットで独立JSONへ出力。
 
-poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。現時点で承認済みの実イベントは0件。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。
+poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。2026-11-02以降の正式公開JSONにはGT直接系統2,487イベントを収録。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。
 
 表記差24件の明示対応は `config/checker-name-aliases.json`。`tools/build_checker_catalog.cjs` は標準でこれを使い、417枚を照合します。`--no-aliases` で厳密一致393枚だけを検証、`--aliases` でローカル対応表を指定できます。欠損SSR5枚のGameWith個別記事の詳細掲載状態は `config/gamewith-ssr-review-status.json`、新規カードやイベント0件の検出は `src/checker_gap_tracker.cjs`。
 
@@ -120,7 +120,7 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 
 ## 全件スキル階層のランタイム導入（2026-10-16）
 
-`src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はレビュー済みイベント0件でも金白辞書を起動時直接GETしてIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/skill-hierarchy-coverage.md)。
+`src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はイベントJSONが取得できない場合でも、金白辞書を別経路で直接GETしIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/skill-hierarchy-coverage.md)。
 
 ## Chromiumの自動ブラウザ回帰（2026-10-17）
 
