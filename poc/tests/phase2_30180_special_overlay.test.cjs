@@ -36,7 +36,10 @@ test('P0 numerical hint missing from GT events adds exactly one separately condi
  assert.equal(e.name,'あなたを想って');
  assert.equal(e.rewards[0].skillId,'skill:200332');
  assert.deepEqual(f,copy);
- assert.deepEqual(require('../data/reviewed_events.v1.json'),{schemaVersion:1,cards:[]});
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
 });
 test('production event loader attaches resolved skill names to disposable model',()=>{
  const f=fixture(),assembled=apply(f),card={id:'30180',hints:[],events:[]};
