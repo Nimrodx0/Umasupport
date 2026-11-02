@@ -67,5 +67,5 @@ test('unredacted original choice wording is refused and strict gate requires rea
  const data=sample();
  data.catalog.cards[0].events[0].choices[0].label='元サイト選択肢の文章';
  assert.throws(()=>worksheet(data),/原文の残る候補/);
- assert.throws(()=>worksheet(sample(),{strict:true}),/固定母集団/);
+ assert.throws(()=>worksheet(sample(),{strict:true}),/固定2512件|固定母集団/);
 });
