@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const os=require('node:os');
 const path=require('node:path');
-const {prepare}=require('../src/approved_event_release_build.cjs');
+const {prepare,assertRetainsPublished}=require('../src/approved_event_release_build.cjs');
 const {project}=require('../src/phase2_title_choice_projection.cjs');
 const {inventory}=require('../src/event_release_cohorts.cjs');
 const {options,run}=require('../tools/build_approved_event_catalog.cjs');
@@ -48,6 +48,16 @@ test('563-card, 2512-event wholly fictional catalogue is normalized and approved
  assert.equal(p.catalog.cards[0].events[0].choices[0].id,'option1');
  assert.equal(p.catalog.cards[0].events[0].choices[0].rewards[0].level,2);
  assert.equal(JSON.stringify(candidate),original);
+});
+test('approved future batches preserve exact previous event IDs and contents',()=>{
+ const f=fixture(),all=project(f.bundle.catalog).catalog;
+ const one={schemaVersion:1,cards:[{...all.cards[0],events:[all.cards[0].events[0]]}]};
+ assert.deepEqual(assertRetainsPublished(one,all),{priorEvents:1,addedEvents:2511});
+ const gone=clone(all);gone.cards[0].events.shift();
+ assert.throws(()=>assertRetainsPublished(one,gone),/既存公開イベントの削除/);
+ const modified=clone(all);modified.cards[0].events[0].name='架空の別見出し';
+ assert.throws(()=>assertRetainsPublished(one,modified),/既存公開イベントの無断変更/);
+ assert.throws(()=>assertRetainsPublished({schemaVersion:1,cards:[{}]},all),/不正/);
 });
 test('unapproved real-shaped data is rejected and no one can approve pre-normalized source text',()=>{
  const f=fixture(),candidate=f.bundle.catalog;
@@ -148,6 +158,21 @@ test('CLI atomic approved write works with invented 563-card 2512-event dataset,
   assert.equal(r.outputWritten,true);
   const published=await fs.readFile(out,'utf8');
   assert.deepEqual(JSON.parse(published),clean);
+  // Even a separately approved NEW batch cannot silently remove or change
+  // already published records; no partial output should reach the filesystem.
+  const smaller=clone(f.bundle.catalog);
+  smaller.cards[0].events.pop();
+  await fs.writeFile(c,JSON.stringify(smaller));
+  await fs.writeFile(a,JSON.stringify(syntheticApprovals(project(smaller).catalog)));
+  await assert.rejects(()=>run(args),/既存公開イベントの削除/);
+  assert.equal(await fs.readFile(out,'utf8'),published);
+  const revised=clone(f.bundle.catalog);
+  revised.cards[0].events[0].name='架空の改訂見出し';
+  await fs.writeFile(c,JSON.stringify(revised));
+  await fs.writeFile(a,JSON.stringify(syntheticApprovals(project(revised).catalog)));
+  await assert.rejects(()=>run(args),/既存公開イベントの無断変更/);
+  assert.equal(await fs.readFile(out,'utf8'),published);
+  await fs.writeFile(a,JSON.stringify(approvals));
   const bad=clone(f.bundle.catalog);
   bad.cards[0].events[0].name='未承認の見出し';
   await fs.writeFile(c,JSON.stringify(bad));
