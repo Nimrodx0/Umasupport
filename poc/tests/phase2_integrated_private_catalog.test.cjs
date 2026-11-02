@@ -85,8 +85,10 @@ test('all eight independent events and the corrected 30080 are in one validated,
  }
  assert.throws(()=>verifyRelease(a.catalog,{schemaVersion:1,entries:[]}),
   /公開イベントに承認証跡がありません/);
- assert.deepEqual(require('../data/reviewed_events.v1.json'),{schemaVersion:1,cards:[]});
- assert.deepEqual(require('../config/event-release-approvals.v1.json'),{schemaVersion:1,entries:[]});
+ const published=require('../data/reviewed_events.v1.json');
+ const {forCatalog}=require('../src/current_public_event_approvals.cjs');
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2487);
+ assert.equal(published.cards.length,559);
 });
 test('source mapping, title identity and review hashes are checked before joining',()=>{
  const changes=[
