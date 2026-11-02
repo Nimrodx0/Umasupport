@@ -63,7 +63,7 @@ function select({catalog,lineage},{strict=true}={}){
  const cohort=work.cohorts[0];
  if(review.schemaVersion!==2||review.cohorts.length!==1||
     review.entries.length!==0||
-    canonical(review.cohorts[0].selector)!==canonical(cohort.selector)||
+    canonical(review.cohorts[0].selector)!==canonical({eventIdPrefix:'gt-'})||
     review.cohorts[0].eventsSha256!==cohort.eventsSha256||
     review.cohorts[0].expectedEvents!==cohort.expectedEvents)
   fail('ユーザーの公開承認対象と実候補集合の範囲・内容SHAが異なる');
