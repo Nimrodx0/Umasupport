@@ -340,6 +340,25 @@ async function main(args){
      if(titleReview.projectedSha256!==hash(JSON.stringify(titleProjected.catalog)))
       fail('固定2512件の表記変換SHAが監査結果と不一致');
      console.log('PHASE2_2512_TITLE_PLACEHOLDER_CONTRACT='+JSON.stringify(titleReview));
+     // Review scope is partitioned by immutable event ID families; this is
+     // a technical worklist, NOT a finding that each source family is
+     // legally cleared. Real candidate data stays in runner memory.
+     const {inventory:cohortInventory}=
+      require('../src/event_release_cohorts.cjs');
+     const scopes=[{eventIdPrefix:'gt-'},{eventIdPrefix:'usl:'}];
+     const grouped=cohortInventory(titleProjected.catalog,scopes);
+     if(grouped.uncovered!==0||grouped.publishedEvents!==2512||
+        grouped.groups[0]?.events!==2488||
+        grouped.groups[1]?.events!==24)
+      fail('固定2512件のイベントID系列別コホートを再確認してください');
+     console.log('PHASE2_2512_RELEASE_COHORT_WORKLIST='+JSON.stringify({
+      sourceRevision:require('../config/event-source-priority.v1.json').baselineRevision,
+      technicalScopes:[
+       {idPrefix:'gt-',events:grouped.groups[0].events,sha256:grouped.groups[0].eventsSha256},
+       {idPrefix:'usl:',events:grouped.groups[1].events,sha256:grouped.groups[1].eventsSha256}
+      ],uncovered:grouped.uncovered,
+      licenseOrPublicReleaseApproved:false,publicEventsAdded:0}));
+
 
 
      // Optional browser acceptance with the REAL 2,512 catalog. Pass the
