@@ -351,13 +351,24 @@ async function main(args){
         grouped.groups[0]?.events!==2488||
         grouped.groups[1]?.events!==24)
       fail('固定2512件のイベントID系列別コホートを再確認してください');
+     let emptyV2Refused=false;
+     try {
+      require('../src/event_release_gate.cjs').verifyRelease(
+       titleProjected.catalog,{schemaVersion:2,cohorts:[],entries:[]});
+     } catch(e) {
+      if(!String(e.message).includes('未承認'))throw e;
+      emptyV2Refused=true;
+     }
+     if(!emptyV2Refused)
+      fail('未承認の実2512イベントがv2空台帳で公開可能になっています');
      console.log('PHASE2_2512_RELEASE_COHORT_WORKLIST='+JSON.stringify({
       sourceRevision:require('../config/event-source-priority.v1.json').baselineRevision,
       technicalScopes:[
        {idPrefix:'gt-',events:grouped.groups[0].events,sha256:grouped.groups[0].eventsSha256},
        {idPrefix:'usl:',events:grouped.groups[1].events,sha256:grouped.groups[1].eventsSha256}
       ],uncovered:grouped.uncovered,
-      licenseOrPublicReleaseApproved:false,publicEventsAdded:0}));
+      licenseOrPublicReleaseApproved:false,emptyV2ReleaseRefused:emptyV2Refused,
+      publicEventsAdded:0}));
 
 
 
