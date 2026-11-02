@@ -42,10 +42,12 @@ function input(){
  ]);
  return {model,index:JSON.parse(JSON.stringify(index)),skillText:dictionary,
   draftCatalogs:Object.fromEntries(index.cards.map(c=>[c.draftFile,read(c.draftFile)])),
-  publicCatalog:read('poc/data/reviewed_events.v1.json'),
+  // This unit fixture audits the independent GameWith-curated publication
+  // subset only; the real GT2487 publication has its own exact v2 gate.
+  publicCatalog:{schemaVersion:1,cards:[]},
   supplementalSkills:read('poc/data/curation/supplemental_skills.v1.json')};
 }
-test('28 direct GameWith article-linked card drafts, 68 events / 563 full-card test roster, 0 released',()=>{
+test('28 direct GameWith article-linked drafts, 68 events / 563-card fixture, 0 curated records released',()=>{
  const arg=input(),before=JSON.stringify(arg.model);
  const report=inventory.audit(arg);
  assert.equal(report.rosterCards,563);
