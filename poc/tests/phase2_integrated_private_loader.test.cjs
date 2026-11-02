@@ -58,8 +58,14 @@ test('real attach reads corrected special choice and GameWith choice hints throu
  assert.match(a.summary.originalCatalogSha256,/^[a-f0-9]{64}$/);
  assert.match(a.summary.attachedPreparedCatalogSha256,/^[a-f0-9]{64}$/);
  assert.deepEqual(f,original,'source JSON, skill model and source dictionary are unchanged');
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
- assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
+ // Private integration tests must NEVER mutate or promote the current
+ // public release. The already-published GT2487 records are legitimate.
+ const published=require('../data/reviewed_events.v1.json');
+ const {forCatalog}=require('../src/current_public_event_approvals.cjs');
+ const {verifyRelease}=require('../src/event_release_gate.cjs');
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2487);
+ assert.equal(published.cards.length,559);
+ assert.equal(forCatalog(published).schemaVersion,2);
 });
 test('a swapped skill ID, name, missing registry row and false release flags all fail',()=>{
  const changes=[

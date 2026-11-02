@@ -105,10 +105,16 @@ function build({normalized,enriched,review,triage},{strict=false}={}){
  const after=mapByCard(output);
  for(const card of EXPECTED_MISSING)if(after.has(card))fail('SSRイベントが予期せず重複');
  const additions=buildEight();
+ // Editorial-only additions stay unapproved, but the already-published GT
+ // catalog is legitimately nonempty. Check the v2-signed public count.
+ const published=require('../data/reviewed_events.v1.json');
+ const {forCatalog}=require('./current_public_event_approvals.cjs');
+ const {verifyRelease}=require('./event_release_gate.cjs');
+ const alreadyPublished=verifyRelease(published,forCatalog(published)).publicEvents;
  if(additions.status!=='NOT_APPROVED_FOR_PUBLICATION'||
     additions.summary.cards!==4||additions.summary.events!==8||
     additions.summary.choices!==16||additions.summary.hints!==4||
-    additions.summary.approvedEvents!==0||
+    additions.summary.approvedEvents!==alreadyPublished||
     additions.approvalWorksheet?.entries.length!==8)
   fail('通常8件の個別編集裁定と未署名証跡が不正');
  for(const card of additions.catalog.cards){

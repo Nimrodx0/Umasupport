@@ -50,7 +50,7 @@ function run(args){
  const mode=args[0];
  const packet=build();
  const pub=require('../data/reviewed_events.v1.json');
- const prior=require('../config/event-release-approvals.v1.json');
+ const prior=require('../src/current_public_event_approvals.cjs').forCatalog(pub);
  const progress=reviewProgress(packet,pub,prior);
  if(mode==='status'&&args.length===1){
   const result={source:'phase2_eight_release_candidate.build',

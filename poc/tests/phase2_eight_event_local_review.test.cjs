@@ -67,7 +67,10 @@ test('local HTTP server only serves four exact GET paths; no write or runtime re
   assert.ok(!JSON.stringify(d).includes('すごい力作だな'));
   assert.ok(JSON.stringify(d).includes('お花屋さんでの1ページ'));
  }finally{await new Promise(ok=>server.close(ok));}
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+    require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });
 test('local CLI refuses external host and untrusted port input',()=>{

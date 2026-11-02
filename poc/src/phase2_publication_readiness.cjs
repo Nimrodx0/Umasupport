@@ -21,7 +21,7 @@ const jungle=require('../data/curation/adjudicated/30240_gamewith_gap.v1.json');
 const anshin=require('../data/curation/adjudicated/30080_choice_repair.v1.json');
 const {verifyRelease}=require('./event_release_gate.cjs');
 const publicCatalog=require('../data/reviewed_events.v1.json');
-const approvals=require('../config/event-release-approvals.v1.json');
+const {forCatalog}=require('./current_public_event_approvals.cjs');
 const fail=m=>{throw Error('Phase2イベント公開受け入れ一覧: '+m);};
 const COMMON=Object.freeze([
  'PUBLIC_DISPLAY_REVIEW_PENDING',
@@ -51,7 +51,7 @@ function build(inputs={}){
  const {
   four=fourPart,ssr30321=duramente,centralLedger=ledger,
   ssr30221=satono,sr20075=tap,ssr30240=jungle,ssr30080=anshin,
-  published=publicCatalog,releaseApprovals=approvals
+  published=publicCatalog,releaseApprovals=forCatalog(published)
  }=inputs;
  const existing=verifyRelease(published,releaseApprovals);
  const checked4=auditFour({remaining:four,duramente:ssr30321,ledger:centralLedger});

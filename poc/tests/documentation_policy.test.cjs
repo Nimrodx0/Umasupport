@@ -118,5 +118,14 @@ test('automatic delivery priority is coherent, and unapproved private source is 
  assert.match(app,/UmaPublicEventCatalog\.loadVerified/);
  assert.doesNotMatch(app,/raw\.githubusercontent\.com\/systemless10/);
  assert.doesNotMatch(app,/gametora\.com\/umamusume\/supports/);
- assert.deepEqual(approved.cards,[],'未審査の2,512件を公開元へ黙って投入しない');
+ const {forCatalog}=require('../src/current_public_event_approvals.cjs');
+ const {verifyRelease}=require('../src/event_release_gate.cjs');
+ const verified=verifyRelease(approved,forCatalog(approved));
+ assert.equal(verified.publicEvents,2487,
+  'ユーザーが承認したGT由来2,487件だけを公開する');
+ assert.equal(verified.publicCards,559);
+ assert.ok(approved.cards.every(c=>c.events.every(e=>
+  e.id.startsWith('gt-')&&!(c.cardId==='30080'&&
+   e.id==='gt-30080-event-006'))),
+  '出典が異なる25件を無断公開しない');
 });

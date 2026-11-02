@@ -67,7 +67,10 @@ test('five source-audited chains append fifteen real events with exact prior-fla
  assert.equal(core.reachability(rice[2],{[rice[0].id]:'option1'},rice).status,'blocked');
  assert.equal(core.reachability(rice[2],{[rice[0].id]:'option1',[rice[1].id]:'option2'},rice).status,'reachable');
  assert.deepEqual(f,unaltered,'do not change source or real card model');
- assert.deepEqual(require('../data/reviewed_events.v1.json'),{schemaVersion:1,cards:[]});
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json'),{schemaVersion:1,entries:[]});
 });
 test('full actual production loader resolves nine names and hints without publishing anything',()=>{

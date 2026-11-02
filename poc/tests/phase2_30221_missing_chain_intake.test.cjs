@@ -63,6 +63,9 @@ test('wrong Satono Diamond edition, numeric drift, staged continuation, and appr
  ])assert.throws(()=>replay(params),/SSR30221連続イベント採用/);
 });
 test('public reviewed events and release approvals remain empty',()=>{
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });

@@ -74,6 +74,11 @@ async function main(){
    status:200,contentType:'text/plain',body:supportData()}));
   await page.route('**/data/skill_data.txt',r=>r.fulfill({
    status:200,contentType:'text/plain',body:skills}));
+  // Keep source-fact draft modes isolated from the signed published
+  // GT2487 catalog: these 563 artificial cards are NOT the real roster.
+  await page.route('**/reviewed_events.v1.json',r=>r.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({schemaVersion:1,cards:[]})}));
   await page.route('**/data/candidates/checker_choice_results.v1.json',r=>r.fulfill({
    status:200,contentType:'application/json',body:JSON.stringify(facts)}));
   await boot(page,origin+'/poc/live.html?eventPreview=facts');

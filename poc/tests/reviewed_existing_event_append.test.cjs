@@ -27,8 +27,10 @@ function fixture(){
    rarity:'normal',group:90000+i
   }))
  ]);
- return {packet,model,skillText,existingCatalog:clone(actual),
-  existingApprovals:clone(approvals)};
+ // V1 individual-append tests must use a synthetic empty predecessor.
+ // The real signed V2 GT2487 catalog is tested independently.
+ return {packet,model,skillText,existingCatalog:{schemaVersion:1,cards:[]},
+  existingApprovals:{schemaVersion:1,entries:[]}};
 }
 function syntheticDecision(packet,cardId,eventId){
  const candidate=packet.catalog.cards.find(c=>c.cardId===cardId)
@@ -54,7 +56,7 @@ test('real eight-candidate worksheet is PENDING; no silent publication results',
  assert.equal(result.catalog,null);
  assert.equal(result.approvals,null);
  assert.equal(result.pendingReviewEvents,8);
- assert.equal(actual.cards.length,0);
+ assert.equal(actual.cards.length,559);
  assert.equal(approvals.entries.length,0);
 });
 test('synthetic signed ONE real numeric-hint event runs through exact application loader and release gate',()=>{
@@ -72,7 +74,8 @@ test('synthetic signed ONE real numeric-hint event runs through exact applicatio
  assert.equal(verifyRelease(a.catalog,a.approvals).publicEvents,1);
  assert.equal(JSON.stringify({catalog:input.existingCatalog,
   approvals:input.existingApprovals}),original);
- assert.deepEqual(actual,{schemaVersion:1,cards:[]});
+ assert.equal(verifyRelease(actual,
+   require('../src/current_public_event_approvals.cjs').forCatalog(actual)).publicEvents,2487);
 });
 test('replay is idempotent and later event can append to the SAME existing card',()=>{
  const input=fixture(),id='30318',b='usl:30318:random:5',a='usl:30318:random:4';
@@ -159,7 +162,7 @@ test('one staged REAL GameWith-adjudicated skill event runs through production a
  const after=core.directRoutes(card,{stage:4,choices:{[id]:'option2'}});
  assert.deepEqual(after.map(x=>[x.skillId,x.level]),[['skill:200152',1]]);
  assert.equal(out.status,'ready-for-explicit-publication');
- assert.equal(actual.cards.length,0);
+ assert.equal(actual.cards.length,559);
 });
 
 test('fresh candidate generation after first public event permits the second review without rewriting the first',()=>{
@@ -205,7 +208,7 @@ test('all eight approved in a synthetic fixture remain reproducible with zero un
  assert.equal(after.summary.approvedEvents,8);
  assert.equal(progress.alreadyPublished.length,8);
  assert.equal(progress.pending.length,0);
- assert.equal(actual.cards.length,0,'synthetic approved fixture must never publish');
+ assert.equal(actual.cards.length,559,'synthetic approved fixture must not alter the real 2487-event release');
 });
 test('a valid old approval that no longer matches the original candidate is rejected for follow-up',()=>{
  const input=fixture();

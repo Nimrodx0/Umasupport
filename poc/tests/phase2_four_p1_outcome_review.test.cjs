@@ -84,6 +84,10 @@ test('exact candidate digest, source ordinal and result condition marker changes
  for(const edit of edits){const f=fixture();edit(f);assert.throws(()=>inspect(f));}
 });
 test('published event and approval registries stay untouched',()=>{
- assert.deepEqual(require('../data/reviewed_events.v1.json'),{schemaVersion:1,cards:[]});
- assert.deepEqual(require('../config/event-release-approvals.v1.json'),{schemaVersion:1,entries:[]});
+ const current=require('../data/reviewed_events.v1.json');
+ const {forCatalog}=require('../src/current_public_event_approvals.cjs');
+ const {verifyRelease}=require('../src/event_release_gate.cjs');
+ assert.equal(verifyRelease(current,forCatalog(current)).publicEvents,2487);
+ assert.equal(current.cards.length,559);
+ assert.equal(forCatalog(current).schemaVersion,2);
 });

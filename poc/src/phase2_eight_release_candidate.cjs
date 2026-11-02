@@ -9,7 +9,7 @@ const schema=require('./event_schema.js');
 const {digest,verifyRelease}=require('./event_release_gate.cjs');
 const publicCatalog=require('./public_event_catalog.js');
 const currentPublished=require('../data/reviewed_events.v1.json');
-const currentApprovals=require('../config/event-release-approvals.v1.json');
+const {forCatalog}=require('./current_public_event_approvals.cjs');
 
 const fail=message=>{throw Error('Phase2通常8件公開候補: '+message);};
 const CHECKS=['card','event','choices','outcomes','dependencies','publication'];
@@ -22,7 +22,7 @@ function candidateId(cardId,ordinal){
   fail('対象外のサポカまたはイベント位置');
  return 'usl:'+cardId+':random:'+ordinal;
 }
-function build({published=currentPublished,approvals=currentApprovals}={}){
+function build({published=currentPublished,approvals=forCatalog(published)}={}){
  // Verify the exact current publication state BEFORE building a review
  // packet. This must continue to work after one (or more) of the eight
  // candidates has already been explicitly published.

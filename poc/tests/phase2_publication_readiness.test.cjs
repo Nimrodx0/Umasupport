@@ -21,7 +21,7 @@ test('28 targeted cases are counted without pretending to audit all 563 cards',(
   trackedPriorityEventPositions:28,trackedCards:8,
   standaloneOrSpecialPositions:9,chainStagePositions:19,
   gameWithNumericAdopted:25,gameWithNumericUnresolved:3,
-  releaseReadyPositions:0,publicEventsAlreadyApproved:0,
+  releaseReadyPositions:0,publicEventsAlreadyApproved:2487,
   userFacingEventScopeFullyVerified:false,all563CardsCoveredByThisWorklist:false
  });
  assert.equal(a.rows.length,28);
@@ -65,7 +65,10 @@ test('public release inputs are verified independently, without being edited',()
  d.releaseApprovals={schemaVersion:1,entries:[]};
  assert.throws(()=>build(d),/公開ゲート/);
  const actual=require('../data/reviewed_events.v1.json');
- const approvals=require('../config/event-release-approvals.v1.json');
- assert.deepEqual(actual.cards,[]);
- assert.deepEqual(approvals.entries,[]);
+ const approvals=require('../src/current_public_event_approvals.cjs').forCatalog(actual);
+ const {verifyRelease}=require('../src/event_release_gate.cjs');
+ assert.equal(verifyRelease(actual,approvals).publicEvents,2487);
+ assert.equal(actual.cards.length,559);
+ assert.equal(approvals.schemaVersion,2);
+ assert.equal(approvals.entries.length,0);
 });
