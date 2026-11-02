@@ -65,7 +65,13 @@ async function boot(page,base){
 async function mockSources(page,{eventFailure=false}={}){
  await page.route('**/data/support_card.txt',r=>r.fulfill({status:200,contentType:'text/plain',body:supports}));
  await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,contentType:'text/plain',body:skills}));
- if(eventFailure)await page.route('**/reviewed_events.v1.json',r=>r.abort());
+ // This test deliberately uses SYNTHETIC cards and skills, so the real
+ // 2487-event public catalog MUST NOT be mixed into this artificial model.
+ // Mock a well-formed empty event catalog as part of the synthetic fixture.
+ // Separate live-publication tests verify the actual 2487-event artifact.
+ await page.route('**/reviewed_events.v1.json',r=>eventFailure?r.abort():
+  r.fulfill({status:200,contentType:'application/json',
+   body:JSON.stringify({schemaVersion:1,cards:[]})}));
 }
 async function main(){
  const server=makeServer();
