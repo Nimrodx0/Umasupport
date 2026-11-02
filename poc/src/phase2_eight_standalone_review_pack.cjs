@@ -16,7 +16,7 @@ const SRC3=require('../data/curation/adjudicated/30318-30320.v1.json');
 const SRC1=require('../data/curation/adjudicated/30321.v1.json');
 const LEDGER=require('../data/curation/adjudicated_event_facts.v1.json');
 const PUBLISHED=require('../data/reviewed_events.v1.json');
-const APPROVALS=require('../config/event-release-approvals.v1.json');
+const {forCatalog}=require('./current_public_event_approvals.cjs');
 const fail=s=>{throw Error('4SSR・通常8件の非公開表示レビュー: '+s);};
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const SOURCE_HINTS=[
@@ -31,7 +31,7 @@ const PRIVATE_BLOCKERS=[
  'EVENT_RELEASE_EVIDENCE_NOT_APPROVED'
 ];
 function build({remaining=SRC3,duramente=SRC1,ledger=LEDGER,
- published=PUBLISHED,approvals=APPROVALS}={}){
+ published=PUBLISHED,approvals=forCatalog(published)}={}){
  const p=readiness({four:remaining,ssr30321:duramente,
   centralLedger:ledger,published,releaseApprovals:approvals});
  const existing=verifyRelease(published,approvals);
