@@ -13,7 +13,8 @@ const APP=BASE+'/poc/live.html';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 async function checkPublishedFiles(request){
  for(const file of ['poc/live.html','poc/src/core.js','poc/src/live_loader.js','poc/src/skill_hierarchy.js',
-                      'poc/src/skill_bridge.js','poc/src/live_app.js']){
+                      'poc/src/skill_bridge.js','poc/src/live_app.js',
+                      'poc/src/public_event_catalog.js','poc/data/reviewed_events.v1.json']){
   const resp=await request.get(BASE+'/'+file,{timeout:30000});
   assert.equal(resp.status(),200,'Published file HTTP '+file);
   assert.equal(sha(Buffer.from(await resp.body())),
@@ -36,7 +37,9 @@ async function cacheInventory(page){
   });
   try{
    const tx=db.transaction('sources','readonly'),store=tx.objectStore('sources'),res={};
-   for(const key of ['umasupport/umasim/support_card.txt/v1','umasupport/umasim/skill_data.txt/v1']){
+   for(const key of ['umasupport/umasim/support_card.txt/v1','umasupport/umasim/skill_data.txt/v1',
+                     'umasupport/umasim/skill_data.txt/cf9366f6a487bd8f197b53d8a11981207beb9f6c',
+                     'umasupport/public/reviewed_events.v1.json/v1']){
     const request=store.get(key);
     const item=await new Promise((resolve,reject)=>{
      request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
@@ -97,9 +100,10 @@ async function main(){
   const context=await browser.newContext({viewport:{width:1280,height:900},locale:'ja-JP'});
   const page=await context.newPage();page.setDefaultTimeout(20000);
   await checkPublishedFiles(page.request);
-  const external=[],errors=[];
+  const external=[],errors=[],warnings=[];
+  page.on('console',msg=>{if(['warning','error'].includes(msg.type()))warnings.push(msg.text().slice(0,500));});
   page.on('request',req=>{
-   if(req.url().includes('raw.githubusercontent.com/mee1080/umasim/') &&
+   if(req.url().includes('raw.githubusercontent.com/mee1080/umasim/main/') &&
        /(?:support_card|skill_data)\.txt/.test(req.url()))external.push(req.url());
   });
   page.on('pageerror',err=>errors.push(err.message));
@@ -117,7 +121,18 @@ async function main(){
                    m.cards.find(c=>c.hints.length);
    const fake={'skill:200014':{count:1,conditionalOnly:false,providers:{}}};
    return {cards:m.cards.length,hints:m.meta.totalHints,skills:m.skills.length,
-    reviewedEvents:m.meta.reviewedEventRecords,rare:h?.totalRare,linked:h?.linked,
+    reviewedEvents:m.meta.reviewedEventRecords,
+    reviewedCards:m.meta.reviewedEventCards,
+    eventMode:m.meta.runtimeSources.events.mode,
+    eventPick:(()=>{
+     const card=m.cards.find(c=>c.events?.some(e=>e.type==='choice'&&!e.requires&&
+       e.choices?.some(o=>o.rewards?.length)));
+     if(!card)return null;
+     const event=card.events.find(e=>e.type==='choice'&&!e.requires&&
+       e.choices?.some(o=>o.rewards?.length));
+     const choice=event.choices.find(o=>o.rewards?.length);
+     return {id:card.id,name:card.name,eventId:event.id,choiceId:choice.id,eventName:event.name};
+    })(),rare:h?.totalRare,linked:h?.linked,
     withoutLower:h?.withoutLower,unresolved:h?.unresolved,
     circle:chain?.name,intermediate:intermediate?.name,base:bottom?.name,
     indirect:window.UmaCore.coverage('hint:右回り○',fake,m),
@@ -126,8 +141,13 @@ async function main(){
   assert.ok(actual.cards>=500,'Card count too small: '+actual.cards);
   assert.ok(actual.hints>3000,'Hint count too small: '+actual.hints);
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
-  assert.equal(actual.reviewedEvents,0,'Never claim events are verified');
-  assert.equal(actual.rare,325);assert.equal(actual.linked,322);
+  assert.equal(actual.reviewedEvents,2487,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
+  assert.equal(actual.reviewedCards,559,'Published event card coverage changed');
+  assert.equal(actual.eventMode,'reviewed');
+  assert.match(status,/2487件/);
+  assert.ok(actual.eventPick,'No selectable and rewarded real public event found');
+  assert.ok(actual.rare>=325,'Current master lost historical rare skill inventory');
+  assert.equal(actual.linked,actual.rare-actual.withoutLower);
   assert.equal(actual.withoutLower,3);assert.equal(actual.unresolved,0);
   assert.deepEqual([actual.circle,actual.intermediate,actual.base],
    ['右回りの鬼','右回り◎','右回り○']);
@@ -162,6 +182,17 @@ async function main(){
   await page.locator('button[data-action="close"]').click();
   const row=page.locator('tr[data-skill="'+skillId+'"]');
   await row.waitFor();assert.match(await row.innerText(),/1/);
+  // A real published GT event must remain usable in the ordinary deck editor.
+  await page.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
+  await page.locator('#picker-search').fill(actual.eventPick.name);
+  await page.locator('button[data-action="set-card"][data-id="'+actual.eventPick.id+'"]').click();
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  assert.ok((await page.locator('.modal-body').innerText()).includes(actual.eventPick.eventName));
+  const eventChoice=page.locator('input[data-event-choice][data-event="'+actual.eventPick.eventId+
+    '"][value="'+actual.eventPick.choiceId+'"]');
+  await eventChoice.check();
+  assert.equal(await eventChoice.isChecked(),true,'Published event choice did not persist');
+  await page.locator('button[data-action="close"]').click();
   await page.locator('button[data-action="goals"]').click();
   await page.locator('#new-goal-skill').selectOption(skillId);
   await page.locator('#new-goal-scope').selectOption('main');
@@ -172,19 +203,24 @@ async function main(){
   assert.equal(await page.locator('.split-grid').count(),1);
   await page.locator('button[data-action="view"][data-value="integrated"]').click();
   // Only abort the game-data endpoints. Published HTML/JS/CSS must still reload.
-  let blocked=0;
+  let blocked=0,eventBlocked=0;
   await page.route('**/data/support_card.txt',r=>{blocked++;return r.abort();});
   await page.route('**/data/skill_data.txt',r=>{blocked++;return r.abort();});
+  await page.route('**/poc/data/reviewed_events.v1.json',r=>{eventBlocked++;return r.abort();});
   const cached=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
   assert.match(cached,/スキル辞書は保存済み版を使用/);
   assert.equal(blocked,2);
+  assert.equal(eventBlocked,1);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2487);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   const restored=await page.evaluate(()=>({cards:window.UmaDemoData.cards.length,
    linked:window.UmaDemoData.meta.skillHierarchy.linked}));
   assert.equal(restored.cards,actual.cards);assert.equal(restored.linked,actual.linked);
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   await page.unroute('**/data/support_card.txt');
   await page.unroute('**/data/skill_data.txt');
+  await page.unroute('**/poc/data/reviewed_events.v1.json');
   // Desktop Chromium resized to a narrow viewport is NOT an actual Android device.
   await page.setViewportSize({width:390,height:844});
   const geometry=await page.evaluate(()=>({width:window.innerWidth,
@@ -211,7 +247,7 @@ async function main(){
   const rejected=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
   assert.match(rejected,/スキル辞書は保存済み版を使用/);
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),actual.linked);
   const afterRejected=await readSourceRecords(page);
   assert.deepEqual(afterRejected,originals,'Rejected publisher content changed last good cache');
 
@@ -239,7 +275,7 @@ async function main(){
   const restoredOnline=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'online');
   assert.match(restoredOnline,/金白構造候補/);
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),actual.linked);
   const refreshed=await readSourceRecords(page);
   assert.ok(refreshed[SUPPORT_KEY]?.text?.length>10000);
   assert.ok(refreshed[SKILL_KEY]?.text?.length>10000);
@@ -272,12 +308,12 @@ async function main(){
   }));
   await boot(stateless);
   assert.equal(await stateless.locator('#bootstrap-status').getAttribute('data-mode'),'online');
-  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),322);
+  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),actual.linked);
   await noStorage.close();
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
-  console.log('PASS: real Pages Chromium, real 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
+  console.log('PASS: real Pages Chromium, real 2487 published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),
    viewport:geometry,cards:actual.cards,hints:actual.hints,skills:actual.skills,
    rare:actual.rare,linked:actual.linked,withoutLower:actual.withoutLower,
