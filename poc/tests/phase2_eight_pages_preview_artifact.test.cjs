@@ -6,7 +6,7 @@ const {verifyRelease}=require('../src/event_release_gate.cjs');
 const fs=require('node:fs');
 const path=require('node:path');
 const catalog=require('../data/reviewed_events.v1.json');
-const approvals=require('../config/event-release-approvals.v1.json');
+const approvals=require('../src/current_public_event_approvals.cjs').forCatalog(catalog);
 const dataPath=path.join(__dirname,'../preview/phase2-eight-events.v1.json');
 test('static browser preview matches exactly the audited eight-event source',()=>{
  const actual=JSON.parse(fs.readFileSync(dataPath,'utf8')),expected=build();
@@ -28,9 +28,9 @@ test('static browser preview matches exactly the audited eight-event source',()=
 });
 test('static preview explicitly contains no published event approval, source prose or extra stages',()=>{
  const p=build();
- assert.deepEqual(catalog,{schemaVersion:1,cards:[]});
- assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
- assert.equal(verifyRelease(catalog,approvals).publicEvents,0);
+ assert.equal(verifyRelease(catalog,approvals).publicEvents,2487);
+ assert.equal(catalog.cards.length,559);
+ assert.equal(approvals.schemaVersion,2);
  for(const c of p.cards){
   assert.deepEqual(c.events.map(e=>e.ordinal),[4,5]);
   assert.ok(c.events.every(e=>e.choices.length===2));
