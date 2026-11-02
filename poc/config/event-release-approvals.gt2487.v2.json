@@ -4,13 +4,7 @@
     {
       "id": "gt-derived-factual-2026-11-02-first-release",
       "selector": {
-        "eventIdPrefix": "gt-",
-        "excludedEventKeys": [
-          {
-            "cardId": "30080",
-            "eventId": "gt-30080-event-006"
-          }
-        ]
+        "eventIdPrefix": "gt-"
       },
       "expectedEvents": 2487,
       "eventsSha256": "9cfb7f3241c1c94250605ef418260eef4080404debcfeea46738ba24bc756d2e",
@@ -77,7 +71,7 @@
         "publicationBasis": {
           "kind": "original-factual-description",
           "reason": "Owner authorized a noncommercial, nonofficial factual-lookup release on 2026-11-02. Publish the 2,487 fixed GT-derived events without tracked cross-source editorial changes, retaining only short event identifiers/names, independent generated choice/outcome placeholders, game facts, skill IDs and numeric effects. This is an assessed factual-use rationale, NOT a blanket right to reproduce GameTora/Cygames expressions or source JSON. No GameWith-adjusted event or curated additions are covered.",
-          "scope": "Only the exact 2,487 hash-pinned GT-derived event records selected here; no original option/result speech, source article text, images, source JSON, GameWith-edited SSR30080/6, curated usl: records, paid distribution, game manipulation or unapproved additions."
+          "scope": "Only the exact 2,487 hash-pinned GT-derived event records selected here; no original option/result speech, source article text, images, source JSON, GameWith-edited SSR30080/6, curated usl: records, paid distribution, game manipulation or unapproved additions. The scope selector is applied only AFTER the one GameWith-edited GT record and all 24 curated records were excluded by the verified 2,512-to-2,487 source-lineage transformation."
         }
       }
     }
