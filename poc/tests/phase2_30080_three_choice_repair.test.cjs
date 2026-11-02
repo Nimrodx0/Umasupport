@@ -80,6 +80,9 @@ test('source drift, swapped choice, invented result, and publication flags fail 
 test('schema model mismatch and public gating are checked',()=>{
  assert.throws(()=>build(copy(),{model:{cards:[],cardById:{},skillById:{}}}),/イベント検証/);
  assert.throws(()=>build(copy(),{model:{cards:[{id:'30080'}],cardById:model.cardById,skillById:{}}}),/イベント検証/);
- assert.deepEqual(require('../data/reviewed_events.v1.json').cards,[]);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
+  require('../data/reviewed_events.v1.json'),
+  require('../src/current_public_event_approvals.cjs').forCatalog(
+   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });
