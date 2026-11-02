@@ -6,9 +6,14 @@ const path=require('node:path');
 const {verifyRelease}=require('../src/event_release_gate.cjs');
 const root=path.resolve(__dirname,'../..');
 const catalogPath=process.argv[2]||path.join(root,'poc/data/reviewed_events.v1.json');
-const approvalsPath=process.argv[3]||path.join(root,'poc/config/event-release-approvals.v1.json');
 try{
  const catalog=JSON.parse(fs.readFileSync(catalogPath,'utf8'));
+ // Before first release the empty legacy v1 ledger remains authoritative.
+ // Once the owner-approved GT cohort is served, the matching source-specific
+ // v2 ledger is the ONLY valid default. Explicit CLI overrides still work.
+ const approvalsPath=process.argv[3]||path.join(root,'poc/config/',
+  catalog.cards?.some(c=>c.events?.length)?
+   'event-release-approvals.gt2487.v2.json':'event-release-approvals.v1.json');
  const approvals=JSON.parse(fs.readFileSync(approvalsPath,'utf8'));
  const result=verifyRelease(catalog,approvals);
  console.log('Event release preflight PASSED:',JSON.stringify(result));
