@@ -11,10 +11,22 @@
  */
 const crypto=require('node:crypto');
 const {project}=require('./phase2_title_choice_projection.cjs');
-const {verifyRelease,canonical}=require('./event_release_gate.cjs');
+const {verifyRelease,canonical,indexPublished}=require('./event_release_gate.cjs');
 const publicLoader=require('./public_event_catalog.js');
 const hash=x=>crypto.createHash('sha256').update(canonical(x)).digest('hex');
 const fail=m=>{throw Error('承認済みイベント一括出版: '+m);};
+// Publication is monotonic by default: a newly approved batch may add
+// records but must never silently delete, relocate or rewrite a record that
+// has already been served to users. Corrections require a separately designed,
+// explicit replacement review process, not merely a fresh batch ledger.
+function assertRetainsPublished(previous,next){
+ const old=indexPublished(previous),current=indexPublished(next);
+ for(const [key,oldSha] of old){
+  if(!current.has(key))fail('既存公開イベントの削除・カード移動を拒否: '+key);
+  if(current.get(key)!==oldSha)fail('既存公開イベントの無断変更を拒否: '+key);
+ }
+ return {priorEvents:old.size,addedEvents:current.size-old.size};
+}
 function prepare({candidate,approvals,model,skillText}){
  if(!candidate||!approvals||!model?.cardById||!model?.skillById||
    typeof skillText!=='string'||!skillText)
@@ -57,4 +69,4 @@ function prepare({candidate,approvals,model,skillText}){
   }
  };
 }
-module.exports={prepare};
+module.exports={prepare,assertRetainsPublished};
