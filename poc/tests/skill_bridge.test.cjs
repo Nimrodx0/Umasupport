@@ -159,6 +159,9 @@ test('exact GT2487 released historical skill whitelist is complete and preserves
  const model=fixture();
  model.skillById['hint:先行駆け引き']={id:'hint:先行駆け引き',name:'先行駆け引き'};
  const approvedEvent=catalog([ref('200801','先行駆け引き')]);
+ assert.throws(()=>publicEvents.preflight(fixture(),approvedEvent,
+  {skillText:skills(),fullRegistry:true}),/未照合/,
+  'Unapproved or private previews must never inherit the released legacy exception');
  const count=publicEvents.attach(model,approvedEvent,{skillText:skills(),fullRegistry:true,allowReviewedLegacy:true});
  assert.equal(count.eventsWithRecords,1);
  assert.equal(model.cardById['30001'].events[0].rewards[0].skillId,'skill:200801');
