@@ -60,11 +60,20 @@ async function main(args){
  if(process.env.UMASUPPORT_GT_EVENT_DIR&&independent2026Preview!==undefined){
   const {readDocuments}=require('./audit_gametora_branches.cjs');
   const {bindNames}=require('../src/gametora_short_event_title_intake.cjs');
+  const pinnedGTDocuments=readDocuments(process.env.UMASUPPORT_GT_EVENT_DIR);
   const enriched=bindNames({
    normalized:candidateAudit,
    projectedCatalog:result.dryRunUnpreparedCatalog,
-   documents:readDocuments(process.env.UMASUPPORT_GT_EVENT_DIR)
+   documents:pinnedGTDocuments
   },{strict:true});
+  // Direct audit of the ORIGINAL pinned GitHub-derived files against the
+  // private app's final source-joined event names. Numbers only: neither
+  // source dialogue nor the fixed files are included in the report.
+  const pinnedSourceAudit=require('../src/phase2_gt_fixed_source_provenance.cjs')
+   .audit({documents:pinnedGTDocuments,projectedCatalog:enriched.catalog},
+    {strict:true});
+  console.log('PHASE2_GT_2488_SOURCE_ORIGIN='+
+   JSON.stringify(pinnedSourceAudit));
   const summary=enriched.summary;
   if(summary.sourceEvents!==2488||
      summary.projectedEvents!==2488||
