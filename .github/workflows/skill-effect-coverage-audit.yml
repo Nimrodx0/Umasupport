@@ -1,0 +1,36 @@
+name: One-time skill effect coverage audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - audit/skill-effect-coverage-20261104
+    paths:
+      - 'poc/tools/audit_skill_effect_coverage.cjs'
+      - '.github/workflows/skill-effect-coverage-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit pinned UmaSim dictionary and current public event cohort
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node --check poc/tools/audit_skill_effect_coverage.cjs
+          node poc/tools/audit_skill_effect_coverage.cjs
+      - name: Upload machine-readable coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-effect-coverage-20261104
+          path: skill-effect-coverage-audit.json
+          if-no-files-found: ignore
