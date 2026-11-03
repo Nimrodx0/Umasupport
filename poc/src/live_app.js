@@ -323,7 +323,7 @@ function refreshEventSelectionUI(changed){
  if(goals)goals.outerHTML=goalHTML(r);
  refreshTable();
  if(!ui.modal)return;
- const {deck,index,event,value}=changed.dataset,kind=changed.hasAttribute('data-event-choice')?
+ const {deck,index,event}=changed.dataset,value=changed.value,kind=changed.hasAttribute('data-event-choice')?
   'data-event-choice':'data-event-outcome';
  renderModal(true);
  const next=Array.from(document.querySelectorAll('input['+kind+']')).find(input=>
