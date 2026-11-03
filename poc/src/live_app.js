@@ -11,7 +11,7 @@ const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
 const blank=()=>({cardId:null,stage:4,choices:{},outcomes:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{},outcomes:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
-let state=DEFAULT(),ui={modal:null,search:'',onlyGoals:false,onlyDuplicate:false,skillTier:'all',skillRoute:'all',skillCoverage:'all',skillSort:'name',reverseOnlyOwned:false,reverseRoute:'all',pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0,eventFilter:'all',importCandidate:null,importPreview:null};
+let state=DEFAULT(),ui={modal:null,goalSkillQuery:'',search:'',onlyGoals:false,onlyDuplicate:false,skillTier:'all',skillRoute:'all',skillCoverage:'all',skillSort:'name',reverseOnlyOwned:false,reverseRoute:'all',pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0,eventFilter:'all',importCandidate:null,importPreview:null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
 const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goalSets[0];
 const activeDeck=k=>window.UmaSettings.activeDeck(state,k);
@@ -82,9 +82,17 @@ function render(){
  const previewBanner=window.UmaPreviewRequested
   ? '<div class="notice" role="alert" id="candidate-preview-warning"><strong>開発用・未承認イベントの試用モードです。</strong> イベントID・後続条件・スキル報酬には未検証部分があり、実ゲームでの獲得を保証しません。'+previewChainNotice+' 通常版とは保存設定を分離します。 <a href="./live.html">通常版に戻る</a></div>'
   : '';
- document.getElementById('app').innerHTML=`<main class="app"><header class="top"><div><div class="brand">ウマサルタント</div><h1>サポカ編成 × スキル可視化</h1></div><div class="controls top-actions"><button class="btn" data-action="source-health">データの収録状況</button><button class="btn" data-action="owned-manage">所持サポカ管理</button><button class="btn" data-action="reset">設定を初期化</button><button class="btn" data-action="import">JSON読込</button><button class="btn primary" data-action="export">JSON保存</button></div></header>${previewBanner}${alertHtml}${statsHTML(r)}<div class="deck-grid">${deckHTML('main')}${deckHTML('inherit')}</div>${goalHTML(r)}<section class="surface comparison"><div class="comparison-head"><div><h2>獲得候補スキルの比較</h2><div class="tiny-note">数値＝そのスキルを直接提供する異なるサポカIDの枚数。同じカードの複数経路・複数枠は1枚で集計（枠ごとの経路は詳細で確認可能）。</div></div><div class="switches"><div class="tabs" aria-label="一覧形式"><button data-action="view" data-value="integrated" aria-pressed="${state.view==='integrated'}">統合表</button><button data-action="view" data-value="split" aria-pressed="${state.view==='split'}">左右比較</button></div><div class="tabs" aria-label="表示密度"><button data-action="density" data-value="compact" aria-pressed="${state.density==='compact'}">コンパクト</button><button data-action="density" data-value="detailed" aria-pressed="${state.density==='detailed'}">カード付き</button></div></div></div><div class="filterbar"><input id="skill-search" class="field search" placeholder="スキル名で検索…" aria-label="スキル名で検索" value="${esc(ui.search)}"><label class="filterlabel"><input type="checkbox" id="only-goals" ${ui.onlyGoals?'checked':''}>目標のみ</label><label class="filterlabel"><input type="checkbox" id="only-duplicate" ${ui.onlyDuplicate?'checked':''}>重複・共通のみ</label><select id="skill-tier" class="field skill-filter" aria-label="スキル分類"><option value="all">全分類</option><option value="gold" ${ui.skillTier==='gold'?'selected':''}>金スキル</option><option value="white" ${ui.skillTier==='white'?'selected':''}>白スキル</option><option value="unknown" ${ui.skillTier==='unknown'?'selected':''}>分類未確認</option></select><select id="skill-route" class="field skill-filter" aria-label="スキルの直接提供経路"><option value="all">全経路</option><option value="hint" ${ui.skillRoute==='hint'?'selected':''}>通常ヒント</option><option value="event" ${ui.skillRoute==='event'?'selected':''}>選択済みイベント</option><option value="both" ${ui.skillRoute==='both'?'selected':''}>通常ヒント＋イベント</option></select><select id="skill-coverage" class="field skill-filter" aria-label="スキルのカバー状態"><option value="all">全カバー</option><option value="direct" ${ui.skillCoverage==='direct'?'selected':''}>直接提供あり</option><option value="indirect" ${ui.skillCoverage==='indirect'?'selected':''}>間接のみ</option><option value="uncovered" ${ui.skillCoverage==='uncovered'?'selected':''}>未カバーの目標</option><option value="conditional" ${ui.skillCoverage==='conditional'?'selected':''}>条件付き経路あり</option></select><select id="skill-sort" class="field skill-filter" aria-label="スキル一覧の並べ替え"><option value="name">スキル名順</option><option value="total-desc" ${ui.skillSort==='total-desc'?'selected':''}>提供合計が多い順</option><option value="main-desc" ${ui.skillSort==='main-desc'?'selected':''}>本育成が多い順</option><option value="inherit-desc" ${ui.skillSort==='inherit-desc'?'selected':''}>継承育成が多い順</option><option value="goals-first" ${ui.skillSort==='goals-first'?'selected':''}>目標を先頭</option></select><span class="tiny-note">${filteredRows(r).length} 件表示</span></div><div id="table-region">${tableHTML(r)}</div><div class="summary-legend"><span><b>2以上</b> デッキ内重複</span><span><span class="common">✓</span> デッキ間共通</span><span>金スキル → インデントした下位スキル（それぞれ独立集計）</span><span>☆ 目標</span><span>「条件付のみ」は成功・失敗等に依存</span></div></section></main><input id="import-file" type="file" accept="application/json,.json" hidden><div id="modal-layer"></div>`;renderModal();document.getElementById('bootstrap-status')?.setAttribute?.('hidden','');}
+ document.getElementById('app').innerHTML=`<main class="app"><header class="top"><div><div class="brand">ウマサルタント</div><h1>サポカ編成 × スキル可視化</h1></div><div class="controls top-actions"><button class="btn" data-action="source-health">データの収録状況</button><button class="btn" data-action="owned-manage">所持サポカ管理</button><button class="btn" data-action="reset">設定を初期化</button><button class="btn" data-action="import">JSON読込</button><button class="btn primary" data-action="export">JSON保存</button></div></header>${previewBanner}${alertHtml}${statsHTML(r)}<div class="deck-grid">${deckHTML('main')}${deckHTML('inherit')}</div>${goalHTML(r)}<section class="surface comparison"><div class="comparison-head"><div><h2>獲得候補スキルの比較</h2><div class="tiny-note">数値＝そのスキルを直接提供する異なるサポカIDの枚数。同じカードの複数経路・複数枠は1枚で集計（枠ごとの経路は詳細で確認可能）。</div></div><div class="switches"><div class="tabs" aria-label="一覧形式"><button data-action="view" data-value="integrated" aria-pressed="${state.view==='integrated'}">統合表</button><button data-action="view" data-value="split" aria-pressed="${state.view==='split'}">左右比較</button></div><div class="tabs" aria-label="表示密度"><button data-action="density" data-value="compact" aria-pressed="${state.density==='compact'}">コンパクト</button><button data-action="density" data-value="detailed" aria-pressed="${state.density==='detailed'}">カード付き</button></div></div></div><div class="filterbar"><input id="skill-search" class="field search" placeholder="スキル名で検索…" aria-label="スキル名で検索" value="${esc(ui.search)}"><label class="filterlabel"><input type="checkbox" id="only-goals" ${ui.onlyGoals?'checked':''}>目標のみ</label><label class="filterlabel"><input type="checkbox" id="only-duplicate" ${ui.onlyDuplicate?'checked':''}>重複・共通のみ</label><select id="skill-tier" class="field skill-filter" aria-label="スキル分類"><option value="all">全分類</option><option value="gold" ${ui.skillTier==='gold'?'selected':''}>金スキル</option><option value="white" ${ui.skillTier==='white'?'selected':''}>白スキル</option><option value="unknown" ${ui.skillTier==='unknown'?'selected':''}>分類未確認</option></select><select id="skill-route" class="field skill-filter" aria-label="スキルの直接提供経路"><option value="all">全経路</option><option value="hint" ${ui.skillRoute==='hint'?'selected':''}>通常ヒント</option><option value="event" ${ui.skillRoute==='event'?'selected':''}>選択済みイベント</option><option value="both" ${ui.skillRoute==='both'?'selected':''}>通常ヒント＋イベント</option></select><select id="skill-coverage" class="field skill-filter" aria-label="スキルのカバー状態"><option value="all">全カバー</option><option value="direct" ${ui.skillCoverage==='direct'?'selected':''}>直接提供あり</option><option value="indirect" ${ui.skillCoverage==='indirect'?'selected':''}>間接のみ</option><option value="uncovered" ${ui.skillCoverage==='uncovered'?'selected':''}>未カバーの目標</option><option value="conditional" ${ui.skillCoverage==='conditional'?'selected':''}>条件付き経路あり</option></select><select id="skill-sort" class="field skill-filter" aria-label="スキル一覧の並べ替え"><option value="name">スキル名順</option><option value="total-desc" ${ui.skillSort==='total-desc'?'selected':''}>提供合計が多い順</option><option value="main-desc" ${ui.skillSort==='main-desc'?'selected':''}>本育成が多い順</option><option value="inherit-desc" ${ui.skillSort==='inherit-desc'?'selected':''}>継承育成が多い順</option><option value="goals-first" ${ui.skillSort==='goals-first'?'selected':''}>目標を先頭</option></select><span class="tiny-note">${filteredRows(r).length} 件表示</span><button class="btn tiny" data-action="skill-filters-reset">条件をクリア</button></div><div id="table-region">${tableHTML(r)}</div><div class="summary-legend"><span><b>2以上</b> デッキ内重複</span><span><span class="common">✓</span> デッキ間共通</span><span>金スキル → インデントした下位スキル（それぞれ独立集計）</span><span>☆ 目標</span><span>「条件付のみ」は成功・失敗等に依存</span></div></section></main><input id="import-file" type="file" accept="application/json,.json" hidden><div id="modal-layer"></div>`;renderModal();document.getElementById('bootstrap-status')?.setAttribute?.('hidden','');}
 function refreshTable(){let r=results();document.getElementById('table-region').innerHTML=tableHTML(r);document.querySelector('.filterbar .tiny-note').textContent=`${filteredRows(r).length} 件表示`;}
-function titleModal(title,subtitle,body,foot=''){document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;}
+function titleModal(title,subtitle,body,foot=''){
+ const lastField=document.activeElement?.id||'';
+ document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;
+ const prior=lastField?document.getElementById(lastField):null;
+ const target=prior?.closest?.('.modal')?prior:
+  ui.modal?.kind==='pick'?document.getElementById('picker-search'):
+  document.querySelector('.modal-head [data-action="close"]');
+ if(typeof target?.focus==='function')target.focus({preventScroll:true});
+}
 function ownedLabel(c){
  const rec=state.ownedCards[c.id];
  return rec?.status==='owned'?'所持 '+rec.stage+'凸':rec?.status==='unowned'?'未所持':'未登録';
@@ -112,7 +120,7 @@ function ownedManagerModal(){
  const opts=(list,chosen)=>list.map(v=>`<option value="${esc(v)}" ${v===chosen?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
  const routes=[['all','すべての獲得経路'],['hint','通常ヒント'],['event','イベント'],['both','通常ヒント＋イベント']];
  const routeOptions=routes.map(([v,label])=>`<option value="${v}" ${ui.ownedRoute===v?'selected':''}>${label}</option>`).join('');
- const body=`<div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><input id="owned-skill-search" class="field search" placeholder="提供スキル名・ID…" aria-label="提供スキル名で検索" value="${esc(ui.ownedSkillQuery)}"><select class="field" id="owned-route" aria-label="獲得経路">${routeOptions}</select><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select></div><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
+ const body=`<div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><input id="owned-skill-search" class="field search" placeholder="提供スキル名・ID…" aria-label="提供スキル名で検索" value="${esc(ui.ownedSkillQuery)}"><select class="field" id="owned-route" aria-label="獲得経路">${routeOptions}</select><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select><button class="btn tiny" data-action="owned-filters-reset">条件をクリア</button></div><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
  titleModal('所持サポカを一括登録',data.cards.length+'枚を検索・整理',body);
 }
 function pickerMatches(){
@@ -122,7 +130,7 @@ function pickerFiltersHtml(){
  const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort(),types=[...new Set(data.cards.map(c=>c.type))].sort();
  const opts=(list,current)=>list.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
  const routeOptions=[['all','全経路'],['hint','通常ヒント'],['event',window.UmaPreviewActive?'試用イベント':'イベント'],['both',window.UmaPreviewActive?'通常ヒント＋試用イベント':'通常ヒント＋イベント']].map(([v,t])=>`<option value="${v}" ${ui.pickerRoute===v?'selected':''}>${t}</option>`).join('');
- return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label></div>`;
+ return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label><button class="btn tiny" data-action="picker-filters-reset">条件をクリア</button></div>`;
 }
 function pickerCardsHtml(){
  const matched=pickerMatches(),perPage=120,pages=Math.max(1,Math.ceil(matched.length/perPage));
@@ -135,7 +143,10 @@ function pickerModal(){
  const body=`${pickerFiltersHtml()}<div id="picker-cards">${pickerCardsHtml()}</div>`;
  titleModal('サポカを選択',`${scopeLabel[deckKey]} / スロット${index+1}`,body,selected.cardId?`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button>`:'');
 }
-function pickerCard(c){return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span><strong>${esc(c.name)}</strong><br><small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${ownedLabel(c)}</small></span></button>`;}
+function pickerCard(c){
+ const used=activeDeck(ui.modal.deckKey).slots.some(slot=>slot.cardId===c.id);
+ return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span><strong>${esc(c.name)}</strong><br><small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${ownedLabel(c)}${used?' · 編成中':''}</small></span></button>`;
+}
 function pickerRefresh(){
  const el=document.getElementById('picker-cards');if(el)el.innerHTML=pickerCardsHtml();
 }
@@ -165,6 +176,18 @@ function resultSelector(part,slot,k,i,event,active,card){
   }).join('')+'</select></label>';
 }
 
+function eventRequirementLabel(condition,card){
+ // Preserve AND/OR semantics; use only names from the validated card graph.
+ if(Array.isArray(condition?.all))
+  return condition.all.map(c=>eventRequirementLabel(c,card)).join(' ＋ ');
+ if(Array.isArray(condition?.any))
+  return '（'+condition.any.map(c=>eventRequirementLabel(c,card)).join(' または ')+'）';
+ const parent=card.events.find(e=>e.id===condition?.eventId);
+ if(!parent)return '前のイベント条件';
+ const choice=parent.choices?.find(c=>c.id===condition.choiceId);
+ const outcome=(choice?.outcomes||parent.outcomes||[]).find(o=>o.id===condition.outcomeId);
+ return parent.name+(choice?' → '+choice.label:'')+(outcome?' / '+outcome.label+'時':'');
+}
 function eventHTML(card,slot,k,i,onlyEventId=null){
  return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
   const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
@@ -172,8 +195,7 @@ function eventHTML(card,slot,k,i,onlyEventId=null){
   const selected=e.type==='choice'?slot.choices[e.id]:null;
   const selectedPart=e.type==='auto'?e:e.choices.find(c=>c.id===selected);
   const status=blocked?'到達不可':conditional?'条件付き到達':e.type==='auto'?'自動集計':selected?'設定済み':'未設定';
-  const requirements=e.requires?(e.requires.all||[e.requires]).map(r=>esc(r.eventId)+
-   (r.choiceId?' → '+esc(r.choiceId):'')+(r.outcomeId?' / '+esc(r.outcomeId)+'時':'')).join(' ＋ '):'';
+  const requirements=e.requires?esc(eventRequirementLabel(e.requires,card)):'';
   const intro='<div class="event '+(blocked?'dim':'')+'"><div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>'+
     (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
     (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
@@ -195,9 +217,9 @@ function hintPerformanceHTML(card,slot){
  const p=card.hintPerformanceByStage?.[String(slot.stage)];
  if(!p)return '<div class="info-item"><strong>ヒント関連性能</strong><div class="sub">未収録・不明</div></div>';
  const hintLevel=1+p.levelBase+p.levelUnique;
- return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div><p class="help">公開シミュレータの段階別パラメータ。発生率の確率推定ではありません。シナリオ効果・特殊な条件付き効果は含みません。</p></div>`;
+ return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div></div>`;
 }
-function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select><span class="tiny-note">ヒント関連性能を解放段階別に表示（提供枚数には加算しません）</span></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考：スキル候補（集計対象外）</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div><p class="help">古い公開カード一覧由来。通常ヒントとイベント報酬が混在する可能性があるため集計には加えません。</p></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3><p class="help">選択式イベントは初期状態では未設定。${window.UmaPreviewActive?'このイベントは開発用の仮データです。進行条件と報酬には実ゲームで未確認の部分があります。':'公開データの候補分岐であり、実ゲーム上のイベント選択・到達関係とは未照合です。'}</p>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
+function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
  titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
 function deckEventsModal(){
  const k=ui.modal.deckKey,deck=activeDeck(k);
@@ -261,7 +283,27 @@ function sourceHealthModal(){
  '<p class="help">この画面は現在のブラウザが利用するデータの状態です。更新ボタンではありません。通信障害時には検証済みキャッシュを再利用します。</p>';
  titleModal('データの収録・取得状況','現在のブラウザの利用データ',body);
 }
-function goalsModal(){const g=goalSet();let all=data.skills.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');const body=`<p class="help">目標セットはデッキとは独立して保存されます。サポカを入れ替えるとカバー判定が更新されます。</p><div class="select-row"><label for="goals-modal-select">編集中のセット：</label><select id="goals-modal-select" class="field grow" aria-label="編集する目標セット">${state.goalSets.map(x=>`<option value="${esc(x.id)}" ${x.id===state.currentGoalSet?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div><div class="select-row"><label>セット名：</label><input class="field" id="goal-set-name" value="${esc(g.name)}"><button class="btn tiny" data-action="rename-goal-set">名称を保存</button></div><div class="select-row"><button class="btn tiny" data-action="duplicate-goal-set" ${state.goalSets.length>=window.UmaSettings.MAX_GOAL_SETS?'disabled':''}>現在のセットを複製</button><button class="btn tiny" data-action="new-goal-set" ${state.goalSets.length>=window.UmaSettings.MAX_GOAL_SETS?'disabled':''}>空のセットを作成</button>${state.goalSets.length>1?'<button class="btn tiny danger" data-action="delete-goal-set">現在のセットを削除</button>':''}</div><hr class="sep">${g.goals.map((x,i)=>`<div class="goal-edit"><span class="goal-name">${esc(data.skillById[x.skillId].name)}</span><select class="field" data-goal-scope="${i}">${Object.entries(scopeLabel).filter(([k])=>['main','inherit','either','both'].includes(k)).map(([k,n])=>`<option value="${k}" ${k===x.scope?'selected':''}>${n}</option>`).join('')}</select><button class="btn tiny" data-action="delete-goal" data-index="${i}">削除</button></div>`).join('')||'<p class="help">登録済みの目標はありません。</p>'}<div class="select-row" style="margin-top:15px"><select id="new-goal-skill" class="field grow" aria-label="追加するスキル">${all}</select><select id="new-goal-scope" class="field" aria-label="目標の対象デッキ">${Object.entries(scopeLabel).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary" data-action="add-goal">目標を追加</button></div>`;
+function matchingGoalSkills(){
+ const q=String(ui.goalSkillQuery||'').normalize('NFKC').toLocaleLowerCase().trim();
+ return data.skills.filter(skill=>!q||
+  (skill.name+' '+skill.id).normalize('NFKC').toLocaleLowerCase().includes(q));
+}
+function goalSkillOptions(skills){
+ return skills.map(skill=>'<option value="'+esc(skill.id)+'">'+esc(skill.name)+'</option>').join('');
+}
+function refreshGoalSkillSearch(){
+ const select=document.getElementById('new-goal-skill');
+ if(!select)return;
+ const previous=select.value,filtered=matchingGoalSkills();
+ select.innerHTML=goalSkillOptions(filtered);
+ if(filtered.some(skill=>skill.id===previous))select.value=previous;
+ select.disabled=filtered.length===0;
+ const add=document.querySelector('[data-action="add-goal"]');
+ if(add)add.disabled=filtered.length===0;
+ const count=document.getElementById('goal-skill-count');
+ if(count)count.textContent=filtered.length+'件';
+}
+function goalsModal(){const g=goalSet(),matches=matchingGoalSkills(),all=goalSkillOptions(matches);const body=`<p class="help">目標セットはデッキとは独立して保存されます。サポカを入れ替えるとカバー判定が更新されます。</p><div class="select-row"><label for="goals-modal-select">編集中のセット：</label><select id="goals-modal-select" class="field grow" aria-label="編集する目標セット">${state.goalSets.map(x=>`<option value="${esc(x.id)}" ${x.id===state.currentGoalSet?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div><div class="select-row"><label>セット名：</label><input class="field" id="goal-set-name" value="${esc(g.name)}"><button class="btn tiny" data-action="rename-goal-set">名称を保存</button></div><div class="select-row"><button class="btn tiny" data-action="duplicate-goal-set" ${state.goalSets.length>=window.UmaSettings.MAX_GOAL_SETS?'disabled':''}>現在のセットを複製</button><button class="btn tiny" data-action="new-goal-set" ${state.goalSets.length>=window.UmaSettings.MAX_GOAL_SETS?'disabled':''}>空のセットを作成</button>${state.goalSets.length>1?'<button class="btn tiny danger" data-action="delete-goal-set">現在のセットを削除</button>':''}</div><hr class="sep">${g.goals.map((x,i)=>`<div class="goal-edit"><span class="goal-name">${esc(data.skillById[x.skillId].name)}</span><select class="field" data-goal-scope="${i}">${Object.entries(scopeLabel).filter(([k])=>['main','inherit','either','both'].includes(k)).map(([k,n])=>`<option value="${k}" ${k===x.scope?'selected':''}>${n}</option>`).join('')}</select><button class="btn tiny" data-action="delete-goal" data-index="${i}">削除</button></div>`).join('')||'<p class="help">登録済みの目標はありません。</p>'}<div class="goal-skill-search"><label for="new-goal-skill-search">追加するスキルを検索</label><input class="field" id="new-goal-skill-search" type="search" placeholder="スキル名・ID…" value="${esc(ui.goalSkillQuery)}"><span id="goal-skill-count" class="tiny-note" aria-live="polite">${matches.length}件</span></div><div class="select-row"><select id="new-goal-skill" class="field grow" aria-label="追加するスキル" ${matches.length?'':'disabled'}>${all}</select><select id="new-goal-scope" class="field" aria-label="目標の対象デッキ">${Object.entries(scopeLabel).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button class="btn primary" data-action="add-goal" ${matches.length?'':'disabled'}>目標を追加</button></div>`;
  titleModal('目標スキルセットを編集',g.name,body);}
 function importPreviewModal(){
  const v=ui.importCandidate,proposal=ui.importPreview;
@@ -274,14 +316,30 @@ function importPreviewModal(){
  titleModal('JSON読込：方法を選択','決定するまで保存内容は変わりません',summary+help+explanation,foot);
 }
 function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'source-health':sourceHealthModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;case 'import-preview':importPreviewModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
+function refreshEventSelectionUI(changed){
+ // The deck and goals remain mounted; avoid throwing away the entire page
+ // for a radio-button edit. Rebuild the dependent summary and current modal.
+ const r=results(),stats=document.querySelector('.stats'),goals=document.querySelector('.goals');
+ if(stats)stats.outerHTML=statsHTML(r);
+ if(goals)goals.outerHTML=goalHTML(r);
+ refreshTable();
+ if(!ui.modal)return;
+ const {deck,index,event}=changed.dataset,value=changed.value,kind=changed.hasAttribute('data-event-choice')?
+  'data-event-choice':'data-event-outcome';
+ renderModal(true);
+ const next=Array.from(document.querySelectorAll('input['+kind+']')).find(input=>
+  input.dataset.deck===deck&&input.dataset.index===index&&
+  input.dataset.event===event&&input.value===value);
+ const focusTarget=next||document.querySelector('.modal-head [data-action="close"]');
+ if(typeof focusTarget?.focus==='function')focusTarget.focus({preventScroll:true});
+}
 function changeSelection(el){
  const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
  if(!sl?.cardId)return;
  const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
  if(el.value)next.choices[eid]=el.value;else delete next.choices[eid];
  sl.choices=next.choices;sl.outcomes=next.outcomes;
- const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
- const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+ store();refreshEventSelectionUI(el);
 }
 function changeOutcome(el){
  const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
@@ -289,13 +347,23 @@ function changeOutcome(el){
  const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
  if(el.value)next.outcomes[eid]=el.value;
  sl.choices=next.choices;sl.outcomes=next.outcomes;
- const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
- const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+ store();refreshEventSelectionUI(el);
+}
+function slotHasEventChoices(slot){
+ return !!slot&&(Object.keys(slot.choices||{}).length>0||
+  Object.keys(slot.outcomes||{}).length>0);
+}
+function confirmCardReplacement(slot,newCardId){
+ if(!slot?.cardId||slot.cardId===newCardId||!slotHasEventChoices(slot))return true;
+ return confirm('この枠のカードを変更すると、設定済みのイベント選択が消えます。変更しますか？');
 }
 function handleAction(el){const a=el.dataset.action,k=el.dataset.deck,i=Number(el.dataset.index);switch(a){
-case 'owned-manage':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;ui.modal={kind:'owned-manager'};renderModal();break;
+case 'owned-manage':ui.modal={kind:'owned-manager'};renderModal();break;
  case 'owned-status':window.UmaSettings.setOwnedCard(state,data,el.dataset.id,el.dataset.status,state.ownedCards[el.dataset.id]?.stage??0);store();refreshOwnedGrid();break;
  case 'owned-bulk':{const ids=filteredOwned().map(c=>c.id);const label={owned:'所持',unowned:'未所持',unregistered:'未登録'}[el.dataset.status];if(ids.length&&confirm('検索条件に一致する'+ids.length+'枚すべてを「'+label+'」に変更しますか？')){window.UmaSettings.setOwnedBulk(state,data,ids,el.dataset.status);store();refreshOwnedGrid();}break;}
+ case 'picker-filters-reset':ui.pickerSearch='';ui.pickerSkillQuery='';ui.pickerRarity='all';ui.pickerType='all';ui.pickerRoute='all';ui.pickerOnlyOwned=false;ui.pickerPage=0;renderModal();break;
+ case 'owned-filters-reset':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;renderModal();break;
+ case 'skill-filters-reset':ui.search='';ui.onlyGoals=false;ui.onlyDuplicate=false;ui.skillTier='all';ui.skillRoute='all';ui.skillCoverage='all';ui.skillSort='name';render();break;
  case 'picker-prev':ui.pickerPage=Math.max(0,ui.pickerPage-1);pickerRefresh();break;
  case 'picker-next':ui.pickerPage++;pickerRefresh();break;
  case 'owned-prev':ui.ownedPage=Math.max(0,ui.ownedPage-1);refreshOwnedGrid();break;
@@ -304,7 +372,7 @@ case 'owned-manage':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';u
 case 'close':ui.modal=null;renderModal();break;
 case 'pick':ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
 case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
-case 'deck-events':ui.eventFilter='all';ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
+case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
  case 'deck-event-slot-reset':{const d=activeDeck(k),slot=d.slots[i],count=Object.keys(slot?.choices||{}).length+Object.keys(slot?.outcomes||{}).length;if(count&&confirm(scopeLabel[k]+'のスロット'+(i+1)+'のイベント選択'+count+'件を解除しますか？')){window.UmaDeckEvents.clearSlot(d,i);store();render();}break;}
  case 'deck-events-reset':{const d=activeDeck(k),count=d.slots.reduce((n,sl)=>n+Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length,0);if(count&&confirm(scopeLabel[k]+'の「'+d.name+'」にあるイベント選択'+count+'件をすべて解除しますか？他の保存デッキには影響しません。')){window.UmaDeckEvents.clearDeck(d);store();render();}break;}
  case 'deck-manage':ui.modal={kind:'deck-manager',deckKey:k};renderModal();break;
@@ -312,20 +380,30 @@ case 'deck-events':ui.eventFilter='all';ui.modal={kind:'deck-events',deckKey:k};
  case 'deck-copy':try{window.UmaSettings.addDeck(state,k,a==='deck-copy');saveRender();}catch(e){alert(e.message)}break;
  case 'deck-rename':try{window.UmaSettings.renameDeck(state,k,document.getElementById('deck-name').value);saveRender();}catch(e){alert(e.message)}break;
  case 'deck-delete':if(state.decks[k].length>1&&confirm('「'+activeDeck(k).name+'」を削除しますか？このデッキのスロットとイベント設定も消えます。')){window.UmaSettings.deleteDeck(state,k);saveRender();}break;
-case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};sl.outcomes={};ui.modal=null;saveRender();break;}
-case 'remove-card':activeDeck(k).slots[i]=blank();ui.modal=null;saveRender();break;
+case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];
+ if(sl.cardId===el.dataset.id){ui.modal=null;renderModal();break;}
+ if(!confirmCardReplacement(sl,el.dataset.id))break;
+ sl.cardId=el.dataset.id;sl.stage=4;sl.choices={};sl.outcomes={};
+ ui.modal=null;saveRender();break;}
+case 'remove-card':{const sl=activeDeck(k).slots[i];
+ if(slotHasEventChoices(sl)&&!confirm('このカードを外すと、設定済みのイベント選択が消えます。外しますか？'))break;
+ activeDeck(k).slots[i]=blank();ui.modal=null;saveRender();break;}
 case 'view':state.view=el.dataset.value;saveRender();break;
 case 'density':state.density=el.dataset.value;saveRender();break;
-case 'skill':ui.reverseOnlyOwned=false;ui.reverseRoute='all';ui.modal={kind:'skill',id:el.dataset.id};renderModal();break;
+case 'skill':ui.modal={kind:'skill',id:el.dataset.id};renderModal();break;
 case 'assign':ui.modal={kind:'assign',cardId:el.dataset.id};renderModal();break;
-case 'assign-slot':activeDeck(k).slots[i]={cardId:ui.modal.cardId,stage:4,choices:{}};ui.modal=null;saveRender();break;
+case 'assign-slot':{const sl=activeDeck(k).slots[i],id=ui.modal.cardId;
+ if(sl.cardId===id){ui.modal=null;renderModal();break;}
+ if(!confirmCardReplacement(sl,id))break;
+ activeDeck(k).slots[i]={cardId:id,stage:4,choices:{},outcomes:{}};
+ ui.modal=null;saveRender();break;}
 case 'goals':ui.modal={kind:'goals'};renderModal();break;case 'source-health':ui.modal={kind:'source-health'};renderModal();break;
 case 'rename-goal-set':try{window.UmaSettings.renameGoalSet(state,document.getElementById('goal-set-name').value);store();render();}catch(e){alert(e.message)}break;
 case 'duplicate-goal-set':try{window.UmaSettings.addGoalSet(state,true);store();render();}catch(e){alert(e.message)}break;
 case 'new-goal-set':try{window.UmaSettings.addGoalSet(state);store();render();}catch(e){alert(e.message)}break;
 case 'delete-goal-set':if(state.goalSets.length>1&&confirm('目標セット「'+goalSet().name+'」を削除しますか？')){window.UmaSettings.deleteGoalSet(state);store();render();}break;
 case 'delete-goal':goalSet().goals.splice(i,1);store();render();break;
-case 'add-goal':{const skillId=document.getElementById('new-goal-skill').value,scope=document.getElementById('new-goal-scope').value;const exists=goalSet().goals.find(x=>x.skillId===skillId);if(exists)exists.scope=scope;else goalSet().goals.push({skillId,scope});store();render();break;}
+case 'add-goal':{const skillId=document.getElementById('new-goal-skill').value,scope=document.getElementById('new-goal-scope').value;if(!data.skillById[skillId])break;const exists=goalSet().goals.find(x=>x.skillId===skillId);if(exists)exists.scope=scope;else goalSet().goals.push({skillId,scope});store();render();break;}
 case 'export':{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const href=URL.createObjectURL(blob);const link=document.createElement('a');link.href=href;link.download='uma-support-lab-poc-settings.json';link.click();setTimeout(()=>URL.revokeObjectURL(href),1000);break;}
 case 'import':document.getElementById('import-file').click();break;
 case 'import-cancel':ui.importCandidate=null;ui.importPreview=null;ui.modal=null;renderModal();break;
@@ -333,11 +411,38 @@ case 'import-replace':if(ui.importCandidate&&confirm('現在の編成・所持�
 case 'import-merge':if(ui.importCandidate){try{const result=window.UmaSettings.merge(state,ui.importCandidate,data);state=result.settings;settingsLoadError=null;ui.importCandidate=null;ui.importPreview=null;ui.modal=null;saveRender();}catch(e){ui.importPreview={error:e.message};renderModal();}}break;
 case 'reset':if(confirm('すべての設定を初期状態に戻しますか？')){state=DEFAULT();settingsLoadError=null;ui.modal=null;saveRender();}break;
 }}
-document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;handleAction(el)});
-document.addEventListener('input',e=>{if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='picker-skill-search'){ui.pickerSkillQuery=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}if(e.target.id==='owned-skill-search'){ui.ownedSkillQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
+function restoreModalFocus(){
+ const target=ui.modalOpener;
+ ui.modalOpener=null;
+ if(target?.isConnected&&typeof target.focus==='function')target.focus({preventScroll:true});
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-action]');if(!el)return;
+ if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;
+ const before=!!ui.modal;
+ if(!before)ui.modalOpener=el;
+ handleAction(el);
+ if(before&&!ui.modal)restoreModalFocus();
+});
+document.addEventListener('input',e=>{if(e.target.id==='new-goal-skill-search'){ui.goalSkillQuery=e.target.value;refreshGoalSkillSearch();return}if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='picker-skill-search'){ui.pickerSkillQuery=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}if(e.target.id==='owned-skill-search'){ui.ownedSkillQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
 document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-event-outcome')){changeOutcome(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;ui.pickerPage=0;pickerRefresh();return}if(['picker-rarity','picker-type','picker-route'].includes(el.id)){ui[{'picker-rarity':'pickerRarity','picker-type':'pickerType','picker-route':'pickerRoute'}[el.id]]=el.value;ui.pickerPage=0;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter','owned-route'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter','owned-route':'ownedRoute'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(['skill-tier','skill-route','skill-coverage','skill-sort'].includes(el.id)){ui[{'skill-tier':'skillTier','skill-route':'skillRoute','skill-coverage':'skillCoverage','skill-sort':'skillSort'}[el.id]]=el.value;refreshTable();return}if(el.id==='event-status-filter'){ui.eventFilter=el.value;renderModal(true);return}if(el.id==='reverse-only-owned'){ui.reverseOnlyOwned=el.checked;renderModal(true);return}if(el.id==='reverse-route'){ui.reverseRoute=el.value;renderModal(true);return}if(el.id==='goals-modal-select'){if(state.goalSets.some(g=>g.id===el.value)){state.currentGoalSet=el.value;store();render();}return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
  const f=el.files?.[0];if(!f)return;el.value='';f.text().then(t=>{let obj;try{obj=JSON.parse(t)}catch(e){alert('JSONを読み取れませんでした。');return}let parsed;try{parsed=window.UmaSettings.parse(obj,data)}catch(e){alert('設定JSONの構造を読み取れませんでした。'+String(e.message||e));return}ui.importCandidate=parsed;try{ui.importPreview={report:window.UmaSettings.merge(state,parsed,data).report}}catch(e){ui.importPreview={error:e.message}}ui.modal={kind:'import-preview'};renderModal();}).catch(()=>alert('ファイルの読み込みに失敗しました。'));
  }});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;renderModal();}});
+document.addEventListener('keydown',e=>{
+ if(!ui.modal)return;
+ if(e.key==='Escape'){e.preventDefault();ui.modal=null;renderModal();restoreModalFocus();return;}
+ if(e.key!=='Tab')return;
+ const modal=document.querySelector('.modal');if(!modal)return;
+ const focusable=Array.from(modal.querySelectorAll(
+  'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+ )).filter(el=>typeof el.focus==='function'&&el.getClientRects().length>0);
+ if(!focusable.length){e.preventDefault();return;}
+ const first=focusable[0],last=focusable[focusable.length-1],active=document.activeElement;
+ if(e.shiftKey&&(active===first||!modal.contains(active))){
+  e.preventDefault();last.focus({preventScroll:true});
+ }else if(!e.shiftKey&&(active===last||!modal.contains(active))){
+  e.preventDefault();first.focus({preventScroll:true});
+ }
+});
 render();
 })();

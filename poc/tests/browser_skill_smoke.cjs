@@ -156,6 +156,8 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),'picker-search',
+   'Opening the picker must focus the card search box');
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
   let perf=await page.locator('.modal-body').innerText();
@@ -172,6 +174,21 @@ async function main(){
   await row.waitFor();assert.match(await row.innerText(),/右回り○/);
   // Goal-only white skill: keep gold/white relationships in the model, not as noisy table text.
   await page.locator('button[data-action="goals"]').click();
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.action),'close',
+   'Modal must focus an accessible control when opened');
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.action),'add-goal',
+   'Shift+Tab must wrap to last modal control');
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.action),'close',
+   'Tab must stay inside the modal');
+  await page.locator('#new-goal-skill-search').fill('右回り');
+  assert.equal(await page.locator('#new-goal-skill option').count(),3);
+  await page.locator('#new-goal-skill-search').fill('存在しない架空のスキル');
+  assert.equal(await page.locator('#new-goal-skill option').count(),0);
+  assert.equal(await page.locator('[data-action="add-goal"]').isDisabled(),true);
+  await page.locator('#new-goal-skill-search').fill('右回り');
+  assert.equal(await page.locator('#new-goal-skill option').count(),3);
   await page.locator('#new-goal-skill').selectOption('skill:700002');
   await page.locator('#new-goal-scope').selectOption('main');
   await page.locator('button[data-action="add-goal"]').click();
@@ -243,6 +260,14 @@ async function main(){
 
   // Search routes are verified hints only while the reviewed events catalog is empty.
   await page.locator('button[data-action="owned-manage"]').click();
+  await page.locator('#owned-search').fill('サポカ42');
+  await page.locator('button[data-action="close"]').click();
+  await page.locator('button[data-action="owned-manage"]').click();
+  assert.equal(await page.locator('#owned-search').inputValue(),'サポカ42',
+   'Owned-card filters must persist after closing the modal');
+  await page.locator('[data-action="owned-filters-reset"]').click();
+  assert.equal(await page.locator('#owned-search').inputValue(),'');
+  assert.equal(await page.locator('#owned-route').inputValue(),'all');
   await page.locator('#owned-skill-search').fill('右回り○');
   assert.equal(await page.locator('.owned-card').count(),1);
   assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30001');
@@ -492,15 +517,53 @@ async function main(){
   assert.match(await eventPage.locator('#deck-event-results').innerText(),/人工後編/);
   await eventPage.locator('#event-status-filter').selectOption('pending');
   assert.equal(await eventPage.locator('#deck-event-results .event').count(),2);
+  await eventPage.evaluate(()=>window.__rootBeforeEventChange=document.querySelector('main.app'));
   await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
+  assert.equal(await eventPage.evaluate(()=>window.__rootBeforeEventChange===document.querySelector('main.app')),true,
+   'Event selection must not discard the whole main screen');
+  assert.equal(await eventPage.evaluate(()=>document.activeElement?.dataset?.action),'close',
+   'When the pending-only filter removes a configured item, focus must stay in the dialog');
+  await eventPage.locator('#event-status-filter').selectOption('all');
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="stop"]').click();
+  assert.equal(await eventPage.evaluate(()=>document.activeElement?.dataset?.event),'synthetic-start',
+   'When the event remains visible, the changed choice must regain keyboard focus');
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
+  await eventPage.locator('#event-status-filter').selectOption('pending');
   overview=await eventPage.locator('.modal-body').innerText();
   assert.match(overview,/自動候補\s*1/);
   assert.match(overview,/条件付きの報酬経路\s*1/);
+  await eventPage.locator('#event-status-filter').selectOption('all');
+  const visibleConditions=await eventPage.locator('[data-event-slot="0"]').innerText();
+  assert.match(visibleConditions,/必要条件：人工開始 → 続行/);
+  assert.equal(visibleConditions.includes('synthetic-start'),false,
+   'Internal event IDs should not be printed in prerequisites');
+  await eventPage.locator('#event-status-filter').selectOption('pending');
   await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="synthetic-second"][value="yes"]').click();
   let saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
   assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
   assert.equal(saved.decks.main[0].slots[1].choices['synthetic-second'],'yes');
   assert.deepEqual(saved.decks.inherit[0].slots[0].choices,{});
+  // Even re-selecting the identical card must not silently erase event choices.
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await eventPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await eventPage.locator('button[data-action="set-card"][data-id="30001"]').click();
+  saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
+  await eventPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await eventPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  eventPage.once('dialog',dialog=>dialog.dismiss());
+  await eventPage.locator('button[data-action="set-card"][data-id="30002"]').click();
+  saved=await eventPage.evaluate(()=>JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1')));
+  assert.equal(saved.decks.main[0].slots[0].cardId,'30001');
+  assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  await eventPage.locator('#event-status-filter').selectOption('configured');
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  assert.equal(await eventPage.locator('#event-status-filter').inputValue(),'configured',
+   'Event overview filter must persist across openings');
   await eventPage.locator('#event-status-filter').selectOption('all');
   eventPage.once('dialog',d=>d.dismiss());
   await eventPage.locator('[data-action="deck-event-slot-reset"][data-index="0"]').click();
