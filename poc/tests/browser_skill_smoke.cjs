@@ -111,6 +111,18 @@ async function main(){
    await pickerPage.locator('button[data-action="set-card"][data-id="30001"]').click();
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
    assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ0');
+   const retainedSelection=await pickerPage.locator('#picker-search').evaluate(input=>({
+    focused:document.activeElement===input,
+    start:input.selectionStart,
+    end:input.selectionEnd,
+    length:input.value.length
+   }));
+   assert.deepEqual(retainedSelection,{focused:true,start:0,end:4,length:4},
+    'Opening the next picker must select the complete retained search query');
+   await pickerPage.keyboard.type('サポカ1');
+   assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ1',
+    'Typing replaces the selected query rather than prefixing/appending');
+   await pickerPage.locator('#picker-search').fill('サポカ0');
    assert.equal(await pickerPage.locator('#picker-skill-search').inputValue(),'右回り○');
    assert.equal(await pickerPage.locator('#picker-route').inputValue(),'hint');
    assert.equal(await pickerPage.locator('#picker-rarity').inputValue(),'SSR');
@@ -120,6 +132,10 @@ async function main(){
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);
    await pickerPage.locator('button[data-action="close"]').click();
    await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="0"]').click();
+   assert.deepEqual(await pickerPage.locator('#picker-search').evaluate(input=>({
+    start:input.selectionStart,end:input.selectionEnd,length:input.value.length
+   })),{start:0,end:4,length:4},
+   'Switching decks must also select the retained search text');
    assert.equal(await pickerPage.locator('#picker-only-owned').isChecked(),true);
    assert.equal(await pickerPage.locator('#picker-skill-search').inputValue(),'右回り○');
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);

@@ -92,6 +92,10 @@ function titleModal(title,subtitle,body,foot=''){
   ui.modal?.kind==='pick'?document.getElementById('picker-search'):
   document.querySelector('.modal-head [data-action="close"]');
  if(typeof target?.focus==='function')target.focus({preventScroll:true});
+ // Keep the previous query as a filter, but make it replaceable immediately
+ // when the card picker opens. Do not change selection during modal refreshes.
+ if(target?.id==='picker-search'&&!prior?.closest?.('.modal')&&typeof target.select==='function')
+  target.select();
 }
 function ownedLabel(c){
  const rec=state.ownedCards[c.id];
