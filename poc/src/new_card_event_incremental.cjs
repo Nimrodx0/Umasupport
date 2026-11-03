@@ -14,6 +14,7 @@ const crypto=require('node:crypto');
 const {preflight}=require('./public_event_catalog.js');
 const {parseSupportCards}=require('./live_loader.js');
 const {verifyRelease,canonical}=require('./event_release_gate.cjs');
+const {project}=require('./phase2_title_choice_projection.cjs');
 const fail=s=>{throw Error('新サポカイベント増分取り込み: '+s);};
 const cardId=id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id);
 const plain=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
@@ -158,24 +159,43 @@ function stageNewCardEvents({
 }
 function appendApprovedNewCards({
  discovery,existingCatalog,candidates,existingApprovals,
- newApprovals,model,skillText=null,pendingCardIds=[],derivedSourcePlan=null
+ newApprovals,model,skillText=null,pinnedSkillText=null,
+ allowReviewedLegacy=false,pendingCardIds=[],derivedSourcePlan=null
 }={}){
  const stage=stageNewCardEvents({discovery,existingCatalog,candidates,pendingCardIds,derivedSourcePlan});
- if(!plain(existingApprovals)||existingApprovals.schemaVersion!==1||
+ // Current production uses a content-bound v2 cohort. The new-card approval
+ // is a separately, explicitly reviewed V1 individual exception, never a
+ // newly generated extension of the already signed GT2487 cohort.
+ const v2=existingApprovals?.schemaVersion===2;
+ if(!plain(existingApprovals)||
+    ![1,2].includes(existingApprovals.schemaVersion)||
     !Array.isArray(existingApprovals.entries)||
+    (v2&&!Array.isArray(existingApprovals.cohorts))||
     !plain(newApprovals)||newApprovals.schemaVersion!==1||
     !Array.isArray(newApprovals.entries))
-  fail('既存と新規の公開承認証跡が必要');
+  fail('既存v1/v2と新カード用v1個別公開承認証跡が必要');
  if(stage.pending.length&&!stage.ready.length)
   return {status:'pending',newCardIds:stage.targetNewIds,
    pending:stage.pending,existingCatalogUnchanged:true,
    catalog:null,approvals:null};
  if(!stage.ready.length){
   if(newApprovals.entries.length)fail('追加対象なしで新規承認証跡が存在する');
-  preflight(model,existingCatalog,{skillText,fullRegistry:false});
+  preflight(model,existingCatalog,{skillText,pinnedSkillText,
+   allowReviewedLegacy,fullRegistry:false});
   verifyRelease(existingCatalog,existingApprovals);
   return {status:'unchanged',newCardIds:[],pending:[],existingCatalogUnchanged:true,
    catalog:clone(existingCatalog),approvals:clone(existingApprovals)};
+ }
+ // The old catalog and all prior approvals must be independently valid
+ // before considering the new records. Never repair old facts implicitly.
+ verifyRelease(existingCatalog,existingApprovals);
+ if(v2){
+  // New cards must already be in the final publishable shape BEFORE their
+  // content hashes are reviewed. Never copy original source choice wording,
+  // even if a human accidentally signs the raw third-party draft.
+  const normalized=project({schemaVersion:1,cards:stage.ready}).catalog;
+  if(canonical(normalized.cards)!==canonical(stage.ready))
+   fail('新規カードの選択肢・結果の独自仮称化が未完');
  }
  const readyIds=new Set(stage.ready.map(x=>x.cardId));
  const approvalEvents=new Set();
@@ -196,13 +216,15 @@ function appendApprovedNewCards({
   entries:[...clone(existingApprovals.entries),...clone(newApprovals.entries)]};
  // Validate both content and per-event human evidence before returning.
  // No mutation, no file writes, no silent fallback on error.
- preflight(model,merged,{skillText,fullRegistry:false});
  verifyRelease(merged,approvals);
+ preflight(model,merged,{skillText,pinnedSkillText,
+  allowReviewedLegacy,fullRegistry:false});
  if(sha256(existingCatalog)!==stage.existingCatalogDigest||
     canonical(merged.cards.slice(0,existingCatalog.cards.length))!==
     canonical(existingCatalog.cards)||
     canonical(approvals.entries.slice(0,existingApprovals.entries.length))!==
-    canonical(existingApprovals.entries))
+    canonical(existingApprovals.entries)||
+    (v2&&canonical(approvals.cohorts)!==canonical(existingApprovals.cohorts)))
   fail('既存DBまたは承認履歴に変更が生じました');
  return {status:stage.pending.length?'partial-append':'ready-to-append',
   newCardIds:stage.ready.map(x=>x.cardId),
