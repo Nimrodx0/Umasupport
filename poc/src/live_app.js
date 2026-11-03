@@ -11,7 +11,7 @@ const SAVE_KEY='uma-support-lab-runtime-umasim-v1'+
 const blank=()=>({cardId:null,stage:4,choices:{},outcomes:{}});
 const deck=(id,name,ids)=>({id,name,slots:Array.from({length:6},(_,i)=>ids[i]?{cardId:ids[i],stage:4,choices:{},outcomes:{}}:blank())});
 const DEFAULT=()=>({version:3,ownedCards:{},decks:{main:[deck('main-default','本育成デッキ',[])],inherit:[deck('inherit-default','継承育成デッキ',[])]},activeDecks:{main:'main-default',inherit:'inherit-default'},nextDeckId:1,goalSets:[{id:'goals-default',name:'目標スキル',goals:[]}],currentGoalSet:'goals-default',view:'integrated',density:'compact'});
-let state=DEFAULT(),ui={modal:null,goalSkillQuery:'',search:'',onlyGoals:false,onlyDuplicate:false,skillTier:'all',skillRoute:'all',skillCoverage:'all',skillSort:'name',reverseOnlyOwned:false,reverseRoute:'all',pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,pickerSort:'source',ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0,ownedSort:'source',eventFilter:'all',importCandidate:null,importPreview:null};
+let state=DEFAULT(),ui={modal:null,goalSkillQuery:'',search:'',onlyGoals:false,onlyDuplicate:false,skillTier:'all',skillRoute:'all',skillCoverage:'all',skillSort:'name',reverseOnlyOwned:false,reverseRoute:'all',pickerSearch:'',pickerOnlyOwned:false,pickerSkillQuery:'',pickerRarity:'all',pickerType:'all',pickerRoute:'all',pickerPage:0,pickerSort:'source',ownedQuery:'',ownedSkillQuery:'',ownedRoute:'all',ownedRarity:'all',ownedType:'all',ownedFilter:'all',ownedPage:0,ownedSort:'source',eventFilter:'all',eventCardFold:{},eventItemFold:{},importCandidate:null,importPreview:null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
 const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goalSets[0];
 const activeDeck=k=>window.UmaSettings.activeDeck(state,k);
@@ -217,7 +217,7 @@ function eventRequirementLabel(condition,card){
  const outcome=(choice?.outcomes||parent.outcomes||[]).find(o=>o.id===condition.outcomeId);
  return parent.name+(choice?' → '+choice.label:'')+(outcome?' / '+outcome.label+'時':'');
 }
-function eventHTML(card,slot,k,i,onlyEventId=null){
+function eventHTML(card,slot,k,i,onlyEventId=null,compactHeader=false){
  return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
   const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
   const blocked=progress.status==='blocked',conditional=progress.status==='conditional';
@@ -225,7 +225,8 @@ function eventHTML(card,slot,k,i,onlyEventId=null){
   const selectedPart=e.type==='auto'?e:e.choices.find(c=>c.id===selected);
   const status=blocked?'到達不可':conditional?'条件付き到達':e.type==='auto'?'自動集計':selected?'設定済み':'未設定';
   const requirements=e.requires?esc(eventRequirementLabel(e.requires,card)):'';
-  const intro='<div class="event '+(blocked?'dim':'')+'"><div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>'+
+  const intro='<div class="event '+(blocked?'dim':'')+'">'+
+    (compactHeader?'':'<div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>')+
     (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
     (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
   if(e.type==='auto')return intro+'<div class="help" style="margin-top:7px">獲得候補：'+eventCandidateHTML(e)+'</div>'+
@@ -250,6 +251,19 @@ function hintPerformanceHTML(card,slot){
 }
 function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
  titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
+function accordionKey(deckKey,deckId,slotIndex,eventId=''){
+ return deckKey+'|'+deckId+'|'+slotIndex+'|'+eventId;
+}
+function captureEventFolds(){
+ for(const element of document.querySelectorAll('[data-event-card-fold]')){
+  ui.eventCardFold[element.dataset.eventCardFold]=element.open;
+ }
+ for(const element of document.querySelectorAll('[data-event-item-fold]')){
+  ui.eventItemFold[element.dataset.eventItemFold]=element.open;
+ }
+}
+const EVENT_STATUS_LABELS={pending:'未設定',configured:'設定済み',
+ conditional:'条件付き到達',blocked:'到達不可',automatic:'自動候補'};
 function deckEventsModal(){
  const k=ui.modal.deckKey,deck=activeDeck(k);
  const {cards,totals}=window.UmaDeckEvents.summarize(deck,data,core);
@@ -257,19 +271,32 @@ function deckEventsModal(){
  const countChoices=deck.slots.reduce((a,s)=>a+Object.keys(s.choices||{}).length+Object.keys(s.outcomes||{}).length,0);
  const chooser=[['all','すべて'],['pending','未設定'],['configured','設定済み'],['conditional','条件付き到達'],['blocked','到達不可'],['automatic','自動候補'],['unknown','イベント未収録']];
  const bar=`<div class="event-overview-stats"><span>選択肢の未設定 <b>${totals.pending}</b></span><span>設定済み <b>${totals.configured}</b></span><span>条件付き到達 <b>${totals.conditional}</b></span><span>到達不可 <b>${totals.blocked}</b></span><span>自動候補 <b>${totals.automatic}</b></span><span>イベント未収録のカード <b>${totals.unknown}</b></span><span>条件付きの報酬経路 <b>${totals.conditionalRoutes}</b></span></div>`;
- const controls=`<div class="event-overview-controls"><label>表示 <select id="event-status-filter" class="field" aria-label="イベント状態の絞り込み">${chooser.map(([v,n])=>`<option value="${v}" ${filter===v?'selected':''}>${n}</option>`).join('')}</select></label><button class="btn tiny danger" data-action="deck-events-reset" data-deck="${k}" ${countChoices===0?'disabled':''}>このデッキの選択を全解除（${countChoices}件）</button></div>`;
+ const controls=`<div class="event-overview-controls"><label>表示 <select id="event-status-filter" class="field" aria-label="イベント状態の絞り込み">${chooser.map(([v,n])=>`<option value="${v}" ${filter===v?'selected':''}>${n}</option>`).join('')}</select></label><button class="btn tiny" data-action="events-expand-all">すべて開く</button><button class="btn tiny" data-action="events-collapse-all">すべて閉じる</button><button class="btn tiny danger" data-action="deck-events-reset" data-deck="${k}" ${countChoices===0?'disabled':''}>このデッキの選択を全解除（${countChoices}件）</button></div>`;
  const content=cards.flatMap(info=>{
   const i=info.index,sl=deck.slots[i],c=sl.cardId&&data.cardById[sl.cardId];
-  if(!c){return filter==='all'?['<div class="info-item"><strong>スロット'+(i+1)+'：空</strong></div>']:[];}
-  if(filter==='unknown'&&!info.unknown||filter!=='unknown'&&filter!=='all'&&!info[filter])return [];
+  if(!c)return filter==='all'?['<div class="info-item"><strong>スロット'+(i+1)+'：空</strong></div>']:[];
+  if((filter==='unknown'&&!info.unknown)||
+     (filter!=='unknown'&&filter!=='all'&&!info[filter]))return [];
   const chosen=Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length;
-  const infoLine=info.unknown?'イベント未収録（存在しないという意味ではありません）':
-    '選択未設定 '+info.pending+' / 設定済み '+info.configured+' / 条件付き到達 '+info.conditional+' / 到達不可 '+info.blocked+' / 自動 '+info.automatic;
+  const infoLine=info.unknown?'イベント未収録':
+   '未設定 '+info.pending+' / 設定済み '+info.configured+' / 条件付き '+info.conditional;
+  const visibleEvents=info.unknown?[]:c.events.filter(e=>
+   filter==='all'||filter==='unknown'||info.events.some(x=>x.id===e.id&&x.status===filter));
+  const pendingIndex=visibleEvents.findIndex(e=>info.events.some(x=>x.id===e.id&&x.status==='pending'));
   const events=info.unknown?'<p class="help">このカードのイベント情報は未収録です。</p>':
-    c.events.filter(e=>filter==='all'||filter==='unknown'||info.events.some(x=>x.id===e.id&&x.status===filter)).map(e=>eventHTML(c,sl,k,i,e.id)).join('');
-  // Always evaluate reachability against the FULL card graph, including hidden prerequisites.
-  return [`<section class="info-item event-slot" data-event-slot="${i}"><div class="flex">${cardIcon(c,true)}<strong>${esc(c.name)}</strong><span class="slot-badge">スロット${i+1}</span></div><div class="tiny-note">${esc(infoLine)}</div>${events}<div class="event-slot-actions"><button class="btn tiny" data-action="edit-card" data-deck="${k}" data-index="${i}">カード詳細</button><button class="btn tiny danger" data-action="deck-event-slot-reset" data-deck="${k}" data-index="${i}" ${chosen===0?'disabled':''}>このカードの選択を解除（${chosen}件）</button></div></section>`];
- }).join('')||'<p class="help">この条件に該当するイベント記録はありません。情報未収録と実ゲームに存在しないことは別です。</p>';
+   visibleEvents.map((event,pos)=>{
+    const status=info.events.find(x=>x.id===event.id)?.status||'pending';
+    const key=accordionKey(k,deck.id,i,event.id);
+    const initiallyOpen=pos===pendingIndex&&status==='pending';
+    const open=Object.hasOwn(ui.eventItemFold,key)?ui.eventItemFold[key]:initiallyOpen;
+    return `<details class="event-accordion" data-event-item-fold="${esc(key)}" ${open?'open':''}><summary class="event-accordion-summary"><span class="event-accordion-title">${esc(event.name)}</span><span class="event-state event-state-${status}">${EVENT_STATUS_LABELS[status]||status}</span></summary><div class="event-accordion-content">${eventHTML(c,sl,k,i,event.id,true)}</div></details>`;
+   }).join('');
+  const key=accordionKey(k,deck.id,i);
+  const open=Object.hasOwn(ui.eventCardFold,key)?ui.eventCardFold[key]:
+   (info.pending>0||filter!=='all');
+  // Full unfiltered event graph is passed into every reachability evaluation.
+  return [`<details class="info-item event-slot event-card-accordion" data-event-slot="${i}" data-event-card-fold="${esc(key)}" ${open?'open':''}><summary class="event-card-summary">${cardIcon(c,true)}<span class="event-card-label">${cardIdentityHTML(c)}<span class="tiny-note">${esc(infoLine)}</span></span><span class="slot-badge">スロット${i+1}</span></summary><div class="event-card-content">${events}<div class="event-slot-actions"><button class="btn tiny" data-action="edit-card" data-deck="${k}" data-index="${i}">カード詳細</button><button class="btn tiny danger" data-action="deck-event-slot-reset" data-deck="${k}" data-index="${i}" ${chosen===0?'disabled':''}>このカードの選択を解除（${chosen}件）</button></div></div></details>`];
+ }).join('')||'<p class="help">この条件に該当するイベント記録はありません。</p>';
  const body=`<p class="help">条件付きの報酬は獲得確定ではありません。</p>${bar}${controls}<div id="deck-event-results">${content}</div>`;
  titleModal('デッキ全体のイベント設定',scopeLabel[k]+' / '+deck.name,body);
 }
@@ -344,7 +371,7 @@ function importPreviewModal(){
  const foot=`<button class="btn" data-action="import-cancel">キャンセル</button><button class="btn" data-action="import-merge" ${proposal?.error?'disabled':''}>現在の設定に統合</button><button class="btn danger" data-action="import-replace">全設定を置き換え</button>`;
  titleModal('JSON読込：方法を選択','決定するまで保存内容は変わりません',summary+help+explanation,foot);
 }
-function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'source-health':sourceHealthModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;case 'import-preview':importPreviewModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
+function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;captureEventFolds();if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'source-health':sourceHealthModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;case 'import-preview':importPreviewModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
 function refreshEventSelectionUI(changed){
  // The deck and goals remain mounted; avoid throwing away the entire page
  // for a radio-button edit. Rebuild the dependent summary and current modal.
@@ -402,6 +429,8 @@ case 'close':ui.modal=null;renderModal();break;
 case 'pick':ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
 case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
 case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
+ case 'events-expand-all':for(const element of document.querySelectorAll('[data-event-card-fold],[data-event-item-fold]'))element.open=true;captureEventFolds();break;
+ case 'events-collapse-all':for(const element of document.querySelectorAll('[data-event-card-fold],[data-event-item-fold]'))element.open=false;captureEventFolds();break;
  case 'deck-event-slot-reset':{const d=activeDeck(k),slot=d.slots[i],count=Object.keys(slot?.choices||{}).length+Object.keys(slot?.outcomes||{}).length;if(count&&confirm(scopeLabel[k]+'のスロット'+(i+1)+'のイベント選択'+count+'件を解除しますか？')){window.UmaDeckEvents.clearSlot(d,i);store();render();}break;}
  case 'deck-events-reset':{const d=activeDeck(k),count=d.slots.reduce((n,sl)=>n+Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length,0);if(count&&confirm(scopeLabel[k]+'の「'+d.name+'」にあるイベント選択'+count+'件をすべて解除しますか？他の保存デッキには影響しません。')){window.UmaDeckEvents.clearDeck(d);store();render();}break;}
  case 'deck-manage':ui.modal={kind:'deck-manager',deckKey:k};renderModal();break;
