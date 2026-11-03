@@ -102,6 +102,16 @@ async function main(){
    await mockSources(pickerPage);
    await boot(pickerPage,base);
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+   assert.equal(await pickerPage.locator('.picker-card .card-character').first().innerText(),'サポカ0');
+   assert.equal(await pickerPage.locator('.picker-card .card-variant').first().innerText(),'架空30001');
+   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'source');
+   assert.equal(await pickerPage.locator('#picker-sort option[value="release-desc"]').count(),0,
+    'Release dates absent from current runtime source must not offer fake chronological sorting');
+   await pickerPage.locator('#picker-sort').selectOption('id-desc');
+   assert.equal(await pickerPage.locator('.picker-card').first().getAttribute('data-id'),'30563');
+   await pickerPage.locator('#picker-sort').selectOption('id-asc');
+   assert.equal(await pickerPage.locator('.picker-card').first().getAttribute('data-id'),'30001');
+   await pickerPage.locator('#picker-sort').selectOption('source');
    await pickerPage.locator('#picker-search').fill('サポカ0');
    await pickerPage.locator('#picker-skill-search').fill('右回り○');
    await pickerPage.locator('#picker-route').selectOption('hint');
@@ -127,6 +137,7 @@ async function main(){
    assert.equal(await pickerPage.locator('#picker-route').inputValue(),'hint');
    assert.equal(await pickerPage.locator('#picker-rarity').inputValue(),'SSR');
    assert.equal(await pickerPage.locator('#picker-type').inputValue(),'スピード');
+   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'source');
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
    await pickerPage.locator('#picker-only-owned').check();
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);
@@ -216,6 +227,11 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   // Phase 3: ownership registry uses all 563 cards, not the first 120 picker entries.
   await page.locator('button[data-action="owned-manage"]').click();
+  assert.equal(await page.locator('#owned-sort').inputValue(),'source');
+  await page.locator('#owned-sort').selectOption('id-desc');
+  assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30563');
+  await page.locator('#owned-sort').selectOption('source');
+  assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30001');
   assert.equal(await page.locator('.owned-card').count(),36);
   assert.match(await page.locator('#owned-results').innerText(),/563枚/);
   await page.locator('#owned-search').fill('サポカ0');
@@ -523,11 +539,28 @@ async function main(){
      {id:'yes',label:'承認'},{id:'no',label:'辞退'}]}];
   });
   await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  assert.equal(await eventPage.locator('[data-event-card-fold]').count(),3,
+   'All filled cards should be individually collapsible');
+  assert.equal(await eventPage.locator('[data-event-item-fold]').count(),3,
+   'All attached events should have individual disclosure headers');
+  const firstEvent=eventPage.locator('[data-event-item-fold]').first();
+  assert.equal(await firstEvent.getAttribute('open'),'',
+   'The first event awaiting a choice should be expanded by default');
+  await firstEvent.locator('summary').click();
+  assert.equal(await firstEvent.getAttribute('open'),null);
+  await firstEvent.locator('summary').click();
+  assert.equal(await firstEvent.getAttribute('open'),'');
+  await eventPage.locator('[data-action="events-collapse-all"]').click();
+  assert.equal(await eventPage.locator('[data-event-item-fold][open]').count(),0);
+  assert.equal(await eventPage.locator('[data-event-card-fold][open]').count(),0);
+  await eventPage.locator('[data-action="events-expand-all"]').click();
+  assert.equal(await eventPage.locator('[data-event-item-fold][open]').count(),3);
+  assert.equal(await eventPage.locator('[data-event-card-fold][open]').count(),3);
   let overview=await eventPage.locator('.modal-body').innerText();
   assert.match(overview,/選択肢の未設定\s*2/);
   assert.match(overview,/到達不可\s*1/);
   assert.match(overview,/イベント未収録のカード\s*1/);
-  assert.match(overview,/未収録（存在しないという意味ではありません）/);
+  assert.match(overview,/イベント未収録/);
   await eventPage.locator('#event-status-filter').selectOption('blocked');
   assert.equal(await eventPage.locator('#deck-event-results .event').count(),1);
   assert.match(await eventPage.locator('#deck-event-results').innerText(),/人工後編/);
