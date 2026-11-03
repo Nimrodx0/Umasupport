@@ -84,7 +84,14 @@ function render(){
   : '';
  document.getElementById('app').innerHTML=`<main class="app"><header class="top"><div><div class="brand">ウマサルタント</div><h1>サポカ編成 × スキル可視化</h1></div><div class="controls top-actions"><button class="btn" data-action="source-health">データの収録状況</button><button class="btn" data-action="owned-manage">所持サポカ管理</button><button class="btn" data-action="reset">設定を初期化</button><button class="btn" data-action="import">JSON読込</button><button class="btn primary" data-action="export">JSON保存</button></div></header>${previewBanner}${alertHtml}${statsHTML(r)}<div class="deck-grid">${deckHTML('main')}${deckHTML('inherit')}</div>${goalHTML(r)}<section class="surface comparison"><div class="comparison-head"><div><h2>獲得候補スキルの比較</h2><div class="tiny-note">数値＝そのスキルを直接提供する異なるサポカIDの枚数。同じカードの複数経路・複数枠は1枚で集計（枠ごとの経路は詳細で確認可能）。</div></div><div class="switches"><div class="tabs" aria-label="一覧形式"><button data-action="view" data-value="integrated" aria-pressed="${state.view==='integrated'}">統合表</button><button data-action="view" data-value="split" aria-pressed="${state.view==='split'}">左右比較</button></div><div class="tabs" aria-label="表示密度"><button data-action="density" data-value="compact" aria-pressed="${state.density==='compact'}">コンパクト</button><button data-action="density" data-value="detailed" aria-pressed="${state.density==='detailed'}">カード付き</button></div></div></div><div class="filterbar"><input id="skill-search" class="field search" placeholder="スキル名で検索…" aria-label="スキル名で検索" value="${esc(ui.search)}"><label class="filterlabel"><input type="checkbox" id="only-goals" ${ui.onlyGoals?'checked':''}>目標のみ</label><label class="filterlabel"><input type="checkbox" id="only-duplicate" ${ui.onlyDuplicate?'checked':''}>重複・共通のみ</label><select id="skill-tier" class="field skill-filter" aria-label="スキル分類"><option value="all">全分類</option><option value="gold" ${ui.skillTier==='gold'?'selected':''}>金スキル</option><option value="white" ${ui.skillTier==='white'?'selected':''}>白スキル</option><option value="unknown" ${ui.skillTier==='unknown'?'selected':''}>分類未確認</option></select><select id="skill-route" class="field skill-filter" aria-label="スキルの直接提供経路"><option value="all">全経路</option><option value="hint" ${ui.skillRoute==='hint'?'selected':''}>通常ヒント</option><option value="event" ${ui.skillRoute==='event'?'selected':''}>選択済みイベント</option><option value="both" ${ui.skillRoute==='both'?'selected':''}>通常ヒント＋イベント</option></select><select id="skill-coverage" class="field skill-filter" aria-label="スキルのカバー状態"><option value="all">全カバー</option><option value="direct" ${ui.skillCoverage==='direct'?'selected':''}>直接提供あり</option><option value="indirect" ${ui.skillCoverage==='indirect'?'selected':''}>間接のみ</option><option value="uncovered" ${ui.skillCoverage==='uncovered'?'selected':''}>未カバーの目標</option><option value="conditional" ${ui.skillCoverage==='conditional'?'selected':''}>条件付き経路あり</option></select><select id="skill-sort" class="field skill-filter" aria-label="スキル一覧の並べ替え"><option value="name">スキル名順</option><option value="total-desc" ${ui.skillSort==='total-desc'?'selected':''}>提供合計が多い順</option><option value="main-desc" ${ui.skillSort==='main-desc'?'selected':''}>本育成が多い順</option><option value="inherit-desc" ${ui.skillSort==='inherit-desc'?'selected':''}>継承育成が多い順</option><option value="goals-first" ${ui.skillSort==='goals-first'?'selected':''}>目標を先頭</option></select><span class="tiny-note">${filteredRows(r).length} 件表示</span><button class="btn tiny" data-action="skill-filters-reset">条件をクリア</button></div><div id="table-region">${tableHTML(r)}</div><div class="summary-legend"><span><b>2以上</b> デッキ内重複</span><span><span class="common">✓</span> デッキ間共通</span><span>金スキル → インデントした下位スキル（それぞれ独立集計）</span><span>☆ 目標</span><span>「条件付のみ」は成功・失敗等に依存</span></div></section></main><input id="import-file" type="file" accept="application/json,.json" hidden><div id="modal-layer"></div>`;renderModal();document.getElementById('bootstrap-status')?.setAttribute?.('hidden','');}
 function refreshTable(){let r=results();document.getElementById('table-region').innerHTML=tableHTML(r);document.querySelector('.filterbar .tiny-note').textContent=`${filteredRows(r).length} 件表示`;}
-function titleModal(title,subtitle,body,foot=''){document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;}
+function titleModal(title,subtitle,body,foot=''){
+ const lastField=document.activeElement?.id||'';
+ document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;
+ const prior=lastField?document.getElementById(lastField):null;
+ const target=prior?.closest?.('.modal')?prior:
+  document.querySelector('.modal-head [data-action="close"]');
+ if(typeof target?.focus==='function')target.focus({preventScroll:true});
+}
 function ownedLabel(c){
  const rec=state.ownedCards[c.id];
  return rec?.status==='owned'?'所持 '+rec.stage+'凸':rec?.status==='unowned'?'未所持':'未登録';
@@ -403,11 +410,38 @@ case 'import-replace':if(ui.importCandidate&&confirm('現在の編成・所持�
 case 'import-merge':if(ui.importCandidate){try{const result=window.UmaSettings.merge(state,ui.importCandidate,data);state=result.settings;settingsLoadError=null;ui.importCandidate=null;ui.importPreview=null;ui.modal=null;saveRender();}catch(e){ui.importPreview={error:e.message};renderModal();}}break;
 case 'reset':if(confirm('すべての設定を初期状態に戻しますか？')){state=DEFAULT();settingsLoadError=null;ui.modal=null;saveRender();}break;
 }}
-document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;handleAction(el)});
+function restoreModalFocus(){
+ const target=ui.modalOpener;
+ ui.modalOpener=null;
+ if(target?.isConnected&&typeof target.focus==='function')target.focus({preventScroll:true});
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-action]');if(!el)return;
+ if(el.dataset.action==='close-overlay'&&!e.target.classList.contains('overlay'))return;
+ const before=!!ui.modal;
+ if(!before)ui.modalOpener=el;
+ handleAction(el);
+ if(before&&!ui.modal)restoreModalFocus();
+});
 document.addEventListener('input',e=>{if(e.target.id==='new-goal-skill-search'){ui.goalSkillQuery=e.target.value;refreshGoalSkillSearch();return}if(e.target.id==='skill-search'){ui.search=e.target.value;refreshTable()}if(e.target.id==='picker-search'){ui.pickerSearch=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='picker-skill-search'){ui.pickerSkillQuery=e.target.value;ui.pickerPage=0;pickerRefresh();}if(e.target.id==='owned-search'){ui.ownedQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}if(e.target.id==='owned-skill-search'){ui.ownedSkillQuery=e.target.value;ui.ownedPage=0;refreshOwnedGrid();}});
 document.addEventListener('change',e=>{const el=e.target;if(el.hasAttribute('data-event-choice')){changeSelection(el);return}if(el.hasAttribute('data-event-outcome')){changeOutcome(el);return}if(el.hasAttribute('data-owned-stage')){window.UmaSettings.setOwnedCard(state,data,el.dataset.ownedStage,'owned',Number(el.value));store();return}if(el.id==='picker-only-owned'){ui.pickerOnlyOwned=el.checked;ui.pickerPage=0;pickerRefresh();return}if(['picker-rarity','picker-type','picker-route'].includes(el.id)){ui[{'picker-rarity':'pickerRarity','picker-type':'pickerType','picker-route':'pickerRoute'}[el.id]]=el.value;ui.pickerPage=0;pickerRefresh();return}if(['owned-rarity','owned-type','owned-filter','owned-route'].includes(el.id)){ui[{ 'owned-rarity':'ownedRarity','owned-type':'ownedType','owned-filter':'ownedFilter','owned-route':'ownedRoute'}[el.id]]=el.value;ui.ownedPage=0;refreshOwnedGrid();return}if(el.id==='only-goals'){ui.onlyGoals=el.checked;refreshTable();return}if(el.id==='only-duplicate'){ui.onlyDuplicate=el.checked;refreshTable();return}if(['skill-tier','skill-route','skill-coverage','skill-sort'].includes(el.id)){ui[{'skill-tier':'skillTier','skill-route':'skillRoute','skill-coverage':'skillCoverage','skill-sort':'skillSort'}[el.id]]=el.value;refreshTable();return}if(el.id==='event-status-filter'){ui.eventFilter=el.value;renderModal(true);return}if(el.id==='reverse-only-owned'){ui.reverseOnlyOwned=el.checked;renderModal(true);return}if(el.id==='reverse-route'){ui.reverseRoute=el.value;renderModal(true);return}if(el.id==='goals-modal-select'){if(state.goalSets.some(g=>g.id===el.value)){state.currentGoalSet=el.value;store();render();}return}if(el.id==='goal-set'){state.currentGoalSet=el.value;saveRender();return}if(el.id==='deck-select-main'||el.id==='deck-select-inherit'){const key=el.id==='deck-select-main'?'main':'inherit';window.UmaSettings.selectDeck(state,key,el.value);ui.modal=null;saveRender();return}if(el.hasAttribute('data-stage')){activeDeck(el.dataset.deck).slots[Number(el.dataset.index)].stage=Number(el.value);store();render();return}if(el.hasAttribute('data-goal-scope')){goalSet().goals[Number(el.dataset.goalScope)].scope=el.value;store();render();return}if(el.id==='import-file'){
  const f=el.files?.[0];if(!f)return;el.value='';f.text().then(t=>{let obj;try{obj=JSON.parse(t)}catch(e){alert('JSONを読み取れませんでした。');return}let parsed;try{parsed=window.UmaSettings.parse(obj,data)}catch(e){alert('設定JSONの構造を読み取れませんでした。'+String(e.message||e));return}ui.importCandidate=parsed;try{ui.importPreview={report:window.UmaSettings.merge(state,parsed,data).report}}catch(e){ui.importPreview={error:e.message}}ui.modal={kind:'import-preview'};renderModal();}).catch(()=>alert('ファイルの読み込みに失敗しました。'));
  }});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;renderModal();}});
+document.addEventListener('keydown',e=>{
+ if(!ui.modal)return;
+ if(e.key==='Escape'){e.preventDefault();ui.modal=null;renderModal();restoreModalFocus();return;}
+ if(e.key!=='Tab')return;
+ const modal=document.querySelector('.modal');if(!modal)return;
+ const focusable=Array.from(modal.querySelectorAll(
+  'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+ )).filter(el=>typeof el.focus==='function'&&el.getClientRects().length>0);
+ if(!focusable.length){e.preventDefault();return;}
+ const first=focusable[0],last=focusable[focusable.length-1],active=document.activeElement;
+ if(e.shiftKey&&(active===first||!modal.contains(active))){
+  e.preventDefault();last.focus({preventScroll:true});
+ }else if(!e.shiftKey&&(active===last||!modal.contains(active))){
+  e.preventDefault();first.focus({preventScroll:true});
+ }
+});
 render();
 })();
