@@ -2,6 +2,10 @@ name: One-time skill effect coverage audit
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/audit_skill_effect_coverage.cjs'
+      - '.github/workflows/skill-effect-coverage-audit.yml'
   push:
     branches:
       - audit/skill-effect-coverage-20261104
