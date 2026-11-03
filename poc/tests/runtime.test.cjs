@@ -51,3 +51,23 @@ test('invalid hint bonus is rejected before overwriting valid offline cache',asy
  const got=await loader.load({fetchImpl:async()=>({ok:true,text:async()=>lines.join('\n')}),store});
  assert.equal(got.mode,'cached');assert.equal(JSON.stringify(baseline),saved);
 });
+
+test('seven support types use the familiar game-style icon color families',()=>{
+ const expected=[
+  ['スピード','#29aceb'],['スタミナ','#ee7569'],['パワー','#f6a524'],
+  ['根性','#ee6ba1'],['賢さ','#29c39a'],['友人','#f2c349'],['グループ','#84cd33']
+ ];
+ const rows=valid.split('\n');
+ expected.forEach(([type],i)=>{
+  for(let stage=0;stage<5;stage++){
+   const index=i*5+stage,fields=rows[index].split('\t');
+   fields[6]=type;rows[index]=fields.join('\t');
+  }
+ });
+ const model=loader.buildModel(rows.join('\n'));
+ expected.forEach(([type,color],i)=>{
+  assert.equal(model.cards[i].type,type);
+  assert.equal(model.cards[i].accent,color);
+ });
+ assert.equal(model.cards.length,510);
+});
