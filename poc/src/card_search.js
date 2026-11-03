@@ -76,7 +76,50 @@ function filterCards(cards,model,filters={},owned={}){
  if(!Array.isArray(cards))throw new Error('Card list must be an array');
  return cards.filter(card=>matches(card,model,filters,owned));
 }
-const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards};
+const rankRarity={SSR:0,SR:1,R:2};
+const rankType={'スピード':0,'スタミナ':1,'パワー':2,'根性':3,'賢さ':4,'友人':5,'グループ':6};
+const nameCollator=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
+const cardName=c=>String(c?.character||c?.name||'');
+const isKnownReleaseDate=c=>{
+ const date=c?.releaseDate;
+ if(typeof date!=='string'||!/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(date))
+  return false;
+ const value=new Date(date+'T00:00:00Z');
+ return Number.isFinite(value.getTime())&&value.toISOString().startsWith(date+'T');
+};
+// Sorting is a pure presentation transform. An ID is not a release date.
+// Release-day ordering must stay unavailable in production until an independently
+// verified date catalog has been connected to the model.
+function sortCards(cards,mode='source',owned={}){
+ if(!Array.isArray(cards))throw new Error('Card list must be an array');
+ const copy=cards.slice();
+ if(mode==='source')return copy;
+ const id=(a,b)=>nameCollator.compare(String(a.id||''),String(b.id||''));
+ const name=(a,b)=>nameCollator.compare(cardName(a),cardName(b))||
+  nameCollator.compare(String(a.name||''),String(b.name||''));
+ const rarity=(c)=>Object.hasOwn(rankRarity,c.rarity)?rankRarity[c.rarity]:3;
+ const type=(c)=>Object.hasOwn(rankType,c.type)?rankType[c.type]:7;
+ const ownedRank=c=>({owned:0,unregistered:1,unowned:2}[owned[c.id]?.status||'unregistered']??1);
+ const hintCount=c=>Array.isArray(c.hints)?c.hints.length:0;
+ const cmp={
+  'id-desc':(a,b)=>id(b,a),
+  'id-asc':id,
+  'rarity-desc':(a,b)=>rarity(a)-rarity(b)||name(a,b),
+  'rarity-asc':(a,b)=>rarity(b)-rarity(a)||name(a,b),
+  'name-asc':name,
+  'name-desc':(a,b)=>name(b,a),
+  'type':(a,b)=>type(a)-type(b)||name(a,b),
+  'owned-first':(a,b)=>ownedRank(a)-ownedRank(b)||name(a,b),
+  'hints-desc':(a,b)=>hintCount(b)-hintCount(a)||name(a,b),
+  'release-desc':(a,b)=>Number(isKnownReleaseDate(b))-Number(isKnownReleaseDate(a))||
+   (isKnownReleaseDate(a)?b.releaseDate.localeCompare(a.releaseDate):0)||id(b,a),
+  'release-asc':(a,b)=>Number(isKnownReleaseDate(b))-Number(isKnownReleaseDate(a))||
+   (isKnownReleaseDate(a)?a.releaseDate.localeCompare(b.releaseDate):0)||id(a,b),
+ }[mode];
+ if(!cmp)throw new Error('Unknown support-card sort: '+mode);
+ return copy.sort(cmp);
+}
+const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards,isKnownReleaseDate};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSearch=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
