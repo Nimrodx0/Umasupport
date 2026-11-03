@@ -39,6 +39,7 @@ function rewards(part,out){
  ]);
  const records=JSON.parse(skillText.replace(/^\uFEFF/,''));
  const source=bridge.parseSource(skillText);
+ const pinnedSource=bridge.parseSource(pinnedSkillText);
  const rawByRarity={};
  for(const x of records){
   const r=x.rarity||'unknown';
@@ -86,12 +87,46 @@ function rewards(part,out){
    return hits[0].description?'unexpected-missing':'source-info-empty';
   }
   const numeric=String(skill.sourceNumericId||(/^skill:(\d+)$/.exec(skill.id)||[])[1]||'');
-  const records=[source.byId.get(numeric),bridge.parseSource(pinnedSkillText).byId.get(numeric)].filter(Boolean);
+  const records=[source.byId.get(numeric),pinnedSource.byId.get(numeric)].filter(Boolean);
   if(records.length===0)return 'numeric-id-not-in-live-or-pinned';
   if(!records.some(x=>x.name===n(skill.name)))return 'numeric-id-name-mismatch';
   if(!records.some(x=>x.name===n(skill.name)&&x.description))return 'source-info-empty';
   return 'unexpected-missing';
  };
+ const noEffectHintNames=[...uniqueHints].filter(name=>{
+  const id='hint:'+name;return !model.skillById[id]?.effectDescription;
+ }).sort((a,b)=>a.localeCompare(b,'ja'));
+ const missingEventSkills=[...skillIdsFromEvents].map(id=>model.skillById[id])
+  .filter(x=>x&&!x.effectDescription);
+ const missingEventOnly=missingEventSkills.filter(x=>!x.id.startsWith('hint:'));
+ const missingDistinctNames=new Set(unfilled.map(x=>n(x.name)));
+ const missingOverlap=[...new Set(missingEventOnly.map(x=>n(x.name)))].filter(name=>noEffectHintNames.includes(name)).sort((a,b)=>a.localeCompare(b,'ja'));
+ const hintAffectedCards=Object.fromEntries(noEffectHintNames.map(name=>{
+  const id='hint:'+name;
+  const cards=model.cards.filter(c=>Object.values(c.hintsByStage||{}).some(xs=>xs.includes(id)));
+  return [name,{cards:cards.length,examples:cards.slice(0,5).map(c=>({id:c.id,name:c.name}))}];
+ }));
+ const affectedEventCards=new Set(),affectedEvents=new Set();
+ let missingEventRewards=0;
+ for(const c of model.cards)for(const e of c.events||[]){
+  const refs=new Set();
+  rewards(e,refs);for(const ch of e.choices||[])rewards(ch,refs);
+  for(const id of refs)if(missingEventOnly.some(x=>x.id===id)){
+   missingEventRewards++;affectedEventCards.add(c.id);affectedEvents.add(c.id+'/'+e.id);
+  }
+ }
+ function recordFor(x){
+  const id=x.sourceNumericId||(/^skill:(\d+)$/.exec(x.id)||[])[1];
+  if(id){const live=source.byId.get(String(id)),old=pinnedSource.byId.get(String(id));
+   return live?.name===n(x.name)?live:old?.name===n(x.name)?old:null;
+  }
+  const records=source.byName.get(n(x.name))||[];
+  return records.length===1?records[0]:null;
+ }
+ const extraInfoSkills=appSkills.filter(x=>{
+  const item=recordFor(x);
+  return item&&records.find(y=>y.id===item.id)?.info?.slice(2).some(t=>n(t));
+ });
  const reasons={};
  for(const skill of unfilled){const why=classify(skill);reasons[why]??={count:0,samples:[]};reasons[why].count++;
   if(reasons[why].samples.length<15)reasons[why].samples.push({id:skill.id,name:skill.name,tier:skill.tier});
@@ -118,6 +153,18 @@ function rewards(part,out){
    normalAndRare:group(x=>['white','gold'].includes(x.tier)),
    currentSourceDescriptions:enrichment.current,pinnedDescriptions:enrichment.pinned},
   missingEffectExplanation:reasons,
+  missingEffectDetails:{
+   distinctMissingSkillNames:missingDistinctNames.size,
+   missingOrdinaryHints:noEffectHintNames,
+   missingHistoricalEventSkills:missingEventOnly.map(x=>({id:x.id,name:x.name})),
+   overlapBetweenHintAndHistoricalMissing:missingOverlap,
+   missingHintCardCounts:hintAffectedCards,
+   affectedEventCards:affectedEventCards.size,affectedEventRecords:affectedEvents.size,
+   affectedEventRewardIdentifiers:missingEventRewards,
+   extraInfoSegmentsNotDisplayed:{sourceRecords:srcTotals.withAdditionalInfo,
+    appModelSkills:extraInfoSkills.length,
+    examples:sample(extraInfoSkills.map(x=>({id:x.id,name:x.name,tier:x.tier})),30)}
+  },
   notes:['All source skill rarities include unique and special skills that are not registered wholesale for goal selection.',
    'An info string is publisher-reported coverage, not proof of current game behavior.',
    'The UI currently displays info[0] and info[1] only; info[2+] remains unavailable in skill detail.',
