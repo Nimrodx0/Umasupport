@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches}=require('../src/card_search.js');
+const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches,sortCards,isKnownReleaseDate}=require('../src/card_search.js');
 
 function fixture(){
  const skills={
@@ -74,4 +74,32 @@ test('explicit preview mode exposes selectable candidate events to route/skill f
  assert.equal(approvedEventSkillIds(m.cards[0],m).has('skill:金'),true);
  m.meta.runtimeSources.events.mode='preview-failed';
  assert.deepEqual(filterCards(m.cards,m,{route:'event'}),[]);
+});
+
+test('sorting is nonmutating and treats card IDs as IDs, never inferred release dates',()=>{
+ const m=fixture(),original=m.cards.map(c=>c.id),owned={'2':{status:'owned'},'4':{status:'unowned'}};
+ const order=mode=>sortCards(m.cards,mode,owned).map(c=>c.id);
+ assert.deepEqual(order('source'),original);
+ assert.deepEqual(order('id-desc'),['4','3','2','1']);
+ assert.deepEqual(order('id-asc'),original);
+ assert.deepEqual(order('rarity-desc'),['1','3','2','4']);
+ assert.deepEqual(order('rarity-asc'),['4','2','1','3']);
+ assert.deepEqual(order('owned-first'),['2','1','3','4']);
+ assert.deepEqual(order('hints-desc'),['2','3','4','1']);
+ assert.deepEqual(order('name-asc'),['1','3','4','2']);
+ assert.deepEqual(order('type'),['1','3','4','2']);
+ assert.deepEqual(m.cards.map(c=>c.id),original);
+ assert.equal(isKnownReleaseDate(m.cards[0]),false);
+ assert.throws(()=>sortCards(m.cards,'calendar-guessed-from-id'),/Unknown support-card sort/);
+});
+
+test('release date ordering requires explicitly supplied dates; unknowns sort last',()=>{
+ const cards=[
+  {id:'10',releaseDate:'2026-09-12'}, {id:'9'}, {id:'11',releaseDate:'2024-03-04'},
+  {id:'12',releaseDate:'2026-10-01'}
+ ];
+ assert.deepEqual(sortCards(cards,'release-desc').map(x=>x.id),['12','10','11','9']);
+ assert.deepEqual(sortCards(cards,'release-asc').map(x=>x.id),['11','10','12','9']);
+ assert.equal(isKnownReleaseDate({releaseDate:'2026-13-01'}),false);
+ assert.equal(isKnownReleaseDate({releaseDate:'2026-09-12'}),true);
 });
