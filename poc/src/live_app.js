@@ -165,6 +165,18 @@ function resultSelector(part,slot,k,i,event,active,card){
   }).join('')+'</select></label>';
 }
 
+function eventRequirementLabel(condition,card){
+ // Preserve AND/OR semantics; use only names from the validated card graph.
+ if(Array.isArray(condition?.all))
+  return condition.all.map(c=>eventRequirementLabel(c,card)).join(' ＋ ');
+ if(Array.isArray(condition?.any))
+  return '（'+condition.any.map(c=>eventRequirementLabel(c,card)).join(' または ')+'）';
+ const parent=card.events.find(e=>e.id===condition?.eventId);
+ if(!parent)return '前のイベント条件';
+ const choice=parent.choices?.find(c=>c.id===condition.choiceId);
+ const outcome=(choice?.outcomes||parent.outcomes||[]).find(o=>o.id===condition.outcomeId);
+ return parent.name+(choice?' → '+choice.label:'')+(outcome?' / '+outcome.label+'時':'');
+}
 function eventHTML(card,slot,k,i,onlyEventId=null){
  return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
   const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
@@ -172,8 +184,7 @@ function eventHTML(card,slot,k,i,onlyEventId=null){
   const selected=e.type==='choice'?slot.choices[e.id]:null;
   const selectedPart=e.type==='auto'?e:e.choices.find(c=>c.id===selected);
   const status=blocked?'到達不可':conditional?'条件付き到達':e.type==='auto'?'自動集計':selected?'設定済み':'未設定';
-  const requirements=e.requires?(e.requires.all||[e.requires]).map(r=>esc(r.eventId)+
-   (r.choiceId?' → '+esc(r.choiceId):'')+(r.outcomeId?' / '+esc(r.outcomeId)+'時':'')).join(' ＋ '):'';
+  const requirements=e.requires?esc(eventRequirementLabel(e.requires,card)):'';
   const intro='<div class="event '+(blocked?'dim':'')+'"><div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>'+
     (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
     (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
@@ -195,9 +206,9 @@ function hintPerformanceHTML(card,slot){
  const p=card.hintPerformanceByStage?.[String(slot.stage)];
  if(!p)return '<div class="info-item"><strong>ヒント関連性能</strong><div class="sub">未収録・不明</div></div>';
  const hintLevel=1+p.levelBase+p.levelUnique;
- return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div><p class="help">公開シミュレータの段階別パラメータ。発生率の確率推定ではありません。シナリオ効果・特殊な条件付き効果は含みません。</p></div>`;
+ return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div></div>`;
 }
-function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select><span class="tiny-note">ヒント関連性能を解放段階別に表示（提供枚数には加算しません）</span></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考：スキル候補（集計対象外）</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div><p class="help">古い公開カード一覧由来。通常ヒントとイベント報酬が混在する可能性があるため集計には加えません。</p></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3><p class="help">選択式イベントは初期状態では未設定。${window.UmaPreviewActive?'このイベントは開発用の仮データです。進行条件と報酬には実ゲームで未確認の部分があります。':'公開データの候補分岐であり、実ゲーム上のイベント選択・到達関係とは未照合です。'}</p>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
+function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
  titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
 function deckEventsModal(){
  const k=ui.modal.deckKey,deck=activeDeck(k);
@@ -293,7 +304,7 @@ function changeOutcome(el){
  const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
 }
 function handleAction(el){const a=el.dataset.action,k=el.dataset.deck,i=Number(el.dataset.index);switch(a){
-case 'owned-manage':ui.ownedQuery='';ui.ownedSkillQuery='';ui.ownedRoute='all';ui.ownedRarity='all';ui.ownedType='all';ui.ownedFilter='all';ui.ownedPage=0;ui.modal={kind:'owned-manager'};renderModal();break;
+case 'owned-manage':ui.modal={kind:'owned-manager'};renderModal();break;
  case 'owned-status':window.UmaSettings.setOwnedCard(state,data,el.dataset.id,el.dataset.status,state.ownedCards[el.dataset.id]?.stage??0);store();refreshOwnedGrid();break;
  case 'owned-bulk':{const ids=filteredOwned().map(c=>c.id);const label={owned:'所持',unowned:'未所持',unregistered:'未登録'}[el.dataset.status];if(ids.length&&confirm('検索条件に一致する'+ids.length+'枚すべてを「'+label+'」に変更しますか？')){window.UmaSettings.setOwnedBulk(state,data,ids,el.dataset.status);store();refreshOwnedGrid();}break;}
  case 'picker-prev':ui.pickerPage=Math.max(0,ui.pickerPage-1);pickerRefresh();break;
@@ -316,7 +327,7 @@ case 'set-card':{const sl=activeDeck(ui.modal.deckKey).slots[ui.modal.index];sl.
 case 'remove-card':activeDeck(k).slots[i]=blank();ui.modal=null;saveRender();break;
 case 'view':state.view=el.dataset.value;saveRender();break;
 case 'density':state.density=el.dataset.value;saveRender();break;
-case 'skill':ui.reverseOnlyOwned=false;ui.reverseRoute='all';ui.modal={kind:'skill',id:el.dataset.id};renderModal();break;
+case 'skill':ui.modal={kind:'skill',id:el.dataset.id};renderModal();break;
 case 'assign':ui.modal={kind:'assign',cardId:el.dataset.id};renderModal();break;
 case 'assign-slot':activeDeck(k).slots[i]={cardId:ui.modal.cardId,stage:4,choices:{}};ui.modal=null;saveRender();break;
 case 'goals':ui.modal={kind:'goals'};renderModal();break;case 'source-health':ui.modal={kind:'source-health'};renderModal();break;
