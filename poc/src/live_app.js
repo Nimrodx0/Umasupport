@@ -89,6 +89,7 @@ function titleModal(title,subtitle,body,foot=''){
  document.getElementById('modal-layer').innerHTML=`<div class="overlay" data-action="close-overlay"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><div><h2>${esc(title)}</h2><div class="modal-sub">${esc(subtitle)}</div></div><button class="btn tiny" data-action="close">閉じる ×</button></div><div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}</section></div>`;
  const prior=lastField?document.getElementById(lastField):null;
  const target=prior?.closest?.('.modal')?prior:
+  ui.modal?.kind==='pick'?document.getElementById('picker-search'):
   document.querySelector('.modal-head [data-action="close"]');
  if(typeof target?.focus==='function')target.focus({preventScroll:true});
 }
@@ -371,7 +372,7 @@ case 'owned-manage':ui.modal={kind:'owned-manager'};renderModal();break;
 case 'close':ui.modal=null;renderModal();break;
 case 'pick':ui.modal={kind:'pick',deckKey:k,index:i};renderModal();break;
 case 'edit-card':ui.modal={kind:'edit',deckKey:k,index:i};renderModal();break;
-case 'deck-events':ui.eventFilter='all';ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
+case 'deck-events':ui.modal={kind:'deck-events',deckKey:k};renderModal();break;
  case 'deck-event-slot-reset':{const d=activeDeck(k),slot=d.slots[i],count=Object.keys(slot?.choices||{}).length+Object.keys(slot?.outcomes||{}).length;if(count&&confirm(scopeLabel[k]+'のスロット'+(i+1)+'のイベント選択'+count+'件を解除しますか？')){window.UmaDeckEvents.clearSlot(d,i);store();render();}break;}
  case 'deck-events-reset':{const d=activeDeck(k),count=d.slots.reduce((n,sl)=>n+Object.keys(sl.choices||{}).length+Object.keys(sl.outcomes||{}).length,0);if(count&&confirm(scopeLabel[k]+'の「'+d.name+'」にあるイベント選択'+count+'件をすべて解除しますか？他の保存デッキには影響しません。')){window.UmaDeckEvents.clearDeck(d);store();render();}break;}
  case 'deck-manage':ui.modal={kind:'deck-manager',deckKey:k};renderModal();break;
