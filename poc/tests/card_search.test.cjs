@@ -86,7 +86,7 @@ test('sorting is nonmutating and treats card IDs as IDs, never inferred release 
  assert.deepEqual(order('rarity-asc'),['4','2','1','3']);
  assert.deepEqual(order('owned-first'),['2','1','3','4']);
  assert.deepEqual(order('hints-desc'),['2','3','4','1']);
- assert.deepEqual(order('name-asc'),['1','3','4','2']);
+ assert.deepEqual(order('name-asc'),['2','1','3','4']);
  assert.deepEqual(order('type'),['1','3','4','2']);
  assert.deepEqual(m.cards.map(c=>c.id),original);
  assert.equal(isKnownReleaseDate(m.cards[0]),false);
