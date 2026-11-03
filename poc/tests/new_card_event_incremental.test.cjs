@@ -295,3 +295,60 @@ test('offline intake CLI planner carries forward staged but unpublished card on 
  assert.deepEqual(afterPublish.carryForwardPendingIds,[]);
  assert.equal(afterPublish.oldCatalogCardCount,1);
 });
+
+
+test('v2 public cohort is immutable when a separately approved new card is appended',()=>{
+ const {inventory}=require('../src/event_release_cohorts.cjs');
+ const before=catalog();
+ const selector={eventIdPrefix:'gt:'};
+ const signed=inventory(before,[selector]).groups[0];
+ const rights=['sourceAccessTerms','databaseReuse','gameMaterialAndTitles','choiceWording'];
+ const allFields=[...Object.keys(checks),...rights];
+ const old={schemaVersion:2,cohorts:[{
+  id:'synthetic-original-cohort',selector,expectedEvents:signed.events,
+  eventsSha256:signed.eventsSha256,
+  review:{
+   reviewer:'synthetic test reviewer',reviewedAt:'2026-11-03',
+   sourceRevision:'6e38b54af4fad397ff4491e63007a90705a4fe67',
+   accessMethod:'reviewed-no-new-access',
+   checks:Object.fromEntries(allFields.map(k=>[k,true])),
+   evidence:Object.fromEntries(allFields.map(k=>[k,['https://example.org/'+k]])),
+   publicationBasis:{kind:'original-factual-description',
+    reason:'All original events are fictional',scope:'Only the synthetic old cohort'}
+  }
+ }],entries:[]};
+ const original=JSON.stringify({before,old});
+ const incoming=candidate('30322');
+ incoming.events[0].choices[0].label='選択肢1（仮）';
+ incoming.events[0].choices[0].outcomes[0].label='結果1（仮）';
+ incoming.events[0].choices[0].outcomes[1].label='結果2（仮）';
+ const x={discovery:discovery(),existingCatalog:before,
+  candidates:[incoming],existingApprovals:old,
+  newApprovals:{schemaVersion:1,entries:[approval('30322',incoming.events[0])]},
+  model};
+ const result=appendApprovedNewCards(x);
+ assert.equal(result.status,'partial-append');
+ assert.deepEqual(result.pending,[{cardId:'30323',reason:'not-yet-fetched'}]);
+ assert.equal(result.approvals.schemaVersion,2);
+ assert.deepEqual(result.approvals.cohorts,old.cohorts);
+ assert.equal(result.approvals.entries.length,1);
+ assert.equal(result.catalog.cards.length,2);
+ assert.equal(JSON.stringify({before,old}),original);
+ const {verifyRelease}=require('../src/event_release_gate.cjs');
+ assert.equal(verifyRelease(result.catalog,result.approvals).publicEvents,2);
+ const unreviewed={...x,newApprovals:{schemaVersion:1,entries:[]}};
+ assert.throws(()=>appendApprovedNewCards(unreviewed),/全イベントの個別公開承認/);
+ const altered=structuredClone(x);
+ altered.existingCatalog.cards[0].events[0].name='old altered';
+ assert.throws(()=>appendApprovedNewCards(altered),/SHA不一致/);
+ const raw=structuredClone(x);
+ raw.candidates[0].events[0].choices[0].label='元サイト文章をそのまま転載';
+ raw.newApprovals.entries=[approval('30322',raw.candidates[0].events[0])];
+ assert.throws(()=>appendApprovedNewCards(raw),/仮称化が未完/);
+ const invalidApproval=structuredClone(x);
+ invalidApproval.newApprovals.entries[0].evidence.choices=[];
+ assert.throws(()=>appendApprovedNewCards(invalidApproval),/根拠URL/);
+ const rewritten=structuredClone(x);
+ rewritten.newApprovals.entries[0].cardId='30001';
+ assert.throws(()=>appendApprovedNewCards(rewritten),/新カード以外/);
+});
