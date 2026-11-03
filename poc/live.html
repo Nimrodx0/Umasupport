@@ -77,17 +77,17 @@
        msg+='。金白対応データを表示できません';
      }
    }
-   // Enrich only screen descriptions after validated public-event and skill loading.
-   // Skill effect strings remain at their publisher; no copy enters this repository.
-   try {
-     window.UmaDemoData.meta.skillEffects=UmaSkillEffects.attach(window.UmaDemoData,{
-       skillText,pinnedSkillText
-     });
-   }catch(effectError){
-     console.warn('スキル効果の表示情報を適用できません',effectError);
-     window.UmaDemoData.meta.skillEffects={enriched:0,error:String(effectError)};
-   }
    const startApp=()=>{
+     // Include skills introduced by a separately approved candidate preview.
+     // Presentation metadata does not alter rewards or source signatures.
+     try {
+       window.UmaDemoData.meta.skillEffects=UmaSkillEffects.attach(window.UmaDemoData,{
+         skillText,pinnedSkillText
+       });
+     }catch(effectError){
+       console.warn('スキル効果の表示情報を適用できません',effectError);
+       window.UmaDemoData.meta.skillEffects={enriched:0,error:String(effectError)};
+     }
      const script=document.createElement('script');script.src='./src/live_app.js';
      script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
      document.body.appendChild(script);
