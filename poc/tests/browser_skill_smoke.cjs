@@ -519,8 +519,14 @@ async function main(){
   await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
   assert.equal(await eventPage.evaluate(()=>window.__rootBeforeEventChange===document.querySelector('main.app')),true,
    'Event selection must not discard the whole main screen');
+  assert.equal(await eventPage.evaluate(()=>document.activeElement?.dataset?.action),'close',
+   'When the pending-only filter removes a configured item, focus must stay in the dialog');
+  await eventPage.locator('#event-status-filter').selectOption('all');
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="stop"]').click();
   assert.equal(await eventPage.evaluate(()=>document.activeElement?.dataset?.event),'synthetic-start',
-   'The changed radio must regain keyboard focus');
+   'When the event remains visible, the changed choice must regain keyboard focus');
+  await eventPage.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="synthetic-start"][value="go"]').click();
+  await eventPage.locator('#event-status-filter').selectOption('pending');
   overview=await eventPage.locator('.modal-body').innerText();
   assert.match(overview,/自動候補\s*1/);
   assert.match(overview,/条件付きの報酬経路\s*1/);
