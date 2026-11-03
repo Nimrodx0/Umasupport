@@ -80,8 +80,13 @@ const rankRarity={SSR:0,SR:1,R:2};
 const rankType={'スピード':0,'スタミナ':1,'パワー':2,'根性':3,'賢さ':4,'友人':5,'グループ':6};
 const nameCollator=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
 const cardName=c=>String(c?.character||c?.name||'');
-const isKnownReleaseDate=c=>typeof c?.releaseDate==='string'&&
- /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(c.releaseDate);
+const isKnownReleaseDate=c=>{
+ const date=c?.releaseDate;
+ if(typeof date!=='string'||!/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(date))
+  return false;
+ const value=new Date(date+'T00:00:00Z');
+ return Number.isFinite(value.getTime())&&value.toISOString().startsWith(date+'T');
+};
 // Sorting is a pure presentation transform. An ID is not a release date.
 // Release-day ordering must stay unavailable in production until an independently
 // verified date catalog has been connected to the model.
