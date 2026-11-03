@@ -2,7 +2,18 @@
 (function (g) {
   'use strict';
   const SOURCE_URL = 'https://raw.githubusercontent.com/mee1080/umasim/main/data/support_card.txt';
-  const COLOR = { 'スピード':'#bc6665','スタミナ':'#58959c','パワー':'#bb9148','根性':'#a66d9b','賢さ':'#758bc1','友人':'#6caa89','グループ':'#8b91af' };
+  // Game type-icon hues (approximate UI colors, not official RGB asset values):
+  // Speed blue, Stamina red, Power orange, Guts pink, Wit green,
+  // Pal yellow, Group lime green. This is presentation metadata only.
+  const COLOR = {
+    'スピード':'#29aceb',
+    'スタミナ':'#ee7569',
+    'パワー':'#f6a524',
+    '根性':'#ee6ba1',
+    '賢さ':'#29c39a',
+    '友人':'#f2c349',
+    'グループ':'#84cd33'
+  };
   const KEY = 'umasupport/umasim/support_card.txt/v1';
   function normalizeName(s) { return String(s).normalize('NFKC').replace(/\s+/g, ' ').trim(); }
   // UmaSim SupportCardLoader.kt: base status begins at column 7, fixed unique at 33.
