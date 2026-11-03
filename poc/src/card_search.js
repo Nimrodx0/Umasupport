@@ -80,16 +80,7 @@ const rankRarity={SSR:0,SR:1,R:2};
 const rankType={'スピード':0,'スタミナ':1,'パワー':2,'根性':3,'賢さ':4,'友人':5,'グループ':6};
 const nameCollator=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
 const cardName=c=>String(c?.character||c?.name||'');
-const isKnownReleaseDate=c=>{
- const date=c?.releaseDate;
- if(typeof date!=='string'||!/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(date))
-  return false;
- const value=new Date(date+'T00:00:00Z');
- return Number.isFinite(value.getTime())&&value.toISOString().startsWith(date+'T');
-};
-// Sorting is a pure presentation transform. An ID is not a release date.
-// Release-day ordering must stay unavailable in production until an independently
-// verified date catalog has been connected to the model.
+// Card IDs are sortable identifiers, not verified implementation dates.
 function sortCards(cards,mode='source',owned={}){
  if(!Array.isArray(cards))throw new Error('Card list must be an array');
  const copy=cards.slice();
@@ -111,15 +102,11 @@ function sortCards(cards,mode='source',owned={}){
   'type':(a,b)=>type(a)-type(b)||name(a,b),
   'owned-first':(a,b)=>ownedRank(a)-ownedRank(b)||name(a,b),
   'hints-desc':(a,b)=>hintCount(b)-hintCount(a)||name(a,b),
-  'release-desc':(a,b)=>Number(isKnownReleaseDate(b))-Number(isKnownReleaseDate(a))||
-   (isKnownReleaseDate(a)?b.releaseDate.localeCompare(a.releaseDate):0)||id(b,a),
-  'release-asc':(a,b)=>Number(isKnownReleaseDate(b))-Number(isKnownReleaseDate(a))||
-   (isKnownReleaseDate(a)?a.releaseDate.localeCompare(b.releaseDate):0)||id(a,b),
  }[mode];
  if(!cmp)throw new Error('Unknown support-card sort: '+mode);
  return copy.sort(cmp);
 }
-const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards,isKnownReleaseDate};
+const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSearch=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

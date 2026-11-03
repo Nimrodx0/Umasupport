@@ -44,11 +44,7 @@ const SORT_LABELS=[
  ['type','タイプ順'],['hints-desc','通常ヒント数：多い順'],['owned-first','所持サポカ優先']
 ];
 function sortOptions(current){
- const verifiedDates=data.meta?.verifiedReleaseDates===true&&
-  data.cards.every(window.UmaCardSearch.isKnownReleaseDate);
- const options=verifiedDates?
-  [...SORT_LABELS,['release-desc','実装日：新しい順'],['release-asc','実装日：古い順']]:SORT_LABELS;
- return options.map(([value,label])=>`<option value="${value}" ${current===value?'selected':''}>${label}</option>`).join('');
+ return SORT_LABELS.map(([value,label])=>`<option value="${value}" ${current===value?'selected':''}>${label}</option>`).join('');
 }
 function cardIcon(c,sm=false){return `<span class="card-icon${sm?' small':''}" style="background:${esc(c.accent)}" aria-hidden="true">${esc((c.character||'?').slice(0,2))}</span>`;}
 function hintDetailText(c,sl){const hints=c.hintsByStage?.[String(sl.stage)]??c.hints;return hints.map(id=>esc(data.skillById[id]?.name||id)).join(' / ')||(c.sourceStatus?.startsWith('verified_hints')?'通常ヒントなし（データ収録済み）':'通常ヒントは未収録');}

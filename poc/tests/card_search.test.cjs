@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches,sortCards,isKnownReleaseDate}=require('../src/card_search.js');
+const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches,sortCards}=require('../src/card_search.js');
 
 function fixture(){
  const skills={
@@ -89,18 +89,6 @@ test('sorting is nonmutating and treats card IDs as IDs, never inferred release 
  assert.deepEqual(order('name-asc'),['2','1','3','4']);
  assert.deepEqual(order('type'),['1','3','4','2']);
  assert.deepEqual(m.cards.map(c=>c.id),original);
- assert.equal(isKnownReleaseDate(m.cards[0]),false);
+ assert.throws(()=>sortCards(m.cards,'release-desc'),/Unknown support-card sort/);
  assert.throws(()=>sortCards(m.cards,'calendar-guessed-from-id'),/Unknown support-card sort/);
-});
-
-test('release date ordering requires explicitly supplied dates; unknowns sort last',()=>{
- const cards=[
-  {id:'10',releaseDate:'2026-09-12'}, {id:'9'}, {id:'11',releaseDate:'2024-03-04'},
-  {id:'12',releaseDate:'2026-10-01'}
- ];
- assert.deepEqual(sortCards(cards,'release-desc').map(x=>x.id),['12','10','11','9']);
- assert.deepEqual(sortCards(cards,'release-asc').map(x=>x.id),['11','10','12','9']);
- assert.equal(isKnownReleaseDate({releaseDate:'2026-13-01'}),false);
- assert.equal(isKnownReleaseDate({releaseDate:'2026-02-30'}),false);
- assert.equal(isKnownReleaseDate({releaseDate:'2026-09-12'}),true);
 });

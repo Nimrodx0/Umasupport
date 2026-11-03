@@ -185,7 +185,16 @@ async function main(){
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
   assert.equal(await page.evaluate(()=>document.activeElement?.id),'picker-search',
    'Opening the picker must focus the card search box');
+  const palette=async locator=>locator.evaluate(element=>({
+   background:getComputedStyle(element).backgroundColor,
+   foreground:getComputedStyle(element).color
+  }));
+  const speedColors={background:'rgb(41, 172, 235)',foreground:'rgb(17, 36, 54)'};
+  assert.deepEqual(await palette(page.locator('.picker-card .card-icon').first()),speedColors,
+   'Picker support card must use blue Speed hue and legible dark text');
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
+  assert.deepEqual(await palette(page.locator('.slot .card-icon').first()),speedColors,
+   'Selected deck card must use the same palette as the picker');
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
   let perf=await page.locator('.modal-body').innerText();
   assert.match(perf,/ヒント関連性能（4凸）/);
