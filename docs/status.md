@@ -1,3 +1,11 @@
+## 2026-11-03：公開UIの内部説明を撤去・サポカ選択フィルターを維持（PR #315）
+
+**利用者要望**：本育成／継承育成を比較する旨や承認済みイベントのみ利用する旨など、開発実装の背景を説明する常時表示コメントを削除。カードを追加するたびに検索語・絞込条件がリセットされる問題を修正する。
+
+**実装**：`poc/src/live_app.js` の通常画面から `LIVE SOURCE PROTOTYPE`、説明調のサブタイトル、常設のUmaSim利用・構造照合・元データ取得説明、PoCフッターを除去。代わりに必要な場合だけ通信・データ欠損警告を表示。明示的に開く「データの収録状況」の技術詳細と、開発プレビュー専用の重要警告、ページ末尾の非公式・権利者非提携表示は維持。サポカ選択では `pick` アクションで `ui.pickerSearch / pickerSkillQuery / pickerRarity / pickerType / pickerRoute / pickerPage` を初期化しない。元から保持している `pickerOnlyOwned` も含めて同じ選択条件を次のスロット・別デッキに引継ぎ。検索条件変更時のページ先頭への移動、候補の件数、ページ数の上限補正はこれまでどおり。サイト初期化の長い取得ログはアプリが描画された後に非表示（取得失敗は例外）。
+
+**検証**：Node構文チェックと既存UI・新規Chromium回帰。実データの実装・公開コホートには変更なし。A＝UI及びモーダル遷移のCI、B＝本件は元ゲームデータ変更なし、C＝Chrome自動ブラウザで操作するがWindows／Android物理端末は未確認。GitHub Pagesデプロイ後のユーザー実機確認は別工程。
+
 ## 2026-11-03：新カード3枚の元JSON未掲載、既存GT2,487署名を守るv2増分公開経路を整備（PR #314）
 
 **実際の取得元**：2026-11-03確認の `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`（2026-10-19版）には `support_10149.json`／`support_30322.json`／`support_30323.json` がすべて未掲載。UmaSim側の3カードIDは認識済みで、[保留台帳Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) に `awaiting-source-json` として維持。既存の監視スケジュールは[2026-11-02の実行](https://github.com/Nimrodx0/Umasupport/actions/runs/41438789193)まで成功しており、Issue本文に変更がなければ更新日時は進まない。**イベント0件という確定情報ではない**。
