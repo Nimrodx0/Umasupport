@@ -214,6 +214,7 @@ function eventRequirementLabel(condition,card){
  return parent.name+(choice?' → '+choice.label:'')+(outcome?' / '+outcome.label+'時':'');
 }
 function eventHTML(card,slot,k,i,onlyEventId=null,compactHeader=false){
+ const sequence=window.UmaEventSequence.classifiedEvents(card.events);
  return card.events.filter(e=>onlyEventId===null||e.id===onlyEventId).map(e=>{
   const progress=core.reachability(e,slot.choices,card.events,slot.outcomes||{});
   const blocked=progress.status==='blocked',conditional=progress.status==='conditional';
@@ -222,7 +223,9 @@ function eventHTML(card,slot,k,i,onlyEventId=null,compactHeader=false){
   const status=blocked?'到達不可':conditional?'条件付き到達':e.type==='auto'?'自動集計':selected?'設定済み':'未設定';
   const requirements=e.requires?esc(eventRequirementLabel(e.requires,card)):'';
   const intro='<div class="event '+(blocked?'dim':'')+'">'+
-    (compactHeader?'':'<div class="event-head"><h3>'+esc(e.name)+'</h3><span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>')+
+    (compactHeader?'':'<div class="event-head"><h3>'+esc(e.name)+'</h3>'+
+      (sequence.has(e.id)?'<span class="event-sequence-badge">連続イベント</span>':'')+
+      '<span class="'+(e.type==='auto'?'auto':'slot-badge')+'">'+status+'</span></div>')+
     (requirements?'<div class="tiny-note">必要条件：'+requirements+'</div>':'')+
     (conditional?'<div class="tiny-note">仮定：'+esc(progress.conditions.join(' / '))+'。確定した報酬には含めません。</div>':'');
   if(e.type==='auto')return intro+'<div class="help" style="margin-top:7px">獲得候補：'+eventCandidateHTML(e)+'</div>'+
@@ -278,6 +281,7 @@ function deckEventsModal(){
    '未設定 '+info.pending+' / 設定済み '+info.configured+' / 条件付き '+info.conditional;
   const visibleEvents=info.unknown?[]:c.events.filter(e=>
    filter==='all'||filter==='unknown'||info.events.some(x=>x.id===e.id&&x.status===filter));
+  const sequence=window.UmaEventSequence.classifiedEvents(c.events);
   const pendingIndex=visibleEvents.findIndex(e=>info.events.some(x=>x.id===e.id&&x.status==='pending'));
   const events=info.unknown?'<p class="help">このカードのイベント情報は未収録です。</p>':
    visibleEvents.map((event,pos)=>{
@@ -285,7 +289,7 @@ function deckEventsModal(){
     const key=accordionKey(k,deck.id,i,event.id);
     const initiallyOpen=pos===pendingIndex&&status==='pending';
     const open=Object.hasOwn(ui.eventItemFold,key)?ui.eventItemFold[key]:initiallyOpen;
-    return `<details class="event-accordion" data-event-item-fold="${esc(key)}" ${open?'open':''}><summary class="event-accordion-summary"><span class="event-accordion-title">${esc(event.name)}</span><span class="event-state event-state-${status}">${EVENT_STATUS_LABELS[status]||status}</span></summary><div class="event-accordion-content">${eventHTML(c,sl,k,i,event.id,true)}</div></details>`;
+    return `<details class="event-accordion" data-event-item-fold="${esc(key)}" ${open?'open':''}><summary class="event-accordion-summary"><span class="event-accordion-title">${esc(event.name)}</span>${sequence.has(event.id)?'<span class="event-sequence-badge">連続</span>':''}<span class="event-state event-state-${status}">${EVENT_STATUS_LABELS[status]||status}</span></summary><div class="event-accordion-content">${eventHTML(c,sl,k,i,event.id,true)}</div></details>`;
    }).join('');
   const key=accordionKey(k,deck.id,i);
   const open=Object.hasOwn(ui.eventCardFold,key)?ui.eventCardFold[key]:
@@ -315,7 +319,13 @@ function skillDetailModal(){
  const reverseHtml=reverse.map(({card:c,hint,event})=>`<div class="info-item flex">${cardIcon(c,true)}<div class="grow"><b>${esc(c.name)}</b><div class="sub">${[hint?'通常ヒント（0～4凸のいずれか）':'',event?'イベント':''].filter(Boolean).join(' / ')} · ${esc(ownedLabel(c))}</div></div><button class="btn tiny" data-action="assign" data-id="${esc(c.id)}">編成へ</button></div>`).join('')||'<p class="help">選択した条件に該当するサポカがありません。情報未収録とゲーム内に存在しないことは別です。</p>';
  const filterHtml=`<div class="reverse-filter"><label class="filterlabel"><input type="checkbox" id="reverse-only-owned" ${ui.reverseOnlyOwned?'checked':''}>所持サポカのみ</label><select class="field" id="reverse-route" aria-label="逆引きの獲得経路"><option value="all">全経路</option><option value="hint" ${ui.reverseRoute==='hint'?'selected':''}>通常ヒント</option><option value="event" ${ui.reverseRoute==='event'?'selected':''}>イベント</option></select><span class="tiny-note">${reverse.length}枚</span></div>`;
  const upper=data.skills.filter(s=>s.lowerId===id);
- const body=`<p class="help">現在の編成で選択済みの直接提供枚数と、全サポカの提供経路を区別します。逆引きの通常ヒントは0～4凸いずれかのデータであり、現在の編成の解放段階やイベント到達・実獲得を保証しません。</p>${scopes}<h3 style="margin:15px 0 9px">全カードから逆引き</h3>${filterHtml}<div class="info-list">${reverseHtml}</div>${upper.length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${upper.map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name||skill.lowerId)}</div>`:''}`;
+ const effectSourceUrl=skill.effectSource==='pinned'?window.UmaSkillBridge.PINNED_URL:
+   window.UmaSkillBridge.SOURCE_URL;
+ const effectSourceLabel=skill.effectSource==='pinned'?'UmaSim固定版スキル辞書':'UmaSimスキル辞書';
+ const effectBlock=skill.effectDescription
+  ?`<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="skill-effect-description">${esc(skill.effectDescription)}</div>${skill.effectTechnicalDetails?`<details class="skill-effect-detail"><summary>発動条件・効果量の詳細</summary><div>${esc(skill.effectTechnicalDetails)}</div></details>`:''}<div class="tiny-note">出典：<a href="${esc(effectSourceUrl)}" target="_blank" rel="noopener noreferrer">${effectSourceLabel}</a></div></section>`
+  :'<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="sub">効果説明は未収録です。</div></section>';
+ const body=`${effectBlock}<p class="help">現在の編成で選択済みの直接提供枚数と、全サポカの提供経路を区別します。逆引きの通常ヒントは0～4凸いずれかのデータであり、現在の編成の解放段階やイベント到達・実獲得を保証しません。</p>${scopes}<h3 style="margin:15px 0 9px">全カードから逆引き</h3>${filterHtml}<div class="info-list">${reverseHtml}</div>${upper.length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${upper.map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name||skill.lowerId)}</div>`:''}`;
  titleModal(skill.name,skill.tier==='gold'?'金スキル':'スキル詳細',body);
 }
 function assignModal(){const c=data.cardById[ui.modal.cardId];const body=`<p class="help">${esc(c.name)}をどの枠へ配置しますか？選んだ枠に登録済みのカードは置き換わります。</p><div class="picker-list">${['main','inherit'].flatMap(k=>activeDeck(k).slots.map((sl,i)=>`<button class="picker-card" data-action="assign-slot" data-deck="${k}" data-index="${i}"><span class="grow"><b>${scopeLabel[k]} · ${i+1}番枠</b><br><small class="muted">${sl.cardId?esc(data.cardById[sl.cardId].name):'空スロット'}</small></span><span>→</span></button>`)).join('')}</div>`;titleModal('配置先を選択',c.name,body);}

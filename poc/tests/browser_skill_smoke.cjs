@@ -29,7 +29,7 @@ function skillFixture(){
  const skills=[
   {id:'700004',name:'右回りの鬼',rarity:'rare',group:70000},
   {id:'700002',name:'右回り◎',rarity:'normal',group:70000},
-  {id:'700001',name:'右回り○',rarity:'normal',group:70000},
+  {id:'700001',name:'右回り○',rarity:'normal',group:70000,info:['右回りコースが少し得意になる','コーナーでの条件を判定']},
   {id:'700014',name:'架空の金スキル',rarity:'rare',group:70001},
   {id:'700012',name:'架空の下位白',rarity:'normal',group:70001},
   {id:'700024',name:'架空の白なし金',rarity:'rare',group:70002}
@@ -363,6 +363,9 @@ async function main(){
   await page.locator('#skill-tier').selectOption('all');
   await page.locator('#skill-route').selectOption('all');
   await page.locator('tr[data-skill="hint:右回り○"]').click();
+  assert.match(await page.locator('.skill-effect-description').innerText(),/右回りコースが少し得意になる/);
+  await page.locator('.skill-effect-detail summary').click();
+  assert.match(await page.locator('.skill-effect-detail').innerText(),/コーナーでの条件を判定/);
   assert.match(await page.locator('.modal-body').innerText(),/全カードから逆引き/);
   assert.match(await page.locator('.modal-body').innerText(),/通常ヒント（0～4凸のいずれか）/);
   assert.equal(await page.locator('.modal-body button[data-action="assign"]').count(),1);
@@ -552,6 +555,10 @@ async function main(){
    'All filled cards should be individually collapsible');
   assert.equal(await eventPage.locator('[data-event-item-fold]').count(),3,
    'All attached events should have individual disclosure headers');
+  assert.equal(await eventPage.locator('[data-event-item-fold] .event-sequence-badge').count(),2,
+   'Only the evidence-linked two-stage event gets a sequence badge');
+  assert.equal(await eventPage.locator('[data-event-item-fold]').nth(2).locator('.event-sequence-badge').count(),0,
+   'Independent event must not be labelled continuous');
   const firstEvent=eventPage.locator('[data-event-item-fold]').first();
   assert.equal(await firstEvent.getAttribute('open'),'',
    'The first event awaiting a choice should be expanded by default');
