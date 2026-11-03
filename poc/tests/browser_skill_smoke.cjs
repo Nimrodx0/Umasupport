@@ -84,10 +84,65 @@ async function main(){
   await mockSources(page);
   let status=await boot(page,base);
   assert.match(status,/金白構造候補 2\/3組/);
-  let notice=await page.locator('.notice').innerText();
-  assert.match(notice,/金白の構造上の対応候補 2\/3組/);
-  assert.match(notice,/承認済み実イベントは0件/);
-  assert.doesNotMatch(notice,/金スキル階層、カード性能は未照合/);
+  assert.equal(await page.locator('#bootstrap-status').isHidden(),true);
+  assert.equal(await page.locator('.notice').count(),0,
+   'Data provenance must not be a permanent dashboard banner');
+  const initialScreen=await page.locator('main.app').innerText();
+  for(const internal of ['本育成と継承育成のスキル獲得候補を比較します。',
+   'イベント経路は承認済みデータのみ反映します。','LIVE SOURCE PROTOTYPE',
+   'UmaSimの通常ヒントを利用しています。','検証用PoC']){
+   assert.equal(initialScreen.includes(internal),false,
+    'Developer-facing note remained on the page: '+internal);
+  }
+  // Fresh browser context: filters survive a card pick, modal close,
+  // subsequent slots, switching decks and a non-first results page.
+  const pickerContext=await browser.newContext();
+  try{
+   const pickerPage=await pickerContext.newPage();
+   await mockSources(pickerPage);
+   await boot(pickerPage,base);
+   await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+   await pickerPage.locator('#picker-search').fill('サポカ0');
+   await pickerPage.locator('#picker-skill-search').fill('右回り○');
+   await pickerPage.locator('#picker-route').selectOption('hint');
+   await pickerPage.locator('#picker-rarity').selectOption('SSR');
+   await pickerPage.locator('#picker-type').selectOption('スピード');
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
+   await pickerPage.locator('button[data-action="set-card"][data-id="30001"]').click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ0');
+   assert.equal(await pickerPage.locator('#picker-skill-search').inputValue(),'右回り○');
+   assert.equal(await pickerPage.locator('#picker-route').inputValue(),'hint');
+   assert.equal(await pickerPage.locator('#picker-rarity').inputValue(),'SSR');
+   assert.equal(await pickerPage.locator('#picker-type').inputValue(),'スピード');
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
+   await pickerPage.locator('#picker-only-owned').check();
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);
+   await pickerPage.locator('button[data-action="close"]').click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="0"]').click();
+   assert.equal(await pickerPage.locator('#picker-only-owned').isChecked(),true);
+   assert.equal(await pickerPage.locator('#picker-skill-search').inputValue(),'右回り○');
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);
+   await pickerPage.locator('#picker-only-owned').uncheck();
+   await pickerPage.locator('#picker-search').fill('サポカ');
+   await pickerPage.locator('#picker-skill-search').fill('');
+   await pickerPage.locator('#picker-route').selectOption('all');
+   await pickerPage.locator('button[data-action="picker-next"]').click();
+   assert.match(await pickerPage.locator('#picker-cards .tiny-note').first().innerText(),/2 \/ 5 ページ/);
+   const cardPage2=await pickerPage.locator('button[data-action="set-card"]').first().getAttribute('data-id');
+   await pickerPage.locator('button[data-action="set-card"]').first().click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="1"]').click();
+   assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ');
+   assert.match(await pickerPage.locator('#picker-cards .tiny-note').first().innerText(),/2 \/ 5 ページ/);
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').first().getAttribute('data-id'),cardPage2);
+   await pickerPage.locator('#picker-search').fill('サポカ562');
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
+   await pickerPage.locator('button[data-action="close"]').click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="2"]').click();
+   assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ562');
+   assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
+   await pickerPage.locator('button[data-action="close"]').click();
+  }finally{await pickerContext.close();}
   // F-08: source status must report genuinely validated empty events.
   await page.locator('button[data-action="source-health"]').click();
   assert.match(await page.locator('#source-status-cards').innerText(),/563枚/);
@@ -577,7 +632,7 @@ async function main(){
   await mockSources(failurePage,{eventFailure:true});
   status=await boot(failurePage,base);
   assert.match(status,/イベントデータの検証に失敗/);
-  assert.match(await failurePage.locator('.notice').innerText(),/公開イベントJSONの検証に失敗/);
+  assert.match(await failurePage.locator('.notice').innerText(),/イベント情報を読み込めませんでした/);
   await failurePage.locator('button[data-action="source-health"]').click();
   assert.match(await failurePage.locator('#source-status-events').innerText(),/公開JSONの検証失敗・未反映/);
   assert.match(await failurePage.locator('#source-status-events').innerText(),/検証不能・件数未確定/);
@@ -586,8 +641,8 @@ async function main(){
   assert.match(status,/金白構造候補 2\/3組/);
   assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
-  notice=await failurePage.locator('.notice').innerText();
-  assert.match(notice,/金白の構造上の対応候補 2\/3組/);
+  assert.equal(await failurePage.locator('.notice').count(),1,
+    'A failure warning must remain visible without raw diagnostics');
   await failureContext.close();
   console.log('PASS: Chromium DOM, full synthetic 563-card load, hierarchy, IndexedDB fallback, bad skill update, event outage');
  } finally {
