@@ -118,25 +118,54 @@ function verifyCohortRelease(catalog,approvals){
   selectors.push(group.selector);
   checkReview(group.review,where);
  }
- let grouped={groups:[],matchedEvents:0,uncovered:indexed.size,matchedKeys:new Set()};
- if(selectors.length)grouped=inventory(catalog,selectors);
- for(const [i,group] of approvals.cohorts.entries()){
-  const actual=grouped.groups[i];
-  if(!actual||actual.events!==group.expectedEvents||
-    actual.eventsSha256!==group.eventsSha256)
-   fail('コホート数／承認済みSHA不一致: '+group.id);
- }
- // V1 individual reviews are still supported for exceptions without forcing
- // every source cohort through event-by-event review. A key is reviewed via
- // exactly one method: overlapping approvals and dangling items are rejected.
+ // Validate individual entry membership BEFORE cohort fingerprint checks.
+ // New, independently reviewed events can share an old cohort's source prefix,
+ // but they must not silently expand that OLD content-bound approval.
  const individual=new Set();
  for(const item of approvals.entries){
   if(!obj(item)||!nonempty(item.cardId)||!nonempty(item.eventId))
    fail('個別例外レビュー形式が不正');
   const key=JSON.stringify([item.cardId,item.eventId]);
-  if(!indexed.has(key)||grouped.matchedKeys.has(key)||individual.has(key))
+  if(!indexed.has(key)||individual.has(key))
    fail('個別例外レビューの重複／対象外');
   individual.add(key);
+ }
+ const blank=()=>({groups:[],matchedEvents:0,uncovered:indexed.size,matchedKeys:new Set()});
+ let grouped=selectors.length?inventory(catalog,selectors):blank();
+ const signed=(result,i)=>result.groups[i]?.events===approvals.cohorts[i].expectedEvents&&
+  result.groups[i]?.eventsSha256===approvals.cohorts[i].eventsSha256;
+ // The old signature is tried intact first. If it has grown, subtract ONLY
+ // explicitly V1-reviewed entries from the effective selector in memory.
+ // The stored cohort selector, hash, reviewer and historical approvals remain
+ // byte-for-byte unchanged. An original cohort event moved into entries will
+ // still break the old SHA because its card/event ID is part of the digest.
+ if(selectors.length&&approvals.cohorts.some((_,i)=>!signed(grouped,i))){
+  let changed=false;
+  const effective=selectors.map((selector,i)=>{
+   if(signed(grouped,i))return selector;
+   const excluded=[...(selector.excludedEventKeys||[])];
+   const seen=new Set(excluded.map(x=>JSON.stringify([x.cardId,x.eventId])));
+   for(const key of individual){
+    if(!matched(key,selector)||seen.has(key))continue;
+    const [cardId,eventId]=JSON.parse(key);
+    excluded.push({cardId,eventId});
+    seen.add(key);
+    changed=true;
+   }
+   return excluded.length?{...selector,excludedEventKeys:excluded}:selector;
+  });
+  if(changed)grouped=inventory(catalog,effective);
+ }
+ for(const [i,group] of approvals.cohorts.entries()){
+  if(!signed(grouped,i))
+   fail('コホート数／承認済みSHA不一致: '+group.id);
+ }
+ // A V1 entry cannot be used to replace any already cohort-covered event;
+ // a separately SHA-reviewed new event or an explicitly excluded old event
+ // must be accounted for exactly once.
+ for(const key of individual){
+  if(grouped.matchedKeys.has(key))
+   fail('個別例外レビューと既存コホートが重複');
  }
  if(grouped.matchedEvents+individual.size!==indexed.size)
   fail('未承認のイベントが残っています');
