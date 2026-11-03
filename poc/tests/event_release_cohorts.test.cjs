@@ -160,3 +160,49 @@ test('synthetic 563-card / 2512-event collection takes a single bound cohort dec
  c.cards[7].events[0].name='変更';
  assert.throws(()=>verifyRelease(c,a),/SHA不一致/);
 });
+
+
+test('additional GT-prefixed card can be reviewed individually without widening an existing signed cohort',()=>{
+ const before={schemaVersion:1,cards:[clone(catalog().cards[0])]};
+ const old={schemaVersion:2,cohorts:[cohort(before,'immutable-gt','gt-')],entries:[]};
+ const original=JSON.stringify(old);
+ assert.equal(verifyRelease(before,old).publicEvents,2);
+ const added=event('gt-30322-event-001');
+ const after=clone(before);
+ after.cards.push({cardId:'30322',coverageStatus:'partial',events:[added]});
+ assert.throws(()=>verifyRelease(after,old),/SHA不一致/);
+ const next={...clone(old),entries:[v1Entry(added,'30322')]};
+ const summary=verifyRelease(after,next);
+ assert.equal(summary.publicEvents,3);
+ assert.equal(summary.reviewedCohorts,1);
+ assert.equal(summary.reviewedIndividualExceptions,1);
+ assert.equal(JSON.stringify(old),original,'Old signed cohort must not change');
+ assert.deepEqual(next.cohorts,old.cohorts);
+ const wrong=clone(next);wrong.entries[0].eventSha256='0'.repeat(64);
+ assert.throws(()=>verifyRelease(after,wrong),/SHA不一致/);
+ const changed=clone(after);changed.cards[0].events[0].name='既存改ざん';
+ assert.throws(()=>verifyRelease(changed,next),/SHA不一致/);
+ const stolen=clone(next);stolen.entries.push(v1Entry(before.cards[0].events[0],'30001'));
+ assert.throws(()=>verifyRelease(after,stolen),/SHA不一致|重複/);
+ const omitted=clone(after);omitted.cards[0].events.pop();
+ assert.throws(()=>verifyRelease(omitted,next),/SHA不一致/);
+});
+test('the actual released GT2487 cohort accepts only explicit extra-card V1 evidence',()=>{
+ const original=require('../data/reviewed_events.v1.json');
+ const signed=require('../config/event-release-approvals.gt2487.v2.json');
+ const old=JSON.stringify(signed);
+ const extra=event('gt-30322-event-001');
+ const candidate={schemaVersion:1,cards:[
+  ...original.cards,{cardId:'30322',coverageStatus:'partial',events:[extra]}
+ ]};
+ const ledger={schemaVersion:2,cohorts:clone(signed.cohorts),
+  entries:[v1Entry(extra,'30322')]};
+ const passed=verifyRelease(candidate,ledger);
+ assert.deepEqual([passed.publicCards,passed.publicEvents,
+   passed.reviewedCohorts,passed.reviewedIndividualExceptions],
+  [560,2488,1,1]);
+ assert.equal(JSON.stringify(signed),old);
+ assert.deepEqual(ledger.cohorts,signed.cohorts);
+ const unapproved=clone(ledger);unapproved.entries=[];
+ assert.throws(()=>verifyRelease(candidate,unapproved),/SHA不一致|未承認/);
+});
