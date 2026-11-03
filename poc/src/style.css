@@ -82,3 +82,7 @@
 .event-accordion-content .event-options{margin-top:6px}
 summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 @media(max-width:490px){.event-card-summary{gap:6px;padding:9px}.event-card-summary .card-icon{display:none}.event-card-label .card-identity{flex-direction:column;align-items:flex-start}.event-accordion-summary{padding:9px 7px;gap:5px}.event-state{font-size:10px}}
+
+/* Game-like type backgrounds are vivid. Keep abbreviated names legible on all
+   seven colors; pale yellow/green/orange in particular require dark ink. */
+.card-icon,.mini{color:#112436;text-shadow:0 1px 0 #ffffff30}
