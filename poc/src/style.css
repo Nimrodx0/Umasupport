@@ -29,3 +29,10 @@
 
 /* Six-card reviewed-event overview: missing data is not an unselected route. */
 .event-overview-stats{display:flex;flex-wrap:wrap;gap:7px 12px;margin:12px 0;padding:9px 12px;border:1px solid var(--line);border-radius:10px}.event-overview-stats span{font-size:12px;color:var(--muted)}.event-overview-stats b{color:var(--text)}.event-overview-controls{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.event-overview-controls label{display:flex;align-items:center;gap:8px}.event-slot{margin-bottom:12px;overflow-wrap:anywhere}.event-slot .flex{flex-wrap:wrap}.event-slot-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px}.event-slot .event{margin:10px 0}
+
+/* Searchable goal-skill picker; the control works with keyboard and touch. */
+.goal-skill-search{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:15px}
+.goal-skill-search label{font-size:12px;color:var(--muted)}
+.goal-skill-search input{flex:1 1 210px;min-width:0}
+.goal-skill-search #goal-skill-count{min-width:34px;text-align:right}
+@media(max-width:490px){.goal-skill-search label{flex-basis:100%}.goal-skill-search input{flex-basis:calc(100% - 48px)}}
