@@ -308,14 +308,30 @@ function importPreviewModal(){
  titleModal('JSON読込：方法を選択','決定するまで保存内容は変わりません',summary+help+explanation,foot);
 }
 function renderModal(preserveScroll){let scroll=preserveScroll?document.querySelector('.modal-body')?.scrollTop||0:0;if(!ui.modal){document.getElementById('modal-layer').innerHTML='';return}switch(ui.modal.kind){case 'pick':pickerModal();break;case 'edit':editCardModal();break;case 'deck-events':deckEventsModal();break;case 'skill':skillDetailModal();break;case 'assign':assignModal();break;case 'goals':goalsModal();break;case 'source-health':sourceHealthModal();break;case 'deck-manager':deckManagerModal();break;case 'owned-manager':ownedManagerModal();break;case 'import-preview':importPreviewModal();break;}const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;}
+function refreshEventSelectionUI(changed){
+ // The deck and goals remain mounted; avoid throwing away the entire page
+ // for a radio-button edit. Rebuild the dependent summary and current modal.
+ const r=results(),stats=document.querySelector('.stats'),goals=document.querySelector('.goals');
+ if(stats)stats.outerHTML=statsHTML(r);
+ if(goals)goals.outerHTML=goalHTML(r);
+ refreshTable();
+ if(!ui.modal)return;
+ const {deck,index,event,value}=changed.dataset,kind=changed.hasAttribute('data-event-choice')?
+  'data-event-choice':'data-event-outcome';
+ renderModal(true);
+ const next=Array.from(document.querySelectorAll('input['+kind+']')).find(input=>
+  input.dataset.deck===deck&&input.dataset.index===index&&
+  input.dataset.event===event&&input.value===value);
+ const focusTarget=next||document.querySelector('.modal-head [data-action="close"]');
+ if(typeof focusTarget?.focus==='function')focusTarget.focus({preventScroll:true});
+}
 function changeSelection(el){
  const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
  if(!sl?.cardId)return;
  const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
  if(el.value)next.choices[eid]=el.value;else delete next.choices[eid];
  sl.choices=next.choices;sl.outcomes=next.outcomes;
- const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
- const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+ store();refreshEventSelectionUI(el);
 }
 function changeOutcome(el){
  const k=el.dataset.deck,i=Number(el.dataset.index),eid=el.dataset.event,sl=activeDeck(k).slots[i];
@@ -323,8 +339,7 @@ function changeOutcome(el){
  const next=core.clearDependentState(data.cardById[sl.cardId],sl.choices,sl.outcomes||{},eid);
  if(el.value)next.outcomes[eid]=el.value;
  sl.choices=next.choices;sl.outcomes=next.outcomes;
- const scroll=document.querySelector('.modal-body')?.scrollTop||0;store();render();
- const body=document.querySelector('.modal-body');if(body)body.scrollTop=scroll;
+ store();refreshEventSelectionUI(el);
 }
 function slotHasEventChoices(slot){
  return !!slot&&(Object.keys(slot.choices||{}).length>0||
