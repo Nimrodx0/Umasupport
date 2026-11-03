@@ -78,7 +78,7 @@ async function main(){
   const page=await context.newPage();await mock(page);
   await boot(page,origin+'/poc/live.html?eventPreview=30311');
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/未承認イベントの試用モード/);
-  assert.match(await page.locator('.notice').last().innerText(),/承認済み実イベントは0件/);
+  assert.equal(await page.locator('.notice').count(),1,'Only the explicit candidate warning should appear');
   assert.equal(await page.evaluate(()=>window.UmaPreviewActive),true);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.cardById['30311'].events.length),5);
@@ -124,7 +124,7 @@ async function main(){
   await boot(badPage,origin+'/poc/live.html?eventPreview=30311');
   assert.equal(await badPage.evaluate(()=>window.UmaDemoData.cardById['30311'].events.length),0);
   assert.equal(await badPage.evaluate(()=>window.UmaPreviewActive),false);
-  assert.match(await badPage.locator('.notice').last().innerText(),/試用イベントは適用されませんでした/);
+  assert.match(await badPage.locator('.notice').last().innerText(),/試用イベントを読み込めませんでした/);
   await bad.close();
 
   // Expanded mode: independently generated 126 candidate input records, used
