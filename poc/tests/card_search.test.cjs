@@ -101,5 +101,6 @@ test('release date ordering requires explicitly supplied dates; unknowns sort la
  assert.deepEqual(sortCards(cards,'release-desc').map(x=>x.id),['12','10','11','9']);
  assert.deepEqual(sortCards(cards,'release-asc').map(x=>x.id),['11','10','12','9']);
  assert.equal(isKnownReleaseDate({releaseDate:'2026-13-01'}),false);
+ assert.equal(isKnownReleaseDate({releaseDate:'2026-02-30'}),false);
  assert.equal(isKnownReleaseDate({releaseDate:'2026-09-12'}),true);
 });
