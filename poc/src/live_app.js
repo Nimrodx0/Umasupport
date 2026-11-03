@@ -255,10 +255,10 @@ function accordionKey(deckKey,deckId,slotIndex,eventId=''){
  return deckKey+'|'+deckId+'|'+slotIndex+'|'+eventId;
 }
 function captureEventFolds(){
- for(const element of document.querySelectorAll('[data-event-card-fold]')){
+ for(const element of document.querySelectorAll?.('[data-event-card-fold]')||[]){
   ui.eventCardFold[element.dataset.eventCardFold]=element.open;
  }
- for(const element of document.querySelectorAll('[data-event-item-fold]')){
+ for(const element of document.querySelectorAll?.('[data-event-item-fold]')||[]){
   ui.eventItemFold[element.dataset.eventItemFold]=element.open;
  }
 }
