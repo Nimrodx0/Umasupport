@@ -156,6 +156,8 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  assert.equal(await page.evaluate(()=>document.activeElement?.id),'picker-search',
+   'Opening the picker must focus the card search box');
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
   let perf=await page.locator('.modal-body').innerText();
@@ -557,6 +559,11 @@ async function main(){
   assert.equal(saved.decks.main[0].slots[0].choices['synthetic-start'],'go');
   await eventPage.locator('button[data-action="close"]').click();
   await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  await eventPage.locator('#event-status-filter').selectOption('configured');
+  await eventPage.locator('button[data-action="close"]').click();
+  await eventPage.locator('button[data-action="deck-events"][data-deck="main"]').click();
+  assert.equal(await eventPage.locator('#event-status-filter').inputValue(),'configured',
+   'Event overview filter must persist across openings');
   await eventPage.locator('#event-status-filter').selectOption('all');
   eventPage.once('dialog',d=>d.dismiss());
   await eventPage.locator('[data-action="deck-event-slot-reset"][data-index="0"]').click();
