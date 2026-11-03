@@ -10,6 +10,7 @@
 | 今後の作業順序と完了ゲート | [roadmap.md](roadmap.md) |
 | **既存Phase 2・2,512非公開候補の残件** | [出典差異の後続裁定](phase2-2511-residual-source-gaps-20261023.md)／[Checker未同定のP0/P1/P2](phase2-remaining-checker-skill-impact-20261023.md)／[10/26非スキル効果の保留16件](phase2-outing-unlock-terminal-batch-20261026.md) |
 | 現在の状況と根拠リンク | [status.md](status.md) |
+| スキル効果説明の全件収録率と未収録36種類 | [2026-11-04固定スナップショット全件監査](skill-effect-coverage-audit-20261104.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
