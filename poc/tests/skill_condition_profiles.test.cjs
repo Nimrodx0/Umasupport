@@ -31,7 +31,7 @@ test('P1 keeps per-invoke OR-of-AND groups and preconditions separate from activ
  const report=profile.attach(m,{skillText:registry(rows)});
  assert.equal(report.matched,1);
  assert.equal(report.unavailable,1);
- assert.equal(report.explicitPredicates,4);
+ assert.equal(report.explicitPredicates,5);
  assert.equal(m.skillById['hint:出典未収録'].activationProfile.status,'unavailable');
  const p=m.skillById['skill:100'].activationProfile;
  assert.equal(p.status,'source-structure');
