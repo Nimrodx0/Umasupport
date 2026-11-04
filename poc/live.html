@@ -6,7 +6,7 @@
 <footer role="note" style="max-width:1100px;margin:16px auto 32px;padding:0 16px;color:#666;font-size:12px;line-height:1.6">
   ウマサルタントは非公式・非営利の育成計画支援ツールです。Cygames、GameToraなどの権利者・提供元とは提携していません。イベント情報は出典の固定版に基づく参考値であり、現行ゲームでの発生・報酬を保証しません。
 </footer>
-<script src="./src/core.js"></script><script src="./src/deck_events.js"></script><script src="./src/event_sequence.js"></script><script src="./src/skill_table.js"></script><script src="./src/card_search.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_hierarchy.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/skill_effects.js"></script><script src="./src/settings.js"></script><script src="./src/source_health.js"></script>
+<script src="./src/core.js"></script><script src="./src/deck_events.js"></script><script src="./src/event_sequence.js"></script><script src="./src/skill_table.js"></script><script src="./src/card_search.js"></script><script src="./src/live_loader.js"></script><script src="./src/skill_hierarchy.js"></script><script src="./src/skill_bridge.js"></script><script src="./src/skill_effects.js"></script><script src="./src/skill_condition_tags.js"></script><script src="./src/skill_condition_profiles.js"></script><script src="./src/settings.js"></script><script src="./src/source_health.js"></script>
 <script src="./src/event_schema.js"></script><script src="./src/public_event_catalog.js"></script>
 <script src="./src/community_candidate_preview.js"></script><script src="./src/checker_choice_fact_preview.js"></script><script src="./src/checker_result_preview.js"></script><script src="./src/event_preview_loader.js"></script><script src="./src/private_local_event_preview.js"></script>
 <script>
@@ -87,6 +87,16 @@
      }catch(effectError){
        console.warn('スキル効果の表示情報を適用できません',effectError);
        window.UmaDemoData.meta.skillEffects={enriched:0,error:String(effectError)};
+     }
+     // P1 classification is read-only. Preserve all unlisted skills and
+     // published event rewards, without inventing activation suitability.
+     try{
+       UmaSkillConditionProfiles.attach(window.UmaDemoData,{skillText,pinnedSkillText});
+     }catch(conditionError){
+       console.warn('スキル発動条件の構造分析を適用できません',conditionError);
+       window.UmaDemoData.meta.skillConditionProfiles={
+         scope:'unavailable',error:String(conditionError)
+       };
      }
      const script=document.createElement('script');script.src='./src/live_app.js';
      script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
