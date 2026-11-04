@@ -1,0 +1,72 @@
+name: GlobalSim position-ranking exploratory pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_scenario:
+        description: "Seeds in each of 4 nine-runner rosters (1-200)"
+        type: number
+        default: 60
+        required: true
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_position_pilot.cjs'
+      - 'poc/tests/globalsim_position_pilot.test.cjs'
+      - '.github/workflows/globalsim-position-pilot.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  exploratory-nine-runner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate pure analyzer before pulling third-party code
+        run: |
+          node --check poc/tools/globalsim_position_pilot.cjs
+          node --test poc/tests/globalsim_position_pilot.test.cjs
+      - name: Fetch pinned, reviewable GlobalSim v77 source for ephemeral CI use
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = '80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1'
+      - name: Compile the same source build profile as published v77 validation
+        run: |
+          cd /tmp/globalsim
+          cargo build --release --locked
+      - name: Generate fixed setup and replay-based positions
+        env:
+          REQUESTED_SEEDS: ${{ inputs.seeds_per_scenario || '2' }}
+        run: |
+          mkdir -p /tmp/position-pilot
+          case "$REQUESTED_SEEDS" in
+            ''|*[!0-9]*) echo "Invalid seed count" >&2; exit 2 ;;
+          esac
+          if [ "$REQUESTED_SEEDS" -lt 1 ] || [ "$REQUESTED_SEEDS" -gt 200 ]; then
+            echo "Pilot seed count out of range" >&2
+            exit 2
+          fi
+          node poc/tools/globalsim_position_pilot.cjs prepare \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/position-pilot/requests.jsonl \
+            /tmp/position-pilot/manifest.json "$REQUESTED_SEEDS"
+          /tmp/globalsim/target/release/race_engine_rs_v2 \
+            < /tmp/position-pilot/requests.jsonl \
+            > /tmp/position-pilot/replies.jsonl
+          node poc/tools/globalsim_position_pilot.cjs finish \
+            /tmp/position-pilot/manifest.json \
+            /tmp/position-pilot/replies.jsonl \
+            /tmp/position-pilot/summary.json
+      - name: Save derived position distributions only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-nine-runner-position-pilot
+          path: /tmp/position-pilot/summary.json
+          retention-days: 14
