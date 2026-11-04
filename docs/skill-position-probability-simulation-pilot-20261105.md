@@ -36,7 +36,7 @@
 - 解析器：`poc/tools/globalsim_position_pilot.cjs`
 - 固定ソース確認・ビルド・実験実行・成果物保管：[手動／PR時の独立CI](../.github/workflows/globalsim-position-pilot.yml)
 - サンプルの要求JSONLおよび返信JSONLはCI作業領域のみで使用。第三者の元スキル辞書と実験用バイナリはGitHubリポジトリへ同梱せず、**集計後のモデル上の割合だけ**CI artifactへ記録。
-- `workflow_dispatch`で各配分のシード数を1～200に設定可能。Pull Requestに限定した実験ゲートでは計算負荷を抑えるため各配分**40シード**で実行し、これは**限定的なモデル上の試行であり日本版の適性判定そのものではない**。脚質適性を裁定する統計量には使わない。
+- `workflow_dispatch`で各配分のシード数を1～200に設定可能。通常のPull Requestでの自動実験は計算負荷を抑えるため各配分**2シード**で接続確認を行う。別途[Actions #41937040969](https://github.com/Nimrodx0/Umasupport/actions/runs/41937040969)で一度、各配分**40シード**（合計160レース）のモデル探索を成功させた。これは限定的な条件でのモデル上の試行であり、日本版の適性判定そのものではない。脚質適性を裁定する統計量には使わない。
 - 実行例：固定版GlobalSimの`examples/v77-race.jsonl`が得られ、`target/release/race_engine_rs_v2`をビルド済みとする。
   ```sh
   node poc/tools/globalsim_position_pilot.cjs prepare \
