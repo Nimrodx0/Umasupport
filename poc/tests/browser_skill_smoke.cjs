@@ -190,6 +190,17 @@ async function main(){
   assert.equal(await page.evaluate(()=>
    window.UmaDemoData.meta.skillConditionProfiles.inference),'not-calculated',
    'P1 must not infer suitability or activation probability');
+  assert.equal(await page.evaluate(()=>
+   window.UmaDemoData.skillById['hint:右回り○'].activationTendency.status),'explicit-only',
+   'P2 must not convert an explicit running-style condition to inferred suitability');
+  assert.equal(await page.evaluate(()=>
+   window.UmaDemoData.meta.skillStyleTendencies.ruleVersion),'rank-phase-style-v1',
+   'P2 read-only metadata must attach in real Chromium');
+  assert.equal(await page.evaluate(()=>
+   Object.values(window.UmaDemoData.skillById).every(skill=>
+    skill.activationTendency===undefined||
+    !Object.hasOwn(skill.activationTendency,'probability'))),true,
+   'P2 never invents skill activation probabilities');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
