@@ -31,8 +31,8 @@ function apply(model,{skillText=null,pinnedSkillText=null}={}){
   } else {
    const numeric=String(skill.sourceNumericId||(/^skill:(\d+)$/.exec(skill.id)||[])[1]||'');
    if(numeric){
-    const record=current.byId.get(numeric)||pinned?.byId.get(numeric);
-    known=!!record&&record.name===name;
+    const live=current.byId.get(numeric),old=pinned?.byId.get(numeric);
+    known=!!(live?.name===name||old?.name===name);
    }
   }
   if(!known)excluded.add(skill.id);
