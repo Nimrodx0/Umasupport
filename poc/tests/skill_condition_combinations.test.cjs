@@ -17,7 +17,7 @@ test('same AND and same invoke across OR branches remain distinct',()=>{
  assert.equal(r.focused[k].sameInvokeOnly.skills,2);
  assert.equal(r.focused[k].sameAnd.examples[0].id,'1');
  assert.equal(r.rankWithPhase['order_rate<=40 & phase_random==1'].skills,1);
- assert.equal(r.positionWithoutTime,2);
+ assert.equal(r.positionWithoutTrackedPhase,2);
  assert.equal(r.cases['rank-in-OR-alternatives'].skills,1);
  assert.equal(r.focused[k].sameAnd.examples[0].clause[0],'order_rate<=40');
 });
