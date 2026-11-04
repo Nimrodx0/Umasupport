@@ -9,6 +9,9 @@ GitHub Pages: index.html → poc/live.html
   ├─ poc/src/live_loader.js：UmaSim support_card.txt の取得・形式検証・IndexedDB
   ├─ poc/src/skill_hierarchy.js / skill_bridge.js：skill_data.txt の数値ID照合と階層候補
   ├─ poc/src/skill_effects.js：UmaSim skill_data.txt の info[0]/info[1..] をID・名称照合し、全詳細行を表示専用に付与
+  ├─ poc/src/skill_condition_profiles.js：明示脚質・距離などの厳格元条件とOR/AND・Invokeをランタイムで保全
+  ├─ poc/src/skill_rank_timing.js：順位割合と局面の数値・抽選位置の事実解釈
+  ├─ poc/src/skill_style_tendency.js：発動条件の成立しやすさに関する定性的脚質傾向（明示条件とは別）
   ├─ poc/src/event_sequence.js：承認済みイベントの親子依存・打ち切りから連続表示を判定
   ├─ poc/src/public_event_catalog.js：レビュー済みイベントJSONの検証と安全な結合
   ├─ poc/src/core.js：デッキ／イベント状態から集計する純粋ロジック
@@ -16,10 +19,16 @@ GitHub Pages: index.html → poc/live.html
   └─ poc/src/settings.js：現行設定の入力検証・保存
 
 第三者公開元：通常ヒントとスキル辞書をブラウザが起動時に直接取得
-独自公開DB：poc/data/reviewed_events.v1.json（同一オリジン・現在実イベント0件）
+独自公開DB：poc/data/reviewed_events.v1.json（同一オリジン、2026-11-04時点の承認済み公開イベント2,487件）
 保存：IndexedDB（検証済みゲームデータ）／localStorage（利用者の編集設定）
 検証：poc/tests/（人工データ）＋ 明示実行のオンライン全件監査・統合検証
 ~~~
+
+### P1/P2スキル条件と推定の流れ（2026-11-04）
+
+`skill_data.txt`（実行時直接取得＋既存の検証済みキャッシュ）→ `skill_condition_profiles.attach`（元条件・作戦の明示表示とASTを独立保持）→ `skill_rank_timing.analyze`（OR中の個別ANDごとの順位割合・局面解釈）→ `skill_style_tendency.attach`（全OR経路の合意等を確認し、推定と保留を区別）→ `skill.activationTendency`および`model.meta.skillStyleTendencies`。
+
+**厳格な作戦条件と発動状況からの適性推定は別属性。** また、P2の脚質傾向の補助データは表示・通常ヒント／イベント報酬・獲得候補・検索フィルター・保存設定の判定にはまだ使わない。全件監査は[固定辞書と現在アプリの集計](skill-style-tendency-audit-20261104.md)。元ゲーム辞書全文のGitHub同梱や、実際の発動率・効果実用性のスコアリングは実施しない。
 
 **React / TypeScript / Viteは未導入。** 導入する場合は、[Phase 3](roadmap.md)で既存UIとテストの保守性を比較して判断する。
 
