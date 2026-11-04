@@ -413,7 +413,8 @@ jobs:
           node --check poc/src/skill_condition_combinations.cjs
           node --check poc/src/skill_rank_timing.js
           node --check poc/src/skill_rank_timing_audit.cjs
-          node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs
+          node --check poc/src/skill_style_tendency.js
+          node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs poc/tests/skill_style_tendency.test.cjs
 
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |
