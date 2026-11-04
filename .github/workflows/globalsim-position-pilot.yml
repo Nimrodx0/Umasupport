@@ -42,7 +42,7 @@ jobs:
           cargo build --release --locked
       - name: Generate fixed setup and replay-based positions
         env:
-          REQUESTED_SEEDS: ${{ inputs.seeds_per_scenario || '40' }}
+          REQUESTED_SEEDS: ${{ inputs.seeds_per_scenario || '2' }}
         run: |
           mkdir -p /tmp/position-pilot
           case "$REQUESTED_SEEDS" in
