@@ -59,7 +59,7 @@ function examine(skills,{exampleLimit=5}={}){
      if(!rankRows.length)continue;
      rankClauseCount++;
      const phases=row.filter(x=>PHASE_TYPES.has(x.type));
-     if(!phases.length){positionWithoutTime++;addCase('position-without-time-in-same-AND',s.id,detail);}
+     if(!phases.length){positionWithoutTime++;addCase('position-without-tracked-phase-in-same-AND',s.id,detail);}
      for(const rank of rankRows){
       for(const phase of phases){
        const key=field(rank)+' & '+field(phase);
