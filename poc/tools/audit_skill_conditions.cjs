@@ -103,7 +103,7 @@ function matchedRecord(skill,live,old){
   app:{...report.app,unmatchedExamples:unknown.slice(0,10),inventory:mini(relevant)}},null,2));
  console.log('SKILL_CONDITION_P0_REPORT_END');
  const compact=x=>({skills:x.skills,clauseCount:x.clauseCount,
-  rankClauseCount:x.rankClauseCount,positionWithoutTime:x.positionWithoutTime,
+  rankClauseCount:x.rankClauseCount,positionWithoutTrackedPhase:x.positionWithoutTrackedPhase,
   multiInvokeRank:x.multiInvokeRank,pairKinds:x.pairKinds,
   focused:Object.fromEntries(Object.entries(x.focused).map(([k,v])=>[k,{
    andSkills:v.sameAnd.skills,invokeOnlySkills:v.sameInvokeOnly.skills,
