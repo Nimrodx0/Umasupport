@@ -8,6 +8,7 @@ const bridge=require('../src/skill_bridge.js');
 const loader=require('../src/live_loader.js');
 const publicEvents=require('../src/public_event_catalog.js');
 const {inventory}=require('../src/skill_condition_inventory.cjs');
+const profiles=require('../src/skill_condition_profiles.js');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -51,14 +52,28 @@ function matchedRecord(skill,live,old){
   seen.set(record.id,record);
  }
  const relevant=inventory([...seen.values()]);
+ const applied=profiles.attach(model,{skillText,pinnedSkillText:pinnedText});
+ if(applied.matched!==relevant.shape.valid||
+    applied.unavailable!==unknown.length||applied.noActivationRecord!==0)
+   throw Error('P1 profile coverage mismatch with independent P0 cohort: '+
+    JSON.stringify(applied));
+ const profileTags=model.skills.filter(s=>s.activationProfile?.angleTags?.length).length;
+ if(profileTags!==relevant.shape.withTags)
+   throw Error('P1 bracket-label mismatch against P0 inventory: '+
+     profileTags+' != '+relevant.shape.withTags);
+ const profileByAxis={};
+ for(const skill of model.skills)for(const invoke of skill.activationProfile?.invokes||[])
+  for(const side of ['preConditions','conditions'])
+   for(const orGroup of invoke[side])for(const c of orGroup)
+    if(c.axis)profileByAxis[c.axis]=(profileByAxis[c.axis]||0)+1;
  const report={
-  auditVersion:1,source:{revision:REVISION,sha256:digest(skillText),
+  auditVersion:2,source:{revision:REVISION,sha256:digest(skillText),
    pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,
   app:{cards:model.cards.length,skills:model.skills.length,
    matchedEntries:seen.size,unmatched:unknown.length,unmatchedExamples:unknown.slice(0,25),
-   sourceCounts,inventory:relevant}
+   sourceCounts,inventory:relevant,profiles:{...applied,profileTags,profileByAxis}}
  };
  if(whole.shape.invalid||relevant.shape.invalid)
   throw Error('Unexpected malformed source skill predicates: '+whole.shape.invalid+'/'+relevant.shape.invalid);
