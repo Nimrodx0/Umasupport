@@ -31,6 +31,13 @@ test('own distance crossing and contemporaneous rival positions, never compare a
  {t:2,horses:[[20],[18],[21],[19]]},
  {t:3,horses:[[30],[28],[32],[35]]}];
  assert.equal(m.crossing(frames,0,15),1);
+ // JSON replay contains position in named horse objects. The Rust
+ // in-process/binary API uses six-element numeric arrays instead.
+ const jsonFrames=frames.map(f=>({t:f.t,
+  horses:f.horses.map(row=>({pos:row[0],speed:10,hp:100}))}));
+ assert.equal(m.crossing(jsonFrames,0,15),1);
+ assert.equal(m.crossing(jsonFrames,2,14.6),2);
+ m.checkFrames(jsonFrames,4);
  assert.equal(m.crossing(frames,2,14.6),2);
  assert.equal(m.crossing(frames,3,100),null);
  assert.equal(m.crossing([{t:0,horses:[[0],[0]]},
@@ -46,7 +53,9 @@ test('pilot analysis is labeled simulated, ensures field identity and full repla
  ];
  const manifest={sourceRevision:m.PIN,courseId:10504,courseDistance:2000,
   trials:[{scenario:trial.scenario,seed:trial.seed,horses:trial.horses}]};
- const output=m.analyze(manifest,[{seed:trial.seed,frames:rows}]);
+ const jsonRows=rows.map(f=>({t:f.t,
+  horses:f.horses.map(row=>({pos:row[0],speed:10}))}));
+ const output=m.analyze(manifest,[{seed:trial.seed,frames:jsonRows}]);
  assert.equal(output.trialCount,1);
  assert.equal(output.fieldSize,9);
  assert.match(output.status,/simulator-estimate-not-JP/);
