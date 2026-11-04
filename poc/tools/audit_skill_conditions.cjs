@@ -10,6 +10,7 @@ const publicEvents=require('../src/public_event_catalog.js');
 const {inventory}=require('../src/skill_condition_inventory.cjs');
 const profiles=require('../src/skill_condition_profiles.js');
 const combinations=require('../src/skill_condition_combinations.cjs');
+const rankTime=require('../src/skill_rank_timing_audit.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -71,12 +72,18 @@ function matchedRecord(skill,live,old){
  const combosApp=combinations.examine([...seen.values()]);
  if(combosAll.skills!==whole.total||combosApp.skills!==relevant.total)
   throw Error('P2 combination audit source-population mismatch');
+ const rankTimingAll=rankTime.cohort(raw);
+ const rankTimingApp=rankTime.cohort([...seen.values()]);
+ if(rankTimingAll.totalRecords!==whole.total||
+    rankTimingApp.totalRecords!==relevant.total)
+  throw Error('P2 rank-timing cohort denominator drift');
  const report={
-  auditVersion:3,source:{revision:REVISION,sha256:digest(skillText),
+  auditVersion:4,source:{revision:REVISION,sha256:digest(skillText),
    pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,
   p2Combinations:{all:combosAll,app:combosApp},
+  p2RankTiming:{all:rankTimingAll,app:rankTimingApp},
   app:{cards:model.cards.length,skills:model.skills.length,
    matchedEntries:seen.size,unmatched:unknown.length,unmatchedExamples:unknown.slice(0,25),
    sourceCounts,inventory:relevant,profiles:{...applied,profileTags,profileByAxis}}
@@ -119,4 +126,15 @@ function matchedRecord(skill,live,old){
  console.log('SKILL_CONDITION_P2_REPORT_START');
  console.log(JSON.stringify({full:compact(combosAll),app:compact(combosApp)},null,2));
  console.log('SKILL_CONDITION_P2_REPORT_END');
+ console.log('SKILL_RANK_TIMING_P2_REPORT_START');
+ const rankMini=x=>({totalRecords:x.totalRecords,withRankTimePair:x.withRankTimePair,
+  withoutRankTimePair:x.withoutRankTimePair,totalPairs:x.totalPairs,
+  isolatedPairs:x.isolatedPairs,needsReviewPairs:x.needsReviewPairs,
+  isolatedWithoutExplicitStyle:x.isolatedWithoutExplicitStyle,
+  reviewReasons:x.reviewReasons,byTimeCode:x.byTimeCode,byPhase:x.byPhase,
+  byRankConstraint:x.byRankConstraint,
+  topPairEntries:Object.entries(x.byPair).slice(0,30),
+  samples:x.samples});
+ console.log(JSON.stringify({full:rankMini(rankTimingAll),app:rankMini(rankTimingApp)},null,2));
+ console.log('SKILL_RANK_TIMING_P2_REPORT_END');
 })().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
