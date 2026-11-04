@@ -33,10 +33,16 @@ function infer(profile){
  const sourceNumericId=profile.sourceNumericId||null;
  const parsed=rankTiming.analyze({id:sourceNumericId,name:'',
   invokes:profile.invokes});
- if(parsed.hasExplicitStyleConstraint)
-  return unresolved('explicit-only','source-has-running-style-condition',
-   {sourceNumericId,hasExplicitStyleConstraint:true,
+ const explicitTag=Array.isArray(profile.angleTags)&&
+  profile.angleTags.some(x=>Array.isArray(x?.dimensions?.style)&&x.dimensions.style.length);
+ if(parsed.hasExplicitStyleConstraint||explicitTag)
+  return unresolved('explicit-only','source-has-explicit-style-condition',
+   {sourceNumericId,hasExplicitStyleConstraint:parsed.hasExplicitStyleConstraint,
+    hasExplicitStyleTag:!!explicitTag,
     note:'明示脚質条件を優先。位置条件由来の推定を専用指定に格上げしない'});
+ if(!parsed.pairs.length)
+  return unresolved('not-inferable','no-rank-timing-in-source',
+   {sourceNumericId,ruleVersion:RULE_VERSION,branches:[]});
  const branches=[];
  for(const [invokeOffset,invoke] of profile.invokes.entries()){
   if(!isObj(invoke)||!Array.isArray(invoke.conditions))
