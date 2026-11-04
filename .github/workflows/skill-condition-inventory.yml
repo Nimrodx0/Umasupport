@@ -1,0 +1,39 @@
+name: One-time skill activation condition inventory
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_condition_inventory.cjs'
+      - 'poc/tools/audit_skill_conditions.cjs'
+      - 'poc/tests/skill_condition_inventory.test.cjs'
+      - '.github/workflows/skill-condition-inventory.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test condition inventory against synthetic matrices
+        run: |
+          node --check poc/src/skill_condition_inventory.cjs
+          node --check poc/tools/audit_skill_conditions.cjs
+          node --test poc/tests/skill_condition_inventory.test.cjs
+      - name: Audit pinned skill registry and current published app model
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: node poc/tools/audit_skill_conditions.cjs
+      - name: Upload inventory report without source skill data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-condition-inventory
+          path: skill-condition-inventory-audit.json
+          if-no-files-found: ignore
