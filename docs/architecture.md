@@ -93,3 +93,11 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 - UmaSim `skill_data.txt` には既存の `info`（効果説明・補足的な発動条件記述）がある。`skill_bridge.parseSource()` がこれを構造検証後に取得し、`skill_effects.attach()` が現在のスキルモデルへ追加する。`hint:` は同名唯一のときのみ結び、`skill:` は数値ID＋名称で照合する。旧版にしかないスキルは検証済み固定版を優先。未照合の効果を推測で表示しない。
 - UmaSim `info[0]` は概要、`info[1..]` は順序つきの詳細記述。`skill_bridge.parseSource` の `technicalDetailLines` → `skill_effects.attach` の `effectTechnicalDetailLines` → スキル詳細UIの折りたたみ番号付きリストで、複数記述を最後まで表示する。従来の `effectTechnicalDetails`（最初の1件）は後方互換の表示補助として保持する。詳細行はHTMLエスケープし、1件しかない場合は従来のコンパクト表示を保つ。元の構造化 `invokes` をイベントの発動条件推定へ流用しない。
 - スキル効果は**画面専用の補助属性**であり、イベント報酬・ヒントLv・スキル階層・保存設定を変えない。効果文を本レポジトリの公開JSONへ同梱せず、外部元の実行時取得・IndexedDBキャッシュを再利用する。辞書取得失敗は従来どおり保存済み検証版にフォールバックする。
+
+## 発動条件の構造化分析基盤（P0／P1、2026-11-04）
+
+- **P0**：`skill_condition_inventory.cjs` と `audit_skill_conditions.cjs` が固定UmaSim辞書を読み、`invokes` の条件型・演算子・AND/OR・効果型・＜ ＞語彙を全件分類する。限定Actionsのみ外部データを取得し、通常CIは合成データで試験する。固定監査結果は[全件P0監査](skill-condition-inventory-audit-20261104.md)。
+- **P1**：`skill_condition_tags.js` は説明の＜ ＞候補から距離・脚質・馬場という限られた語彙のみを抽出し、数値比較の `<` / `>` を誤認しない。抽出文字列はUmaSim出典の表示語彙であり、実ゲーム画面の独立実機確認を意味しない。
+- `skill_condition_profiles.js` は現在辞書と固定辞書を**スキル数値ID＋名称**（`hint:` は一意名照合）で結び、各 `Invoke` の `preConditions` と `conditions` を「外側OR／内側AND」の入れ子構造のまま投影する。脚質 `running_style`、距離 `distance_type`、馬場 `ground_type`、馬場状態 `ground_condition` の `type/operator/value` は演算子を保持したまま日本語の値ラベルを添える。その他の条件も**条件式のまま保持**し、未知を無制限扱いしない。
+- `live.html` の起動直前に `UmaSkillConditionProfiles.attach(model,{skillText,pinnedSkillText})` を追加。ステージングして全件検証後に `skill.activationProfile` を付加し、`model.meta.skillConditionProfiles` に出典付きの集計を保持。**スキル一覧・イベント報酬・元ゲーム辞書・目標／提供枚数計算・保存設定は変更しない。**
+- **P1は構造分類まで**：順位・局面からの「逃げ／先行向き」という推定、全発動確率、カード傾向のUI・フィルターはまだ実装しない。追加条件を一律に基礎効果の制限とみなさず、複数Invoke・AND/ORの意味の裁定は次工程で行う。未収録63スキルは `status:'unavailable'` で残す。

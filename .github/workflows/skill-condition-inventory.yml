@@ -7,6 +7,9 @@ on:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
       - 'poc/tests/skill_condition_inventory.test.cjs'
+      - 'poc/src/skill_condition_tags.js'
+      - 'poc/src/skill_condition_profiles.js'
+      - 'poc/tests/skill_condition_profiles.test.cjs'
       - '.github/workflows/skill-condition-inventory.yml'
 
 permissions:
@@ -21,11 +24,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test condition inventory against synthetic matrices
+      - name: Test P0 inventory and P1 activation profiles against synthetic predicates
         run: |
           node --check poc/src/skill_condition_inventory.cjs
+          node --check poc/src/skill_condition_tags.js
+          node --check poc/src/skill_condition_profiles.js
           node --check poc/tools/audit_skill_conditions.cjs
-          node --test poc/tests/skill_condition_inventory.test.cjs
+          node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs
       - name: Audit pinned skill registry and current published app model
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
