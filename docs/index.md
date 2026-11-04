@@ -12,6 +12,7 @@
 | 現在の状況と根拠リンク | [status.md](status.md) |
 | スキル効果説明の全件収録率と未収録36種類 | [2026-11-04固定スナップショット全件監査](skill-effect-coverage-audit-20261104.md) |
 | スキル発動条件の分類・サポカ傾向分析の設計 | [明示条件・実質的適性・汎用性を分けた設計案](skill-activation-tendencies-design.md) |
+| P0 スキル発動条件の全件実測・125条件コード | [UmaSim固定版2,162件の構造監査](skill-condition-inventory-audit-20261104.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
