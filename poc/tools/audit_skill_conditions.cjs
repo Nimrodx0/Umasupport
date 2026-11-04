@@ -13,6 +13,7 @@ const combinations=require('../src/skill_condition_combinations.cjs');
 const rankTime=require('../src/skill_rank_timing_audit.cjs');
 const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
+const styleReview=require('../src/skill_style_review.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -85,6 +86,9 @@ function matchedRecord(skill,live,old){
   throw Error('P2 inference mutated card/event/hint catalog');
  if(styleApp.total!==model.skills.length||styleApp.unavailable!==unknown.length)
   throw Error('P2 style tendency app coverage mismatch: '+JSON.stringify(styleApp));
+ const allInferredReview=styleReview.summarize(model);
+ if(allInferredReview.total!==styleApp.inferred)
+  throw Error('P2 review list lost inferred skills');
  const sourceStyles=raw.map(rec=>{
   const inference=styleTendency.infer({
    status:'source-structure',sourceNumericId:rec.id,
@@ -134,6 +138,7 @@ function matchedRecord(skill,live,old){
   p2Combinations:{all:combosAll,app:combosApp},
   p2RankTiming:{all:rankTimingAll,app:rankTimingApp},
   p2StyleTendency:{all:styleFull,app:styleApp},
+  p2StyleReview:allInferredReview,
   app:{cards:model.cards.length,skills:model.skills.length,
    matchedEntries:seen.size,unmatched:unknown.length,unmatchedExamples:unknown.slice(0,25),
    sourceCounts,inventory:relevant,profiles:{...applied,profileTags,profileByAxis}}
@@ -191,4 +196,7 @@ function matchedRecord(skill,live,old){
  console.log(JSON.stringify({all:styleFull,app:styleApp,
   checkedNamedSkills:mustAgree},null,2));
  console.log('SKILL_STYLE_TENDENCY_P2_REPORT_END');
+ console.log('SKILL_STYLE_REVIEW_P2_REPORT_START');
+ console.log(JSON.stringify(allInferredReview,null,2));
+ console.log('SKILL_STYLE_REVIEW_P2_REPORT_END');
 })().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
