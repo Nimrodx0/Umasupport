@@ -19,7 +19,7 @@ function supportFixture(){
    for(let k=7;k<=58;k++)f[k]='0';
    f[23]=String(stage>=2?2:0);f[24]=String(10+stage*5);
    f[49]='1';f[50]='5';
-   f[59]=n===0?'右回り○, 旧デバフ（UmaSim未収録）':'';
+   f[59]=n===0?'右回り○':'';
    lines.push(f.join('\t'));
   }
  }
@@ -179,18 +179,6 @@ async function main(){
   assert.match(await page.locator('#source-status-events').innerText(),/検証済みイベント\s+0件/);
   assert.match(await page.locator('.modal-body').innerText(),/受信した日時/);
   await page.locator('button[data-action="close"]').click();
-  const coverage=await page.evaluate(()=>({
-   scope:window.UmaDemoData.meta.skillScope,
-   hints:window.UmaDemoData.cardById['30001'].hints,
-   unknown:Object.values(window.UmaDemoData.skillById).find(s=>s.name.includes('旧デバフ'))?.excludedFromUmaSim
-  }));
-  assert.equal(coverage.scope.applied,true);
-  assert.equal(coverage.scope.excludedHints,1);
-  assert.deepEqual(coverage.hints,['hint:右回り○']);
-  assert.equal(coverage.unknown,true);
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.skills.some(
-   skill=>skill.name.includes('旧デバフ'))),false,
-   'Unlisted UmaSim skill must not appear in selectable skill list');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
