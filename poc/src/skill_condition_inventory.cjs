@@ -6,25 +6,10 @@ const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const OPS=new Set(['==','!=','>=','<=','>','<']);
 const EXPLICIT_TYPES=new Set(['running_style','distance_type','ground_type',
  'ground_condition','rotation','track_id','is_basis_distance']);
-const TAG_ATOMS=new Set(['逃げ','先行','差し','追込',
- '短距離','マイル','中距離','長距離','芝','ダート']);
-const allAngleCandidates=info=>{
- const tags=[];
- for(const row of Array.isArray(info)?info:[]){
-  if(typeof row!=='string')continue;
-  for(const m of row.matchAll(/[＜〈]([^＞〉]{1,100})[＞〉]/g))tags.push(m[1].normalize('NFKC').trim());
-  // UmaSim also uses ASCII inequality predicates such as <=, so an arbitrary
-  // <...> substring is NOT proof of an in-game angle-category.
-  for(const m of row.matchAll(/<([^<>\\r\\n]{1,100})>/g))tags.push(m[1].normalize('NFKC').trim());
- }
- return tags.filter(Boolean);
-};
-const isCategoryTag=text=>{
- const normalized=String(text).replace(/^作戦・/,'');
- const atoms=normalized.split(/[・/]/);
- return atoms.length>0&&atoms.every(a=>TAG_ATOMS.has(a));
-};
-const tagsOf=info=>allAngleCandidates(info).filter(isCategoryTag);
+const tagParser=require('./skill_condition_tags.js');
+const allAngleCandidates=info=>tagParser.candidates(info).map(x=>x.text);
+const isCategoryTag=text=>!!tagParser.parse(text);
+const tagsOf=info=>tagParser.recognized(info).map(x=>x.text);
 function inventory(records){
  if(!Array.isArray(records)||records.length===0)throw Error('Skill registry must be a nonempty array');
  const total=records.length,ids=new Set();
