@@ -16,7 +16,8 @@ function approvedEventSkillIds(card,model){
  if(!(model?.meta?.reviewedEventRecords||preview)||!Array.isArray(card?.events))return out;
  function rewards(xs){
   if(!Array.isArray(xs))return;
-  for(const r of xs)if(typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId))out.add(r.skillId);
+  for(const r of xs)if(typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId)&&
+   !model.skillById[r.skillId].excludedFromUmaSim)out.add(r.skillId);
  }
  function branch(x){
   if(!x||typeof x!=='object')return;
