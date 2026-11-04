@@ -127,6 +127,16 @@ function rewards(part,out){
   const item=recordFor(x);
   return item&&records.find(y=>y.id===item.id)?.info?.slice(2).some(t=>n(t));
  });
+ const incompleteExtraInfoSkills=extraInfoSkills.filter(x=>{
+  const matched=recordFor(x);
+  const raw=records.find(y=>y.id===matched.id);
+  const expected=raw.info.slice(1).filter(t=>typeof t==='string')
+   .map(t=>t.trim()).filter(t=>t&&t.length<=4000);
+  const actual=x.effectTechnicalDetailLines;
+  return !Array.isArray(actual)||JSON.stringify(actual)!==JSON.stringify(expected);
+ });
+ if(incompleteExtraInfoSkills.length)throw Error(
+  'Multiple publisher effect details lost: '+incompleteExtraInfoSkills.map(x=>x.id).join(', '));
  const reasons={};
  for(const skill of unfilled){const why=classify(skill);reasons[why]??={count:0,samples:[]};reasons[why].count++;
   if(reasons[why].samples.length<15)reasons[why].samples.push({id:skill.id,name:skill.name,tier:skill.tier});
@@ -161,13 +171,15 @@ function rewards(part,out){
    missingHintCardCounts:hintAffectedCards,
    affectedEventCards:affectedEventCards.size,affectedEventRecords:affectedEvents.size,
    affectedEventRewardIdentifiers:missingEventRewards,
-   extraInfoSegmentsNotDisplayed:{sourceRecords:srcTotals.withAdditionalInfo,
+   extraInfoSegments:{sourceRecords:srcTotals.withAdditionalInfo,
     appModelSkills:extraInfoSkills.length,
+    allPresentInDisplayModel:extraInfoSkills.length-incompleteExtraInfoSkills.length,
+    incomplete:incompleteExtraInfoSkills.length,
     examples:sample(extraInfoSkills.map(x=>({id:x.id,name:x.name,tier:x.tier})),30)}
   },
   notes:['All source skill rarities include unique and special skills that are not registered wholesale for goal selection.',
    'An info string is publisher-reported coverage, not proof of current game behavior.',
-   'The UI currently displays info[0] and info[1] only; info[2+] remains unavailable in skill detail.',
+   'The UI displays info[0] and all validated info[1+] entries, preserving their sequence.',
    'Missing descriptions do not mean that a skill is absent from the game.']
  };
  const filename=process.env.SKILL_AUDIT_OUTPUT||'skill-effect-coverage-audit.json';
