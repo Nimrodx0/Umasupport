@@ -11,6 +11,8 @@ const {inventory}=require('../src/skill_condition_inventory.cjs');
 const profiles=require('../src/skill_condition_profiles.js');
 const combinations=require('../src/skill_condition_combinations.cjs');
 const rankTime=require('../src/skill_rank_timing_audit.cjs');
+const styleTendency=require('../src/skill_style_tendency.js');
+const skillTags=require('../src/skill_condition_tags.js');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -77,13 +79,61 @@ function matchedRecord(skill,live,old){
  if(rankTimingAll.totalRecords!==whole.total||
     rankTimingApp.totalRecords!==relevant.total)
   throw Error('P2 rank-timing cohort denominator drift');
+ const cardsBefore=JSON.stringify(model.cards);
+ const styleApp=styleTendency.attach(model);
+ if(cardsBefore!==JSON.stringify(model.cards))
+  throw Error('P2 inference mutated card/event/hint catalog');
+ if(styleApp.total!==model.skills.length||styleApp.unavailable!==unknown.length)
+  throw Error('P2 style tendency app coverage mismatch: '+JSON.stringify(styleApp));
+ const sourceStyles=raw.map(rec=>{
+  const inference=styleTendency.infer({
+   status:'source-structure',sourceNumericId:rec.id,
+   invokes:rec.invokes,angleTags:skillTags.recognized(rec.info)});
+  return {id:rec.id,name:rec.name,inference};
+ });
+ const styleFull={total:sourceStyles.length,
+  statuses:{},labels:{},reviewReasons:{},examples:{front:[],back:[],
+   needsReview:[],explicitOnly:[],notInferable:[]}};
+ const inc=(obj,k)=>{obj[k]=(obj[k]||0)+1;};
+ for(const item of sourceStyles){
+  const x=item.inference;
+  inc(styleFull.statuses,x.status);
+  if(x.status==='inferred'){
+   inc(styleFull.labels,x.label);
+   const examples=x.styles[0]===1?styleFull.examples.front:styleFull.examples.back;
+   if(examples.length<12)examples.push({id:item.id,name:item.name,
+     ruleIds:x.basisRuleIds,sourceConditions:x.branches[0].sourceConditions});
+  }else{
+   if(x.reason)inc(styleFull.reviewReasons,x.reason);
+   const list=x.status==='explicit-only'?styleFull.examples.explicitOnly:
+    x.status==='not-inferable'?styleFull.examples.notInferable:
+    styleFull.examples.needsReview;
+   if(list.length<12)list.push({id:item.id,name:item.name,reason:x.reason});
+  }
+ }
+ const mustAgree=[
+  ['201052','逃げ・先行寄り'],['200702','差し・追込寄り']];
+ for(const [id,expected] of mustAgree){
+  const found=sourceStyles.find(x=>x.id===id);
+  if(!found||found.inference.status!=='inferred'||found.inference.label!==expected)
+   throw Error('P2 named skill regression: '+id+' != '+expected+
+    ' (actual '+JSON.stringify(found?.inference)+')');
+ }
+ for(const id of ['200542','200592']){
+  const found=sourceStyles.find(x=>x.id===id);
+  if(!found||found.inference.status!=='explicit-only')
+   throw Error('P2 explicit-style card wrongly inferred: '+id);
+ }
+ if(styleFull.total!==Object.values(styleFull.statuses).reduce((a,b)=>a+b,0))
+  throw Error('P2 style tendency full count mismatch');
  const report={
-  auditVersion:4,source:{revision:REVISION,sha256:digest(skillText),
+  auditVersion:5,source:{revision:REVISION,sha256:digest(skillText),
    pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,
   p2Combinations:{all:combosAll,app:combosApp},
   p2RankTiming:{all:rankTimingAll,app:rankTimingApp},
+  p2StyleTendency:{all:styleFull,app:styleApp},
   app:{cards:model.cards.length,skills:model.skills.length,
    matchedEntries:seen.size,unmatched:unknown.length,unmatchedExamples:unknown.slice(0,25),
    sourceCounts,inventory:relevant,profiles:{...applied,profileTags,profileByAxis}}
@@ -137,4 +187,8 @@ function matchedRecord(skill,live,old){
   samples:x.samples});
  console.log(JSON.stringify({full:rankMini(rankTimingAll),app:rankMini(rankTimingApp)},null,2));
  console.log('SKILL_RANK_TIMING_P2_REPORT_END');
+ console.log('SKILL_STYLE_TENDENCY_P2_REPORT_START');
+ console.log(JSON.stringify({all:styleFull,app:styleApp,
+  checkedNamedSkills:mustAgree},null,2));
+ console.log('SKILL_STYLE_TENDENCY_P2_REPORT_END');
 })().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
