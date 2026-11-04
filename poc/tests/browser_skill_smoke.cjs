@@ -29,7 +29,11 @@ function skillFixture(){
  const skills=[
   {id:'700004',name:'右回りの鬼',rarity:'rare',group:70000},
   {id:'700002',name:'右回り◎',rarity:'normal',group:70000},
-  {id:'700001',name:'右回り○',rarity:'normal',group:70000,info:['右回りコースが少し得意になる','コーナーでの条件を判定','追加の持続条件','再発動時の条件 <em>後半</em>']},
+  {id:'700001',name:'右回り○',rarity:'normal',group:70000,info:['右回りコースが少し得意になる','コーナーでの条件を判定','追加の持続条件','再発動時の条件 <em>後半</em>'],
+   invokes:[{index:0,preConditions:[],conditions:[[
+    {type:'running_style',operator:'==',value:1},
+    {type:'distance_type',operator:'==',value:3}]],
+    effects:[{type:'targetSpeed',value:1500}]}]},
   {id:'700014',name:'架空の金スキル',rarity:'rare',group:70001},
   {id:'700012',name:'架空の下位白',rarity:'normal',group:70001},
   {id:'700024',name:'架空の白なし金',rarity:'rare',group:70002}
@@ -179,6 +183,13 @@ async function main(){
   assert.match(await page.locator('#source-status-events').innerText(),/検証済みイベント\s+0件/);
   assert.match(await page.locator('.modal-body').innerText(),/受信した日時/);
   await page.locator('button[data-action="close"]').click();
+  assert.deepEqual(await page.evaluate(()=>
+   window.UmaDemoData.skillById['hint:右回り○'].activationProfile.invokes[0]
+    .conditions[0].map(p=>p.valueLabel)),['逃げ','中距離'],
+   'The real browser must attach source-verified categorized predicates');
+  assert.equal(await page.evaluate(()=>
+   window.UmaDemoData.meta.skillConditionProfiles.inference),'not-calculated',
+   'P1 must not infer suitability or activation probability');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700002'].lowerId),'hint:右回り○');
