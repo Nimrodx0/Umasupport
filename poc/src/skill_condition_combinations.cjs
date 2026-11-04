@@ -20,7 +20,7 @@ const types=row=>new Set(row.map(x=>x.type));
 const pairKey=(a,b)=>[a,b].sort().join(' + ');
 function examine(skills,{exampleLimit=5}={}){
  if(!Array.isArray(skills))throw Error('skills must be an array');
- const registry=new Map(),focus={},timeRanks=new Map(),cases={};
+ const registry=new Map(),focus=new Map(),timeRanks=new Map(),cases=new Map();
  const inc=(map,key,id,example)=>{
   let x=map.get(key);
   if(!x){x={skills:new Set(),occurrences:0,examples:[]};map.set(key,x);}
