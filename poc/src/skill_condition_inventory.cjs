@@ -20,7 +20,7 @@ function inventory(records){
  const total=records.length,ids=new Set();
  const shape={valid:0,invalid:0,withoutInvoke:0,multipleInvokes:0,
   invokes:0,withPreconditions:0,withConditions:0,withAnyCondition:0,
-  withTags:0,invalidExamples:[],byRarity:{}};
+  withTags:0,invalidExamples:[],invalidReasons:{},byRarity:{}};
  const counts={types:{},tags:{},operators:{},effects:{},matrixShapes:{},invokeCounts:{},unknownValues:[]};
  function bump(obj,key,n=1){obj[key]=(obj[key]||0)+n;}
  function check(groups){
@@ -32,17 +32,27 @@ function inventory(records){
  }
  for(const skill of records){
   const id=skill?.id,name=skill?.name;
-  let ok=isObj(skill)&&typeof id==='string'&&/^\d+$/.test(id)&&
-   typeof name==='string'&&name.trim()&&Array.isArray(skill.invokes);
-  if(ids.has(id))ok=false;ids.add(id);
-  const invokes=ok?skill.invokes:[];
-  if(ok)for(const invoke of invokes){
-   if(!isObj(invoke)||!check(invoke.conditions)||!check(invoke.preConditions)||
-      !Array.isArray(invoke.effects)){ok=false;break;}
+  let reason=null;
+  if(!isObj(skill)||typeof id!=='string'||!/^\d+$/.test(id)||
+     typeof name!=='string'||!name.trim())reason='invalid-skill-identity';
+  else if(!Array.isArray(skill.invokes))reason='missing-invokes-array';
+  else if(ids.has(id))reason='duplicate-id';
+  ids.add(id);
+  const invokes=!reason?skill.invokes:[];
+  if(!reason)for(const invoke of invokes){
+   if(!isObj(invoke)){reason='invalid-invoke-record';break;}
+   // UmaSim Kotlin model provides default empty lists; JSON may omit them.
+   for(const side of ['preConditions','conditions','effects']){
+    const value=invoke[side]===undefined?[]:invoke[side];
+    const valid=side==='effects'?Array.isArray(value):check(value);
+    if(!valid){reason='invalid-'+side;break;}
+   }
+   if(reason)break;
   }
-  if(!ok){
+  if(reason){
    shape.invalid++;
-   if(shape.invalidExamples.length<25)shape.invalidExamples.push({id:String(id??''),name:String(name??'').slice(0,70)});
+   bump(shape.invalidReasons,reason);
+   if(shape.invalidExamples.length<25)shape.invalidExamples.push({id:String(id??''),reason});
    continue;
   }
   shape.valid++;
@@ -56,9 +66,9 @@ function inventory(records){
   let hasPre=false,hasCond=false;
   for(const invoke of invokes){
    shape.invokes++;
-   for(const effect of invoke.effects)if(typeof effect?.type==='string')bump(counts.effects,effect.type);
+   for(const effect of invoke.effects||[])if(typeof effect?.type==='string')bump(counts.effects,effect.type);
    for(const side of ['preConditions','conditions']){
-    const groups=invoke[side];
+    const groups=invoke[side]===undefined?[]:invoke[side];
     bump(counts.matrixShapes,side+':'+groups.length+'-OR-groups');
     if(groups.length)(side==='preConditions'?hasPre=true:hasCond=true);
     for(const andGroup of groups){
