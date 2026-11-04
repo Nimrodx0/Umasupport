@@ -404,6 +404,12 @@ jobs:
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs
 
+      - name: Validate P0 skill activation condition matrix inventory (synthetic only)
+        run: |
+          node --check poc/src/skill_condition_inventory.cjs
+          node --check poc/tools/audit_skill_conditions.cjs
+          node --test poc/tests/skill_condition_inventory.test.cjs
+
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |
           node --check poc/src/event_sequence.js
