@@ -6,21 +6,31 @@ const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const OPS=new Set(['==','!=','>=','<=','>','<']);
 const EXPLICIT_TYPES=new Set(['running_style','distance_type','ground_type',
  'ground_condition','rotation','track_id','is_basis_distance']);
-const tagsOf=info=>{
+const TAG_ATOMS=new Set(['逃げ','先行','差し','追込',
+ '短距離','マイル','中距離','長距離','芝','ダート']);
+const allAngleCandidates=info=>{
  const tags=[];
  for(const row of Array.isArray(info)?info:[]){
   if(typeof row!=='string')continue;
   for(const m of row.matchAll(/[＜〈]([^＞〉]{1,100})[＞〉]/g))tags.push(m[1].normalize('NFKC').trim());
+  // UmaSim also uses ASCII inequality predicates such as <=, so an arbitrary
+  // <...> substring is NOT proof of an in-game angle-category.
   for(const m of row.matchAll(/<([^<>\\r\\n]{1,100})>/g))tags.push(m[1].normalize('NFKC').trim());
  }
  return tags.filter(Boolean);
 };
+const isCategoryTag=text=>{
+ const normalized=String(text).replace(/^作戦・/,'');
+ const atoms=normalized.split(/[・/]/);
+ return atoms.length>0&&atoms.every(a=>TAG_ATOMS.has(a));
+};
+const tagsOf=info=>allAngleCandidates(info).filter(isCategoryTag);
 function inventory(records){
  if(!Array.isArray(records)||records.length===0)throw Error('Skill registry must be a nonempty array');
  const total=records.length,ids=new Set();
  const shape={valid:0,invalid:0,withoutInvoke:0,multipleInvokes:0,
   invokes:0,withPreconditions:0,withConditions:0,withAnyCondition:0,
-  withTags:0,invalidExamples:[],invalidReasons:{},byRarity:{}};
+  withTags:0,withUnrecognizedAngleCandidates:0,invalidExamples:[],invalidReasons:{},byRarity:{}};
  const counts={types:{},tags:{},operators:{},effects:{},matrixShapes:{},invokeCounts:{},unknownValues:[]};
  function bump(obj,key,n=1){obj[key]=(obj[key]||0)+n;}
  function check(groups){
@@ -60,8 +70,10 @@ function inventory(records){
   bump(counts.invokeCounts,String(invokes.length));
   if(!invokes.length)shape.withoutInvoke++;
   if(invokes.length>1)shape.multipleInvokes++;
-  const tags=tagsOf(skill.info);
+  const candidates=allAngleCandidates(skill.info);
+  const tags=candidates.filter(isCategoryTag);
   if(tags.length)shape.withTags++;
+  if(candidates.some(t=>!isCategoryTag(t)))shape.withUnrecognizedAngleCandidates++;
   for(const tag of new Set(tags))bump(counts.tags,tag);
   let hasPre=false,hasCond=false;
   for(const invoke of invokes){
@@ -102,4 +114,4 @@ function inventory(records){
   tags:Object.fromEntries(sortedTags),operators:counts.operators,
   effects:counts.effects,matrixShapes:counts.matrixShapes,invokeCounts:counts.invokeCounts}};
 }
-module.exports={inventory,tagsOf,EXPLICIT_TYPES};
+module.exports={inventory,tagsOf,allAngleCandidates,isCategoryTag,EXPLICIT_TYPES};
