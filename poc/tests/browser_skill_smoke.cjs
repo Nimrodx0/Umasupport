@@ -194,7 +194,7 @@ async function main(){
    window.UmaDemoData.skillById['hint:右回り○'].activationTendency.status),'explicit-only',
    'P2 must not convert an explicit running-style condition to inferred suitability');
   assert.equal(await page.evaluate(()=>
-   window.UmaDemoData.meta.skillStyleTendencies.ruleVersion),'rank-phase-style-v1',
+   window.UmaDemoData.meta.skillStyleTendencies.ruleVersion),'rank-phase-style-v2',
    'P2 read-only metadata must attach in real Chromium');
   assert.equal(await page.evaluate(()=>
    Object.values(window.UmaDemoData.skillById).every(skill=>
