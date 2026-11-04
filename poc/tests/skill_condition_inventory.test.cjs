@@ -30,7 +30,7 @@ test('P0 inventory preserves and counts OR groups, nested AND and condition role
  assert.equal(got.counts.matrixShapes['preConditions:2-OR-groups'],1);
 });
 test('bracket parsing is bounded and excludes ordinary mathematical comparisons',()=>{
- assert.deepEqual(tagsOf(['＜作戦・逃げ＞','<中距離>','速さが>30になる','＜ ＞']),
+ assert.deepEqual(tagsOf(['＜作戦・逃げ＞','<中距離>','速さが>30になる','＜ ＞','<=10、順位<20、距離割合>40>']),
   ['作戦・逃げ','中距離']);
  assert.deepEqual(tagsOf(null),[]);
 });
