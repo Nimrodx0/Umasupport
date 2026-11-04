@@ -35,13 +35,19 @@ function create(template,{seedsPerScenario=6}={}){
  }
  return rows;
 }
+// JSON replay serializes each horse as {pos,speed,hp,lane,...};
+ // the binary in-process API instead exposes positional numeric arrays.
+const positionOf=h=>Array.isArray(h)?h[0]:h?.pos;
 function crossing(frames,runner,metres){
  for(let k=1;k<frames.length;k++){
   const a=frames[k-1],b=frames[k];
-  const x=a.horses[runner][0],y=b.horses[runner][0];
+  const x=positionOf(a.horses[runner]),y=positionOf(b.horses[runner]);
   if(y<metres||x>metres||y<=x)continue;
   const t=(metres-x)/(y-x);
-  const positions=a.horses.map((row,i)=>row[0]+t*(b.horses[i][0]-row[0]));
+  const positions=a.horses.map((row,i)=>{
+   const from=positionOf(row),to=positionOf(b.horses[i]);
+   return from+t*(to-from);
+  });
   const here=positions[runner];
   if(positions.some((z,i)=>i!==runner&&Math.abs(z-here)<1e-5))return null;
   return 1+positions.filter((z,i)=>i!==runner&&z>here).length;
@@ -55,7 +61,7 @@ function checkFrames(frames,n){
   if(!Number.isFinite(f.t)||f.t<=last||!Array.isArray(f.horses)||f.horses.length!==n)
    throw Error('Malformed replay frame '+frameIndex+' '+JSON.stringify({
     t:f?.t,horsesLength:f?.horses?.length}));
-  const idx=f.horses.findIndex(h=>!Array.isArray(h)||!Number.isFinite(h[0]));
+  const idx=f.horses.findIndex(h=>!Number.isFinite(positionOf(h)));
   if(idx>=0)throw Error('Missing runner position '+JSON.stringify({
    frameIndex,time:f.t,runnerIndex:idx,row:f.horses[idx],firstFrame:f.horses.slice(0,2)}));
   last=f.t;
