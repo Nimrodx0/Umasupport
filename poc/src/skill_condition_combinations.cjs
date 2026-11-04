@@ -30,7 +30,7 @@ function examine(skills,{exampleLimit=5}={}){
   x.skills.add(id);
  };
  const addCase=(label,id,example)=>inc(cases,label,id,example);
- let clauseCount=0,rankClauseCount=0,positionWithoutTime=0,
+ let clauseCount=0,rankClauseCount=0,positionWithoutTrackedPhase=0,
    sameInvokeButDifferentClause=0,multiInvokeRank=0;
  for(const s of skills){
   if(!Array.isArray(s?.invokes))throw Error('Invalid skill invokes: '+s?.id);
@@ -59,7 +59,7 @@ function examine(skills,{exampleLimit=5}={}){
      if(!rankRows.length)continue;
      rankClauseCount++;
      const phases=row.filter(x=>PHASE_TYPES.has(x.type));
-     if(!phases.length){positionWithoutTime++;addCase('position-without-tracked-phase-in-same-AND',s.id,detail);}
+     if(!phases.length){positionWithoutTrackedPhase++;addCase('position-without-tracked-phase-in-same-AND',s.id,detail);}
      for(const rank of rankRows){
       for(const phase of phases){
        const key=field(rank)+' & '+field(phase);
@@ -97,7 +97,7 @@ function examine(skills,{exampleLimit=5}={}){
    sameInvokeOnly:invokeOnly[key+':same-invoke-only']||{skills:0,occurrences:0,examples:[]}}];
  }));
  return {skills:skills.length,clauseCount,rankClauseCount,
-  positionWithoutTime,sameInvokeButDifferentClause,multiInvokeRank,
+  positionWithoutTrackedPhase,sameInvokeButDifferentClause,multiInvokeRank,
   pairKinds:Object.keys(sameAnd).length,
   focused,rankWithPhase:rankTime,
   topPairs:Object.fromEntries(Object.entries(sameAnd).slice(0,50)),
