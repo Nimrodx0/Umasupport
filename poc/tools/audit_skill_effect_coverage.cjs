@@ -40,6 +40,27 @@ function rewards(part,out){
  const records=JSON.parse(skillText.replace(/^\uFEFF/,''));
  const source=bridge.parseSource(skillText);
  const pinnedSource=bridge.parseSource(pinnedSkillText);
+ const reviewedLegacy=Object.entries(bridge.REVIEWED_LEGACY_SKILL_NAMES).map(([id,name])=>{
+  const currentById=source.byId.get(id);
+  const currentByName=source.byName.get(n(name))||[];
+  const pinnedById=pinnedSource.byId.get(id);
+  const pinnedByName=pinnedSource.byName.get(n(name))||[];
+  return {id,name,
+   currentIdMatch:currentById?{id:currentById.id,name:currentById.name}:null,
+   currentNameMatches:currentByName.map(x=>({id:x.id,name:x.name,rarity:x.rarity})),
+   pinnedIdMatch:pinnedById?{id:pinnedById.id,name:pinnedById.name}:null,
+   pinnedNameMatches:pinnedByName.map(x=>({id:x.id,name:x.name,rarity:x.rarity}))};
+ });
+ const identityCounts={
+  legacyEventIds:reviewedLegacy.length,
+  currentIdMatches:reviewedLegacy.filter(x=>x.currentIdMatch).length,
+  currentNameMatches:reviewedLegacy.filter(x=>x.currentNameMatches.length>0).length,
+  currentNameMatchedUnderDifferentId:reviewedLegacy.filter(x=>x.currentNameMatches.some(y=>y.id!==x.id)).length,
+  noCurrentIdOrName:reviewedLegacy.filter(x=>!x.currentIdMatch&&!x.currentNameMatches.length).length,
+  pinnedIdMatches:reviewedLegacy.filter(x=>x.pinnedIdMatch).length,
+  pinnedNameMatches:reviewedLegacy.filter(x=>x.pinnedNameMatches.length>0).length
+ };
+ if(identityCounts.legacyEventIds!==30)throw Error('Unexpected reviewed legacy ID count: '+identityCounts.legacyEventIds);
  const rawByRarity={};
  for(const x of records){
   const r=x.rarity||'unknown';
@@ -148,6 +169,7 @@ function rewards(part,out){
    pinnedRevision:bridge.PINNED_URL},
   sourceSkillDictionary:srcTotals,
   dictionaryByRarity:rawByRarity,
+  reviewedLegacyIdAndNameComparison:{...identityCounts,rows:reviewedLegacy},
   supportCards:{count:cardCount,uniqueOrdinaryHintNames:uniqueHints.size,
    hintNamesMissingFromDictionary:hintNamesNotInSource.length,
    missingHintExamples:sample(hintNamesNotInSource),ambiguousHintNames:hintNamesAmbiguous.length,

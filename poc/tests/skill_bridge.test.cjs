@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const bridge=require('../src/skill_bridge.js');
 const publicEvents=require('../src/public_event_catalog.js');
 const core=require('../src/core.js');
+const effects=require('../src/skill_effects.js');
 const skills=()=>JSON.stringify([
   {id:'100',name:' 尻尾上がり ',rarity:'normal',group:10},
   {id:'200',name:'架空の金スキル',rarity:'rare',group:20},
@@ -167,6 +168,17 @@ test('exact GT2487 released historical skill whitelist is complete and preserves
  assert.equal(model.cardById['30001'].events[0].rewards[0].skillId,'skill:200801');
  assert.equal(model.skillById['skill:200801'].tier,'unknown');
  assert.equal(model.skillById['skill:200801'].sourceStatus,'reviewed-legacy-master-id-only');
+ // A missing UmaSim effect is NOT a reason to remove the skill itself.
+ assert.ok(model.skills.some(s=>s.id==='skill:200801'));
+ const skillAfter=effects.attach(model,{skillText:skills()});
+ assert.equal(model.skillById['skill:200801'].effectDescription,undefined);
+ assert.equal(model.skillById['skill:200801'].effectTechnicalDetailLines,undefined);
+ assert.ok(skillAfter.missing>=1);
+ const routes=core.directRoutes(model.cardById['30001'],{stage:4,choices:{}});
+ assert.ok(routes.some(r=>r.skillId==='skill:200801'));
+ const deck={slots:[{cardId:'30001',stage:4,choices:{},outcomes:{}}]};
+ assert.ok(core.aggregate(deck,model)['skill:200801'],
+  'Verified published event reward remains a candidate even without effect text');
  assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('200801','他の名前')]),
   {skillText:skills(),allowReviewedLegacy:true}),/未照合/);
  assert.throws(()=>publicEvents.attach(fixture(),catalog([ref('999999','未知のスキル')]),
