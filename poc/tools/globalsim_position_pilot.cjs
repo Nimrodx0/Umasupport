@@ -51,11 +51,13 @@ function crossing(frames,runner,metres){
 function checkFrames(frames,n){
  if(!Array.isArray(frames)||frames.length<2)throw Error('Missing dense replay frames');
  let last=-Infinity;
- for(const f of frames){
+ for(const [frameIndex,f] of frames.entries()){
   if(!Number.isFinite(f.t)||f.t<=last||!Array.isArray(f.horses)||f.horses.length!==n)
-   throw Error('Malformed replay frame');
-  if(f.horses.some(h=>!Array.isArray(h)||!Number.isFinite(h[0])))
-   throw Error('Missing runner position');
+   throw Error('Malformed replay frame '+frameIndex+' '+JSON.stringify({
+    t:f?.t,horsesLength:f?.horses?.length}));
+  const idx=f.horses.findIndex(h=>!Array.isArray(h)||!Number.isFinite(h[0]));
+  if(idx>=0)throw Error('Missing runner position '+JSON.stringify({
+   frameIndex,time:f.t,runnerIndex:idx,row:f.horses[idx],firstFrame:f.horses.slice(0,2)}));
   last=f.t;
  }
 }
