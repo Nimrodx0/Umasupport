@@ -102,5 +102,9 @@ summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 .skill-effect-description{font-size:13px;line-height:1.75;margin:8px 0;white-space:pre-wrap}
 .skill-effect-detail{border-top:1px solid var(--line);margin:9px 0;padding-top:8px}
 .skill-effect-detail summary{font-size:12px;color:var(--teal);cursor:pointer}
-.skill-effect-detail>div{color:var(--muted);font-size:12px;line-height:1.7;margin-top:8px;white-space:pre-wrap}
+.skill-effect-detail>div{color:var(--muted);font-size:12px;line-height:1.7;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.skill-effect-steps{color:var(--muted);font-size:12px;line-height:1.7;margin:9px 0 0;padding-left:23px}
+.skill-effect-steps li{padding:0 0 9px 2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.skill-effect-steps li:last-child{padding-bottom:0}
+.skill-effect-steps li+li{border-top:1px solid var(--line);padding-top:9px}
 .skill-effect-panel a{color:var(--teal)}
