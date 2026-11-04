@@ -29,7 +29,7 @@ function skillFixture(){
  const skills=[
   {id:'700004',name:'右回りの鬼',rarity:'rare',group:70000},
   {id:'700002',name:'右回り◎',rarity:'normal',group:70000},
-  {id:'700001',name:'右回り○',rarity:'normal',group:70000,info:['右回りコースが少し得意になる','コーナーでの条件を判定','追加の持続条件','再発動時の条件 <後半>']},
+  {id:'700001',name:'右回り○',rarity:'normal',group:70000,info:['右回りコースが少し得意になる','コーナーでの条件を判定','追加の持続条件','再発動時の条件 <em>後半</em>']},
   {id:'700014',name:'架空の金スキル',rarity:'rare',group:70001},
   {id:'700012',name:'架空の下位白',rarity:'normal',group:70001},
   {id:'700024',name:'架空の白なし金',rarity:'rare',group:70002}
@@ -370,9 +370,9 @@ async function main(){
   const effectSteps=page.locator('.skill-effect-steps li');
   assert.equal(await effectSteps.count(),3,'All later publisher info entries must be rendered');
   assert.deepEqual(await effectSteps.allInnerTexts(),[
-   'コーナーでの条件を判定','追加の持続条件','再発動時の条件 <後半>'
+   'コーナーでの条件を判定','追加の持続条件','再発動時の条件 <em>後半</em>'
   ]);
-  assert.equal(await page.locator('.skill-effect-steps').locator('後半').count(),0,
+  assert.equal(await page.locator('.skill-effect-steps em').count(),0,
    'Angle brackets in publisher text must be escaped, not parsed as HTML');
   assert.match(await page.locator('.modal-body').innerText(),/全カードから逆引き/);
   assert.match(await page.locator('.modal-body').innerText(),/通常ヒント（0～4凸のいずれか）/);
