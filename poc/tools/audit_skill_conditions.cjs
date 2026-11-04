@@ -53,7 +53,7 @@ function matchedRecord(skill,live,old){
  const relevant=inventory([...seen.values()]);
  const report={
   auditVersion:1,source:{revision:REVISION,sha256:digest(skillText),
-   pinnedRevision:bridge.PINNED_URL.split('/')[4],pinnedSha256:digest(pinnedText),
+   pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,
   app:{cards:model.cards.length,skills:model.skills.length,
