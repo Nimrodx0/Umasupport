@@ -43,6 +43,14 @@ test('invalid AST is reported as unknown rather than as zero-condition universal
  assert.equal(results.shape.withoutInvoke,0);
  assert.equal(results.counts.occurrences,0);
 });
+test('omitted optional condition and effect arrays inherit the UmaSim empty-list defaults',()=>{
+ const r=inventory([x(4,[{conditions:[[c('distance_type','==',2)]]}]),
+  x(5,[{preConditions:[[c('running_style','==',1)]]}])]);
+ assert.equal(r.shape.valid,2);
+ assert.equal(r.shape.invalid,0);
+ assert.equal(r.counts.byType.distance_type.occurrences,1);
+ assert.equal(r.counts.byType.running_style.occurrences,1);
+});
 test('empty invoke and empty AND group remain structurally distinguishable',()=>{
  const r=inventory([x(1,[]),x(2,[invocation([],[[]])])]);
  assert.equal(r.shape.withoutInvoke,1);
