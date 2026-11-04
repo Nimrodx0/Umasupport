@@ -12,14 +12,15 @@ function dictionary(records=[]){
 const skill=(id,name,sourceNumericId)=>({id,name,tier:'unknown',lowerId:null,...(sourceNumericId?{sourceNumericId}:{})});
 function model(...skills){return {skills,skillById:Object.fromEntries(skills.map(x=>[x.id,x]))};}
 test('parses two info strings but keeps them distinct from event rewards',()=>{
- const text=dictionary([{id:'20011',name:'直線巧者',rarity:'normal',group:2001,info:['直線で速度が上がる','発動条件と効果量']}]);
+ const text=dictionary([{id:'20011',name:'直線巧者',rarity:'normal',group:2001,info:['直線で速度が上がる','発動条件と効果量','追加条件1','追加条件2']}]);
  const record=bridge.parseSource(text).byId.get('20011');
  assert.equal(record.description,'直線で速度が上がる');
  assert.equal(record.technicalDetails,'発動条件と効果量');
+ assert.deepEqual(record.technicalDetailLines,['発動条件と効果量','追加条件1','追加条件2']);
 });
 test('enriches unique named hints and numeric skills without merging duplicate names',()=>{
  const text=dictionary([
-  {id:'20011',name:'直線巧者',rarity:'normal',group:2001,info:['直線で速度が上がる','速度2500']},
+  {id:'20011',name:'直線巧者',rarity:'normal',group:2001,info:['直線で速度が上がる','速度2500','追加の持続条件','再発動条件']},
   {id:'20021',name:'連鎖スキル',rarity:'rare',group:2002,info:['追い抜きで速度が上がる']},
   {id:'20031',name:'同名',rarity:'normal',group:2003,info:['A']},
   {id:'20032',name:'同名',rarity:'rare',group:2003,info:['B']}
@@ -28,6 +29,9 @@ test('enriches unique named hints and numeric skills without merging duplicate n
  const report=effects.attach(m,{skillText:text});
  assert.equal(report.enriched,2);
  assert.equal(m.skillById['hint:直線巧者'].effectDescription,'直線で速度が上がる');
+ assert.deepEqual(m.skillById['hint:直線巧者'].effectTechnicalDetailLines,
+  ['速度2500','追加の持続条件','再発動条件']);
+ assert.equal(m.skillById['hint:直線巧者'].effectTechnicalDetails,'速度2500');
  assert.equal(m.skillById['skill:20021'].effectDescription,'追い抜きで速度が上がる');
  assert.equal(m.skillById['hint:同名'].effectDescription,undefined);
 });
@@ -46,4 +50,23 @@ test('missing effects are not fabricated and malformed sources change nothing',(
  assert.equal(m.skills[0].effectDescription,undefined);
  assert.throws(()=>effects.attach(m,{skillText:'garbage'}),/JSON形式/);
  assert.equal(m.skills[0].effectDescription,undefined);
+});
+
+test('retains every valid source detail in order, including after malformed entries',()=>{
+ const text=dictionary([{
+  id:'20011',name:'段階付き',rarity:'normal',group:2001,
+  info:['概要','最初',null,'次の条件','',42,'最後の効果']
+ }]);
+ const m=model(skill('hint:段階付き','段階付き'));
+ effects.attach(m,{skillText:text});
+ assert.deepEqual(m.skills[0].effectTechnicalDetailLines,['最初','次の条件','最後の効果']);
+ assert.equal(m.skills[0].effectTechnicalDetails,'最初');
+});
+test('historical source detail lines never leak into mismatched name-only hints',()=>{
+ const pinned=dictionary([{id:'20011',name:'旧名',rarity:'normal',group:2001,
+  info:['旧概要','過去の発動','旧版の追加発動']}]);
+ const m=model(skill('skill:20011','旧名','20011'),skill('hint:旧名','旧名'));
+ effects.attach(m,{pinnedSkillText:pinned});
+ assert.deepEqual(m.skills[0].effectTechnicalDetailLines,['過去の発動','旧版の追加発動']);
+ assert.equal(m.skills[1].effectTechnicalDetailLines,undefined);
 });

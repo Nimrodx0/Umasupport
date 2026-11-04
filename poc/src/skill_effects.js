@@ -30,12 +30,15 @@ function attach(model,{skillText=null,pinnedSkillText=null}={}){
   }
   if(!record?.description)continue;
   changes.push({skill,description:record.description,
-   technicalDetails:record.technicalDetails||null,source});
+   technicalDetails:record.technicalDetails||null,
+   technicalDetailLines:Array.isArray(record.technicalDetailLines)
+    ?[...record.technicalDetailLines]:[],source});
  }
  // Atomically apply after every source file has passed parseSource validation.
  for(const c of changes){
   c.skill.effectDescription=c.description;
   c.skill.effectTechnicalDetails=c.technicalDetails;
+  c.skill.effectTechnicalDetailLines=c.technicalDetailLines;
   c.skill.effectSource=c.source;
   if(c.source==='current')currentCount++;else pinnedCount++;
  }

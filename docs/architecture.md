@@ -8,7 +8,7 @@
 GitHub Pages: index.html → poc/live.html
   ├─ poc/src/live_loader.js：UmaSim support_card.txt の取得・形式検証・IndexedDB
   ├─ poc/src/skill_hierarchy.js / skill_bridge.js：skill_data.txt の数値ID照合と階層候補
-  ├─ poc/src/skill_effects.js：UmaSim skill_data.txt の既存 info[0]/info[1] をID・名称照合して表示専用に付与
+  ├─ poc/src/skill_effects.js：UmaSim skill_data.txt の info[0]/info[1..] をID・名称照合し、全詳細行を表示専用に付与
   ├─ poc/src/event_sequence.js：承認済みイベントの親子依存・打ち切りから連続表示を判定
   ├─ poc/src/public_event_catalog.js：レビュー済みイベントJSONの検証と安全な結合
   ├─ poc/src/core.js：デッキ／イベント状態から集計する純粋ロジック
@@ -91,4 +91,5 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 - `event_sequence.classifiedEvents(card.events)` は公開済みイベントスキーマの `requires`・`terminal`・`availabilityKind` を読み、連続関係が**確認できた**イベントのラベルだけを算出する。名称・イベントの配列順・非公開の元データから連続を推測しない。未収録の関係は表示できない場合がある。編成の到達可否・スキル数値計算は不変。
 - UmaSim `skill_data.txt` には既存の `info`（効果説明・補足的な発動条件記述）がある。`skill_bridge.parseSource()` がこれを構造検証後に取得し、`skill_effects.attach()` が現在のスキルモデルへ追加する。`hint:` は同名唯一のときのみ結び、`skill:` は数値ID＋名称で照合する。旧版にしかないスキルは検証済み固定版を優先。未照合の効果を推測で表示しない。
+- UmaSim `info[0]` は概要、`info[1..]` は順序つきの詳細記述。`skill_bridge.parseSource` の `technicalDetailLines` → `skill_effects.attach` の `effectTechnicalDetailLines` → スキル詳細UIの折りたたみ番号付きリストで、複数記述を最後まで表示する。従来の `effectTechnicalDetails`（最初の1件）は後方互換の表示補助として保持する。詳細行はHTMLエスケープし、1件しかない場合は従来のコンパクト表示を保つ。元の構造化 `invokes` をイベントの発動条件推定へ流用しない。
 - スキル効果は**画面専用の補助属性**であり、イベント報酬・ヒントLv・スキル階層・保存設定を変えない。効果文を本レポジトリの公開JSONへ同梱せず、外部元の実行時取得・IndexedDBキャッシュを再利用する。辞書取得失敗は従来どおり保存済み検証版にフォールバックする。

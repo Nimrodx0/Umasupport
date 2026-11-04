@@ -319,11 +319,17 @@ function skillDetailModal(){
  const reverseHtml=reverse.map(({card:c,hint,event})=>`<div class="info-item flex">${cardIcon(c,true)}<div class="grow"><b>${esc(c.name)}</b><div class="sub">${[hint?'通常ヒント（0～4凸のいずれか）':'',event?'イベント':''].filter(Boolean).join(' / ')} · ${esc(ownedLabel(c))}</div></div><button class="btn tiny" data-action="assign" data-id="${esc(c.id)}">編成へ</button></div>`).join('')||'<p class="help">選択した条件に該当するサポカがありません。情報未収録とゲーム内に存在しないことは別です。</p>';
  const filterHtml=`<div class="reverse-filter"><label class="filterlabel"><input type="checkbox" id="reverse-only-owned" ${ui.reverseOnlyOwned?'checked':''}>所持サポカのみ</label><select class="field" id="reverse-route" aria-label="逆引きの獲得経路"><option value="all">全経路</option><option value="hint" ${ui.reverseRoute==='hint'?'selected':''}>通常ヒント</option><option value="event" ${ui.reverseRoute==='event'?'selected':''}>イベント</option></select><span class="tiny-note">${reverse.length}枚</span></div>`;
  const upper=data.skills.filter(s=>s.lowerId===id);
+ const effectDetailLines=Array.isArray(skill.effectTechnicalDetailLines)
+   ?skill.effectTechnicalDetailLines
+   :skill.effectTechnicalDetails?[skill.effectTechnicalDetails]:[];
+ const effectDetailsHtml=effectDetailLines.length>1
+   ?`<ol class="skill-effect-steps">${effectDetailLines.map(line=>`<li>${esc(line)}</li>`).join('')}</ol>`
+   :`<div>${esc(effectDetailLines[0]||'')}</div>`;
  const effectSourceUrl=skill.effectSource==='pinned'?window.UmaSkillBridge.PINNED_URL:
    window.UmaSkillBridge.SOURCE_URL;
  const effectSourceLabel=skill.effectSource==='pinned'?'UmaSim固定版スキル辞書':'UmaSimスキル辞書';
  const effectBlock=skill.effectDescription
-  ?`<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="skill-effect-description">${esc(skill.effectDescription)}</div>${skill.effectTechnicalDetails?`<details class="skill-effect-detail"><summary>発動条件・効果量の詳細</summary><div>${esc(skill.effectTechnicalDetails)}</div></details>`:''}<div class="tiny-note">出典：<a href="${esc(effectSourceUrl)}" target="_blank" rel="noopener noreferrer">${effectSourceLabel}</a></div></section>`
+  ?`<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="skill-effect-description">${esc(skill.effectDescription)}</div>${effectDetailLines.length?`<details class="skill-effect-detail"><summary>発動条件・効果量の詳細${effectDetailLines.length>1?'（'+effectDetailLines.length+'件）':''}</summary>${effectDetailsHtml}</details>`:''}<div class="tiny-note">出典：<a href="${esc(effectSourceUrl)}" target="_blank" rel="noopener noreferrer">${effectSourceLabel}</a></div></section>`
   :'<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="sub">効果説明は未収録です。</div></section>';
  const body=`${effectBlock}<p class="help">現在の編成で選択済みの直接提供枚数と、全サポカの提供経路を区別します。逆引きの通常ヒントは0～4凸いずれかのデータであり、現在の編成の解放段階やイベント到達・実獲得を保証しません。</p>${scopes}<h3 style="margin:15px 0 9px">全カードから逆引き</h3>${filterHtml}<div class="info-list">${reverseHtml}</div>${upper.length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${upper.map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name||skill.lowerId)}</div>`:''}`;
  titleModal(skill.name,skill.tier==='gold'?'金スキル':'スキル詳細',body);
