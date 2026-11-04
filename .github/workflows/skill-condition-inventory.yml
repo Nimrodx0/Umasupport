@@ -12,6 +12,10 @@ on:
       - 'poc/tests/skill_condition_profiles.test.cjs'
       - 'poc/src/skill_condition_combinations.cjs'
       - 'poc/tests/skill_condition_combinations.test.cjs'
+      - 'poc/src/skill_rank_timing.js'
+      - 'poc/src/skill_rank_timing_audit.cjs'
+      - 'poc/tests/skill_rank_timing.test.cjs'
+      - 'poc/tests/skill_rank_timing_audit.test.cjs'
       - '.github/workflows/skill-condition-inventory.yml'
 
 permissions:
@@ -33,7 +37,9 @@ jobs:
           node --check poc/src/skill_condition_profiles.js
           node --check poc/tools/audit_skill_conditions.cjs
           node --check poc/src/skill_condition_combinations.cjs
-          node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs
+          node --check poc/src/skill_rank_timing.js
+          node --check poc/src/skill_rank_timing_audit.cjs
+          node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs
       - name: Audit pinned skill registry and current published app model
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
