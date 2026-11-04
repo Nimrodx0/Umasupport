@@ -25,6 +25,50 @@ test('Updraft: final-first-half behind 50% is qualitative late / end tendency',(
  assert.deepEqual(got.styles,[3,4]);
  assert.equal(got.branches[0].timing[0].windows[0].phaseName,'終盤前半');
 });
+test('Ikigomi Jūbun: phase-2 whole random window includes late-position overlap',()=>{
+ const x=engine.infer(profile([[c('ground_type','==',2),
+  c('phase_random','==',2),c('order_rate','<=',50)]]));
+ assert.equal(x.status,'inferred');
+ assert.equal(x.label,'逃げ・先行／差し・追込も適性');
+ assert.deepEqual(x.styles,[1,2,3,4]);
+ assert.deepEqual(x.primaryStyles,[1,2]);
+ assert.deepEqual(x.additionalStyles,[3,4]);
+ assert.deepEqual(x.styleNames,['逃げ','先行','差し','追込']);
+ assert.equal(x.branches[0].basisRuleId,'P2-RANK-AT-MOST-50-LATE-RANDOM-v2');
+ assert.match(x.note,/等確率という意味ではない/);
+ assert.equal(x.ruleVersion,'rank-phase-style-v2');
+ assert.equal(Object.hasOwn(x,'probability'),false);
+});
+test('early quarter of final first phase stays front-leaning; end of phase 2 broadens',()=>{
+ const early=engine.infer(profile([[
+  c('phase_firsthalf_random','==',2),c('order_rate','<=',50)]]));
+ assert.equal(early.status,'inferred');
+ assert.deepEqual(early.styles,[1,2]);
+ const late=engine.infer(profile([[
+  c('phase_laterhalf_random','==',2),c('order_rate','<=',50)]]));
+ assert.equal(late.status,'inferred');
+ assert.deepEqual(late.styles,[1,2,3,4]);
+ const deterministic=engine.infer(profile([[
+  c('phase','==',2),c('order_rate','<=',50)]]));
+ assert.deepEqual(deterministic.styles,[1,2],
+  'Phase gate alone does not show random activation late in that phase');
+ const mid=engine.infer(profile([middle('<=',50)]));
+ assert.deepEqual(mid.styles,[1,2]);
+});
+test('all OR branches must agree whether late-phase broadening applies',()=>{
+ const mixed=engine.infer(profile([
+  [c('phase_firsthalf_random','==',2),c('order_rate','<=',50)],
+  [c('phase_random','==',2),c('order_rate','<=',50)]
+ ]));
+ assert.equal(mixed.status,'needs-review');
+ assert.equal(mixed.reason,'different-or-branch-style-tendencies');
+ const uniform=engine.infer(profile([
+  [c('ground_type','==',2),c('phase_random','==',2),c('order_rate','<=',50)],
+  [c('distance_type','==',2),c('phase_random','==',2),c('order_rate','<=',50)]
+ ]));
+ assert.equal(uniform.status,'inferred');
+ assert.deepEqual(uniform.styles,[1,2,3,4]);
+});
 test('late stage itself is not reason to refuse a behind-half qualitative tendency',()=>{
  const got=engine.infer(profile([[c('phase_random','==',3),c('order_rate','>',50)]]));
  assert.equal(got.status,'inferred');
@@ -111,6 +155,7 @@ test('metadata attach is read-only to hint/event data; unknown remains unknown',
  assert.equal(result.inferred,2);
  assert.equal(result.front,1);
  assert.equal(result.back,1);
+ assert.equal(result.broadLateFront,0);
  assert.equal(result.explicitOnly,1);
  assert.equal(result.unavailable,1);
  assert.equal(JSON.stringify(m.cards),before);

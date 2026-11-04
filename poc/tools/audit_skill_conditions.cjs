@@ -96,7 +96,7 @@ function matchedRecord(skill,live,old){
   return {id:rec.id,name:rec.name,inference};
  });
  const styleFull={total:sourceStyles.length,
-  statuses:{},labels:{},reviewReasons:{},examples:{front:[],back:[],
+  statuses:{},labels:{},reviewReasons:{},examples:{front:[],back:[],broadLateFront:[],
    needsReview:[],explicitOnly:[],notInferable:[]}};
  const inc=(obj,k)=>{obj[k]=(obj[k]||0)+1;};
  for(const item of sourceStyles){
@@ -104,7 +104,10 @@ function matchedRecord(skill,live,old){
   inc(styleFull.statuses,x.status);
   if(x.status==='inferred'){
    inc(styleFull.labels,x.label);
-   const examples=x.styles[0]===1?styleFull.examples.front:styleFull.examples.back;
+   const examples=x.basisRuleIds[0]===styleTendency.RULES.FRONT_LATE.id?
+    styleFull.examples.broadLateFront:
+    x.basisRuleIds[0]===styleTendency.RULES.FRONT.id?
+     styleFull.examples.front:styleFull.examples.back;
    if(examples.length<12)examples.push({id:item.id,name:item.name,
      ruleIds:x.basisRuleIds,sourceConditions:x.branches[0].sourceConditions});
   }else{
@@ -116,7 +119,10 @@ function matchedRecord(skill,live,old){
   }
  }
  const mustAgree=[
-  ['201052','逃げ・先行寄り'],['200702','差し・追込寄り']];
+  ['201052','逃げ・先行寄り'],['200702','差し・追込寄り'],
+  ['202312','逃げ・先行／差し・追込も適性'],
+  ['202311','逃げ・先行／差し・追込も適性'],
+  ['202672','逃げ・先行寄り'],['202671','逃げ・先行寄り']];
  for(const [id,expected] of mustAgree){
   const found=sourceStyles.find(x=>x.id===id);
   if(!found||found.inference.status!=='inferred'||found.inference.label!==expected)
@@ -131,7 +137,7 @@ function matchedRecord(skill,live,old){
  if(styleFull.total!==Object.values(styleFull.statuses).reduce((a,b)=>a+b,0))
   throw Error('P2 style tendency full count mismatch');
  const report={
-  auditVersion:5,source:{revision:REVISION,sha256:digest(skillText),
+  auditVersion:6,source:{revision:REVISION,sha256:digest(skillText),
    pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,

@@ -16,6 +16,7 @@
 | P2 条件同士の組合せと実スキル反例の相談資料 | [固定全件とアプリ818件のAND/OR監査](skill-condition-combinations-audit-20261104.md) |
 | P2 順位割合×レース局面の事実モデルと脚質推定の相談 | [2,162件／818件の解釈・条件経路監査](skill-rank-timing-audit-20261104.md) |
 | P2 脚質傾向の初版判定・全件監査 | [53スキルの定性推定と保留理由](skill-style-tendency-audit-20261104.md) |
+| P2 終盤前方条件のレビュー改訂（v2） | [後方脚質の追い上げを考慮した適性推定](skill-style-late-window-audit-20261105.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
