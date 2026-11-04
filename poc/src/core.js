@@ -170,11 +170,7 @@ function directRoutes(card,config){
       }
     }else if(event.type==='auto')collect(event,event,null,progress.conditions);
   }
-  // A published event may retain a historical reward whose skill is not in
-  // UmaSim's verified skill registry. Keep event facts, exclude that reward
-  // from all analysis routes and provider counts.
-  const excluded=card.umaSimExcludedSkillIds;
-  return excluded?.size?routes.filter(route=>!excluded.has(route.skillId)):routes;
+  return routes;
 }
 // Non-skill effects are separate from directRoutes/aggregate/skill coverage.
  // Each row is an outcome-specific CONDITIONAL candidate until its selection
