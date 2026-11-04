@@ -27,14 +27,18 @@ function parseSource(text){
       throw Error('スキル辞書のレコードが不正: '+index);
     if(byId.has(entry.id))throw Error('スキル辞書の数値ID重複: '+entry.id);
     const item={id:entry.id,name:normalize(entry.name),rarity:entry.rarity,group:entry.group};
-    // UmaSim info[0] is a human-readable effect summary; info[1] is
-    // publisher-provided activation/effect-detail text. Neither is an event reward.
-    // Ignore absent or oversized strings rather than inventing explanations.
+    // UmaSim info[0] summarizes the effect; every subsequent info element
+    // describes an additional activation/effect detail. Preserve source order.
+    // Details are display-only, never inputs to skill or event calculation.
     if(Array.isArray(entry.info)){
       const description=typeof entry.info[0]==='string'?entry.info[0].trim():'';
-      const technicalDetails=typeof entry.info[1]==='string'?entry.info[1].trim():'';
+      const detailLines=entry.info.slice(1).filter(x=>typeof x==='string')
+        .map(x=>x.trim()).filter(x=>x&&x.length<=4000);
       if(description&&description.length<=1000)item.description=description;
-      if(technicalDetails&&technicalDetails.length<=4000)item.technicalDetails=technicalDetails;
+      if(detailLines.length){
+        item.technicalDetails=detailLines[0]; // Legacy single-line consumers.
+        item.technicalDetailLines=detailLines;
+      }
     }
     byId.set(item.id,item);
     const names=byName.get(item.name)||[];names.push(item);byName.set(item.name,names);
