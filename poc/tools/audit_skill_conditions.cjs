@@ -9,6 +9,7 @@ const loader=require('../src/live_loader.js');
 const publicEvents=require('../src/public_event_catalog.js');
 const {inventory}=require('../src/skill_condition_inventory.cjs');
 const profiles=require('../src/skill_condition_profiles.js');
+const combinations=require('../src/skill_condition_combinations.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -66,11 +67,16 @@ function matchedRecord(skill,live,old){
   for(const side of ['preConditions','conditions'])
    for(const orGroup of invoke[side])for(const c of orGroup)
     if(c.axis)profileByAxis[c.axis]=(profileByAxis[c.axis]||0)+1;
+ const combosAll=combinations.examine(raw);
+ const combosApp=combinations.examine([...seen.values()]);
+ if(combosAll.skills!==whole.total||combosApp.skills!==relevant.total)
+  throw Error('P2 combination audit source-population mismatch');
  const report={
-  auditVersion:2,source:{revision:REVISION,sha256:digest(skillText),
+  auditVersion:3,source:{revision:REVISION,sha256:digest(skillText),
    pinnedRevision:bridge.PINNED_URL.split('/')[5],pinnedSha256:digest(pinnedText),
    supportRevision:REVISION,supportSha256:digest(supportText)},
   fullRegistry:whole,
+  p2Combinations:{all:combosAll,app:combosApp},
   app:{cards:model.cards.length,skills:model.skills.length,
    matchedEntries:seen.size,unmatched:unknown.length,unmatchedExamples:unknown.slice(0,25),
    sourceCounts,inventory:relevant,profiles:{...applied,profileTags,profileByAxis}}
@@ -96,4 +102,21 @@ function matchedRecord(skill,live,old){
   all:mini(whole),
   app:{...report.app,unmatchedExamples:unknown.slice(0,10),inventory:mini(relevant)}},null,2));
  console.log('SKILL_CONDITION_P0_REPORT_END');
+ const compact=x=>({skills:x.skills,clauseCount:x.clauseCount,
+  rankClauseCount:x.rankClauseCount,positionWithoutTrackedPhase:x.positionWithoutTrackedPhase,
+  multiInvokeRank:x.multiInvokeRank,pairKinds:x.pairKinds,
+  focused:Object.fromEntries(Object.entries(x.focused).map(([k,v])=>[k,{
+   andSkills:v.sameAnd.skills,invokeOnlySkills:v.sameInvokeOnly.skills,
+   andExamples:v.sameAnd.examples.slice(0,4),
+   invokeOnlyExamples:v.sameInvokeOnly.examples.slice(0,2)}])),
+  rankWithPhase:Object.fromEntries(Object.entries(x.rankWithPhase).slice(0,30)
+   .map(([k,v])=>[k,{skills:v.skills,examples:v.examples.slice(0,2)}])),
+  cases:Object.fromEntries(Object.entries(x.cases)
+   .filter(([k])=>!k.startsWith('position:')).map(([k,v])=>
+    [k,{skills:v.skills,examples:v.examples.slice(0,5)}])),
+  topPairs:Object.fromEntries(Object.entries(x.topPairs).slice(0,25)
+   .map(([k,v])=>[k,{skills:v.skills}]))});
+ console.log('SKILL_CONDITION_P2_REPORT_START');
+ console.log(JSON.stringify({full:compact(combosAll),app:compact(combosApp)},null,2));
+ console.log('SKILL_CONDITION_P2_REPORT_END');
 })().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
