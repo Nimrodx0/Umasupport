@@ -24,6 +24,7 @@
 | P2 全記録時刻の走行位置を用いた9地点近似の誤差検証 | [72レース・384条件での追い抜き地点と区間集計](skill-position-dense-frame-validation-20261105.md) |
 | P2 乱数初期値の違いによる順位条件成立割合の変動 | [シード3／10／15個、分割試行群、レース単位の再抽出](skill-position-seed-stability-20261105.md) |
 | P2 実スキルの発動条件と順位モデルの照合 | [53スキルのうち16比較可能・8距離未計測・29未評価とテンポアップの実例](skill-position-source-matched-cases-20261105.md) |
+| P2 基礎研究：6コース間の順位傾向の一般性 | [2,160レース・576条件での前方／後方群の方向性と群内序列の反例](skill-position-six-course-generality-20261105.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |
