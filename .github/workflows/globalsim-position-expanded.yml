@@ -1,0 +1,64 @@
+name: GlobalSim observed-prior and field-size sensitivity
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Seeds per (6 courses x 2 field sizes x 6 scenarios x 2 stat modes), 1..60"
+        type: number
+        required: true
+        default: 10
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_position_expanded.cjs'
+      - 'poc/tests/globalsim_position_expanded.test.cjs'
+      - '.github/workflows/globalsim-position-expanded.yml'
+permissions:
+  contents: read
+
+jobs:
+  expanded-position-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test observational priors and 9/12 position mathematics
+        run: |
+          node --check poc/tools/globalsim_position_expanded.cjs
+          node --test poc/tests/globalsim_position_pilot.test.cjs poc/tests/globalsim_position_expanded.test.cjs
+      - name: Check out exact same audited GlobalSim v77 revision
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+      - name: Compile unmodified engine with its version-locked dependencies
+        run: |
+          cd /tmp/globalsim
+          cargo build --release --locked
+      - name: Run independent streamed 9/12-race position studies
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '15' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo "Invalid seeds_per_cell" >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 1 ] || [ "$SEEDS_PER_CELL" -gt 60 ]; then
+            echo "seeds_per_cell must be 1..60" >&2
+            exit 2
+          fi
+          mkdir -p /tmp/global-position-expanded
+          node --max-old-space-size=3072 poc/tools/globalsim_position_expanded.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/global-position-expanded/summary.json "$SEEDS_PER_CELL"
+      - name: Save derived probability estimates (no raw game data, no frames)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-observed-prior-position-sensitivity
+          path: /tmp/global-position-expanded/summary.json
+          retention-days: 14
