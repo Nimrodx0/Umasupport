@@ -67,7 +67,7 @@ test('pair-wise course differences are signed and preserve the race-level pairin
   o.rankFractions=Array(o.fieldSize).fill(0);
   o.rankFractions[0]=1;
  }
- const x=m.compare(plans,observations,{thresholds:[50]});
+ const x=m.compare(plans,observations,{thresholds:[20]});
  const paired=x.pairedCourseContrasts.find(y=>y.comparison==='1600m-course-geometry'&&
   y.fieldSize===9&&y.scenario==='balanced'&&y.mode==='equal'&&
   y.phase===1&&y.style==='Senkou');
