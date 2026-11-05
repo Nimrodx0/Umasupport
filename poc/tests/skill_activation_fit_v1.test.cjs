@@ -28,6 +28,7 @@ test('early full race phase is measured, final phase subwindows are scoped',()=>
   rank('<=',50,2,'phase_laterhalf_random')
  ])assert.equal(statuses(p([row]))['逃げ'],'high');
  for(const row of [
+  rank('<=',50,3,'phase_laterhalf_random'),
   rank('<=',50,0,'phase_laterhalf_random'),
   rank('<=',50,2,'phase'),
   rank('<=',50,1,'phase_corner_random')
@@ -61,12 +62,17 @@ test('unsupported threshold/operator/AND restrictions remain held with partial r
  assert.equal(partial.styles['逃げ'].paths[0].unmodelledPredicates[0].type,'is_overtake');
 });
 test('race-global distance/ground context does not invent extra style condition',()=>{
- const row=[...rank('<=',50),cond('distance_type','==',2),
-  cond('ground_type','==',1)];
+ const row=[...rank('<=',50),cond('distance_type','==',2)];
  const x=fit.evaluate(p([row]));
  assert.equal(x.styles['逃げ'].status,'high');
  assert.equal(x.styles['追込'].status,'low');
- assert.equal(x.styles['逃げ'].paths[0].contextPredicates.length,2);
+ assert.equal(x.styles['逃げ'].paths[0].contextPredicates.length,1);
+ const dirt=fit.evaluate(p([[...rank('<=',50),
+  cond('ground_type','==',2)]]));
+ assert.equal(dirt.styles['逃げ'].status,'held');
+ assert.equal(dirt.styles['逃げ'].paths[0].rankOnly.status,'high');
+ assert(dirt.styles['逃げ'].paths[0].allReasons.includes(
+  'race-context-not-matched-to-position-study'));
  assert.equal(fit.evaluate(p([[cond('distance_type','==',3),
   cond('phase_random','==',1)]])).styles['逃げ'].status,'neutral');
 });
