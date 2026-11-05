@@ -30,6 +30,9 @@ test('reviewed 53 skills have 212 style cases, all six statuses are tracked with
  assert.equal(out.counts.byStatus.ineligible,0);
  assert.equal(out.counts.byStatus.neutral,0);
  assert.equal(out.counts.byStatus.held,0);
+ assert.equal(out.counts.terrainRaceGateSkills,1);
+ assert.equal(out.counts.terrainRaceGateResolvedSkills,1);
+ assert.equal(out.counts.terrainRaceGateStillHeldSkills,0);
  assert.equal(out.status,'research-only-activation-condition-fit-not-production-classification');
  assert.equal(out.items[0].styles['逃げ'].status,'high');
  assert.equal(out.items[1].styles['差し'].status,'high');
