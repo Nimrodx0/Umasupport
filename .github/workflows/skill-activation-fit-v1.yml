@@ -1,10 +1,12 @@
-name: P2 activation-condition fit v1.1 source-verified 53-skill research
+name: P2 activation-condition fit v1.2 source-verified 53-skill research
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'poc/src/skill_activation_fit_v1.cjs'
+      - 'poc/data/p2_subphase_model_direction.v1.json'
+      - 'poc/tools/verify_subphase_model_direction.cjs'
       - 'poc/tests/skill_activation_fit_v1.test.cjs'
       - 'poc/tools/skill_activation_fit_v1_report.cjs'
       - 'poc/tests/skill_activation_fit_v1_report.test.cjs'
@@ -46,10 +48,12 @@ jobs:
             '/tmp/p2-style-fit-v1/activation-fit-v1-53.json','utf8'));
           assert.equal(r.counts.skills,53);
           assert.equal(r.counts.styleCases,212);
-          assert.equal(r.ruleVersion,'activation-condition-fit-v1.1');
+          assert.equal(r.ruleVersion,'activation-condition-fit-v1.2');
           assert.deepEqual(r.counts.byStatus,{
-            high:62,low:62,dependent:0,neutral:0,held:88,ineligible:0
+            high:106,low:106,dependent:0,neutral:0,held:0,ineligible:0
           });
+          assert.equal(r.counts.subphaseEvidenceSkills,22);
+          assert.equal(r.counts.subphaseEvidenceResolvedSkills,22);
           assert.deepEqual([
             r.counts.terrainRaceGateSkills,
             r.counts.terrainRaceGateResolvedSkills,
@@ -63,21 +67,31 @@ jobs:
           for(const [id,expect] of Object.entries({
             '201052':['high','high','low','low'],
             '200702':['low','low','high','high'],
-            '200681':['held','held','held','held'],
+            '200681':['high','high','low','low'],
+            '200691':['low','low','high','high'],
+            '202011':['high','high','low','low'],
+            '202261':['high','high','low','low'],
+            '202951':['high','high','low','low'],
+            '204511':['high','high','low','low'],
             '202311':['high','high','low','low'],
             '202312':['high','high','low','low'],
             '202841':['high','high','low','low'],
             '202842':['high','high','low','low'],
             '203972':['high','high','low','low'],
-            '202261':['held','held','held','held'],
-            '202262':['held','held','held','held'],
-            '202951':['held','held','held','held'],
-            '202952':['held','held','held','held']
+            '202262':['high','high','low','low'],
+            '202952':['high','high','low','low']
           })){
             const skill=r.items.find(x=>x.sourceNumericId===id);
             assert(skill,'Missing source skill '+id);
             assert.deepEqual(['逃げ','先行','差し','追込']
               .map(s=>skill.styles[s].status),expect);
+            if(['200681','200691','202011','202261','202951',
+              '204511','202262','202952'].includes(id)){
+              const proof=skill.styles['逃げ'].branches[0].modelSubphaseEvidence;
+              assert(proof,'Missing audited source-window proof '+id);
+              assert.equal(proof.modelContexts,72);
+              assert.equal(proof.bothSeedHalvesFrontAhead,72);
+            }
             if(['202311','202312','202841','202842','203972'].includes(id)){
               const branch=skill.styles['逃げ'].branches[0];
               assert(branch.raceRequirements.some(c=>
