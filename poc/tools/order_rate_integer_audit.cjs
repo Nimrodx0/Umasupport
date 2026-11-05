@@ -65,6 +65,7 @@ function audit(records){
      }
    }
   }
+  }
   if(hasRank)totals.skillsWithOrderRate++;
  }
  const byOperatorValue=[...terms.values()].map(t=>{
