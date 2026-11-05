@@ -69,12 +69,85 @@ test('race-global distance/ground context does not invent extra style condition'
  assert.equal(x.styles['逃げ'].paths[0].contextPredicates.length,1);
  const dirt=fit.evaluate(p([[...rank('<=',50),
   cond('ground_type','==',2)]]));
- assert.equal(dirt.styles['逃げ'].status,'held');
- assert.equal(dirt.styles['逃げ'].paths[0].rankOnly.status,'high');
- assert(dirt.styles['逃げ'].paths[0].allReasons.includes(
-  'race-context-not-matched-to-position-study'));
+ assert.deepEqual(Object.fromEntries(Object.entries(dirt.styles)
+  .map(([name,v])=>[name,v.status])),{
+  '逃げ':'high','先行':'high','差し':'low','追込':'low'
+ });
+ const branch=dirt.styles['逃げ'].paths[0];
+ assert.deepEqual(branch.raceRequirements,[
+  cond('ground_type','==',2)]);
+ assert.equal(branch.surfaceTransfer.status,
+  'provisional-cross-surface-direction-not-verified');
+ assert.match(branch.surfaceTransfer.note,/未検証/);
+ assert.equal(Object.hasOwn(branch,'probability'),false);
+ assert.equal(dirt.ruleVersion,'activation-condition-fit-v1.1');
  assert.equal(fit.evaluate(p([[cond('distance_type','==',3),
   cond('phase_random','==',1)]])).styles['逃げ'].status,'neutral');
+});
+test('ground restrictions are separate race gates across rank direction and conditions',()=>{
+ for(const terrain of [
+  cond('ground_type','==',1),
+  cond('ground_type','==',2),
+  cond('ground_type','!=',1),
+  cond('ground_condition','==',4),
+  cond('ground_condition','<=',2)
+ ]){
+  for(const [op,front] of [['<=',true],['>',false]]){
+   const evaluated=fit.evaluate(p([[...rank(op,50),terrain]]));
+   assert.equal(evaluated.styles['逃げ'].status,front?'high':'low');
+   assert.equal(evaluated.styles['差し'].status,front?'low':'high');
+   assert.deepEqual(evaluated.styles['逃げ'].paths[0].raceRequirements,[terrain]);
+   assert.equal(evaluated.styles['逃げ'].paths[0].surfaceTransfer.scope,
+    'qualitative-style-direction-only');
+  }
+ }
+ const both=fit.evaluate(p([[...rank('<=',50),
+  cond('distance_type','==',2),cond('ground_type','==',2),
+  cond('ground_condition','==',1)]]));
+ assert.equal(both.styles['逃げ'].status,'high');
+ assert.deepEqual(both.styles['逃げ'].paths[0].raceRequirements,[
+  cond('distance_type','==',2),
+  cond('ground_type','==',2),
+  cond('ground_condition','==',1)
+ ]);
+ assert.equal(both.styles['逃げ'].paths[0].contextPredicates.length,3);
+});
+test('unknown terrain and non-global event conditions stay held, never implicit universal permission',()=>{
+ for(const invalid of [
+  cond('ground_type','==',99),
+  cond('ground_condition','==',99),
+  cond('ground_type','<',1),
+  cond('ground_condition','>',4),
+  cond('rotation','==',1)
+ ]){
+  const x=fit.evaluate(p([[...rank('<=',50),invalid]]));
+  assert.equal(x.styles['逃げ'].status,'held');
+  assert(x.styles['逃げ'].paths[0].allReasons.includes(
+   'race-context-not-matched-to-position-study'));
+  assert.equal(x.styles['逃げ'].paths[0].rankOnly.status,'high');
+ }
+ const overtaking=fit.evaluate(p([[...rank('<=',50),
+  cond('ground_type','==',2),cond('is_overtake','==',1)]]));
+ assert.equal(overtaking.styles['逃げ'].status,'held');
+ assert.equal(overtaking.styles['逃げ'].paths[0].rankOnly.status,'high');
+ assert.deepEqual(overtaking.styles['逃げ'].paths[0].raceRequirements,[
+  cond('ground_type','==',2)]);
+ assert.equal(overtaking.styles['逃げ'].paths[0].unmodelledPredicates[0].type,
+  'is_overtake');
+});
+test('surface gates remain attached to each alternative and explicit style exclusions stay absolute',()=>{
+ const x=fit.evaluate(p([
+  [...rank('<=',50),cond('ground_type','==',1)],
+  [...rank('<=',50),cond('ground_type','==',2)]
+ ]));
+ assert.equal(x.styles['逃げ'].status,'high');
+ assert.deepEqual(x.styles['逃げ'].paths.map(b=>b.raceRequirements[0].value),[1,2]);
+ const gated=fit.evaluate(p([[
+  cond('running_style','==',3),...rank('>',50),
+  cond('ground_type','==',2)
+ ]]));
+ assert.equal(gated.styles['逃げ'].status,'ineligible');
+ assert.equal(gated.styles['差し'].status,'held'); // explicit permission ≠ measured suitability
 });
 test('all known neutral predicates prove absence of a STYLE condition only',()=>{
  const x=fit.evaluate(p([[cond('distance_type','==',3),
