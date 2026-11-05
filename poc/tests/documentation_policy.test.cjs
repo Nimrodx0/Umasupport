@@ -33,40 +33,28 @@ test('public entry and roadmap have stable headings and current source precedenc
  }
  assert.doesNotMatch(read('README.md'),/イベントデータはGameWithを優先資料に/);
 });
-test('current requirements and roadmap do not reactivate superseded HTML intake',()=>{
+test('current requirements and roadmap protect the present from old source/approval plans',()=>{
  const req=read('docs/requirements.md');
  const roadmap=read('docs/roadmap.md');
  const verification=read('docs/verification-plan.md');
  const decisions=read('docs/decisions.md');
  assert.match(req,/現行の主入力は第三者GitHubの構造化GameTora派生JSON/);
- assert.match(req,/2026-10-27のGameTora本体直接取得方針（2026-10-29撤回）/);
- assert.doesNotMatch(req,/この工程の唯一のイベント情報入力はGameTora本体/);
- assert.doesNotMatch(req,/GameTora本体に表示された\*\*新カードのイベントだけ\*\*/);
  assert.match(decisions,/現行.*GameTora派生JSONを主経路/);
  assert.match(roadmap,/現在の製品完成への作業順（正本）/);
- assert.equal((roadmap.match(/^### 現在の製品完成への作業順/gm)||[]).length,1);
- assert.match(roadmap,/他Phaseの横断検証（上記とは別の優先順ではない）/);
- assert.match(roadmap,/2,512イベント/);
- assert.match(roadmap,/既存カードのPhase 2は、2026-10-23〜26に全件検証した非公開563カード・2,512イベント/);
- assert.match(roadmap,/SSR30240の連続3段階/);
+ assert.equal((roadmap.match(/^## 現在の製品完成への作業順（正本）$/gm)||[]).length,1);
+ assert.match(roadmap,/既存563カード・非公開2,512イベント/);
+ assert.match(roadmap,/SSR30240の連続3段階は明示保留済み/);
  assert.match(roadmap,/P2未同定11位置/);
- assert.match(roadmap,/2,512との件数差の解消、363件の再実装、既存DBの作り直しを今後の作業にしない/);
- assert.match(roadmap,/既存DBの一括利用と例外管理を主工程にする/);
- assert.match(roadmap,/2,512件を1件ずつ手動承認することを製品完成の前提条件にしない/);
- assert.match(roadmap,/元サイト／元GitHubから読み込んでローカルで正規化/);
- assert.match(roadmap,/現在の.event_release_gate.cjs.との整合/);
- assert.match(read('AGENTS.md'),/既存DBの一括利用と例外管理が主工程/);
- assert.match(read('docs/decisions.md'),/1件ずつ人手承認して公開DBへ追記する手順を必須としない/);
- assert.match(read('docs/phase2-first-event-release-rehearsal-20261030.md'),/後続方針：この実装は補助ツール/);
- assert.match(verification,/2,512件を1件ずつ人手承認する手順は主工程ではない/);
- assert.doesNotMatch(roadmap,/対象ソースと版、出典にないイベント、既に採用した編集事実、保留の位置を対応付ける/);
- assert.match(read('AGENTS.md'),/既存Phase 2を再作成しない/);
- assert.match(read('docs/derived-github-whole-roster-app-draft-audit-20261029.md'),/履歴・現行の工程外/);
- assert.match(roadmap,/SSR30240.*明示保留済み/);
  assert.match(roadmap,/出典未掲載は当該位置だけ保留し、他の作業へ進む/);
- assert.match(read('docs/phase2-30240-gamewith-gap-utools-only-replay-20261022.md'),/2026-10-30 再確認：元資料未掲載のため明示保留/);
+ assert.match(roadmap,/GameTora派生GitHub JSON/);
+ assert.match(roadmap,/GameWith/);
+ assert.match(roadmap,/元サイトHTMLを必須で直接取得する計画は撤回・保留/);
+ assert.doesNotMatch(roadmap,/次の実装順は上の3→4/);
+ assert.doesNotMatch(roadmap,/最優先：自動提供方法・利用条件/);
+ assert.match(read('AGENTS.md'),/既存DBの一括利用と例外管理が主工程/);
+ assert.match(verification,/2,512件を1件ずつ人手承認する手順は主工程ではない/);
  assert.match(read('docs/phase2-remaining-checker-skill-impact-20261023.md'),/P2の11位置だけがイベント同定未完/);
- assert.match(verification,/以下は2026-10-29に撤回した直接取得先行条件の履歴/);
+ assert.match(read('docs/phase2-first-event-release-rehearsal-20261030.md'),/後続方針：この実装は補助ツール/);
 });
 test('dated evidence and old complete texts are preserved in dedicated documents',()=>{
  const status=read('docs/status.md');
@@ -113,7 +101,7 @@ test('automatic delivery priority is coherent, and unapproved private source is 
  assert.match(plan,/元データの再利用許可を意味しない/);
  assert.match(plan,/既存の同一オリジン公開ローダー/);
  assert.match(plan,/元文の転記を一括許可しない/);
- assert.match(roadmap,/最優先：自動提供方法・利用条件/);
+ assert.match(roadmap,/公開済みイベントの利用受け入れ/);
  assert.match(decisions,/一般利用者が非公開JSONを都度生成・選択するのではなく/);
  assert.match(app,/UmaPublicEventCatalog\.loadVerified/);
  assert.doesNotMatch(app,/raw\.githubusercontent\.com\/systemless10/);
