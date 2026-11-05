@@ -84,7 +84,7 @@ function audit(records){
  return {schemaVersion:1,
   status:'source-pinned-aggregate-rank-projections-not-skill-activation-probabilities',
   source:{repository:'mee1080/umasim',revision:REV,
-   skillDictionarySha256:PINN},
+   skillDictionarySha256:PINNED},
   rankMapping:m.SOURCE,version:m.VERSION,
   fields:[9,12],totals,byOperatorValue,
   compoundRowExamples:cohorts,
