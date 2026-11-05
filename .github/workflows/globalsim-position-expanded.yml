@@ -14,6 +14,8 @@ on:
       - 'poc/tests/globalsim_position_expanded.test.cjs'
       - 'poc/tools/globalsim_window_profile.cjs'
       - 'poc/tests/globalsim_window_profile.test.cjs'
+      - 'poc/tools/globalsim_window_sensitivity.cjs'
+      - 'poc/tests/globalsim_window_sensitivity.test.cjs'
       - '.github/workflows/globalsim-position-expanded.yml'
 permissions:
   contents: read
@@ -62,6 +64,13 @@ jobs:
           node poc/tools/globalsim_window_profile.cjs \
             /tmp/global-position-expanded/summary.json \
             /tmp/global-position-expanded/window-profile.json
+            /tmp/global-position-expanded/sensitivity.json
+      - name: Audit model-only sensitivity to window, field, prior and stats
+        run: |
+          node poc/tools/globalsim_window_sensitivity.cjs \
+            /tmp/global-position-expanded/summary.json \
+            /tmp/global-position-expanded/window-profile.json \
+            /tmp/global-position-expanded/sensitivity.json
       - name: Save derived probability estimates (no raw game data, no frames)
         if: success()
         uses: actions/upload-artifact@v4
