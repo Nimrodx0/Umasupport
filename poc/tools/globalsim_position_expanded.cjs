@@ -13,7 +13,9 @@ const STYLES=['Nige','Senkou','Sasi','Oikomi'];
 const COURSES=Object.freeze([
  {id:10501,distance:1200,group:'sprint'},
  {id:10502,distance:1600,group:'mile'},
+ {id:10304,distance:1600,group:'mile-alternate-track'},
  {id:10504,distance:2000,group:'middle'},
+ {id:10604,distance:2000,group:'middle-alternate-track'},
  {id:10506,distance:2500,group:'long'}
 ]);
 const SOURCES=Object.freeze({
