@@ -11,6 +11,8 @@ on:
   pull_request:
     paths:
       - 'poc/tools/globalsim_subphase_rank_fit.cjs'
+      - 'poc/tools/verify_subphase_model_direction.cjs'
+      - 'poc/data/p2_subphase_model_direction.v1.json'
       - 'poc/tests/globalsim_subphase_rank_fit.test.cjs'
       - '.github/workflows/globalsim-subphase-rank-fit.yml'
 permissions:
@@ -29,6 +31,7 @@ jobs:
           node --check poc/tools/globalsim_subphase_rank_fit.cjs
           node --test poc/tests/globalsim_subphase_rank_fit.test.cjs
           node --test poc/tests/globalsim_rank_distribution.test.cjs
+          node --check poc/tools/verify_subphase_model_direction.cjs
       - name: Verify and compile fixed GlobalSim v77 engine
         run: |
           mkdir -p /tmp/globalsim
@@ -55,6 +58,10 @@ jobs:
             /tmp/globalsim/examples/v77-race.jsonl \
             /tmp/globalsim/target/release/race_engine_rs_v2 \
             /tmp/subphase-positions/report.json "$SEEDS_PER_CELL"
+      - name: Independently verify whole model report hash and all 216 context statuses
+        if: success()
+        run: |
+          node poc/tools/verify_subphase_model_direction.cjs             /tmp/subphase-positions/report.json
       - name: Archive only derived group rank occupancy
         if: success()
         uses: actions/upload-artifact@v4
