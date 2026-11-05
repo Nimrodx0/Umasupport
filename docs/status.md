@@ -1,6 +1,6 @@
 # 開発状況（現行スナップショット）
 
-**測定日：2026-11-06。** 対象：公開アプリの現行mainと、GlobalSim v77固定版によるP2順位条件分析（[PR #335～#349](https://github.com/Nimrodx0/Umasupport/pull/349)）。数値は固定条件のモデル上の測定であり、現行ゲーム全体の発動率ではありません。
+**測定日：2026-11-06。** 対象：公開アプリの現行mainと、GlobalSim v77固定版によるP2順位条件分析（[PR #335～#350](https://github.com/Nimrodx0/Umasupport/pull/350)）。数値は固定条件のモデル上の測定であり、現行ゲーム全体の発動率ではありません。
 
 > **読む順番**：現在の到達点はこのページ、これからの仕事は [roadmap.md](roadmap.md)、過去のPR別報告・旧スナップショットは [移行前の全文](archive/status-through-20261105.md) と [開発履歴](development-history.md) を参照してください。過去の「次工程」を今の指示として扱わないでください。
 
@@ -29,7 +29,7 @@
 
 ## 最新の進行中作業
 
-- **脚質分析 P2**：固定GlobalSimの[6コース一般化 #343](skill-position-six-course-generality-20261105.md)、[4局面・7順位帯 #344](skill-position-rank-phase-foundations-20261105.md)、[固定編成 #345](skill-position-fixed-roster-paired-control-20261105.md)、[相手脚質変更 #346](skill-position-focal-opponent-roster-study-20261105.md)に加えて、[**3つの細分化された序盤・中盤の発動区間 #349**](skill-position-subphase-fit-20261106.md)を**2,160レース・全記録時刻の68,040走者×区間観測**で検証。3区間とも72/72比較条件で前方群優位（前後15シード両半分で方向一致）。[**発動条件適合性v1.2の6区分判定**](skill-activation-condition-fit-v1-20261106.md)に元条件と一致した3区間だけ追加し、**固定UmaSim53スキル×4脚質212件は高適合106・低適合106・保留0**、他3区分0。**53件の限定既存コホート**の結果であり、ほかのスキルや実ゲームの発動確率には拡張しない。ダートは絶対条件として独立保持し、基本方向性の芝からの横断適用は**暫定仮定**。旧53件のラベル、サポカ集約、UI、公開イベントは変更なし。
+- **脚質分析 P2**：既存53スキル×4脚質の[定性的な適合性v1.2](skill-activation-condition-fit-v1-20261106.md)（高106・低106、53件の保留0）と[固定GlobalSimの細かな3区間 #349](skill-position-subphase-fit-20261106.md)の結果は維持。新たに[**元条件order_rateの9頭・12頭の整数順位換算 #350**](skill-order-rate-integer-mapping-20261106.md)を固定UmaSim全2,162スキルに対して照合（858スキルに1,465述語、複合AND304行、9/12頭で境界順位が異なる述語出現1,373件）。**order_rate>=40は9頭で4～9位、12頭で5～12位**、<=40や<=50と重なるため、前／後方の一律ラベルへ直接変換しない。固定UmaSimのSkillCheckerはorder_rateを実装しておらず、人数換算はGameTora説明とモデルの一致を根拠とした参照仕様で**現行JPの直接検証ではない**。50%以外の順位範囲は整数投影だけ追加し、脚質適合性は引き続き保留。旧53件・サポカ集約・UI・公開イベントは変更なし。
 - **公開保留・継続更新**：25件の出典別判断は [Issue #302](https://github.com/Nimrodx0/Umasupport/issues/302)、新カードは [Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) で追跡。公開済み2,487件を再び0件と書く旧Issueや旧文書は [履歴](archive/status-through-20261105.md) として扱います。
 
 ## 更新ルール
