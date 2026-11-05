@@ -1,6 +1,6 @@
 # 開発状況（現行スナップショット）
 
-**測定日：2026-11-05。** 対象：main（公開イベント・既存機能）と [未マージPR #336](https://github.com/Nimrodx0/Umasupport/pull/336)（脚質分析の実験）。数値はこの時点の固定ソースに対する測定であり、現行ゲーム全体の網羅性を示しません。
+**測定日：2026-11-05。** 対象：main（公開イベント・既存機能、[PR #336](https://github.com/Nimrodx0/Umasupport/pull/336)の拡張実験まで統合）および本変更ブランチのP2研究用区間集計。数値は固定ソースに対する測定であり、現行ゲーム全体の網羅性を示しません。
 
 > **読む順番**：現在の到達点はこのページ、これからの仕事は [roadmap.md](roadmap.md)、過去のPR別報告・旧スナップショットは [移行前の全文](archive/status-through-20261105.md) と [開発履歴](development-history.md) を参照してください。過去の「次工程」を今の指示として扱わないでください。
 
@@ -29,7 +29,7 @@
 
 ## 最新の進行中作業
 
-- **脚質分析 P2**：2026-11-04～05に条件の構造化・順位条件の定性推定を監査。GlobalSimの9頭パイロットは [PR #335](https://github.com/Nimrodx0/Umasupport/pull/335)。拡張実験は [PR #336](https://github.com/Nimrodx0/Umasupport/pull/336)（本スナップショット時点でOpen、main未統合）。数値はモデルの条件成立率であり、実ゲームの発動確率ではありません。
+- **脚質分析 P2**：条件構造化・53スキルの定性推定を監査済み。GlobalSimの9頭パイロット [PR #335](https://github.com/Nimrodx0/Umasupport/pull/335)、6コース・9／12頭・実測別脚質構成／能力差の拡張実験 [PR #336](https://github.com/Nimrodx0/Umasupport/pull/336)はmainへ統合。新たに、発動区間を表す元のphase_random等に対応した**研究用の順位帯区間平均**を疎な9地点から近似する後処理を追加し、詳細と限界を[専用レポート](skill-position-window-profile-20261105.md)へ記録。**本研究用集計の実エンジン実行結果・脚質適性への採否はまだ未判定**。既存53件の表示・分類は変更していません。
 - **公開保留・継続更新**：25件の出典別判断は [Issue #302](https://github.com/Nimrodx0/Umasupport/issues/302)、新カードは [Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) で追跡。公開済み2,487件を再び0件と書く旧Issueや旧文書は [履歴](archive/status-through-20261105.md) として扱います。
 
 ## 更新ルール
