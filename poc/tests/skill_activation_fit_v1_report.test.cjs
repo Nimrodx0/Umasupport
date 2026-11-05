@@ -15,7 +15,7 @@ const fixed=()=>({
   const period=c('phase_random','==',late?3:1);
   return {sourceNumericId:String(200000+i),id:'skill:'+String(200000+i),
    name:'テストスキル'+i,paths:[{invokeIndex:0,orIndex:0,
-    sourceConditions:[rank,period]}],
+    sourceConditions:[rank,period,...(i===0?[c('ground_type','==',2)]:[])]}],
    signature:'synthetic',tendency:back?'差し・追込寄り':'逃げ・先行寄り'};
  })}]}
 });
@@ -30,12 +30,20 @@ test('reviewed 53 skills have 212 style cases, all six statuses are tracked with
  assert.equal(out.counts.byStatus.ineligible,0);
  assert.equal(out.counts.byStatus.neutral,0);
  assert.equal(out.counts.byStatus.held,0);
+ assert.equal(out.counts.terrainRaceGateSkills,1);
+ assert.equal(out.counts.terrainRaceGateResolvedSkills,1);
+ assert.equal(out.counts.terrainRaceGateStillHeldSkills,0);
  assert.equal(out.status,'research-only-activation-condition-fit-not-production-classification');
  assert.equal(out.items[0].styles['逃げ'].status,'high');
  assert.equal(out.items[1].styles['差し'].status,'high');
  assert.equal(out.items[52].styles['逃げ'].status,'dependent');
  assert.match(out.boundaries[0],/order_rate/);
- assert.equal(out.items[0].styles['逃げ'].branches[0].sourceConditions.length,2);
+ assert.equal(out.items[0].styles['逃げ'].branches[0].sourceConditions.length,3);
+ assert.deepEqual(out.items[0].styles['逃げ'].branches[0].raceRequirements,
+  [c('ground_type','==',2)]);
+ assert.equal(out.items[0].styles['逃げ'].branches[0].surfaceTransfer.status,
+  'provisional-cross-surface-direction-not-verified');
+ assert.equal(out.items[1].styles['差し'].branches[0].surfaceTransfer,null);
 });
 test('modified, incomplete or duplicated pinned source cohort fails closed',()=>{
  const x=fixed();x.p2StyleReview.total=52;

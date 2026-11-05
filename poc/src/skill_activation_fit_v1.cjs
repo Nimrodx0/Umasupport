@@ -3,7 +3,7 @@
  * activation probability. Work with source-pinned predicates only.
  * Preserve AND/OR and hold unmodelled predicates instead of promoting them. */
 const rank=require('./skill_rank_timing.js');
-const VERSION='activation-condition-fit-v1';
+const VERSION='activation-condition-fit-v1.1';
 const STYLES=Object.freeze([
  {id:1,name:'逃げ'},{id:2,name:'先行'},
  {id:3,name:'差し'},{id:4,name:'追込'}
@@ -17,6 +17,20 @@ const NEUTRAL_CONTEXT=new Set([
  'distance_type','ground_type','ground_condition','rotation',
  'track_id','is_basis_distance'
 ]);
+// A race-level gate controls WHERE the skill can activate. It is not
+// evidence that one running style is better or worse than another.
+const RACE_GATES=new Set(['distance_type','ground_type','ground_condition']);
+const GROUND_DOMAINS=Object.freeze({
+ ground_type:[1,2],
+ ground_condition:[1,2,3,4]
+});
+const SURFACE_TRANSFER=Object.freeze({
+ status:'provisional-cross-surface-direction-not-verified',
+ scope:'qualitative-style-direction-only',
+ note:'馬場条件は別の絶対条件として保持。芝・ダートや馬場状態別の順位傾向は未検証のため、脚質の基本方向性のみ暫定適用。実ゲームの発動率は不明。'
+});
+const supportedGroundGate=c=>!Object.hasOwn(GROUND_DOMAINS,c.type)||
+ GROUND_DOMAINS[c.type].some(v=>testOperator(v,c.operator,c.value));
 const RESEARCH=Object.freeze({
  middleAndFinal:'GlobalSim pinned #343 2160 races, #344 1080 all-recorded-position races',
  early:'GlobalSim pinned #344 1080 all-recorded-position races',
@@ -94,17 +108,19 @@ function branch(row,styleId,{preconditionRows=[]}={}){
   preconditionRows.some(p=>!Array.isArray(p)||p.some(c=>!valid(c))))
   throw Error('Invalid source precondition OR rows');
  const conditions=row.map(cond);
+ const raceRequirements=conditions.filter(c=>RACE_GATES.has(c.type));
  const style=explicitStyle(row,styleId);
  if(style===false)
   return result('ineligible','explicit-running-style-AND-excludes-style',
-   {sourceConditions:conditions});
+   {sourceConditions:conditions,raceRequirements});
  // Precondition OR rows: all branches exclude the style -> provably forbidden.
  // If any branch might allow it, don't ignore other unmodelled preconditions.
  if(preconditionRows.length){
   const pre=preconditionRows.map(p=>explicitStyle(p,styleId));
   if(pre.every(x=>x===false))
    return result('ineligible','all-explicit-style-precondition-OR-paths-exclude-style',
-    {sourceConditions:conditions,preconditionRows:preconditionRows.map(p=>p.map(cond))});
+    {sourceConditions:conditions,raceRequirements,
+     preconditionRows:preconditionRows.map(p=>p.map(cond))});
  }
  const rankEvidence=rankOnly(row,styleId);
  const extra=row.filter(c=>c.type!=='order_rate'&&
@@ -116,11 +132,17 @@ function branch(row,styleId,{preconditionRows=[]}={}){
   return t?.status!=='source-defined'||t.courseDependent;
  });
  const contextual=row.filter(c=>NEUTRAL_CONTEXT.has(c.type)).map(cond);
- // Position study spans four distance categories but does not establish
- // dirt/track-condition/rotation effects. Race-global ≠ model-comparable.
+ const surfaceTransfer=rankEvidence&&raceRequirements.some(c=>
+  c.type==='ground_type'||c.type==='ground_condition')?
+  SURFACE_TRANSFER:null;
+ // Accept a surface/condition only as a *race gate*. Its exact operator
+ // remains in sourceConditions; it neither proves a style-specific
+ // effect nor forces a hold when the rank/phase evidence is available.
+ // Unknown course geometry still requires a separate comparison.
  const unmatchedContext=rankEvidence?contextual.filter(c=>
-  !(c.type==='distance_type'&&c.operator==='=='&&
-    Number.isInteger(c.value)&&c.value>=1&&c.value<=4)):[];
+  !((c.type==='distance_type'&&c.operator==='=='&&
+    Number.isInteger(c.value)&&c.value>=1&&c.value<=4)||
+    (Object.hasOwn(GROUND_DOMAINS,c.type)&&supportedGroundGate(c)))):[];
  const blockers=[];
  if(unmatchedContext.length)blockers.push('race-context-not-matched-to-position-study');
  if(style===true)blockers.push('explicit-style-permission-does-not-prove-relative-suitability');
@@ -131,11 +153,13 @@ function branch(row,styleId,{preconditionRows=[]}={}){
  if(rankEvidence?.status==='held')blockers.push(rankEvidence.reason);
  if(blockers.length)return result('held',blockers[0],{
   allReasons:blockers,sourceConditions:conditions,contextPredicates:contextual,
+  raceRequirements,surfaceTransfer,
   unmodelledPredicates:[...extra.map(cond),...unmatchedContext],rankOnly:rankEvidence
  });
  if(rankEvidence){
   return {...rankEvidence,sourceConditions:conditions,
-   contextPredicates:contextual,ruleVersion:VERSION};
+   contextPredicates:contextual,raceRequirements,surfaceTransfer,
+   ruleVersion:VERSION};
  }
  if(phase.length){
   // Only race-global timing, not corner/straight opportunities.
@@ -148,7 +172,7 @@ function branch(row,styleId,{preconditionRows=[]}={}){
  // Only validated race-global predicates remain, with no style or rank
  // dependency. "Neutral" applies to the conditions, not effects or triggers.
  return result('neutral','all-known-AND-predicates-race-global',
-  {sourceConditions:conditions,contextPredicates:contextual});
+  {sourceConditions:conditions,contextPredicates:contextual,raceRequirements});
 }
 function evaluate(profile){
  if(!isObj(profile)||profile.status!=='source-structure'||
@@ -189,5 +213,6 @@ function evaluate(profile){
   scope:'activation-condition-fit-not-game-trigger-rate-or-value',
   styles:outcomes,sourceInvokes:profile.invokes.length};
 }
-module.exports={VERSION,STYLES,LABELS,RESEARCH,NEUTRAL_CONTEXT,
+module.exports={VERSION,STYLES,LABELS,RESEARCH,NEUTRAL_CONTEXT,RACE_GATES,
+ GROUND_DOMAINS,SURFACE_TRANSFER,supportedGroundGate,
  testOperator,explicitStyle,rankOnly,branch,evaluate};

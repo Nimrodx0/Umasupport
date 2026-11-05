@@ -1,6 +1,6 @@
 # スキル発動条件の分類とサポカ傾向分析：設計案（2026-11-04）
 
-**状態：設計履歴（一部は後続判断で更新済み）。** 脚質ごとの発動条件適合性は[2026-11-06の**6区分v1の採用仕様**](skill-activation-condition-fit-v1-20261106.md)を優先する。本書の過去案（未実測の75%閾値や旧53分類など）を現行の確定適合性規則と読み替えない。工程の正本は [roadmap.md](roadmap.md)、確定要件は [requirements.md](requirements.md)、全件監査は [skill-effect-coverage-audit-20261104.md](skill-effect-coverage-audit-20261104.md)。
+**状態：設計履歴（一部は後続判断で更新済み）。** 脚質ごとの発動条件適合性は[2026-11-06の**6区分v1.1（馬場等の絶対レース条件を分離）の採用仕様**](skill-activation-condition-fit-v1-20261106.md)を優先する。本書の過去案（未実測の75%閾値や旧53分類など）を現行の確定適合性規則と読み替えない。工程の正本は [roadmap.md](roadmap.md)、確定要件は [requirements.md](requirements.md)、全件監査は [skill-effect-coverage-audit-20261104.md](skill-effect-coverage-audit-20261104.md)。
 
 ## 目的・非目的
 
