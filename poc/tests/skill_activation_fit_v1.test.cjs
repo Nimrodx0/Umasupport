@@ -97,6 +97,30 @@ test('late phase has measured exceptions: do not promote it to high or low',()=>
    '差し':'dependent','追込':'dependent'});
  }
 });
+test('a rank percent boundary is visible in 9/12 orders but does not prove style suitability',()=>{
+ const source=[
+  cond('order_rate','>=',40),
+  cond('order_rate','<=',80),
+  cond('phase_random','==',1)
+ ];
+ const x=fit.evaluate(p([source]));
+ for(const style of ['逃げ','先行','差し','追込']){
+  assert.equal(x.styles[style].status,'held');
+  const branch=x.styles[style].paths[0];
+  assert.equal(branch.rankOnly.reason,'rank-predicate-intersection-unverified');
+  assert.deepEqual(branch.rankOnly.sourceRankProjection.byField[9].positions,
+   [4,5,6,7]);
+  assert.deepEqual(branch.rankOnly.sourceRankProjection.byField[12].positions,
+   [5,6,7,8,9,10]);
+  assert.equal(branch.rankOnly.sourceRankProjection.byField[9].otherAndPredicates[0].type,
+   'phase_random');
+ }
+ const single=fit.evaluate(p([[cond('order_rate','>=',40),
+  cond('phase_random','==',1)]]));
+ assert.equal(single.styles['差し'].status,'held');
+ assert.deepEqual(single.styles['差し'].paths[0].rankOnly
+  .sourceRankProjection.byField[9].positions,[4,5,6,7,8,9]);
+});
 test('unsupported threshold/operator/AND restrictions remain held with partial rank evidence',()=>{
  const unsupported=[
   rank('<=',40),
