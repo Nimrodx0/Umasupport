@@ -8,6 +8,12 @@ const fakeTemplate=()=>({courseId:10504,skillData:{},
  horses:Array.from({length:9},(_,i)=>({
   speed:1000+i*3,stamina:900+i*2,power:850,guts:800,wisdom:790,
   strategy:'Senkou',gateIndex:i,skills:[1001]}))});
+test('median averages both central values for even cohorts, including signed contrasts',()=>{
+ assert.equal(m.median([20,0]),10);
+ assert.equal(m.median([30,0,10]),10);
+ assert.equal(m.median([-5,5,20,10]),7.5);
+ assert.equal(m.median([]),null);
+});
 function fixture(seeds=2){
  const rows=m.plans(seeds),observations=[];
  for(const p of rows)for(const phase of phases){
