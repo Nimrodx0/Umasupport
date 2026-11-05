@@ -29,7 +29,7 @@
 
 ## 最新の進行中作業
 
-- **脚質分析 P2**：構造化条件と53スキルの定性的初版、[9頭パイロット #335](https://github.com/Nimrodx0/Umasupport/pull/335)、[9/12頭・6コース拡張 #336](https://github.com/Nimrodx0/Umasupport/pull/336)、[区間平均近似 #338](https://github.com/Nimrodx0/Umasupport/pull/338)をmainへ統合。固定GlobalSim v77の実行成果物（[Actions #41962505576](https://github.com/Nimrodx0/Umasupport/actions/runs/41962505576)）で**2,160レース、上位／後方順位の位置観測204,120、区間別モデル推計2,208件**を解析（順位不明6観測）。区間延長、脚質構成、距離・頭数・人工能力差の感度を[実測レポート](skill-position-window-sensitivity-audit-20261105.md)に整理し、再現可能な自動比較器を追加する。**実スキル発動率ではなく、P2適性閾値は未採用。53スキルとUIは不変**。次は9地点近似と密なリプレイ区間集計の誤差比較。
+- **脚質分析 P2**：構造化条件と53スキルの定性的初版、[9頭パイロット #335](https://github.com/Nimrodx0/Umasupport/pull/335)、[9/12頭・6コース拡張 #336](https://github.com/Nimrodx0/Umasupport/pull/336)、[区間平均近似 #338](https://github.com/Nimrodx0/Umasupport/pull/338)をmainへ統合。固定GlobalSim v77の実行成果物（[Actions #41962505576](https://github.com/Nimrodx0/Umasupport/actions/runs/41962505576)）で**2,160レース、上位／後方順位の位置観測204,120、区間別モデル推計2,208件**を解析（順位不明6観測）。区間延長、脚質構成、距離・頭数・人工能力差の感度を[実測レポート](skill-position-window-sensitivity-audit-20261105.md)に整理し、再現可能な自動比較器を追加する。**実スキル発動率ではなく、P2適性閾値は未採用。53スキルとUIは不変**。[密フレームの追い抜き交点を用いた再検証](skill-position-dense-frame-validation-20261105.md)では固定GlobalSim v77の72レース・384比較セルで9地点の疎な近似との差を計測（絶対差平均0.61、最大7.49ポイント）。**精密な閾値には密フレーム方式を優先**するが、実ゲーム発動率は検証していない。
 - **公開保留・継続更新**：25件の出典別判断は [Issue #302](https://github.com/Nimrodx0/Umasupport/issues/302)、新カードは [Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) で追跡。公開済み2,487件を再び0件と書く旧Issueや旧文書は [履歴](archive/status-through-20261105.md) として扱います。
 
 ## 更新ルール
