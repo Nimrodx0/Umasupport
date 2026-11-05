@@ -58,7 +58,7 @@ jobs:
             r.counts.terrainRaceGateSkills,
             r.counts.terrainRaceGateResolvedSkills,
             r.counts.terrainRaceGateStillHeldSkills
-          ],[9,5,4]);
+          ],[9,9,0]);
           assert.equal(Object.values(r.counts.byStatus)
             .reduce((sum,n)=>sum+n,0),212);
           assert.equal(r.counts.byStatus.dependent,0);
