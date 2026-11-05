@@ -47,6 +47,14 @@ jobs:
           assert.equal(r.counts.skills,53);
           assert.equal(r.counts.styleCases,212);
           assert.equal(r.ruleVersion,'activation-condition-fit-v1.1');
+          assert.deepEqual(r.counts.byStatus,{
+            high:62,low:62,dependent:0,neutral:0,held:88,ineligible:0
+          });
+          assert.deepEqual([
+            r.counts.terrainRaceGateSkills,
+            r.counts.terrainRaceGateResolvedSkills,
+            r.counts.terrainRaceGateStillHeldSkills
+          ],[9,5,4]);
           assert.equal(Object.values(r.counts.byStatus)
             .reduce((sum,n)=>sum+n,0),212);
           assert.equal(r.counts.byStatus.dependent,0);
@@ -56,13 +64,21 @@ jobs:
             '201052':['high','high','low','low'],
             '200702':['low','low','high','high'],
             '200681':['held','held','held','held'],
-            '202312':['high','high','low','low']
+            '202311':['high','high','low','low'],
+            '202312':['high','high','low','low'],
+            '202841':['high','high','low','low'],
+            '202842':['high','high','low','low'],
+            '203972':['high','high','low','low'],
+            '202261':['held','held','held','held'],
+            '202262':['held','held','held','held'],
+            '202951':['held','held','held','held'],
+            '202952':['held','held','held','held']
           })){
             const skill=r.items.find(x=>x.sourceNumericId===id);
             assert(skill,'Missing source skill '+id);
             assert.deepEqual(['逃げ','先行','差し','追込']
               .map(s=>skill.styles[s].status),expect);
-            if(id==='202312'){
+            if(['202311','202312','202841','202842','203972'].includes(id)){
               const branch=skill.styles['逃げ'].branches[0];
               assert(branch.raceRequirements.some(c=>
                 c.type==='ground_type'&&c.operator==='=='&&c.value===2));
