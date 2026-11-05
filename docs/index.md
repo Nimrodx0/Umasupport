@@ -7,9 +7,9 @@
 | AIの作業規則・引き継ぎの読み順 | [AGENTS.md](../AGENTS.md) |
 | 製品の最終要件と対象外 | [requirements.md](requirements.md) |
 | 利用者による確定決定・撤回の履歴 | [decisions.md](decisions.md) |
-| 今後の作業順序と完了ゲート | [roadmap.md](roadmap.md) |
+| **今後の作業順序と完了ゲート（現在）** | [roadmap.md](roadmap.md) |
 | **既存Phase 2・2,512非公開候補の残件** | [出典差異の後続裁定](phase2-2511-residual-source-gaps-20261023.md)／[Checker未同定のP0/P1/P2](phase2-remaining-checker-skill-impact-20261023.md)／[10/26非スキル効果の保留16件](phase2-outing-unlock-terminal-batch-20261026.md) |
-| 現在の状況と根拠リンク | [status.md](status.md) |
+| **現在の状況と根拠リンク（冒頭の短い一覧）** | [status.md](status.md) |
 | スキル効果説明の全件収録率と未収録36種類 | [2026-11-04固定スナップショット全件監査](skill-effect-coverage-audit-20261104.md) |
 | スキル発動条件の分類・サポカ傾向分析の設計 | [明示条件・実質的適性・汎用性を分けた設計案](skill-activation-tendencies-design.md) |
 | P0 スキル発動条件の全件実測・125条件コード | [UmaSim固定版2,162件の構造監査](skill-condition-inventory-audit-20261104.md) |
@@ -64,6 +64,9 @@
 | 整理前の全文保存 | [archive/](archive/) |
 
 ## 履歴と現行の区別
+
+- [移行前のstatus.md全文](archive/status-through-20261105.md)：2026-11-05以前のPR別作業ログと当時の現状説明。**現在値ではない**。
+- [移行前のroadmap.md全文](archive/roadmap-through-20261105.md)：初回公開前後の工程判断・旧優先順位。**現在の作業順ではない**。
 
 以前の入口に進捗が入り込んでいたため、2026-10-21に原文をアーカイブした。
 
