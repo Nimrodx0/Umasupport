@@ -70,6 +70,8 @@ function rankOnly(row,styleId){
   phaseIndex:p,periodCode:times[0].type,
   sourceThreshold:'order_rate'+c.operator+'50',
   researchBasis:RESEARCH[basis],researchScope:'pinned-GlobalSim-only'};
+ if(p===3&&times[0].type!=='phase_random')
+  return result('held','late-subphase-not-verified',metadata);
  if(p===3)
   return result('dependent','late-phase-group-order-exceptions-observed',
    {...metadata,note:'終盤後半のモデル条件では脚質群の有利不利に例外が確認されている'});
@@ -114,7 +116,13 @@ function branch(row,styleId,{preconditionRows=[]}={}){
   return t?.status!=='source-defined'||t.courseDependent;
  });
  const contextual=row.filter(c=>NEUTRAL_CONTEXT.has(c.type)).map(cond);
+ // Position study spans four distance categories but does not establish
+ // dirt/track-condition/rotation effects. Race-global ≠ model-comparable.
+ const unmatchedContext=rankEvidence?contextual.filter(c=>
+  !(c.type==='distance_type'&&c.operator==='=='&&
+    Number.isInteger(c.value)&&c.value>=1&&c.value<=4)):[];
  const blockers=[];
+ if(unmatchedContext.length)blockers.push('race-context-not-matched-to-position-study');
  if(style===true)blockers.push('explicit-style-permission-does-not-prove-relative-suitability');
  if(preconditionRows.length)blockers.push('preconditions-not-fully-modelled');
  if(extra.length)blockers.push('additional-AND-opportunity-predicates-unmeasured');
@@ -123,7 +131,7 @@ function branch(row,styleId,{preconditionRows=[]}={}){
  if(rankEvidence?.status==='held')blockers.push(rankEvidence.reason);
  if(blockers.length)return result('held',blockers[0],{
   allReasons:blockers,sourceConditions:conditions,contextPredicates:contextual,
-  unmodelledPredicates:extra.map(cond),rankOnly:rankEvidence
+  unmodelledPredicates:[...extra.map(cond),...unmatchedContext],rankOnly:rankEvidence
  });
  if(rankEvidence){
   return {...rankEvidence,sourceConditions:conditions,
