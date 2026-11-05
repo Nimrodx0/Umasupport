@@ -18,7 +18,8 @@ const PHASES=Object.freeze([0,1,2,3].map(index=>{
 const SCENARIOS=['balanced','jan2026','noFront'];
 const STYLES=expanded.STYLES;
 const EPS=1e-9;
-const pct=n=>Number(n.toFixed(6));
+const fraction=n=>Number(n.toFixed(9));
+const percentagePoints=n=>Number((n*100).toFixed(6));
 const pos=x=>Array.isArray(x)?x[0]:x.pos;
 const clamp=(x,a,b)=>Math.max(a,Math.min(x,b));
 const ident=r=>[r.courseId,r.fieldSize,r.scenario,r.mode,r.style,r.phase].join('|');
@@ -117,7 +118,7 @@ function summarize(group,thresholds){
  const cumulative=complete?thresholds.map(cut=>{
   const n=pilot.threshold(group.fieldSize,cut);
   return {cutoffPercent:cut,rankCutoff:n,
-   fraction:pct(hist.slice(0,n).reduce((a,b)=>a+b,0))};
+   fraction:fraction(hist.slice(0,n).reduce((a,b)=>a+b,0))};
  }):null;
  return {courseId:group.courseId,fieldSize:group.fieldSize,
   scenario:group.scenario,mode:group.mode,style:group.style,
@@ -181,7 +182,7 @@ function analyze(rows,observations,thresholds=[30,40,50,60,70]){
    const noFront=g.scenario==='noFront';
    const strictComplete=missing.length===0&&
     directions.length===(noFront?1:2)&&rear.length===2;
-   const gap=strictComplete?pct(
+   const gap=strictComplete?percentagePoints(
     Math.min(...directions)-Math.max(...rear)):null;
    compare.push({courseId:g.courseId,fieldSize:g.fieldSize,
     scenario:g.scenario,mode:g.mode,phase:g.phase,cutoffPercent:cut,
