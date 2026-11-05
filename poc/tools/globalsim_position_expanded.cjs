@@ -194,6 +194,7 @@ async function execute(template,enginePath,{seedsPerCell=3}={}){
   assumptions:['all runners have no skills','equal or synthetic jitter10 stats',
    '12-runner cohorts do not model six LoH NPC',
    'observed event marginals do not preserve within-team or match correlations',
+   'the source Nige bucket can include Oonige runners; this pilot does not simulate Oonige separately',
    'each runner sampled at own progress-point crossing, contemporaneous ranks'],
   scenarios:[...counts.values()],samples};
 }
