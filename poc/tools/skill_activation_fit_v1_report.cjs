@@ -53,6 +53,7 @@ function audit53(audit){
      rankOnlyStatus:b.rankOnly?.status||null,
      sourceConditions:b.sourceConditions||null,
      researchBasis:b.researchBasis||null,
+     modelSubphaseEvidence:b.modelSubphaseEvidence||null,
      contextPredicates:b.contextPredicates||[],
      raceRequirements:b.raceRequirements||[],
      surfaceTransfer:b.surfaceTransfer||null}))
@@ -75,18 +76,26 @@ function audit53(audit){
    c.type==='ground_type'||c.type==='ground_condition'))));
  const terrainResolved=terrainItems.filter(item=>Object.values(item.styles)
   .every(s=>s.status!=='held'));
+ const subphaseItems=items.filter(item=>Object.values(item.styles).some(s=>
+  s.branches.some(b=>b.modelSubphaseEvidence!==null)));
+ const subphaseResolved=subphaseItems.filter(item=>Object.values(item.styles)
+  .every(s=>s.status==='high'||s.status==='low'));
  return {schemaVersion:1,ruleVersion:fit.VERSION,
   status:'research-only-activation-condition-fit-not-production-classification',
   source:{revision:REV,sha256:SHA,appSkillCohort:53,
    simulatorSources:['GlobalSim v77 #343 six-course 2160','GlobalSim v77 #344 four-phase 1080',
-    'GlobalSim v77 #345 fixed-roster 1440','GlobalSim v77 #346 focal-control 5760']},
+    'GlobalSim v77 #345 fixed-roster 1440','GlobalSim v77 #346 focal-control 5760',
+    'GlobalSim v77 #349 source-subphase 2160 all-recorded-position']},
   counts:{skills:items.length,styleCases:items.length*4,byStatus:totals,
    byPriorStyleLabel:byExisting,
    terrainRaceGateSkills:terrainItems.length,
    terrainRaceGateResolvedSkills:terrainResolved.length,
-   terrainRaceGateStillHeldSkills:terrainItems.length-terrainResolved.length},
+   terrainRaceGateStillHeldSkills:terrainItems.length-terrainResolved.length,
+   subphaseEvidenceSkills:subphaseItems.length,
+   subphaseEvidenceResolvedSkills:subphaseResolved.length},
   boundaries:[
-   'Only exact order_rate<=50 and >50 with validated random phase windows receive stable relative high/low labels.',
+   'Only exact order_rate<=50 and >50 with source-matched, attested phase/subphase model windows receive relative high/low direction labels.',
+   'Three new early/middle subphase windows use an attested 2160-race model report; all 72 contexts and both 15-seed halves show front group ahead; no extrapolation to other subphases.',
    'Phase 3 is context-dependent because counterexamples exist, even if many tested cohorts retain the front/rear ordering.',
    'Explicit style exclusion must be shown on every reachable OR/invoke path to count as ineligible.',
    'Ground type (turf/dirt) and track condition are separate absolute race gates, not style suitability predicates; their exact source operator and value are retained.',
