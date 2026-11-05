@@ -26,7 +26,10 @@ test('all expected runner positions and all four source-defined random windows r
  assert.equal(r.totalCells,384);
  assert.equal(r.coverage.withEstimates,384);
  assert.equal(r.coverage.held,0);
- assert.equal(r.coverage.splitHalfComparisons,384);
+ // A running style can be absent from one of the disjoint batches.
+ // Such comparisons must be missing rather than assigned a false 0%.
+ assert(r.coverage.splitHalfComparisons>0);
+ assert(r.coverage.splitHalfComparisons<384);
  assert.equal(r.status,'GlobalSim-seed-sensitivity-not-game-skill-activation-rate');
  assert(r.assumptions.some(s=>s.includes('race is the resampling unit')));
  assert(r.rows.every(row=>row.sourceRaceCount===3&&row.topHalfPercent===50));
