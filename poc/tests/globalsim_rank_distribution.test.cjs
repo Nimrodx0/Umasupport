@@ -83,6 +83,11 @@ test('model observations are counted per runner, not as independent race draws',
  assert(out.samples.filter(s=>s.status==='estimate').length===16);
  assert(out.samples.every(s=>s.runners>0));
  assert.equal(out.phaseDefinitions[0].phaseName,'序盤');
+ // Model fractions are 0..1; group gaps are displayed in percentage points.
+ assert.equal(out.byPhaseCutoff.find(x=>x.phase===0&&x.cutoffPercent===50)
+  .smallestGapPoints,66.666667);
+ assert(out.samples.flatMap(x=>x.atMost||[]).every(x=>
+  x.fraction>=0&&x.fraction<=1));
  const broken=obs.map(o=>({...o}));
  broken[0]={...broken[0],status:'ambiguous-ties',rankFractions:null};
  const held=m.analyze(rows,broken,[50]);
