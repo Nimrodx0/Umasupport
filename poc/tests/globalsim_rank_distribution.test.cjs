@@ -26,8 +26,7 @@ test('rank-distance integration splits exact linear overtake and partitions rank
  assert.equal(a.status,'estimate');
  assert.deepEqual(a.rankFractions,[0.5,0.5]);
  assert.equal(a.observedDistance,10);
- const b=m.histogram(f,1,10,0,1);
- assert.equal(b.status,'incomplete-replay');
+ assert.throws(()=>m.histogram(f,1,10,0,1),/position goes backwards/);
 });
 test('persistently tied, missing replay and malformed rank inputs are withheld',()=>{
  const tied=m.histogram([frame(0,[0,0]),frame(1,[10,10])],0,10,0,1);
