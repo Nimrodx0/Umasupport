@@ -108,17 +108,19 @@ function branch(row,styleId,{preconditionRows=[]}={}){
   preconditionRows.some(p=>!Array.isArray(p)||p.some(c=>!valid(c))))
   throw Error('Invalid source precondition OR rows');
  const conditions=row.map(cond);
+ const raceRequirements=conditions.filter(c=>RACE_GATES.has(c.type));
  const style=explicitStyle(row,styleId);
  if(style===false)
   return result('ineligible','explicit-running-style-AND-excludes-style',
-   {sourceConditions:conditions});
+   {sourceConditions:conditions,raceRequirements});
  // Precondition OR rows: all branches exclude the style -> provably forbidden.
  // If any branch might allow it, don't ignore other unmodelled preconditions.
  if(preconditionRows.length){
   const pre=preconditionRows.map(p=>explicitStyle(p,styleId));
   if(pre.every(x=>x===false))
    return result('ineligible','all-explicit-style-precondition-OR-paths-exclude-style',
-    {sourceConditions:conditions,preconditionRows:preconditionRows.map(p=>p.map(cond))});
+    {sourceConditions:conditions,raceRequirements,
+     preconditionRows:preconditionRows.map(p=>p.map(cond))});
  }
  const rankEvidence=rankOnly(row,styleId);
  const extra=row.filter(c=>c.type!=='order_rate'&&
@@ -130,7 +132,6 @@ function branch(row,styleId,{preconditionRows=[]}={}){
   return t?.status!=='source-defined'||t.courseDependent;
  });
  const contextual=row.filter(c=>NEUTRAL_CONTEXT.has(c.type)).map(cond);
- const raceRequirements=contextual.filter(c=>RACE_GATES.has(c.type));
  const surfaceTransfer=rankEvidence&&raceRequirements.some(c=>
   c.type==='ground_type'||c.type==='ground_condition')?
   SURFACE_TRANSFER:null;
