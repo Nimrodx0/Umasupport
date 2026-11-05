@@ -82,16 +82,33 @@ function roster(n,scenario,rep,seed){
   counts
  };
 }
+// Stable seed per course / field / population / replicate. Both stat
+// variants receive identical roster composition and sim seed, enabling
+// paired sensitivity comparisons. Adding courses never reseeds old cases.
+function seedFor(courseId,fieldSize,scenario,rep){
+ const key=[PIN,courseId,fieldSize,scenario,rep].join('|');
+ let h=2166136261;
+ for(let i=0;i<key.length;i++){
+  h^=key.charCodeAt(i);
+  h=Math.imul(h,16777619);
+ }
+ return 1+((h>>>0)%2147483000);
+}
 function makePlan({seedsPerCell=3}={}){
  if(!Number.isInteger(seedsPerCell)||seedsPerCell<1||seedsPerCell>60)
   throw Error('seedsPerCell must be 1..60');
  const plans=[];
+ const usedSeeds=new Map();
  for(const course of COURSES)
   for(const n of [9,12])
    for(const scenario of Object.keys(SOURCES))
     for(const mode of MODES)
      for(let rep=0;rep<seedsPerCell;rep++){
-      const seed=920000+plans.length;
+      const seed=seedFor(course.id,n,scenario,rep);
+      const label=[course.id,n,scenario,rep].join('|');
+      if(usedSeeds.has(seed)&&usedSeeds.get(seed)!==label)
+       throw Error('Hash seed collision: '+label+' '+usedSeeds.get(seed));
+      usedSeeds.set(seed,label);
       const drawn=roster(n,scenario,rep,seed);
       plans.push({seed,course,fieldSize:n,scenario,mode,rep,...drawn});
      }
@@ -214,4 +231,4 @@ async function main(){
 }
 if(require.main===module)main().catch(e=>{console.error(e);process.exitCode=1;});
 module.exports={SOURCES,COURSES,STYLES,MODES,sampleCounts,roster,makePlan,makeRace,
- observe,execute,rng};
+ observe,execute,rng,seedFor};
