@@ -447,6 +447,9 @@ jobs:
           node --test poc/tests/globalsim_seed_stability.test.cjs
           node --check poc/src/skill_position_model_join.cjs
           node --test poc/tests/skill_position_model_join.test.cjs
+          node --check poc/src/skill_activation_fit_v1.cjs
+          node --check poc/tools/skill_activation_fit_v1_report.cjs
+          node --test poc/tests/skill_activation_fit_v1.test.cjs poc/tests/skill_activation_fit_v1_report.test.cjs
 
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |
