@@ -1,0 +1,65 @@
+name: GlobalSim dense-frame window crosscheck
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Seeds per three courses x two field sizes x two source priors x two stat modes, 1..20"
+        type: number
+        required: true
+        default: 3
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_dense_window_validation.cjs'
+      - 'poc/tests/globalsim_dense_window_validation.test.cjs'
+      - '.github/workflows/globalsim-dense-window-validation.yml'
+permissions:
+  contents: read
+
+jobs:
+  frame-window-crosscheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test dense-frame crossings against artificial overtakes
+        run: |
+          node --check poc/tools/globalsim_dense_window_validation.cjs
+          node --test poc/tests/globalsim_dense_window_validation.test.cjs
+      - name: Check out pinned GlobalSim v77 source
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+      - name: Build engine with source-locked dependencies
+        run: |
+          cd /tmp/globalsim
+          cargo build --release --locked
+      - name: Compare dense-frame and nine-point position window estimates
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '3' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo "Invalid seeds_per_cell" >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 1 ] || [ "$SEEDS_PER_CELL" -gt 20 ]; then
+            echo "seeds_per_cell must be 1..20" >&2
+            exit 2
+          fi
+          mkdir -p /tmp/globalsim-frame-window
+          node --max-old-space-size=3072 poc/tools/globalsim_dense_window_validation.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/globalsim-frame-window/comparison.json \
+            "$SEEDS_PER_CELL"
+      - name: Preserve derived error comparisons only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-dense-window-crosscheck
+          path: /tmp/globalsim-frame-window/comparison.json
+          retention-days: 14
