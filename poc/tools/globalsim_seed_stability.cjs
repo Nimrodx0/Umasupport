@@ -126,14 +126,23 @@ function analyze(source){
   received.add(key);
   if(!['estimate','ambiguous-ties','incomplete-replay'].includes(obs.status))
    throw Error('Unknown runner observation status '+obs.status);
+  // Piecewise-linear distance integration may yield -1e-15 or
+  // 1+1e-15 from floating-point rounding. Only clamp roundoff,
+  // never silently accept a materially invalid probability.
+  const tolerance=1e-9;
   if(obs.status==='estimate'?
-   !Number.isFinite(obs.pTopHalf)||obs.pTopHalf<0||obs.pTopHalf>1:
-   obs.pTopHalf!==null)
-   throw Error('Invalid runner observation probability');
+   !Number.isFinite(obs.pTopHalf)||obs.pTopHalf< -tolerance||
+    obs.pTopHalf>1+tolerance:obs.pTopHalf!==null)
+   throw Error('Invalid runner observation probability '+JSON.stringify({
+    value:obs.pTopHalf,status:obs.status,windowId:obs.windowId,
+    courseId:obs.courseId,rep:obs.rep}));
   const group=groups.get(cellKey(obs));
   const rep=group.replicates[obs.rep];
   rep.nTotal++;
-  if(obs.status==='estimate'){rep.nValid++;rep.sumTop+=obs.pTopHalf}
+  if(obs.status==='estimate'){
+   rep.nValid++;
+   rep.sumTop+=Math.min(1,Math.max(0,obs.pTopHalf));
+  }
   else rep.nInvalid++;
  }
  const rows=[];
