@@ -1,0 +1,56 @@
+name: GlobalSim six-course rank generalization audit
+on:
+  workflow_dispatch:
+    inputs:
+      expanded_run_id:
+        description: "Pinned six-course GlobalSim window experiment Actions run"
+        type: string
+        required: true
+        default: '41966480256'
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_course_generalization.cjs'
+      - 'poc/tests/globalsim_course_generalization.test.cjs'
+      - '.github/workflows/globalsim-course-generalization.yml'
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rank-course-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test grouping, counterexamples and incomplete-population handling
+        run: |
+          node --check poc/tools/globalsim_course_generalization.cjs
+          node --test poc/tests/globalsim_course_generalization.test.cjs
+      - name: Fetch already simulated six-course research observations
+        uses: actions/download-artifact@v4
+        with:
+          name: globalsim-observed-prior-position-sensitivity
+          run-id: ${{ inputs.expanded_run_id || '41966480256' }}
+          github-token: ${{ github.token }}
+          path: /tmp/global-course-source
+      - name: Require the recorded original simulator-derived files
+        run: |
+          echo 'd853e79525f0e0fdcacdb0e0e5e96d9af2aa53766a2e8e774cb7d019763954c9  /tmp/global-course-source/summary.json' | sha256sum -c -
+          echo '92641d16ad597c12082babae6d5784fa82747968aa812f1a2e818c7d8cea6a0d  /tmp/global-course-source/window-profile.json' | sha256sum -c -
+      - name: Recompute matched course differences from all 2160 original model races
+        run: |
+          mkdir -p /tmp/global-course-review
+          node poc/tools/globalsim_course_generalization.cjs \
+            /tmp/global-course-source/summary.json \
+            /tmp/global-course-source/window-profile.json \
+            /tmp/global-course-review/course-generality.json
+      - name: Preserve derived cross-course evidence, not source replays
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-six-course-generalization
+          path: /tmp/global-course-review/course-generality.json
+          retention-days: 14
