@@ -87,6 +87,21 @@ test('missing running style is absent, not a zero probability',()=>{
  assert.equal(held.bootstrap95.lowerPercent,null);
  assert.equal(held.invalidRunnerObservations,1);
 });
+test('integration roundoff near 0% or 100% is clamped, never a new chance',()=>{
+ const data=fixture(3);
+ data.observations[0].pTopHalf=1+1e-12;
+ data.observations[1].pTopHalf=-1e-12;
+ const report=m.analyze(data);
+ assert.equal(report.coverage.held,0);
+ const a=report.rows.find(x=>x.style===data.observations[0].style&&
+  x.windowId===data.observations[0].windowId&&
+  x.courseId===data.observations[0].courseId&&
+  x.fieldSize===data.observations[0].fieldSize&&
+  x.scenario===data.observations[0].scenario&&
+  x.mode===data.observations[0].mode);
+ assert(a.topHalfPercent>=0&&a.topHalfPercent<=100);
+});
+
 test('wrong seed, duplicated runner, wrong style and missing data are rejected',()=>{
  const original=fixture(3);
  assert.throws(()=>m.analyze({...original,sourceRevision:'latest'}),/Expected pinned/);
