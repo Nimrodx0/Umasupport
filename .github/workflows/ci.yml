@@ -432,6 +432,8 @@ jobs:
           node --test poc/tests/globalsim_window_profile.test.cjs
           node --check poc/tools/globalsim_window_sensitivity.cjs
           node --test poc/tests/globalsim_window_sensitivity.test.cjs
+          node --check poc/tools/globalsim_dense_window_validation.cjs
+          node --test poc/tests/globalsim_dense_window_validation.test.cjs
 
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |
