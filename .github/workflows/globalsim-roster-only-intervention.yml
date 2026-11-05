@@ -1,0 +1,65 @@
+name: P2 opponent-composition-only matched focal-rank experiment
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Matched seeds per course, size, focal style, mode, 2..40"
+        required: true
+        type: number
+        default: 20
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_roster_only_intervention.cjs'
+      - 'poc/tests/globalsim_roster_only_intervention.test.cjs'
+      - '.github/workflows/globalsim-roster-only-intervention.yml'
+permissions:
+  contents: read
+
+jobs:
+  fixed-focal-position:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify unchanged focal horse, opponents-only intervention and fail-closed rank arithmetic
+        run: |
+          node --check poc/tools/globalsim_roster_only_intervention.cjs
+          node --test poc/tests/globalsim_roster_only_intervention.test.cjs
+          node --test poc/tests/globalsim_rank_distribution.test.cjs
+      - name: Fetch unchanged GlobalSim v77 engine source
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Run 6 courses x 2 field sizes x 4 fixed focal styles x 3 opponent lineups x 2 stat modes x 20 matched seeds
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '20' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo 'Expected integer seeds' >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 2 ] || [ "$SEEDS_PER_CELL" -gt 40 ]; then
+            echo 'Seeds must be 2..40' >&2
+            exit 2
+          fi
+          mkdir -p /tmp/globalsim-roster-intervention
+          node --max-old-space-size=3072 poc/tools/globalsim_roster_only_intervention.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/globalsim-roster-intervention/report.json "$SEEDS_PER_CELL"
+      - name: Archive aggregate position differences only, not race replays
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-focal-opponent-roster-intervention
+          path: /tmp/globalsim-roster-intervention/report.json
+          retention-days: 14
