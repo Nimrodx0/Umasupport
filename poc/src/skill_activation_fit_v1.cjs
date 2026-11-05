@@ -3,7 +3,8 @@
  * activation probability. Work with source-pinned predicates only.
  * Preserve AND/OR and hold unmodelled predicates instead of promoting them. */
 const rank=require('./skill_rank_timing.js');
-const VERSION='activation-condition-fit-v1.1';
+const subphase=require('../tools/verify_subphase_model_direction.cjs');
+const VERSION='activation-condition-fit-v1.2';
 const STYLES=Object.freeze([
  {id:1,name:'逃げ'},{id:2,name:'先行'},
  {id:3,name:'差し'},{id:4,name:'追込'}
@@ -89,17 +90,24 @@ function rankOnly(row,styleId){
  if(p===3)
   return result('dependent','late-phase-group-order-exceptions-observed',
    {...metadata,note:'終盤後半のモデル条件では脚質群の有利不利に例外が確認されている'});
- if(p===0&&times[0].type!=='phase_random')
-  return result('held','early-subphase-not-verified',metadata);
- if(p===1&&times[0].type!=='phase_random')
-  return result('held','middle-subphase-not-verified',metadata);
+ const needsSubphaseProof=(p===0||p===1)&&
+  times[0].type!=='phase_random';
+ const subphaseProof=needsSubphaseProof?
+  subphase.verifiedWindow(times[0]):null;
+ if(needsSubphaseProof&&!subphaseProof)
+  return result('held',p===0?'early-subphase-not-verified':
+   'middle-subphase-not-verified',metadata);
  if(p===2&&![
    'phase_random','phase_firsthalf_random','phase_laterhalf_random'
   ].includes(times[0].type))
   return result('held','final-subphase-not-verified',metadata);
  const favored=front?styleId<=2:styleId>=3;
  return result(favored?'high':'low',
-  'validated-relative-front-rear-group-direction',metadata);
+  'validated-relative-front-rear-group-direction',
+  {...metadata,...(subphaseProof?{
+   modelSubphaseEvidence:subphaseProof,
+   researchBasis:'GlobalSim v77 2160 model races; exact early/middle subphase windows #349; all recorded positions'
+  }:{})});
 }
 function branch(row,styleId,{preconditionRows=[]}={}){
  if(!Array.isArray(row)||row.some(c=>!valid(c)))

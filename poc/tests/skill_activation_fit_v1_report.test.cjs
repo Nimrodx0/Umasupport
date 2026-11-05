@@ -12,7 +12,8 @@ const fixed=()=>({
  p2StyleReview:{total:53,groups:[{skills:Array.from({length:53},(_,i)=>{
   const back=i%2===1,late=i===52;
   const rank=c('order_rate',back?'>':'<=',50);
-  const period=c('phase_random','==',late?3:1);
+  const period=c(i===2?'phase_laterhalf_random':'phase_random',
+   '==',i===2?0:late?3:1);
   return {sourceNumericId:String(200000+i),id:'skill:'+String(200000+i),
    name:'テストスキル'+i,paths:[{invokeIndex:0,orIndex:0,
     sourceConditions:[rank,period,...(i===0?[c('ground_type','==',2)]:[])]}],
@@ -33,6 +34,11 @@ test('reviewed 53 skills have 212 style cases, all six statuses are tracked with
  assert.equal(out.counts.terrainRaceGateSkills,1);
  assert.equal(out.counts.terrainRaceGateResolvedSkills,1);
  assert.equal(out.counts.terrainRaceGateStillHeldSkills,0);
+ assert.equal(out.counts.subphaseEvidenceSkills,1);
+ assert.equal(out.counts.subphaseEvidenceResolvedSkills,1);
+ assert.equal(out.ruleVersion,'activation-condition-fit-v1.2');
+ assert.equal(out.items[2].styles['逃げ'].branches[0].modelSubphaseEvidence.windowId,
+  'early-latter');
  assert.equal(out.status,'research-only-activation-condition-fit-not-production-classification');
  assert.equal(out.items[0].styles['逃げ'].status,'high');
  assert.equal(out.items[1].styles['差し'].status,'high');

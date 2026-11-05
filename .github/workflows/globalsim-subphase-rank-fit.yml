@@ -1,0 +1,71 @@
+name: P2 source-defined subphase rank direction research
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Number of seeds per course, field size, roster scenario, stat mode (2..60)"
+        type: number
+        required: true
+        default: 30
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_subphase_rank_fit.cjs'
+      - 'poc/tools/verify_subphase_model_direction.cjs'
+      - 'poc/data/p2_subphase_model_direction.v1.json'
+      - 'poc/tests/globalsim_subphase_rank_fit.test.cjs'
+      - '.github/workflows/globalsim-subphase-rank-fit.yml'
+permissions:
+  contents: read
+jobs:
+  subphase-rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run source-window and full recorded position test cases
+        run: |
+          node --check poc/tools/globalsim_subphase_rank_fit.cjs
+          node --test poc/tests/globalsim_subphase_rank_fit.test.cjs
+          node --test poc/tests/globalsim_rank_distribution.test.cjs
+          node --check poc/tools/verify_subphase_model_direction.cjs
+      - name: Verify and compile fixed GlobalSim v77 engine
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Test partial early/middle source windows across six courses
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '30' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo 'Expected integer seeds' >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 2 ] || [ "$SEEDS_PER_CELL" -gt 60 ]; then
+            echo 'Seeds outside 2..60' >&2
+            exit 2
+          fi
+          mkdir -p /tmp/subphase-positions
+          node --max-old-space-size=4096 poc/tools/globalsim_subphase_rank_fit.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/subphase-positions/report.json "$SEEDS_PER_CELL"
+      - name: Independently verify whole model report hash and all 216 context statuses
+        if: success()
+        run: |
+          node poc/tools/verify_subphase_model_direction.cjs             /tmp/subphase-positions/report.json
+      - name: Archive only derived group rank occupancy
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-source-subphase-rank-direction
+          path: /tmp/subphase-positions/report.json
+          retention-days: 14

@@ -24,15 +24,71 @@ test('mid-race exact front and back 50% classify relative style fit',()=>{
 test('early full race phase is measured, final phase subwindows are scoped',()=>{
  for(const row of [
   rank('<=',50,0),
+  rank('<=',50,0,'phase_laterhalf_random'),
+  rank('<=',50,1,'phase_firsthalf_random'),
+  rank('<=',50,1,'phase_laterhalf_random'),
   rank('<=',50,2,'phase_firsthalf_random'),
   rank('<=',50,2,'phase_laterhalf_random')
  ])assert.equal(statuses(p([row]))['逃げ'],'high');
  for(const row of [
   rank('<=',50,3,'phase_laterhalf_random'),
-  rank('<=',50,0,'phase_laterhalf_random'),
+  rank('<=',50,0,'phase_firsthalf_random'),
+  rank('<=',50,1,'phase_firstquarter_random'),
   rank('<=',50,2,'phase'),
   rank('<=',50,1,'phase_corner_random')
  ])assert.equal(statuses(p([row]))['逃げ'],'held');
+});
+test('pinned 2160-race model evidence covers only the three exact subphase source windows',()=>{
+ const gate=require('../tools/verify_subphase_model_direction.cjs');
+ assert.equal(gate.validate(gate.EVIDENCE),true);
+ for(const w of gate.EVIDENCE.windows){
+  const cond={type:w.type,operator:w.operator,value:w.value};
+  const proof=gate.verifiedWindow(cond);
+  assert(proof);
+  assert.equal(proof.modelContexts,72);
+  assert.equal(proof.bothSeedHalvesFrontAhead,72);
+  assert(proof.modelMinFrontMinusRearPoints>0);
+  const a=fit.evaluate(p([[...rank('<=',50,w.value,w.type)]]));
+  assert.equal(a.styles['逃げ'].status,'high');
+  assert.equal(a.styles['差し'].status,'low');
+  assert.equal(a.styles['逃げ'].paths[0].modelSubphaseEvidence.windowId,
+   w.windowId);
+ }
+ assert.equal(gate.verifiedWindow({type:'phase_laterhalf_random',
+  operator:'==',value:2}),null);
+ assert.equal(gate.verifiedWindow({type:'phase_firsthalf_random',
+  operator:'==',value:0}),null);
+});
+test('a counterexample, unknown, or source-window drift prevents automatic fit promotion',()=>{
+ const gate=require('../tools/verify_subphase_model_direction.cjs');
+ const row={type:'phase_laterhalf_random',operator:'==',value:0};
+ const x=JSON.parse(JSON.stringify(gate.EVIDENCE));
+ x.windows[0].rearCounterexamples=1;
+ assert.equal(gate.validate(x),false);
+ assert.equal(gate.verifiedWindow(row,x),null);
+ const y=JSON.parse(JSON.stringify(gate.EVIDENCE));
+ y.windows[1].startRate+=.01;
+ assert.equal(gate.validate(y),false);
+ const z=JSON.parse(JSON.stringify(gate.EVIDENCE));
+ z.reportSha256='unverified';
+ assert.equal(gate.validate(z),false);
+ const invalid=Buffer.from(JSON.stringify({races:2160}));
+ assert.throws(()=>gate.verifyReproduction(gate.EVIDENCE,invalid),
+  /digest changed/);
+});
+test('two alternative distance cases with the same supported subphase keep OR structure',()=>{
+ const x=fit.evaluate(p([
+  [...rank('<=',50,1,'phase_firsthalf_random'),
+   cond('distance_type','==',3)],
+  [...rank('<=',50,1,'phase_firsthalf_random'),
+   cond('distance_type','==',4)]
+ ]));
+ assert.equal(x.styles['逃げ'].status,'high');
+ assert.equal(x.styles['先行'].status,'high');
+ assert.equal(x.styles['差し'].status,'low');
+ assert.equal(x.styles['追込'].status,'low');
+ assert.equal(x.styles['逃げ'].paths.length,2);
+ assert(x.styles['逃げ'].paths.every(b=>b.modelSubphaseEvidence!==undefined));
 });
 test('late phase has measured exceptions: do not promote it to high or low',()=>{
  for(const op of ['<=','>']){
@@ -80,7 +136,7 @@ test('race-global distance/ground context does not invent extra style condition'
   'provisional-cross-surface-direction-not-verified');
  assert.match(branch.surfaceTransfer.note,/未検証/);
  assert.equal(Object.hasOwn(branch,'probability'),false);
- assert.equal(dirt.ruleVersion,'activation-condition-fit-v1.1');
+ assert.equal(dirt.ruleVersion,'activation-condition-fit-v1.2');
  assert.equal(fit.evaluate(p([[cond('distance_type','==',3),
   cond('phase_random','==',1)]])).styles['逃げ'].status,'neutral');
 });

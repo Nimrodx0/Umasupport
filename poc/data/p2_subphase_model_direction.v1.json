@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "status": "pinned-GlobalSim-model-relative-rank-direction-research-only",
+  "sourceRevision": "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1",
+  "reportSha256": "3841c303c5725442b322ce893135d03b534aed187649f8d5d50df1b71feb32f8",
+  "experimentAction": "https://github.com/Nimrodx0/Umasupport/actions/runs/42070972985",
+  "artifactId": 13436946206,
+  "races": 2160,
+  "runnerWindowObservations": 68040,
+  "seedsPerCell": 30,
+  "scenarios": [
+    "balanced",
+    "jan2026",
+    "noFront"
+  ],
+  "courses": 6,
+  "fieldSizes": [
+    9,
+    12
+  ],
+  "statModes": [
+    "equal",
+    "jitter10"
+  ],
+  "category": "top50-fractional-distance-occupancy-not-game-trigger-rate",
+  "rankCutoffProvenance": "globalsim_position_pilot.threshold(n,50): model mapping not independently verified as Japanese game rule",
+  "evidenceLevel": "all 72 model contexts, first and last 15 seeds separately; no actual game observation",
+  "windows": [
+    {
+      "windowId": "early-latter",
+      "type": "phase_laterhalf_random",
+      "operator": "==",
+      "value": 0,
+      "startRate": 0.08333333,
+      "endRate": 0.16666667,
+      "contexts": 72,
+      "comparable": 72,
+      "frontAhead": 72,
+      "rearCounterexamples": 0,
+      "ties": 0,
+      "unresolved": 0,
+      "splitBothFrontAhead": 72,
+      "anySplitReversal": 0,
+      "minGapPoints": 34.124647,
+      "directionGate": "all-contexts-and-splits-directionally-consistent"
+    },
+    {
+      "windowId": "middle-first",
+      "type": "phase_firsthalf_random",
+      "operator": "==",
+      "value": 1,
+      "startRate": 0.16666667,
+      "endRate": 0.41666667,
+      "contexts": 72,
+      "comparable": 72,
+      "frontAhead": 72,
+      "rearCounterexamples": 0,
+      "ties": 0,
+      "unresolved": 0,
+      "splitBothFrontAhead": 72,
+      "anySplitReversal": 0,
+      "minGapPoints": 33.849376,
+      "directionGate": "all-contexts-and-splits-directionally-consistent"
+    },
+    {
+      "windowId": "middle-latter",
+      "type": "phase_laterhalf_random",
+      "operator": "==",
+      "value": 1,
+      "startRate": 0.41666667,
+      "endRate": 0.66666667,
+      "contexts": 72,
+      "comparable": 72,
+      "frontAhead": 72,
+      "rearCounterexamples": 0,
+      "ties": 0,
+      "unresolved": 0,
+      "splitBothFrontAhead": 72,
+      "anySplitReversal": 0,
+      "minGapPoints": 34.10363,
+      "directionGate": "all-contexts-and-splits-directionally-consistent"
+    }
+  ],
+  "limitations": [
+    "All recorded position times and piecewise-linear overtake crossing interpolation on fixed GlobalSim v77",
+    "72 contexts per window are systematic simulator settings, not independent game observations or representative match distributions",
+    "The measured result is relative front-vs-rear group rank occupancy, not Japanese game activation probability",
+    "Any drift in script, engine or source window definitions requires an independent model audit before expanding fit",
+    "No actual game rank predicate rounding equivalence has been independently verified"
+  ]
+}
