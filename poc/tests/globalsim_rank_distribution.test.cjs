@@ -28,6 +28,18 @@ test('rank-distance integration splits exact linear overtake and partitions rank
  assert.equal(a.observedDistance,10);
  assert.throws(()=>m.histogram(f,1,10,0,1),/position goes backwards/);
 });
+test('the 50% total matches the existing frame-interpolated rank-band implementation',()=>{
+ const old=require('../tools/globalsim_dense_window_validation.cjs');
+ const f=[frame(0,[0,4,12]),frame(1,[10,9,22])];
+ const h=m.histogram(f,0,10,0,1);
+ const matched=h.rankFractions.slice(0,2).reduce((a,b)=>a+b,0);
+ const original=old.integrateDense(f,0,10,0,1);
+ assert.equal(h.status,'estimate');
+ assert.equal(original.status,'estimate');
+ assert(Math.abs(matched-original.pTopHalf)<1e-10);
+ assert(Math.abs(matched-0.2)<1e-10);
+});
+
 test('persistently tied, missing replay and malformed rank inputs are withheld',()=>{
  const tied=m.histogram([frame(0,[0,0]),frame(1,[10,10])],0,10,0,1);
  assert.equal(tied.status,'ambiguous-ties');
