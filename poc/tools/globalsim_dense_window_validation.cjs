@@ -18,14 +18,14 @@ const position=h=>Array.isArray(h)?h[0]:h?.pos;
 const identity=(plan,style,windowId)=>[
  plan.course.id,plan.fieldSize,plan.scenario,plan.mode,style,windowId].join('|');
 const clamp=(v,a,b)=>Math.max(a,Math.min(v,b));
-function integrateDense(frames,runner,distance,startRate,endRate){
+function integrateDense(frames,runner,distance,startRate,endRate,validatedFrames=false){
  const n=frames?.[0]?.horses?.length;
  if(!Number.isInteger(n)||n<2||!Number.isInteger(runner)||
   runner<0||runner>=n||!Number.isFinite(distance)||distance<=0||
   !Number.isFinite(startRate)||!Number.isFinite(endRate)||
   startRate<0||endRate>1||endRate<=startRate)
   throw Error('Invalid dense window arguments');
- pilot.checkFrames(frames,n);
+ if(!validatedFrames)pilot.checkFrames(frames,n);
  const start=distance*startRate,end=distance*endRate,width=end-start;
  let front=0,back=0,unknown=0;
  for(let k=1;k<frames.length;k++){
@@ -96,7 +96,7 @@ function analyzeReply(plan,reply,coarse,dense){
     style,windowId:win.id,valid:0,unknown:0,sumTop:0,sumBack:0,
     statusReasons:{}});
    const group=dense.get(k),result=integrateDense(reply.frames,runner,
-    plan.course.distance,win.startRate,win.endRate);
+    plan.course.distance,win.startRate,win.endRate,true);
    if(result.status==='estimate'){
     group.valid++;group.sumTop+=result.pTopHalf;group.sumBack+=result.pBackHalf;
    }else{
@@ -117,12 +117,15 @@ function reportFrom(plans,coarse,dense,seedsPerCell){
   const k=[w.courseId,w.fieldSize,w.scenario,w.mode,w.style,w.windowId].join('|');
   const d=dense.get(k);
   if(!d)throw Error('Missing direct-frame comparison group '+k);
-  const eligible=w.status==='estimate'&&d.valid>0&&d.unknown===0;
+  const eligible=w.status==='estimate'&&d.valid>0&&d.unknown===0&&
+   w.minValidRunners===d.valid&&w.maxValidRunners===d.valid;
   const direct=eligible?d.sumTop/d.valid:null;
   return {courseId:w.courseId,fieldSize:w.fieldSize,scenario:w.scenario,
    mode:w.mode,style:w.style,windowId:w.windowId,
    coarseStatus:w.status,frameValidRunners:d.valid,
    frameUnknownRunners:d.unknown,unknownReasons:d.statusReasons,
+   coarseMinValidRunners:w.minValidRunners??null,
+   coarseMaxValidRunners:w.maxValidRunners??null,
    coarseTopPercent:w.pTopHalf===null?null:Number((w.pTopHalf*100).toFixed(6)),
    denseFrameTopPercent:direct===null?null:Number((direct*100).toFixed(6)),
    differencePercentagePoints:eligible?
