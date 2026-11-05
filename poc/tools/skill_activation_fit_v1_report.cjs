@@ -70,13 +70,21 @@ function audit53(audit){
  if(items.length*4!==Object.values(totals).reduce((a,b)=>a+b,0))
   throw Error('Style coverage count not exhaustive');
  items.sort((a,b)=>Number(a.sourceNumericId)-Number(b.sourceNumericId));
+ const terrainItems=items.filter(item=>Object.values(item.styles).some(s=>
+  s.branches.some(b=>(b.raceRequirements||[]).some(c=>
+   c.type==='ground_type'||c.type==='ground_condition'))));
+ const terrainResolved=terrainItems.filter(item=>Object.values(item.styles)
+  .every(s=>s.status!=='held'));
  return {schemaVersion:1,ruleVersion:fit.VERSION,
   status:'research-only-activation-condition-fit-not-production-classification',
   source:{revision:REV,sha256:SHA,appSkillCohort:53,
    simulatorSources:['GlobalSim v77 #343 six-course 2160','GlobalSim v77 #344 four-phase 1080',
     'GlobalSim v77 #345 fixed-roster 1440','GlobalSim v77 #346 focal-control 5760']},
   counts:{skills:items.length,styleCases:items.length*4,byStatus:totals,
-   byPriorStyleLabel:byExisting},
+   byPriorStyleLabel:byExisting,
+   terrainRaceGateSkills:terrainItems.length,
+   terrainRaceGateResolvedSkills:terrainResolved.length,
+   terrainRaceGateStillHeldSkills:terrainItems.length-terrainResolved.length},
   boundaries:[
    'Only exact order_rate<=50 and >50 with validated random phase windows receive stable relative high/low labels.',
    'Phase 3 is context-dependent because counterexamples exist, even if many tested cohorts retain the front/rear ordering.',
