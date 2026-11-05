@@ -147,6 +147,8 @@ test('surface gates remain attached to each alternative and explicit style exclu
   cond('ground_type','==',2)
  ]]));
  assert.equal(gated.styles['逃げ'].status,'ineligible');
+ assert.deepEqual(gated.styles['逃げ'].paths[0].raceRequirements,
+  [cond('ground_type','==',2)]);
  assert.equal(gated.styles['差し'].status,'held'); // explicit permission ≠ measured suitability
 });
 test('all known neutral predicates prove absence of a STYLE condition only',()=>{
