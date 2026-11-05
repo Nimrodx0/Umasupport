@@ -439,6 +439,8 @@ jobs:
           node --test poc/tests/globalsim_rank_distribution.test.cjs
           node --check poc/tools/globalsim_paired_rank_controls.cjs
           node --test poc/tests/globalsim_paired_rank_controls.test.cjs
+          node --check poc/tools/globalsim_roster_only_intervention.cjs
+          node --test poc/tests/globalsim_roster_only_intervention.test.cjs
           node --check poc/tools/globalsim_dense_window_validation.cjs
           node --test poc/tests/globalsim_dense_window_validation.test.cjs
           node --check poc/tools/globalsim_seed_stability.cjs
