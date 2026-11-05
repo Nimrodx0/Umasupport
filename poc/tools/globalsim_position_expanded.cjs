@@ -24,6 +24,14 @@ const SOURCES=Object.freeze({
  oct2025:{kind:'observed-marginals',counts:[39,64,114,23],n:240,
   event:'2025-10 CM sprint A preliminary matches',
   url:'https://note.com/krupp_el/n/nf9383f0f1bac'},
+ dec2025:{kind:'observed-marginals',counts:[22,88,117,13],n:240,
+  event:'2025-12 CM Hanshin mile A preliminary matches',
+  url:'https://note.com/krupp_el/n/n5b287805c5af'},
+ observedPool:{kind:'observed-marginals',counts:[82,296,265,77],n:720,
+  event:'illustrative sum of 2025-10, 2025-12, 2026-01 observed cohorts, NOT a population average',
+  urls:['https://note.com/krupp_el/n/nf9383f0f1bac',
+    'https://note.com/krupp_el/n/n5b287805c5af',
+    'https://note.com/krupp_el/n/n3bcca7d8ec3b']},
  noFront:{kind:'fixed-composition',counts9:[0,3,3,3],
   counts12:[0,4,4,4],note:'Sensitivity case; no front-runner'}
 });
