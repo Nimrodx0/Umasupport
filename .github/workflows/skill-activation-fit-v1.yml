@@ -1,4 +1,4 @@
-name: P2 activation-condition fit v1 source-verified 53-skill research
+name: P2 activation-condition fit v1.1 source-verified 53-skill research
 
 on:
   workflow_dispatch:
@@ -46,19 +46,29 @@ jobs:
             '/tmp/p2-style-fit-v1/activation-fit-v1-53.json','utf8'));
           assert.equal(r.counts.skills,53);
           assert.equal(r.counts.styleCases,212);
-          assert.deepEqual(r.counts.byStatus,{
-            high:52,low:52,dependent:0,neutral:0,held:108,ineligible:0
-          });
+          assert.equal(r.ruleVersion,'activation-condition-fit-v1.1');
+          assert.equal(Object.values(r.counts.byStatus)
+            .reduce((sum,n)=>sum+n,0),212);
+          assert.equal(r.counts.byStatus.dependent,0);
+          assert.equal(r.counts.byStatus.neutral,0);
+          assert.equal(r.counts.byStatus.ineligible,0);
           for(const [id,expect] of Object.entries({
             '201052':['high','high','low','low'],
             '200702':['low','low','high','high'],
             '200681':['held','held','held','held'],
-            '202312':['held','held','held','held']
+            '202312':['high','high','low','low']
           })){
             const skill=r.items.find(x=>x.sourceNumericId===id);
             assert(skill,'Missing source skill '+id);
             assert.deepEqual(['逃げ','先行','差し','追込']
               .map(s=>skill.styles[s].status),expect);
+            if(id==='202312'){
+              const branch=skill.styles['逃げ'].branches[0];
+              assert(branch.raceRequirements.some(c=>
+                c.type==='ground_type'&&c.operator==='=='&&c.value===2));
+              assert.equal(branch.surfaceTransfer.status,
+                'provisional-cross-surface-direction-not-verified');
+            }
           }
           NODE
       - name: Save narrow derived skill status report, not raw third-party dictionary
