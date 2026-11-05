@@ -437,6 +437,8 @@ jobs:
           node --check poc/tools/rank_source_distribution.cjs
           node --check poc/tools/globalsim_rank_distribution.cjs
           node --test poc/tests/globalsim_rank_distribution.test.cjs
+          node --check poc/tools/globalsim_subphase_rank_fit.cjs
+          node --test poc/tests/globalsim_subphase_rank_fit.test.cjs
           node --check poc/tools/globalsim_paired_rank_controls.cjs
           node --test poc/tests/globalsim_paired_rank_controls.test.cjs
           node --check poc/tools/globalsim_roster_only_intervention.cjs
