@@ -1,0 +1,46 @@
+name: P2 activation-condition fit v1 source-verified 53-skill research
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_activation_fit_v1.cjs'
+      - 'poc/tests/skill_activation_fit_v1.test.cjs'
+      - 'poc/tools/skill_activation_fit_v1_report.cjs'
+      - 'poc/tests/skill_activation_fit_v1_report.test.cjs'
+      - '.github/workflows/skill-activation-fit-v1.yml'
+permissions:
+  contents: read
+
+jobs:
+  source-fit-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test six fit statuses, source OR/AND, style restrictions and full 53-item coverage
+        run: |
+          node --check poc/src/skill_activation_fit_v1.cjs
+          node --check poc/tools/skill_activation_fit_v1_report.cjs
+          node --test poc/tests/skill_activation_fit_v1.test.cjs poc/tests/skill_activation_fit_v1_report.test.cjs
+      - name: Rebuild original source condition cohort at pinned UmaSim revision
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-source-review.log
+      - name: Apply research-only v1 fit to 53 reviewed skills without changing published data
+        run: |
+          mkdir -p /tmp/p2-style-fit-v1
+          node poc/tools/skill_activation_fit_v1_report.cjs \
+            skill-condition-inventory-audit.json \
+            /tmp/p2-style-fit-v1/activation-fit-v1-53.json
+      - name: Save narrow derived skill status report, not raw third-party dictionary
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-matched-activation-condition-fit-v1
+          path: /tmp/p2-style-fit-v1/activation-fit-v1-53.json
+          retention-days: 14
