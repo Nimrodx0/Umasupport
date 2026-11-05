@@ -19,6 +19,11 @@ const COUNTS=Object.freeze({
 const CUTS=[20,30,40,50,60,70,80];
 const round=n=>Number(n.toFixed(6));
 const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+const median=arr=>{
+ if(!arr.length)return null;
+ const a=[...arr].sort((x,y)=>x-y),i=Math.floor(a.length/2);
+ return a.length%2?a[i]:(a[i-1]+a[i])/2;
+};
 const id=x=>[x.courseId,x.fieldSize,x.focalStyle,x.mode,x.rep,x.phase,x.pressure].join('|');
 const cohortId=x=>[x.courseId,x.fieldSize,x.focalStyle,x.mode,x.phase,x.pressure,x.cut].join('|');
 function opponentLineup(fieldSize,pressure,rep){
@@ -164,7 +169,7 @@ function analyze(planRows,observations,{strict=false}={}){
      ties:delta.filter(x=>x===0).length,
      consistentNonzeroSplitHalfSigns:stable.length,
      medianAbsoluteDifferencePoints:delta.length?
-      round([...delta].map(Math.abs).sort((a,b)=>a-b)[Math.floor(delta.length/2)]):null,
+      round(median(delta.map(Math.abs))):null,
      maximumAbsoluteDifferencePoints:delta.length?
       round(Math.max(...delta.map(Math.abs))):null});
    }
@@ -255,5 +260,5 @@ async function main([templatePath,enginePath,outPath,count]){
 }
 if(require.main===module)main(process.argv.slice(2)).catch(e=>{
  console.error(e);process.exitCode=1});
-module.exports={STYLES,PRESSURES,COUNTS,CUTS,opponentLineup,plans,
+module.exports={STYLES,PRESSURES,COUNTS,CUTS,opponentLineup,plans,median,
  analyze,execute};
