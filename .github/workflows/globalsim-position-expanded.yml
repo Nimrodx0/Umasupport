@@ -41,7 +41,7 @@ jobs:
           cargo build --release --locked
       - name: Run independent streamed 9/12-race position studies
         env:
-          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '15' }}
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '3' }}
         run: |
           case "$SEEDS_PER_CELL" in
             ''|*[!0-9]*) echo "Invalid seeds_per_cell" >&2; exit 2 ;;
