@@ -1,0 +1,65 @@
+name: GlobalSim matched-seed fixed-roster late-phase controls
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Matched seeds per 6 course x 2 field x 2 fixed roster x 2 stats"
+        type: number
+        default: 30
+        required: true
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_paired_rank_controls.cjs'
+      - 'poc/tests/globalsim_paired_rank_controls.test.cjs'
+      - '.github/workflows/globalsim-paired-rank-controls.yml'
+permissions:
+  contents: read
+
+jobs:
+  matched-positions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify matched-seed roster controls and full-rank histogram invariants
+        run: |
+          node --check poc/tools/globalsim_paired_rank_controls.cjs
+          node --test poc/tests/globalsim_paired_rank_controls.test.cjs
+          node --test poc/tests/globalsim_rank_distribution.test.cjs
+      - name: Fetch unchanged fixed GlobalSim version
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Run 30 matched seeds for fixed balanced and no-front lineups
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '30' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo 'Expected integer seed count' >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 2 ] || [ "$SEEDS_PER_CELL" -gt 60 ]; then
+            echo 'Seed count must be 2..60' >&2
+            exit 2
+          fi
+          mkdir -p /tmp/matched-course-controls
+          node --max-old-space-size=3072 poc/tools/globalsim_paired_rank_controls.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/matched-course-controls/report.json "$SEEDS_PER_CELL"
+      - name: Archive only derived model-level position comparisons
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-fixed-roster-matched-course-study
+          path: /tmp/matched-course-controls/report.json
+          retention-days: 14
