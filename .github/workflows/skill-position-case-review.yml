@@ -1,0 +1,59 @@
+name: P2 audited skill rank conditions versus simulated position data
+
+on:
+  workflow_dispatch:
+    inputs:
+      stability_run_id:
+        description: "Successful pinned GlobalSim seed stability Actions run ID (artifact retained 14 days)"
+        type: string
+        required: true
+        default: '41980732030'
+  pull_request:
+    paths:
+      - 'poc/src/skill_position_model_join.cjs'
+      - 'poc/tools/skill_position_case_report.cjs'
+      - 'poc/tests/skill_position_model_join.test.cjs'
+      - '.github/workflows/skill-position-case-review.yml'
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  skill-position-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test source-constrained rank comparison
+        run: |
+          node --check poc/src/skill_position_model_join.cjs
+          node --check poc/tools/skill_position_case_report.cjs
+          node --test poc/tests/skill_position_model_join.test.cjs
+      - name: Retrieve the fixed GlobalSim seed-stability artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: globalsim-race-seed-stability
+          run-id: ${{ inputs.stability_run_id || '41980732030' }}
+          github-token: ${{ github.token }}
+          path: /tmp/skill-position-model
+      - name: Audit the fixed source skill dictionary without redistributing it
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: node poc/tools/audit_skill_conditions.cjs > /tmp/skill-p2-source-audit.log
+      - name: Join the source-verified 53 skills to comparable position observations only
+        run: |
+          mkdir -p /tmp/skill-position-case-review
+          node poc/tools/skill_position_case_report.cjs \
+            skill-condition-inventory-audit.json \
+            /tmp/skill-position-model/stability.json \
+            /tmp/skill-position-case-review/cases.json
+      - name: Save research-only conditional position evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-position-case-comparison
+          path: /tmp/skill-position-case-review/cases.json
+          retention-days: 14
