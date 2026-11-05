@@ -22,8 +22,11 @@ test('observed prior counts retain source identity, sum and are not an aggregate
 });
 test('9 and 12 runners, three distances, observed-prior draws, stats modes',()=>{
  const plans=x.makePlan({seedsPerCell:2});
- assert.equal(plans.length,4*2*6*2*2);
+ assert.equal(plans.length,6*2*6*2*2);
  assert.deepEqual(new Set(plans.map(p=>p.course.distance)),new Set([1200,1600,2000,2500]));
+ assert.equal(new Set(plans.map(p=>p.course.id)).size,6);
+ assert.deepEqual(new Set(plans.map(p=>Math.floor(p.course.id/100))),
+  new Set([105,103,106]));
  assert.deepEqual(new Set(plans.map(p=>p.fieldSize)),new Set([9,12]));
  assert.deepEqual(new Set(plans.map(p=>p.mode)),new Set(['equal','jitter10']));
  assert.deepEqual(new Set(plans.map(p=>p.scenario)),
