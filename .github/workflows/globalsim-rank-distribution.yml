@@ -1,0 +1,81 @@
+name: GlobalSim source-prioritized rank bands and four race phases
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Seeds per 6 courses x 9/12 runners x 3 rosters x 2 stat settings, 1..20"
+        required: true
+        type: number
+        default: 15
+  pull_request:
+    paths:
+      - 'poc/tools/rank_source_distribution.cjs'
+      - 'poc/tools/globalsim_rank_distribution.cjs'
+      - 'poc/tests/globalsim_rank_distribution.test.cjs'
+      - '.github/workflows/globalsim-rank-distribution.yml'
+permissions:
+  contents: read
+jobs:
+  rank-distribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify histogram math, representative source thresholds and no invented missing styles
+        run: |
+          node --check poc/tools/rank_source_distribution.cjs
+          node --check poc/tools/globalsim_rank_distribution.cjs
+          node --test poc/tests/globalsim_rank_distribution.test.cjs
+      - name: Acquire exact fixed UmaSim skill dictionary for frequency analysis only
+        run: |
+          mkdir -p /tmp/global-rank-research
+          node -e '
+            const fs=require("node:fs");
+            const url="https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt";
+            fetch(url).then(async r=>{
+              if(!r.ok)throw Error("Upstream source "+r.status);
+              fs.writeFileSync("/tmp/global-rank-research/skill_data.txt",
+                Buffer.from(await r.arrayBuffer()));
+            }).catch(e=>{console.error(e);process.exitCode=1});
+          '
+          node poc/tools/rank_source_distribution.cjs \
+            /tmp/global-rank-research/skill_data.txt \
+            /tmp/global-rank-research/rank-source-distribution.json
+      - name: Build unchanged pinned GlobalSim engine
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Repeat full-rank simulation in four phases
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '15' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo "Invalid seeds per cell" >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 1 ] || [ "$SEEDS_PER_CELL" -gt 20 ]; then
+            echo "Seeds must be 1..20" >&2
+            exit 2
+          fi
+          node --max-old-space-size=3072 poc/tools/globalsim_rank_distribution.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/global-rank-research/rank-source-distribution.json \
+            /tmp/global-rank-research/rank-profile.json "$SEEDS_PER_CELL"
+      - name: Publish only aggregated model histograms and condition frequencies
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-source-prioritized-rank-distribution
+          path: |
+            /tmp/global-rank-research/rank-source-distribution.json
+            /tmp/global-rank-research/rank-profile.json
+          retention-days: 14
