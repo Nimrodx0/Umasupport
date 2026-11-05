@@ -27,7 +27,7 @@ function audit(records){
   let hasRank=false;
   for(const invoke of skill.invokes){
    for(const side of ['conditions','preConditions']){
-    const rows=invoke[side]||[];
+    const rows=invoke[side]===undefined?[]:invoke[side];
     if(!Array.isArray(rows))throw Error('Missing OR branches');
     for(const row of rows){
      if(!Array.isArray(row))throw Error('Malformed AND row');
