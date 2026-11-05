@@ -20,6 +20,11 @@ jobs:
         run: |
           node --check poc/tools/check_release_test_assumptions.cjs
           node poc/tools/check_release_test_assumptions.cjs
+      - name: Verify current public catalog matches docs and check tracking regressions
+        run: |
+          node --check poc/tools/check_project_tracking.cjs
+          node poc/tools/check_project_tracking.cjs
+          node --test poc/tests/project_tracking.test.cjs
       - name: Validate documentation responsibilities, archive and canonical links
         run: node --test poc/tests/documentation_policy.test.cjs
       - name: Validate pinned private full 2512-event local import without publishing data
