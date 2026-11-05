@@ -81,7 +81,7 @@ function plansFor(seedsPerCell){
  return expanded.makePlan({seedsPerCell}).filter(p=>
   COURSE_IDS.includes(p.course.id)&&SCENARIOS.includes(p.scenario));
 }
-function analyzeReply(plan,reply,coarse,dense){
+function analyzeReply(plan,reply,coarse,dense,onRunnerWindow){
  if(reply?.error)throw Error('GlobalSim reported an error for '+plan.seed);
  if(reply?.seed!==undefined&&reply.seed!==plan.seed)
   throw Error('Wrong simulator seed');
@@ -97,6 +97,11 @@ function analyzeReply(plan,reply,coarse,dense){
     statusReasons:{}});
    const group=dense.get(k),result=integrateDense(reply.frames,runner,
     plan.course.distance,win.startRate,win.endRate,true);
+   if(onRunnerWindow)onRunnerWindow({courseId:plan.course.id,
+    fieldSize:plan.fieldSize,scenario:plan.scenario,mode:plan.mode,
+    rep:plan.rep,seed:plan.seed,runnerIndex:runner,
+    style,windowId:win.id,status:result.status,
+    pTopHalf:result.status==='estimate'?result.pTopHalf:null});
    if(result.status==='estimate'){
     group.valid++;group.sumTop+=result.pTopHalf;group.sumBack+=result.pBackHalf;
    }else{
@@ -157,7 +162,7 @@ function reportFrom(plans,coarse,dense,seedsPerCell){
    'No production label, P2 threshold, skill effects, card scores or UI changes.'
   ],pairs};
 }
-async function execute(template,enginePath,{seedsPerCell=3}={}){
+async function execute(template,enginePath,{seedsPerCell=3,onRunnerWindow}={}){
  const plans=plansFor(seedsPerCell),coarse=new Map(),dense=new Map();
  if(!plans.length)throw Error('No dense validation race plans');
  const child=spawn(enginePath,[],{stdio:['pipe','pipe','pipe']});
@@ -179,7 +184,7 @@ async function execute(template,enginePath,{seedsPerCell=3}={}){
   for await(const line of lines){
    if(!line.trim())continue;
    if(n>=plans.length)throw Error('Unexpected extra GlobalSim response');
-   analyzeReply(plans[n],JSON.parse(line),coarse,dense);n++;
+   analyzeReply(plans[n],JSON.parse(line),coarse,dense,onRunnerWindow);n++;
   }
   await input;
  }catch(e){error=e;child.kill()}
