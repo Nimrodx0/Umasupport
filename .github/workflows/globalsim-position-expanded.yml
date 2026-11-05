@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       seeds_per_cell:
-        description: "Seeds per (3 courses x 2 field sizes x 4 scenarios x 2 stat modes), 1..60"
+        description: "Seeds per (3 courses x 2 field sizes x 6 scenarios x 2 stat modes), 1..60"
         type: number
         required: true
         default: 10
