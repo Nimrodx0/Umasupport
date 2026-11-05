@@ -6,8 +6,7 @@ const fit=require('../src/skill_activation_fit_v1.cjs');
 const c=(type,operator,value)=>({type,operator,value});
 const fixed=()=>({
  auditVersion:7,
- source:{revision:reporter.audit53.toString().includes('pinned')?
-  'f6e4501ee6c6c2d4ac8698e7796e309d31575bde':'broken',
+ source:{revision:'f6e4501ee6c6c2d4ac8698e7796e309d31575bde',
   sha256:'4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5'},
  p2StyleTendency:{app:{inferred:53}},
  p2StyleReview:{total:53,groups:[{skills:Array.from({length:53},(_,i)=>{
@@ -41,6 +40,8 @@ test('reviewed 53 skills have 212 style cases, all six statuses are tracked with
 test('modified, incomplete or duplicated pinned source cohort fails closed',()=>{
  const x=fixed();x.p2StyleReview.total=52;
  assert.throws(()=>reporter.audit53(x),/exact pinned 53-skill/);
+ const forged=fixed();forged.source.revision='unverified';
+ assert.throws(()=>reporter.audit53(forged),/exact pinned 53-skill/);
  const y=fixed();y.p2StyleReview.groups[0].skills[1].sourceNumericId='200000';
  assert.throws(()=>reporter.audit53(y),/Unexpected or duplicate/);
  const z=fixed();z.p2StyleReview.groups[0].skills[0].tendency='差し・追込寄り';
