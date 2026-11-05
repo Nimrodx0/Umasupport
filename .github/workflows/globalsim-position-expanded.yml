@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       seeds_per_cell:
-        description: "Seeds per (4 courses x 2 field sizes x 6 scenarios x 2 stat modes), 1..60"
+        description: "Seeds per (6 courses x 2 field sizes x 6 scenarios x 2 stat modes), 1..60"
         type: number
         required: true
         default: 10
@@ -41,7 +41,7 @@ jobs:
           cargo build --release --locked
       - name: Run independent streamed 9/12-race position studies
         env:
-          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '3' }}
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '15' }}
         run: |
           case "$SEEDS_PER_CELL" in
             ''|*[!0-9]*) echo "Invalid seeds_per_cell" >&2; exit 2 ;;
