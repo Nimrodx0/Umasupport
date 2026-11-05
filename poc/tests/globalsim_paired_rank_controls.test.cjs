@@ -40,7 +40,7 @@ test('fixed matching enables fully paired identical simulations with zero course
  const x=m.compare(plans,observations,{thresholds:[50],strict:true});
  assert.equal(x.raceCount,96);
  assert.equal(x.counts.contextComparisons,6*2*2*2*4);
- assert.equal(x.counts.matchedCourseDifferences,5*2*2*2*4*1*3+5*2*1*2*4*1);
+ assert.equal(x.counts.matchedCourseDifferences,5*2*2*4*(4+3));
  assert.equal(x.counts.held,0);
  assert.equal(x.counts.rearCounterexamples>=0,true);
  assert(x.pairedCourseContrasts.every(z=>z.pairedRaces===2&&
