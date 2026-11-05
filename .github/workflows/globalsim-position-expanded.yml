@@ -64,7 +64,6 @@ jobs:
           node poc/tools/globalsim_window_profile.cjs \
             /tmp/global-position-expanded/summary.json \
             /tmp/global-position-expanded/window-profile.json
-            /tmp/global-position-expanded/sensitivity.json
       - name: Audit model-only sensitivity to window, field, prior and stats
         run: |
           node poc/tools/globalsim_window_sensitivity.cjs \
@@ -79,4 +78,5 @@ jobs:
           path: |
             /tmp/global-position-expanded/summary.json
             /tmp/global-position-expanded/window-profile.json
+            /tmp/global-position-expanded/sensitivity.json
           retention-days: 14
