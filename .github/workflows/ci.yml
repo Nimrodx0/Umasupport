@@ -452,6 +452,9 @@ jobs:
           node --check poc/src/skill_activation_fit_v1.cjs
           node --check poc/tools/skill_activation_fit_v1_report.cjs
           node --test poc/tests/skill_activation_fit_v1.test.cjs poc/tests/skill_activation_fit_v1_report.test.cjs
+          node --check poc/src/skill_order_rate_bounds.cjs
+          node --check poc/tools/order_rate_integer_audit.cjs
+          node --test poc/tests/skill_order_rate_bounds.test.cjs poc/tests/order_rate_integer_audit.test.cjs
 
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |

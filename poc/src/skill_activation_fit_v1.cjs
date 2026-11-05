@@ -3,6 +3,7 @@
  * activation probability. Work with source-pinned predicates only.
  * Preserve AND/OR and hold unmodelled predicates instead of promoting them. */
 const rank=require('./skill_rank_timing.js');
+const numericRanks=require('./skill_order_rate_bounds.cjs');
 const subphase=require('../tools/verify_subphase_model_direction.cjs');
 const VERSION='activation-condition-fit-v1.2';
 const STYLES=Object.freeze([
@@ -65,14 +66,20 @@ function rankOnly(row,styleId){
  const ranks=row.filter(c=>c.type==='order_rate');
  const times=row.filter(c=>Object.hasOwn(rank.TIME_SPECS,c.type));
  if(!ranks.length)return null;
+ // Map the source rank condition to 9/12 integer order as an independent
+ // *partial* explanation. This is not proof of a high/low STYLE direction.
+ const sourceRankProjection=ranks.every(c=>c.value>=0&&c.value<=100)?
+  numericRanks.byField(row):null;
  if(ranks.length!==1)
-  return result('held','rank-predicate-intersection-unverified');
+  return result('held','rank-predicate-intersection-unverified',
+   {sourceRankProjection});
  const c=ranks[0];
- // No threshold cutoffs invented from model distributions. This is the
- // exact 50% partition already researched; other rank bands need mapping.
+ // Only the 50% relative style-group direction has a separately attested
+ // phase-sensitive model gate. Integer conversion alone MUST NOT promote it.
  if(!((c.operator==='<='&&c.value===50)||
       (c.operator==='>'&&c.value===50)))
-  return result('held','rank-operator-or-threshold-not-validated');
+  return result('held','rank-operator-or-threshold-not-validated',
+   {sourceRankProjection});
  if(times.length!==1)
   return result('held','rank-needs-one-source-timing-window');
  const t=rank.timing(times[0]);

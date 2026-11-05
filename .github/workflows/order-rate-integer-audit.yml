@@ -1,0 +1,88 @@
+name: P2 source-ranked order_rate integer boundary audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_order_rate_bounds.cjs'
+      - 'poc/tests/skill_order_rate_bounds.test.cjs'
+      - 'poc/tools/order_rate_integer_audit.cjs'
+      - 'poc/tests/order_rate_integer_audit.test.cjs'
+      - '.github/workflows/order-rate-integer-audit.yml'
+permissions:
+  contents: read
+
+jobs:
+  integer-rank-projection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm original operators, strict bounds and 9/12 runner examples
+        run: |
+          node --check poc/src/skill_order_rate_bounds.cjs
+          node --check poc/tools/order_rate_integer_audit.cjs
+          node --test poc/tests/skill_order_rate_bounds.test.cjs poc/tests/order_rate_integer_audit.test.cjs
+      - name: Read exact pinned UmaSim source and skill dictionary, no redistribution
+        run: |
+          mkdir -p /tmp/rate-audit
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const base='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/';
+          const pin='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5';
+          async function read(path){
+            const r=await fetch(base+path,{signal:AbortSignal.timeout(60000)});
+            if(!r.ok)throw Error('Source unavailable '+path+' '+r.status);
+            return Buffer.from(await r.arrayBuffer());
+          }
+          (async()=>{
+            const [dictionary,skillData,checker]=await Promise.all([
+              read('data/skill_data.txt'),
+              read('race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt'),
+              read('race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt')
+            ]);
+            if(crypto.createHash('sha256').update(dictionary).digest('hex')!==pin)
+              throw Error('Original skill dictionary drift');
+            const data=skillData.toString('utf8'),runner=checker.toString('utf8');
+            // Explicit audit boundary: this skill checker does NOT implement
+            // order_rate; do not present it as independent Japan-game evidence.
+            if(!/"order_rate"\s+to\s+"順位条件は無視"/.test(data)||
+               /"order_rate"\s*->/.test(runner)||
+               !runner.includes('if (!ignoreConditions.containsKey(condition.type))'))
+              throw Error('Upstream source interpretation changed');
+            fs.writeFileSync('/tmp/rate-audit/skill_data.txt',dictionary);
+            console.log('Checked fixed source: order_rate ignored by pinned SkillChecker');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+      - name: Compute all 2162 source skills 9/12 runner rank projections
+        run: |
+          node poc/tools/order_rate_integer_audit.cjs \
+            /tmp/rate-audit/skill_data.txt /tmp/rate-audit/report.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/rate-audit/report.json','utf8'));
+          assert.equal(r.totals.sourceSkills,2162);
+          assert.equal(r.totals.skillsWithOrderRate,858);
+          assert.equal(r.totals.rankTerms,1465);
+          assert.deepEqual(r.examples[1].nine,[4,5,6,7]);
+          assert.deepEqual(r.examples[1].twelve,[5,6,7,8,9,10]);
+          const by=x=>r.byOperatorValue.find(c=>c.sourceCode===x);
+          assert.equal(by('<=50').uniqueSkills,344);
+          assert.equal(by('>=40').uniqueSkills,273);
+          assert.deepEqual(by('>=40').integerRankProjection[9].positions,
+            [4,5,6,7,8,9]);
+          assert.deepEqual(by('>=40').integerRankProjection[12].positions,
+            [5,6,7,8,9,10,11,12]);
+          NODE
+      - name: Publish aggregate projection counts only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-verified-order-rate-integer-audit
+          path: /tmp/rate-audit/report.json
+          retention-days: 14
