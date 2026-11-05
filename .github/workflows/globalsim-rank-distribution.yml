@@ -6,7 +6,7 @@ on:
         description: "Seeds per 6 courses x 9/12 runners x 3 rosters x 2 stat settings, 1..20"
         required: true
         type: number
-        default: 5
+        default: 15
   pull_request:
     paths:
       - 'poc/tools/rank_source_distribution.cjs'
@@ -56,7 +56,7 @@ jobs:
           cargo build --release --locked
       - name: Repeat full-rank simulation in four phases
         env:
-          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '5' }}
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '15' }}
         run: |
           case "$SEEDS_PER_CELL" in
             ''|*[!0-9]*) echo "Invalid seeds per cell" >&2; exit 2 ;;
