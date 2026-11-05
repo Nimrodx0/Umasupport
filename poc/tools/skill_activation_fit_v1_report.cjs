@@ -53,7 +53,9 @@ function audit53(audit){
      rankOnlyStatus:b.rankOnly?.status||null,
      sourceConditions:b.sourceConditions||null,
      researchBasis:b.researchBasis||null,
-     contextPredicates:b.contextPredicates||[]}))
+     contextPredicates:b.contextPredicates||[],
+     raceRequirements:b.raceRequirements||[],
+     surfaceTransfer:b.surfaceTransfer||null}))
    }];
   }));
   if(!byExisting[original.tendency])
@@ -79,6 +81,8 @@ function audit53(audit){
    'Only exact order_rate<=50 and >50 with validated random phase windows receive stable relative high/low labels.',
    'Phase 3 is context-dependent because counterexamples exist, even if many tested cohorts retain the front/rear ordering.',
    'Explicit style exclusion must be shown on every reachable OR/invoke path to count as ineligible.',
+   'Ground type (turf/dirt) and track condition are separate absolute race gates, not style suitability predicates; their exact source operator and value are retained.',
+   'Front/rear qualitative position tendency is provisionally transferred across surfaces by user decision; dirt/track-condition-specific simulation has not been validated.',
    'Unknown AND terms and divergent OR paths remain held; partial rank evidence is shown separately.',
    'A relative high/low tendency is neither an absolute model success rate nor a Japanese game skill activation probability.',
    'No previously inferred label, support-card score, published data or UI is changed.'
