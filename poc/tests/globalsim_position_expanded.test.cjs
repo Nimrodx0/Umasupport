@@ -41,6 +41,36 @@ test('9 and 12 runners, three distances, observed-prior draws, stats modes',()=>
  assert.equal(noFront9.strategies.filter(s=>s==='Nige').length,0);
  assert.throws(()=>x.makePlan({seedsPerCell:61}),/1..60/);
 });
+test('equal and jitter variants share roster, field order and seed for paired estimates',()=>{
+ const plans=x.makePlan({seedsPerCell:15});
+ const paired=new Map();
+ const identities=new Set();
+ for(const p of plans){
+  const k=[p.course.id,p.fieldSize,p.scenario,p.rep].join('|');
+  if(!paired.has(k))paired.set(k,{});
+  paired.get(k)[p.mode]=p;
+  if(p.mode==='equal'){
+   assert(!identities.has(p.seed),'independent scenario key must have unique seed');
+   identities.add(p.seed);
+  }
+  assert.equal(p.seed,x.seedFor(p.course.id,p.fieldSize,p.scenario,p.rep));
+ }
+ assert.equal(paired.size,6*2*6*15);
+ for(const pair of paired.values()){
+  assert(pair.equal&&pair.jitter10);
+  assert.equal(pair.equal.seed,pair.jitter10.seed);
+  assert.deepEqual(pair.equal.counts,pair.jitter10.counts);
+  assert.deepEqual(pair.equal.strategies,pair.jitter10.strategies);
+  const a=x.makeRace(base,pair.equal),b=x.makeRace(base,pair.jitter10);
+  assert.equal(a.seed,b.seed);
+  assert.deepEqual(a.horses.map(h=>h.strategy),b.horses.map(h=>h.strategy));
+  assert.deepEqual(a.horses.map(h=>h.gateIndex),b.horses.map(h=>h.gateIndex));
+  assert.notDeepEqual(a.horses.map(h=>h.speed),b.horses.map(h=>h.speed));
+ }
+ assert.equal(x.seedFor(10504,9,'balanced',0),
+  x.makePlan({seedsPerCell:1}).find(p=>p.course.id===10504&&
+   p.fieldSize===9&&p.scenario==='balanced'&&p.mode==='equal').seed);
+});
 test('same seed reproduces actual roster including absent runaways',()=>{
  const a=x.roster(9,'jan2026',5,110),b=x.roster(9,'jan2026',5,110);
  assert.deepEqual(a,b);
