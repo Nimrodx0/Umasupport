@@ -81,8 +81,8 @@ test('permanent ties and missing phase distance hold, never yield false opportun
 });
 test('a segment crossing multiple other horses computes the exact rank piecewise',()=>{
  const frames=[
-  {t:0,horses:[{pos:0},{pos:-1},{pos:-2}]},
-  {t:1,horses:[{pos:100},{pos:101},{pos:102}]}
+  {t:0,horses:[{pos:0},{pos:-1},{pos:-3}]},
+  {t:1,horses:[{pos:100},{pos:103},{pos:101}]}
  ];
  const x=study.rankSegments(frames,0,0,100);
  assert.equal(x.status,'estimate');
