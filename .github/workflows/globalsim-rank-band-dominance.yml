@@ -11,6 +11,8 @@ on:
   pull_request:
     paths:
       - 'poc/tools/globalsim_rank_band_dominance.cjs'
+      - 'poc/tools/verify_rank_band_model_evidence.cjs'
+      - 'poc/data/p2_rank_band_model_direction.v1.json'
       - 'poc/tools/globalsim_rank_band_study.cjs'
       - 'poc/tests/globalsim_rank_band_dominance.test.cjs'
       - '.github/workflows/globalsim-rank-band-dominance.yml'
@@ -29,6 +31,7 @@ jobs:
         run: |
           node --check poc/tools/globalsim_rank_band_dominance.cjs
           node --check poc/tools/globalsim_rank_band_study.cjs
+          node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --test poc/tests/globalsim_rank_band_dominance.test.cjs
           node --test poc/tests/skill_order_rate_bounds.test.cjs
           node --test poc/tests/globalsim_rank_distribution.test.cjs
@@ -78,6 +81,10 @@ jobs:
           console.log(JSON.stringify({races:r.raceCount,comparisons:r.comparisonCount,
             byPhaseBand:r.byPhaseBand},null,2));
           NODE
+      - name: Match complete model report SHA and all 44 accepted/held rows
+        run: |
+          node poc/tools/verify_rank_band_model_evidence.cjs \
+            /tmp/rank-band-study/rank-band-direction.json
       - name: Preserve derived all-rank histograms, groups, splits and SHA provenance
         if: success()
         uses: actions/upload-artifact@v4

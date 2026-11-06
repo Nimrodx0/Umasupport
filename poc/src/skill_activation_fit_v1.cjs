@@ -4,8 +4,9 @@
  * Preserve AND/OR and hold unmodelled predicates instead of promoting them. */
 const rank=require('./skill_rank_timing.js');
 const numericRanks=require('./skill_order_rate_bounds.cjs');
+const modelBand=require('../tools/verify_rank_band_model_evidence.cjs');
 const subphase=require('../tools/verify_subphase_model_direction.cjs');
-const VERSION='activation-condition-fit-v1.2';
+const VERSION='activation-condition-fit-v1.3';
 const STYLES=Object.freeze([
  {id:1,name:'逃げ'},{id:2,name:'先行'},
  {id:3,name:'差し'},{id:4,name:'追込'}
@@ -70,16 +71,33 @@ function rankOnly(row,styleId){
  // *partial* explanation. This is not proof of a high/low STYLE direction.
  const sourceRankProjection=ranks.every(c=>c.value>=0&&c.value<=100)?
   numericRanks.byField(row):null;
- if(ranks.length!==1)
-  return result('held','rank-predicate-intersection-unverified',
-   {sourceRankProjection});
+ const priorHalfBand=ranks.length===1&&
+  ((ranks[0].operator==='<='&&ranks[0].value===50)||
+   (ranks[0].operator==='>'&&ranks[0].value===50));
+ if(!priorHalfBand){
+  // Must match source rank predicates AND a whole phase_random window.
+  // Model distance-occupancy dominance is not a real skill trigger rate.
+  const time=times.length===1?times[0]:null;
+  const proof=time?modelBand.verifiedBand(ranks,time):null;
+  if(proof){
+   const favored=proof.status==='front'?styleId<=2:styleId>=3;
+   return result(favored?'high':'low',
+    'validated-exact-rank-band-model-group-direction',{
+     relativeDirection:proof.status,phaseIndex:proof.phase,
+     periodCode:time.type,sourceRankProjection,
+     sourceThreshold:ranks.map(c=>'order_rate'+c.operator+c.value)
+      .join(' && '),
+     modelBandEvidence:proof,
+     researchScope:'pinned-GlobalSim-model-only'});
+  }
+  const review=time?modelBand.studyBand(ranks,time):null;
+  return result('held',review?
+   'model-rank-band-direction-mixed-or-not-confirmed':
+   ranks.length!==1?'rank-predicate-intersection-unverified':
+   'rank-operator-or-threshold-not-validated',
+   {sourceRankProjection,modelBandReview:review});
+ }
  const c=ranks[0];
- // Only the 50% relative style-group direction has a separately attested
- // phase-sensitive model gate. Integer conversion alone MUST NOT promote it.
- if(!((c.operator==='<='&&c.value===50)||
-      (c.operator==='>'&&c.value===50)))
-  return result('held','rank-operator-or-threshold-not-validated',
-   {sourceRankProjection});
  if(times.length!==1)
   return result('held','rank-needs-one-source-timing-window');
  const t=rank.timing(times[0]);

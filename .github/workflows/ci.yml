@@ -458,6 +458,7 @@ jobs:
           node --check poc/tools/globalsim_rank_band_dominance.cjs
           node --check poc/tools/globalsim_rank_band_study.cjs
           node --test poc/tests/globalsim_rank_band_dominance.test.cjs
+          node --check poc/tools/verify_rank_band_model_evidence.cjs
 
       - name: Validate skill effect descriptions and verified event sequence badges
         run: |

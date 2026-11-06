@@ -54,6 +54,7 @@ function audit53(audit){
      sourceConditions:b.sourceConditions||null,
      researchBasis:b.researchBasis||null,
      modelSubphaseEvidence:b.modelSubphaseEvidence||null,
+     modelBandEvidence:b.modelBandEvidence||null,
      contextPredicates:b.contextPredicates||[],
      raceRequirements:b.raceRequirements||[],
      surfaceTransfer:b.surfaceTransfer||null}))

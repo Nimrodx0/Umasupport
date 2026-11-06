@@ -97,6 +97,48 @@ test('late phase has measured exceptions: do not promote it to high or low',()=>
    '差し':'dependent','追込':'dependent'});
  }
 });
+test('source-matched full phases promote validated new rank boundaries and retain unmeasured windows',()=>{
+ for(const phase of [0,1,2]){
+  assert.deepEqual(statuses(p([rank('<=',40,phase)])),{
+   '逃げ':'high','先行':'high','差し':'low','追込':'low'});
+  assert.deepEqual(statuses(p([rank('>=',40,phase)])),{
+   '逃げ':'low','先行':'low','差し':'high','追込':'high'});
+ }
+ assert.equal(statuses(p([rank('<=',80,1)]))['逃げ'],'high');
+ assert.equal(statuses(p([rank('<=',80,2)]))['逃げ'],'held');
+ assert.equal(statuses(p([rank('>=',40,3)]))['差し'],'held');
+ assert.equal(statuses(p([rank('>=',40,1,'phase_laterhalf_random')]))['差し'],'held');
+ const x=fit.evaluate(p([rank('>=',40,1)]));
+ const proof=x.styles['差し'].paths[0].modelBandEvidence;
+ assert.equal(proof.bandId,'from40');
+ assert.equal(proof.phase,1);
+ assert.equal(proof.splitSeedHalvesConfirmed,72);
+ assert.equal(proof.modelContexts,72);
+ assert.deepEqual(proof.positionsByField[9],[4,5,6,7,8,9]);
+ assert.deepEqual(proof.positionsByField[12],[5,6,7,8,9,10,11,12]);
+ assert.equal(x.ruleVersion,'activation-condition-fit-v1.3');
+});
+test('only 20 vetted band/phase gates are usable, mixed ANDs remain held',()=>{
+ const gate=require('../tools/verify_rank_band_model_evidence.cjs');
+ assert.equal(gate.validate(gate.EVIDENCE),true);
+ assert.equal(gate.EVIDENCE.rows.filter(gate.supported).length,20);
+ assert.equal(gate.verifiedBand([cond('order_rate','<=',40)],
+  cond('phase_random','==',2)).status,'front');
+ assert.equal(gate.verifiedBand([cond('order_rate','<=',80)],
+  cond('phase_random','==',2)),null);
+ const terms=[cond('order_rate','>=',40),cond('order_rate','<=',80)];
+ assert.equal(gate.verifiedBand(terms,cond('phase_random','==',1)),null);
+ const rev=gate.studyBand(terms,cond('phase_random','==',1));
+ assert.deepEqual([rev.front,rev.rear,rev.mixed,rev.unresolved],
+  [0,24,48,0]);
+ assert.equal(gate.verifiedBand([cond('order_rate','>=',40)],
+  cond('phase_laterhalf_random','==',1)),null);
+ const corrupted=JSON.parse(JSON.stringify(gate.EVIDENCE));
+ corrupted.rows.find(x=>x.phase===1&&x.bandId==='from40').splitSameDirection=71;
+ assert.equal(gate.validate(corrupted),false);
+ assert.throws(()=>gate.verifyReproduction(gate.EVIDENCE,Buffer.from('{}')),
+  /SHA changed/);
+});
 test('a rank percent boundary is visible in 9/12 orders but does not prove style suitability',()=>{
  const source=[
   cond('order_rate','>=',40),
@@ -117,14 +159,17 @@ test('a rank percent boundary is visible in 9/12 orders but does not prove style
  }
  const single=fit.evaluate(p([[cond('order_rate','>=',40),
   cond('phase_random','==',1)]]));
- assert.equal(single.styles['差し'].status,'held');
- assert.deepEqual(single.styles['差し'].paths[0].rankOnly
+ assert.equal(single.styles['差し'].status,'high');
+ assert.deepEqual(single.styles['差し'].paths[0]
   .sourceRankProjection.byField[9].positions,[4,5,6,7,8,9]);
+ assert.equal(single.styles['差し'].paths[0].modelBandEvidence.bandId,'from40');
 });
 test('unsupported threshold/operator/AND restrictions remain held with partial rank evidence',()=>{
  const unsupported=[
-  rank('<=',40),
-  rank('>=',40),
+  rank('<=',80,2),
+  rank('>=',40,3),
+  rank('>=',40,1,'phase_laterhalf_random'),
+  rank('==',50),
   [...rank('<=',50),cond('order_rate','>',20)],
   [cond('order_rate','<=',50)],
   [...rank('<=',50),cond('is_overtake','==',1)],
@@ -160,7 +205,7 @@ test('race-global distance/ground context does not invent extra style condition'
   'provisional-cross-surface-direction-not-verified');
  assert.match(branch.surfaceTransfer.note,/未検証/);
  assert.equal(Object.hasOwn(branch,'probability'),false);
- assert.equal(dirt.ruleVersion,'activation-condition-fit-v1.2');
+ assert.equal(dirt.ruleVersion,'activation-condition-fit-v1.3');
  assert.equal(fit.evaluate(p([[cond('distance_type','==',3),
   cond('phase_random','==',1)]])).styles['逃げ'].status,'neutral');
 });
