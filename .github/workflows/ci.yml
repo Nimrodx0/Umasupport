@@ -462,6 +462,9 @@ jobs:
           node --check poc/src/skill_balanced_four_style_fit.cjs
           node --check poc/tools/verify_balanced_four_style_evidence.cjs
           node --test poc/tests/skill_balanced_four_style_fit.test.cjs
+          node --check poc/tools/globalsim_balanced_two_axis.cjs
+          node --check poc/src/skill_two_axis_research.cjs
+          node --test poc/tests/skill_two_axis_research.test.cjs
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --check poc/tools/rank_band_fit_population_audit.cjs
           node --test poc/tests/rank_band_fit_population_audit.test.cjs
