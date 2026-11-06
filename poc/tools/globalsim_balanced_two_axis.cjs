@@ -8,6 +8,8 @@
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const rules=require('../src/skill_balanced_four_style_fit.cjs');
+const bounds=require('../src/skill_order_rate_bounds.cjs');
+const bands=require('./globalsim_rank_band_dominance.cjs').BANDS;
 const verifier=require('./verify_balanced_four_style_evidence.cjs');
 const PINNED_SOURCE_SHA=rules.EVIDENCE.fullReportSha256;
 const STYLES=rules.EVIDENCE.styles;
@@ -44,10 +46,10 @@ function summarize(report,{requireComplete=true}={}){
   if(r.integerRanks.some(n=>!Number.isInteger(n)||n<1||n>r.fieldSize)||
    new Set(r.integerRanks).size!==r.integerRanks.length)
    throw Error('Invalid integer rank projection '+k);
-  const proof=rules.bandProof(
-   rules.exactBand([{type:'order_rate',operator:'<=',value:20}])?.predicates||[],
-   {type:'phase_random',operator:'==',value:0}); // do not use as calibration
-  void proof;
+  const band=bands.find(b=>b.id===r.bandId);
+  if(!band||JSON.stringify(bounds.andProjection(band.predicates,
+   r.fieldSize).positions)!==JSON.stringify(r.integerRanks))
+   throw Error('Source integer-rank projection drift '+k);
   const gk=groupKey(r.phase,r.bandId);
   if(!groups.has(gk))groups.set(gk,[]);
   groups.get(gk).push(r);
@@ -124,9 +126,7 @@ function summarize(report,{requireComplete=true}={}){
     }}];
   }));
   results.push({phase,bandId,scenario:'balanced',
-   sourceRankConditions:rules.exactBand(
-    (require('../tools/globalsim_rank_band_dominance.cjs').BANDS
-      .find(z=>z.id===bandId)||{}).predicates||[])?.predicates||null,
+   sourceRankConditions:bands.find(z=>z.id===bandId).predicates,
    contexts:scope.length,styles:all});
  }
  if(requireComplete&&(seen.size!==1056||pairRows.size!==264||
