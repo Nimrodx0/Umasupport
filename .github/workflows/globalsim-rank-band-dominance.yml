@@ -20,6 +20,9 @@ on:
       - 'poc/tools/verify_balanced_four_style_evidence.cjs'
       - 'poc/data/p2_balanced_four_style_rank_direction.v1.json'
       - 'poc/tests/skill_balanced_four_style_fit.test.cjs'
+      - 'poc/tools/globalsim_balanced_two_axis.cjs'
+      - 'poc/src/skill_two_axis_research.cjs'
+      - 'poc/tests/skill_two_axis_research.test.cjs'
       - 'poc/tests/globalsim_rank_band_dominance.test.cjs'
       - '.github/workflows/globalsim-rank-band-dominance.yml'
 permissions:
@@ -42,6 +45,9 @@ jobs:
           node --check poc/src/skill_balanced_four_style_fit.cjs
           node --check poc/tools/verify_balanced_four_style_evidence.cjs
           node --test poc/tests/skill_balanced_four_style_fit.test.cjs
+          node --check poc/tools/globalsim_balanced_two_axis.cjs
+          node --check poc/src/skill_two_axis_research.cjs
+          node --test poc/tests/skill_two_axis_research.test.cjs
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --test poc/tests/globalsim_rank_band_dominance.test.cjs
           node --test poc/tests/skill_order_rate_bounds.test.cjs
@@ -111,6 +117,26 @@ jobs:
         run: |
           node poc/tools/verify_balanced_four_style_evidence.cjs \
             /tmp/rank-band-study/four-style-pairwise.json
+      - name: Derive two separate balanced-only rank condition axes from pinned evidence
+        run: |
+          node poc/tools/globalsim_balanced_two_axis.cjs \
+            /tmp/rank-band-study/four-style-pairwise.json \
+            /tmp/rank-band-study/balanced-two-axis.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const doc=JSON.parse(fs.readFileSync('/tmp/rank-band-study/balanced-two-axis.json','utf8'));
+          assert.equal(doc.scenario,'balanced');
+          assert.equal(doc.results.length,44);
+          assert(doc.results.every(r=>r.contexts===24));
+          assert(doc.results.every(r=>Object.values(r.styles).length===4));
+          const middle=doc.results.find(r=>r.phase===1&&r.bandId==='middle40to80');
+          assert.equal(middle.styles.Sasi.opportunity.meanPercent,84.140967);
+          assert.equal(middle.styles.Nige.opportunity.meanPercent,1.486887);
+          assert.equal(middle.styles.Sasi.specificity.higherThan.length,3);
+          assert.equal(middle.styles.Sasi.specificity.allThreePairsConfirmed,true);
+          assert(!Object.hasOwn(middle.styles.Sasi,'activationProbability'));
+          NODE
       - name: Preserve derived all-rank histograms, groups, splits and SHA provenance
         if: success()
         uses: actions/upload-artifact@v4
@@ -119,6 +145,7 @@ jobs:
           path: |
             /tmp/rank-band-study/rank-band-direction.json
             /tmp/rank-band-study/four-style-pairwise.json
+            /tmp/rank-band-study/balanced-two-axis.json
             /tmp/rank-band-study/full-rank-profile.json
             /tmp/rank-band-study/first-half-rank-profile.json
             /tmp/rank-band-study/last-half-rank-profile.json
