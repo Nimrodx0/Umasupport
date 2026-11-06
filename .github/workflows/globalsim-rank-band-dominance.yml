@@ -16,6 +16,10 @@ on:
       - 'poc/tools/globalsim_rank_band_study.cjs'
       - 'poc/tools/globalsim_four_style_rank_fit.cjs'
       - 'poc/tests/globalsim_four_style_rank_fit.test.cjs'
+      - 'poc/src/skill_balanced_four_style_fit.cjs'
+      - 'poc/tools/verify_balanced_four_style_evidence.cjs'
+      - 'poc/data/p2_balanced_four_style_rank_direction.v1.json'
+      - 'poc/tests/skill_balanced_four_style_fit.test.cjs'
       - 'poc/tests/globalsim_rank_band_dominance.test.cjs'
       - '.github/workflows/globalsim-rank-band-dominance.yml'
 permissions:
@@ -35,6 +39,9 @@ jobs:
           node --check poc/tools/globalsim_rank_band_study.cjs
           node --check poc/tools/globalsim_four_style_rank_fit.cjs
           node --test poc/tests/globalsim_four_style_rank_fit.test.cjs
+          node --check poc/src/skill_balanced_four_style_fit.cjs
+          node --check poc/tools/verify_balanced_four_style_evidence.cjs
+          node --test poc/tests/skill_balanced_four_style_fit.test.cjs
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --test poc/tests/globalsim_rank_band_dominance.test.cjs
           node --test poc/tests/skill_order_rate_bounds.test.cjs
@@ -100,6 +107,10 @@ jobs:
         run: |
           node poc/tools/verify_rank_band_model_evidence.cjs \
             /tmp/rank-band-study/rank-band-direction.json
+      - name: Verify balanced-only 264 pair directions against pinned complete report SHA
+        run: |
+          node poc/tools/verify_balanced_four_style_evidence.cjs \
+            /tmp/rank-band-study/four-style-pairwise.json
       - name: Preserve derived all-rank histograms, groups, splits and SHA provenance
         if: success()
         uses: actions/upload-artifact@v4
