@@ -81,6 +81,8 @@ function analyze(profile,{firstProfile=null,lastProfile=null,
      compare(b.values[one],b.values[two])]:[];
    return {first:one,second:two,...pooled,
     splitStatus:halves.length===0?'not-measured':
+     pooled.status==='absent'&&halves.every(x=>x.status==='absent')?
+     'not-applicable-absent':
      (pooled.status==='first-higher'||pooled.status==='second-higher')&&
      halves.every(x=>x.status===pooled.status)?
      'stable':'unstable-or-unavailable',
