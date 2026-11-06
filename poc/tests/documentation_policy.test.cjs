@@ -8,7 +8,8 @@ const root=path.resolve(__dirname,'../..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const canonical=[
  'AGENTS.md','README.md','docs/index.md','docs/documentation-policy.md',
- 'docs/roadmap.md','docs/status.md','docs/requirements.md','docs/decisions.md'
+ 'docs/roadmap.md','docs/status.md','docs/requirements.md','docs/decisions.md',
+ 'docs/evidence-index.md','docs/verification-plan.md','docs/verification-history.md','poc/README.md'
 ];
 test('AI entry point remains permanent policy, not chronological PR log',()=>{
  const a=read('AGENTS.md');
@@ -125,4 +126,23 @@ test('handoff policy is discoverable at the entry point and in the PR checklist'
  assert.match(a,/引き継ぎ/);
  assert.match(policy,/引き継ぎ可能性の原則/);
  assert.match(template,/^- \[ \] 引き継ぎに必要な.*正本文書／Issueへ反映した/m);
+});
+
+test('entry documents separate current authority from dated evidence',()=>{
+ const entry=read('docs/index.md');
+ const evidence=read('docs/evidence-index.md');
+ const plan=read('docs/verification-plan.md');
+ const history=read('docs/verification-history.md');
+ const runbook=read('poc/README.md');
+ const architecture=read('docs/architecture.md');
+ assert.ok(entry.split('\n').length<65,'Entry index should stay navigable');
+ assert.match(entry,/evidence-index\.md/);
+ assert.match(evidence,/skill-position-rank-band-fit-20261106\.md/);
+ assert.match(plan,/verification-history\.md/);
+ assert.doesNotMatch(plan,/実イベントの承認件数は0/);
+ assert.match(history,/実イベントの承認件数は0/);
+ assert.match(runbook,/legacy-runbook\.md/);
+ assert.doesNotMatch(runbook,/^# PoC v8\.1/);
+ assert.doesNotMatch(architecture,/現状の公開イベント0件は変わらない/);
+ assert.match(architecture,/本番配信と出典の境界（現行）/);
 });
