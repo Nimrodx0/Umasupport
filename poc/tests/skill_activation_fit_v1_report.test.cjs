@@ -36,7 +36,7 @@ test('reviewed 53 skills have 212 style cases, all six statuses are tracked with
  assert.equal(out.counts.terrainRaceGateStillHeldSkills,0);
  assert.equal(out.counts.subphaseEvidenceSkills,1);
  assert.equal(out.counts.subphaseEvidenceResolvedSkills,1);
- assert.equal(out.ruleVersion,'activation-condition-fit-v1.2');
+ assert.equal(out.ruleVersion,'activation-condition-fit-v1.3');
  assert.equal(out.items[2].styles['逃げ'].branches[0].modelSubphaseEvidence.windowId,
   'early-latter');
  assert.equal(out.status,'research-only-activation-condition-fit-not-production-classification');

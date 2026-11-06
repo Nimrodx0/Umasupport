@@ -28,9 +28,10 @@
 | P2 実スキルの順位閾値と4局面を用いた基礎研究 | [固定辞書858スキルの順位条件、1,080レースでの終盤後半の脚質順位逆転](skill-position-rank-phase-foundations-20261105.md) |
 | P2 固定編成と同一シードによる順位傾向の対照検証 | [1,440レース、終盤後半の逆転と同距離の2コース間の数値差](skill-position-fixed-roster-paired-control-20261105.md) |
 | P2 注目馬を固定し相手脚質構成だけ操作する基礎実験 | [5,760レース、前方／後方脚質の人数構成と順位占有割合の対応差](skill-position-focal-opponent-roster-study-20261105.md) |
-| **P2 脚質別の発動条件適合性v1.2（6区分）** | [元53スキルすべてを定性的な高／低と判定、部分区間の固定証拠を照合](skill-activation-condition-fit-v1-20261106.md) |
+| **P2 脚質別の発動条件適合性v1.3（6区分）** | [元53スキルすべてを定性的な高／低と判定、部分区間の固定証拠を照合](skill-activation-condition-fit-v1-20261106.md) |
 | P2 序盤後半・中盤前後半の順位窓実験 | [2,160レース・68,040走者×区間観測・72/72条件で優位方向一致](skill-position-subphase-fit-20261106.md) |
 | **P2 order_rateの整数順位への厳密換算** | [9頭・12頭の元演算子、全2,162スキル監査、複合AND304経路、未検証条件の保留](skill-order-rate-integer-mapping-20261106.md) |
+| **P2 11順位帯×4局面の厳密脚質比較** | [2,160レース、20/44の一方向支持、中団ANDの編成依存、固定元辞書の新規24スキル](skill-position-rank-band-fit-20261106.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
 | 技術設計 | [architecture.md](architecture.md) / [event-schema.md](event-schema.md) / [runtime-data-loading.md](runtime-data-loading.md) |
 | 2026-10-29 第三者GitHub DBへの復帰と直接取得保留・製品完成計画 | [現在の主経路・作業の優先度・安全な保留](derived-github-primary-restart-20261029.md) |

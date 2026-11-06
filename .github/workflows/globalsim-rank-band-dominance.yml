@@ -1,0 +1,99 @@
+name: P2 exact rank bands by style in four phase windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Even seed count per 6 course x 9/12 x 3 roster x 2 stat cell (2..60)"
+        required: true
+        type: number
+        default: 30
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_rank_band_dominance.cjs'
+      - 'poc/tools/verify_rank_band_model_evidence.cjs'
+      - 'poc/data/p2_rank_band_model_direction.v1.json'
+      - 'poc/tools/globalsim_rank_band_study.cjs'
+      - 'poc/tests/globalsim_rank_band_dominance.test.cjs'
+      - '.github/workflows/globalsim-rank-band-dominance.yml'
+permissions:
+  contents: read
+jobs:
+  four-phase-rank-bands:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify strict front/rear group dominance and original rank AND ranges
+        run: |
+          node --check poc/tools/globalsim_rank_band_dominance.cjs
+          node --check poc/tools/globalsim_rank_band_study.cjs
+          node --check poc/tools/verify_rank_band_model_evidence.cjs
+          node --test poc/tests/globalsim_rank_band_dominance.test.cjs
+          node --test poc/tests/skill_order_rate_bounds.test.cjs
+          node --test poc/tests/globalsim_rank_distribution.test.cjs
+      - name: Check out exact GlobalSim v77 engine revision
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay 6 courses, 9/12 horses, three rosters, two stat modes
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '30' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo 'Expected integer seed count' >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 2 ] || [ "$SEEDS_PER_CELL" -gt 60 ] || \
+             [ $((SEEDS_PER_CELL % 2)) -ne 0 ]; then
+            echo 'Expected an even seed count in 2..60' >&2
+            exit 2
+          fi
+          node --max-old-space-size=4096 poc/tools/globalsim_rank_band_study.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/rank-band-study "$SEEDS_PER_CELL"
+      - name: Inspect all rank-band contexts and fail closed on malformed result
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const r=JSON.parse(fs.readFileSync('/tmp/rank-band-study/rank-band-direction.json','utf8'));
+          assert.equal(r.schemaVersion,1);
+          assert.equal(r.sourceRevision,'80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1');
+          assert.equal(r.contextCount,288);
+          assert.equal(r.comparisonCount,288*11);
+          assert.equal(r.byPhaseBand.length,44);
+          assert.equal(r.byScenarioBand.length,44*3);
+          assert(r.byPhaseBand.every(x=>x.contexts===72));
+          assert(r.byScenarioBand.every(x=>x.contexts===24));
+          assert.equal(r.splitSeedCounts.length,2);
+          assert.equal(r.splitSeedCounts.reduce((a,b)=>a+b,0),r.seedCount);
+          assert(r.comparisons.every(x=>x.integerRanks.length>0));
+          console.log(JSON.stringify({races:r.raceCount,comparisons:r.comparisonCount,
+            byPhaseBand:r.byPhaseBand},null,2));
+          NODE
+      - name: Match complete model report SHA and all 44 accepted/held rows
+        run: |
+          node poc/tools/verify_rank_band_model_evidence.cjs \
+            /tmp/rank-band-study/rank-band-direction.json
+      - name: Preserve derived all-rank histograms, groups, splits and SHA provenance
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-exact-rank-band-direction
+          path: |
+            /tmp/rank-band-study/rank-band-direction.json
+            /tmp/rank-band-study/full-rank-profile.json
+            /tmp/rank-band-study/first-half-rank-profile.json
+            /tmp/rank-band-study/last-half-rank-profile.json
+            /tmp/rank-band-study/provenance.json
+          retention-days: 14

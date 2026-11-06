@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "modelStatus": "pinned-GlobalSim-model-rank-band-direction-not-game-activation",
+  "engineRevision": "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1",
+  "rankMappingVersion": "order-rate-integer-projection-v1",
+  "reportSha256": "7bd254e3b10d58119caeab7eadee27d96b0a9946856b2812ffc40bc697df0eca",
+  "sourceAction": "https://github.com/Nimrodx0/Umasupport/actions/runs/42135649519",
+  "sourceArtifactId": 13465705919,
+  "races": 2160,
+  "seedsPerCell": 30,
+  "seedHalfCounts": [
+    15,
+    15
+  ],
+  "contextsPerPhase": 72,
+  "fullPhaseWindows": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "totalBands": 11,
+  "rows": [
+    {
+      "phase": 0,
+      "bandId": "top30",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 30.0304
+    },
+    {
+      "phase": 0,
+      "bandId": "top40",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 41.544
+    },
+    {
+      "phase": 0,
+      "bandId": "top50",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 34.9641
+    },
+    {
+      "phase": 0,
+      "bandId": "top80",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 9.2105
+    },
+    {
+      "phase": 0,
+      "bandId": "from40",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 30.0304
+    },
+    {
+      "phase": 0,
+      "bandId": "from50strict",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 34.9641
+    },
+    {
+      "phase": 0,
+      "bandId": "from70",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 34.9641
+    },
+    {
+      "phase": 0,
+      "bandId": "middle40to80",
+      "front": 0,
+      "rear": 28,
+      "mixed": 44,
+      "unresolved": 0,
+      "splitSameDirection": 65,
+      "minStrictMarginPoints": 0.2621
+    },
+    {
+      "phase": 0,
+      "bandId": "middle30to80",
+      "front": 0,
+      "rear": 24,
+      "mixed": 48,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 15.9811
+    },
+    {
+      "phase": 0,
+      "bandId": "equal50",
+      "front": 0,
+      "rear": 36,
+      "mixed": 36,
+      "unresolved": 0,
+      "splitSameDirection": 65,
+      "minStrictMarginPoints": 3.5493
+    },
+    {
+      "phase": 0,
+      "bandId": "middle70to75",
+      "front": 0,
+      "rear": 68,
+      "mixed": 4,
+      "unresolved": 0,
+      "splitSameDirection": 67,
+      "minStrictMarginPoints": 1.2148
+    },
+    {
+      "phase": 1,
+      "bandId": "top30",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 30.6796
+    },
+    {
+      "phase": 1,
+      "bandId": "top40",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 42.5684
+    },
+    {
+      "phase": 1,
+      "bandId": "top50",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 33.9765
+    },
+    {
+      "phase": 1,
+      "bandId": "top80",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 4.0263
+    },
+    {
+      "phase": 1,
+      "bandId": "from40",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 30.6796
+    },
+    {
+      "phase": 1,
+      "bandId": "from50strict",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 33.9765
+    },
+    {
+      "phase": 1,
+      "bandId": "from70",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 31.7173
+    },
+    {
+      "phase": 1,
+      "bandId": "middle40to80",
+      "front": 0,
+      "rear": 24,
+      "mixed": 48,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 38.5947
+    },
+    {
+      "phase": 1,
+      "bandId": "middle30to80",
+      "front": 0,
+      "rear": 24,
+      "mixed": 48,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 8.4646
+    },
+    {
+      "phase": 1,
+      "bandId": "equal50",
+      "front": 3,
+      "rear": 34,
+      "mixed": 35,
+      "unresolved": 0,
+      "splitSameDirection": 60,
+      "minStrictMarginPoints": 0.6889
+    },
+    {
+      "phase": 1,
+      "bandId": "middle70to75",
+      "front": 0,
+      "rear": 63,
+      "mixed": 9,
+      "unresolved": 0,
+      "splitSameDirection": 61,
+      "minStrictMarginPoints": 0.412
+    },
+    {
+      "phase": 2,
+      "bandId": "top30",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 29.1125
+    },
+    {
+      "phase": 2,
+      "bandId": "top40",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 34.873
+    },
+    {
+      "phase": 2,
+      "bandId": "top50",
+      "front": 72,
+      "rear": 0,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 27.7183
+    },
+    {
+      "phase": 2,
+      "bandId": "top80",
+      "front": 71,
+      "rear": 0,
+      "mixed": 1,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 4.9719
+    },
+    {
+      "phase": 2,
+      "bandId": "from40",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 29.1125
+    },
+    {
+      "phase": 2,
+      "bandId": "from50strict",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 27.7183
+    },
+    {
+      "phase": 2,
+      "bandId": "from70",
+      "front": 0,
+      "rear": 72,
+      "mixed": 0,
+      "unresolved": 0,
+      "splitSameDirection": 72,
+      "minStrictMarginPoints": 27.7183
+    },
+    {
+      "phase": 2,
+      "bandId": "middle40to80",
+      "front": 0,
+      "rear": 31,
+      "mixed": 41,
+      "unresolved": 0,
+      "splitSameDirection": 56,
+      "minStrictMarginPoints": 0.0802
+    },
+    {
+      "phase": 2,
+      "bandId": "middle30to80",
+      "front": 2,
+      "rear": 24,
+      "mixed": 46,
+      "unresolved": 0,
+      "splitSameDirection": 69,
+      "minStrictMarginPoints": 1.6744
+    },
+    {
+      "phase": 2,
+      "bandId": "equal50",
+      "front": 4,
+      "rear": 18,
+      "mixed": 50,
+      "unresolved": 0,
+      "splitSameDirection": 50,
+      "minStrictMarginPoints": 0.1841
+    },
+    {
+      "phase": 2,
+      "bandId": "middle70to75",
+      "front": 0,
+      "rear": 68,
+      "mixed": 4,
+      "unresolved": 0,
+      "splitSameDirection": 67,
+      "minStrictMarginPoints": 0.5999
+    },
+    {
+      "phase": 3,
+      "bandId": "top30",
+      "front": 67,
+      "rear": 0,
+      "mixed": 4,
+      "unresolved": 1,
+      "splitSameDirection": 60,
+      "minStrictMarginPoints": 1.4359
+    },
+    {
+      "phase": 3,
+      "bandId": "top40",
+      "front": 68,
+      "rear": 0,
+      "mixed": 3,
+      "unresolved": 1,
+      "splitSameDirection": 64,
+      "minStrictMarginPoints": 0.2071
+    },
+    {
+      "phase": 3,
+      "bandId": "top50",
+      "front": 67,
+      "rear": 0,
+      "mixed": 4,
+      "unresolved": 1,
+      "splitSameDirection": 67,
+      "minStrictMarginPoints": 3.5352
+    },
+    {
+      "phase": 3,
+      "bandId": "top80",
+      "front": 66,
+      "rear": 0,
+      "mixed": 5,
+      "unresolved": 1,
+      "splitSameDirection": 63,
+      "minStrictMarginPoints": 0.4784
+    },
+    {
+      "phase": 3,
+      "bandId": "from40",
+      "front": 0,
+      "rear": 67,
+      "mixed": 4,
+      "unresolved": 1,
+      "splitSameDirection": 60,
+      "minStrictMarginPoints": 1.4359
+    },
+    {
+      "phase": 3,
+      "bandId": "from50strict",
+      "front": 0,
+      "rear": 67,
+      "mixed": 4,
+      "unresolved": 1,
+      "splitSameDirection": 67,
+      "minStrictMarginPoints": 3.5352
+    },
+    {
+      "phase": 3,
+      "bandId": "from70",
+      "front": 0,
+      "rear": 67,
+      "mixed": 4,
+      "unresolved": 1,
+      "splitSameDirection": 67,
+      "minStrictMarginPoints": 0.1476
+    },
+    {
+      "phase": 3,
+      "bandId": "middle40to80",
+      "front": 10,
+      "rear": 31,
+      "mixed": 30,
+      "unresolved": 1,
+      "splitSameDirection": 42,
+      "minStrictMarginPoints": 0.4007
+    },
+    {
+      "phase": 3,
+      "bandId": "middle30to80",
+      "front": 14,
+      "rear": 21,
+      "mixed": 36,
+      "unresolved": 1,
+      "splitSameDirection": 51,
+      "minStrictMarginPoints": 0.6063
+    },
+    {
+      "phase": 3,
+      "bandId": "equal50",
+      "front": 30,
+      "rear": 5,
+      "mixed": 36,
+      "unresolved": 1,
+      "splitSameDirection": 39,
+      "minStrictMarginPoints": 0.0216
+    },
+    {
+      "phase": 3,
+      "bandId": "middle70to75",
+      "front": 1,
+      "rear": 53,
+      "mixed": 17,
+      "unresolved": 1,
+      "splitSameDirection": 48,
+      "minStrictMarginPoints": 0.0523
+    }
+  ],
+  "warnings": [
+    "Four source-defined full phases only, not subphase or straight/corner windows",
+    "All 72 contexts and both 15-seed halves are required for common qualitative direction",
+    "Model position occupancy over distance, not Japan game trigger probabilities",
+    "9/12 rank boundaries use an externally documented rounding model, not independent JP engine verification"
+  ]
+}
