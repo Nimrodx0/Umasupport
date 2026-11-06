@@ -14,6 +14,8 @@ on:
       - 'poc/tools/verify_rank_band_model_evidence.cjs'
       - 'poc/data/p2_rank_band_model_direction.v1.json'
       - 'poc/tools/globalsim_rank_band_study.cjs'
+      - 'poc/tools/globalsim_four_style_rank_fit.cjs'
+      - 'poc/tests/globalsim_four_style_rank_fit.test.cjs'
       - 'poc/tests/globalsim_rank_band_dominance.test.cjs'
       - '.github/workflows/globalsim-rank-band-dominance.yml'
 permissions:
@@ -31,6 +33,8 @@ jobs:
         run: |
           node --check poc/tools/globalsim_rank_band_dominance.cjs
           node --check poc/tools/globalsim_rank_band_study.cjs
+          node --check poc/tools/globalsim_four_style_rank_fit.cjs
+          node --test poc/tests/globalsim_four_style_rank_fit.test.cjs
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --test poc/tests/globalsim_rank_band_dominance.test.cjs
           node --test poc/tests/skill_order_rate_bounds.test.cjs
@@ -78,6 +82,17 @@ jobs:
           assert.equal(r.splitSeedCounts.length,2);
           assert.equal(r.splitSeedCounts.reduce((a,b)=>a+b,0),r.seedCount);
           assert(r.comparisons.every(x=>x.integerRanks.length>0));
+          const four=JSON.parse(fs.readFileSync('/tmp/rank-band-study/four-style-pairwise.json','utf8'));
+          assert.equal(four.schemaVersion,1);
+          assert.equal(four.sourceRevision,r.sourceRevision);
+          assert.equal(four.raceCount,r.raceCount);
+          assert.equal(four.comparisons.length,r.comparisonCount);
+          assert.equal(four.byPairPhaseBand.length,44*6);
+          assert.equal(four.byPairScenarioBand.length,44*6*3);
+          assert.equal(four.byStylePhaseBand.length,44*4);
+          assert(four.byPairPhaseBand.every(x=>x.contexts===72));
+          assert(four.byPairPhaseBand.every(x=>x.comparable+x.absent+x.unresolved===72));
+          assert(four.byStylePhaseBand.every(x=>x.comparisons.length===3));
           console.log(JSON.stringify({races:r.raceCount,comparisons:r.comparisonCount,
             byPhaseBand:r.byPhaseBand},null,2));
           NODE
@@ -92,6 +107,7 @@ jobs:
           name: globalsim-exact-rank-band-direction
           path: |
             /tmp/rank-band-study/rank-band-direction.json
+            /tmp/rank-band-study/four-style-pairwise.json
             /tmp/rank-band-study/full-rank-profile.json
             /tmp/rank-band-study/first-half-rank-profile.json
             /tmp/rank-band-study/last-half-rank-profile.json

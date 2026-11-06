@@ -12,6 +12,7 @@ const {spawn}=require('node:child_process');
 const expanded=require('./globalsim_position_expanded.cjs');
 const rank=require('./globalsim_rank_distribution.cjs');
 const band=require('./globalsim_rank_band_dominance.cjs');
+const fourStyle=require('./globalsim_four_style_rank_fit.cjs');
 const pilot=require('./globalsim_position_pilot.cjs');
 const SCENARIOS=Object.freeze(['balanced','jan2026','noFront']);
 function plans(seedsPerCell=30){
@@ -98,8 +99,11 @@ async function main(args){
  const result=await execute(JSON.parse(raw[0]),enginePath,
   {seedsPerCell:Number(seedsArg||30)});
  fs.mkdirSync(outDirectory,{recursive:true});
+ const fourStyleReport=fourStyle.analyze(result.allProfile,
+  {firstProfile:result.firstProfile,lastProfile:result.lastProfile});
  const files=[
   ['rank-band-direction.json',result.report],
+  ['four-style-pairwise.json',fourStyleReport],
   ['full-rank-profile.json',result.allProfile],
   ['first-half-rank-profile.json',result.firstProfile],
   ['last-half-rank-profile.json',result.lastProfile]
@@ -122,6 +126,8 @@ async function main(args){
   comparisons:result.report.comparisonCount,
   splitSeedCounts:result.report.splitSeedCounts,
   results:result.report.byPhaseBand,
+  fourStyleMiddle:fourStyleReport.byStylePhaseBand.filter(r=>
+   r.phase===1&&r.bandId==='middle40to80'),
   hashes},null,2));
 }
 if(require.main===module)main(process.argv.slice(2))
