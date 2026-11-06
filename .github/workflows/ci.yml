@@ -26,7 +26,7 @@ jobs:
           node poc/tools/check_project_tracking.cjs
           node --test poc/tests/project_tracking.test.cjs
       - name: Validate documentation responsibilities, archive and canonical links
-        run: node --test poc/tests/documentation_policy.test.cjs
+        run: node --test poc/tests/documentation_policy.test.cjs poc/tests/handoff_quality.test.cjs
       - name: Validate pinned private full 2512-event local import without publishing data
         run: |
           node --check poc/src/private_local_event_preview.js
