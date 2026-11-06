@@ -56,6 +56,28 @@ jobs:
             /tmp/p2-app-identity/pinned_legacy_skills.txt \
             poc/data/reviewed_events.v1.json \
             /tmp/p2-app-identity/report.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-app-identity/report.json','utf8'));
+          assert.equal(r.candidates,24);
+          assert.equal(r.app.totalCards,566);
+          assert.equal(r.app.totalSkills,881);
+          assert.equal(r.app.profileCoverage.matched,818);
+          assert.deepEqual(r.summary,{
+            exactIdName:17,duplicateAppIdentity:0,
+            idNameOrSourceMismatch:0,nameOnlyOrOtherId:0,
+            notInAppCatalog:7
+          });
+          const absent=r.items.filter(x=>x.status==='not-in-app-catalog')
+            .map(x=>x.sourceNumericId).sort();
+          assert.deepEqual(absent,[
+            '100702211','100702221','101902211','103401211',
+            '103401221','103601111','105501111'
+          ]);
+          assert(r.items.filter(x=>x.status==='exact-id-name').every(x=>
+            x.appSkills.length===1 && x.appSkills[0].id));
+          NODE
           rm -f /tmp/p2-app-identity/skill_data.txt \
             /tmp/p2-app-identity/support_card.txt \
             /tmp/p2-app-identity/pinned_legacy_skills.txt
