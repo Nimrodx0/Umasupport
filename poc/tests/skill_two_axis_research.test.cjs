@@ -57,10 +57,11 @@ test('derive absolute opportunity and relative specificity separately, without a
 });
 test('unconfirmed pair is held but numeric opportunity remains measured',()=>{
  const source=toyReport();
- source.byPairScenarioBand[4].gate='held';
+ source.comparisons[0].phase=3;
+ source.byPairScenarioBand.forEach(r=>{r.phase=3;r.gate='held'});
  const doc=generator.summarize(source,{requireComplete:false});
  assert.equal(doc.results[0].styles.Senkou.opportunity.meanPercent,50);
- assert.deepEqual(doc.results[0].styles.Senkou.specificity.heldAgainst,['Oikomi']);
+ assert.deepEqual(doc.results[0].styles.Senkou.specificity.heldAgainst,['Nige','Sasi','Oikomi']);
  assert.equal(doc.results[0].styles.Senkou.specificity.allThreePairsConfirmed,false);
 });
 test('exact source rank projection and missing runner data fail closed',()=>{
