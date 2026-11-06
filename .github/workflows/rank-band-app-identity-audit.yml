@@ -1,0 +1,90 @@
+name: P2 new rank band skills to published app identity audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/rank_band_app_identity_audit.cjs'
+      - 'poc/tests/rank_band_app_identity_audit.test.cjs'
+      - '.github/workflows/rank-band-app-identity-audit.yml'
+permissions:
+  contents: read
+
+jobs:
+  application-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test source-proof candidate extraction and strict numeric + name joins
+        run: |
+          node --check poc/tools/rank_band_app_identity_audit.cjs
+          node --test poc/tests/rank_band_app_identity_audit.test.cjs
+          node --test poc/tests/rank_band_fit_population_audit.test.cjs
+      - name: Download and verify exact source skill/support snapshots
+        run: |
+          mkdir -p /tmp/p2-app-identity
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const bridge=require('./poc/src/skill_bridge.js');
+          const rev='f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
+          const base='https://raw.githubusercontent.com/mee1080/umasim/'+rev+'/data/';
+          const urls=[
+           [base+'skill_data.txt','skill_data.txt',
+            '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5'],
+           [base+'support_card.txt','support_card.txt',null],
+           [bridge.PINNED_URL,'pinned_legacy_skills.txt',bridge.PINNED_SHA256]
+          ];
+          (async()=>{for(const [url,file,expected] of urls){
+            const r=await fetch(url,{signal:AbortSignal.timeout(60000)});
+            if(!r.ok)throw Error('Original source HTTP '+r.status+' '+file);
+            const body=Buffer.from(await r.arrayBuffer());
+            if(expected&&crypto.createHash('sha256').update(body).digest('hex')!==expected)
+              throw Error('Original source SHA mismatch '+file);
+            fs.writeFileSync('/tmp/p2-app-identity/'+file,body);
+          }})().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+      - name: Match all newly supported source skills to actual application skill identities
+        run: |
+          node poc/tools/rank_band_app_identity_audit.cjs \
+            /tmp/p2-app-identity/skill_data.txt \
+            /tmp/p2-app-identity/support_card.txt \
+            /tmp/p2-app-identity/pinned_legacy_skills.txt \
+            poc/data/reviewed_events.v1.json \
+            /tmp/p2-app-identity/report.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-app-identity/report.json','utf8'));
+          assert.equal(r.candidates,24);
+          assert.equal(r.app.totalCards,566);
+          assert.equal(r.app.totalSkills,881);
+          assert.equal(r.app.profileCoverage.matched,818);
+          assert.deepEqual(r.summary,{
+            exactIdName:17,duplicateAppIdentity:0,
+            idNameOrSourceMismatch:0,nameOnlyOrOtherId:0,
+            notInAppCatalog:7
+          });
+          const absent=r.items.filter(x=>x.status==='not-in-app-catalog')
+            .map(x=>x.sourceNumericId).sort();
+          assert.deepEqual(absent,[
+            '100702211','100702221','101902211','103401211',
+            '103401221','103601111','105501111'
+          ]);
+          assert(r.items.filter(x=>x.status==='exact-id-name').every(x=>
+            x.appSkills.length===1 && x.appSkills[0].id));
+          NODE
+          rm -f /tmp/p2-app-identity/skill_data.txt \
+            /tmp/p2-app-identity/support_card.txt \
+            /tmp/p2-app-identity/pinned_legacy_skills.txt
+      - name: Archive minimal identity/status records only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rank-band-24-source-app-identity-audit
+          path: /tmp/p2-app-identity/report.json
+          retention-days: 14
