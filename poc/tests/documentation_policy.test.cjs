@@ -117,3 +117,18 @@ test('automatic delivery priority is coherent, and unapproved private source is 
    e.id==='gt-30080-event-006'))),
   '出典が異なる25件を無断公開しない');
 });
+
+test('repository-first handoff rule is explicit and preserved in AI entry, documentation policy and PR template',()=>{
+ const agents=read('AGENTS.md');
+ const policy=read('docs/documentation-policy.md');
+ const template=read('.github/PULL_REQUEST_TEMPLATE.md');
+ assert.match(agents,/チャットに依存しない引き継ぎ/);
+ assert.match(agents,/会話中に利用者が方針・要件・優先順位を確定または変更したら/);
+ assert.match(agents,/main.*再取得して反映を検証/);
+ assert.match(policy,/会話・エージェントに依存しない情報保存ゲート/);
+ assert.match(policy,/利用者が「文書を更新して」と明示しなくても/);
+ assert.match(policy,/反映不可の場合/);
+ assert.match(template,/チャット非依存の仕様・判断引き継ぎ/);
+ assert.match(template,/docs\/requirements\.md.*docs\/decisions\.md/);
+ assert.match(template,/PR本文やチャットだけに残った継続開発上の重要事項/);
+});
