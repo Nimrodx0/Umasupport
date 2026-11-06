@@ -30,6 +30,7 @@
 | P2 注目馬を固定し相手脚質構成だけ操作する基礎実験 | [5,760レース、前方／後方脚質の人数構成と順位占有割合の対応差](skill-position-focal-opponent-roster-study-20261105.md) |
 | **P2 脚質別の発動条件適合性v1.3（6区分）** | [元53スキルすべてを定性的な高／低と判定、部分区間の固定証拠を照合](skill-activation-condition-fit-v1-20261106.md) |
 | P2 序盤後半・中盤前後半の順位窓実験 | [2,160レース・68,040走者×区間観測・72/72条件で優位方向一致](skill-position-subphase-fit-20261106.md) |
+| **P2 新たな24スキルとアプリ収録先の照合** | [厳密一致17・未収録7、元条件とカード入手経路の区別](skill-rank-band-app-identity-20261106.md) |
 | **P2 order_rateの整数順位への厳密換算** | [9頭・12頭の元演算子、全2,162スキル監査、複合AND304経路、未検証条件の保留](skill-order-rate-integer-mapping-20261106.md) |
 | **P2 11順位帯×4局面の厳密脚質比較** | [2,160レース、20/44の一方向支持、中団ANDの編成依存、固定元辞書の新規24スキル](skill-position-rank-band-fit-20261106.md) |
 | 機構・データ・実環境での合否条件 | [verification-plan.md](verification-plan.md) |
