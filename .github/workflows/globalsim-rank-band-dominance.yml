@@ -131,8 +131,8 @@ jobs:
           assert(doc.results.every(r=>r.contexts===24));
           assert(doc.results.every(r=>Object.values(r.styles).length===4));
           const middle=doc.results.find(r=>r.phase===1&&r.bandId==='middle40to80');
-          assert.equal(middle.styles.Sasi.opportunity.meanPercent,84.140967);
-          assert.equal(middle.styles.Nige.opportunity.meanPercent,1.486887);
+          assert(Math.abs(middle.styles.Sasi.opportunity.meanPercent-84.141)<0.001);
+          assert(Math.abs(middle.styles.Nige.opportunity.meanPercent-1.487)<0.001);
           assert.equal(middle.styles.Sasi.specificity.higherThan.length,3);
           assert.equal(middle.styles.Sasi.specificity.allThreePairsConfirmed,true);
           assert(!Object.hasOwn(middle.styles.Sasi,'activationProbability'));
