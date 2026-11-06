@@ -22,19 +22,7 @@
 
 ## 文書の入口
 
-**[文書索引](docs/index.md)** ／ **[文書運用規約](docs/documentation-policy.md)**
-
-| 知りたいこと | 文書 |
-| --- | --- |
-| 要求・対象外・利用者の受け入れ条件 | [要件](docs/requirements.md) |
-| 最新の確定判断と過去の判断理由 | [意思決定](docs/decisions.md) |
-| 今後の工程・優先度 | [ロードマップ](docs/roadmap.md) |
-| 最新の実測・残件・CI根拠 | [開発状況](docs/status.md) |
-| 機構／データ／実環境の合格条件 | [検証計画](docs/verification-plan.md) |
-| アプリ構成・イベントデータ契約 | [設計](docs/architecture.md) / [イベントスキーマ](docs/event-schema.md) |
-| イベント取得元の採用方針 | [GitHub派生DB主経路への復帰と製品完成の方針](docs/derived-github-primary-restart-20261029.md) / [GameTora由来基準の扱い](docs/gametora-baseline-event-policy-20261021.md) |
-| 過去の実装・調査 | [開発履歴](docs/development-history.md) / [文書アーカイブ](docs/archive/) |
-| AI開発時の作業ルール | [AGENTS.md](AGENTS.md) |
+**[文書索引](docs/index.md)** に、現在の要件・決定・設計・進捗・証拠の正本をまとめています。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、対象の[研究・監査記録](docs/evidence-index.md)を確認してください。詳細なルールは [文書運用規約](docs/documentation-policy.md) にあります。
 
 ## 開発と検証
 
