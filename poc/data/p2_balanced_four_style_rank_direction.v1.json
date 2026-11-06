@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "status": "pinned-GlobalSim-balanced-four-style-pairwise-model-not-game-activation",
+  "sourceRevision": "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1",
+  "fullReportSha256": "62764af14894ed0ef5354f3136b8d9eaae0dc8426ca2d8a0f146ccd24ea25cc9",
+  "races": 2160,
+  "seedsPerCell": 30,
+  "splitSeeds": [
+    15,
+    15
+  ],
+  "sourceScenario": "balanced",
+  "contextsPerPhaseBand": 24,
+  "phases": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "bands": [
+    "top30",
+    "top40",
+    "top50",
+    "top80",
+    "from40",
+    "from50strict",
+    "from70",
+    "middle40to80",
+    "middle30to80",
+    "equal50",
+    "middle70to75"
+  ],
+  "styles": [
+    "Nige",
+    "Senkou",
+    "Sasi",
+    "Oikomi"
+  ],
+  "pairs": [
+    [
+      "Nige",
+      "Senkou"
+    ],
+    [
+      "Nige",
+      "Sasi"
+    ],
+    [
+      "Nige",
+      "Oikomi"
+    ],
+    [
+      "Senkou",
+      "Sasi"
+    ],
+    [
+      "Senkou",
+      "Oikomi"
+    ],
+    [
+      "Sasi",
+      "Oikomi"
+    ]
+  ],
+  "directionCodes": {
+    "F": "first-consistently-higher",
+    "S": "second-consistently-higher",
+    "?": "held-unresolved-tie-split-or-reversal"
+  },
+  "directionByPhase": [
+    [
+      "FFFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "?FFFFF",
+      "SSSSS?",
+      "?SSSS?",
+      "?SSSSS",
+      "SSSS?F",
+      "SSS?FF",
+      "??????",
+      "?SSSSF"
+    ],
+    [
+      "FFFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "?FFFFF",
+      "SSSSS?",
+      "?SSSS?",
+      "?SSSSS",
+      "SSSSFF",
+      "SSS?FF",
+      "??????",
+      "?SSSSF"
+    ],
+    [
+      "FFFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "SSSSS?",
+      "?SSSS?",
+      "?SSSS?",
+      "SSSS??",
+      "?S??F?",
+      "??????",
+      "?SSSS?"
+    ],
+    [
+      "?FFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "?FFFF?",
+      "?SSSS?",
+      "?SSSS?",
+      "?SSSS?",
+      "??????",
+      "??????",
+      "??????",
+      "???S??"
+    ]
+  ],
+  "limitations": [
+    "Balanced roster is a fixed comparison baseline, not an empirical most-frequent matchup.",
+    "Equal cross-course/headcount/stat-mode context weighting is not population match frequency.",
+    "Codes F/S only mean strict, stable GlobalSim model occupancy across all 24 balanced contexts and both seed halves.",
+    "A held pair is unknown, not a tie or equal activation chance.",
+    "Source predicates must match a full-phase window; extra AND, preconditions, and OR paths require independent evidence.",
+    "Not game skill activation probability, game-side fit threshold, support-card value, or prediction for custom opponent rosters."
+  ]
+}
