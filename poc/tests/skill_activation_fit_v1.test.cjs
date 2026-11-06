@@ -149,7 +149,7 @@ test('a rank percent boundary is visible in 9/12 orders but does not prove style
  for(const style of ['逃げ','先行','差し','追込']){
   assert.equal(x.styles[style].status,'held');
   const branch=x.styles[style].paths[0];
-  assert.equal(branch.rankOnly.reason,'rank-predicate-intersection-unverified');
+  assert.equal(branch.rankOnly.reason,'model-rank-band-direction-mixed-or-not-confirmed');
   assert.deepEqual(branch.rankOnly.sourceRankProjection.byField[9].positions,
    [4,5,6,7]);
   assert.deepEqual(branch.rankOnly.sourceRankProjection.byField[12].positions,

@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - 'poc/src/skill_activation_fit_v1.cjs'
+      - 'poc/tools/rank_band_fit_population_audit.cjs'
+      - 'poc/tests/rank_band_fit_population_audit.test.cjs'
       - 'poc/data/p2_rank_band_model_direction.v1.json'
       - 'poc/tools/verify_rank_band_model_evidence.cjs'
       - 'poc/data/p2_subphase_model_direction.v1.json'
@@ -29,7 +31,7 @@ jobs:
         run: |
           node --check poc/src/skill_activation_fit_v1.cjs
           node --check poc/tools/skill_activation_fit_v1_report.cjs
-          node --test poc/tests/skill_activation_fit_v1.test.cjs poc/tests/skill_activation_fit_v1_report.test.cjs
+          node --test poc/tests/skill_activation_fit_v1.test.cjs poc/tests/skill_activation_fit_v1_report.test.cjs poc/tests/rank_band_fit_population_audit.test.cjs
       - name: Rebuild original source condition cohort at pinned UmaSim revision
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
@@ -103,10 +105,31 @@ jobs:
             }
           }
           NODE
+      - name: Audit all original 2162 skills for strict new model rank-band coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const url='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
+          fetch(url).then(async r=>{
+            if(!r.ok)throw Error('Pinned source HTTP '+r.status);
+            const bytes=Buffer.from(await r.arrayBuffer());
+            if(crypto.createHash('sha256').update(bytes).digest('hex')!==
+              '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5')
+              throw Error('Source SHA changed');
+            fs.writeFileSync('/tmp/p2-style-fit-v1/skill_data_source_only.txt',bytes);
+          }).catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          node poc/tools/rank_band_fit_population_audit.cjs \
+            /tmp/p2-style-fit-v1/skill_data_source_only.txt \
+            /tmp/p2-style-fit-v1/full-source-rank-band-fit-summary.json
+          rm -f /tmp/p2-style-fit-v1/skill_data_source_only.txt
       - name: Save narrow derived skill status report, not raw third-party dictionary
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: source-matched-activation-condition-fit-v1
-          path: /tmp/p2-style-fit-v1/activation-fit-v1-53.json
+          path: |
+            /tmp/p2-style-fit-v1/activation-fit-v1-53.json
+            /tmp/p2-style-fit-v1/full-source-rank-band-fit-summary.json
           retention-days: 14
