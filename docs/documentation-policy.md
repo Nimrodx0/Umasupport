@@ -41,4 +41,4 @@
 - **数値の矛盾**：観測事実は現行ソース／JSON／CIで確かめ、statusの測定日と対象集合を更新する。過去の数値は歴史として保存し、「現行件数」をroadmapやAGENTSに重複記載しない。
 - **作業の状態**：roadmapには一つの主要作業順、Issueには現在の残課題、statusには実績を保持する。旧記録の「未実装／公開0件」を現行として再掲しない。関連Issueには必要に応じて現在節を更新し、機械生成Issueはその生成器の責務を守る。
 - **品質の根拠**：検証A/B/C、固定出典と全ゲームの網羅、データ採用と正式公開の権利確認を区別する。[公開ゲート](checker-public-catalog.md)を省略しない。
-- **自動検査**：`poc/tests/documentation_policy.test.cjs` は正本の導線・リンクなどの構造を、`poc/tools/check_project_tracking.cjs` は公開JSONと現行statusの不一致などを調べる。どちらも文章の意味、意思決定の承認、現ゲームでの正しさは自動保証しない。
+- **自動検査**：`poc/tests/handoff_quality.test.cjs` はREADME・AGENTS・開発手順を起点に、要件／判断理由／状態／工程／設計／根拠／旧検証への到達経路とリンク切れを確認する。`poc/tests/documentation_policy.test.cjs` は出典・公開境界と履歴保存を、`poc/tools/check_project_tracking.cjs` は公開JSONと現行statusの一致を確認する。文書の行数や一字一句は固定しない。これらは情報の**発見可能性・機械的整合性**の検査であり、記述の意味や研究結果の真偽、合意漏れを自動保証しない。大きな文書再編では、別の担当者として現在の作業を資料だけから復元できるかもレビューする。
