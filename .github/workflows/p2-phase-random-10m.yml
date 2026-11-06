@@ -1,0 +1,95 @@
+name: P2 phase_random 10m opportunity comparison
+
+on:
+  workflow_dispatch:
+    inputs:
+      seeds_per_cell:
+        description: "Even seed count per balanced 6 course x 9/12 x 2 modes cell (2..30)"
+        required: true
+        type: number
+        default: 30
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_phase_random_10m.cjs'
+      - 'poc/tests/globalsim_phase_random_10m.test.cjs'
+      - '.github/workflows/p2-phase-random-10m.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compare-sampled-position-versus-10m-window:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate deterministic random-window geometry
+        run: |
+          node --check poc/tools/globalsim_phase_random_10m.cjs
+          node --test poc/tests/globalsim_phase_random_10m.test.cjs
+      - name: Check out pinned GlobalSim v77 model
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay balanced 720 model races with original no-skill position trajectories
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '30' }}
+        run: |
+          case "$SEEDS_PER_CELL" in
+            ''|*[!0-9]*) echo 'Expected integer seed count' >&2; exit 2 ;;
+          esac
+          if [ "$SEEDS_PER_CELL" -lt 2 ] || [ "$SEEDS_PER_CELL" -gt 30 ] || \
+             [ $((SEEDS_PER_CELL % 2)) -ne 0 ]; then
+            echo 'Expected even seed count in 2..30' >&2; exit 2
+          fi
+          node --max-old-space-size=4096 poc/tools/globalsim_phase_random_10m.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/phase-random-10m-opportunity.json "$SEEDS_PER_CELL"
+      - name: Check complete comparison and retain unknowns as unknown
+        env:
+          SEEDS_PER_CELL: ${{ inputs.seeds_per_cell || '30' }}
+        run: |
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/phase-random-10m-opportunity.json'));
+          assert.equal(r.sourceRevision,'80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1');
+          assert.equal(r.status,'research-GlobalSim-10m-rank-opportunity-not-game-activation');
+          assert.equal(r.scenario,'balanced');
+          assert.equal(r.simulations,24*Number(process.env.SEEDS_PER_CELL));
+          assert.equal(r.phaseBands,44);
+          assert.equal(r.perContextRows,24*4*11*4);
+          assert(r.contextRows.every(x=>x.runners>=Number(process.env.SEEDS_PER_CELL)));
+          for(const x of r.contextRows){
+            assert(x.random10mOpportunityPercent>=x.pointPercent-0.000002);
+            assert(x.random10mOpportunityPercent<=100);
+            assert(x.pointPercent>=0);
+          }
+          assert(r.contextRows.some(x=>x.upliftPoints>0.001));
+          const middle=r.byPhaseBand.find(x=>x.phase===1&&x.bandId==='middle40to80');
+          assert(middle);
+          assert(Math.abs(middle.styles.Sasi.pointPercent-84.141)<0.1);
+          assert(Math.abs(middle.styles.Nige.pointPercent-1.487)<0.1);
+          for(const [name,x] of Object.entries(middle.styles)){
+            console.log(name+': '+x.pointPercent.toFixed(2)+
+              '% occupancy -> '+x.random10mOpportunityPercent.toFixed(2)+
+              '% 10m window, delta '+x.upliftPoints.toFixed(2)+' pp');
+          }
+          NODE
+      - name: Retain model-only descriptive metrics for research audit
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: globalsim-balanced-phase-random-10m
+          path: /tmp/phase-random-10m-opportunity.json
+          retention-days: 14
