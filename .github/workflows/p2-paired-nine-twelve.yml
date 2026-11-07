@@ -122,6 +122,27 @@ jobs:
            }
           }
           assert(r.summaries.some(s=>s.additionStyleSensitivity.rangePoints>0));
+          const near=(a,b)=>assert(Math.abs(a-b)<0.002, String(a)+' != '+String(b));
+          const mile=r.summaries.find(s=>s.profileId==='mile-ruler'&&s.style==='Sasi');
+          assert(mile);
+          near(mile.mixedBaseline.ninePercent,36.092853);
+          near(mile.mixedBaseline.twelvePercent,0.017075);
+          near(mile.mixedBaseline.boundaryComponentPoints,0.017075);
+          near(mile.mixedBaseline.addedEntrantsComponentPoints,-36.092853);
+          near(mile.additionStyleSensitivity.rangePoints,55.920968);
+          const leader=r.summaries.find(s=>s.profileId==='mile-ruler'&&s.style==='Senkou');
+          near(leader.mixedBaseline.boundaryComponentPoints,34.635612);
+          near(leader.mixedBaseline.addedEntrantsComponentPoints,-34.551166);
+          const dirt=r.summaries.find(s=>s.profileId==='dirt-expert'&&s.style==='Senkou');
+          near(dirt.mixedBaseline.boundaryComponentPoints,-26.305827);
+          near(dirt.mixedBaseline.addedEntrantsComponentPoints,41.54737);
+          near(dirt.additionStyleSensitivity.rangePoints,94.484552);
+          for(const item of r.summaries){
+           if(item.bandId==='top50')
+            assert(item.mixedBaseline.boundaryComponentPoints>=-0.00001);
+           if(item.bandId==='from40')
+            assert(item.mixedBaseline.boundaryComponentPoints<=0.00001);
+          }
           assert(r.calculationCaveats.some(x=>x.includes('no meaningful pure headcount')));
           const selected=r.summaries.filter(s=>
            (s.profileId==='mile-ruler'&&s.style==='Sasi')||
