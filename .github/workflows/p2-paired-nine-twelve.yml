@@ -1,0 +1,143 @@
+name: P2 paired 9 vs 12 original nine anchored field-size decomposition
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_paired_nine_twelve.cjs'
+      - 'poc/tests/globalsim_paired_nine_twelve.test.cjs'
+      - '.github/workflows/p2-paired-nine-twelve.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  paired-nine-anchors-with-twelve-entrant-compositions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source-rank boundary counterfactual and anchor-invariant designs
+        run: |
+          node --check poc/tools/globalsim_paired_nine_twelve.cjs
+          node --test poc/tests/globalsim_paired_nine_twelve.test.cjs
+          node --test poc/tests/skill_context_stability_77.test.cjs
+      - name: Verify five representative conditions against pinned UmaSim dictionary
+        run: |
+          node - <<'NODE'
+          const crypto=require('node:crypto');
+          const url='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
+          const fixed='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5';
+          const study=require('./poc/tools/globalsim_paired_nine_twelve.cjs');
+          const bands=require('./poc/tools/globalsim_rank_band_dominance.cjs').BANDS;
+          (async()=>{
+           const r=await fetch(url,{signal:AbortSignal.timeout(60000)});
+           if(!r.ok)throw Error('Pinned dictionary HTTP '+r.status);
+           const bytes=Buffer.from(await r.arrayBuffer());
+           if(crypto.createHash('sha256').update(bytes).digest('hex')!==fixed)
+            throw Error('Source skill dictionary changed');
+           const list=JSON.parse(bytes.toString('utf8'));
+           if(list.length!==2162)throw Error('Source skill count changed');
+           for(const target of study.TARGETS){
+            const s=list.find(x=>String(x.id)===target.sourceNumericId);
+            if(!s||s.name.normalize('NFKC')!==target.example.normalize('NFKC'))
+             throw Error('Source skill ID/name changed '+target.sourceNumericId);
+            const [timeType,timeIndex]=target.timing.split(':');
+            const and=bands.find(x=>x.id===target.bandId)?.predicates;
+            if(!and?.length||!(s.invokes||[]).some(inv=>
+             (inv.conditions||[]).some(row=>
+              row.some(c=>c.type===timeType&&c.operator==='=='&&c.value===Number(timeIndex))&&
+              and.every(p=>row.some(c=>c.type===p.type&&
+               c.operator===p.operator&&c.value===p.value)))))
+             throw Error('Original source timing/rank AND mismatch '+s.name);
+           }
+           console.log('Five exact source IDs, names, rank bands and timing windows validated');
+          })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
+          NODE
+      - name: Build exactly pinned GlobalSim v77 race engine
+        run: |
+          mkdir -p /tmp/globalsim /tmp/p2-paired
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Check model's real turf/dirt course geometry and uniform aptitude
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const path=require('node:path');
+          const courses=JSON.parse(fs.readFileSync('/tmp/globalsim/data/course_data.json'));
+          const study=require('./poc/tools/globalsim_paired_nine_twelve.cjs');
+          const sample=JSON.parse(fs.readFileSync('/tmp/globalsim/examples/v77-race.jsonl','utf8').trim());
+          if(sample.courseId!==10504||sample.horses.length!==9||
+            sample.horses.some(x=>x.surfaceAptitude!=='A'||x.distanceAptitude!=='A'))
+            throw Error('Original fixed GlobalSim example aptitude changed');
+          for(const c of study.COURSE_SET){
+           const orig=courses[c.id];
+           if(!orig||orig.distance!==1600||
+             orig.surface!==(c.surface==='dirt'?2:1))
+            throw Error('Pinned model course or surface invalid '+c.id);
+           if(!fs.existsSync(path.join('/tmp/globalsim/data/course_geometry',
+              c.id+'.json')))
+            throw Error('Missing actual model course geometry '+c.id);
+          }
+          console.log('Two real 1600m course surfaces and geometries validated');
+          NODE
+      - name: Replay same original nine anchors and five alternative entrant mixes (720 cases)
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_paired_nine_twelve.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-paired/nine-twelve-factors.json 30 \
+            > /tmp/p2-paired/summary.log
+      - name: Verify full paired design and decomposition without claiming pure headcount effects
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-paired/nine-twelve-factors.json'));
+          assert.equal(r.sourceRevision,'80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1');
+          assert.equal(r.totalRaceCases,720);
+          assert.equal(r.targetDefinitions.length,5);
+          assert.equal(r.summaries.length,20);
+          assert.equal(r.pairs.length,6000);
+          assert.equal(r.baseRosterNine.join(','),'2,2,3,2');
+          for(const s of r.summaries){
+           assert.equal(s.mixedBaseline.nPairedSeedModes,60);
+           assert.equal(s.byAddedComposition.length,5);
+           assert(s.additionStyleSensitivity.rangePoints>=0);
+           assert(Math.abs(s.mixedBaseline.totalDifferencePoints-
+            s.mixedBaseline.boundaryComponentPoints-
+            s.mixedBaseline.addedEntrantsComponentPoints)<0.00002);
+           for(const v of s.byAddedComposition){
+            assert.equal(v.nPairedSeedModes,60);
+            assert.equal(v.byMode.equal.n,30);
+            assert.equal(v.byMode.jitter10.n,30);
+           }
+          }
+          assert(r.summaries.some(s=>s.additionStyleSensitivity.rangePoints>0));
+          assert(r.calculationCaveats.some(x=>x.includes('no meaningful pure headcount')));
+          const selected=r.summaries.filter(s=>
+           (s.profileId==='mile-ruler'&&s.style==='Sasi')||
+           (s.profileId==='dirt-momentum'&&s.style==='Sasi')||
+           (s.profileId==='dirt-expert'&&s.style==='Senkou'));
+          console.log(JSON.stringify(selected.map(x=>({name:x.example,
+           style:x.style,base:x.mixedBaseline,
+           addedCompositionSensitivity:x.additionStyleSensitivity,
+           twelveVariants:x.byAddedComposition.map(v=>({
+            variant:v.variant,opportunity:v.twelvePercent,
+            netDelta:v.totalDifferencePoints}))})),null,2));
+          NODE
+      - name: Save derived model-only paired comparisons (not source dictionary or frame data)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-nine-twelve-entrant-boundary-research
+          path: /tmp/p2-paired/nine-twelve-factors.json
+          retention-days: 14
