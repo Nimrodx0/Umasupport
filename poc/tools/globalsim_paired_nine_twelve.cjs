@@ -27,15 +27,15 @@ const COURSE_SET=Object.freeze([
  Object.freeze({id:10611,distance:1600,surface:'dirt'})
 ]);
 const TARGETS=Object.freeze([
- Object.freeze({id:'mile-ruler',example:'マイルの支配者',
+ Object.freeze({id:'mile-ruler',sourceNumericId:'200681',example:'マイルの支配者',
   courseId:10502,timing:'phase_laterhalf_random:0',bandId:'top50'}),
- Object.freeze({id:'high-voltage',example:'ハイボルテージ',
+ Object.freeze({id:'high-voltage',sourceNumericId:'202671',example:'ハイボルテージ',
   courseId:10502,timing:'phase_firsthalf_random:2',bandId:'top50'}),
- Object.freeze({id:'gear-shift',example:'ギアシフト',
+ Object.freeze({id:'gear-shift',sourceNumericId:'201052',example:'ギアシフト',
   courseId:10502,timing:'phase_random:1',bandId:'top50'}),
- Object.freeze({id:'dirt-momentum',example:'勝利の機運',
+ Object.freeze({id:'dirt-momentum',sourceNumericId:'202261',example:'勝利の機運',
   courseId:10611,timing:'phase_laterhalf_random:1',bandId:'top50'}),
- Object.freeze({id:'dirt-expert',example:'砂の玄人',
+ Object.freeze({id:'dirt-expert',sourceNumericId:'202001',example:'砂の玄人',
   courseId:10611,timing:'phase_random:1',bandId:'from40'})
 ]);
 const EXTRAS=Object.freeze({
