@@ -117,7 +117,7 @@ test('missing or duplicated scenario contexts fail rather than reporting a zero'
  const reports=syntheticReports();
  reports[0].contextRows.pop();
  assert.throws(()=>join.analyze(manifest,reports),
-  /contextRows|Not all source scope/);
+  /Missing\/unsupported fixed source|Not all source scope/);
  const second=syntheticReports();
  second[0].contextRows[0]=second[0].contextRows[1];
  assert.throws(()=>join.analyze(manifest,second),/missing or malformed/);
