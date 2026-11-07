@@ -223,6 +223,10 @@ async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
  verifyManifest(manifest);
  const runPlans=plans(scenario,{seedsPerCell}),groups=new Map();
  const child=spawn(engine,[],{stdio:['pipe','pipe','pipe']});
+ // If an unmodelled source case aborts replay, stop the writer cleanly.
+ // Otherwise an EPIPE event can hide the real rank/simulator error.
+ let inputError=null;
+ child.stdin.on('error',e=>{inputError=e;});
  let stderr='';
  child.stderr.setEncoding('utf8');
  child.stderr.on('data',x=>{stderr=(stderr+x).slice(-4500)});
@@ -232,10 +236,21 @@ async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
  const write=(async()=>{
   for(const p of runPlans){
    const request=expanded.makeRace(template,p);
+   if(child.killed||child.stdin.destroyed||child.exitCode!==null)break;
    if(!child.stdin.write(JSON.stringify(request)+'\n'))
-    await new Promise(resolve=>child.stdin.once('drain',resolve));
+    await new Promise(resolve=>{
+     const release=()=>{
+      child.stdin.off('drain',release);
+      child.stdin.off('close',release);
+      child.off('close',release);
+      resolve();
+     };
+     child.stdin.once('drain',release);
+     child.stdin.once('close',release);
+     child.once('close',release);
+    });
   }
-  child.stdin.end();
+  if(!child.stdin.destroyed)child.stdin.end();
  })();
  let received=0,error=null;
  try{
@@ -249,9 +264,10 @@ async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
    received++;
   }
   await write;
- }catch(e){error=e;child.kill()}
+ }catch(e){error=e;console.error('roster32 source/model error:',e.stack||e);child.kill()}
  const exit=await closed;
  if(error)throw error;
+ if(inputError&&inputError.code!=='EPIPE')throw inputError;
  if(exit.code!==0||received!==runPlans.length)
   throw Error('Not all fixed source model races completed '+
    JSON.stringify({exit,received,expected:runPlans.length,stderr}));
