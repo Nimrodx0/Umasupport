@@ -60,7 +60,7 @@ function validateReports(manifest,reports,seedsPerCell=30){
  return map;
 }
 function profiles(manifest,reports){
- const index=validateReports(manifest,reports);
+ const index=validateReports(manifest,reports,reports[0]?.seedsPerCell);
  const output=[];
  for(const p of manifest.profiles){
   const courses=model.COURSES.filter(c=>c.surface===p.surface&&
