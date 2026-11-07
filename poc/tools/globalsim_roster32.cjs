@@ -140,21 +140,30 @@ function observe(plan,frames,manifest,groups){
    end=w.endRate*plan.course.distance;
   for(let runner=0;runner<plan.fieldSize;runner++){
    const trace=geo.rankSegments(frames,runner,start,end,{validated:true});
-   if(trace.status!=='estimate')
-    throw Error('Unresolved runner model rank trajectory '+JSON.stringify({
-     seed:plan.seed,windowName,runner,status:trace.status}));
+   if(!['estimate','held-tied-position','held-incomplete-distance'].includes(trace.status))
+    throw Error('Unrecognized source trajectory status '+trace.status);
    const style=plan.strategies[runner];
    for(const band of bs){
-    const measured=geo.measureWindows(trace.segments,allowed.get(band),start,end);
     const k=key(plan.scenario,plan.course.id,plan.fieldSize,plan.mode,
      windowName,band,style);
     if(!groups.has(k))groups.set(k,{
      scenario:plan.scenario,surface:plan.course.surface,courseId:plan.course.id,
      distance:plan.course.distance,fieldSize:plan.fieldSize,mode:plan.mode,
      timing:windowName,bandId:band,style,
-     runners:0,opportunitySum:0,pointSum:0});
+     runners:0,validRunners:0,unresolvedRunners:0,
+     unresolvedReasons:{},opportunitySum:0,pointSum:0});
     const item=groups.get(k);
     item.runners++;
+    if(trace.status!=='estimate'){
+     // Ranking is genuinely ambiguous under the pinned no-skill model.
+     // Do NOT assign an arbitrary gate/lane tie-break or score it as zero.
+     item.unresolvedRunners++;
+     item.unresolvedReasons[trace.status]=
+      (item.unresolvedReasons[trace.status]||0)+1;
+     continue;
+    }
+    const measured=geo.measureWindows(trace.segments,allowed.get(band),start,end);
+    item.validRunners++;
     item.opportunitySum+=measured.tenMetreWindowOpportunity*100;
     item.pointSum+=measured.pointOccupancy*100;
    }
@@ -165,58 +174,77 @@ function report(manifest,groups,scenario,seedsPerCell){
  verifyManifest(manifest);
  if(!SCENARIOS.includes(scenario)||seedsPerCell<2)
   throw Error('Unrecognized report scenario');
- const rows=[...groups.values()].map(g=>({
-  scenario,surface:g.surface,courseId:g.courseId,distance:g.distance,
-  fieldSize:g.fieldSize,mode:g.mode,
-  timing:g.timing,bandId:g.bandId,style:g.style,
-  runners:g.runners,opportunityPercent:round(g.opportunitySum/g.runners),
-  pointOccupancyPercent:round(g.pointSum/g.runners)
- })).sort((a,b)=>a.surface.localeCompare(b.surface)||
+ const rows=[...groups.values()].map(g=>{
+  if(!g.runners||g.validRunners+g.unresolvedRunners!==g.runners)
+   throw Error('Malformed trajectory evidence population');
+  const held=g.unresolvedRunners>0;
+  return {scenario,surface:g.surface,courseId:g.courseId,
+   distance:g.distance,fieldSize:g.fieldSize,mode:g.mode,
+   timing:g.timing,bandId:g.bandId,style:g.style,
+   status:held?'held-unresolved-rank-trajectory':'complete-model-measurement',
+   runners:g.runners,validRunners:g.validRunners,
+   unresolvedRunners:g.unresolvedRunners,
+   unresolvedReasons:g.unresolvedReasons,
+   opportunityPercent:held?null:round(g.opportunitySum/g.runners),
+   pointOccupancyPercent:held?null:round(g.pointSum/g.runners),
+   opportunityLowerBoundPercent:round(g.opportunitySum/g.runners),
+   opportunityUpperBoundPercent:round(
+    (g.opportunitySum+100*g.unresolvedRunners)/g.runners)};
+ }).sort((a,b)=>a.surface.localeCompare(b.surface)||
   a.courseId-b.courseId||a.fieldSize-b.fieldSize||
   a.mode.localeCompare(b.mode)||a.timing.localeCompare(b.timing)||
   a.bandId.localeCompare(b.bandId)||STYLES.indexOf(a.style)-STYLES.indexOf(b.style));
- const index=new Set(rows.map(r=>key(r.courseId,r.fieldSize,r.mode,
-  r.timing,r.bandId,r.style)));
+ const index=new Map(rows.map(r=>[key(r.courseId,r.fieldSize,r.mode,
+  r.timing,r.bandId,r.style),r]));
  if(index.size!==rows.length)throw Error('Duplicate derived course context');
- let expected=0,absent=0;
+ let expected=0,absent=0,held=0,unresolved=0;
  for(const course of COURSES)
   for(const n of [9,12])
    for(const mode of MODES){
     const scenarioCounts=COUNTS[scenario][n];
-    for(const bs of courseTargets(manifest,course).entries()){
-     const [w,bandsForWindow]=bs;
+    for(const [windowName,bandsForWindow] of courseTargets(manifest,course))
      for(const band of bandsForWindow)
       for(const [si,style] of STYLES.entries()){
-       const k=key(course.id,n,mode,w,band,style);
-       const r=rows.find(x=>key(x.courseId,x.fieldSize,x.mode,
-        x.timing,x.bandId,x.style)===k);
+       const k=key(course.id,n,mode,windowName,band,style);
+       const r=index.get(k);
        if(scenarioCounts[si]===0){
         if(r)throw Error('Absent style must not be scored zero');
         absent++;
        }else{
         if(!r||r.runners!==scenarioCounts[si]*seedsPerCell||
-         r.pointOccupancyPercent>r.opportunityPercent+0.00001)
+         r.validRunners+r.unresolvedRunners!==r.runners||
+         r.opportunityLowerBoundPercent<0||
+         r.opportunityUpperBoundPercent>100||
+         r.opportunityLowerBoundPercent>r.opportunityUpperBoundPercent+1e-5||
+         (r.status==='complete-model-measurement'&&
+          (!Number.isFinite(r.opportunityPercent)||
+           r.pointOccupancyPercent>r.opportunityPercent+1e-5))||
+         (r.status==='held-unresolved-rank-trajectory'&&
+          (r.opportunityPercent!==null||r.pointOccupancyPercent!==null)))
          throw Error('Incomplete source matched scenario sample '+k);
+        if(r.unresolvedRunners){held++;unresolved+=r.unresolvedRunners}
         expected++;
        }
       }
-    }
    }
  if(rows.length!==expected)throw Error('Wrong count of scenario context cells');
- return {schemaVersion:1,
+ return {schemaVersion:2,
   status:'P2-model-only-32-source-conditions-roster-sensitivity-not-game-activation',
   modelRevision:PIN,sourceSkillRegistrySha256:SOURCE_SHA,
   researchManifestSha256:manifest.source.previousArtifactSha256,
   scenario,rosterCounts:COUNTS[scenario],
   runnersPerStyleMissingIsNull:true,
+  unresolvedTrajectoryIsBoundedNotZero:true,
   seedsPerCell,models:COURSES.length,simulations:COURSES.length*2*2*seedsPerCell,
   profileCount:32,profileCourseInstances:94,
   observedRows:rows.length,missingStyleContextCells:absent,
+  heldContextCells:held,unresolvedRunnerWindows:unresolved,
   assumptions:['All scenarios have equal seed/gate/stat jitter design for fixed course/n/mode/rep.',
-   'NoFront has zero Nige runners and yields no Nige opportunity; do not coerce absent to 0%.',
-   'Synthetic fixed roster compositions are NOT observed Japanese game frequencies.',
-   'Opportunity is model 10m random-window rank overlap, not actual skill proc rate.',
-   'Only source rank/time/distance/ground conditions; no other AND, OR union, usefulness or published app labels.'],
+   'NoFront has zero Nige runners, so there is no Nige opportunity to measure; do not coerce absent to 0%.',
+   'An unresolved exact positional tie yields a conservative 0..100% bound on that runner; source condition mean is a bounded interval, NOT a point estimate.',
+   'Synthetic fixed rosters are NOT observed Japanese game race frequencies.',
+   'Opportunity is skill-free model 10m random-window rank overlap, not actual skill proc rate.',
+   'Only source rank/time/distance/ground predicates; no other AND, OR union, usefulness or published app labels.'],
   contextRows:rows};
 }
 async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
