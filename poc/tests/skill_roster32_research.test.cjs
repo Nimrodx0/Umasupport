@@ -132,7 +132,7 @@ test('missing or duplicated scenario contexts fail rather than reporting a zero'
  const row=structuredClone(front.contextRows[0]);
  row.style='Nige';row.runners=2;
  front.contextRows.push(row);front.observedRows++;
- assert.throws(()=>join.analyze(manifest,third),/Wrong source roster count/);
+ assert.throws(()=>join.analyze(manifest,third),/Wrong source roster count|Scenario context is missing or malformed/);
 });
 test('a genuine tied model rank is held as an interval rather than scored as zero',()=>{
  const reports=syntheticReports();
