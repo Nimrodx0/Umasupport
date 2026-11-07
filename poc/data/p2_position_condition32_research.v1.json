@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "status": "derived-research-only-fixed-32-unique-source-condition-profiles",
+  "source": {
+    "repository": "Nimrodx0/Umasupport",
+    "commitOfReview": "d68f8aeffb8e5f3652800dc1d3dc0a29fa93a7e9",
+    "previousResearch": "docs/skill-context-stability-77-audit-20261107.md",
+    "previousArtifactSha256": "71251951444fbe4cbef8502422deebaf489941f817a8830c5038176be59f9fcd",
+    "umaSimSkillDataSha256": "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5",
+    "globalSimRevision": "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+  },
+  "notes": [
+    "One representative source ID per duplicate-normalized original rank-time-surface-distance condition; not an original skill database.",
+    "The source cohort was selected by earlier position skills research and is not a population representative sample.",
+    "Only rank and timing eligibility modelled; no real skill activation rate or usefulness measured."
+  ],
+  "profiles": [
+    {
+      "sourceNumericId": "202951",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_laterhalf_random:0",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202261",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "101902211",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "202841",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202321",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_random:2",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "202311",
+      "surface": "dirt",
+      "distanceScope": "all",
+      "timing": "phase_random:2",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "204511",
+      "surface": "turf",
+      "distanceScope": "middle",
+      "timing": "phase_firsthalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "204511",
+      "surface": "turf",
+      "distanceScope": "long",
+      "timing": "phase_firsthalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "204311",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_firsthalf_random:2",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202671",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_firsthalf_random:2",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "203111",
+      "surface": "turf",
+      "distanceScope": "middle",
+      "timing": "phase_firsthalf_random:2",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "203641",
+      "surface": "turf",
+      "distanceScope": "long",
+      "timing": "phase_firsthalf_random:2",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "200691",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_laterhalf_random:0",
+      "bandId": "from50strict"
+    },
+    {
+      "sourceNumericId": "204751",
+      "surface": "turf",
+      "distanceScope": "all",
+      "timing": "phase_laterhalf_random:0",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "200681",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_laterhalf_random:0",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202041",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "204071",
+      "surface": "turf",
+      "distanceScope": "all",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202501",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "203051",
+      "surface": "turf",
+      "distanceScope": "middle",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "202011",
+      "surface": "turf",
+      "distanceScope": "long",
+      "timing": "phase_laterhalf_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "203922",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "203361",
+      "surface": "turf",
+      "distanceScope": "all",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "203351",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "100702211",
+      "surface": "turf",
+      "distanceScope": "middle",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "100702221",
+      "surface": "turf",
+      "distanceScope": "long",
+      "timing": "phase_random:1",
+      "bandId": "from40"
+    },
+    {
+      "sourceNumericId": "200662",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_random:1",
+      "bandId": "from50strict"
+    },
+    {
+      "sourceNumericId": "203881",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "203031",
+      "surface": "turf",
+      "distanceScope": "all",
+      "timing": "phase_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "201051",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "200721",
+      "surface": "turf",
+      "distanceScope": "middle",
+      "timing": "phase_random:1",
+      "bandId": "top50"
+    },
+    {
+      "sourceNumericId": "200671",
+      "surface": "turf",
+      "distanceScope": "sprint",
+      "timing": "phase_random:2",
+      "bandId": "from50strict"
+    },
+    {
+      "sourceNumericId": "200701",
+      "surface": "turf",
+      "distanceScope": "mile",
+      "timing": "phase_random:2",
+      "bandId": "from50strict"
+    }
+  ]
+}
