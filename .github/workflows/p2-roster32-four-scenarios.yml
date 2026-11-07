@@ -101,7 +101,7 @@ jobs:
           node - <<'NODE'
           const fs=require('node:fs');
           const x=JSON.parse(fs.readFileSync('/tmp/p2-roster/${{ matrix.scenario }}.json'));
-          if(x.simulations!==1440||x.profileCount!==32||
+          if(x.schemaVersion!==2||x.simulations!==1440||x.profileCount!==32||
              x.seedsPerCell!==30||x.models!==12)
            throw Error('Incomplete pinned scenario race replay');
           if(x.scenario==='noFront' && x.missingStyleContextCells<=0)
@@ -147,11 +147,21 @@ jobs:
           assert.equal(r.design.raceCases,5760);
           assert.equal(r.profiles.length,256);
           assert.equal(r.summary.all.noFrontMissingStyleCases,64);
-          assert(r.summary.all.scenarioRangeOver20Points>0);
+          assert.equal(r.schemaVersion,2);
+          assert.equal(r.summary.all.count,256);
+          assert(r.summary.all.guaranteedScenarioSpanOver20Points>0);
           assert(r.profiles.every(p=>p.scenarios.noFront.status===
-           (p.style==='Nige'?'no-style-runners':'model-rank-window-measured')));
-          assert(r.profiles.every(p=>p.availableScenarioCount===
+           (p.style==='Nige'?'no-style-runners':
+            p.scenarios.noFront.heldContexts>0?
+             'held-ambiguous-source-rank-trajectory':
+             'model-rank-window-measured')));
+          assert(r.profiles.every(p=>p.applicableScenarioCount===
            (p.style==='Nige'?3:4)));
+          assert(r.profiles.every(p=>p.heldScenarioCount===
+           Object.values(p.scenarios).filter(s=>
+            s.status==='held-ambiguous-source-rank-trajectory').length));
+          assert(Object.values(r.rawUncertainty.byScenario).every(x=>
+           x.unresolvedRunnerWindows>=0&&x.heldContextCells>=0));
           console.log(JSON.stringify({design:r.design,
             summary:r.summary,examples:r.examples.map(p=>({
              skillId:p.sourceNumericId,style:p.style,fieldSize:p.fieldSize,
