@@ -117,8 +117,29 @@ jobs:
           assert.equal(x.counts.original53,53);
           assert.equal(x.counts.added24,24);
           assert.equal(x.counts.historicalFullPhaseEligiblePaths,34);
-          assert(x.counts.newlyModeledSubphasePaths>0);
-          assert(x.counts.eligibleModelledPaths>34);
+          assert.equal(x.model.shortWindowReportSha256,
+           '206d9db77299189f91fea649a40effbe9ca2d2203c9d0b69c7873bfacee04c27');
+          assert.equal(x.counts.sourcePaths,81);
+          assert.equal(x.counts.newlyModeledSubphasePaths,30);
+          assert.equal(x.counts.newSubphasePathsWithSurfaceHeld,4);
+          assert.equal(x.counts.missingSubphaseSourcePaths,0);
+          assert.equal(x.counts.eligibleModelledPaths,64);
+          assert.equal(x.counts.distinctConditionSignatures,26);
+          assert.deepEqual(x.counts.bySkillStatus,{
+            'one-source-path-rank-window-modelled-not-skill-rate':56,
+            'all-source-paths-separately-modeled-OR-union-held':4,
+            'held-at-least-one-unverified-source-path':17
+          });
+          for(const s of ['Nige','Senkou','Sasi','Oikomi'])
+            assert.equal(x.distribution.uniqueByStyle[s].count,26);
+          const king=x.examples.find(x=>x.sourceNumericId==='200681');
+          assert(king&&king.status==='one-source-path-rank-window-modelled-not-skill-rate');
+          assert(Math.abs(king.paths[0].byStyle.Nige.opportunityPercent-
+            99.429155)<0.001);
+          assert(king.paths[0].byStyle.Oikomi.differenceFromFullPhasePoints< -10);
+          const highVoltage=x.examples.find(x=>x.sourceNumericId==='202671');
+          assert(highVoltage);
+          assert.equal(highVoltage.paths[0].window,'phase_firsthalf_random:2');
           assert.equal(x.counts.eligibleStyleCases,
             x.counts.eligibleModelledPaths*4);
           assert.equal(x.counts.bySkillStatus[
