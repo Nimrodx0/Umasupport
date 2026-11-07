@@ -1,0 +1,156 @@
+name: P2 balanced 77 skill half-phase random 10m audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_subphase_random_10m.cjs'
+      - 'poc/tools/skill_subphase10_cohort_review.cjs'
+      - 'poc/tests/skill_subphase10_cohort_review.test.cjs'
+      - '.github/workflows/p2-subphase10-77-skill-review.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-four-original-short-windows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate exact original short random windows, 10m geometry and held logic
+        run: |
+          node --check poc/tools/globalsim_subphase_random_10m.cjs
+          node --check poc/tools/skill_subphase10_cohort_review.cjs
+          node --test poc/tests/skill_subphase10_cohort_review.test.cjs
+          node --test poc/tests/globalsim_phase_random_10m.test.cjs
+          node --test poc/tests/skill_phase10_cohort_review.test.cjs
+      - name: Regenerate the exact historical 53 and new 24 source candidate cohort
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-subphase-source.log
+          node poc/tools/skill_activation_fit_v1_report.cjs \
+            skill-condition-inventory-audit.json /tmp/p2-53-rechecked.json > /tmp/p2-53-recheck.log
+          node - <<'NODE'
+          const crypto=require('node:crypto');
+          const fs=require('node:fs');
+          const url='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
+          (async()=>{
+           const r=await fetch(url,{signal:AbortSignal.timeout(60000)});
+           if(!r.ok)throw Error('Pinned source HTTP '+r.status);
+           const data=Buffer.from(await r.arrayBuffer());
+           if(crypto.createHash('sha256').update(data).digest('hex')!==
+            '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5')
+            throw Error('Pinned source skill dictionary SHA changed');
+           fs.writeFileSync('/tmp/p2-fixed-skill-source.txt',data);
+           const audit=JSON.parse(fs.readFileSync('skill-condition-inventory-audit.json'));
+           const rows=JSON.parse(data.toString('utf8'));
+           const source=require('./poc/tools/skill_phase10_cohort_review.cjs');
+           const items=source.strictCohorts(audit,rows);
+           if(items.length!==77||items.filter(x=>x.cohort==='old53').length!==53||
+            items.filter(x=>x.cohort==='new24').length!==24)
+            throw Error('Fixed 53+24 source cohort changed');
+           console.log('Exactly 77 original source-verified skills');
+          })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
+          NODE
+      - name: Check out exactly the same frozen GlobalSim v77 commit as original model
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay SAME balanced 720 races and generate paired 4-phase plus 4-short-window models
+        run: |
+          mkdir -p /tmp/p2-subphase
+          node --max-old-space-size=4096 poc/tools/globalsim_subphase_random_10m.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-subphase/full-phase-reference.json \
+            /tmp/p2-subphase/short-phase.json 30 \
+            > /tmp/p2-subphase/replay.log
+      - name: Verify previous published FULL phase 720 race report unchanged by paired replay
+        run: |
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const bytes=fs.readFileSync('/tmp/p2-subphase/full-phase-reference.json');
+          const sha=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(sha,
+           'f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-subphase/short-phase.json'));
+          assert.equal(x.simulations,720);
+          assert.equal(x.contextsPerWindow,24);
+          assert.equal(x.windowBands,44);
+          assert.equal(x.perContextRows,4224);
+          assert.equal(x.windows.length,4);
+          assert(x.contextRows.every(z=>z.runners>=30&&
+           z.random10mOpportunityPercent+1e-6>=z.pointPercent));
+          console.log('Same source, same seeds: full reference exact SHA; short windows 44 groups');
+          NODE
+      - name: Evaluate original 77 skill IDs and keep OR paths separated
+        run: |
+          node poc/tools/skill_phase10_cohort_review.cjs \
+            skill-condition-inventory-audit.json \
+            /tmp/p2-fixed-skill-source.txt \
+            /tmp/p2-subphase/full-phase-reference.json \
+            /tmp/p2-subphase/old77.json > /tmp/p2-subphase/full77.log
+          node poc/tools/skill_subphase10_cohort_review.cjs \
+            /tmp/p2-subphase/old77.json \
+            /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/full-phase-reference.json \
+            /tmp/p2-subphase/combined77.json \
+            > /tmp/p2-subphase/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-subphase/combined77.json'));
+          assert.equal(x.counts.skills,77);
+          assert.equal(x.counts.original53,53);
+          assert.equal(x.counts.added24,24);
+          assert.equal(x.counts.historicalFullPhaseEligiblePaths,34);
+          assert(x.counts.newlyModeledSubphasePaths>0);
+          assert(x.counts.eligibleModelledPaths>34);
+          assert.equal(x.counts.eligibleStyleCases,
+            x.counts.eligibleModelledPaths*4);
+          assert.equal(x.counts.bySkillStatus[
+           'one-source-path-rank-window-modelled-not-skill-rate']+
+           x.counts.bySkillStatus[
+           'all-source-paths-separately-modeled-OR-union-held']+
+           x.counts.bySkillStatus[
+           'held-at-least-one-unverified-source-path'],77);
+          assert(x.items.every(item=>item.paths.length>0));
+          assert(x.items.some(item=>item.paths.some(p=>
+            p.status==='modeled-short-window-rank-component-not-real-activation')));
+          assert(x.items.some(item=>item.paths.some(p=>
+            p.status==='held-unverified-surface')));
+          assert(x.items.some(item=>
+            item.status==='all-source-paths-separately-modeled-OR-union-held'));
+          assert(x.model.opportunityNotActivationProbability);
+          console.log(JSON.stringify({counts:x.counts,
+            distribution:x.distribution.uniqueByStyle,examples:x.examples},null,2));
+          NODE
+      - name: Remove third-party fixed source and full replay traces
+        if: always()
+        run: |
+          rm -f /tmp/p2-fixed-skill-source.txt \
+            /tmp/p2-subphase/full-phase-reference.json \
+            /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/old77.json \
+            skill-condition-inventory-audit.json \
+            /tmp/p2-53-rechecked.json
+      - name: Retain only small derived 77 source-ID metrics and explicit limitations
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-balanced-short-phase-77-skill-opportunity
+          path: /tmp/p2-subphase/combined77.json
+          retention-days: 14
