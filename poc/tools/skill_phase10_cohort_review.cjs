@@ -55,7 +55,8 @@ function strictCohorts(audit,raw){
  const items=[];
  for(const x of original53){
   const rawSkill=originalById.get(x.sourceNumericId);
-  if(!rawSkill||rawSkill.name!==x.name)throw Error('Original 53 ID/name drift '+x.sourceNumericId);
+  if(!rawSkill||new24.norm(rawSkill.name)!==new24.norm(x.name))
+   throw Error('Original 53 ID/name drift '+x.sourceNumericId);
   const actual=rawSkill.invokes||[];
   // The historic 53 review is exactly one invoke. Check that its source
   // AND/OR branches equal the original source; do not lose hidden branches.
