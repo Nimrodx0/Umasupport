@@ -1,0 +1,163 @@
+name: P2 dirt rank opportunity for fixed 17 source skills
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_dirt_10m.cjs'
+      - 'poc/tools/skill_dirt17_opportunity_review.cjs'
+      - 'poc/tests/skill_dirt17_opportunity_review.test.cjs'
+      - '.github/workflows/p2-dirt17-10m.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-verified-dirt-course-17-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit-test genuine dirt surface/geometry, race plans and source skill gates
+        run: |
+          node --check poc/tools/globalsim_dirt_10m.cjs
+          node --check poc/tools/skill_dirt17_opportunity_review.cjs
+          node --test poc/tests/skill_dirt17_opportunity_review.test.cjs
+          node --test poc/tests/skill_subphase10_cohort_review.test.cjs
+          node --test poc/tests/skill_phase10_cohort_review.test.cjs
+      - name: Recreate all original source-verified 77 skill conditions
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          mkdir -p /tmp/p2-dirt17
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-dirt17/source-audit.log
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const url='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
+          (async()=>{
+            const r=await fetch(url,{signal:AbortSignal.timeout(60000)});
+            if(!r.ok)throw Error('Pinned source skill HTTP '+r.status);
+            const buf=Buffer.from(await r.arrayBuffer());
+            if(crypto.createHash('sha256').update(buf).digest('hex')!==
+              '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5')
+              throw Error('Original source skill SHA changed');
+            fs.writeFileSync('/tmp/p2-dirt17/fixed-skill-only.txt',buf);
+            const source=require('./poc/tools/skill_phase10_cohort_review.cjs');
+            const audit=JSON.parse(fs.readFileSync('skill-condition-inventory-audit.json'));
+            const rows=JSON.parse(buf.toString('utf8'));
+            const skills=source.strictCohorts(audit,rows);
+            if(skills.length!==77)throw Error('77 source skills changed');
+          })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
+          NODE
+      - name: Fetch frozen v77 GlobalSim and compile exactly source-defined engine
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay former frozen 720 turf baseline races and verify exact reference hashes
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_subphase_random_10m.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-dirt17/turf-full.json \
+            /tmp/p2-dirt17/turf-short.json 30 \
+            > /tmp/p2-dirt17/turf-replay.log
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          if(sha('/tmp/p2-dirt17/turf-full.json')!==
+            'f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58'||
+             sha('/tmp/p2-dirt17/turf-short.json')!==
+            '206d9db77299189f91fea649a40effbe9ca2d2203c9d0b69c7873bfacee04c27')
+            throw Error('Original turf source SHA changed; dirt comparison not authorized');
+          NODE
+      - name: Replay 720 races on six REAL dirt course geometries, equal-A surface aptitudes
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_dirt_10m.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/data/course_data.json \
+            /tmp/globalsim/data/course_geometry \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-dirt17/dirt-10m-source.json 30 \
+            > /tmp/p2-dirt17/dirt-replay.log
+      - name: Reconcile former 77 source conditions with 17 dirt requirements and new evidence
+        run: |
+          node poc/tools/skill_phase10_cohort_review.cjs \
+            skill-condition-inventory-audit.json \
+            /tmp/p2-dirt17/fixed-skill-only.txt \
+            /tmp/p2-dirt17/turf-full.json \
+            /tmp/p2-dirt17/old77.json > /tmp/p2-dirt17/old77.log
+          node poc/tools/skill_subphase10_cohort_review.cjs \
+            /tmp/p2-dirt17/old77.json \
+            /tmp/p2-dirt17/turf-short.json \
+            /tmp/p2-dirt17/turf-full.json \
+            /tmp/p2-dirt17/combined77.json > /tmp/p2-dirt17/combined77.log
+          node poc/tools/skill_dirt17_opportunity_review.cjs \
+            /tmp/p2-dirt17/old77.json \
+            /tmp/p2-dirt17/combined77.json \
+            /tmp/p2-dirt17/turf-full.json \
+            /tmp/p2-dirt17/turf-short.json \
+            /tmp/p2-dirt17/dirt-10m-source.json \
+            /tmp/p2-dirt17/dirt17-review.json > /tmp/p2-dirt17/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-dirt17/dirt17-review.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.counts.sourceSkills,17);
+          assert.equal(x.counts.sourceStyleCases,68);
+          assert.equal(x.counts.uniqueConditionSignatures,6);
+          assert.equal(x.counts.originalFullPhaseRankConditions,13);
+          assert.equal(x.counts.originalShortWindowRankConditions,4);
+          assert.equal(x.model.dirtReportSha256,
+           '242273c0903f37f4c8817e2d8c95325c6f14758fb8edc544974f78f3bf2328d1');
+          const center=x.items.find(z=>z.sourceNumericId==='202001');
+          assert(center);
+          assert(Math.abs(center.byStyle.Nige.opportunityPercent-1.044503)<0.001);
+          assert(Math.abs(center.byStyle.Sasi.opportunityPercent-99.972764)<0.001);
+          const pioneer=x.items.find(z=>z.sourceNumericId==='202951');
+          assert(pioneer&&pioneer.modelWindow==='phase_laterhalf_random:0');
+          assert(pioneer.byStyle.Nige.opportunityPercent>99);
+          assert.equal(x.counts.independentlyValidatedGameSkillActivationRates,0);
+          assert.equal(x.model.dirtSurface,2);
+          assert.equal(x.model.races,720);
+          assert.equal(x.model.courseIds.length,6);
+          assert(x.items.every(item=>item.status===
+           'model-source-dirt-rank-component-measured-not-game-activation'));
+          assert(x.items.every(item=>Object.keys(item.byStyle).length===4));
+          assert(x.items.every(item=>item.sourceConditions.some(c=>
+           c.type==='ground_type'&&c.operator==='=='&&c.value===2)));
+          assert(Object.values(x.distribution.distinctConditions).every(z=>z.count>0));
+          console.log(JSON.stringify({counts:x.counts,
+           distribution:x.distribution.distinctConditions,
+           examples:x.examples.map(z=>({name:z.skillName,
+            timing:z.modelWindow,
+            byStyle:Object.fromEntries(Object.entries(z.byStyle)
+              .map(([s,v])=>[s,{dirt:v.opportunityPercent,
+              referenceTurf:v.turfDifferentCourseReferencePercent}]))}))},null,2));
+          NODE
+      - name: Remove original third-party source and large model JSON from runner before artifact
+        if: always()
+        run: |
+          rm -f /tmp/p2-dirt17/fixed-skill-only.txt \
+            /tmp/p2-dirt17/turf-full.json /tmp/p2-dirt17/turf-short.json \
+            /tmp/p2-dirt17/dirt-10m-source.json \
+            /tmp/p2-dirt17/old77.json /tmp/p2-dirt17/combined77.json \
+            skill-condition-inventory-audit.json
+      - name: Retain ONLY small derived 17 source-ID dirt model metrics and limitations
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-dirt17-source-matched-rank-opportunity
+          path: /tmp/p2-dirt17/dirt17-review.json
+          retention-days: 14
