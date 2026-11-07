@@ -104,8 +104,25 @@ jobs:
           assert.equal(x.source.appMissingOfNew24,7);
           assert.equal(x.model.simulatedRaces,720);
           assert.equal(x.model.fullPhaseRandomOnly,true);
-          assert(x.counts.distributionStyleCases>0);
-          assert(x.counts.distinctConditionsWithinEvidence>0);
+          assert.equal(x.model.sourceReportSha256,
+            'f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58');
+          assert.equal(x.counts.modeledFullPhaseSourcePaths,47);
+          assert.equal(x.counts.distributionEligiblePaths,34);
+          assert.equal(x.counts.distributionStyleCases,136);
+          assert.equal(x.counts.distinctConditionsWithinEvidence,48);
+          assert.equal(x.counts.byPathAndSkill['old53:rank-window-and-race-gates-modelled'],18);
+          assert.equal(x.counts.byPathAndSkill['new24:rank-window-and-race-gates-modelled'],16);
+          assert.equal(x.counts.byPathAndSkill['old53:held-other-conditions-but-rank-component-measured'],5);
+          assert.equal(x.counts.byPathAndSkill['new24:held-other-conditions-but-rank-component-measured'],8);
+          assert.equal(x.counts.byPathAndSkill['old53:held-no-matching-rank-window'],34);
+          assert(Object.values(x.distribution.uniqueByStyle).every(s=>s.count===12));
+          const gear=x.examples.find(z=>z.id==='201052');
+          assert(gear&&gear.status==='single-rank-window-path-modelled-not-skill-rate');
+          assert(Math.abs(gear.paths[0].byStyle.Nige-99.430194)<0.001);
+          const dirt=x.examples.find(z=>z.id==='202311');
+          assert(dirt&&dirt.paths[0].reasons.includes('held-unverified-surface-requirement'));
+          const half=x.examples.find(z=>z.id==='202671');
+          assert(half&&half.paths[0].byStyle.Nige===null);
           assert(x.items.every(item=>item.paths.length>=1));
           assert(x.items.filter(item=>item.cohort==='new24'&&
             item.catalogScope==='not-in-fixed-881-app').length===7);
