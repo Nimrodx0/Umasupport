@@ -1,0 +1,165 @@
+name: P2 32 source condition profiles under four fixed roster scenarios
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/data/p2_position_condition32_research.v1.json'
+      - 'poc/tools/globalsim_roster32.cjs'
+      - 'poc/tools/skill_roster32_aggregate.cjs'
+      - 'poc/tests/skill_roster32_research.test.cjs'
+      - '.github/workflows/p2-roster32-four-scenarios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fixed-source-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check 32 source rank/time profiles and synthetic scenarios
+        run: |
+          node --check poc/tools/globalsim_roster32.cjs
+          node --check poc/tools/skill_roster32_aggregate.cjs
+          node --test poc/tests/skill_roster32_research.test.cjs
+          node --test poc/tests/skill_context_stability_77.test.cjs
+      - name: Build original frozen GlobalSim v77 engine
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Validate original template and all twelve model course geometry files
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const manifest=require('./poc/tools/globalsim_roster32.cjs');
+          const data=JSON.parse(fs.readFileSync('/tmp/globalsim/data/course_data.json'));
+          const template=JSON.parse(fs.readFileSync('/tmp/globalsim/examples/v77-race.jsonl','utf8').trim());
+          if(template.courseId!==10504||template.horses.length!==9||
+            template.horses.some(h=>h.surfaceAptitude!=='A'||
+             h.distanceAptitude!=='A'||h.strategyAptitude!=='A'))
+            throw Error('Original pinned no-skill base horse aptitude changed');
+          for(const course of manifest.COURSES){
+            const orig=data[course.id];
+            if(!orig||orig.distance!==course.distance||
+             orig.surface!==(course.surface==='dirt'?2:1)||
+             !fs.existsSync(path.join('/tmp/globalsim/data/course_geometry',
+              course.id+'.json')))
+             throw Error('Missing or nonmatching frozen course '+course.id);
+          }
+          console.log('All 12 source course identities and geometries verified');
+          NODE
+      - name: Stage binary and pinned example for four matched scenario shards
+        run: |
+          mkdir -p /tmp/p2-engine
+          cp /tmp/globalsim/target/release/race_engine_rs_v2 /tmp/p2-engine/race_engine_rs_v2
+          cp /tmp/globalsim/examples/v77-race.jsonl /tmp/p2-engine/v77-race.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-roster32-frozen-engine
+          path: /tmp/p2-engine
+          retention-days: 1
+
+  replay-roster:
+    needs: fixed-source-engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [balanced, frontHeavy, backHeavy, noFront]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-roster32-frozen-engine
+          path: /tmp/p2-engine
+      - name: Replay six turf and six dirt courses, 9/12 runners and two stat modes
+        run: |
+          chmod +x /tmp/p2-engine/race_engine_rs_v2
+          mkdir -p /tmp/p2-roster
+          node --max-old-space-size=4096 poc/tools/globalsim_roster32.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-engine/v77-race.jsonl \
+            /tmp/p2-engine/race_engine_rs_v2 \
+            "${{ matrix.scenario }}" \
+            "/tmp/p2-roster/${{ matrix.scenario }}.json" 30 \
+            > "/tmp/p2-roster/${{ matrix.scenario }}.log"
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-roster/${{ matrix.scenario }}.json'));
+          if(x.simulations!==1440||x.profileCount!==32||
+             x.seedsPerCell!==30||x.models!==12)
+           throw Error('Incomplete pinned scenario race replay');
+          if(x.scenario==='noFront' && x.missingStyleContextCells<=0)
+           throw Error('Absent front-runner status was not preserved');
+          console.log(JSON.stringify({scenario:x.scenario,races:x.simulations,
+           rows:x.observedRows,absent:x.missingStyleContextCells}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-roster32-${{ matrix.scenario }}
+          path: /tmp/p2-roster/${{ matrix.scenario }}.json
+          retention-days: 14
+
+  reconcile-all-32-original-conditions:
+    needs: replay-roster
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: p2-roster32-*
+          path: /tmp/p2-roster-shards
+          merge-multiple: true
+      - name: Reconcile same 32 source conditions, catch missing styles and pin balanced source values
+        run: |
+          node poc/tools/skill_roster32_aggregate.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-roster-shards/balanced.json \
+            /tmp/p2-roster-shards/frontHeavy.json \
+            /tmp/p2-roster-shards/backHeavy.json \
+            /tmp/p2-roster-shards/noFront.json \
+            /tmp/p2-roster-shards/roster32-comparison.json \
+            > /tmp/p2-roster-summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-roster-shards/roster32-comparison.json'));
+          assert.equal(r.design.sourceSkillCount,77);
+          assert.equal(r.design.sourceConditionProfiles,32);
+          assert.equal(r.design.raceCases,5760);
+          assert.equal(r.profiles.length,256);
+          assert.equal(r.summary.all.noFrontMissingStyleCases,64);
+          assert(r.summary.all.scenarioRangeOver20Points>0);
+          assert(r.profiles.every(p=>p.scenarios.noFront.status===
+           (p.style==='Nige'?'no-style-runners':'model-rank-window-measured')));
+          assert(r.profiles.every(p=>p.availableScenarioCount===
+           (p.style==='Nige'?3:4)));
+          console.log(JSON.stringify({design:r.design,
+            summary:r.summary,examples:r.examples.map(p=>({
+             skillId:p.sourceNumericId,style:p.style,fieldSize:p.fieldSize,
+             values:Object.fromEntries(Object.entries(p.scenarios).map(
+              ([k,v])=>[k,v.opportunityPercent]))}))},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-32-source-roster-sensitivity-aggregated
+          path: /tmp/p2-roster-shards/roster32-comparison.json
+          retention-days: 14
