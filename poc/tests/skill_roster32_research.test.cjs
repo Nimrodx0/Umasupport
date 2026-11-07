@@ -75,16 +75,21 @@ function syntheticReports(){
         ):60;
         rows.push({scenario,surface:course.surface,courseId:course.id,
          distance:course.distance,fieldSize:n,mode,timing,bandId,style,
-         runners:count*2,pointOccupancyPercent:value/2,
-         opportunityPercent:value});
+         status:'complete-model-measurement',runners:count*2,
+         validRunners:count*2,unresolvedRunners:0,unresolvedReasons:{},
+         pointOccupancyPercent:value/2,opportunityPercent:value,
+         opportunityLowerBoundPercent:value,
+         opportunityUpperBoundPercent:value});
        }
-  reports.push({schemaVersion:1,
+  reports.push({schemaVersion:2,
    status:'P2-model-only-32-source-conditions-roster-sensitivity-not-game-activation',
    modelRevision:model.PIN,sourceSkillRegistrySha256:model.SOURCE_SHA,
    scenario,rosterCounts:model.COUNTS[scenario],
    models:12,seedsPerCell:2,simulations:96,
    profileCount:32,profileCourseInstances:94,
    observedRows:rows.length,runnersPerStyleMissingIsNull:true,
+   unresolvedTrajectoryIsBoundedNotZero:true,
+   heldContextCells:0,unresolvedRunnerWindows:0,
    contextRows:rows});
  }
  return reports;
@@ -98,7 +103,8 @@ test('noFront Nige is null and never reported as zero percent',()=>{
  assert.equal(a.summary.all.noFrontMissingStyleCases,64);
  const p=a.profiles.find(x=>x.sourceNumericId==='200681'&&
   x.fieldSize===9&&x.style==='Nige');
- assert.equal(p.availableScenarioCount,3);
+ assert.equal(p.applicableScenarioCount,3);
+ assert.equal(p.measuredScenarioCount,3);
  assert.equal(p.scenarios.noFront.opportunityPercent,null);
  assert.equal(p.scenarios.noFront.status,'no-style-runners');
  assert.equal(p.scenarios.balanced.opportunityPercent,95);
@@ -111,7 +117,7 @@ test('noFront Nige is null and never reported as zero percent',()=>{
  assert.equal(s.scenarios.backHeavy.opportunityPercent,85);
  assert.equal(s.scenarios.noFront.opportunityPercent,70);
  assert.equal(s.rangeAcrossScenariosPoints,80);
- assert.equal(s.candidateThresholdRobustness['20-80'].stableAcrossAllDefinedScenarios,false);
+ assert.equal(s.candidateThresholdRobustness['20-80'].robustness,'unstable');
 });
 test('missing or duplicated scenario contexts fail rather than reporting a zero',()=>{
  const reports=syntheticReports();
@@ -127,6 +133,37 @@ test('missing or duplicated scenario contexts fail rather than reporting a zero'
  row.style='Nige';row.runners=2;
  front.contextRows.push(row);front.observedRows++;
  assert.throws(()=>join.analyze(manifest,third),/Wrong source roster count/);
+});
+test('a genuine tied model rank is held as an interval rather than scored as zero',()=>{
+ const reports=syntheticReports();
+ const noFront=reports.find(r=>r.scenario==='noFront');
+ const row=noFront.contextRows.find(r=>r.surface==='turf'&&
+  r.fieldSize===12&&r.style==='Sasi'&&r.courseId===10502&&
+  r.timing==='phase_laterhalf_random:0'&&r.bandId==='top50');
+ assert(row);
+ row.validRunners--;
+ row.unresolvedRunners++;
+ row.unresolvedReasons={'held-tied-position':1};
+ row.status='held-unresolved-rank-trajectory';
+ row.opportunityLowerBoundPercent=Number((70*(row.runners-1)/row.runners).toFixed(6));
+ row.opportunityUpperBoundPercent=Number(
+  ((70*(row.runners-1)+100)/row.runners).toFixed(6));
+ row.opportunityPercent=null;
+ row.pointOccupancyPercent=null;
+ noFront.unresolvedRunnerWindows++;
+ noFront.heldContextCells++;
+ const result=join.analyze(manifest,reports);
+ const p=result.profiles.find(x=>x.sourceNumericId==='200681'&&
+  x.style==='Sasi'&&x.fieldSize===12);
+ assert(p);
+ assert.equal(p.scenarios.noFront.status,'held-ambiguous-source-rank-trajectory');
+ assert.equal(p.scenarios.noFront.opportunityPercent,null);
+ assert(p.scenarios.noFront.lowerBoundPercent<
+  p.scenarios.noFront.upperBoundPercent);
+ assert.equal(p.heldScenarioCount,1);
+ assert.equal(p.rangeAcrossScenariosPoints,null);
+ assert(result.summary.all.heldByUnresolvedTrajectory>0);
+ assert(result.rawUncertainty.byScenario.noFront.unresolvedRunnerWindows===1);
 });
 test('candidate boundaries keep the middle region and never become product decisions',()=>{
  assert.equal(join.classify(19.99,20,80),'low');
