@@ -51,6 +51,22 @@ jobs:
             fs.writeFileSync('/tmp/p2-skill-source-only.txt',bytes);
           })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
           NODE
+      - name: Verify source cohorts and all original AND/OR branches BEFORE model replay
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const v=require('./poc/tools/skill_phase10_cohort_review.cjs');
+          const audit=JSON.parse(fs.readFileSync('skill-condition-inventory-audit.json','utf8'));
+          const raw=JSON.parse(fs.readFileSync('/tmp/p2-skill-source-only.txt','utf8'));
+          const cohort=v.strictCohorts(audit,raw);
+          assert.equal(cohort.length,77);
+          assert.equal(cohort.filter(x=>x.cohort==='old53').length,53);
+          assert.equal(cohort.filter(x=>x.cohort==='new24').length,24);
+          assert(cohort.every(x=>x.invokes.length>=1&&x.invokes.every(i=>
+            Array.isArray(i.conditions)&&Array.isArray(i.preConditions))));
+          console.log('Fixed source cohorts and all source branches verified: 53+24');
+          NODE
       - name: Check out pinned GlobalSim v77 race model for balanced 10m replay
         run: |
           mkdir -p /tmp/globalsim
