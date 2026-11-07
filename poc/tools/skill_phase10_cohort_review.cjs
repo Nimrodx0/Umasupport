@@ -57,7 +57,9 @@ function strictCohorts(audit,raw){
   const rawSkill=originalById.get(x.sourceNumericId);
   if(!rawSkill||new24.norm(rawSkill.name)!==new24.norm(x.name))
    throw Error('Original 53 ID/name drift '+x.sourceNumericId);
-  const actual=rawSkill.invokes||[];
+  const actual=(rawSkill.invokes||[]).map((inv,i)=>({...inv,
+   index:inv.index??i,conditions:inv.conditions??[],
+   preConditions:inv.preConditions??[]}));
   // The historic 53 review is exactly one invoke. Check that its source
   // AND/OR branches equal the original source; do not lose hidden branches.
   if(actual.length!==1||x.paths.length!==actual[0].conditions.length||
@@ -79,7 +81,9 @@ function strictCohorts(audit,raw){
   items.push({sourceNumericId:x.sourceNumericId,skillName:x.sourceName,
    cohort:'new24',catalogScope:ABSENT_IDS.has(x.sourceNumericId)?
     'not-in-fixed-881-app':'verified-in-fixed-881-app',
-   historicalDirection:null,invokes:rawSkill.invokes});
+   historicalDirection:null,invokes:(rawSkill.invokes||[]).map((inv,i)=>({
+    ...inv,index:inv.index??i,conditions:inv.conditions??[],
+    preConditions:inv.preConditions??[]}))});
  }
  if(items.length!==77||new Set(items.map(x=>x.sourceNumericId)).size!==77)
   throw Error('Incomplete source 77');
