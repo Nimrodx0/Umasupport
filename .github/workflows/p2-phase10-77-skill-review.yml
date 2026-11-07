@@ -1,0 +1,148 @@
+name: P2 fixed 53 plus 24 skills in balanced 10m model
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/skill_phase10_cohort_review.cjs'
+      - 'poc/tests/skill_phase10_cohort_review.test.cjs'
+      - '.github/workflows/p2-phase10-77-skill-review.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-verified-seventy-seven-skills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate 10m eligibility, source AND/OR and conservative holds
+        run: |
+          node --check poc/tools/skill_phase10_cohort_review.cjs
+          node --test poc/tests/skill_phase10_cohort_review.test.cjs
+          node --test poc/tests/skill_balanced_four_style_fit.test.cjs
+          node --test poc/tests/skill_activation_fit_v1_report.test.cjs
+          node --test poc/tests/rank_band_fit_population_audit.test.cjs
+      - name: Rebuild exact 53 skill cohort from fixed UmaSim source and production card catalog
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-77-source-audit.log
+          node poc/tools/skill_activation_fit_v1_report.cjs \
+            skill-condition-inventory-audit.json /tmp/p2-53-revalidated.json \
+            > /tmp/p2-53-revalidated.log
+      - name: Obtain fixed entire original source skill registry with SHA
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const crypto=require('node:crypto');
+          const url='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
+          (async()=>{
+            const r=await fetch(url,{signal:AbortSignal.timeout(60000)});
+            if(!r.ok)throw Error('Pinned source HTTP '+r.status);
+            const bytes=Buffer.from(await r.arrayBuffer());
+            if(crypto.createHash('sha256').update(bytes).digest('hex')!==
+              '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5')
+              throw Error('Original 2162-skill source SHA mismatch');
+            fs.writeFileSync('/tmp/p2-skill-source-only.txt',bytes);
+          })().catch(e=>{console.error(e.stack||e);process.exitCode=1});
+          NODE
+      - name: Verify source cohorts and all original AND/OR branches BEFORE model replay
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const v=require('./poc/tools/skill_phase10_cohort_review.cjs');
+          const audit=JSON.parse(fs.readFileSync('skill-condition-inventory-audit.json','utf8'));
+          const raw=JSON.parse(fs.readFileSync('/tmp/p2-skill-source-only.txt','utf8'));
+          const cohort=v.strictCohorts(audit,raw);
+          assert.equal(cohort.length,77);
+          assert.equal(cohort.filter(x=>x.cohort==='old53').length,53);
+          assert.equal(cohort.filter(x=>x.cohort==='new24').length,24);
+          assert(cohort.every(x=>x.invokes.length>=1&&x.invokes.every(i=>
+            Array.isArray(i.conditions)&&Array.isArray(i.preConditions))));
+          console.log('Fixed source cohorts and all source branches verified: 53+24');
+          NODE
+      - name: Check out pinned GlobalSim v77 race model for balanced 10m replay
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay the same balanced 720 model races, full four phases and eleven source rank bands
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_phase_random_10m.cjs \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-77-phase10-full.json 30 \
+            > /tmp/p2-phase10-source.log
+      - name: Join all verified source paths to course-gated 10m model evidence
+        run: |
+          mkdir -p /tmp/p2-phase10-77
+          node poc/tools/skill_phase10_cohort_review.cjs \
+            skill-condition-inventory-audit.json \
+            /tmp/p2-skill-source-only.txt \
+            /tmp/p2-77-phase10-full.json \
+            /tmp/p2-phase10-77/cohort77-review.json \
+            > /tmp/p2-77-report.log
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-phase10-77/cohort77-review.json'));
+          assert.equal(x.counts.skills,77);
+          assert.equal(x.counts.byCohort.old53,53);
+          assert.equal(x.counts.byCohort.new24,24);
+          assert.equal(x.source.appMatchedOfNew24,17);
+          assert.equal(x.source.appMissingOfNew24,7);
+          assert.equal(x.model.simulatedRaces,720);
+          assert.equal(x.model.fullPhaseRandomOnly,true);
+          assert.equal(x.model.sourceReportSha256,
+            'f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58');
+          assert.equal(x.counts.modeledFullPhaseSourcePaths,47);
+          assert.equal(x.counts.distributionEligiblePaths,34);
+          assert.equal(x.counts.distributionStyleCases,136);
+          assert.equal(x.counts.distinctConditionsWithinEvidence,48);
+          assert.equal(x.counts.byPathAndSkill['old53:rank-window-and-race-gates-modelled'],18);
+          assert.equal(x.counts.byPathAndSkill['new24:rank-window-and-race-gates-modelled'],16);
+          assert.equal(x.counts.byPathAndSkill['old53:held-other-conditions-but-rank-component-measured'],5);
+          assert.equal(x.counts.byPathAndSkill['new24:held-other-conditions-but-rank-component-measured'],8);
+          assert.equal(x.counts.byPathAndSkill['old53:held-no-matching-rank-window'],34);
+          assert(Object.values(x.distribution.uniqueByStyle).every(s=>s.count===12));
+          const gear=x.examples.find(z=>z.id==='201052');
+          assert(gear&&gear.status==='single-rank-window-path-modelled-not-skill-rate');
+          assert(Math.abs(gear.paths[0].byStyle.Nige-99.430194)<0.001);
+          const dirt=x.examples.find(z=>z.id==='202311');
+          assert(dirt&&dirt.paths[0].reasons.includes('held-unverified-surface-requirement'));
+          const half=x.examples.find(z=>z.id==='202671');
+          assert(half&&half.paths[0].byStyle.Nige===null);
+          assert(x.items.every(item=>item.paths.length>=1));
+          assert(x.items.filter(item=>item.cohort==='new24'&&
+            item.catalogScope==='not-in-fixed-881-app').length===7);
+          assert(x.items.some(item=>item.paths.some(path=>
+            path.nonModelledReasons.includes('phase-random-full-window-not-matched'))));
+          assert(x.items.some(item=>item.paths.some(path=>
+            path.nonModelledReasons.includes('held-unverified-surface-requirement'))));
+          assert(!Object.hasOwn(x,'skillTriggerProbability'));
+          console.log(JSON.stringify({counts:x.counts,descriptive:x.distribution,
+            exampleItems:x.examples},null,2));
+          NODE
+      - name: Remove original third-party skill registry and full source model output
+        if: always()
+        run: |
+          rm -f /tmp/p2-skill-source-only.txt /tmp/p2-77-phase10-full.json \
+            skill-condition-inventory-audit.json /tmp/p2-53-revalidated.json
+      - name: Save ONLY compact derived source-ID, modeled partial conditions and audit counts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-phase10-source-matched-77-skills
+          path: /tmp/p2-phase10-77/cohort77-review.json
+          retention-days: 14
