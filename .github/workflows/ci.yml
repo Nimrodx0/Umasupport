@@ -469,6 +469,9 @@ jobs:
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --check poc/tools/skill_phase10_cohort_review.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
+          node --check poc/tools/globalsim_subphase_random_10m.cjs
+          node --check poc/tools/skill_subphase10_cohort_review.cjs
+          node --test poc/tests/skill_subphase10_cohort_review.test.cjs
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --check poc/tools/rank_band_fit_population_audit.cjs
           node --test poc/tests/rank_band_fit_population_audit.test.cjs
