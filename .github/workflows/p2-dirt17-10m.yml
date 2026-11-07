@@ -116,6 +116,18 @@ jobs:
           assert.equal(x.schemaVersion,1);
           assert.equal(x.counts.sourceSkills,17);
           assert.equal(x.counts.sourceStyleCases,68);
+          assert.equal(x.counts.uniqueConditionSignatures,6);
+          assert.equal(x.counts.originalFullPhaseRankConditions,13);
+          assert.equal(x.counts.originalShortWindowRankConditions,4);
+          assert.equal(x.model.dirtReportSha256,
+           '242273c0903f37f4c8817e2d8c95325c6f14758fb8edc544974f78f3bf2328d1');
+          const center=x.items.find(z=>z.sourceNumericId==='202001');
+          assert(center);
+          assert(Math.abs(center.byStyle.Nige.opportunityPercent-1.044503)<0.001);
+          assert(Math.abs(center.byStyle.Sasi.opportunityPercent-99.972764)<0.001);
+          const pioneer=x.items.find(z=>z.sourceNumericId==='202951');
+          assert(pioneer&&pioneer.modelWindow==='phase_laterhalf_random:0');
+          assert(pioneer.byStyle.Nige.opportunityPercent>99);
           assert.equal(x.counts.independentlyValidatedGameSkillActivationRates,0);
           assert.equal(x.model.dirtSurface,2);
           assert.equal(x.model.races,720);
