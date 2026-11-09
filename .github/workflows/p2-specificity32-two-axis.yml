@@ -1,0 +1,88 @@
+name: P2 source-32 two-axis specificity across model contexts
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/skill_specificity32_research.cjs'
+      - 'poc/tests/skill_specificity32_research.test.cjs'
+      - '.github/workflows/p2-specificity32-two-axis.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  balanced-four-style-two-axis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit test distinct W window, O point, uniform reference and pair holds
+        run: |
+          node --check poc/tools/skill_specificity32_research.cjs
+          node --test poc/tests/skill_specificity32_research.test.cjs
+          node --test poc/tests/skill_roster32_research.test.cjs
+      - name: Fetch immutable source-validated 5760-race research artifacts
+        run: |
+          mkdir -p /tmp/p2-specified
+          gh run download 42413671565 -n p2-roster32-balanced -D /tmp/p2-specified
+          gh run download 42413671565 -n p2-roster32-frontHeavy -D /tmp/p2-specified
+          gh run download 42413671565 -n p2-roster32-backHeavy -D /tmp/p2-specified
+          gh run download 42413671565 -n p2-roster32-noFront -D /tmp/p2-specified
+          gh run download 42413671565 -n p2-32-source-roster-sensitivity-aggregated -D /tmp/p2-specified
+          test -s /tmp/p2-specified/balanced.json
+          test -s /tmp/p2-specified/frontHeavy.json
+          test -s /tmp/p2-specified/backHeavy.json
+          test -s /tmp/p2-specified/noFront.json
+          test -s /tmp/p2-specified/roster32-comparison.json
+      - name: Derive source-scope 32×2 point-rank specificity, 384 pairwise W comparisons
+        run: |
+          node poc/tools/skill_specificity32_research.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specified/balanced.json \
+            /tmp/p2-specified/frontHeavy.json \
+            /tmp/p2-specified/backHeavy.json \
+            /tmp/p2-specified/noFront.json \
+            /tmp/p2-specified/roster32-comparison.json \
+            /tmp/p2-specified/two-axis-32.json \
+            > /tmp/p2-specified/summary.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-specified/two-axis-32.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.model.sourceConditions,32);
+          assert.equal(x.summary.totalConditionHeadcounts,64);
+          assert.equal(x.summary.totalConditionHeadcountPairs,384);
+          assert.equal(x.summary.balancedPairDirections['first-strict-all-matched-contexts']+
+           x.summary.balancedPairDirections['second-strict-all-matched-contexts'],337);
+          assert.equal(x.summary.balancedPairDirections['held-overlap-or-context-mixed']+
+           (x.summary.balancedPairDirections['held-context-direction-reversal']||0),47);
+          assert.equal(x.summary.fullyStrictBalancedFourStyleOrders,21);
+          assert.equal(x.summary.fullyStrictOrdersByHeadcount['9'],1);
+          assert.equal(x.summary.fullyStrictOrdersByHeadcount['12'],20);
+          assert.equal(x.summary.crossHeadcountPairs['same-strict-direction'],156);
+          assert.equal(x.summary.crossHeadcountPairs['held-at-least-one-headcount'],36);
+          assert.equal(x.summary.fourRosterPairDirections['not-four-way-comparable-style-absent'],192);
+          assert.equal(x.summary.fourRosterPairDirections['first-higher-in-all-four-rosters-and-matched-contexts']+
+           x.summary.fourRosterPairDirections['second-higher-in-all-four-rosters-and-matched-contexts'],143);
+          assert(x.conditions.every(c=>c.sourceIntegerPositions.length>0));
+          assert(x.conditions.every(c=>c.pairwise.length===6));
+          assert(x.conditions.every(c=>Object.values(c.styles).every(v=>
+           v.opportunity10mPercent+1e-5>=v.pointOccupancyPercent&&
+           v.baselineType.startsWith('uniform-single-rank-not-a-10m'))));
+          assert(x.model.seedSplitConfirmation.startsWith('NOT TESTED'));
+          console.log(JSON.stringify(x.summary,null,2));
+          NODE
+      - name: Retain research-only derived two-axis context comparisons
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-two-axis-32-rank-specificity-research
+          path: /tmp/p2-specified/two-axis-32.json
+          retention-days: 14
