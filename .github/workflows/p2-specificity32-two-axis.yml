@@ -7,6 +7,9 @@ on:
       - 'poc/tools/skill_specificity32_research.cjs'
       - 'poc/tests/skill_specificity32_research.test.cjs'
       - '.github/workflows/p2-specificity32-two-axis.yml'
+      - 'poc/src/p2_p3_evidence_contract.cjs'
+      - 'poc/tests/p2_p3_evidence_contract.test.cjs'
+      - 'poc/tools/verify_p2_p3_real_report.cjs'
 
 permissions:
   contents: read
@@ -80,6 +83,35 @@ jobs:
           assert(x.model.seedSplitConfirmation.startsWith('NOT TESTED'));
           console.log(JSON.stringify(x.summary,null,2));
           NODE
+      - name: Verify actual pinned two-axis research against downstream P3 evidence contract
+        run: |
+          node --check poc/src/p2_p3_evidence_contract.cjs
+          node --check poc/tools/verify_p2_p3_real_report.cjs
+          node --test poc/tests/p2_p3_evidence_contract.test.cjs
+          node poc/tools/verify_p2_p3_real_report.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specified/two-axis-32.json \
+            /tmp/p2-specified/p2-p3-contract-proof.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-specified/p2-p3-contract-proof.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'verified-fixed-P2-source32-to-P3-evidence-contract-not-card-grade');
+          assert.equal(x.metrics.conditionHeadcounts,64);
+          assert.equal(x.metrics.stableWithinBalancedContexts,337);
+          assert.equal(x.metrics.heldWithinBalancedContexts,47);
+          assert.equal(x.cardSuitabilityCalculated,false);
+          assert.equal(x.applicationUIChanged,false);
+          assert.match(x.derivedReportSha256,/^[0-9a-f]{64}$/);
+          console.log(JSON.stringify({derivedReportSha256:x.derivedReportSha256,
+            metrics:x.metrics},null,2));
+          NODE
+      - name: Retain strictly derived P2 to P3 validation proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-p3-fixed-two-axis-evidence-proof
+          path: /tmp/p2-specified/p2-p3-contract-proof.json
+          retention-days: 14
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
