@@ -16,6 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate local P3 four-style review inspector
+        run: |
+          node --check poc/src/p3_coarse_review_ui.js
+          node --test poc/tests/p3_coarse_review_ui.test.cjs
       - name: Detect stale empty-public-event assumptions before running expensive tests
         run: |
           node --check poc/tools/check_release_test_assumptions.cjs
