@@ -14,3 +14,6 @@ poc/src/data.js
 poc/uma_support_lab_v*.html
 local-data/
 scratch/
+
+# Research-only local 9-runner observed match counts; never commit real match rows.
+poc/private-rosters/
