@@ -76,12 +76,20 @@ function compareScenario(index,profile,n,a,b,scenario,courses){
  }
  const status=strictAcrossContexts(cells);
  return {scenario,status,contexts:cells.length,
-  means:{firstPercent:round(mean(courses.flatMap(course=>
-   model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
-    profile.timing,profile.bandId,a)).opportunityLowerBoundPercent)))),
-   secondPercent:round(mean(courses.flatMap(course=>
-   model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
-    profile.timing,profile.bandId,b)).opportunityLowerBoundPercent))))},
+  means:{
+   firstLowerBoundPercent:round(mean(courses.flatMap(course=>
+    model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
+     profile.timing,profile.bandId,a)).opportunityLowerBoundPercent)))),
+   firstUpperBoundPercent:round(mean(courses.flatMap(course=>
+    model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
+     profile.timing,profile.bandId,a)).opportunityUpperBoundPercent)))),
+   secondLowerBoundPercent:round(mean(courses.flatMap(course=>
+    model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
+     profile.timing,profile.bandId,b)).opportunityLowerBoundPercent)))),
+   secondUpperBoundPercent:round(mean(courses.flatMap(course=>
+    model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
+     profile.timing,profile.bandId,b)).opportunityUpperBoundPercent))))
+  },
   lowerMeanDifferencePoints:round(mean(cells.map(c=>c.differenceLowerPoints))),
   upperMeanDifferencePoints:round(mean(cells.map(c=>c.differenceUpperPoints))),
   contextDiagnostics:{
