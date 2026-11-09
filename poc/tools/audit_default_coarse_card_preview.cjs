@@ -53,7 +53,7 @@ function audit({skillText,supportText,pinnedSkillText,catalog}){
  }).slice(0,12);
  const projection=x=>({
   cardId:x.cardId,cardName:x.cardName,
-  stage:x.stage,coverage:x.coverage,
+  stage:x.stage,coverage:x.coverage,coarseDirection:x.coarseDirection,
   styles:Object.fromEntries(preview.STYLES.map(s=>[s,x.styles[s]])),
   sourceHints: x.skills.map(s=>({
    id:s.skillId,name:s.skillName,
@@ -109,6 +109,7 @@ function main([skillFile,supportFile,pinnedFile,catalogFile,output]){
   byStyle:model.byStyle,
   examples:model.examples.slice(0,5).map(x=>({
    cardId:x.cardId,cardName:x.cardName,
+   coarseDirection:x.coarseDirection,
    labels:Object.fromEntries(preview.STYLES.map(s=>[s,x.styles[s].labelJa])),
    evidence:Object.fromEntries(preview.STYLES.map(s=>[s,x.styles[s].evidenceCount])),
    unknown:x.coverage.unmatchedSkills
