@@ -183,15 +183,19 @@ function previewCard(card,model,config={}){
  // Pareto comparison of skill evidence counts, NOT a weighted score or
  // headcount-specific performance prediction. This guards against all four
  // styles getting equal "favored" labels on a mixed-evidence card.
- const positiveKeys=['relativeFavorable','broadFavorable','explicitTargeted'];
- const negativeKeys=['relativeUnfavorable','broadUnfavorable','ineligible'];
+ const positiveKeys=['relative-favorable','broad-favorable','explicit-targeted'];
+ const negativeKeys=['relative-unfavorable','broad-unfavorable','explicit-ineligible'];
  const uncondSourceSkills=skills.filter(x=>
   x.availability==='route-eligible-unconditional');
+ const vectors=Object.fromEntries(STYLES.map(style=>[
+  style,Object.fromEntries([...positiveKeys,...negativeKeys].map(signal=>[
+   signal,uncondSourceSkills.filter(s=>s.styles[style].signal===signal).length
+  ]))
+ ]));
  const directionalSignals=uncondSourceSkills.some(x=>STYLES.some(name=>
-  ['relative-favorable','broad-favorable','explicit-targeted']
-   .includes(x.styles[name].signal)));
+  positiveKeys.includes(x.styles[name].signal)));
  function better(a,b){
-  const aa=counts[a],bb=counts[b];
+  const aa=vectors[a],bb=vectors[b];
   const notWorse=positiveKeys.every(k=>aa[k]>=bb[k])&&
    negativeKeys.every(k=>aa[k]<=bb[k]);
   const strictlyBetter=positiveKeys.some(k=>aa[k]>bb[k])||
