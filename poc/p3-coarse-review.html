@@ -114,7 +114,8 @@
     if(!card){empty(detail,'カードが選択されていません。');return;}
     detail.append(node('h2','',card.cardName),
       node('div','meta','サポカID: '+card.cardId+' ｜ 研究用・'+card.stage+'凸条件'),
-      node('p','direction',direction(card)));
+      node('p','direction',direction(card)),
+      node('p','meta','診断サンプルの抽出理由: '+api.reviewReason(card)));
     const coverage=card.coverage;
     detail.append(node('p','meta',
       '通常ヒント確認: '+(coverage.verifiedNormalHints?'あり':'未確認')+
@@ -169,7 +170,8 @@
     for(const c of found){
       const btn=node('button','card');
       btn.type='button';btn.setAttribute('aria-pressed',String(c.cardId===selectedId));
-      btn.append(node('strong','',c.cardName),node('small','',direction(c)));
+      btn.append(node('strong','',c.cardName),node('small','',direction(c)),
+        node('small','',api.reviewReason(c)));
       btn.addEventListener('click',()=>{selectedId=c.cardId;render();});
       cards.append(btn);
     }
