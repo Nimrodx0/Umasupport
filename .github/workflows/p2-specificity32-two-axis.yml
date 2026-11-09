@@ -1,0 +1,128 @@
+name: P2 source-matched 32 original-condition 10m specificity with 15+15 seeds
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_specificity32_split_replay.cjs'
+      - 'poc/tools/skill_specificity32_two_axis.cjs'
+      - 'poc/tests/skill_specificity32_two_axis.test.cjs'
+      - '.github/workflows/p2-specificity32-two-axis.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-balanced-1440-replay-and-six-pair-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify fixed 32 source AND profiles and all strict pairwise/half-seed guardrails
+        run: |
+          node --check poc/tools/globalsim_specificity32_split_replay.cjs
+          node --check poc/tools/skill_specificity32_two_axis.cjs
+          node --test poc/tests/skill_specificity32_two_axis.test.cjs
+          node --test poc/tests/skill_roster32_research.test.cjs
+          node --test poc/tests/skill_context_stability_77.test.cjs
+      - name: Compile the exact 2026-era v77 GlobalSim research engine
+        run: |
+          mkdir -p /tmp/globalsim /tmp/p2-specificity
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Assert source manifest, original model template and 12 turf/dirt course geometries
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const source=require('./poc/tools/globalsim_roster32.cjs');
+          const manifest=require('./poc/data/p2_position_condition32_research.v1.json');
+          const report=require('./poc/tools/globalsim_specificity32_split_replay.cjs');
+          if(!source.verifyManifest(manifest))throw Error('Wrong original 32 source conditions');
+          if(report.EXPECTED_BALANCED_SHA!==
+           '63a6e44656684bf94cebe4dba7c2118a1c9668e8d4623c02321876949ec2a6b2')
+           throw Error('Fixed 30-seed result SHA changed');
+          const courses=JSON.parse(fs.readFileSync('/tmp/globalsim/data/course_data.json'));
+          const example=JSON.parse(fs.readFileSync('/tmp/globalsim/examples/v77-race.jsonl','utf8').trim());
+          if(example.courseId!==10504||example.horses.length!==9||
+           example.horses.some(h=>h.surfaceAptitude!=='A'||
+            h.distanceAptitude!=='A'||h.strategyAptitude!=='A'))
+           throw Error('Frozen model input A aptitude drift');
+          for(const course of source.COURSES){
+           const found=courses[course.id];
+           if(!found||found.distance!==course.distance||
+            found.surface!==(course.surface==='dirt'?2:1)||
+            !fs.existsSync(path.join('/tmp/globalsim/data/course_geometry',
+             course.id+'.json')))
+            throw Error('Not an original 12-course eligible model context');
+          }
+          console.log('Pinned manifest/engine/input/12 true course geometries validated');
+          NODE
+      - name: Replay 1440 balanced races, preserve original 30-seed SHA and generate 15+15 seed halves
+        run: |
+          node --max-old-space-size=4096 \
+            poc/tools/globalsim_specificity32_split_replay.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-specificity/split-15-balanced.json \
+            > /tmp/p2-specificity/replay-log.json
+      - name: Build source-matched 32-condition four-style specificity and cross-check independent axes
+        run: |
+          node poc/tools/skill_specificity32_two_axis.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specificity/split-15-balanced.json \
+            /tmp/p2-specificity/two-axis-32.json \
+            > /tmp/p2-specificity/summary-log.json
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-specificity/two-axis-32.json','utf8'));
+          assert.equal(r.summary.sourceSkills,77);
+          assert.equal(r.summary.sourceAndPaths,81);
+          assert.equal(r.summary.distinctConditions,32);
+          assert.equal(r.summary.styleCases,128);
+          assert.equal(r.summary.pairComparisons,192);
+          assert.equal(r.summary.pairs.robustFirstHigher+
+           r.summary.pairs.robustSecondHigher+r.summary.pairs.held,192);
+          assert.equal(r.summary.roles['relative-leader']+
+           r.summary.roles['relative-trailer']+
+           r.summary.roles['relative-intermediate']+
+           r.summary.roles['partial-order-unresolved'],128);
+          assert.equal(r.provenance.splitSeeds.join(','),'15,15');
+          assert.equal(r.provenance.pinnedBalanced30SeedSha256,
+           '63a6e44656684bf94cebe4dba7c2118a1c9668e8d4623c02321876949ec2a6b2');
+          const ruler=r.conditions.find(x=>x.sourceNumericId==='200681'&&
+           x.timing==='phase_laterhalf_random:0');
+          assert(ruler);
+          assert(Math.abs(ruler.byStyle.Sasi.opportunityAxis.meanPercent-
+           18.30664)<0.0002);
+          for(const c of r.conditions){
+           const sum=Object.values(c.byStyle).reduce((v,x)=>v+
+            x.specificityAxis.deltaFromEqualFourStyleMeanPoints,0);
+           assert(Math.abs(sum)<0.000005);
+          }
+          console.log(JSON.stringify({
+           provenance:r.provenance,summary:r.summary,
+           representativeExamples:r.representativeExamples.map(c=>({
+            condition:c.conditionSignature,
+            pairs:c.byPair.map(p=>({first:p.first,second:p.second,
+             direction:p.direction,
+             heldReasons:p.heldReasons}))
+           }))},null,2));
+          NODE
+      - name: Preserve derived numerical evidence only, never model frames or third-party original dictionary
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-32-source-two-axis-10m-specificity-15plus15
+          path: |
+            /tmp/p2-specificity/two-axis-32.json
+            /tmp/p2-specificity/split-15-balanced.json
+          retention-days: 14
