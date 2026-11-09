@@ -52,7 +52,7 @@ test('explicit style ineligibility takes priority, while permission alone is not
  const r=candidate.skillSummary(samples()[3]);
  assert.equal(r.styles['逃げ'].signal,'explicit-ineligible');
  assert.equal(r.styles['差し'].signal,'explicit-ineligible');
- assert.equal(r.styles['先行'].signal,'explicit-eligible-unmeasured');
+ assert.equal(r.styles['先行'].signal,'explicit-targeted');
 });
 test('unsupported extra AND and different OR rows are not upgraded to full skill evidence',()=>{
  const a=candidate.skillSummary(samples()[2]);
@@ -122,6 +122,50 @@ test('same-name gold and lower skills with separate numeric identities remain se
  assert.equal(x.coverage.uniqueSkillCandidates,2);
  assert.deepEqual(x.skills.map(s=>s.skillId),['skill:1001','skill:1002']);
 });
+
+test('a sole explicit-targeted skill yields a clear direction without pretending activation probability',()=>{
+ const x=candidate.previewCard(card(['skill:1004']),model());
+ assert.deepEqual(x.coarseDirection,{
+  status:'non-dominated-evidence-candidates-not-card-score',
+  styles:['先行']
+ });
+ assert.equal(x.styles['先行'].label,'favorable');
+ assert.equal(x.styles['逃げ'].label,'unfavorable');
+ assert.equal(x.styles['先行'].explicitTargeted,1);
+});
+test('mixed-card skill evidence still gives a Pareto-front direction instead of four equally mixed headlines',()=>{
+ const skills=[
+  skill('skill:1001','前の位置取り',[rank('<=',50)]),
+  skill('skill:2001','後方スキル1',[rank('>',50)]),
+  skill('skill:2002','後方スキル2',[rank('>',50)]),
+  skill('skill:2003','後方スキル3',[rank('>',50)])
+ ];
+ const c=card(skills.map(s=>s.id));
+ const x=candidate.previewCard(c,model(skills));
+ assert.equal(x.styles['逃げ'].label,'mixed');
+ assert.equal(x.styles['差し'].label,'mixed');
+ assert.deepEqual(x.coarseDirection.styles,['差し','追込']);
+});
+test('conditional-only event rewards remain visible but never create a default favorable headline',()=>{
+ const x=candidate.previewCard(
+  card([], [{id:'auto1',type:'auto',name:'条件付',rewards:[
+   {skillId:'skill:1004',kind:'hint',condition:'未成立の前提'}
+  ]}]),model());
+ assert.equal(x.coverage.uniqueSkillCandidates,1);
+ assert.equal(x.skills[0].availability,'route-conditional-only');
+ assert.equal(x.styles['先行'].conditionalFavorable,1);
+ assert.equal(x.styles['先行'].headlineFavorable,0);
+ assert.equal(x.styles['先行'].label,'unresolved');
+ assert.equal(x.coarseDirection.status,'not-distinguishable-with-current-evidence');
+ assert.deepEqual(x.coarseDirection.styles,[]);
+});
+test('equal evidence favoring all four styles is non-discriminating, not a forced recommendation',()=>{
+ const p=card(['skill:1001','skill:1005']);
+ const x=candidate.previewCard(p,model());
+ assert.equal(x.coarseDirection.status,'not-distinguishable-with-current-evidence');
+ assert.deepEqual(x.coarseDirection.styles,[]);
+});
+
 test('missing skill source is unknown, never a low grade or omitted from coverage',()=>{
  const m=model();
  m.skillById['hint:未照合']={id:'hint:未照合',name:'未照合'};
