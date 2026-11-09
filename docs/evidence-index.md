@@ -20,6 +20,7 @@
 | P2 脚質傾向の初版判定・全件監査 | [53スキルの定性推定と保留理由](skill-style-tendency-audit-20261104.md) |
 | P2 終盤前方条件のレビュー改訂（v2） | [後方脚質の追い上げを考慮した適性推定](skill-style-late-window-audit-20261105.md) |
 | P2 モデル上の順位条件成立率の実験 | [GlobalSim v77：精度・限界・9頭試験](skill-position-probability-simulation-pilot-20261105.md) |
+| **P2 実対人9頭編成の公開観測と、6頭周辺度数からの推定不能性** | [2026-11-09：1レースの同時編成と、3大会相手240頭の分布から計算した数学的上限・下限](skill-real-joint-roster-evidence-20261109.md) |
 | P2 観測した脚質構成と9／12頭の感度検証 | [2025年10・12月、2026年1月の240人調査と6コースのモデル実験](skill-position-population-priors-20261105.md) |
 | P2 ランダム発動区間の位置条件成立割合（研究用） | [9地点の疎な順位割合から区間平均を近似する手法と限界](skill-position-window-profile-20261105.md) |
 | P2 2,160レースの脚質構成・区間・距離・能力差の感度監査 | [固定GlobalSim成果物の実測と自動再計算](skill-position-window-sensitivity-audit-20261105.md) |

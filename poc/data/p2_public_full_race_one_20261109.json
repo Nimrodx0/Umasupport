@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "status": "public-one-race-aggregate-only-not-population",
+  "cohorts": [
+    {
+      "cohortId": "cm-2026-01-arima-a-final-single-published-match",
+      "gameMode": "champions_meeting",
+      "eventMonth": "2026-01",
+      "round": "A_final",
+      "fieldSize": 9,
+      "observationScope": "full_nine_runners",
+      "samplingMethod": "one-author-reported-final-not-random",
+      "source": {
+        "url": "https://note.com/krupp_el/n/n3bcca7d8ec3b",
+        "publishedDate": "2026-01-28",
+        "attribution": "ハロ―ワーク／2026年1月チャンピオンズミーティング総括",
+        "sourceSection": "A決勝"
+      },
+      "oonigeResolution": "not_distinguished",
+      "races": [
+        {
+          "recordKey": "one-publicly-described-final",
+          "counts": {
+            "Nige": 1,
+            "Senkou": 4,
+            "Sasi": 1,
+            "Oikomi": 3
+          },
+          "verification": "reported-full-race-composition",
+          "selfTeamCounts": null
+        }
+      ]
+    }
+  ]
+}

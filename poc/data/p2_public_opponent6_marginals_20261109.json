@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "event-specific-six-opponent-marginals-not-joint-race-data",
+  "cohorts": [
+    {
+      "cohortId": "cm-2025-10-sprint-a-prelim-opponents",
+      "gameMode": "champions_meeting",
+      "eventMonth": "2025-10",
+      "round": "A_preliminary",
+      "observedMatches": 40,
+      "opponentsPerMatch": 6,
+      "totalObservedOpponents": 240,
+      "observationScope": "opponents_six_aggregate_only",
+      "counts": {
+        "Nige": 39,
+        "Senkou": 64,
+        "Sasi": 114,
+        "Oikomi": 23
+      },
+      "source": {
+        "url": "https://note.com/krupp_el/n/nf9383f0f1bac",
+        "publishedDate": "2025-10-29",
+        "sourceSection": "脚質別分布"
+      },
+      "verification": "prior-source-audit-20261105"
+    },
+    {
+      "cohortId": "cm-2025-12-mile-a-prelim-opponents",
+      "gameMode": "champions_meeting",
+      "eventMonth": "2025-12",
+      "round": "A_preliminary",
+      "observedMatches": 40,
+      "opponentsPerMatch": 6,
+      "totalObservedOpponents": 240,
+      "observationScope": "opponents_six_aggregate_only",
+      "counts": {
+        "Nige": 22,
+        "Senkou": 88,
+        "Sasi": 117,
+        "Oikomi": 13
+      },
+      "source": {
+        "url": "https://note.com/krupp_el/n/n5b287805c5af",
+        "publishedDate": "2026-01-01",
+        "sourceSection": "A予選マッチでの環境傾向調査"
+      },
+      "verification": "public-text-direct-20261109"
+    },
+    {
+      "cohortId": "cm-2026-01-arima-a-prelim-opponents",
+      "gameMode": "champions_meeting",
+      "eventMonth": "2026-01",
+      "round": "A_preliminary",
+      "observedMatches": 40,
+      "opponentsPerMatch": 6,
+      "totalObservedOpponents": 240,
+      "observationScope": "opponents_six_aggregate_only",
+      "counts": {
+        "Nige": 21,
+        "Senkou": 144,
+        "Sasi": 34,
+        "Oikomi": 41
+      },
+      "source": {
+        "url": "https://note.com/krupp_el/n/n3bcca7d8ec3b",
+        "publishedDate": "2026-01-28",
+        "sourceSection": "A予選 キャラ分布調査"
+      },
+      "verification": "public-text-direct-20261109"
+    }
+  ]
+}
