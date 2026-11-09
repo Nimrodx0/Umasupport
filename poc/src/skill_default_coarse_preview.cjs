@@ -80,6 +80,17 @@ function skillSummary(skill){
    basis:'unmatched-skill-source-structure',
    detail:'辞書の数値ID・名称・発動条件が照合できない'}])):
   branchFit(p);
+ // If all alternative activation paths exclude competing styles,
+ // a permitted style is a genuine target of the source skill, but it is
+ // still NOT proof that its effect is useful or always activates.
+ const anyExcluded=STYLES.some(name=>
+  styles[name].signal==='explicit-ineligible');
+ if(anyExcluded)for(const style of STYLES){
+  if(styles[style].signal==='explicit-eligible-unmeasured')
+   styles[style]={signal:'explicit-targeted',
+    basis:'source-explicit-running-style-permission',
+    detail:'他脚質では明示条件により発動不可。対象脚質への提供候補であり、効果の有用性は未評価'};
+ }
  return {skillId:skill.id,skillName:skill.name,
   sourceNumericId:p?.status==='source-structure'?
    p.sourceNumericId:null,
@@ -129,24 +140,36 @@ function previewCard(card,model,config={}){
  });
  const counts=Object.fromEntries(STYLES.map(style=>{
   const a={relativeFavorable:0,relativeUnfavorable:0,
-   broadFavorable:0,broadUnfavorable:0,
+   broadFavorable:0,broadUnfavorable:0,explicitTargeted:0,
    mixed:0,ineligible:0,unknown:0,
-   raceGateOnly:0,conditionalOnly:0,unconditional:0};
+   raceGateOnly:0,conditionalOnly:0,unconditional:0,
+   headlineFavorable:0,headlineUnfavorable:0,
+   conditionalFavorable:0};
   for(const skill of skills){
    const s=skill.styles[style].signal;
    if(s==='relative-favorable')a.relativeFavorable++;
    else if(s==='relative-unfavorable')a.relativeUnfavorable++;
    else if(s==='broad-favorable')a.broadFavorable++;
    else if(s==='broad-unfavorable')a.broadUnfavorable++;
+   else if(s==='explicit-targeted')a.explicitTargeted++;
    else if(s==='relative-mixed')a.mixed++;
    else if(s==='explicit-ineligible')a.ineligible++;
    else if(s==='race-gate-only')a.raceGateOnly++;
    else a.unknown++;
-   if(skill.availability==='route-conditional-only')a.conditionalOnly++;
-   else a.unconditional++;
+   const positive=['relative-favorable','broad-favorable',
+    'explicit-targeted'].includes(s);
+   const negative=['relative-unfavorable',
+    'broad-unfavorable','explicit-ineligible'].includes(s);
+   if(skill.availability==='route-conditional-only'){
+    a.conditionalOnly++;
+    if(positive)a.conditionalFavorable++;
+   }else{
+    a.unconditional++;
+    if(positive)a.headlineFavorable++;
+    if(negative)a.headlineUnfavorable++;
+   }
   }
-  const pos=a.relativeFavorable+a.broadFavorable,
-   neg=a.relativeUnfavorable+a.broadUnfavorable;
+  const pos=a.headlineFavorable,neg=a.headlineUnfavorable;
   // Not a numeric performance or rarity-weighted score. One unmeasured skill
   // cannot be counted against a style, and conditions on a route remain marked.
   const label=pos>0&&neg>0?'mixed':pos>0?'favorable':
@@ -155,9 +178,34 @@ function previewCard(card,model,config={}){
    evidenceCount:pos+neg,
    strongFourStyleEvidence:a.relativeFavorable+a.relativeUnfavorable,
    onlyBroadReference:pos+neg>0&&
-    a.relativeFavorable+a.relativeUnfavorable===0}];
+    a.relativeFavorable+a.relativeUnfavorable+a.explicitTargeted===0}];
  }));
+ // Pareto comparison of skill evidence counts, NOT a weighted score or
+ // headcount-specific performance prediction. This guards against all four
+ // styles getting equal "favored" labels on a mixed-evidence card.
+ const positiveKeys=['relativeFavorable','broadFavorable','explicitTargeted'];
+ const negativeKeys=['relativeUnfavorable','broadUnfavorable','ineligible'];
+ const uncondSourceSkills=skills.filter(x=>
+  x.availability==='route-eligible-unconditional');
+ const directionalSignals=uncondSourceSkills.some(x=>STYLES.some(name=>
+  ['relative-favorable','broad-favorable','explicit-targeted']
+   .includes(x.styles[name].signal)));
+ function better(a,b){
+  const aa=counts[a],bb=counts[b];
+  const notWorse=positiveKeys.every(k=>aa[k]>=bb[k])&&
+   negativeKeys.every(k=>aa[k]<=bb[k]);
+  const strictlyBetter=positiveKeys.some(k=>aa[k]>bb[k])||
+   negativeKeys.some(k=>aa[k]<bb[k]);
+  return notWorse&&strictlyBetter;
+ }
+ const leaders=directionalSignals?STYLES.filter(style=>
+  !STYLES.some(other=>other!==style&&better(other,style))):[];
+ const coarseDirection=leaders.length===4||leaders.length===0?
+  {status:'not-distinguishable-with-current-evidence',styles:[]}:
+  {status:'non-dominated-evidence-candidates-not-card-score',
+   styles:leaders};
  return {version:VERSION,status:'research-only-coarse-card-skill-candidate-preview',
+  coarseDirection,
   cardId:card.id,cardName:card.name,
   stage:config.stage??4,
   scenario:'balanced-reference-no-user-race-configuration',
