@@ -16,6 +16,40 @@ const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const tally=(entries,prop)=>
  Object.fromEntries([...new Set(entries.map(x=>x[prop]))].sort().map(k=>
   [k,entries.filter(x=>x[prop]===k).length]));
+// Intentional stratified diagnostic examples, NOT random/representative statistics.
+function selectReviewExamples(reviews,limit=12){
+ const ordered=reviews.slice().sort((a,b)=>
+  String(a.cardId).localeCompare(String(b.cardId)));
+ const has=(c,p)=>preview.STYLES.some(s=>p(c.styles[s]));
+ const strata=[
+  ['single-style-candidate',c=>c.coarseDirection.styles.length===1],
+  ['multi-style-candidate',c=>c.coarseDirection.styles.length>1&&
+   c.coarseDirection.styles.length<4],
+  ['mixed-without-leader',c=>c.coarseDirection.styles.length===0&&
+   has(c,s=>s.label==='mixed')],
+  ['all-material-insufficient',c=>preview.STYLES.every(s=>
+   c.styles[s].label==='unresolved')],
+  ['broad-model-only',c=>has(c,s=>s.onlyBroadReference)],
+  ['no-reviewed-event-data',c=>!c.coverage.reviewedEventData],
+  ['conditional-route',c=>c.skills.some(s=>
+   s.availability==='route-conditional-only')],
+  ['explicit-style-target',c=>c.skills.some(skill=>
+   preview.STYLES.some(s=>skill.styles[s].signal==='explicit-targeted'))],
+  ['four-style-model-evidence',c=>has(c,s=>s.strongFourStyleEvidence>0)]
+ ];
+ const chosen=[],seen=new Set();
+ function choose(card,reason){
+  if(!card||seen.has(card.cardId)||chosen.length>=limit)return;
+  seen.add(card.cardId);chosen.push({card,reason});
+ }
+ for(const [reason,pred] of strata)choose(ordered.find(c=>!seen.has(c.cardId)&&pred(c)),reason);
+ const strength=c=>preview.STYLES.reduce((sum,s)=>sum+
+  c.styles[s].strongFourStyleEvidence,0);
+ const extras=ordered.filter(c=>!seen.has(c.cardId)).sort((a,b)=>
+  strength(b)-strength(a)||String(a.cardId).localeCompare(String(b.cardId)));
+ for(const card of extras)choose(card,'remaining-fixed-source-example');
+ return chosen;
+}
 function audit({skillText,supportText,pinnedSkillText,catalog}){
  if(typeof skillText!=='string'||sha(skillText)!==PIN)
   throw Error('Not the fixed 2162-skill source');
@@ -46,11 +80,7 @@ function audit({skillText,supportText,pinnedSkillText,catalog}){
  }]));
  const candidates=reviews.filter(x=>
   preview.STYLES.some(s=>x.styles[s].evidenceCount>0));
- const examples=candidates.slice().sort((a,b)=>{
-  const a4=preview.STYLES.reduce((n,s)=>n+a.styles[s].strongFourStyleEvidence,0);
-  const b4=preview.STYLES.reduce((n,s)=>n+b.styles[s].strongFourStyleEvidence,0);
-  return b4-a4||String(a.cardId).localeCompare(String(b.cardId));
- }).slice(0,12);
+ const examples=selectReviewExamples(reviews,12);
  const projection=x=>({
   cardId:x.cardId,cardName:x.cardName,
   stage:x.stage,coverage:x.coverage,coarseDirection:x.coarseDirection,
@@ -83,7 +113,7 @@ function audit({skillText,supportText,pinnedSkillText,catalog}){
   cardsWithNoReviewedEventEntry:reviews.filter(x=>!
    x.coverage.reviewedEventData).length,
   byStyle:styles,
-  examples:examples.map(projection),
+  examples:examples.map(({card,reason})=>({...projection(card),reviewStratum:reason})),
   invariants:[
    'Only reviewed approved event records and verified normal hints for configured stage are candidate grants.',
    'Unselected choice events do not become candidate grants; outcomes are not guaranteed.',
@@ -117,4 +147,4 @@ function main([skillFile,supportFile,pinnedFile,catalogFile,output]){
 }
 if(require.main===module)try{main(process.argv.slice(2))}
  catch(e){console.error(e.stack||e);process.exitCode=1}
-module.exports={PIN,sha,audit,main};
+module.exports={PIN,sha,selectReviewExamples,audit,main};

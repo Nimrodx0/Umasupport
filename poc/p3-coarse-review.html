@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P3 脚質傾向レビュー | ウマサルタント（研究専用）</title>
+  <style>
+    :root{color-scheme:light;font-family:system-ui,"Yu Gothic",Meiryo,sans-serif;color:#213044;background:#f3f5f8}
+    *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}
+    header{background:#19293e;color:#fff;padding:17px clamp(14px,3vw,36px)}
+    header h1{font-size:1.25rem;margin:0 0 5px}header p{margin:0;color:#d6dfe9;font-size:.84rem}
+    main{max-width:1230px;margin:auto;padding:15px}
+    .notice{background:#fff5e8;border:1px solid #e9d3a6;border-radius:9px;padding:10px 13px;margin-bottom:12px;font-size:.86rem;line-height:1.6}
+    .bar{display:flex;flex-wrap:wrap;align-items:end;gap:9px;padding:12px;background:white;border:1px solid #dde3eb;border-radius:10px;margin-bottom:12px}
+    .bar label{display:grid;gap:4px;font-size:.82rem;color:#4a596b;flex:1 1 130px}.bar label:first-child{flex:2 1 250px}
+    input,select{width:100%;border:1px solid #c4cfda;border-radius:7px;background:#fff;padding:9px 10px;color:#213044}
+    input[type=file]{font-size:.8rem}button{cursor:pointer}.layout{display:grid;grid-template-columns:minmax(245px,330px) minmax(0,1fr);gap:12px}
+    .panel{background:#fff;border:1px solid #dde3eb;border-radius:10px;min-width:0;overflow:hidden}
+    .panelhead{padding:12px 14px;border-bottom:1px solid #e5eaf0;font-size:.88rem;font-weight:700}
+    .list{max-height:72vh;overflow:auto;padding:7px}.card{width:100%;background:#fff;text-align:left;border:1px solid #e1e6ed;border-radius:7px;padding:10px;margin-bottom:6px;color:#213044}
+    .card[aria-pressed=true]{border-color:#226b9a;background:#eaf4fc;box-shadow:inset 3px 0 #226b9a}
+    .card strong{font-size:.86rem;display:block;margin-bottom:5px}.card small{color:#56677b;line-height:1.4;display:block}
+    .detail{padding:15px;min-height:320px}.detail h2{font-size:1.15rem;margin:0 0 5px}.detail .meta{color:#526277;font-size:.79rem}
+    .muted{color:#607083}.empty{padding:20px;color:#586b80;font-size:.88rem;line-height:1.7}
+    .overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:15px 0}
+    .style{border:1px solid #d9e0e9;border-radius:8px;padding:9px 7px;background:#fafbfd;min-width:0}
+    .style h3{margin:0 0 5px;font-size:.88rem}.style b{display:block;font-size:.8rem;line-height:1.5}
+    .style small{display:block;color:#52667a;font-size:.73rem;line-height:1.55;margin-top:4px}
+    .good{border-top:3px solid #247667}.bad{border-top:3px solid #b26b34}.mixed{border-top:3px solid #8774b2}.unknown{border-top:3px solid #abb6c3}
+    .direction{border-left:3px solid #367eaa;padding:7px 9px;background:#f0f6fc;font-weight:600;font-size:.86rem}
+    .caution{font-size:.81rem;color:#6b5542;margin:10px 0;line-height:1.6}
+    h3.section{font-size:.95rem;margin:20px 0 10px}.skill{border:1px solid #e1e7ee;border-radius:8px;margin:6px 0}
+    summary{cursor:pointer;padding:10px 12px;font-size:.85rem;line-height:1.5}
+    summary small{color:#607183;margin-left:7px}.skillbody{padding:9px 12px 12px;border-top:1px solid #e5eaf0}
+    .signalgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+    .signal{font-size:.78rem;background:#f6f8fb;border-radius:5px;padding:8px;line-height:1.5}
+    .signal b{display:block}.tag{display:inline-block;font-size:.7rem;border:1px solid #cbd5df;color:#4a5c6f;border-radius:4px;padding:2px 5px;margin:2px}
+    footer{margin:16px auto 0;color:#56677b;font-size:.77rem;line-height:1.6}
+    @media(max-width:800px){.layout{grid-template-columns:1fr}.list{max-height:260px}.overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){main{padding:10px}.detail{padding:10px}.signalgrid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>サポカ脚質傾向・研究レビュー</h1>
+  <p>P3 非公開評価試作の確認画面。通常アプリ・デッキ・保存データへ反映しません。</p>
+</header>
+<main>
+  <div class="notice">
+    <strong>この画面の数値はカードの強さ・スキル発動率ではありません。</strong>
+    固定モデルの順位条件、明示脚質制限、獲得<strong>候補</strong>の比較です。
+    「向きにくい」はカード全体の不適合を意味しません。未収録・条件付き・未照合は低評価に含めません。
+  </div>
+  <section class="bar" aria-label="研究レポートを読み込む">
+    <label>GitHub Actionsから取得した研究JSON
+      <input id="report" type="file" accept=".json,application/json">
+    </label>
+    <label>カード名・IDで絞り込み
+      <input id="query" type="search" placeholder="例：デアリングタクト" disabled>
+    </label>
+    <label>注目脚質
+      <select id="style" disabled>
+        <option value="all">4脚質すべて</option>
+        <option>逃げ</option><option>先行</option><option>差し</option><option>追込</option>
+      </select>
+    </label>
+    <label>検証対象
+      <select id="filter" disabled>
+        <option value="all">すべて</option>
+        <option value="direction">非劣位候補あり</option>
+        <option value="ambiguous">方向を決められない</option>
+        <option value="mixed">根拠が混在</option>
+        <option value="insufficient">材料不足を含む</option>
+        <option value="weak-only">旧2群の参考だけ</option>
+      </select>
+    </label>
+  </section>
+  <div id="status" role="status" aria-live="polite" class="muted" style="padding:0 4px 12px;font-size:.85rem">
+    PR #375のP3ワークフローから「p3-coarse-style-readonly.json」を取り出して選択してください。ファイルはブラウザ内だけで処理します。
+  </div>
+  <div class="layout">
+    <section class="panel" aria-label="サポートカードの候補">
+      <div class="panelhead">レポート内のカード例 <span id="count"></span></div>
+      <div id="cards" class="list"><div class="empty">研究JSONの読み込み前です。</div></div>
+    </section>
+    <section class="panel" aria-label="カードの根拠">
+      <div id="detail" class="detail"><div class="empty">左のカードを選ぶと、4脚質の傾向と根拠スキルを表示します。</div></div>
+    </section>
+  </div>
+  <footer>
+    研究用。外部通信・ブラウザ保存・カードの自動編成は行いません。
+    JSONの「examples」に含まれるサンプルだけを表示するため、566枚すべてのレビュー画面ではありません。
+    確認は元のP3固定版・PRと対応付けて行ってください。
+  </footer>
+</main>
+<script src="./src/p3_coarse_review_ui.js"></script>
+<script>
+'use strict';
+(()=>{
+  const api=window.P3CoarseReview, $=id=>document.getElementById(id);
+  const file=$('report'),query=$('query'),style=$('style'),filter=$('filter');
+  const cards=$('cards'),detail=$('detail'),status=$('status'),count=$('count');
+  let report=null,selectedId=null;
+  const node=(tag,cls,text)=>{
+    const e=document.createElement(tag);
+    if(cls)e.className=cls;
+    if(text!==undefined)e.textContent=String(text);
+    return e;
+  };
+  const empty=(root,message)=>{root.replaceChildren(node('div','empty',message));};
+  const direction=c=>api.cardDirection(c);
+  function showDetail(card){
+    detail.replaceChildren();
+    if(!card){empty(detail,'カードが選択されていません。');return;}
+    detail.append(node('h2','',card.cardName),
+      node('div','meta','サポカID: '+card.cardId+' ｜ 研究用・'+card.stage+'凸条件'),
+      node('p','direction',direction(card)),
+      node('p','meta','診断サンプルの抽出理由: '+api.reviewReason(card)));
+    const coverage=card.coverage;
+    detail.append(node('p','meta',
+      '通常ヒント確認: '+(coverage.verifiedNormalHints?'あり':'未確認')+
+      ' ｜ 公開イベント情報: '+(coverage.reviewedEventData?'あり':'このカードは未収録または未確認')+
+      ' ｜ 提供スキル候補: '+coverage.uniqueSkillCandidates+
+      ' ｜ 条件照合できない候補: '+coverage.unmatchedSkills));
+    const grid=node('div','overview');
+    for(const name of api.STYLES){
+      const x=card.styles[name],n=api.counts(card,name);
+      const mood=x.label==='favorable'?'good':
+        x.label==='unfavorable'?'bad':
+        x.label==='mixed'?'mixed':'unknown';
+      const tile=node('div','style '+mood);
+      tile.append(node('h3','',name),node('b','',api.LABELS[x.label]),
+        node('small','',''));
+      tile.lastChild.textContent='有利の材料 '+n.positive+' ／ 不利・対象外 '+n.negative+
+        ' ／ 条件付き '+n.conditional+' ／ 未判定 '+n.unknown;
+      grid.append(tile);
+    }
+    detail.append(grid,node('p','caution',
+      '不利の材料は、特定のスキルが条件上不利・適用外であるという意味です。サポカ全体の弱さ・取得保証・発動確率には換算していません。'));
+    detail.append(node('h3','section','根拠スキル（重複経路は1件扱い）'));
+    if(!card.sourceHints.length){
+      detail.append(node('p','muted','採用可能な根拠スキルがありません。データ未収録と獲得不可を区別してください。'));
+    }
+    for(const skill of card.sourceHints){
+      const wrap=node('details','skill'),summary=node('summary');
+      summary.append(node('strong','',skill.name),
+        node('small','',skill.availability==='route-conditional-only'?'条件付き候補':'到達条件を満たす候補'));
+      wrap.append(summary);
+      const body=node('div','skillbody'),h=node('div','','取得元: ');
+      for(const source of skill.sourceRouteTypes)h.append(node('span','tag',source==='hint'?'通常ヒント':source==='event'?'公開イベント':source));
+      body.append(h);
+      const signals=node('div','signalgrid');
+      for(const name of api.STYLES){
+        const data=api.signalInfo(skill.researchSignals[name]),p=node('div','signal');
+        p.append(node('b','',name),node('span','',data.label));
+        signals.append(p);
+      }
+      body.append(signals);
+      if(skill.sourceNumericId===null)body.append(node('p','caution','元辞書のID・条件が照合できていません。'));
+      wrap.append(body);detail.append(wrap);
+    }
+  }
+  function render(){
+    if(!report)return;
+    const found=api.filterCards(report,{query:query.value,style:style.value,filter:filter.value});
+    count.textContent='('+found.length+'/'+report.examples.length+')';
+    cards.replaceChildren();
+    if(!found.length){empty(cards,'条件に一致するカードはありません。');showDetail(null);return;}
+    if(!found.some(x=>x.cardId===selectedId))selectedId=found[0].cardId;
+    for(const c of found){
+      const btn=node('button','card');
+      btn.type='button';btn.setAttribute('aria-pressed',String(c.cardId===selectedId));
+      btn.append(node('strong','',c.cardName),node('small','',direction(c)),
+        node('small','',api.reviewReason(c)));
+      btn.addEventListener('click',()=>{selectedId=c.cardId;render();});
+      cards.append(btn);
+    }
+    showDetail(found.find(x=>x.cardId===selectedId));
+  }
+  file.addEventListener('change',async()=>{
+    const f=file.files&&file.files[0];
+    if(!f)return;
+    try{
+      if(f.size>5*1024*1024)throw Error('5MBを超えるレポートは読めません。');
+      const data=api.validateReport(JSON.parse(await f.text()));
+      report=data;selectedId=null;
+      for(const x of [query,style,filter])x.disabled=false;
+      status.textContent='固定版 '+data.modelRevision+' のレポートを読み込みました。カード例 '+data.examples.length+'枚。抽出例のため全カードの代表標本ではありません。';
+      render();
+    }catch(err){
+      report=null;selectedId=null;
+      for(const x of [query,style,filter])x.disabled=true;
+      empty(cards,'正しい研究JSONを選択してください。');
+      empty(detail,'検証用データは表示されていません。');
+      count.textContent='';
+      status.textContent='読み込み失敗: '+err.message;
+    }
+  });
+  for(const x of [query,style,filter])x.addEventListener('input',render);
+})();
+</script>
+</body>
+</html>
