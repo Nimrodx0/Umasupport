@@ -92,6 +92,15 @@ jobs:
           assert.equal(r.summary.pairComparisons,192);
           assert.equal(r.summary.pairs.robustFirstHigher+
            r.summary.pairs.robustSecondHigher+r.summary.pairs.held,192);
+          assert.equal(r.summary.pairs.robustFirstHigher,92);
+          assert.equal(r.summary.pairs.robustSecondHigher,54);
+          assert.equal(r.summary.pairs.held,46);
+          assert.equal(r.summary.pairs.allFullStrict,156);
+          assert.equal(r.summary.pairs.contextOnlyStrictWithoutHalves,10);
+          assert.equal(r.summary.pairs.fullContextNotStrict,36);
+          assert.equal(r.summary.roles['partial-order-unresolved'],128);
+          assert.equal(r.summary.bySurface.turf.held,37);
+          assert.equal(r.summary.bySurface.dirt.held,9);
           assert.equal(r.summary.roles['relative-leader']+
            r.summary.roles['relative-trailer']+
            r.summary.roles['relative-intermediate']+
