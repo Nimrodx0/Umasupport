@@ -87,11 +87,24 @@
        !card.coarseDirection.styles.length)return '単独の方向は判断保留';
     return '非劣位の候補：'+card.coarseDirection.styles.join('・');
   }
+  const REVIEW_STRATA=Object.freeze({
+    'single-style-candidate':'1脚質が候補',
+    'multi-style-candidate':'複数脚質が候補',
+    'mixed-without-leader':'根拠が混在・方向保留',
+    'all-material-insufficient':'4脚質とも材料不足',
+    'broad-model-only':'旧2群の参考情報あり',
+    'no-reviewed-event-data':'公開イベント未収録・未確認',
+    'conditional-route':'条件付き獲得経路あり',
+    'explicit-style-target':'脚質限定スキルあり',
+    'four-style-model-evidence':'4脚質比較の根拠あり',
+    'remaining-fixed-source-example':'補完の固定版サンプル'
+  });
+  function reviewReason(c){return REVIEW_STRATA[c.reviewStratum]||'選定理由未登録';}
   function counts(card,style){
     const s=card.styles[style];
     return {positive:s.headlineFavorable??0,negative:s.headlineUnfavorable??0,
       conditional:s.conditionalFavorable??0,unknown:s.unknown??0};
   }
   return Object.freeze({STYLES,LABELS,validateReport,filterCards,matches,
-    signalInfo,cardDirection,counts});
+    signalInfo,cardDirection,counts,reviewReason});
 });
