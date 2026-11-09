@@ -67,6 +67,30 @@ test('filters samples without converting unresolved or broad-only into high card
   assert.equal(ui.filterCards(r,{style:'先行',filter:'mixed'}).length,1);
   assert.equal(ui.cardDirection(b),'単独の方向は判断保留');
 });
+
+test('diagnostic sample deliberately covers mixed, unknown, limited, and conditional cases',()=>{
+  const {selectReviewExamples}=require('../tools/audit_default_coarse_card_preview.cjs');
+  function scenario(id){
+    const c=sample(id);c.skills=[];
+    for(const style of ui.STYLES)c.styles[style].strongFourStyleEvidence=0;
+    return c;
+  }
+  const a=scenario('1'),b=scenario('2'),c=scenario('3'),d=scenario('4'),e=scenario('5'),f=scenario('6');
+  b.coarseDirection.styles=['逃げ','先行'];
+  c.coarseDirection.styles=[]; c.styles['逃げ'].label='mixed';
+  d.coarseDirection.styles=[];for(const style of ui.STYLES)d.styles[style].label='unresolved';
+  e.skills=[{availability:'route-conditional-only',styles:Object.fromEntries(
+    ui.STYLES.map(s=>[s,{signal:s==='逃げ'?'explicit-targeted':'unresolved'}]))}];
+  f.styles['差し'].strongFourStyleEvidence=3;
+  const picked=selectReviewExamples([f,e,d,c,b,a],6);
+  assert.equal(picked.length,6);
+  assert.equal(new Set(picked.map(x=>x.card.cardId)).size,6);
+  assert(picked.some(x=>x.reason==='single-style-candidate'));
+  assert(picked.some(x=>x.reason==='multi-style-candidate'));
+  assert(picked.some(x=>x.reason==='mixed-without-leader'));
+  assert(picked.some(x=>x.reason==='all-material-insufficient'));
+});
+
 test('static reviewer is independent of production app and does not transmit or persist file data',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../p3-coarse-review.html'),'utf8');
   assert(html.includes('p3_coarse_review_ui.js'));
