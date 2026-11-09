@@ -59,3 +59,11 @@
 **リリース判断を分離**：A機構（経路／条件／比較／重複のテスト）、B固定実データ（566枚の出典照合）、C公開UI・実機のレイアウト・操作評価は別の合否。今回A/Bの試作が成功してもCの完成ではない。正式な「◎○△」等の定義・提示順・フィルター、スキル効果有用性を自動で加える方式、現実の相手分布を組み込むかどうかはレビュー後に決める。
 
 検証資産：[ルール実装](../poc/src/skill_default_coarse_preview.cjs)、[人工データ回帰](../poc/tests/skill_default_coarse_preview.test.cjs)、[実版566カード照合](../poc/tools/audit_default_coarse_card_preview.cjs)、[CI](../.github/workflows/p3-default-coarse-card-preview.yml)。
+
+## 5. リサーチ用のカード一覧レビュー画面（別PRで試作）
+
+- [研究専用画面](../poc/p3-coarse-review.html)：研究JSONをブラウザ内で選択して、固定版サンプル12枚の4脚質見出し、候補数、根拠スキル、通常ヒント／イベント取得経路の別、条件付き・未照合を調べる。**通常アプリへは未接続**。
+- [純粋な入力検証・表示補助](../poc/src/p3_coarse_review_ui.js) と [回帰テスト](../poc/tests/p3_coarse_review_ui.test.cjs) は、研究専用ステータス・4脚質・個別スキル経路を検査する。JSONファイルの内容は外部へ送らず、ブラウザ保存もしない。
+- 試すには、PR #375の `P3 default coarse style candidate card preview (fixed source)` の成功したActions実行から `p3-coarse-card-default-566-review-only` をダウンロード・展開し、その中の `p3-coarse-style-readonly.json` を選択する。ローカルではルートで `python -m http.server 8000` の後、`/poc/p3-coarse-review.html` を開く。**Actions成果物は14日保持**。
+- 現状の12枚は4脚質比較の材料が多いカードを優先した**偏りのある診断サンプル**であり、566枚の代表抽出ではない。混合型・明示限定・材料不足・イベント未収録のカバレッジを確かめるには、次工程で抽出設計と対象数の拡張が必要。
+- 「向きにくい傾向」は個別スキルの不利・明示対象外の材料を示すだけで、カード全体が弱いことではない。非劣位候補は単一スコアでもおすすめ順位でもない。レビューから正式な適性ラベルへの採用は別の判断にする。
