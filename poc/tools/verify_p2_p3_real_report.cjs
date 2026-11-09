@@ -9,6 +9,7 @@ const assert=require('node:assert/strict');
 const bridge=require('../src/p2_p3_evidence_contract.cjs');
 const research=require('./skill_specificity32_research.cjs');
 const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
+const FIXED_DERIVED_SHA256='7831abb1bfae9f044ad7e4c62a2885fb79e1f25981d387876e03f202925b82e5';
 const strict=new Set(['first-strict-all-matched-contexts',
  'second-strict-all-matched-contexts']);
 function auditReal(report,manifest){
@@ -87,6 +88,9 @@ function main([manifestPath,reportPath,proofPath]){
  const report=JSON.parse(raw);
  const result=auditReal(report,manifest);
  result.derivedReportSha256=digest(raw);
+ if(result.derivedReportSha256!==FIXED_DERIVED_SHA256)
+  throw Error('Fixed P2 derived two-axis report hash drift: '+
+   result.derivedReportSha256);
  fs.writeFileSync(proofPath,JSON.stringify(result,null,2)+'\n');
  console.log(JSON.stringify({status:result.status,
   sha256:result.derivedReportSha256,metrics:result.metrics,
@@ -94,4 +98,4 @@ function main([manifestPath,reportPath,proofPath]){
 }
 if(require.main===module)try{main(process.argv.slice(2))}
  catch(err){console.error(err.stack||err);process.exitCode=1}
-module.exports={auditReal,main};
+module.exports={FIXED_DERIVED_SHA256,auditReal,main};
