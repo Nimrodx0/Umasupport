@@ -112,7 +112,7 @@ function aggregate(metadata,csv){
  const own=counts(rows.map(x=>x.own)),
   opponents=counts(rows.map(x=>x.opp));
  const all=counts(rows.map(x=>
-  Object.fromEntries(STYLES.map(s=>[s,x.own[s]+x.opp[s]])));
+  Object.fromEntries(STYLES.map(s=>[s,x.own[s]+x.opp[s]]));
  const patterns=new Map();
  const absentSix=Object.fromEntries(STYLES.map(s=>[s,0]));
  const absentNine=Object.fromEntries(STYLES.map(s=>[s,0]));
