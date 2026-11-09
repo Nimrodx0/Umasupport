@@ -488,6 +488,8 @@ jobs:
           node --test poc/tests/skill_local_roster_intake.test.cjs
           node --check poc/tools/skill_specificity32_research.cjs
           node --test poc/tests/skill_specificity32_research.test.cjs
+          node --check poc/src/skill_default_coarse_preview.cjs
+          node --test poc/tests/skill_default_coarse_preview.test.cjs
           node poc/tools/skill_joint_roster_source_audit.cjs poc/data/p2_public_full_race_one_20261109.json poc/data/p2_public_opponent6_marginals_20261109.json /tmp/p2-joint-roster-source-audit.json
           node --check poc/tools/verify_rank_band_model_evidence.cjs
           node --check poc/tools/rank_band_fit_population_audit.cjs
