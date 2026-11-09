@@ -160,8 +160,10 @@ test('conditional-only event rewards remain visible but never create a default f
  assert.deepEqual(x.coarseDirection.styles,[]);
 });
 test('equal evidence favoring all four styles is non-discriminating, not a forced recommendation',()=>{
- const p=card(['skill:1001','skill:1005']);
- const x=candidate.previewCard(p,model());
+ const front=skill('skill:1001','前方',[rank('<=',50)]);
+ const back=skill('skill:2001','後方',[rank('>',50)]);
+ const p=card([front.id,back.id]);
+ const x=candidate.previewCard(p,model([front,back]));
  assert.equal(x.coarseDirection.status,'not-distinguishable-with-current-evidence');
  assert.deepEqual(x.coarseDirection.styles,[]);
 });
