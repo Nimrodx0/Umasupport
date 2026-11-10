@@ -1,5 +1,8 @@
 # 数値ゲームマスターに基づく連続イベント段階の一括監査（2026-10-19）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的と制約
 
 PR #101で2025年固定マスターのストーリーIDと**厳密名称一致で仮対応**できた954イベントを対象に、旧ゲームマスターの `show_progress_1` / `show_progress_2` / `show_progress_3` と、Checker由来のヒント数値候補を初めて一括結合する。対応する公開Wikiのコードでは、これらを `chainNum` / `chainMax` / `isGroupChain` と読み替えている：[Umamusume WikiのTrainingEvents/Data](https://umamusu.wiki/Module:Game/TrainingEvents/Data)。

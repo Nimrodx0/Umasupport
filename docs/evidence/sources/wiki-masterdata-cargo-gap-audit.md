@@ -1,5 +1,8 @@
 # Phase 1：Wiki JP masterdata→Cargo掲載IDの一方向漏れ検査
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 監査日：**2026-10-18**。実測：[GitHub Actions #39092779263](https://github.com/Nimrodx0/Umasupport/actions/runs/39092779263)。
 
 ## 何を検証したか

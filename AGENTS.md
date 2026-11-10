@@ -2,6 +2,8 @@
 
 このファイルは**担当者が変わっても維持する作業原則と必須の境界**を示します。時点依存の工程・件数・研究結果はここへ重複記載しません。詳細な保存先は [文書運用規約](docs/documentation-policy.md) を参照してください。
 
+読み手を意識した記述方法は[文書設計の方法論](docs/documentation-methodology.md)と[文書更新の手順](docs/how-to/update-docs.md)を参照します。
+
 ## 作業を再開する
 
 1. [README](README.md) と [文書の入口](docs/index.md) から、[現行ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、[詳細計画](docs/plans/index.md)の担当小工程・結果、関連するOpen Issueを確認する。

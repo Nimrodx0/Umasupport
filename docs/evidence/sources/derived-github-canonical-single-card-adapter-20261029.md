@@ -1,5 +1,8 @@
 # 2026-10-29：既存のGameTora全件変換器を新サポカ1枚の増分取り込みに再利用
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的と訂正
 
 以前の `gametora_whole_event_normalize.cjs` → `gametora_event_skill_crosswalk.cjs` → `gametora_app_schema_dry_run.cjs` は、固定GameTora由来JSON全2,488イベントをウマサルタント形式へ投影し、`phase2_integrated_private_catalog.cjs` 等でGameWithの個別補完を加えた非公開2,496イベントを統合・読込試験した**既存の変換器**である。これに対し2026-10-29の `derived_github_runtime_draft.cjs` はより狭い対応範囲を別実装していたため、**新カード増分取り込みの主経路から外す**。旧モジュールと過去の全件監査は記録・回帰用に残し、既存DBの再生成・上書きはしない。

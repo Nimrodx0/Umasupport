@@ -1,5 +1,8 @@
 # Phase 2：レジェンズの全員／選択相手の指南ゲージ共通変換（2026-10-26）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 対象と出典
 
 固定GameTora元 `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67` の [`support_30241.json`](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30241.json) にある「伝説の体現者」の **9イベント**。固定元の元イベント順位は7・8・9・13・14・15・16・17・18。GameWithの[同カードのイベント情報](https://gamewith.jp/uma-musume/article/show/485772)に、全員の指南ゲージと選択相手1名の指南ゲージが明記されている。二種類の意味を混同しない。

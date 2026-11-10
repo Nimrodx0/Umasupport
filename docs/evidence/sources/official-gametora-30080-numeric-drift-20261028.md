@@ -1,5 +1,8 @@
 # SSR30080：元GameToraサイト4経路の数値を直接取得した結果、旧固定版との差異を検出（2026-10-28）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 検証対象
 
 [SSR30080の3択・4候補の構造実測](official-gametora-30080-site-branch-20261028.md)を継承し、GameTora本体の[対象カード](https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa)から、旧固定SSR30080の**イベント位置8、外側3グループ・OR後4経路**にある符号付き数値効果を読み取った。[PR #255](https://github.com/Nimrodx0/Umasupport/pull/255)／[限定元サイト実Chromeの成功](https://github.com/Nimrodx0/Umasupport/actions/runs/40659573715)。

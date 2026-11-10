@@ -1,5 +1,8 @@
 # Phase 2・GameTora `all_stats` 68記載の5能力別投影（2026-10-24）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 対象・出典の意味と範囲
 
 前回の[固定GameTora全2,488イベントの非スキル監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)では、`all_stats` 68記載を未対応扱いにしていた。このコードの意味は、元の**同じ固定リビジョン**の[イベント実行コード`server/app/event_engine.py`（約1376～1379行）](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L1376-L1379)で明示されている。イベントの符号付き数値を`speed`, `stamina`, `power`, `guts`, `wiz`の5能力それぞれに適用するもの。ゲーム内効果表示でも、プラスは全能力の増加、マイナスは5属性の減少として扱う[同ファイルの表示処理](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L716-L734)。この実装根拠はGT派生固定実装の意味解析であり、2026年ゲームの実プレイ直接検証ではない。

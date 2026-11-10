@@ -1,5 +1,8 @@
 # 既存SSR30001：GameTora本体とアプリ用スキルイベント投影の差分照合（2026-10-28）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的と基準
 
 [前段の独自数値候補照合](official-gametora-existing-normalized-parity-20261028.md)では、既存GameTora由来の固定JSONを`gametora_whole_event_normalize.cjs`で正規化し、同じSSR30001のGameTora本体と5イベント・9経路・絆効果8件まで一致した。

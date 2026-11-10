@@ -1,5 +1,8 @@
 # Phase 2：GameToraから実行時イベントスキーマへの全件試験変換（2026-10-21）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目標
 
 既存の[GameTora全2,488イベント中間DB](phase2-gametora-whole-event-normalization-20261021.md)と[1,681数値ヒントID全件照合](phase2-gametora-event-skill-crosswalk-20261021.md)の成果を連結し、実行時アプリが使う`event_schema.js`・`skill_bridge.js`のイベント形式へ変換する。**GameWith全件からイベントDBを作り直さず、GameTora由来の基準データを用いる。**

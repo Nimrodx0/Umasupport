@@ -1,5 +1,8 @@
 # Phase 2：数値だけが低／高に変動するGT連続イベントを2結果へ非公開導入（2026-10-26）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 固定出典と動作の前提
 
 [前工程の連動数値範囲監査](phase2-gt-coupled-range-numeric-outcomes-20261026.md)では、固定GameTora由来`systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`の「`+5/+10`」は、同じ選択肢のすべての範囲値が**同じ低／高tier**で決まる結果分岐であることを確認した。[元実行器の処理](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L414-L445)を参照。前PR #215ではSSR30028のスキルヒントLv1/Lv3へスピード+5/+10を同一結果として付けた。

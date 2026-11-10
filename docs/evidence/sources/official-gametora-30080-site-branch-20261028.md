@@ -1,5 +1,8 @@
 # SSR30080の元GameToraサイトにおける3選択肢・4結果候補・打ち切り構造（2026-10-28）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 検証の位置づけ
 
 [旧固定3カードの構造選定](official-gametora-existing-structural-cohorts-20261028.md)のSSR30080について、GameTora本体の[カードページ](https://gametora.com/ja/umamusume/supports/30080-sasami-anshinzawa)の1イベントだけを実Chromeで開き、既存の旧固定参照と**画面構造を別々に**比較した。[PR #254](https://github.com/Nimrodx0/Umasupport/pull/254)／[専用Actions #40657924719](https://github.com/Nimrodx0/Umasupport/actions/runs/40657924719)で実測。

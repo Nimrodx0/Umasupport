@@ -1,5 +1,8 @@
 # 既存SSR30001：スキルと非スキルの単一イベントJSON結合を直接照合（2026-10-28）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的
 
 PR #249では、既存SSR30001を`transformDocument`→`crosswalk`→`gametora_app_schema_dry_run.project`に通した**実アプリ用スキル投影**が、[GameTora本体](https://gametora.com/ja/umamusume/supports/30001-special-week)の5イベント・9結果経路・数値スキルIDとヒントLv5件に一致した。

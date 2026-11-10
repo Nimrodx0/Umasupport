@@ -1,5 +1,8 @@
 # Phase 2：SSR30090の絆±5を連続打ち切り付き2排他的結果へ安全に結合（2026-10-26）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 固定元と差分の意味
 
 固定GameTora派生 `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67` の [`support_30090.json`](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora/support_30090.json) の元イベント#4は連続 `arrows`、2択。選択肢#1には体力+10・スキルPt+10・スキル数値ID201142ヒントLv1・絆+5（受け手1017）。選択肢#2には体力-10・スタミナ+25・根性+25・絆**-5または+5**（受け手1017）の幅値と、元結果に `chain_end` が明記される。

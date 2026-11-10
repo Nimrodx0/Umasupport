@@ -1,5 +1,8 @@
 # Phase 2：スキル直接付与をヒントと分け、マイナススキルを獲得候補から除外（2026-10-21）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 分類上の発見
 
 固定 [GameTora由来イベント版](https://github.com/systemless10/UmamusumePS/tree/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora) の `obtain_skill` は、`skill_hint` のヒントLv付与とは異なる効果。元データ全2,488イベント・4,129選択・4,376経路の `obtain_skill` 7件を、固定 [UmaSim skill_data.txt](https://github.com/mee1080/umasim/blob/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt) と**数値IDで**照合した。

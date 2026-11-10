@@ -1,5 +1,8 @@
 # Event policy: GameTora baseline, GameWith adjudicator (2026-10-21)
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 **Update (2026-10-29):** The user reconfirmed this document's structured **third-party GitHub GameTora-derived JSON as the PRIMARY event source**. The separate plan to replace it with GameTora website HTML extraction (2026-10-27) is superseded and the incomplete direct adapter is paused. See [current development policy](derived-github-primary-restart-20261029.md). GameWith remains an individual exception adjudicator. Publication permissions and release review are still separate.
 
 ## Decision and correction

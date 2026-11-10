@@ -1,5 +1,8 @@
 # Phase 2：GameToraヒントLvの低／高同期結果を試験スキーマ化（2026-10-21）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 仕様の根拠
 
 固定GameTora由来データの `+1/+3` のような効果値は、`systemless10/UmamusumePS` の固定版 [`event_engine.py`](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py) で、**1つの選択の低結果・高結果を表す数値対**として処理される。同じ効果経路に複数の幅値があれば、同じ低／高インデックスを適用する。ORヒント（`skill_hint_or`）は別軸として、複数のうち必ず1候補だけを選ぶ。

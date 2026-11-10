@@ -1,5 +1,8 @@
 # Phase 2：2026年10月26日追加3サポカの通常ヒントID照合とイベント欠損の分離監査
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 母集団・実測
 
 基準： [UmaSim `support_card.txt` 固定版](https://github.com/mee1080/umasim/blob/910dd79f046710245e0cc88a09c5c92b1044897e/data/support_card.txt) にある **566カード**、[UmaSim `skill_data.txt` 固定版](https://github.com/mee1080/umasim/blob/910dd79f046710245e0cc88a09c5c92b1044897e/data/skill_data.txt)、比較元2026-09-30コミット `91952973eb334ae530b8cd76541bce8a01a141cd`。固定スキルJSONのGit blobは旧 `402544b639c32da63bd4e66788f4944f5e0ff47a`、新 `0c6ea6d72b037b24ee40860f73b0e86db47aab1d`。

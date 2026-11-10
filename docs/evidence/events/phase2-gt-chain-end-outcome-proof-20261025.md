@@ -1,5 +1,8 @@
 # Phase 2：固定GTの結果別 `chain_end` とスキル側 `terminal` の一致照合（2026-10-25）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的と事実の出典
 
 従来の[固定GT非スキル全件監査](phase2-grand-live-lowest-and-full-energy-20261025.md)では、連続イベント内部の打ち切りを表す制御効果があるだけで結果全体を保留していた。元の効果`chain_end`は固定GameTora由来版`systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`の[パーサで`ee`として定義](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/gametora.py#L98-L116)され、[実行処理](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py#L1469-L1475)では当該チェーンの残りを終了させる。個別**結果ごと**に記載され、同じ選択肢の別結果に打ち切りがないこともある。

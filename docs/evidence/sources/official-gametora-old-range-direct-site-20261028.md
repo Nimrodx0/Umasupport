@@ -1,5 +1,8 @@
 # 旧SSR30030／30041のGameTora本体数値範囲を限定観測（2026-10-28）
 
+> **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 調査対象と前提
 
 [旧GT構造選定の監査](official-gametora-existing-structural-cohorts-20261028.md)の3カードから、範囲付き数値があるSSR30030／30041を先に調査する。Git blobを固定した従来の派生GT元データと、現在の[SSR30030 GameToraページ](https://gametora.com/ja/umamusume/supports/30030-matikanetannhauser)／[SSR30041 GameToraページ](https://gametora.com/ja/umamusume/supports/30041-mejiro-dober)の**実ブラウザ表示を独立に比較**するための限定計測。元出典の数値を画面観測側へ混ぜず、GameToraの原文、選択肢文章、HTML、画像、全ページレスポンスをリポジトリ・ログへ出力しない。

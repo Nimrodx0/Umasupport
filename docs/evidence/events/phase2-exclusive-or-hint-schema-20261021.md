@@ -1,5 +1,8 @@
 # Phase 2：GameToraの排他的ORヒントを非公開スキーマへ変換（2026-10-21）
 
+> **資料の位置づけ**：イベントの変換・審査に関する調査（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../plans/product.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+
 ## 目的と元データの意味
 
 従来の全件変換は、GameTora由来の `skill_hint_or` を一律 `SKILL_HINT_EFFECT_UNRESOLVED` として保留していた。固定元 `systemless10/UmamusumePS` の [`gametora.py`](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/gametora.py) と [`event_engine.py`](https://github.com/systemless10/UmamusumePS/blob/6e38b54af4fad397ff4491e63007a90705a4fe67/server/app/event_engine.py) の `skill_hint_or` / `resolve_or_effects` は、**選択肢に並んだORスキルのうち、一つだけを取得する**意味を明示している。金と白の両方を獲得済みの報酬に見せないことが今回の主眼。
