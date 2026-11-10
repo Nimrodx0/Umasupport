@@ -36,7 +36,7 @@ test('app vs full denominator, OR complexity and held candidate intersections ar
  ];
  const whole=[...app,make(5,[[c('is_lastspurt',1)]])];
  const report=triage.examine(inventory(whole),inventory(app),{matchedRecords:app});
- assert.equal(report.summary.totalSourceTypes,8);
+ assert.equal(report.summary.totalSourceTypes,9);
  assert.equal(report.summary.appMatchedSkillRecords,4);
  assert.equal(report.summary.matchedSkillStructure.includesRankType,2);
  assert.equal(report.summary.matchedSkillStructure.candidateAndDeferredMixed,1);
