@@ -155,3 +155,11 @@ test('broken evidence and disconnected decisions fail while harmless prose chang
     fs.rmSync(temp, {recursive: true, force: true});
   }
 });
+
+test('all tracked Markdown documents keep valid local links after reorganization', () => {
+  const {execFileSync} = require('node:child_process');
+  const files = execFileSync('git', ['ls-files', '--', '*.md'], {cwd: root, encoding: 'utf8'})
+    .split('\n').map(line => line.trim()).filter(Boolean);
+  const {errors} = scan(root, files);
+  assert.deepEqual(errors, [], 'Every local Markdown destination must exist, including archived evidence');
+});
