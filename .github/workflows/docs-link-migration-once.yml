@@ -101,11 +101,11 @@ jobs:
           git diff --check
           node --test poc/tests/handoff_quality.test.cjs poc/tests/documentation_policy.test.cjs
           node poc/tools/check_project_tracking.cjs
-      - name: Commit repaired links and remove one-time workflow
+      - name: Commit repaired documentation and source links
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/docs-link-migration-once.yml
+          git restore -- .github/workflows/
           git add -u
           git commit -m "docs: repair all Markdown and source paths after evidence move"
           git push origin HEAD:docs/reorganize-navigation-and-phase-plans-20261110
