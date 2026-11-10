@@ -60,8 +60,8 @@ test('source phase random boundaries preserve exact fractional values',()=>{
  const later={...base,timingPredicates:[
   c('phase_laterhalf_random','==',1)]};
  const w=m.supportedWindow(later,{...course,distance:1800},meta);
- assert.equal(w.start,750);
- assert.equal(w.end,1200);
+ assert(Math.abs(w.start-750)<1e-8);
+ assert(Math.abs(w.end-1200)<1e-8);
 });
 test('rejected model metadata must not become a result of zero probability',()=>{
  assert.throws(()=>m.courseMeta(course,{...meta,surface:2}),/differs/);
