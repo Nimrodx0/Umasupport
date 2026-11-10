@@ -139,6 +139,7 @@
  wr('docs/decisions/registry.json',JSON.stringify(registry,null,2));
  let di=rd('docs/decisions/index.md');
  di=di.replace('current 10件、superseded 4件、qualified 3件','current 10件、superseded 3件、qualified 4件');
+ di=di.replace('。残り23件は原文確認が必要です。','、review-required 23件です。review-requiredの判断は原文確認が必要です。');
  // The registry is the machine-readable authority; always show the same status.
  const replacementLine=di.split('\n').find(x=>x.includes('イベントはウマサルタント独自DBを正本として蓄積する'));
  if(replacementLine){di=di.replace(replacementLine,replacementLine.replace('`superseded`','`qualified`').replace('GameWithを全面的に優先','GameWith全面優先'));}
