@@ -1,0 +1,103 @@
+name: One-time documentation path migration
+
+on:
+  push:
+    branches:
+      - docs/reorganize-navigation-and-phase-plans-20261110
+    paths:
+      - .github/workflows/docs-link-migration-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with main history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fix relative paths after moving evidence documents
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path').posix;
+          const cp = require('node:child_process');
+          const originals = cp.execFileSync('git', ['ls-tree', '-r', '--name-only', 'origin/main'], {encoding:'utf8'}).trim().split('\n');
+          const core = new Set('index.md requirements.md decisions.md roadmap.md status.md architecture.md event-schema.md data-sources.md documentation-policy.md verification-plan.md verification-history.md development-history.md evidence-index.md runtime-data-loading.md skill-activation-tendencies-design.md event-adjudication-enforcement.md event-source-selection.md curated-event-intake.md upstream-refresh-operations.md checker-public-catalog.md checker-persistent-candidate-database.md reviewed-skill-hierarchy.md card-image-rights-decision.md event-data-acquisition-rights-20261019.md gamewith-offline-ingest.md'.split(' '));
+          function group(n) {
+            if(n.startsWith('skill-') && !n.includes('acceptance')) return 'skills';
+            if(/^(derived-github|official-gametora|gametora|gamewith|wiki-|utools|checker|upstream-|independent-|historical-|master-|game8-|new-card|efforia|release-card|expanded-card|card-population)/.test(n)) return 'sources';
+            if(/^(phase2-|event-|choice-|editorial-|f08-|candidate-|route-|story-|unreviewed-)/.test(n)) return 'events';
+            return 'quality';
+          }
+          const move = new Map(), reverse = new Map();
+          for(const name of originals) {
+            if(!/^docs\/[^/]+\.md$/.test(name)) continue;
+            const n = path.basename(name);
+            if(core.has(n)) continue;
+            const dest = 'docs/evidence/' + group(n) + '/' + n;
+            move.set(name,dest); reverse.set(dest,name);
+          }
+          const tracked = cp.execFileSync('git', ['ls-files', '-z'], {encoding:'utf8'}).split('\0').filter(Boolean);
+          let modified=0, markdown=0, missing=0;
+          for(const file of tracked) {
+            if(!/\.(?:md|js|cjs|mjs|yml|yaml|html|json)$/.test(file) && !['README.md','AGENTS.md'].includes(file)) continue;
+            if(!fs.existsSync(file))continue;
+            let input=fs.readFileSync(file,'utf8');
+            let output=input;
+            if(file.endsWith('.md')) {
+              const former = reverse.get(file) || file;
+              output = output.replace(/(!?\[[^\]\n]*\]\()([^\s)]+)([^)\n]*\))/g,(match,prefix,uri,suffix)=>{
+                if(/^(?:[a-z][\w+.-]*:|\/\/|#)/i.test(uri))return match;
+                const m=/^([^?#]*)([?#].*)?$/.exec(uri);
+                if(!m||!m[1])return match;
+                let decoded;
+                try{decoded=decodeURIComponent(m[1]);}catch{return match;}
+                const oldTarget=path.normalize(path.join(path.dirname(former),decoded));
+                const newTarget=move.get(oldTarget)||oldTarget;
+                if(former===file&&newTarget===oldTarget)return match;
+                const newUri=path.relative(path.dirname(file),newTarget) || './';
+                return prefix+newUri+(m[2]||'')+suffix;
+              });
+              markdown++;
+            }
+            // Repair explicit repo-root references in prose and checked source paths.
+            output=output.replace(/\bdocs\/[A-Za-z0-9_.-]+\.md\b/g,m=>move.get(m)||m);
+            if(output!==input){fs.writeFileSync(file,output);modified++;}
+          }
+          const targets = new Set(cp.execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean));
+          let broken=[];
+          for(const file of [...targets].filter(p=>p.endsWith('.md')&&fs.existsSync(p))){
+            const s=fs.readFileSync(file,'utf8');
+            for(const m of s.matchAll(/!?\[[^\]\n]*\]\(([^)\n]+)\)/g)){
+              const first=m[1].trim().split(/\s+["']/)[0].replace(/^<(.*)>$/,'$1');
+              if(/^(?:[a-z][\w+.-]*:|\/\/|#)/i.test(first))continue;
+              const dest=first.split(/[?#]/)[0];if(!dest)continue;
+              const resolved=path.normalize(path.join(path.dirname(file),decodeURIComponent(dest)));
+              if(!fs.existsSync(resolved))broken.push(file+' -> '+resolved);
+            }
+          }
+          console.log(JSON.stringify({movedDocuments:move.size,processedMarkdown:markdown,modifiedFiles:modified,brokenRelativeLinks:broken.slice(0,50),brokenCount:broken.length},null,2));
+          if(broken.length) process.exitCode=1;
+          NODE
+      - name: Validate tracking and documentation
+        run: |
+          git diff --check
+          node --test poc/tests/handoff_quality.test.cjs poc/tests/documentation_policy.test.cjs
+          node poc/tools/check_project_tracking.cjs
+      - name: Commit repaired links and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/docs-link-migration-once.yml
+          git add -u
+          git commit -m "docs: repair all Markdown and source paths after evidence move"
+          git push origin HEAD:docs/reorganize-navigation-and-phase-plans-20261110
