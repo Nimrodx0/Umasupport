@@ -22,7 +22,7 @@
 
 ## 文書の入口
 
-**[文書索引](docs/index.md)** に、現在の要件・決定・設計・進捗・証拠の正本をまとめています。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、対象の[研究・監査記録](docs/evidence-index.md)を確認してください。詳細なルールは [文書運用規約](docs/documentation-policy.md) にあります。
+**[文書索引](docs/index.md)** から、[工程別の詳細計画](docs/plans/index.md)と[分野別の研究・監査記録](docs/evidence/README.md)を辿れます。要件・決定・設計・進捗の正本もこちらから確認できます。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、対象の[研究・監査記録](docs/evidence-index.md)を確認してください。詳細なルールは [文書運用規約](docs/documentation-policy.md) にあります。
 
 ## 開発と検証
 
