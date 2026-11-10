@@ -15,10 +15,10 @@ const PIN='80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1';
 const TARGET=/if retail_runtime \|\| finished\[i\]\.is_none\(\) \{ s\.rushing_mode as f64 \} else \{ 0\.0 \},\s*blocker as f64\]/g;
 const REPLACEMENT=[
  'if finished[i].is_none() {',
- '  (field.order_of(i) * 64 + field.previous_order_of(i)) as f64',
+ '  field.order_of(i) as f64 - field.previous_order_of(i) as f64',
  '} else { -999.0 },',
  'if finished[i].is_none() {',
- '  field.order_of(i) as f64 - field.previous_order_of(i) as f64',
+ '  (field.order_of(i) * 64 + field.previous_order_of(i)) as f64',
  '} else { -999.0 }]'
 ].join('\n                 ');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
@@ -33,7 +33,7 @@ function patch(file){
  fs.writeFileSync(file,after);
  return {modelRevision:PIN,originalLibSHA256:sha(before),
   instrumentedLibSHA256:sha(after),
-  slots:'4=64*currentRank+previousRank,5=currentRank-previousRank',
+  slots:'4=currentRank-previousRank,5=64*currentRank+previousRank',
   finishedSentinel:-999,unmodifiedReplayColumns:[0,1,2,3]};
 }
 const columns=['pos','speed','hp','lane','temptationMode','blockFrontHorseIndex'];
@@ -88,14 +88,14 @@ function analyze(original,probe,manifest){
       throw Error('Probe changed original position/speed/HP/lane trajectory');
      matchedColumns++;
     }
-    const encoded=get(k,4),difference=get(k,5);
+    const encoded=get(k,5),difference=get(k,4);
     if(encoded===-999&&difference===-999){finished++;continue}
     if(!Number.isSafeInteger(encoded)||!Number.isSafeInteger(difference))
      throw Error('Probe readout is not exact integer rank state');
     const current=Math.floor(encoded/64),previous=encoded%64;
     if(current<1||previous<1||current>n||previous>n||
        difference!==current-previous)
-     throw Error('Original source condition formula does not match captured rank');
+     throw Error('Original source condition formula does not match captured rank '+JSON.stringify({trial,tick,runner:i,current,previous,difference,encoded,n}));
     sampled++;
     const style=p.strategies[i],id=[p.course.id,n,p.scenario,style].join('|');
     if(!groups.has(id))groups.set(id,{
