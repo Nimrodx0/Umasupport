@@ -1,0 +1,52 @@
+name: Documentation Integrity
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'poc/README.md'
+      - 'poc/tests/docs_integrity.test.cjs'
+      - 'poc/tests/handoff_quality.test.cjs'
+      - 'poc/tools/check_markdown_anchors.cjs'
+      - 'poc/tools/list_doc_inventory.cjs'
+      - 'poc/data/p2_position_condition32_research.v1.json'
+      - '.github/workflows/docs-integrity.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'poc/README.md'
+      - 'poc/tests/docs_integrity.test.cjs'
+      - 'poc/tests/handoff_quality.test.cjs'
+      - 'poc/tools/check_markdown_anchors.cjs'
+      - 'poc/tools/list_doc_inventory.cjs'
+      - 'poc/data/p2_position_condition32_research.v1.json'
+      - '.github/workflows/docs-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Reference, provenance and decision safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate syntax
+        run: |
+          node --check poc/tools/check_markdown_anchors.cjs
+          node --check poc/tools/list_doc_inventory.cjs
+          node --check poc/tests/docs_integrity.test.cjs
+      - name: Audit current and pinned references, decision states, and historical preservation
+        run: node --test poc/tests/docs_integrity.test.cjs poc/tests/handoff_quality.test.cjs
+      - name: Verify Markdown fragment targets
+        run: node poc/tools/check_markdown_anchors.cjs --strict
