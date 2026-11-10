@@ -66,3 +66,14 @@ test('automatic delivery priority is coherent, and unapproved private source is 
   '出典が異なる25件を無断公開しない');
 });
 
+
+test('owner-approved cross-cutting docs track is reachable from project, plans and agent entrypoints',()=>{
+ const plan=read('docs/plans/documentation-maintenance.md');
+ for(const file of ['docs/project/README.md','docs/project/roadmap.md',
+  'docs/index.md','AGENTS.md']){
+  assert.match(read(file),/plans\/documentation-maintenance\.md/,file);
+ }
+ assert.match(read('docs/plans/index.md'),/\(documentation-maintenance\.md\)/);
+ assert.match(plan,/個別.+発見時/);
+ assert.match(plan,/複数.+一括改修/);
+});

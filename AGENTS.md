@@ -33,6 +33,8 @@
 - **現行のイベント収録主経路は構造化されたGameTora由来GitHub JSON**。疑義・欠損の具体的な数値裁定にはGameWithを用い、元GameTora HTMLの全面直接取得を前提にしない。既存DBの一括利用と例外管理が主工程で、既存データを無断で全件再生成・上書きしない。細かい出典優先順位・機械的採用条件は [データソース](docs/reference/data-sources.md)・[イベント裁定契約](docs/reference/event-adjudication-enforcement.md)・[ロードマップ](docs/project/roadmap.md)を参照する。
 - 承認のないイベント候補・第三者原文・画像は公開データに混ぜない。公開境界は [公開ゲート](docs/how-to/checker-public-catalog.md) と [権利・取得条件](docs/decisions/event-data-acquisition-rights-20261019.md) を参照する。外部取得が不正・欠損した場合、検証済みキャッシュと保存設定を安全に扱う。
 
+文書の旧パス・孤立リンク・誤記などの**個別不備は発見した作業内で修正**する。正本の役割、横断的な索引・更新フローなど**複数領域を一括改修する方が効果的な構造課題だけ**を[文書品質Dトラック](docs/plans/documentation-maintenance.md)と[Issue #388](https://github.com/Nimrodx0/Umasupport/issues/388)に集約する。問題の記録を修正の先延ばしに使わず、フォルダ移設自体を成果としない。
+
 ## 検証と完了の表現
 
 - 変更の対象・母集団・例外・合格条件を事前に定め、[検証計画](docs/quality/verification-plan.md) の **A 機構／B データ／C 実環境**を独立に評価する。単体・CI成功、固定データ監査、Pagesのブラウザ確認、物理端末の検証は相互に代替しない。
