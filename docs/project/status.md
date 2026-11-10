@@ -17,9 +17,9 @@
 
 ## P2研究の成果・未完の確認
 
-P2の各実験を一行の文章に連結せず、[P2.1～P2.18と移植研究P2.21～P2.25](../plans/skill-conditions/p2.md)の小工程へ分解して記録しています。P2.19～P2.20は[別の順位変動内部観測PR #390](https://github.com/Nimrodx0/Umasupport/pull/390)で提案中です。元の調査結果・母集団・反例・留保は[研究証拠](../evidence/skills/README.md)に残し、検証されたモデル事実とゲーム内の実際のスキル発動率を区別します。**本節は文書構成の変更であり、新しい研究試験やユーザーによる閾値承認を意味しません。**
+P2の各実験を一行の文章に連結せず、[P2.1～P2.25](../plans/skill-conditions/p2.md)の小工程へ分解して記録しています。P2.19の固定モデル内部状態の観測までが実証済みで、P2.20の元スキル全条件との同一判定時刻の照合は未着手です。元の調査結果・母集団・反例・留保は[研究証拠](../evidence/skills/README.md)に残し、検証されたモデル事実とゲーム内の実際のスキル発動率を区別します。**本節は文書構成の変更であり、新しい研究試験やユーザーによる閾値承認を意味しません。**
 
-**2026-11-10研究移植（PR #380～#383からの未マージ提案）**：[125条件コードの優先度](../evidence/skills/p2-condition-research-triage-20261110.md)、[追加ANDを持つ17スキル](../evidence/skills/p2-mixed-rank-deferred-cohort-20261110.md)、[絶対順位・コーナー順位1,440モデルレース](../evidence/skills/p2-absolute-corner-source-model-20261110.md)、[15＋15シードの2,352脚質比較](../evidence/skills/p2-rank-corner-split15-stability-20261110.md)、[非順位条件の可観測性](../evidence/skills/p2-nonrank-condition-observability-20261110.md)は固定実験とコード根拠を持つが、**ゲーム内発動率や正式な脚質・サポカ評価に採用したものではない**。従前の旧パス参照を現行の証拠配置へ移す研究専用PRであり、公開アプリとUIは変更しない。
+**2026-11-10研究移植（PR #391でmainへ統合済み）**：[125条件コードの優先度](../evidence/skills/p2-condition-research-triage-20261110.md)、[追加ANDを持つ17スキル](../evidence/skills/p2-mixed-rank-deferred-cohort-20261110.md)、[絶対順位・コーナー順位1,440モデルレース](../evidence/skills/p2-absolute-corner-source-model-20261110.md)、[15＋15シードの2,352脚質比較](../evidence/skills/p2-rank-corner-split15-stability-20261110.md)、[非順位条件の可観測性](../evidence/skills/p2-nonrank-condition-observability-20261110.md)は固定実験とコード根拠を持つが、**ゲーム内発動率や正式な脚質・サポカ評価に採用したものではない**。従前の旧パス参照を現行の証拠配置へ移し、公開アプリとUIは変更していない。
 ## 公開イベントの検証対象（本番JSON）
 
 - 公開イベント（公開JSON実測）：**2,487件**／**559カード**。測定対象：[poc/data/reviewed_events.v1.json](../../poc/data/reviewed_events.v1.json)。公開承認と初回投入は [PR #309](https://github.com/Nimrodx0/Umasupport/pull/309)（2026-11-02）。CIの機械検査でJSONのイベント数とこの記載を突き合わせます。
