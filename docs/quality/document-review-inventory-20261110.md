@@ -1,10 +1,9 @@
 # 文書構成の全件点検台帳（2026-11-10）
 
-レビュー対象273文書（この台帳自身を含む）のMarkdownを対象に、文書の役割・見出し数・400文字を超える行数を機械的に調べた一覧です。資料本文の事実性の査読とは異なります。研究原本は本文を保全して説明と導線を追加し、現行の重要文書には読み方と章への案内を設けました。**数値の裏付けや内部の技術的な意味を推測して変更していません**。
+既存Markdownを対象に、文書の役割・見出し数・400文字を超える行数を機械的に調べた一覧です。資料本文の事実性の査読とは異なります。研究原本は本文を保全して説明と導線を追加し、現行の重要文書には読み方と章への案内を設けました。**数値の裏付けや内部の技術的な意味を推測して変更していません**。
 
 | 文書 | 種別 | 見出し数 | 長文行数 | 継続的な改善候補 |
 | --- | --- | ---: | ---: | --- |
-| [document-review-inventory-20261110.md](document-review-inventory-20261110.md) | 構成レビューの台帳 | 1 | 0 | レビュー対象自身を含む |
 | [0001-documentation-architecture.md](../adr/0001-documentation-architecture.md) | 判断記録 | 5 | 0 | 文書の役割と参照先を確認 |
 | [README.md](../adr/README.md) | 判断記録 | 3 | 0 | 文書の役割と参照先を確認 |
 | [architecture.md](../architecture.md) | 正本・索引等 | 13 | 3 | 長文箇所の個別編集は継続候補 |
@@ -265,6 +264,7 @@
 | [p4.md](../plans/skill-conditions/p4.md) | 成果物・実装計画 | 1 | 0 | 文書の役割と参照先を確認 |
 | [p5.md](../plans/skill-conditions/p5.md) | 成果物・実装計画 | 1 | 0 | 文書の役割と参照先を確認 |
 | [wbs-dictionary.md](../plans/wbs-dictionary.md) | 成果物・実装計画 | 2 | 0 | 文書の役割と参照先を確認 |
+| [document-review-inventory-20261110.md](document-review-inventory-20261110.md) | 正本・索引等 | 1 | 0 | 文書の役割と参照先を確認 |
 | [documentation-integrity-review-20261110.md](documentation-integrity-review-20261110.md) | 正本・索引等 | 5 | 0 | 文書の役割と参照先を確認 |
 | [index.md](../reference/index.md) | リファレンス | 1 | 0 | 文書の役割と参照先を確認 |
 | [requirements.md](../requirements.md) | 正本・索引等 | 32 | 1 | 長文箇所の個別編集は継続候補 |
