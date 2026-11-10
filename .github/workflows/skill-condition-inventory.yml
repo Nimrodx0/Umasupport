@@ -7,6 +7,8 @@ on:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
+      - 'poc/src/skill_rank_corner_source_cohort.cjs'
+      - 'poc/tests/skill_rank_corner_source_cohort.test.cjs'
       - 'poc/tests/skill_condition_mixed_cohort.test.cjs'
       - 'poc/tests/skill_condition_research_triage.test.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
@@ -45,6 +47,7 @@ jobs:
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
+          node --check poc/src/skill_rank_corner_source_cohort.cjs
           node --check poc/src/skill_condition_tags.js
           node --check poc/src/skill_condition_profiles.js
           node --check poc/tools/audit_skill_conditions.cjs
@@ -55,6 +58,7 @@ jobs:
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
           node --test poc/tests/skill_condition_mixed_cohort.test.cjs
+          node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
           node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs poc/tests/skill_style_tendency.test.cjs poc/tests/skill_style_review.test.cjs
       - name: Audit pinned skill registry and current published app model
         env:
@@ -95,6 +99,25 @@ jobs:
             mixedSkills:a.mixedSkills,byRelation:a.byRelation,
             byDeferredType:a.byDeferredType},null,2));
           NODE
+      - name: Validate fixed absolute-order and corner-rank source study cohort
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const p=JSON.parse(fs.readFileSync('p2-rank-corner-source-cohort.json'));
+          assert.equal(p.schemaVersion,1);
+          assert.equal(p.sourceRecords,818);
+          assert.equal(p.summary.absoluteOrder.distinctSkills,34);
+          assert.equal(p.summary.cornerRank.distinctSkills,13);
+          assert.equal(p.summary.noFullSkillRatings,true);
+          assert(p.paths.every(x=>x.fullyModeledSkill===false));
+          console.log(JSON.stringify(p.summary,null,2));
+          NODE
+      - name: Upload bounded source-verified P2 rank/corner candidate cohort
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-rank-corner-source-cohort
+          path: p2-rank-corner-source-cohort.json
+          retention-days: 14
       - name: Upload read-only P2 mixed rank/deferred cohort audit
         uses: actions/upload-artifact@v4
         with:
