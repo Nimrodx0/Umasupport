@@ -27,8 +27,7 @@ for(const p of evidence){
  s=s.split('\n').map(line=>{
   if(/^\s*(`{3,}|~{3,})/.test(line)){inFence=!inFence;return line;}
   if(inFence||line.length<640||/^\s*(?:[-*+]\s|\d+\.\s|>|#|\||<| {4})/.test(line))return line;
-  const segments=line.split(/(?<=。)(?=【|[①-⑳]|さらに|また、|ただし、|一方、|\*\*)/u);
-  if(segments.length>1){paragraphs++;return segments.join('\n\n');}
+  // Preserve body paragraphs exactly; editing prose requires evidence-specific review.
   return line;
  }).join('\n');
  write(p,s);metadata++;
