@@ -236,7 +236,7 @@ PCでは比較表を広く使い、スマートフォンでは横幅の必要な
 
 ## 10. 開発状況の所在
 
-本書は要件を定義するため、**実装済み件数や次の単発作業は記録しない**。現在の件数・検証範囲・残件は [status.md](../project/status.md)、次の優先工程は [roadmap.md](../project/roadmap.md)、証拠は各個別監査・PRを参照。過去の節は [整理前のGit履歴](https://github.com/Nimrodx0/Umasupport/blob/1e17eeddbd80ecc6f33545a98f602d455676873a/docs/reference/requirements.md) に保存されている。
+本書は要件を定義するため、**実装済み件数や次の単発作業は記録しない**。現在の件数・検証範囲・残件は [status.md](../project/status.md)、次の優先工程は [roadmap.md](../project/roadmap.md)、証拠は各個別監査・PRを参照。過去の節は [整理前のGit履歴](https://github.com/Nimrodx0/Umasupport/blob/1e17eeddbd80ecc6f33545a98f602d455676873a/docs/requirements.md) に保存されている。
 
 ## 11. 開発版の保存設定（2026-10-16 改定）
 
