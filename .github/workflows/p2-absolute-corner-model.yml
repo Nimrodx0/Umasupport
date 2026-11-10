@@ -1,0 +1,154 @@
+name: P2 source-exact absolute rank and corner rank 10m pilot
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_rank_corner_source_cohort.cjs'
+      - 'poc/tests/skill_rank_corner_source_cohort.test.cjs'
+      - 'poc/tools/globalsim_rank_corner_opportunity.cjs'
+      - 'poc/tools/skill_rank_corner_split_stability.cjs'
+      - 'poc/tests/skill_rank_corner_split_stability.test.cjs'
+      - 'poc/tests/globalsim_rank_corner_opportunity.test.cjs'
+      - 'poc/tools/audit_skill_conditions.cjs'
+      - '.github/workflows/p2-absolute-corner-model.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-exact-model-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate original source-cohort and model geometry rules
+        run: |
+          node --check poc/src/skill_rank_corner_source_cohort.cjs
+          node --check poc/tools/globalsim_rank_corner_opportunity.cjs
+          node --check poc/tools/skill_rank_corner_split_stability.cjs
+          node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
+          node --test poc/tests/globalsim_rank_corner_opportunity.test.cjs
+          node --test poc/tests/skill_rank_corner_split_stability.test.cjs
+      - name: Reconstruct source-exact rank and corner cohort from pinned skill dictionary
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-rank-corner-source-audit.log
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const a=JSON.parse(fs.readFileSync('p2-rank-corner-source-cohort.json'));
+          assert.equal(a.source?.sha256,
+            '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(a.summary.absoluteOrder.distinctSkills,34);
+          assert.equal(a.summary.cornerRank.distinctSkills,13);
+          assert.equal(a.paths.filter(x=>
+            x.feasibility==='source-absolute-rank-phase-random-subcondition-candidate').length,12);
+          assert.equal(a.paths.filter(x=>
+            x.feasibility==='source-corner-rank-subcondition-candidate').length,20);
+          console.log('Pinned original cohort: 12 absolute / 20 corner source paths verified');
+          NODE
+      - name: Build the exact fixed GlobalSim v77 engine and geometry
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+      - name: Replay 12 pinned turf/dirt courses, 9/12 runners, equal/jitter10, 30 seeds
+        run: |
+          mkdir -p /tmp/p2-rank-corner
+          node --max-old-space-size=4096 poc/tools/globalsim_rank_corner_opportunity.cjs \
+            p2-rank-corner-source-cohort.json \
+            /tmp/globalsim/data/course_data.json \
+            /tmp/globalsim/examples/v77-race.jsonl \
+            /tmp/globalsim/target/release/race_engine_rs_v2 \
+            /tmp/p2-rank-corner/source-rank-corner-1440.json \
+            > /tmp/p2-rank-corner/replay-summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+          const file='/tmp/p2-rank-corner/source-rank-corner-1440.json';
+          const bytes=fs.readFileSync(file);
+          const x=JSON.parse(bytes);
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.simulations,1440);
+          assert.equal(x.modelCourseCount,12);
+          assert.equal(x.eligibleSourcePaths,32);
+          assert(x.matchedContextCells>0);
+          assert(x.absoluteContextCells>0);
+          assert(x.cornerContextCells>0);
+          assert(x.contextCells.every(c=>c.inferenceStatus===
+            'source-rank-subcondition-only-not-skill-rating'));
+          assert(x.contextCells.every(c=>c.W10mOpportunityPercent===null||
+            c.OPointOccupancyPercent<=c.W10mOpportunityPercent+0.00001));
+          const sha256=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(sha256,
+            '0ad669a4dca52ca652009a0702037281a2044bd7ba0c5d1a057a053b954df7bd',
+            'Fixed GlobalSim original source rank/corner study changed unexpectedly');
+          assert.equal(x.matchedContextCells,1632);
+          assert.equal(x.absoluteContextCells,576);
+          assert.equal(x.cornerContextCells,1056);
+          assert.equal(x.unresolvedContextCells,0);
+          console.log('Pinned derived research SHA256: '+sha256);
+          console.log(JSON.stringify({
+            status:x.status,simulations:x.simulations,
+            candidatePaths:x.eligibleSourcePaths,
+            measuredContexts:x.matchedContextCells,
+            absoluteContexts:x.absoluteContextCells,
+            cornerContexts:x.cornerContextCells,
+            heldContexts:x.unresolvedContextCells
+          },null,2));
+          NODE
+      - name: Audit real W/O split15 directions, held comparisons and 9 versus 12 separately
+        run: |
+          node poc/tools/skill_rank_corner_split_stability.cjs \
+            /tmp/p2-rank-corner/source-rank-corner-1440.json \
+            /tmp/p2-rank-corner/source-rank-corner-split15-audit.json \
+            > /tmp/p2-rank-corner/seed-stability-summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-rank-corner/source-rank-corner-split15-audit.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.provenance.sourceModelReportSha256,
+            '0ad669a4dca52ca652009a0702037281a2044bd7ba0c5d1a057a053b954df7bd');
+          assert.equal(x.axis.W.pairedStyleComparisons,2352);
+          assert.equal(x.axis.W.bySplitHalfStatus['strict-direction-repeated'],2006);
+          assert.equal(x.axis.W.bySplitHalfStatus['both-halves-tied'],239);
+          assert.equal(x.axis.W.bySplitHalfStatus['at-least-one-half-tied'],89);
+          assert.equal(x.axis.W.bySplitHalfStatus['direction-reversed-between-halves'],18);
+          assert.equal(x.axis.O.pairedStyleComparisons,2352);
+          assert.equal(x.fullFourContextCount,392);
+          assert.equal(x.axis.W.strictCompleteFourStyleContexts,87);
+          assert.equal(x.crossHeadcountComparedPairs,1176);
+          assert.equal(x.crossHeadcount.W['same-strict-direction-both-field-sizes'],958);
+          assert.equal(x.crossHeadcount.W['held-at-least-one-field-size'],218);
+          assert.equal(x.crossHeadcount.W['strict-direction-reversed-between-field-sizes'],0);
+          assert.equal(x.maximumAbsoluteSingleStyleW15SplitDeltaPoints,16.468879);
+          assert.equal(x.sharedMeasurementAudit.sourcePaths,32);
+          assert.equal(x.sharedMeasurementAudit.distinctMeasuredPathProfiles,14);
+          console.log(JSON.stringify({
+            W:x.axis.W.bySplitHalfStatus,O:x.axis.O.bySplitHalfStatus,
+            crossHeadcountW:x.crossHeadcount.W,
+            fourStyleStrictW:x.axis.W.strictCompleteFourStyleContexts,
+            maxSplitW:x.maximumAbsoluteSingleStyleW15SplitDeltaPoints},null,2));
+          NODE
+      - name: Keep derived two-axis seed-split research report separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-rank-corner-15plus15-direction-audit
+          path: /tmp/p2-rank-corner/source-rank-corner-split15-audit.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain source-exact study evidence with no source dictionary or raw trajectories
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-absolute-corner-1440-partial-rank-opportunity
+          path: /tmp/p2-rank-corner/source-rank-corner-1440.json
+          retention-days: 14
+          if-no-files-found: error

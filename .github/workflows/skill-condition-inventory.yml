@@ -5,6 +5,12 @@ on:
   pull_request:
     paths:
       - 'poc/src/skill_condition_inventory.cjs'
+      - 'poc/src/skill_condition_research_triage.cjs'
+      - 'poc/src/skill_condition_mixed_cohort.cjs'
+      - 'poc/src/skill_rank_corner_source_cohort.cjs'
+      - 'poc/tests/skill_rank_corner_source_cohort.test.cjs'
+      - 'poc/tests/skill_condition_mixed_cohort.test.cjs'
+      - 'poc/tests/skill_condition_research_triage.test.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
       - 'poc/tests/skill_condition_inventory.test.cjs'
       - 'poc/src/skill_condition_tags.js'
@@ -39,6 +45,9 @@ jobs:
       - name: Test P0 inventory and P1 activation profiles against synthetic predicates
         run: |
           node --check poc/src/skill_condition_inventory.cjs
+          node --check poc/src/skill_condition_research_triage.cjs
+          node --check poc/src/skill_condition_mixed_cohort.cjs
+          node --check poc/src/skill_rank_corner_source_cohort.cjs
           node --check poc/src/skill_condition_tags.js
           node --check poc/src/skill_condition_profiles.js
           node --check poc/tools/audit_skill_conditions.cjs
@@ -47,11 +56,82 @@ jobs:
           node --check poc/src/skill_rank_timing_audit.cjs
           node --check poc/src/skill_style_tendency.js
           node --check poc/src/skill_style_review.cjs
+          node --test poc/tests/skill_condition_research_triage.test.cjs
+          node --test poc/tests/skill_condition_mixed_cohort.test.cjs
+          node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
           node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs poc/tests/skill_style_tendency.test.cjs poc/tests/skill_style_review.test.cjs
       - name: Audit pinned skill registry and current published app model
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
         run: node poc/tools/audit_skill_conditions.cjs
+      - name: Check fixed-cohort research triage completeness without promoting suitability
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-condition-research-triage.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'P2-condition-type-research-triage-not-skill-or-card-suitability');
+          assert.equal(x.summary.totalSourceTypes,125);
+          assert.equal(x.summary.appMatchedTypes,90);
+          assert.equal(x.summary.appMatchedSkillRecords,818);
+          assert.equal(x.summary.noAutomaticStyleLabels,true);
+          assert.equal(x.summary.noAutomaticUniversalStyleInferences,true);
+          assert.equal(x.summary.skillEffectUtility,'future-extension-only');
+          assert.equal(x.byType.length,125);
+          assert(x.byType.every(t=>Number.isSafeInteger(t.appMatchedSkills) &&
+            t.appMatchedSkills>=0&&typeof t.group==='string'));
+          console.log('P2 condition research triage complete:',JSON.stringify(x.summary,null,2));
+          NODE
+      - name: Verify actual mixed rank/deferred source-path population
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const a=JSON.parse(fs.readFileSync('p2-mixed-rank-deferred-audit.json'));
+          assert.equal(a.schemaVersion,1);
+          assert.equal(a.mixedSkills,17);
+          assert.equal(a.sourceDenominator,818);
+          assert.equal(a.cases.length,17);
+          assert.equal(new Set(a.cases.map(x=>x.sourceNumericId)).size,17);
+          assert.equal(a.byRelation.sameAnd+a.byRelation.sameInvokeOnlyWithoutSameAnd+
+            a.byRelation.differentInvokeOnly,17);
+          assert(a.cases.every(x=>x.disposition==='hold-whole-skill-style-suitability'));
+          console.log(JSON.stringify({status:a.status,
+            mixedSkills:a.mixedSkills,byRelation:a.byRelation,
+            byDeferredType:a.byDeferredType},null,2));
+          NODE
+      - name: Validate fixed absolute-order and corner-rank source study cohort
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const p=JSON.parse(fs.readFileSync('p2-rank-corner-source-cohort.json'));
+          assert.equal(p.schemaVersion,1);
+          assert.equal(p.sourceRecords,818);
+          assert.equal(p.summary.absoluteOrder.distinctSkills,34);
+          assert.equal(p.summary.cornerRank.distinctSkills,13);
+          assert.equal(p.summary.noFullSkillRatings,true);
+          assert(p.paths.every(x=>x.fullyModeledSkill===false));
+          console.log(JSON.stringify(p.summary,null,2));
+          NODE
+      - name: Upload bounded source-verified P2 rank/corner candidate cohort
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-rank-corner-source-cohort
+          path: p2-rank-corner-source-cohort.json
+          retention-days: 14
+      - name: Upload read-only P2 mixed rank/deferred cohort audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-mixed-rank-deferred-cohort
+          path: p2-mixed-rank-deferred-audit.json
+          retention-days: 14
+      - name: Upload bounded P2 condition research triage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-condition-research-triage
+          path: p2-condition-research-triage.json
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Upload inventory report without source skill data
         if: always()
         uses: actions/upload-artifact@v4
