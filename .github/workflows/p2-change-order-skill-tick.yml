@@ -89,6 +89,20 @@ jobs:
           assert(x.partialConditionOpportunity.signedRankPredicates.every(t=>
            t.status==='model-pre-skill-check-marginal-only'));
           const sha=crypto.createHash('sha256').update(b).digest('hex');
+          assert.equal(sha,'9b8277bd79d6f16e432952a59530688e0b46f8331484185157d65a4e77b42031',
+           'Pinned original-skill-check state evidence changed');
+          assert.equal(x.validation.comparedFrames,41704);
+          assert.equal(x.validation.identicalPhysicalValues,1751724);
+          assert.equal(x.validation.prePriorityMatchesPreviousPostRankCache,435222);
+          assert.equal(x.validation.initializedRetailSnapshotsNotInstrumented,336);
+          assert.equal(x.validation.firstTickPreviousRankZeroHeld,336);
+          assert.equal(x.validation.finishedSnapshotsNotMeasured,2037);
+          assert.equal(x.partialConditionOpportunity.evaluablePreSkillRunnerTicks,435222);
+          assert.equal(x.partialConditionOpportunity.preSkillRankUpRunnerTicks,2043);
+          assert.equal(x.partialConditionOpportunity.preSkillRankDownRunnerTicks,2095);
+          assert.equal(x.partialConditionOpportunity.sameTickPreAndPostDifferenceRunnerTicks,7561);
+          assert.equal(x.design.originalSignedRankSignatures,2);
+          assert.equal(x.partialConditionOpportunity.signedRankPredicates.length,2);
           console.log('P2_PRE_SKILL_STAGE_SHA256='+sha);
           console.log(JSON.stringify({design:x.design,validation:x.validation,
            partialConditionOpportunity:{...x.partialConditionOpportunity,
