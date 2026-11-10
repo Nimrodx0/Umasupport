@@ -1,6 +1,16 @@
 # ウマサルタントの文書
 
-ここが文書の入口です。**docs直下にはこのindex.md以外のMarkdownを置きません。** 各ファイルは読者の目的と責任範囲に応じて整理しています。
+ここは**正本を発見するための地図**です。AIエージェントはリポジトリ直下の[AGENTS.md](../AGENTS.md)を入口とし、担当作業に必要な文書だけを読むことを基本とします。ファイルをフォルダへ入れること自体は品質の保証ではありません。現在の分類は利用しつつ、正本の発見性を優先します。
+
+## エージェントの作業別入口
+
+- **デッキ・UI・保存の変更**：[要件](reference/requirements.md) → [アーキテクチャ](reference/architecture.md) → [実装・テスト](../poc/README.md)
+- **イベント追加・公開**：[出典契約](reference/data-sources.md) → [イベント構造](reference/event-schema.md) → [公開審査](how-to/checker-public-catalog.md)
+- **P2研究・スキル適合性**：[研究小工程](plans/skill-conditions/index.md) → [技術設計](explanation/skill-activation-tendencies-design.md) → [関連する固定証拠](evidence/skills/README.md)
+- **次の実装の着手**：[ロードマップ](project/roadmap.md) → [開発状況](project/status.md) → [詳細計画](plans/index.md)
+- **合格基準の確認**：[検証計画](quality/verification-plan.md) → 対象のテスト／CI → [証拠記録](evidence/README.md)
+
+必要な文書を段階的に読むこと。文書一覧を一括でコンテキストに投入せず、該当するコード・実際のJSONと突き合わせます。
 
 ## まず探すもの
 

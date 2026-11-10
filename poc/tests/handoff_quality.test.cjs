@@ -164,7 +164,28 @@ test('all tracked Markdown documents keep valid local links after reorganization
   assert.deepEqual(errors, [], 'Every local Markdown destination must exist, including archived evidence');
 });
 
-test('docs root contains only index.md',()=>{
- const loose=fs.readdirSync(path.join(root,'docs'),{withFileTypes:true}).filter(x=>x.isFile()&&x.name.endsWith('.md')).map(x=>x.name).sort();
- assert.deepEqual(loose,['index.md']);
+test('agent entry points resolve task-specific authoritative documents without prescribing folder counts',()=>{
+ const agents=fs.readFileSync(path.join(root,'AGENTS.md'),'utf8');
+ const index=fs.readFileSync(path.join(root,'docs/index.md'),'utf8');
+ assert.match(agents,/タスクに必要な文書を段階的に取得する/);
+ for(const canonical of [
+  'docs/reference/requirements.md',
+  'docs/reference/architecture.md',
+  'docs/reference/data-sources.md',
+  'docs/project/roadmap.md',
+  'docs/project/status.md',
+  'docs/plans/index.md',
+  'docs/quality/verification-plan.md',
+  'docs/decisions/log.md'
+ ]){
+  assert.ok(fs.existsSync(path.join(root,canonical)),canonical+' must remain reachable');
+  assert.ok(agents.includes(canonical),canonical+' should be discoverable from the automatic agent entry');
+ }
+ assert.match(index,/作業別入口/);
+ const {graph,errors}=scan(root,core);
+ assert.deepEqual(errors,[]);
+ for(const target of destinations){
+  const pathToDoc=shortestRoute(graph,'AGENTS.md',target);
+  assert.ok(pathToDoc && pathToDoc.length<=4,target+' must be reachable from agent entry within three links');
+ }
 });

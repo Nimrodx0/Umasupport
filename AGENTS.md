@@ -2,13 +2,21 @@
 
 このファイルは**担当者が変わっても維持する作業原則と必須の境界**を示します。時点依存の工程・件数・研究結果はここへ重複記載しません。詳細な保存先は [文書運用規約](docs/governance/documentation-policy.md) を参照してください。
 
-読み手を意識した記述方法は[文書設計の方法論](docs/governance/documentation-methodology.md)と[文書更新の手順](docs/how-to/update-docs.md)を参照します。
+文書の配置と開発エージェント向けの導線は[文書設計方法論](docs/governance/documentation-methodology.md)と[更新手順](docs/how-to/update-docs.md)を参照してください。
 
-## 作業を再開する
+## タスクに必要な文書を段階的に取得する
 
-1. [README](README.md) と [文書の入口](docs/index.md) から、[現行ロードマップ](docs/project/roadmap.md)、[開発状況](docs/project/status.md)、[詳細計画](docs/plans/index.md)の担当小工程・結果、関連するOpen Issueを確認する。
-2. [有効な要件](docs/reference/requirements.md)、[意思決定の履歴](docs/decisions/log.md)、[設計](docs/reference/architecture.md)を対象範囲に応じて読む。過去のPR・研究監査・[履歴](docs/archive/)を現在の指示と見なさない。
-3. 該当するコード・公開データ・テスト・CIを確認し、文書と現物の不一致を調査する。根拠不明の矛盾や利用者判断が必要な変更を推測で解決しない。
+`AGENTS.md`は自動読込される**少量の必須指示と情報の地図**です。[文書索引](docs/index.md)から正本を探し、**278件の文書を開始時に一括読み込みしない**。先に依頼内容と編集対象を絞り、必要な契約・コード・証拠だけを読む。文書の階層やファイル数自体を開発成果とみなさない。
+
+| 作業の種類 | 最初に確認する正本 | 次に必要となる情報 |
+| --- | --- | --- |
+| 機能追加・UI修正 | [要件](docs/reference/requirements.md)、[アーキテクチャ](docs/reference/architecture.md)、変更対象コード | [PoC実行とテスト](poc/README.md)、関連する判断・受入条件 |
+| イベント・出典データ | [データソース](docs/reference/data-sources.md)、[イベントスキーマ](docs/reference/event-schema.md) | [公開審査](docs/how-to/checker-public-catalog.md)、固定出典の個別監査 |
+| スキル条件・適性研究 | [研究計画](docs/plans/skill-conditions/index.md)、[研究設計](docs/explanation/skill-activation-tendencies-design.md) | 対象P番号の詳細・対応する固定証拠 |
+| 次工程の着手・引き継ぎ | [ロードマップ](docs/project/roadmap.md)、[現在の状態](docs/project/status.md)、[小工程](docs/plans/index.md) | [決定履歴](docs/decisions/log.md)、該当Issue／PR |
+| 検証・公開 | [検証計画](docs/quality/verification-plan.md)、対象コード・データ | 対象のCI、公開判定、日時・固定版付きの証拠 |
+
+実装前に**実ファイルと現在のテスト**も確認し、文書とコードが食い違う場合は根拠を調査する。古いPR・研究監査・[履歴](docs/archive/)を自動的に現行指示へ昇格させない。どの文書もリンクなしに存在し得るため、ファイル検索とGit履歴も利用する。
 
 ## 引き継ぎと変更
 

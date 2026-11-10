@@ -38,4 +38,15 @@
 
 ## 第二段階：docs直下の25文書を責務別に分類（2026-11-10）
 
-旧docs直下の現行文書25件をproject/reference/how-to/decisions/explanation/governance/quality/history/evidenceへ移動しました。本文の削除・要約は行わず、旧パスからの相対参照とプログラム内の正本パス、CIを更新しました。docs/index.mdのみをルートに残すテストを追加しました。変更前後の関係は本PRのGit差分で再現できます。
+旧docs直下の現行文書25件をproject/reference/how-to/decisions/explanation/governance/quality/history/evidenceへ移動しました。本文の削除・要約は行わず、旧パスからの相対参照とプログラム内の正本パス、CIを更新しました。**当初は「docs/index.mdのみをルートに残す」テストも作りましたが、後続のAIエージェント優先レビューで、この根拠の乏しい制約は撤回しています。**変更前後の関係は本PRのGit差分で再現できます。
+
+## 第三段階：エージェント開発を優先した構成の再評価（2026-11-10）
+
+Diátaxisの4機能を全ファイルのフォルダ配置規則として強制せず、[OpenAI Harness Engineering](https://openai.com/index/harness-engineering/)に見られる、短いAGENTS.mdから必要な正本を段階的に参照する方法を第一の基準としました。
+
+- 現在の物理フォルダ構成は変更しない。既存の有効なリンクとコード参照を再移動によって壊さないため。
+- [AGENTS.md](../../AGENTS.md)に作業別の最小参照経路を追加し、全278文書の一括読込を避ける。
+- [documentation-policy](../governance/documentation-policy.md)から空のdocs直下を必須とする規則を撤回。
+- リグレッションテストを、フォルダの個数ではなく**エージェントの正本への到達**の検証に変更。
+
+本段階はドキュメントの情報設計の評価であって、エージェント実行時のトークン数・作業成功率の実測比較ではありません。実際のタスクで検索漏れ・手戻りが発生した場合に、検索・到達・鮮度の評価を継続します。
