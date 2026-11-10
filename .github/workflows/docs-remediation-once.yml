@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/docs-remediation-once.yml
       - poc/tools/remediate_docs_20261110_once.cjs
+      - poc/tools/audit_doc_reorg.cjs
 permissions:
   contents: write
 jobs:
