@@ -44,9 +44,8 @@ const BUCKETS=Object.freeze({
   'distance_diff_top','distance_diff_top_float','distance_diff_rate',
   'bashin_diff_infront','bashin_diff_behind','infront_near_lane_time',
   'behind_near_lane_time','behind_near_lane_time_set1',
-  'near_count','near_infront_count','near_infront_count',
-  'near_infront_count','is_surrounded','visiblehorse',
-  'lane_type','is_behind_in','straight_front_type_unused'],
+  'near_count','near_infront_count','is_surrounded','visiblehorse',
+  'lane_type','is_behind_in'],
  'complex-or-external-hold':[
   'is_activate_other_skill_detail','is_used_skill_id',
   'is_used_skill_id_with_detail_one','is_exist_skill_id',
@@ -59,8 +58,7 @@ const BUCKETS=Object.freeze({
   'activate_count_all_team','same_skill_horse_count',
   'running_style_count_same_rate','running_style_count_same',
   'running_style_equal_popularity_one','random_lot','random_lot_shared',
-  'hp_per','temptation_count','temptation_opponent_count_behind',
-  'temptation_opponent_count_behind_unused']
+  'hp_per','temptation_count','temptation_opponent_count_behind']
 });
 const POLICY=Object.freeze({
  'explicit-eligibility':{
