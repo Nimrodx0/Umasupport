@@ -16,6 +16,13 @@ python -m http.server 8000
 
 ネットワーク／取得元／利用条件によってローカル起動時のデータ取得が失敗する場合があります。成功を推測せず、ブラウザ表示・開発者ツールとデータ状態を確認してください。実際の利用者配信は [GitHub Pages](https://nimrodx0.github.io/Umasupport/poc/live.html) です。
 
+## 初回演習：仕様・実コード・検証を接続する
+
+1. [現在の要件](../docs/reference/requirements.md)、[状況](../docs/project/status.md)、[ロードマップ](../docs/project/roadmap.md)で対象作業を特定する。
+2. このページの手順でローカルサーバーを起動し、デッキ・スキル比較・イベント設定・保存を確認する。
+3. 該当コードと下の回帰検証を実行し、機構の合格と実ブラウザ・実ゲームの受入を区別する。
+4. 確認した範囲・未検証・根拠を[小工程](../docs/plans/index.md)と[固定研究](../docs/evidence/README.md)から追跡する。
+
 ## 主要なローカル検証
 
 リポジトリのルートから：

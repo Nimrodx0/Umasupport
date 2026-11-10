@@ -188,7 +188,7 @@ GameWithは個別記事の補助照合と数値差がある場合の優先参照
 
 **完了条件**：採用範囲の全カードについて収録状況と欠損が追跡可能で、公開した各イベントの条件・報酬・公開可否が根拠付きで承認済み。単にソースにレコードが存在することを完全収録と呼ばない。SSR／SRを先に完成させても、Rを含む最終要件の完了とは区別する。
 
-詳細：[供給元監査](../decisions/event-source-selection.md)、[公開イベントDB手順](../how-to/checker-public-catalog.md)、[イベントモデル](../reference/event-schema.md)。
+詳細：[供給元監査](../evidence/sources/event-source-selection-20261016.md)、[公開イベントDB手順](../how-to/checker-public-catalog.md)、[イベントモデル](../reference/event-schema.md)。
 
 ## Phase 3：ユーザー機能の完成
 

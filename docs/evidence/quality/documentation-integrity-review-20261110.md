@@ -6,17 +6,17 @@
 
 - 対象：docs直下からevidence配下へ移動したMarkdown **214件**。
 - Gitの内容ハッシュが一致するもの **101件**、移設に伴うリンク変更があるもの **113件**。
-- [比較スクリプト](../../poc/tools/audit_doc_reorg.cjs)は、移設した214件の**全見出し、数値トークン、リンク先を正規化した本文**の一致を確認し、差異を報告します。今回の実行では214件とも一致、構造上の消失は検出されていません。
-- マークダウンのローカルリンクは[既存のCIテスト](../../poc/tests/handoff_quality.test.cjs)で全ファイルを検査します。
+- [比較スクリプト](../../../poc/tools/audit_doc_reorg.cjs)は、移設した214件の**全見出し、数値トークン、リンク先を正規化した本文**の一致を確認し、差異を報告します。今回の実行では214件とも一致、構造上の消失は検出されていません。
+- マークダウンのローカルリンクは[既存のCIテスト](../../../poc/tests/handoff_quality.test.cjs)で全ファイルを検査します。
 
 ## 2. 要約した文書の保存
 
-短縮・再構成された次の文書は、改修前の全文を[2026-11-10直前のアーカイブ](../archive/pre-reorganization-20261110/)に保存しました。リンクは移動先に合わせて修正しています。
+短縮・再構成された次の文書は、改修前の全文を[2026-11-10直前のアーカイブ](../../archive/pre-reorganization-20261110)に保存しました。リンクは移動先に合わせて修正しています。
 
-- [roadmap](../archive/pre-reorganization-20261110/roadmap.md)
-- [status](../archive/pre-reorganization-20261110/status.md)
-- [documentation-policy](../archive/pre-reorganization-20261110/documentation-policy.md)
-- [index](../archive/pre-reorganization-20261110/index.md)
+- [roadmap](../../archive/pre-reorganization-20261110/roadmap.md)
+- [status](../../archive/pre-reorganization-20261110/status.md)
+- [documentation-policy](../../archive/pre-reorganization-20261110/documentation-policy.md)
+- [index](../../archive/pre-reorganization-20261110/index.md)
 
 従来の2026-11-05までのアーカイブだけでは、11月9日の研究経過まで保存できるとは限りません。Git履歴に加え、現在のリポジトリから旧版を確認できるようにしました。
 
@@ -26,9 +26,9 @@
 
 ## 4. 方法論の適用
 
-- [Diátaxis／WBS／ADR／Docs as Codeの対応表](../governance/documentation-methodology.md)を追加。
-- 工程は[WBS Dictionary](../plans/wbs-dictionary.md)で成果物・依存関係・終了条件を定義。
-- [ADR](../adr/README.md)は決定記録用の形式とし、未承認の提案を採用済みと断定しません。
+- [Diátaxis／WBS／ADR／Docs as Codeの対応表](../../governance/documentation-methodology.md)を追加。
+- 工程は[WBS Dictionary](../../plans/wbs-dictionary.md)で成果物・依存関係・終了条件を定義。
+- [ADR](../../adr/README.md)は決定記録用の形式とし、未承認の提案を採用済みと断定しません。
 
 ## 5. 限界
 
@@ -45,8 +45,12 @@
 Diátaxisの4機能を全ファイルのフォルダ配置規則として強制せず、[OpenAI Harness Engineering](https://openai.com/index/harness-engineering/)に見られる、短いAGENTS.mdから必要な正本を段階的に参照する方法を第一の基準としました。
 
 - 現在の物理フォルダ構成は変更しない。既存の有効なリンクとコード参照を再移動によって壊さないため。
-- [AGENTS.md](../../AGENTS.md)に作業別の最小参照経路を追加し、全278文書の一括読込を避ける。
-- [documentation-policy](../governance/documentation-policy.md)から空のdocs直下を必須とする規則を撤回。
+- [AGENTS.md](../../../AGENTS.md)に作業別の最小参照経路を追加し、全278文書の一括読込を避ける。
+- [documentation-policy](../../governance/documentation-policy.md)から空のdocs直下を必須とする規則を撤回。
 - リグレッションテストを、フォルダの個数ではなく**エージェントの正本への到達**の検証に変更。
 
 本段階はドキュメントの情報設計の評価であって、エージェント実行時のトークン数・作業成功率の実測比較ではありません。実際のタスクで検索漏れ・手戻りが発生した場合に、検索・到達・鮮度の評価を継続します。
+
+## 第三段階の是正（2026-11-10）
+
+固定コミット参照の不整合、旧GameWith-first手順と現行手順の混在、証拠の誤分類と誤誘導、現行と歴史的判断の区別、文書一覧の陳腐化について、旧全文を保存し現行文書を独立させました。資料の状態は利用者判断の原文・実装・公開ゲートを確認して決め、推定だけで旧判断を撤回扱いしません。

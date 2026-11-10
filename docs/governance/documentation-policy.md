@@ -2,7 +2,7 @@
 
 人間と開発エージェントが共通で使用する、**文書の保存先・粒度・更新原則**です。最新のPR成果や固定実験結果をこのページへ追記しません。
 
-[文書体系の方法論](documentation-methodology.md) ／ [成果物と受入条件](../plans/wbs-dictionary.md) ／ [ADRの管理](../adr/README.md) ／ [情報保全の監査](../quality/documentation-integrity-review-20261110.md)
+[文書体系の方法論](documentation-methodology.md) ／ [成果物と受入条件](../plans/wbs-dictionary.md) ／ [ADRの管理](../adr/README.md) ／ [情報保全の監査](../evidence/quality/documentation-integrity-review-20261110.md)
 
 ## AIエージェントへの情報の渡し方
 
@@ -52,7 +52,7 @@
 - **P2.1・W1.2**等、親工程と番号で結び付いた小工程を作り、**作業内容・状態・結果・根拠・終了条件**を記載する。
 - 研究の「計測済み」、内部「実装済み」、一般公開、A/B/Cの「合格」を混同しない。未実施をPassと書かない。
 - 結果と課題は一工程ずつ短く記載し、反例・数値・出典版などの詳細は個別証拠へリンクする。**異なる作業を改行なしの長大な1文に連結しない**。
-- 日付付きの研究記録は既存の`docs/evidence/skills/`、`events/`、`sources/`、`quality/`から適切な場所を選ぶ。例外ではファイルの意味・参照先と管理責任を明記し、既存の証拠体系を不必要に変更しない。
+- 日付付きの文書レビューと全件点検台帳は`evidence/quality/`の**固定記録**として扱います。現在の検証基準は`quality/`です。日付付きの研究記録は既存の`docs/evidence/skills/`、`events/`、`sources/`、`quality/`から適切な場所を選ぶ。例外ではファイルの意味・参照先と管理責任を明記し、既存の証拠体系を不必要に変更しない。
 - 大きな仕様変更は[decisions](../decisions/log.md)と[requirements](../reference/requirements.md)に反映。古い決定は履歴に残し、置換関係を明確にする。
 
 ## 変更時の手順

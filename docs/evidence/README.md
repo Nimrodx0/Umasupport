@@ -9,4 +9,6 @@
 | [sources](sources/README.md) | GameTora派生DB、UmaSim、外部ソースとカード照合 |
 | [quality](quality/README.md) | UI、受入、品質、文書体系などの監査 |
 
+分類基準は**何を検証したか**です。`events/`はイベントの選択・結果・取込経路、`sources/`は外部出典やカード名簿の版・ID照合、`skills/`はスキル辞書・階層・脚質条件研究、`quality/`は受入と文書品質の固定監査です。複数にまたがる資料は主題で一箇所に置き、ほかからリンクします。
+
 主要な根拠をテーマから探す場合は[証拠索引](catalog.md)を使います。旧スナップショットは[archive](../archive/)へ保存しています。

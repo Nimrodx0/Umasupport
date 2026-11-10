@@ -256,11 +256,11 @@
       "id": "D-030",
       "date": "2026-10-19",
       "heading": "2026-10-19：イベントはウマサルタント独自DBを正本として蓄積する（従来方針の明確化・変更）",
-      "status": "superseded",
+      "status": "qualified",
       "relation": [
         "D-035"
       ],
-      "note": "GameWith全面優先という部分のみ置換。独自承認済みJSONの配信は継続"
+      "note": "GameWith全面優先だけ後続で置換。独自の公開承認済みJSONを使用する方針は継続"
     },
     {
       "id": "D-031",

@@ -168,7 +168,7 @@
 - [Phase 2・タッカー翌ターン得意率と保科温泉入浴券・次回超回復の22イベント一括変換](events/phase2-gt-contextual-batch-20261026.md)
 - [Phase 2・レジェンズの全員／選択相手の指南ゲージ9イベントを共通変換](events/phase2-legends-gauge-batch-20261026.md)
 - [Phase 2・お出かけ連続イベントの解放／打ち切り14イベントを一括変換](events/phase2-outing-unlock-terminal-batch-20261026.md)
-- [Phase 2・2026-10-26現行UmaSimサポカ563→566枚の差分と公開ローダー監査](events/phase2-current-roster-566-audit-20261026.md)
+- [Phase 2・2026-10-26現行UmaSimサポカ563→566枚の差分と公開ローダー監査](sources/phase2-current-roster-566-audit-20261026.md)
 - [Phase 2・2026/10/26追加サポカ3枚の通常ヒント14件・数値スキルIDとイベント未収録の独立照合](events/phase2-20261026-new-card-skill-event-scope.md)
 - [固定GameTora／UmaSim出典の継続更新手順と日次差分監視](../how-to/upstream-refresh-operations.md)
 - [出典候補の全件GTイベント・UmaSimカード／数値スキル辞書preflight（2026-10-27）](sources/upstream-full-source-preflight-20261027.md)

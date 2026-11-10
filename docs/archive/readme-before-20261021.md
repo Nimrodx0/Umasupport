@@ -23,7 +23,7 @@
 
 [旧ゲームマスターの連続段階監査](../evidence/sources/historical-chain-stage-audit-20261019.md)により、954仮リンク中910件の段階座標を整理し、312の構造完備グループ（841候補）のうち171組を**結果・報酬の独立検証を先に行う対象**として抽出しました。これらは未承認候補で、実ゲームのスキル獲得経路を確約するものではありません。
 
-[独自数値イベント候補DB（SSR・SR 417枚、2,109候補）](../reference/checker-persistent-candidate-database.md)を追加。第三者記事の原文は含めず、イベント／選択肢の順序とヒントID・Lv・未解決箇所をウマサルタントが管理するJSONへ保持します。**未承認データであり、通常のスキル獲得計算には使いません。**
+[独自数値イベント候補DB（SSR・SR 417枚、2,109候補）](../evidence/sources/checker-persistent-candidate-database-20261019.md)を追加。第三者記事の原文は含めず、イベント／選択肢の順序とヒントID・Lv・未解決箇所をウマサルタントが管理するJSONへ保持します。**未承認データであり、通常のスキル獲得計算には使いません。**
 
 [取得・利用条件の整理とGameWithへの問い合わせ文案](../decisions/event-data-acquisition-rights-20261019.md)で、事実データの利用と大量自動取得の許可を分離し、許諾取得と代替ソース検査を並行して進めます。**問い合わせは文案作成済みで、送信・許諾取得済みではありません。**
 
@@ -45,7 +45,7 @@
 | 現行アーキテクチャとデータ境界 | [設計](../reference/architecture.md)、[実行時取得](../reference/runtime-data-loading.md) |
 | 決定事項と変更理由 | [意思決定ログ](../decisions/log.md) |
 | 実装・検証履歴 | [開発履歴](../history/development-history.md) |
-| データの収録と不確実性 | [ソース](../reference/data-sources.md)、[金白監査](../evidence/skills/skill-hierarchy-coverage.md)、[独立照合](../evidence/sources/independent-skill-json-audit.md)、[イベントソース調査](../decisions/event-source-selection.md) |
+| データの収録と不確実性 | [ソース](../reference/data-sources.md)、[金白監査](../evidence/skills/skill-hierarchy-coverage.md)、[独立照合](../evidence/sources/independent-skill-json-audit.md)、[イベントソース調査](../evidence/sources/event-source-selection-20261016.md) |
 | 開発環境・テスト | [PoCの手順](../../poc/README.md)、[開発AI向け入口](../../AGENTS.md) |
 
 ## 現在の到達点（基礎監査2026-10-17、追加操作・イベント監査2026-10-18）
@@ -64,11 +64,11 @@
 
 通常の公開アプリと同じ編成・イベント選択・スキル比較画面で、5イベントと成功／大成功ヒントの候補経路を試せます。**未承認の仮データ**であることを画面に表示し、通常版の設定と保存領域を分離。プレビューが壊れていても通常ヒントは使えます。ユーザー向けの実イベント公開DBと公開承認台帳は引き続き空です。
 
-[試用モードの仕様・残件](../evidence/sources/efforia30311-preview.md)参照。
+[試用モードの仕様・残件](../evidence/events/efforia30311-preview.md)参照。
 
 ## SSR30311の開発用イベント経路プレビュー（2026-10-18）
 
-[5イベント・11選択肢の限定プレビュー](../evidence/sources/efforia30311-preview.md)を追加し、GameWithの効果を優先した成功／大成功別のヒント経路を、本番と同じスキーマ・スキルIDブリッジ・集計器で単体検証できるようにしました。記事の台詞・選択肢文面は使用せず、開発用の番号ラベルで動かします。**検証コードと限定数値メタデータはPublic GitHubに収録されますが、Pagesアプリの配信用イベントカタログは今も0件です**。イベントIDと記事の対応、連続継続条件と結果の完全性、掲載データを公開アプリへ採用するための最終レビューはまだ完了していません。
+[5イベント・11選択肢の限定プレビュー](../evidence/events/efforia30311-preview.md)を追加し、GameWithの効果を優先した成功／大成功別のヒント経路を、本番と同じスキーマ・スキルIDブリッジ・集計器で単体検証できるようにしました。記事の台詞・選択肢文面は使用せず、開発用の番号ラベルで動かします。**検証コードと限定数値メタデータはPublic GitHubに収録されますが、Pagesアプリの配信用イベントカタログは今も0件です**。イベントIDと記事の対応、連続継続条件と結果の完全性、掲載データを公開アプリへ採用するための最終レビューはまだ完了していません。
 
 ~~~sh
 node poc/tools/inspect_efforia30311_review_preview.cjs

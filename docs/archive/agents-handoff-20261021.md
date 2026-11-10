@@ -14,14 +14,14 @@ PRの監査ソース `poc/data/candidates/editorial_cumulative_result_30103.v1.j
 
 ## 【2026-10-20】Phase 2④：複数資料で照合した連続分岐の監査用ケース
 
-Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_crosscheck.v1.json` と `poc/src/editorial_branch_crosscheck.cjs`。カード30001・30007・30026の4つのP0イベントから10個の選択×結果経路をGame8/U-tools等で別途照合。数値スキル・ヒントLvを8件再確認。30026には「他の情報サイトでは掲載されない報酬」「資料間Lv差」の未解決2件があり、この選択肢報酬は `auditFixture` でも採用しない。レビュー根拠とリンクは `docs/evidence/sources/checker-explicit-result-extraction-20261020.md`。
+Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_crosscheck.v1.json` と `poc/src/editorial_branch_crosscheck.cjs`。カード30001・30007・30026の4つのP0イベントから10個の選択×結果経路をGame8/U-tools等で別途照合。数値スキル・ヒントLvを8件再確認。30026には「他の情報サイトでは掲載されない報酬」「資料間Lv差」の未解決2件があり、この選択肢報酬は `auditFixture` でも採用しない。レビュー根拠とリンクは `docs/evidence/events/checker-explicit-result-extraction-20261020.md`。
 **分類：** `actualGamePlayVerified:false`、`publicationApproval:false`。複数出版社での一致はゲーム実機検証ではない。`auditFixture` は実行エンジンのテスト用であって通常カタログ公開やサポートカード収録率を増やさない。
 単体テスト：`node --test poc/tests/editorial_branch_crosscheck.test.cjs poc/tests/outcome_dependent_branches.test.cjs`。AND条件に同一親イベントの相容れない選択肢／結果が入れば `event_schema.js` で拒否し、`core.reachability` でも blocked とする。
 
 
 ## 【最優先・2026-10-20】Phase 2③ 結果別全件抽出（PR #110）
 
-正本は docs/evidence/sources/checker-explicit-result-extraction-20261020.md。Checker固定版のSSR/SR417枚・2,109イベント候補・3,458選択位置を一括再照合し、明示結果分岐203選択位置/411結果、連続終了等の明示89（終了73＋次回不発生16）、Lv範囲4位置を元文章を含まない未承認JSONに保存した。
+正本は docs/evidence/events/checker-explicit-result-extraction-20261020.md。Checker固定版のSSR/SR417枚・2,109イベント候補・3,458選択位置を一括再照合し、明示結果分岐203選択位置/411結果、連続終了等の明示89（終了73＋次回不発生16）、Lv範囲4位置を元文章を含まない未承認JSONに保存した。
 `poc/data/candidates/checker_explicit_result_facts.v1.json` と `poc/data/candidates/checker_explicit_result_review_queue.v1.json` は **forSkillGrant:false**。後者はP0 199 / P1 164 / P2 1,746の未確定な全件レビューキュー。P2も連続経路未確認であって獲得可能性の正式承認ではない。
 `node poc/tools/verify_checker_result_facts.cjs --verify` は全件無通信検証、固定元資料からの全件再現は専用の限定PR/手動GitHub Actions `verify-checker-result-extraction.yml` を使う。`node poc/tools/query_checker_result_review.cjs --priority P0 --limit 30` は旧2025年story ID（厳密仮照合178/表記差7/未対応14）を付けてレビューできる。
 次はWiki/Game8の独立経路を用いたP0終了・結果依存の裏付けと、563枚の正式期待イベント一覧・R146枚の収録。通常公開DBのイベント数は依然0件。元資料の大規模転載やGameWith.jp一括GETを行わない。
@@ -45,7 +45,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 
 ## 2026-10-19：417枚の一括候補をウマサルタントの独自DBに永続化（PR #100）
 
-[正本](../reference/checker-persistent-candidate-database.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
+[正本](../evidence/sources/checker-persistent-candidate-database-20261019.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
 
 ## 2026-10-19：全2,109イベント候補の経路状態と歴史マスター照合（PR #101）
 
@@ -233,11 +233,11 @@ See [settings merge acceptance](../evidence/quality/settings-import-merge-accept
 
 ## 2026-10-18：SSR30311の開発用in-memoryプレビュー（PR #74）
 
-[検証と限界](../evidence/sources/efforia30311-preview.md)。`poc/src/efforia30311_review_preview.cjs` が **5イベント/11選択肢/連続最終6結果/スキル報酬18参照**のスキル経路を本番schema/core/skill bridgeへ投入して人工的に検証する。出典はGameWith 2026-10-08の記事とコミュニティWiki 30311 IDリンク。**本コードに載せた連続条件とWiki/記事の紐付けは仮**で、既定でデータファイルを生成しない。CLIは件数と残るゲートのみ出力する。**このプレビューを `poc/data/reviewed_events.v1.json` にコピーしないこと**。正式ID/連続/結果条件/公開表現・権利はIssue #72で未承認。
+[検証と限界](../evidence/events/efforia30311-preview.md)。`poc/src/efforia30311_review_preview.cjs` が **5イベント/11選択肢/連続最終6結果/スキル報酬18参照**のスキル経路を本番schema/core/skill bridgeへ投入して人工的に検証する。出典はGameWith 2026-10-08の記事とコミュニティWiki 30311 IDリンク。**本コードに載せた連続条件とWiki/記事の紐付けは仮**で、既定でデータファイルを生成しない。CLIは件数と残るゲートのみ出力する。**このプレビューを `poc/data/reviewed_events.v1.json` にコピーしないこと**。正式ID/連続/結果条件/公開表現・権利はIssue #72で未承認。
 
 ## 2026-10-18：数値メタデータのPublicコードと配信用実データを区別
 
-[SSR30311プレビュー](../evidence/sources/efforia30311-preview.md)は開発用in-memoryデータを組み立てるため、**そのビルダーのソースコード内の5 story IDと8スキルの数値ID/名称/ヒントLvはPublic GitHub上で読める**。これは公開アプリの `reviewed_events.v1.json` に掲載し、獲得可能性を保証することと区別する。GameWithの原文・選択肢文面・ゲーム画面・画像を含めていないが、数値等の事実情報をPublicに限定掲載したことを第三者コンテンツの包括利用許諾と呼んではならない。利用者に提供する正式なイベントDBは、別途6観点の出典・条件・公開判断をレビューしてから採用する。
+[SSR30311プレビュー](../evidence/events/efforia30311-preview.md)は開発用in-memoryデータを組み立てるため、**そのビルダーのソースコード内の5 story IDと8スキルの数値ID/名称/ヒントLvはPublic GitHub上で読める**。これは公開アプリの `reviewed_events.v1.json` に掲載し、獲得可能性を保証することと区別する。GameWithの原文・選択肢文面・ゲーム画面・画像を含めていないが、数値等の事実情報をPublicに限定掲載したことを第三者コンテンツの包括利用許諾と呼んではならない。利用者に提供する正式なイベントDBは、別途6観点の出典・条件・公開判断をレビューしてから採用する。
 
 ## 2026-10-18：5イベントのWiki見出し↔9桁story_id監査（PR #76）
 
@@ -255,7 +255,7 @@ See [settings merge acceptance](../evidence/quality/settings-import-merge-accept
 
 ## 2026-10-19：イベントの未確認事項をUIで細分化しない（利用者判断）
 
-**禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions/log.md`、`docs/evidence/sources/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
+**禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions/log.md`、`docs/evidence/events/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
 
 ## 2026-10-19：45カード候補プレビュー導線（PR #80）
 

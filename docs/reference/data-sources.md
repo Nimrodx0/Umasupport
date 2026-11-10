@@ -95,20 +95,20 @@
 
 ## 履歴：2026-10-16の供給元選定の優先順位（現在は不適用）
 
-45枚の部分データに合わせた実イベント導入より先に、全カード向けのデータ元を探索して定量比較する。最優先候補は [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) の継続更新中の大規模JSON。**2026-10-16に全件を測定し、カード見出し466件／イベント1,403件／UmaSimとの名前＋レアリティ一致442/563件**を確認。ゲーム内IDでの照合やイベントの真の網羅率は未検証。Umamusume Wikiのマスター由来イベントID／連続段階を補完・検証用に検討する。詳細は [供給元の候補比較・選定条件](../decisions/event-source-selection.md)。
+45枚の部分データに合わせた実イベント導入より先に、全カード向けのデータ元を探索して定量比較する。最優先候補は [umaumacruise_customjson](https://github.com/po-po-po-pong/umaumacruise_customjson) の継続更新中の大規模JSON。**2026-10-16に全件を測定し、カード見出し466件／イベント1,403件／UmaSimとの名前＋レアリティ一致442/563件**を確認。ゲーム内IDでの照合やイベントの真の網羅率は未検証。Umamusume Wikiのマスター由来イベントID／連続段階を補完・検証用に検討する。詳細は [供給元の候補比較・選定条件](../evidence/sources/event-source-selection-20261016.md)。
 
 ## 大規模イベントソース全件監査（2026-10-16）
 
-`umaumacruise_customjson` はSSR311／SR101／R54カード、イベント1,403件、選択肢・効果2,852行。UmaSimとはSSR291/316、SR98/101、R53/146が名称＋レアリティ一致（計442/563）。SSR／SRで高い一致率がある一方、Rの93枚は元JSON側に名称一致がない。元ソースにカードID・イベントID・到達条件を明示するフィールドは見つからなかった。データの取得・利用条件は引き続き未確認。詳細：[供給元選定の全件測定](../decisions/event-source-selection.md)。
+`umaumacruise_customjson` はSSR311／SR101／R54カード、イベント1,403件、選択肢・効果2,852行。UmaSimとはSSR291/316、SR98/101、R53/146が名称＋レアリティ一致（計442/563）。SSR／SRで高い一致率がある一方、Rの93枚は元JSON側に名称一致がない。元ソースにカードID・イベントID・到達条件を明示するフィールドは見つからなかった。データの取得・利用条件は引き続き未確認。詳細：[供給元選定の全件測定](../evidence/sources/event-source-selection-20261016.md)。
 
 ## 第二ソースの実測（2026-10-16）
 
-[UmaUmaChecker](https://github.com/Cilda/UmaUmaChecker) の日本語イベントJSONはSSR316・SR101カードで、UmaSimと枚数が一致。厳密な名前一致393/417、残り24件は一対一の表記差候補。SSR＋SRでは2,099イベントがあるが5枚のSSRはイベント配列が空で、イベント記録あり412/417。GameWithから抽出し1日4回更新すると説明されており、MITのコードライセンスをイベントデータの利用許可と混同しない。詳細は[ソース選定](../decisions/event-source-selection.md)。
+[UmaUmaChecker](https://github.com/Cilda/UmaUmaChecker) の日本語イベントJSONはSSR316・SR101カードで、UmaSimと枚数が一致。厳密な名前一致393/417、残り24件は一対一の表記差候補。SSR＋SRでは2,099イベントがあるが5枚のSSRはイベント配列が空で、イベント記録あり412/417。GameWithから抽出し1日4回更新すると説明されており、MITのコードライセンスをイベントデータの利用許可と混同しない。詳細は[ソース選定](../evidence/sources/event-source-selection-20261016.md)。
 
 
 ## 2026-10-16 U-toolsとSSR・SRイベント差分
 
-[U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/) はゲーム内カードIDでイベントページを参照でき、連続イベントとランダムイベントを区別する。UmaUmaCheckerが0件とする5枚のイベントについてGame8/U-toolsで参考資料を確認した。UmaUmaCheckerとUmaUmaCruise系の412カード対応候補におけるタイトル差分は、両方に共通1,277、Checkerのみ821、Cruiseのみ11（11枚）。**名前差や同一データ出典の相関を含む未検証の差分**。参照：[選定調査](../decisions/event-source-selection.md)。
+[U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/) はゲーム内カードIDでイベントページを参照でき、連続イベントとランダムイベントを区別する。UmaUmaCheckerが0件とする5枚のイベントについてGame8/U-toolsで参考資料を確認した。UmaUmaCheckerとUmaUmaCruise系の412カード対応候補におけるタイトル差分は、両方に共通1,277、Checkerのみ821、Cruiseのみ11（11枚）。**名前差や同一データ出典の相関を含む未検証の差分**。参照：[選定調査](../evidence/sources/event-source-selection-20261016.md)。
 
 
 ## U-tools直接利用の検証（2026-10-16）

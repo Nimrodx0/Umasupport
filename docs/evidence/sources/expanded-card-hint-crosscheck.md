@@ -1,7 +1,7 @@
 # 2026年版・2025年版の別サポカ資料による通常ヒント網羅の拡大監査
 
 > **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../reference/data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [分野別の証拠索引](../catalog.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
 検証日：2026-10-17（JST）　関連：[Phase 1](../../project/roadmap.md) / [45枚の数値ヒント照合](independent-card-hint-audit.md) / [カードID母集団](card-population-independent-audit.md) / [PR #39](https://github.com/Nimrodx0/Umasupport/pull/39)
 

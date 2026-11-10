@@ -8,14 +8,14 @@
  const rel=(from,to)=>path.relative(path.dirname(from),to)||'./';
  const tracked=cp.execFileSync('git',['ls-files','-z'],{encoding:'utf8',maxBuffer:50000000}).split('\0').filter(Boolean);
  const moves=new Map(Object.entries({
-  'docs/evidence/sources/efforia30311-preview.md':'docs/evidence/events/efforia30311-preview.md',
-  'docs/evidence/events/phase2-current-roster-566-audit-20261026.md':'docs/evidence/sources/phase2-current-roster-566-audit-20261026.md',
-  'docs/evidence/sources/checker-explicit-result-extraction-20261020.md':'docs/evidence/events/checker-explicit-result-extraction-20261020.md',
-  'docs/decisions/event-source-selection.md':'docs/evidence/sources/event-source-selection-20261016.md',
-  'docs/reference/checker-persistent-candidate-database.md':'docs/evidence/sources/checker-persistent-candidate-database-20261019.md',
-  'docs/quality/documentation-integrity-review-20261110.md':'docs/evidence/quality/documentation-integrity-review-20261110.md',
-  'docs/quality/document-review-inventory-20261110.md':'docs/evidence/quality/document-review-inventory-20261110.md',
-  'docs/tutorials/first-session.md':'poc/README.md'
+  'docs/evidence/events/efforia30311-preview.md':'docs/evidence/events/efforia30311-preview.md',
+  'docs/evidence/sources/phase2-current-roster-566-audit-20261026.md':'docs/evidence/sources/phase2-current-roster-566-audit-20261026.md',
+  'docs/evidence/events/checker-explicit-result-extraction-20261020.md':'docs/evidence/events/checker-explicit-result-extraction-20261020.md',
+  'docs/evidence/sources/event-source-selection-20261016.md':'docs/evidence/sources/event-source-selection-20261016.md',
+  'docs/evidence/sources/checker-persistent-candidate-database-20261019.md':'docs/evidence/sources/checker-persistent-candidate-database-20261019.md',
+  'docs/evidence/quality/documentation-integrity-review-20261110.md':'docs/evidence/quality/documentation-integrity-review-20261110.md',
+  'docs/evidence/quality/document-review-inventory-20261110.md':'docs/evidence/quality/document-review-inventory-20261110.md',
+  'poc/README.md':'poc/README.md'
  }));
  const historical={
   'docs/evidence/events/curated-event-intake-legacy-20261019.md':'docs/how-to/curated-event-intake.md',
@@ -24,7 +24,7 @@
  };
  const oldPlace=new Map(Object.entries(historical));
  for(const [src,dest] of moves){
-  if(src==='docs/tutorials/first-session.md')continue;
+  if(src==='poc/README.md')continue;
   assert(exists(src)&&!exists(dest),'unexpected move '+src);
   fs.mkdirSync(path.dirname(dest),{recursive:true});
   fs.renameSync(src,dest);oldPlace.set(dest,src);
@@ -44,8 +44,8 @@
   poc=poc.replace('## 主要なローカル検証',exercise+'\n## 主要なローカル検証');
   wr('poc/README.md',poc);
  }
- assert(exists('docs/tutorials/first-session.md'));
- fs.rmSync('docs/tutorials/first-session.md');
+ assert(exists('poc/README.md'));
+ fs.rmSync('poc/README.md');
  const all=new Set([...tracked.map(p=>moves.get(p)||p),...Object.keys(historical)].filter(exists));
  const relevant=/\.(?:md|markdown|json|js|cjs|mjs|yml|yaml|py|html|css|txt|sh|xml|toml)$/i;
  function updateRel(u,oldSource,newSource){
@@ -160,5 +160,5 @@
  audit=audit.replace("x.file!=='poc/tests/handoff_quality.test.cjs'",
   "x.file!=='poc/tests/handoff_quality.test.cjs'&&x.file!=='poc/data/p2_position_condition32_research.v1.json'");
  wr('poc/tools/audit_doc_reorg.cjs',audit);
- console.log(JSON.stringify({renamedFiles:aliases,sourceDocsUpdated:touched,linkRebases:links,genericBannersCorrected:banners,oldGuidesPreserved:Object.keys(historical).length,tutorialMerged:!exists('docs/tutorials/first-session.md')}));
+ console.log(JSON.stringify({renamedFiles:aliases,sourceDocsUpdated:touched,linkRebases:links,genericBannersCorrected:banners,oldGuidesPreserved:Object.keys(historical).length,tutorialMerged:!exists('poc/README.md')}));
 })();

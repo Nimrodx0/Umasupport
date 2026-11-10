@@ -4,7 +4,7 @@
 
 **文書の種類**：公開ゲート。**用途**：承認・保留・非公開の境界。
 
-有効仕様は[要件](../reference/requirements.md)、現行の到達点は[status](../project/status.md)、作業順は[ロードマップ](../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
+有効仕様は[要件](../../reference/requirements.md)、現行の到達点は[status](../../project/status.md)、作業順は[ロードマップ](../../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
 
 ### 主な章
 
@@ -20,14 +20,14 @@
 - [2026-10-18：選択式イベントを自動報酬に変換しないゲート（PR #68）](#2026-10-18選択式イベントを自動報酬に変換しないゲートpr-68)
 
 
-**現在有効な取得元方針：GameTora由来の固定データが基準**。Checkerは別ソースの欠落・矛盾の発見に用い、GameWithは特定の疑義・欠落の裁定に限る。[現行のGameTora優先決定](../evidence/sources/gametora-baseline-event-policy-20261021.md)、[差異ごとの優先監査](../evidence/events/phase2-cross-source-completeness-exceptions-20261022.md)を参照。
+**現在有効な取得元方針：GameTora由来の固定データが基準**。Checkerは別ソースの欠落・矛盾の発見に用い、GameWithは特定の疑義・欠落の裁定に限る。[現行のGameTora優先決定](../sources/gametora-baseline-event-policy-20261021.md)、[差異ごとの優先監査](phase2-cross-source-completeness-exceptions-20261022.md)を参照。
 
 この文書のChecker入口を前提としたCLI例や旧PRの節は、**当時のChecker限定の収集・レビュー機構の手順と経緯**として保存する。新規開発でこの手順を全件イベントの第一資料取込に採用するという意味ではない。数値上の候補レコードを、元ソースの実選択肢の証拠にすることもできない。公開JSONと独立のレビュー／権利ゲートは現行のまま維持する。
 
 ## 決定事項と現状
 
 - 全サポートカードのイベント候補はGameTora由来データを**基準**とする。Checkerは収録不足、イベント同定・分岐・報酬の不一致を検出するために照合する。
-- GameTora固定版にないカードは**SSR30318〜30321の4枚**、Checker側の追加イベント候補は各5件で計20件。GameWithは**これらの局所的な欠落や不一致の裁定**に利用し、全件をGameWithで作り直さない。[固定元の欠落台帳](../evidence/events/phase2-missing-gametora-cards-20261022.md)。
+- GameTora固定版にないカードは**SSR30318〜30321の4枚**、Checker側の追加イベント候補は各5件で計20件。GameWithは**これらの局所的な欠落や不一致の裁定**に利用し、全件をGameWithで作り直さない。[固定元の欠落台帳](phase2-missing-gametora-cards-20261022.md)。
 - ウマサルタント独自の公開DBは **poc/data/reviewed_events.v1.json**。GitHub Pagesから同一オリジンで配信する。
 - 元データの文面や攻略文章を丸ごと移すのではなく、レビューで確定したカードID・スキルID・選択肢の効果・到達条件を独自データ形式にする。
 - **本PR時点では実ゲームのイベント収録0件。** 初期JSONは空。変換器、検証、公開DB接続だけを実装した。
@@ -50,7 +50,7 @@ node poc/tools/build_checker_catalog.cjs
 node poc/tools/build_checker_catalog.cjs --local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json
 ~~~
 
-local-dataディレクトリはgitignore対象。candidates.jsonには、カードIDと、元の配列上の番号（sourceIndex）、イベント識別子（sourceKey）、元のタイトル・選択肢・効果文全体のSHA-256（sourceDigest）、選択肢の件数だけを記録する。**イベント名・選択肢原文・効果原文は含まない。2026-10-17から各候補へ `titleFingerprint`（正規化イベント名のSHA-256）と `typographicFingerprint`（記号・空白除去＋小文字化した**補助診断専用**SHA-256）も追加し、[旧マスターのイベント名監査](../evidence/events/event-title-fingerprint-audit.md)で一時利用する。これは正式ゲームイベントIDではなく、候補ファイルそのものをPublicへコミットしない。**
+local-dataディレクトリはgitignore対象。candidates.jsonには、カードIDと、元の配列上の番号（sourceIndex）、イベント識別子（sourceKey）、元のタイトル・選択肢・効果文全体のSHA-256（sourceDigest）、選択肢の件数だけを記録する。**イベント名・選択肢原文・効果原文は含まない。2026-10-17から各候補へ `titleFingerprint`（正規化イベント名のSHA-256）と `typographicFingerprint`（記号・空白除去＋小文字化した**補助診断専用**SHA-256）も追加し、[旧マスターのイベント名監査](event-title-fingerprint-audit.md)で一時利用する。これは正式ゲームイベントIDではなく、候補ファイルそのものをPublicへコミットしない。**
 
 カード名の揺れは推測で自動統合しない。人手で対応を確認したときだけ、別ファイルに実ID→元ソースのカード表示名を明記して --aliases local-data/aliases.json を指定する。同一カードの同名イベントは消去・統合せず、別々のsourceIndexを持つ候補とし、duplicateTitleフラグで追加レビューを要求する。
 
@@ -102,7 +102,7 @@ node poc/tools/build_checker_catalog.cjs --local local-data/support_card.txt loc
 
 ## 4. サービス側の動作
 
-poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトのイベント公開JSONを取得して検証してカードに追加する。イベントJSONの取得・検証に失敗しても、通常ヒントは利用できる。イベントは公開用の0件から開始した。**2026-10-22以降は**公開イベントJSONをカード・スキル現行モデルに照らして検証後のみIndexedDBに保存し、取得失敗・破損更新時は検証済み旧版を再検証して復帰する。キャッシュも不正・未保持ならイベントは反映せず、通常ヒントのみ表示する。これはHTTPでアプリ本体を読み込める状況での**イベントデータ取得先だけの障害復旧**であり、HTML/JSの完全オフライン起動は保証しない。詳細は[最新の運用・受入記録](../evidence/events/f08-reviewed-event-cache-acceptance-20261022.md)。
+poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトのイベント公開JSONを取得して検証してカードに追加する。イベントJSONの取得・検証に失敗しても、通常ヒントは利用できる。イベントは公開用の0件から開始した。**2026-10-22以降は**公開イベントJSONをカード・スキル現行モデルに照らして検証後のみIndexedDBに保存し、取得失敗・破損更新時は検証済み旧版を再検証して復帰する。キャッシュも不正・未保持ならイベントは反映せず、通常ヒントのみ表示する。これはHTTPでアプリ本体を読み込める状況での**イベントデータ取得先だけの障害復旧**であり、HTML/JSの完全オフライン起動は保証しない。詳細は[最新の運用・受入記録](f08-reviewed-event-cache-acceptance-20261022.md)。
 
 ## 5. 残る課題
 
@@ -114,7 +114,7 @@ poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトの�
 
 ## 2026-10-16追加：表記差24件とGameWith掲載状態
 
-[検証記録](../evidence/sources/checker-aliases-and-gaps.md) のとおり、UmaSimとUmaUmaCheckerのSSR・SR **全417枚の名称対応候補**を確定。CLIは標準で `poc/config/checker-name-aliases.json`（24件）を使用する。`--no-aliases` なら厳密名称一致393枚のみを再監査できる。24件はソース名の一意な対応であり、正式なゲーム内イベントIDではない。
+[検証記録](../sources/checker-aliases-and-gaps.md) のとおり、UmaSimとUmaUmaCheckerのSSR・SR **全417枚の名称対応候補**を確定。CLIは標準で `poc/config/checker-name-aliases.json`（24件）を使用する。`--no-aliases` なら厳密名称一致393枚のみを再監査できる。24件はソース名の一意な対応であり、正式なゲーム内イベントIDではない。
 
 `poc/config/gamewith-ssr-review-status.json` はGameWithの欠損5枚の個別記事についてイベント詳細の掲載状態を保持。1枚に内容掲載、3枚はイベント欄「検証中」、1枚は未確認。「検証中」をゲーム内イベントが存在しない証拠とみなさない。実イベント公開DBは引き続き0件。
 
@@ -136,7 +136,7 @@ poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトの�
 
 ## 金白辞書の全件対応（2026-10-16）
 
-金白対応は `poc/src/skill_hierarchy.js` の実行時全件グルーピングを使用する。通常ヒントと同一名称・一意な場合は既存 `hint:名前` に統合し、固有の金・白は `skill:数値ID` とする。起動時にスキル辞書を取得し、3段階の○・◎・金を相互にリンクする。公開イベントDBは実イベント0件のまま。[実測・例外の資料](../evidence/skills/skill-hierarchy-coverage.md)参照。
+金白対応は `poc/src/skill_hierarchy.js` の実行時全件グルーピングを使用する。通常ヒントと同一名称・一意な場合は既存 `hint:名前` に統合し、固有の金・白は `skill:数値ID` とする。起動時にスキル辞書を取得し、3段階の○・◎・金を相互にリンクする。公開イベントDBは実イベント0件のまま。[実測・例外の資料](../skills/skill-hierarchy-coverage.md)参照。
 
 ## 2026-10-18：選択式イベントを自動報酬に変換しないゲート（PR #68）
 
@@ -161,10 +161,10 @@ poc/live.htmlはUmaSimの通常ヒントを取得した後、同一サイトの�
 
 ## 【旧運用・撤回済み】2026-10-18：GameWithをイベント効果の暫定正本にした当時の運用
 
-**現行ではこの節を実装方針として用いない。** 2026-10-21に[GameTora基準／GameWith個別裁定](../evidence/sources/gametora-baseline-event-policy-20261021.md)へ明確に切り替えた。以下は当時の判断履歴であり、全イベント収録をGameWith-firstに戻す指示ではない。
+**現行ではこの節を実装方針として用いない。** 2026-10-21に[GameTora基準／GameWith個別裁定](../sources/gametora-baseline-event-policy-20261021.md)へ明確に切り替えた。以下は当時の判断履歴であり、全イベント収録をGameWith-firstに戻す指示ではない。
 
 **攻略サイト間で数値・効果が矛盾した場合は、GameWithの該当サポカ記事を優先してレビュー入力を作成する。** 一致するまで複数記事を追加検索する作業を必須にしない。対象はイベントの効果・報酬数値で、ゲーム内イベントIDとカードID、連続条件、発生条件の確証とは別問題。サイトの掲載時点とURL、他サイトとの既知の不一致、例外はレビュー記録へ残す。GameWithが未掲載なら未解決にするか明示的な例外レビューを行い、他サイトから無断で穴埋めしない。
 
 **現行の公開イベント形式は獲得スキルとヒントLvのみをモデル化し、体力・絆ゲージ・ステータス報酬はアプリに表示・計上しない。** これらの数値差は監査でGameWith優先と記録するだけに留め、スキル経路の初期収録を停止しない。
 
-この優先はGameWithが絶対的に正しいと立証したものではなく、公開判断・第三者データ利用条件にも影響しない。正式な公開JSONへ反映するには従来どおり選択方式、結果別スキルとヒントLv、到達条件、実ID、出典と公開利用の根拠を個別承認し、イベント本体SHAを照合する。[意思決定ログ](../decisions/log.md)／[SSR30311差異記録](../evidence/events/unreviewed-event-numeric-candidate-audit.md)／[数値優先ポリシー](../../poc/config/event-source-priority.v1.json) を参照。
+この優先はGameWithが絶対的に正しいと立証したものではなく、公開判断・第三者データ利用条件にも影響しない。正式な公開JSONへ反映するには従来どおり選択方式、結果別スキルとヒントLv、到達条件、実ID、出典と公開利用の根拠を個別承認し、イベント本体SHAを照合する。[意思決定ログ](../../decisions/log.md)／[SSR30311差異記録](unreviewed-event-numeric-candidate-audit.md)／[数値優先ポリシー](../../../poc/config/event-source-priority.v1.json) を参照。

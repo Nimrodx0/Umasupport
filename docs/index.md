@@ -33,7 +33,6 @@
 | [plans](plans/index.md) | 製品・研究の小工程、依存、受入基準 |
 | [reference](reference/index.md) | 有効要件、技術・データ・イベントの定義 |
 | [how-to](how-to/README.md) | 出典更新、イベント取込、公開審査などの手順 |
-| [tutorials](tutorials/first-session.md) | 初めての開発・確認演習 |
 | [explanation](explanation/index.md) | 設計や推定の根拠と限界 |
 | [decisions](decisions/index.md) | ユーザー判断、権利、出典選定の経緯 |
 | [adr](adr/README.md) | 設計上の重要判断（採用・提案を区別） |

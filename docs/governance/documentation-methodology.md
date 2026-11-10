@@ -20,12 +20,12 @@
 
 | 読者がしたいこと | 文書種別 | 入口 |
 | --- | --- | --- |
-| 最初の操作を学ぶ | チュートリアル | [初回起動の演習](../tutorials/first-session.md) |
+| 最初の操作を学ぶ | チュートリアル | [PoC開発Runbookの初回演習](../../poc/README.md) |
 | ある作業を完了する | How-to／手順 | [文書更新手順](../how-to/update-docs.md)、[PoC開発手順](../../poc/README.md) |
 | 定義や仕様を調べる | リファレンス | [仕様書・技術契約](../reference/index.md) |
 | 採用理由や限界を理解する | 解説 | [設計判断の背景](../explanation/index.md) |
 
-**注意**：Diátaxisの公式ガイドは、ドキュメント改善のためにフォルダ構成を強制することや、空の4分類を作ることを推奨していません（[Diátaxisの使い方](https://diataxis.fr/how-to-use-diataxis/)）。現在の`tutorials/`等は既存文書の役割を示す**便宜的な分類**であり、規格による必須フォルダではありません。skills/events/sources/qualityというevidenceの分け方も、Diátaxisではなく研究資料の主題別分類です。
+**注意**：Diátaxisの公式ガイドは、ドキュメント改善のためにフォルダ構成を強制することや、空の4分類を作ることを推奨していません（[Diátaxisの使い方](https://diataxis.fr/how-to-use-diataxis/)）。現在の`reference/`や`how-to/`等は既存文書の役割を示す**便宜的な分類**であり、規格による必須フォルダではありません。skills/events/sources/qualityというevidenceの分け方も、Diátaxisではなく研究資料の主題別分類です。
 
 ## 2. WBS：成果物を階層的に分解する
 
@@ -51,7 +51,7 @@
 
 - 原本の研究結果・例外・数値・日時・固定版を削除せず、別文書に再構成するときは旧版の参照先を必ず残す。
 - 要約の正本をロードマップや索引とし、実験原本をevidence、現行仕様をrequirements、検証の到達点をstatusとして分離する。
-- リンク修正を本文の意味の変更から区別し、移設時は[情報保持監査](../quality/documentation-integrity-review-20261110.md)を参照する。
+- リンク修正を本文の意味の変更から区別し、移設時は[情報保持監査](../evidence/quality/documentation-integrity-review-20261110.md)を参照する。
 - 未承認の設計判断やP2モデルの未検証推定を確定した製品仕様として扱わない。
 
 本構成は**Diátaxis、WBS、ADR、Docs as Codeを目的別に組み合わせたもの**で、単一の公的規格への完全準拠・認証を主張しません。
