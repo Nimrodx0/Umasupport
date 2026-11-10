@@ -13,6 +13,7 @@ const readline=require('node:readline');
 const {spawn}=require('node:child_process');
 const source=require('../src/skill_rank_corner_source_cohort.cjs');
 const roster=require('./globalsim_roster32.cjs');
+const expanded=require('./globalsim_position_expanded.cjs');
 const geometry=require('./globalsim_phase_random_10m.cjs');
 const framesCheck=require('./globalsim_position_pilot.cjs');
 const rank=require('../src/skill_order_rate_bounds.cjs');
@@ -275,8 +276,7 @@ async function execute(cohort,courseData,template,engine){
  const feed=(async()=>{
   for(const p of plans){
    if(child.killed||child.stdin.destroyed||child.exitCode!==null)break;
-   if(!child.stdin.write(JSON.stringify(roster
-     ?require('./globalsim_position_expanded.cjs').makeRace(template,p):{})+'\n'))
+   if(!child.stdin.write(JSON.stringify(expanded.makeRace(template,p))+'\n'))
     await new Promise(resolve=>{
      const finish=()=>{
       child.stdin.off('drain',finish);child.stdin.off('close',finish);
