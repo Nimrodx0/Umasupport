@@ -90,6 +90,58 @@ const POLICY=Object.freeze({
   canInferStyle:false,
   rationale:'Unknown source condition is never silently neutral or ignored.'}
 });
+
+/*
+ * Small real-source path feasibility audit. One count per source skill ID,
+ * never union conditions from different AND rows or Invoke definitions.
+ * The result records candidate CO-OCCURRENCES, not simultaneous proc rates.
+ */
+const PILOT_TYPES=Object.freeze([
+ 'order','is_overtake','change_order_onetime','blocked_side_continuetime',
+ 'is_lastspurt','corner_random','all_corner_random','straight_random',
+ 'distance_diff_top'
+]);
+const RANK_TYPES=new Set(BUCKETS['rank-opportunity-study']);
+const WINDOW_TYPES=new Set(BUCKETS['timing-or-geometry-only']);
+function auditPilotPaths(records){
+ if(!Array.isArray(records))throw Error('Matched source skill records required');
+ const result=PILOT_TYPES.map(type=>{
+  let appSkills=0,sameAndRank=0,sameAndWindow=0,
+    sameAndRankWindow=0,withExtraDynamicAnd=0,
+    withOr=0,withPreConditions=0,withMultiInvoke=0;
+  const representativeSourceIds=[];
+  for(const skill of records){
+   const rows=(skill.invokes||[]).flatMap(inv=>
+    ['preConditions','conditions'].flatMap(side=>
+      (inv[side]||[]).map(row=>({side,row}))));
+   const targets=rows.filter(({row})=>row.some(x=>x.type===type));
+   if(!targets.length)continue;
+   appSkills++;
+   if(representativeSourceIds.length<5)
+    representativeSourceIds.push(String(skill.id));
+   const hasRank=({row})=>row.some(x=>x.type!==type&&RANK_TYPES.has(x.type));
+   const hasWindow=({row})=>row.some(x=>x.type!==type&&WINDOW_TYPES.has(x.type));
+   if(targets.some(hasRank))sameAndRank++;
+   if(targets.some(hasWindow))sameAndWindow++;
+   if(targets.some(x=>hasRank(x)&&hasWindow(x)))sameAndRankWindow++;
+   if(targets.some(({row})=>row.some(x=>x.type!==type&&
+    ['interaction-or-spurt-pilot','no-general-style-inference',
+      'complex-or-external-hold','unreviewed'].includes(typeDecision(x.type).group))))
+    withExtraDynamicAnd++;
+   if((skill.invokes||[]).some(inv=>
+    (inv.conditions||[]).length>1||(inv.preConditions||[]).length>1))
+    withOr++;
+   if(targets.some(x=>x.side==='preConditions'))withPreConditions++;
+   if((skill.invokes||[]).length>1)withMultiInvoke++;
+  }
+  return {type,group:typeDecision(type).group,appSkills,
+   sameAndRank,sameAndWindow,sameAndRankWindow,
+   withExtraDynamicAnd,withOr,withPreConditions,withMultiInvoke,
+   representativeSourceIds};
+ });
+ return result;
+}
+
 const catalogue=new Map();
 for(const [group,types] of Object.entries(BUCKETS)){
  for(const type of types){
@@ -152,6 +204,7 @@ function examine(all,app,{matchedRecords=[]}={}){
     [k,{allTypes:rows.filter(r=>r.group===k).length,
       appTypes:rows.filter(r=>r.group===k&&r.appMatchedSkills>0).length,
       appDistinctSkillCount:skillStates.filter(s=>s.groups.includes(k)).length}])),
+  pilotPathAudit:auditPilotPaths(matchedRecords),
   matchedSkillStructure:{
    multiInvoke:skillStates.filter(x=>x.multi).length,
    withPreConditions:skillStates.filter(x=>x.pre).length,
@@ -173,4 +226,4 @@ function examine(all,app,{matchedRecords=[]}={}){
   summary,byType:rows.sort((a,b)=>b.appMatchedSkills-a.appMatchedSkills||
     a.type.localeCompare(b.type))};
 }
-module.exports={BUCKETS,POLICY,typeDecision,examine};
+module.exports={BUCKETS,POLICY,PILOT_TYPES,typeDecision,auditPilotPaths,examine};
