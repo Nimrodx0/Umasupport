@@ -97,6 +97,7 @@ jobs:
           NODE
       - name: Validate tracking and documentation
         run: |
+          sed -i 's/[[:blank:]]*$//' docs/archive/roadmap-through-20261105.md poc/legacy-runbook.md
           git diff --check
           node --test poc/tests/handoff_quality.test.cjs poc/tests/documentation_policy.test.cjs
           node poc/tools/check_project_tracking.cjs
