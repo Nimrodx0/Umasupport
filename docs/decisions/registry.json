@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "asOf": "2026-11-10",
-  "description": "Indexed historical user decisions; review-required means unknown, not rejected.",
+  "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
     "current",
@@ -16,7 +16,11 @@
       "heading": "2026-11-06：発動条件の成立機会と脚質特異性を独立した2軸とする",
       "status": "current",
       "relation": [],
-      "note": "4脚質別発動条件の二軸研究方針。効果の有用性と閾値は未確定"
+      "note": "4脚質別発動条件の二軸研究方針。効果の有用性と閾値は未確定",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-001",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-001",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-002",
@@ -24,7 +28,11 @@
       "heading": "2026-11-06：サポカ標準適性は均衡脚質構成だけを基準に集約する",
       "status": "current",
       "relation": [],
-      "note": "標準P3では均衡編成のみ、別編成は研究・感度分析"
+      "note": "標準P3では均衡編成のみ、別編成は研究・感度分析",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-002",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-002",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-003",
@@ -32,7 +40,11 @@
       "heading": "2026-11-06：脚質適合性は4脚質独立の比較を基本とする",
       "status": "current",
       "relation": [],
-      "note": "前後2群に代わる独立比較。研究モデルは実発動率ではない"
+      "note": "前後2群に代わる独立比較。研究モデルは実発動率ではない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-003",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-003",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-004",
@@ -40,7 +52,11 @@
       "heading": "2026-11-06：展開依存の発動条件適合性は脚質を主対象とし、距離・馬場は簡易調査で判断",
       "status": "current",
       "relation": [],
-      "note": "明示的な距離・馬場条件は維持し、展開依存は脚質を優先して研究"
+      "note": "明示的な距離・馬場条件は維持し、展開依存は脚質を優先して研究",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-004",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-004",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-005",
@@ -48,7 +64,11 @@
       "heading": "2026-11-06：細分化された発動区間を固定モデルの順位根拠で更新（v1.2）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-005",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-006",
@@ -56,7 +76,11 @@
       "heading": "2026-11-06：馬場条件を脚質適合性と分離（v1.1、後続決定）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-006",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-007",
@@ -66,7 +90,11 @@
       "relation": [
         "D-001"
       ],
-      "note": "旧6区分は研究履歴。二軸の新製品標準ラベルと同一視しない"
+      "note": "旧6区分は研究履歴。二軸の新製品標準ラベルと同一視しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-007",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-001",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-008",
@@ -76,7 +104,11 @@
       "relation": [
         "D-002"
       ],
-      "note": "P2の感度研究は継続、P3の標準適性に非均衡条件を混ぜない"
+      "note": "P2の感度研究は継続、P3の標準適性に非均衡条件を混ぜない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-008",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-002",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-009",
@@ -84,7 +116,11 @@
       "heading": "2026-11-05：脚質別の順位条件成立率は複数頭シミュレーションを検証候補にする",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-009",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-010",
@@ -92,7 +128,11 @@
       "heading": "2026-11-05：脚質優位の推定と後方脚質の進出可能性は別軸にする（後続見直し）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-010",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-011",
@@ -102,7 +142,11 @@
       "relation": [
         "D-010"
       ],
-      "note": "75%以降を自動的に全脚質適性とする断定を撤回"
+      "note": "75%以降を自動的に全脚質適性とする断定を撤回",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-011",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-010",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-012",
@@ -112,7 +156,11 @@
       "relation": [
         "D-003"
       ],
-      "note": "前方/後方群による判断は現行P3標準へ直接使用しない"
+      "note": "前方/後方群による判断は現行P3標準へ直接使用しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-012",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-003",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-013",
@@ -120,7 +168,11 @@
       "heading": "2026-11-04：P2の発動状況分類と脚質推定は条件の組合せから判断する",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-013",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-014",
@@ -128,7 +180,11 @@
       "heading": "2026-11-04：UmaSim辞書未収録のスキルを残し、未確認項目だけ未収録にする（後続決定）",
       "status": "current",
       "relation": [],
-      "note": "未収録の効果・発動条件だけ未収録表示し、スキル自体は削除しない"
+      "note": "未収録の効果・発動条件だけ未収録表示し、スキル自体は削除しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-014",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-014",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-015",
@@ -136,7 +192,11 @@
       "heading": "2026-11-04：スキル詳細の複数効果記述をすべて表示",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-015",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-016",
@@ -144,7 +204,11 @@
       "heading": "2026-11-04：連続イベントの識別・スキル効果の確認",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-016",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-017",
@@ -152,7 +216,11 @@
       "heading": "2026-11-04：カードID順とサポカタイプの色",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-017",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-018",
@@ -160,7 +228,11 @@
       "heading": "2026-11-02：本人による初回実データ公開の明示承認",
       "status": "current",
       "relation": [],
-      "note": "2026-11-02時点のGT直接系列2487件の限定承認。新規追加は別審査"
+      "note": "2026-11-02時点のGT直接系列2487件の限定承認。新規追加は別審査",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-018",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-018",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-019",
@@ -168,7 +240,11 @@
       "heading": "2026-11-02：データ出典・利用条件ごとの一括公開審査を実装（仕様の再解釈ではない）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-019",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-020",
@@ -176,7 +252,11 @@
       "heading": "2026-10-30：公開範囲の削減前にユーザー体験への影響を監査する",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-020",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-021",
@@ -184,7 +264,11 @@
       "heading": "2026-10-30：一般利用者向け自動配信を優先し、ローカルJSON生成を補助工程にする",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-021",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-022",
@@ -192,7 +276,11 @@
       "heading": "2026-10-30：既存2,512イベントの一括利用と例外管理を主工程に変更",
       "status": "current",
       "relation": [],
-      "note": "既存イベントを一括利用し例外管理。公開承認は別のゲート"
+      "note": "既存イベントを一括利用し例外管理。公開承認は別のゲート",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-022",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-022",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-023",
@@ -200,7 +288,11 @@
       "heading": "2026-10-29：派生GitHub DB主経路へ復帰し製品完成を最優先",
       "status": "current",
       "relation": [],
-      "note": "外部構造化GT派生JSONを主経路、元HTMLの汎用取得は保留"
+      "note": "外部構造化GT派生JSONを主経路、元HTMLの汎用取得は保留",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-023",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-023",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-024",
@@ -208,7 +300,11 @@
       "heading": "2026-10-17 開発計画文書の再編",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-024",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-025",
@@ -218,7 +314,11 @@
       "relation": [
         "D-035"
       ],
-      "note": "GameWithを一般主経路とする旧判断は後続判断で変更"
+      "note": "GameWithを一般主経路とする旧判断は後続判断で変更",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-025",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-035",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-026",
@@ -226,7 +326,11 @@
       "heading": "2026-10-19（同日・後から再確認）：イベント発生条件と連続イベント内部の分岐は別物",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-026",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-027",
@@ -234,7 +338,11 @@
       "heading": "2026-10-19：イベント収録は「選択肢とその結果」だけを必要条件にする（最新のユーザー決定）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-027",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-028",
@@ -242,7 +350,11 @@
       "heading": "2026-10-19：イベント獲得条件の根拠・未確認項目は内部文書だけに記録する",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-028",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-029",
@@ -250,7 +362,11 @@
       "heading": "2026-10-19：イベント試用対象を45枚へ拡張、外部候補の自動加算は禁止",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-029",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-030",
@@ -260,7 +376,11 @@
       "relation": [
         "D-035"
       ],
-      "note": "GameWith全面優先だけ後続で置換。独自の公開承認済みJSONを使用する方針は継続"
+      "note": "GameWith全面優先だけ後続で置換。独自の公開承認済みJSONを使用する方針は継続",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-030",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-035",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-031",
@@ -268,7 +388,11 @@
       "heading": "2026-10-19：イベント報酬のID照合を通常ヒントの部分集合から全数値辞書へ切り替える",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-031",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-032",
@@ -276,7 +400,11 @@
       "heading": "2026-10-19：全スキル辞書にない数値IDを独自編集用補完台帳で扱う（PR #84）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-032",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-033",
@@ -284,7 +412,11 @@
       "heading": "2026-10-19：GameWith大量記事取得の条件と、オフライン抽出方式の決定",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-033",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-034",
@@ -292,7 +424,11 @@
       "heading": "2026-10-19：連続／結果依存候補の編集者専用保留は、無条件報酬と区別（PR #87）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-034",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-035",
@@ -300,7 +436,11 @@
       "heading": "2026-10-21：GameToraをDB基礎、GameWithを疑義裁定に使用（旧GameWith全面正本化を訂正）",
       "status": "current",
       "relation": [],
-      "note": "GT由来を基準としGameWithは個別疑義の補助裁定"
+      "note": "GT由来を基準としGameWithは個別疑義の補助裁定",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-035",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-035",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-036",
@@ -308,7 +448,11 @@
       "heading": "2026-10-23：GameTora／GameWithを正とし、実ゲーム再現検証を収録条件にしない（ユーザー確定）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-036",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-037",
@@ -316,7 +460,11 @@
       "heading": "2026-10-23：未確定17遷移は通常継続の計画規則と、経路の実証を区別",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-037",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-038",
@@ -324,7 +472,11 @@
       "heading": "2026-10-23：ユーザー再確認・連続イベントの解放フラグと抽選を混同しない（先の「独立確証0」扱いを訂正）",
       "status": "review-required",
       "relation": [],
-      "note": "原文と後続判断を照合するまで現行仕様と断定しない"
+      "note": "原文と後続判断を照合するまで現行仕様と断定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-038",
+      "assessmentBasis": null,
+      "reviewedAt": null
     },
     {
       "id": "D-039",
@@ -334,7 +486,11 @@
       "relation": [
         "D-023"
       ],
-      "note": "2026-10-29同日の後続判断で元HTML直接取得の優先を撤回"
+      "note": "2026-10-29同日の後続判断で元HTML直接取得の優先を撤回",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-039",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-023",
+      "reviewedAt": "2026-11-10"
     },
     {
       "id": "D-040",
@@ -342,7 +498,46 @@
       "heading": "2026-10-29：新サポカの差分自動登録を目標に確定（取得元は後続の派生GitHub決定を優先）",
       "status": "current",
       "relation": [],
-      "note": "新規IDだけ増分追加。データ源の優先順位は後続の派生GitHub主経路に従う"
+      "note": "新規IDだけ増分追加。データ源の優先順位は後続の派生GitHub主経路に従う",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-040",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-040",
+      "reviewedAt": "2026-11-10"
+    }
+  ],
+  "statusSemantics": {
+    "current": "Most recent relevant user decision identifiable in the reviewed log; editorial assessment, not fresh owner reconfirmation.",
+    "superseded": "Explicit later decision replaced the relevant earlier direction; relation points to later ID.",
+    "qualified": "A later decision narrowed or amended part of earlier direction; relation points to later ID.",
+    "review-required": "Current applicability is not established; do not infer rejection, approval, or implementation."
+  },
+  "assessment": {
+    "performedAt": "2026-11-10",
+    "type": "editorial classification based on decision log, not user re-approval",
+    "reference": "https://github.com/Nimrodx0/Umasupport/pull/384"
+  },
+  "documentEntries": [
+    {
+      "id": "R-001",
+      "heading": "サポートカード画像の利用条件：確認結果と実装境界",
+      "date": "2026-10-18",
+      "sourcePath": "docs/decisions/card-image-rights-decision.md",
+      "status": "review-required",
+      "relation": [],
+      "assessmentBasis": null,
+      "reviewedAt": null,
+      "note": "個別許諾と現在の画像配信可否を、現行の要件・実コード・公開条件で再照合するまで確定しない"
+    },
+    {
+      "id": "R-002",
+      "heading": "イベントデータ取得・利用条件に関する実務判断",
+      "date": "2026-10-19",
+      "sourcePath": "docs/decisions/event-data-acquisition-rights-20261019.md",
+      "status": "review-required",
+      "relation": [],
+      "assessmentBasis": null,
+      "reviewedAt": null,
+      "note": "当時の公開条件と利用者判断の記録。現在の公開承認範囲は公開ゲートと承認台帳を優先する"
     }
   ]
 }

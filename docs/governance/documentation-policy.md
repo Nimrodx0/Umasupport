@@ -27,7 +27,7 @@
 **フォルダの完全性や空のルートを義務化しません。** 現時点では`docs/index.md`が中心的な入口ですが、これは便宜的な配置であり規格上の要件ではありません。新規文書は、変更対象のコード・データ、正本、参照者の目的を考えて配置します。独立した責任を持ち、検索・参照の導線が確保できるなら、`docs/`直下やコード近傍にも配置できます。
 
 - 現行の進捗・上位方針は`project/`、詳細工程は`plans/`。
-- 現行の定義は`reference/`、具体的手順は`how-to/`、設計理由は`explanation/`、学習用演習は`tutorials/`。
+- 現行の定義は`reference/`、具体的手順は`how-to/`、設計理由は`explanation/`、学習用演習は`poc/README.md`に統合し、必要な場合にだけ専用の`tutorials/`を設ける。
 - 利用者判断は`decisions/`、設計判断記録は`adr/`、受入基準は`quality/`、文書のルールは`governance/`。
 - 固定研究は`evidence/`、更新する過去の記録は`history/`、凍結版は`archive/`。
 
@@ -55,7 +55,15 @@
 - 研究の「計測済み」、内部「実装済み」、一般公開、A/B/Cの「合格」を混同しない。未実施をPassと書かない。
 - 結果と課題は一工程ずつ短く記載し、反例・数値・出典版などの詳細は個別証拠へリンクする。**異なる作業を改行なしの長大な1文に連結しない**。
 - 日付付きの文書レビューと全件点検台帳は`evidence/quality/`の**固定記録**として扱います。現在の検証基準は`quality/`です。日付付きの研究記録は既存の`docs/evidence/skills/`、`events/`、`sources/`、`quality/`から適切な場所を選ぶ。例外ではファイルの意味・参照先と管理責任を明記し、既存の証拠体系を不必要に変更しない。
-- 大きな仕様変更は[decisions](../decisions/log.md)と[requirements](../reference/requirements.md)に反映。古い決定は履歴に残し、置換関係を明確にする。
+- 大きな仕様変更は[判断原文](../decisions/log.md)・[状態台帳](../decisions/registry.json)と[requirements](../reference/requirements.md)に反映。台帳から[索引を再生成](../../poc/tools/build_decision_index.cjs)し、古い決定は履歴に残して置換関係を明確にする。
+- 技術選択は[ADRの運用規約](../adr/README.md)に従い、明示採用の根拠なしにProposedをAcceptedへ変更しない。
+
+## 判断とADRの更新不変条件
+
+- 利用者判断の原文は既存の[判断ログ](../decisions/log.md)または独立した判断文書に一度だけ記載し、[registry.json](../decisions/registry.json)で出典・適用状態・置換先を管理します。`review-required`の項目を機械的に採用済みと推測しない。
+- 状態・後続判断の根拠、判定日、判断主体を明示し、[生成した索引](../decisions/index.md)の本文は直接編集しません。
+- 新しい技術判断のADRは提案・採用・置換を区別し、採用の承認主体と根拠が記録できるまで提案のまま残す。
+- 実行可能な技術契約は[reference](../reference/index.md)、その作業手順は[how-to](../how-to/README.md)、過去の検証・実験は[evidence](../evidence/README.md)に分けます。
 
 ## 変更時の手順
 

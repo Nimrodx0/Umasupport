@@ -37,4 +37,4 @@
 
 - 変更の対象・母集団・例外・合格条件を事前に定め、[検証計画](docs/quality/verification-plan.md) の **A 機構／B データ／C 実環境**を独立に評価する。単体・CI成功、固定データ監査、Pagesのブラウザ確認、物理端末の検証は相互に代替しない。
 - 原則として Node.js 22以上と既存CIを利用する。必要な監査、権利・公開ゲートは対象作業に応じて実行し、未実施をPassとしない。開発の実施手順は [poc/README.md](poc/README.md) を参照する。
-- 変更によって仕様・現状・作業順・小工程・Issueが変わる場合は、[文書運用規約](docs/governance/documentation-policy.md)に従い必要な記録を同期する。PRで検証した事実と、利用者の明示確認が必要な判断を区別する。
+- 利用者の新たな確定判断・後続判断が生じたら、[原文](docs/decisions/log.md)または独立した判断文書と[状態台帳](docs/decisions/registry.json)を同期し、[索引を生成](poc/tools/build_decision_index.cjs)する。重要な技術選択は[ADR運用](docs/adr/README.md)に従い、PRの存在だけで採用済みにしない。変更によって仕様・現状・作業順・小工程・Issueが変わる場合は、[文書運用規約](docs/governance/documentation-policy.md)に従い必要な記録を同期する。PRで検証した事実と、利用者の明示確認が必要な判断を区別する。
