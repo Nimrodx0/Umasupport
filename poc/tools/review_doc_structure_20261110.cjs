@@ -20,7 +20,7 @@ for(const p of evidence){
  if(s.includes('**資料の位置づけ**'))continue;
  const g=p.split('/')[2],[label,target]=groupDesc[g];
  const note='\n> **資料の位置づけ**：'+label+'（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。\n> **現行の参照先**：[正本の入口]('+rel(p,'docs/index.md')+') ／ [関連する工程・契約]('+rel(p,target)+')。執筆当時の「現在」「次工程」は現行の指示ではありません。\n';
- const h=/^# [^\n]*\n/.exec(s);
+ const h=/^#{1,2} [^\n]*\n/.exec(s);
  s=h?s.slice(0,h[0].length)+note+s.slice(h[0].length):note+'\n'+s;
  // Split only exceptionally long, plain prose (never tables, list items, code or headings).
  let inFence=false;
