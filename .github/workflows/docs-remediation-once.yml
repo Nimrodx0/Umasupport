@@ -5,6 +5,7 @@ on:
       - docs/reorganize-navigation-and-phase-plans-20261110
     paths:
       - .github/workflows/docs-remediation-once.yml
+      - poc/tools/remediate_docs_20261110_once.cjs
 permissions:
   contents: write
 jobs:
