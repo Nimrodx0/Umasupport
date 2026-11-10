@@ -17,6 +17,7 @@ const styleReview=require('../src/skill_style_review.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
+const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -64,6 +65,8 @@ function matchedRecord(skill,live,old){
   {matchedRecords:[...seen.values()]});
  const mixed=mixedResearch.analyze([...seen.values()]);
  const pilotCandidates=rankCorner.inspect([...seen.values()]);
+ const changeOrder=changeOrderSource.audit([...seen.values()]);
+ if(changeOrder.summary.sourceSkills!==30)throw Error('Original change_order_onetime source cohort changed: '+changeOrder.summary.sourceSkills);
  if(pilotCandidates.summary.absoluteOrder.distinctSkills!==34||
     pilotCandidates.summary.cornerRank.distinctSkills!==13)
   throw Error('Fixed candidate population unexpected: '+
@@ -176,6 +179,11 @@ function matchedRecord(skill,live,old){
  if(whole.shape.invalid||relevant.shape.invalid)
   throw Error('Unexpected malformed source skill predicates: '+whole.shape.invalid+'/'+relevant.shape.invalid);
  fs.writeFileSync('skill-condition-inventory-audit.json',JSON.stringify(report,null,2)+'\n');
+ fs.writeFileSync('p2-change-order-source-paths.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},...changeOrder},null,2)+'\n');
+ console.log('P2_CHANGE_ORDER_SOURCE_PATHS_START');
+ console.log(JSON.stringify(changeOrder.summary,null,2));
+ console.log('P2_CHANGE_ORDER_SOURCE_PATHS_END');
  fs.writeFileSync('p2-rank-corner-source-cohort.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},...pilotCandidates},
   null,2)+'\n');
