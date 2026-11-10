@@ -39,7 +39,7 @@ test('direct internal signed difference is checked against both source rank buff
   const original={frames:[{t:1,horses:physical},{t:2,horses:physical}]};
   const patched=physical.map((h,i)=>{
    const current=i+1,prev=i===0?2:i===1?1:current;
-   return [...h.slice(0,4),current*64+prev,current-prev];
+   return [...h.slice(0,4),current-prev,current*64+prev];
   });
   originals.push(original);
   probes.push({frames:[{t:1,horses:patched},{t:2,horses:patched}]});
@@ -52,7 +52,7 @@ test('direct internal signed difference is checked against both source rank buff
  assert(r.observations.movedDownTicks>0);
  assert.equal(r.validation.allModelPhysicsColumnsIdentical,true);
  const corrupt=structuredClone(probes);
- corrupt[0].frames[0].horses[0][5]=7;
+ corrupt[0].frames[0].horses[0][4]=7;
  assert.throws(()=>study.analyze(originals,corrupt,plans),/condition formula/);
  const physics=structuredClone(probes);
  physics[0].frames[0].horses[0][0]+=0.5;
