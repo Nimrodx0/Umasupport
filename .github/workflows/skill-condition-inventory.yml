@@ -7,6 +7,8 @@ on:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
+      - 'poc/src/skill_change_order_source_paths.cjs'
+      - 'poc/tests/skill_change_order_source_paths.test.cjs'
       - 'poc/src/skill_rank_corner_source_cohort.cjs'
       - 'poc/tests/skill_rank_corner_source_cohort.test.cjs'
       - 'poc/tests/skill_condition_mixed_cohort.test.cjs'
@@ -47,6 +49,7 @@ jobs:
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
+          node --check poc/src/skill_change_order_source_paths.cjs
           node --check poc/src/skill_rank_corner_source_cohort.cjs
           node --check poc/src/skill_condition_tags.js
           node --check poc/src/skill_condition_profiles.js
@@ -58,6 +61,7 @@ jobs:
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
           node --test poc/tests/skill_condition_mixed_cohort.test.cjs
+          node --test poc/tests/skill_change_order_source_paths.test.cjs
           node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
           node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs poc/tests/skill_style_tendency.test.cjs poc/tests/skill_style_review.test.cjs
       - name: Audit pinned skill registry and current published app model
@@ -112,6 +116,28 @@ jobs:
           assert(p.paths.every(x=>x.fullyModeledSkill===false));
           console.log(JSON.stringify(p.summary,null,2));
           NODE
+      - name: Verify pinned change_order_onetime source-path structure
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const p=JSON.parse(fs.readFileSync('p2-change-order-source-paths.json'));
+          assert.equal(p.schemaVersion,1);
+          assert.equal(p.status,'P2-source-change-order-path-structure-not-complete-proc');
+          assert.equal(p.matchedSkillDenominator,818);
+          assert.equal(p.summary.sourceSkills,30);
+          assert(p.summary.sourceAndPaths>=30);
+          assert(p.paths.every(x=>x.fullSkillEvaluated===false));
+          assert.equal(new Set(p.paths.map(x=>x.sourceNumericId)).size,30);
+          console.log('P2_CHANGE_ORDER_PATH_REPORT_START');
+          console.log(JSON.stringify(p.summary,null,2));
+          console.log('P2_CHANGE_ORDER_PATH_REPORT_END');
+          NODE
+      - name: Upload source-exact rank-change predicate path audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-change-order-source-predicate-cohort
+          path: p2-change-order-source-paths.json
+          retention-days: 14
       - name: Upload bounded source-verified P2 rank/corner candidate cohort
         uses: actions/upload-artifact@v4
         with:
