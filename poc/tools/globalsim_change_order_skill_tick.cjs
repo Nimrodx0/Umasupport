@@ -40,10 +40,16 @@ function patch(root){
  const changed={};
  for(const [name,pairs] of Object.entries(replacements)){
   const path=require('node:path').join(root,name);
-  let old=fs.readFileSync(path,'utf8'),next=old;
+  const old=fs.readFileSync(path,'utf8');
+  let next=old;
+  const newline=old.includes('\r\n')?'\r\n':'\n';
   for(const [from,to] of pairs){
-   if(old.split(from).length!==2)throw Error('Pinned v77 source patch site moved: '+name);
-   next=next.replace(from,to);
+   const needle=name==='src/lib.rs'?legacy.TARGET:from.replace(/\n/g,newline);
+   const replacement=to.replace(/\n/g,newline);
+   const hits=typeof needle==='string'?
+    old.split(needle).length-1:[...old.matchAll(needle)].length;
+   if(hits!==1)throw Error('Pinned v77 source patch site moved: '+name+' '+hits);
+   next=next.replace(needle,replacement);
   }
   if(next===old)throw Error('Empty frozen-source instrumentation patch');
   fs.writeFileSync(path,next);
