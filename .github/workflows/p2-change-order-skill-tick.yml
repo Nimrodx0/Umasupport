@@ -1,0 +1,108 @@
+name: P2.20 exact pre-skill-check rank state and source predicates
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_change_order_source_paths.cjs'
+      - 'poc/tests/skill_change_order_source_paths.test.cjs'
+      - 'poc/tools/globalsim_change_order_skill_tick.cjs'
+      - 'poc/tests/globalsim_change_order_skill_tick.test.cjs'
+      - 'poc/tools/audit_skill_conditions.cjs'
+      - '.github/workflows/p2-change-order-skill-tick.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-exact-skill-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify all source-path AND/OR and pre/post rank stage invariants
+        run: |
+          node --check poc/src/skill_change_order_source_paths.cjs
+          node --check poc/tools/globalsim_change_order_skill_tick.cjs
+          node --test poc/tests/skill_change_order_source_paths.test.cjs poc/tests/globalsim_change_order_skill_tick.test.cjs
+      - name: Build source-exact 30-skill predicate cohort from pinned UmaSim
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-change-order-source.log
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const a=JSON.parse(fs.readFileSync('p2-change-order-source-paths.json'));
+          assert.equal(a.source.sha256,'4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(a.summary.sourceSkills,30);
+          assert.equal(a.matchedSkillDenominator,818);
+          console.log(JSON.stringify(a.summary,null,2));
+          NODE
+      - name: Compile exact unmodified pinned GlobalSim v77
+        run: |
+          mkdir -p /tmp/p2-skill-tick-engine
+          cd /tmp/p2-skill-tick-engine
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+          mkdir -p /tmp/p2-skill-tick-report
+          cp target/release/race_engine_rs_v2 /tmp/p2-skill-tick-report/original-engine
+      - name: Patch only the temporary skill priority observer and replay fields
+        run: |
+          node poc/tools/globalsim_change_order_skill_tick.cjs patch \
+            /tmp/p2-skill-tick-engine > /tmp/p2-skill-tick-report/patch-provenance.json
+          cd /tmp/p2-skill-tick-engine
+          git diff --name-only | sort > /tmp/p2-skill-tick-report/modified-files.txt
+          printf "src/lib.rs\nsrc/race_field.rs\nsrc/race_field_retail.rs\n" > /tmp/p2-skill-tick-report/expected-files.txt
+          cmp /tmp/p2-skill-tick-report/modified-files.txt /tmp/p2-skill-tick-report/expected-files.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-skill-tick-report/pre-skill-stage-engine
+      - name: Observe 32 original and instrumented races at two priority-call boundaries
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_change_order_skill_tick.cjs replay \
+            /tmp/p2-skill-tick-engine/examples/v77-race.jsonl \
+            /tmp/p2-skill-tick-report/original-engine \
+            /tmp/p2-skill-tick-report/pre-skill-stage-engine \
+            p2-change-order-source-paths.json \
+            /tmp/p2-skill-tick-report/source-exact-skill-stage.json \
+            > /tmp/p2-skill-tick-report/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+          const b=fs.readFileSync('/tmp/p2-skill-tick-report/source-exact-skill-stage.json');
+          const x=JSON.parse(b);
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'P2-direct-retail-pre-skill-conditions-model-only-no-skill-proc');
+          assert.equal(x.design.races,32);
+          assert.equal(x.design.sourceMatchedSkills,30);
+          assert.equal(x.validation.allPhysicalValuesEqual,true);
+          assert.equal(x.validation.priorityCallRankStateMismatches,0);
+          assert.equal(x.validation.prePriorityDisagreesWithPreviousPostRankCache,0);
+          assert(x.validation.prePriorityMatchesPreviousPostRankCache>0);
+          assert(x.partialConditionOpportunity.evaluablePreSkillRunnerTicks>0);
+          assert(x.partialConditionOpportunity.sameTickPreAndPostDifferenceRunnerTicks>0);
+          assert(x.partialConditionOpportunity.signedRankPredicates.every(t=>
+           t.status==='model-pre-skill-check-marginal-only'));
+          const sha=crypto.createHash('sha256').update(b).digest('hex');
+          console.log('P2_PRE_SKILL_STAGE_SHA256='+sha);
+          console.log(JSON.stringify({design:x.design,validation:x.validation,
+           partialConditionOpportunity:{...x.partialConditionOpportunity,
+            signedRankPredicates:x.partialConditionOpportunity.signedRankPredicates.map(p=>({
+             operator:p.operator,value:p.value,sourcePaths:p.originalSourcePaths.length,
+             trueTicks:p.predicateTrueModelRunnerTicks,denominator:p.denominatorModelRunnerTicks}))},
+           contexts:x.styleContexts.length},null,2));
+          NODE
+      - name: Upload bounded derived source/path and model-stage study
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-skill-check-priority-vs-replay-model-stage
+          path: |
+            /tmp/p2-skill-tick-report/source-exact-skill-stage.json
+            /tmp/p2-skill-tick-report/patch-provenance.json
+          retention-days: 14
+          if-no-files-found: error
