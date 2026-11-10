@@ -14,6 +14,7 @@ const rankTime=require('../src/skill_rank_timing_audit.cjs');
 const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
+const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -57,6 +58,8 @@ function matchedRecord(skill,live,old){
   seen.set(record.id,record);
  }
  const relevant=inventory([...seen.values()]);
+ const p2Triage=researchTriage.examine(whole,relevant,
+  {matchedRecords:[...seen.values()]});
  const applied=profiles.attach(model,{skillText,pinnedSkillText:pinnedText});
  if(applied.matched!==relevant.shape.valid||
     applied.unavailable!==unknown.length||applied.noActivationRecord!==0)
@@ -161,6 +164,16 @@ function matchedRecord(skill,live,old){
  if(whole.shape.invalid||relevant.shape.invalid)
   throw Error('Unexpected malformed source skill predicates: '+whole.shape.invalid+'/'+relevant.shape.invalid);
  fs.writeFileSync('skill-condition-inventory-audit.json',JSON.stringify(report,null,2)+'\n');
+ fs.writeFileSync('p2-condition-research-triage.json',
+  JSON.stringify({source:report.source,...p2Triage},null,2)+'\n');
+ console.log('P2_CONDITION_TRIAGE_SUMMARY_START');
+ console.log(JSON.stringify({
+  summary:p2Triage.summary,
+  topAppTypes:p2Triage.byType.slice(0,30).map(x=>({
+   type:x.type,matchedSkills:x.appMatchedSkills,
+   group:x.group,treatment:x.treatment
+  }))},null,2));
+ console.log('P2_CONDITION_TRIAGE_SUMMARY_END');
  const mini=v=>({total:v.total,shape:v.shape,
   conditionTypes:v.counts.distinctConditionTypes,
   occurrences:v.counts.occurrences,
