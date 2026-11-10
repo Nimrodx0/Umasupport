@@ -62,7 +62,14 @@ jobs:
                 let decoded;
                 try{decoded=decodeURIComponent(m[1]);}catch{return match;}
                 const oldTarget=path.normalize(path.join(path.dirname(former),decoded));
-                const newTarget=move.get(oldTarget)||oldTarget;
+                let newTarget=move.get(oldTarget)||oldTarget;
+                // Historic snapshots were copied into archive/ without rebasing their links.
+                // Reinterpret a missing archive target relative to docs/ before judging it broken.
+                if(!fs.existsSync(newTarget) && file.startsWith('docs/archive/')){
+                  const alternate=path.normalize(path.join('docs',decoded));
+                  const corrected=move.get(alternate)||alternate;
+                  if(fs.existsSync(corrected))newTarget=corrected;
+                }
                 if(former===file&&newTarget===oldTarget)return match;
                 const newUri=path.relative(path.dirname(file),newTarget) || './';
                 return prefix+newUri+(m[2]||'')+suffix;
