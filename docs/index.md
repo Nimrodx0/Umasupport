@@ -9,6 +9,7 @@
 - **P2研究・スキル適合性**：[研究小工程](plans/skill-conditions/index.md) → [技術設計](explanation/skill-activation-tendencies-design.md) → [関連する固定証拠](evidence/skills/README.md)
 - **次の実装の着手**：[ロードマップ](project/roadmap.md) → [開発状況](project/status.md) → [詳細計画](plans/index.md)
 - **合格基準の確認**：[検証計画](quality/verification-plan.md) → 対象のテスト／CI → [証拠記録](evidence/README.md)
+- **文書の不都合を発見した**：[Dトラックの改善計画](plans/documentation-maintenance.md) → [継続記録 Issue #388](https://github.com/Nimrodx0/Umasupport/issues/388)
 
 必要な文書を段階的に読むこと。文書一覧を一括でコンテキストに投入せず、該当するコード・実際のJSONと突き合わせます。
 
