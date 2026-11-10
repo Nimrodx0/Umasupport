@@ -21,6 +21,14 @@
 
 [API](https://github.com/daftuyda/GlobalSim/blob/80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1/src/api.rs#L60-L92)ではexperimentalRetailRuntimeが明示的に有効でない限りretailモードではない。非retailとretailで追い抜きの内部判定元が異なる可能性を保持する。
 
+## UmaSim固定版との照合における重要な注意
+
+[UmaSim固定SkillChecker.kt](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt#L243-L257) では、**change_order_onetime / is_overtake / blocked_side_continuetime は checkSpecialState による状態判定**。その定義は同ファイルの[358–360行](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt#L358-L360) にあるように、辞書の条件コードを approximateTypeToState のキーへ変換し、simulation.specialState から値を読む方式。**これを元ゲームの物理的な追い抜き・接触・阻害条件の独立再現実装とみなさない**。
+
+一方、[同固定UmaSimの208行](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt#L208) は is_lastspurt の判定に isInSpurt を使用する。GlobalSimの内部フラグとはモデルと更新時刻が異なる可能性があるため、両シミュレータで同名条件の結果が一致するとは無検証で主張しない。
+
+**この差はモデル実測の信頼性に直結する**。したがって、GlobalSimの内部状態が忠実に読み取れたとしても、UmaSimの抽選近似と整合したことだけを実ゲームの検証とすることはできない。
+
 ## 次の実験の採否ゲート
 
 1. モデルの**内部変数と更新時刻**を直接取得できるか。同じ名称でも状態判定と順位変動の代理値を混同しない。
