@@ -19,6 +19,8 @@ function audit(records){
     if(!Array.isArray(ors))throw Error('Invalid source OR layout');
     for(const [orIndex,and] of ors.entries()){
      if(!Array.isArray(and))throw Error('Invalid source AND layout');
+     if(and.some(c=>!c||typeof c.type!=='string'||typeof c.operator!=='string'))
+      throw Error('Invalid source AND predicate');
      const uses=and.filter(c=>c?.type===TARGET);
      if(!uses.length)continue;
      paths.push({
