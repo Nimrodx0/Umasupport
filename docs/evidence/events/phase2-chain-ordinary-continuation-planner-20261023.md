@@ -15,4 +15,4 @@ GameTora固定版にない4SSR（30318〜30321）およびSSR30221について�
 
 ## 出典
 
-GameToraの[基準継続ルール](gametora-baseline-event-policy-20261021.md)。個別サポカGameWithの記事：[30318](https://gamewith.jp/uma-musume/article/show/578814)、[30319](https://gamewith.jp/uma-musume/article/show/578819)、[30320](https://gamewith.jp/uma-musume/article/show/578818)、[30321](https://gamewith.jp/uma-musume/article/show/578817)、[30221](https://gamewith.jp/uma-musume/article/show/461418)。
+GameToraの[基準継続ルール](../sources/gametora-baseline-event-policy-20261021.md)。個別サポカGameWithの記事：[30318](https://gamewith.jp/uma-musume/article/show/578814)、[30319](https://gamewith.jp/uma-musume/article/show/578819)、[30320](https://gamewith.jp/uma-musume/article/show/578818)、[30321](https://gamewith.jp/uma-musume/article/show/578817)、[30221](https://gamewith.jp/uma-musume/article/show/461418)。

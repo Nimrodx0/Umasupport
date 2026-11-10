@@ -46,7 +46,7 @@
 
 - 解析器：`poc/tools/globalsim_position_expanded.cjs`。流れてきた出力を1レースごとに解析・解放する。膨大な元リプレイJSONLをリポジトリに格納しない。
 - 単体テスト：`poc/tests/globalsim_position_expanded.test.cjs`。実測件数・合計・9/12頭・乱数再現性・ゲートの交替・ステータス変化・全馬の順位カウント・異常系を検査。
-- 完全分離した[実エンジンのCI](../.github/workflows/globalsim-position-expanded.yml)：固定GlobalSimを`cargo build --release --locked`し、競走全員の位置が得られた場合だけ派生集計の`summary.json`を保存する。
+- 完全分離した[実エンジンのCI](../../../.github/workflows/globalsim-position-expanded.yml)：固定GlobalSimを`cargo build --release --locked`し、競走全員の位置が得られた場合だけ派生集計の`summary.json`を保存する。
 - 独立性：Python/JSの実験で外部の公式レースログを作ったことにはならない。元のGlobalSimの検証値[公式グローバル版の約70万レース一致](https://github.com/daftuyda/GlobalSim/blob/80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1/docs/ACCURACY.md)を試験内容の証拠として参照する一方、データの独立検証ではない。
 - 公式日本版との違いの**優先度は下げる**というユーザー方針を反映。ただし、現行日本版との完全同一性を証明したと表示しない。研究用GlobalSim順位分布の**再現可能性**と**脚質構成への頑健性**を先に確認する。
 

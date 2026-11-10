@@ -2,13 +2,13 @@
 
 ## 役割
 
-[更新運用の正本](upstream-refresh-operations.md)で生じる未採用の`automation/upstream-refresh-candidate`枝に対し、**GTとUmaSimの元データそのものを一時環境で全件再計算**する。[候補出典のメタデータ監視](../poc/src/upstream_refresh_watch.cjs)はGit blobの差分しか見ていなかったため、Git上でファイルが増えたことと、カード・ヒント・イベントの各構造が安全に扱えることは区別する必要がある。
+[更新運用の正本](../../upstream-refresh-operations.md)で生じる未採用の`automation/upstream-refresh-candidate`枝に対し、**GTとUmaSimの元データそのものを一時環境で全件再計算**する。[候補出典のメタデータ監視](../../../poc/src/upstream_refresh_watch.cjs)はGit blobの差分しか見ていなかったため、Git上でファイルが増えたことと、カード・ヒント・イベントの各構造が安全に扱えることは区別する必要がある。
 
 本工程の対象は**構造・網羅性・数値スキルID辞書の形状**であり、イベントの報酬・選択肢の具体的な意味、実ゲーム内分岐の独立裁定、第三者データの再利用許可、公開承認ではない。
 
 ## データ取得と検証
 
-[`Preflight full upstream source candidate`](../.github/workflows/upstream-candidate-full-preflight.yml) は以下を区別して運用する。
+[`Preflight full upstream source candidate`](../../../.github/workflows/upstream-candidate-full-preflight.yml) は以下を区別して運用する。
 
 - `pull_request`・対象コードの`main`更新：**従来の本物の固定GT559カード全件を使った新アダプタの回帰**。結果が559ファイル／2,488イベント／4,129選択肢／4,376結果経路から変わったら失敗。固定元の内部全件イベント正規化と別実装の分岐診断が矛盾しないか検査する。
 - `workflow_dispatch`・枝 `automation/upstream-refresh-candidate`：**候補Draftの実行時だけ**完全元データを読み込む。固定GTコミットと候補GTコミットをそれぞれリポジトリへcheckoutし、現在の候補manifestに記録したGit commit／tree SHAを検算する。UmaSimの固定／候補 `support_card.txt`と`skill_data.txt` の合計4ファイルだけを一時`$RUNNER_TEMP`へ取得し、Git blob SHAを検算する。

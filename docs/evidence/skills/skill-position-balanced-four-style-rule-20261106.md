@@ -1,6 +1,6 @@
 # P2：均衡編成基準の4脚質順位帯比較とスキル条件への接続（2026-11-06）
 
-**状態：研究専用の判定器・固定根拠を実装。サポカ集約P3・公開UIには未接続。** 仕様上の基準は[要件](requirements.md)と[決定](decisions.md)、先行の4脚質実測は[固定研究](skill-position-four-style-pairwise-20261106.md)を参照。
+**状態：研究専用の判定器・固定根拠を実装。サポカ集約P3・公開UIには未接続。** 仕様上の基準は[要件](../../requirements.md)と[決定](../../decisions.md)、先行の4脚質実測は[固定研究](skill-position-four-style-pairwise-20261106.md)を参照。
 
 ## 狙いと比較母集団
 
@@ -8,11 +8,11 @@
 
 脚質ごとの順位占有率は4脚質を個別に調べる。局面4種×元データの順位帯11種×脚質ペア6種＝**264ペア**。均衡編成に限り、全24設定と両シード半群で厳密に一方向だったものは**164ペア**、不一致・同値・不安定などで保留するものは**100ペア**。他の観測比率編成や逃げ不在編成を標準評価の決定・平均・ペナルティに使わない。ただし過去研究の反例として保持する。
 
-根拠は[固定GlobalSimモデル出力（Actions #42155087605）](https://github.com/Nimrodx0/Umasupport/actions/runs/42155087605)の `four-style-pairwise.json`（SHA256 `62764af14894ed0ef5354f3136b8d9eaae0dc8426ca2d8a0f146ccd24ea25cc9`）。研究用の固定短縮表は[4脚質比較の方向表](../poc/data/p2_balanced_four_style_rank_direction.v1.json)。完全レポートからのSHAと全264ペアの一致は[検証器](../poc/tools/verify_balanced_four_style_evidence.cjs)が固定GlobalSim再実行で確認する。**短縮表にある「?」は、適性差ゼロという意味ではない。**
+根拠は[固定GlobalSimモデル出力（Actions #42155087605）](https://github.com/Nimrodx0/Umasupport/actions/runs/42155087605)の `four-style-pairwise.json`（SHA256 `62764af14894ed0ef5354f3136b8d9eaae0dc8426ca2d8a0f146ccd24ea25cc9`）。研究用の固定短縮表は[4脚質比較の方向表](../../../poc/data/p2_balanced_four_style_rank_direction.v1.json)。完全レポートからのSHAと全264ペアの一致は[検証器](../../../poc/tools/verify_balanced_four_style_evidence.cjs)が固定GlobalSim再実行で確認する。**短縮表にある「?」は、適性差ゼロという意味ではない。**
 
 ## 条件と脚質の結合規則
 
-[研究専用判定器](../poc/src/skill_balanced_four_style_fit.cjs)は、元のスキルデータの`order_rate`条件を**ANDのまま**元の順位帯のどれかに厳密一致させ、`phase_random == 0..3`の**局面全体に対応した抽選窓**がある場合だけ、その順位帯における4脚質の比較を参照する。9/12頭それぞれの順位番号換算も保持する。
+[研究専用判定器](../../../poc/src/skill_balanced_four_style_fit.cjs)は、元のスキルデータの`order_rate`条件を**ANDのまま**元の順位帯のどれかに厳密一致させ、`phase_random == 0..3`の**局面全体に対応した抽選窓**がある場合だけ、その順位帯における4脚質の比較を参照する。9/12頭それぞれの順位番号換算も保持する。
 
 - **relative-leader**：モデル比較で対象脚質が他3脚質のすべてを一貫して上回る。
 - **relative-intermediate**：他の脚質より高い比較と低い比較があり、3脚質すべてとの方向が揃った部分順序。
@@ -31,6 +31,6 @@
 
 ## 検証と次工程
 
-**A：機構**は[回帰](../poc/tests/skill_balanced_four_style_fit.test.cjs)で部分順序・AND/OR・除外・未知を検査する。**B：研究モデル**は[固定GlobalSimワークフロー](../.github/workflows/globalsim-rank-band-dominance.yml)で完全レポートSHA256、24設定×6ペア×44局面順位帯を再検証する。**C：実環境**は未対象で、公開アプリのデッキ表示・保存や既存スキルラベルには変更を加えていない。
+**A：機構**は[回帰](../../../poc/tests/skill_balanced_four_style_fit.test.cjs)で部分順序・AND/OR・除外・未知を検査する。**B：研究モデル**は[固定GlobalSimワークフロー](../../../.github/workflows/globalsim-rank-band-dominance.yml)で完全レポートSHA256、24設定×6ペア×44局面順位帯を再検証する。**C：実環境**は未対象で、公開アプリのデッキ表示・保存や既存スキルラベルには変更を加えていない。
 
 次工程は、(1) 4脚質の相対比較をスキル単位の6区分（高適合・低適合・条件依存・脚質差なし・保留・発動不可）へ変換する際の**根拠と基準**を検討する、(2) 元の53件＋追加24件を厳密な条件・獲得経路の単位で再審査する、(3) サポカの提供スキルと重複・条件付き結果・未収録の扱いを確定させてP3に渡す。相対順位だけから高／低を一律導出する閾値は採用していない。

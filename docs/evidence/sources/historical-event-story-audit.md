@@ -21,8 +21,8 @@
 ## 再実行
 
 - 人工データ回帰：python3 -m unittest discover -s poc/tests -p 'test_historical_event_master.py' -v
-- [限定ワークフロー](../.github/workflows/historical-event-master-audit.yml)：PR（スクリプト・ワークフロー自身の変更）または手動で固定コミットから3ファイルを一時取得。ゲーム生データをアーティファクトやPublicレポジトリに保存しない。
-- [監査スクリプト](../poc/tools/audit_historical_event_master.py)：UmaSim TSV、ゲームマスターSQLite、任意の候補JSONをローカル指定可能。
+- [限定ワークフロー](../../../.github/workflows/historical-event-master-audit.yml)：PR（スクリプト・ワークフロー自身の変更）または手動で固定コミットから3ファイルを一時取得。ゲーム生データをアーティファクトやPublicレポジトリに保存しない。
+- [監査スクリプト](../../../poc/tools/audit_historical_event_master.py)：UmaSim TSV、ゲームマスターSQLite、任意の候補JSONをローカル指定可能。
 
 実測値と制約は限定監査の合格結果を得てから追記する。少数実データ試験や2025年版をもってPhase 2完了とはしない。
 

@@ -17,7 +17,7 @@
 | **order_rate>=40 AND order_rate<=80** | **4～7位** | **5～10位** |
 | order_rate>=50 AND order_rate<=75 | 5～7位 | 6～9位 |
 
-実装：[順位割合の人数別投影コード](../poc/src/skill_order_rate_bounds.cjs)。正の値を四捨五入して0.5は上方に丸める。
+実装：[順位割合の人数別投影コード](../../../poc/src/skill_order_rate_bounds.cjs)。正の値を四捨五入して0.5は上方に丸める。
 
 - 境界順位 B(n,p) = floor((n×p+50)/100)
 - 元の order_rate OP p に対し、1～n位の整数順位 r を条件 r OP B(n,p) で比較する。
@@ -30,7 +30,7 @@
 **文献で確認した説明**
 - [GameTora条件ビューア](https://gametora.com/umamusume/skill-condition-viewer?skill=100211)：order_rate は出走頭数×割合を最も近い整数へ丸め、元の演算子で整数順位と比較する方式。9頭で >50 → 6位以下の具体例を示す。
 - [競技機構Wikiの順位率解説](https://wiki.biligame.com/umamusume/马娘比赛机制)：9頭の50%は5位へ丸められ、>50は6位以下という別資料の説明。
-- 固定GlobalSim研究の [globalsim_position_pilot.cjs](../poc/tools/globalsim_position_pilot.cjs) も同じ丸め式。今回はこれを9/12頭の境界で照合した。
+- 固定GlobalSim研究の [globalsim_position_pilot.cjs](../../../poc/tools/globalsim_position_pilot.cjs) も同じ丸め式。今回はこれを9/12頭の境界で照合した。
 
 **固定UmaSim実装だけでは証明できないこと**
 - 固定UmaSimの [SkillData.kt](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt) の未対応条件一覧に order_rate が含まれる。
@@ -56,13 +56,13 @@
 
 元の式で最も多いものは order_rate<=50（**344スキル**）、order_rate>=40（**273スキル**）、order_rate<=80（**82スキル**）。複数条件を使うスキルが重なるため、これらの件数を足し合わせない。
 
-[元辞書のSHAを照合して集計するコード](../poc/tools/order_rate_integer_audit.cjs)、[演算子と境界の人工テスト](../poc/tests/skill_order_rate_bounds.test.cjs)、[元AND/OR経路監査テスト](../poc/tests/order_rate_integer_audit.test.cjs)、[固定元辞書と未対応元コードを確認するCI](../.github/workflows/order-rate-integer-audit.yml)。
+[元辞書のSHAを照合して集計するコード](../../../poc/tools/order_rate_integer_audit.cjs)、[演算子と境界の人工テスト](../../../poc/tests/skill_order_rate_bounds.test.cjs)、[元AND/OR経路監査テスト](../../../poc/tests/order_rate_integer_audit.test.cjs)、[固定元辞書と未対応元コードを確認するCI](../../../.github/workflows/order-rate-integer-audit.yml)。
 
 専用Actions：[実行 #42126623094](https://github.com/Nimrodx0/Umasupport/actions/runs/42126623094) は成功。派生集計 report.json のartifact名 source-verified-order-rate-integer-audit、ID **13462250433**（保存期限あり）。
 
 ## 3. 脚質適合性v1.2への接続
 
-現行の研究用適合性判定器 [skill_activation_fit_v1.cjs](../poc/src/skill_activation_fit_v1.cjs) に、従来未対応だった50%以外の順位条件の**人数別の位置投影（sourceRankProjection）**を部分評価として追加した。
+現行の研究用適合性判定器 [skill_activation_fit_v1.cjs](../../../poc/src/skill_activation_fit_v1.cjs) に、従来未対応だった50%以外の順位条件の**人数別の位置投影（sourceRankProjection）**を部分評価として追加した。
 
 ただし、**整数順位に換算できることと、脚質がその順位条件を満たしやすいことは別**。たとえば >=40 は中団から後方まで広く含み、一律に差し・追込へ高適合としない。他のAND条件に追い抜き等があれば、順位条件のみの投影からスキル全体を確定しない。
 

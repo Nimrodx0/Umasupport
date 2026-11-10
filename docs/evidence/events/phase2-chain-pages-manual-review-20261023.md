@@ -6,7 +6,7 @@
 
 [GitHub Pages・連続イベント段階別試用](https://nimrodx0.github.io/Umasupport/poc/phase2-chain-preview.html) を独立ページとして追加する。既存の[通常イベント8件](https://nimrodx0.github.io/Umasupport/poc/phase2-eight-preview.html)の試用ページと相互に移動できる。
 
-固定GTにないSSR30318〜30321の4枚について、GameWithで数値採用済みの**連続イベント12段階・19結果行・8件の数値スキルヒント**をブラウザで試せる。ただし、[手動段階到達の編集検査](../poc/src/phase2_chain_manual_replay.cjs)で列挙済みの前段15遷移候補は、すべて続行・打ち切りが**未確証**である。この画面は段階を自動的につなげない。
+固定GTにないSSR30318〜30321の4枚について、GameWithで数値採用済みの**連続イベント12段階・19結果行・8件の数値スキルヒント**をブラウザで試せる。ただし、[手動段階到達の編集検査](../../../poc/src/phase2_chain_manual_replay.cjs)で列挙済みの前段15遷移候補は、すべて続行・打ち切りが**未確証**である。この画面は段階を自動的につなげない。
 
 ## 段階の操作と到達条件
 

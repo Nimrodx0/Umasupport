@@ -2,7 +2,7 @@
 
 ## なぜ必要か
 
-`AGENTS.md`・`docs/decisions.md`・[GameTora基準／GameWith裁定方針](gametora-baseline-event-policy-20261021.md) に、2026-10-21時点で方針は既に明記されていた。にもかかわらず、30321ドゥラメンテの連続2・3を「GameWith記事には明記されるが、第二の独立サイトや実ゲームで実証できない」として保留した。**これは文書の欠落ではなく、方針を参照・適用できなかった作業上の失敗**。PR #164で2件だけ訂正しても、新しいカードで同じ判断を繰り返す危険はなくならない。
+`AGENTS.md`・`docs/decisions.md`・[GameTora基準／GameWith裁定方針](evidence/sources/gametora-baseline-event-policy-20261021.md) に、2026-10-21時点で方針は既に明記されていた。にもかかわらず、30321ドゥラメンテの連続2・3を「GameWith記事には明記されるが、第二の独立サイトや実ゲームで実証できない」として保留した。**これは文書の欠落ではなく、方針を参照・適用できなかった作業上の失敗**。PR #164で2件だけ訂正しても、新しいカードで同じ判断を繰り返す危険はなくならない。
 
 既存の汎用数値裁定関数`poc/src/event_source_precedence.cjs`にも、**GameToraのベース数値が欠落している場合にGameWithの値が存在しても`unresolved-baseline-missing`を返す**挙動があり、欠損ならGameWithで裁定する規則と矛盾していた。この点も修正し、GT元サイトをカード単位で確認してから、GameWithの明示的な事実を選択できるようにした。
 

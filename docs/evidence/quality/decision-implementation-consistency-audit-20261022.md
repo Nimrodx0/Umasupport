@@ -4,7 +4,7 @@
 
 今回の起点は、**GameTora固定元→元サイトを確認→GameWithを疑義裁定に使用するという既存のユーザー決定が文書化済みだったのに、作業中に「さらに第二の独立サイトやゲーム実測を要する」という条件が暗黙に追加されたこと**である。ルールを細分化して増やす前に、ユーザー決定・設計・コード・テスト・CIの期待値が一致しているかを調査する。
 
-[文書運用規約](documentation-policy.md)に定める序列を維持する。**ユーザーの最新決定と現在の要件**が「何を作るか」の判断材料、コードは「現に何が動くか」の証拠、テストは「何を期待値として固定したか」の証拠であり、**CI PASSだけで仕様適合やユーザー承認は証明されない**。設計の改善を提案することと、合意済みの必須条件を変更することは別。開発上の仮説から必須条件への格上げを黙って行わない。
+[文書運用規約](../../documentation-policy.md)に定める序列を維持する。**ユーザーの最新決定と現在の要件**が「何を作るか」の判断材料、コードは「現に何が動くか」の証拠、テストは「何を期待値として固定したか」の証拠であり、**CI PASSだけで仕様適合やユーザー承認は証明されない**。設計の改善を提案することと、合意済みの必須条件を変更することは別。開発上の仮説から必須条件への格上げを黙って行わない。
 
 今回はイベントソース・結果依存・開発版設定・公開ゲートの**4領域のスポット監査**であり、レポジトリ全コード／全決定の網羅監査ではない。対象ファイル名を明示し、未調査箇所について「矛盾なし」と主張しない。
 
@@ -12,10 +12,10 @@
 
 | ID・分類 | 現行決定／要件 | 実装とテストで確認したこと | 結論・今回の対応 |
 | --- | --- | --- | --- |
-| **C-01 過去の真の方針逸脱、既に修正済み** | [decisions.md](decisions.md)／[GameTora基準方針](gametora-baseline-event-policy-20261021.md)：GT固定版が基本、欠損・疑義は元サイトを確認の上GameWithで裁定。GameWithに明示される値の採用に第二の編集元／実ゲーム直接検証は不要 | 旧版の `poc/src/event_source_precedence.cjs` はGT基準数値が欠落するとGameWith数値があっても未解決にした。その挙動を旧テストも正解扱いしていた。**PR #165**で元サイト確認後にGameWithを選ぶよう修正。現在の `event_exception_adjudication.test.cjs` は余分なゲートを拒否 | **以前のコード＋テスト両方が誤っていた**。現行コードは補正済み。テスト成功は決定の正当性を証明しないという直接例 |
-| **C-02 現行要件中の古い実装状態、今回訂正** | [requirements.md](requirements.md) §2026-10-19：先行イベントの選択／結果により後続が変わる場合は再現する。元文は `outcomeId` が未対応で今後追加が必要と記載 | `poc/src/event_schema.js` は `requires.all[].outcomeId` を検証し、`poc/src/core.js` は結果別の到達と報酬を処理、`poc/tests/outcome_dependent_branches.test.cjs` は成功／失敗ルート・不正依存の回帰を持つ。[event-schema.md](event-schema.md)も「実装済み」と明記 | **実装は存在するのに正本文書が古い**。新たな仕様決定を作らず、requirementsの動詞「追加してから」を「実装済みの機構で再現」に訂正。実ゲームイベントへ適用済みとは言わない |
-| **C-03 ユーザー要求ではない既存機能・テストの維持、要判断** | [requirements.md](requirements.md) §11、[decisions.md](decisions.md) 2026-10-16：公開前開発では旧ID・旧設定スキーマへの後方互換**維持は不要**。不正な設定値は確認なく上書きしない | `poc/src/settings.js` の `migrateV1` とv2→v3変換が残り、`poc/tests/settings.test.cjs` は旧版からの無損失移行を期待値として固定。旧ID形式も受理するという意味ではない。アーキテクチャ本文が「移行する」と説明する一方、同じ文書の障害時節は「旧スキーマ互換を維持しない」と記載 | **「不要」は「禁止」ではないため、仕様違反と断定しない**。しかし旧移行を残す保守コスト・テストの価値は未審査。今回コード／既存テストは消さず、architectureに「実装は残存、保守義務はない」と区別を明記。削除するかは別工程で影響分析 |
-| **C-04 境界の区別が維持されていることを確認** | [requirements.md](requirements.md)、[verification-plan.md](verification-plan.md)：技術変換／記事裁定／現行ゲーム実証／公開承認は異なる | `poc/src/event_release_gate.cjs` の公開承認・ハッシュ検証、`poc/tests/event_release_gate.test.cjs`の正負例、PR #165共通例外判定器の `publicationApproved:false` を確認 | **この対象範囲では矛盾を認めない**。個別記事の採用が直ちに公開イベント追加を意味するわけではない。全公開権利の独立審査完了を保証しない |
+| **C-01 過去の真の方針逸脱、既に修正済み** | [decisions.md](../../decisions.md)／[GameTora基準方針](../sources/gametora-baseline-event-policy-20261021.md)：GT固定版が基本、欠損・疑義は元サイトを確認の上GameWithで裁定。GameWithに明示される値の採用に第二の編集元／実ゲーム直接検証は不要 | 旧版の `poc/src/event_source_precedence.cjs` はGT基準数値が欠落するとGameWith数値があっても未解決にした。その挙動を旧テストも正解扱いしていた。**PR #165**で元サイト確認後にGameWithを選ぶよう修正。現在の `event_exception_adjudication.test.cjs` は余分なゲートを拒否 | **以前のコード＋テスト両方が誤っていた**。現行コードは補正済み。テスト成功は決定の正当性を証明しないという直接例 |
+| **C-02 現行要件中の古い実装状態、今回訂正** | [requirements.md](../../requirements.md) §2026-10-19：先行イベントの選択／結果により後続が変わる場合は再現する。元文は `outcomeId` が未対応で今後追加が必要と記載 | `poc/src/event_schema.js` は `requires.all[].outcomeId` を検証し、`poc/src/core.js` は結果別の到達と報酬を処理、`poc/tests/outcome_dependent_branches.test.cjs` は成功／失敗ルート・不正依存の回帰を持つ。[event-schema.md](../../event-schema.md)も「実装済み」と明記 | **実装は存在するのに正本文書が古い**。新たな仕様決定を作らず、requirementsの動詞「追加してから」を「実装済みの機構で再現」に訂正。実ゲームイベントへ適用済みとは言わない |
+| **C-03 ユーザー要求ではない既存機能・テストの維持、要判断** | [requirements.md](../../requirements.md) §11、[decisions.md](../../decisions.md) 2026-10-16：公開前開発では旧ID・旧設定スキーマへの後方互換**維持は不要**。不正な設定値は確認なく上書きしない | `poc/src/settings.js` の `migrateV1` とv2→v3変換が残り、`poc/tests/settings.test.cjs` は旧版からの無損失移行を期待値として固定。旧ID形式も受理するという意味ではない。アーキテクチャ本文が「移行する」と説明する一方、同じ文書の障害時節は「旧スキーマ互換を維持しない」と記載 | **「不要」は「禁止」ではないため、仕様違反と断定しない**。しかし旧移行を残す保守コスト・テストの価値は未審査。今回コード／既存テストは消さず、architectureに「実装は残存、保守義務はない」と区別を明記。削除するかは別工程で影響分析 |
+| **C-04 境界の区別が維持されていることを確認** | [requirements.md](../../requirements.md)、[verification-plan.md](../../verification-plan.md)：技術変換／記事裁定／現行ゲーム実証／公開承認は異なる | `poc/src/event_release_gate.cjs` の公開承認・ハッシュ検証、`poc/tests/event_release_gate.test.cjs`の正負例、PR #165共通例外判定器の `publicationApproved:false` を確認 | **この対象範囲では矛盾を認めない**。個別記事の採用が直ちに公開イベント追加を意味するわけではない。全公開権利の独立審査完了を保証しない |
 
 ## 根本原因についての分析と未証明部分
 

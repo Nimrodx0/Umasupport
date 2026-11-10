@@ -30,7 +30,7 @@ Wiki側に規則外の数値IDは0件。200・200・163件とページの末尾�
 ## 再現と受け入れ
 
 - **A 機構**：`poc/tools/audit_wiki_cargo_supports.py` と `poc/tests/test_wiki_cargo_supports.py`。数字以外のID、正規化後の同一ID、重複・不足ページング、異常なsource行、同カードの凸重複、レアリティ不整合を拒否する人工テスト。
-- **B 実データ**：[限定監査ワークフロー](../.github/workflows/wiki-cargo-support-audit.yml)で通常HTTPの公開数値IDだけを収集し、固定UmaSimの全IDと比較。**563/563数値IDの一致**が今回の通過ゲートで、ゲーム全件性・2026年全スキル/イベントとは別。
+- **B 実データ**：[限定監査ワークフロー](../../../.github/workflows/wiki-cargo-support-audit.yml)で通常HTTPの公開数値IDだけを収集し、固定UmaSimの全IDと比較。**563/563数値IDの一致**が今回の通過ゲートで、ゲーム全件性・2026年全スキル/イベントとは別。
 - **C 実機**：ブラウザアプリ自体の挙動・画像を変更していないため、Android/Windows物理実機の受け入れは今回の対象外。通常のChromium回帰テストは維持。
 
 新しい情報源を増やす場合は、無制限にWiki APIを再取得せず、出典、更新日、フィールド構造、件数差・再利用条件を別ゲートで検証する。

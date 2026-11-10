@@ -42,7 +42,7 @@ Lua内部の `findMissing` は次の2組について、**マスター側に存�
 ## 自動化と合格ゲート
 
 - **A：人工データ**：`poc/tools/audit_wiki_masterdata_cargo.py` と `poc/tests/test_wiki_masterdata_cargo.py`。APIの期待スキーマ・セクション・一意数値ID・不正なデータの拒否。テンプレート展開に失敗した場合に「0件」を捏造せず非0で停止。正常で明示的な `Up to date!` がある場合のみ0件と認定する。
-- **B：外部公開ソース**：[限定ワークフロー](../.github/workflows/wiki-masterdata-cargo-gap.yml)にて**公開テンプレート展開の実測**。Wiki自身の比較ロジックによる「masterdataにあってCargoにないID」の観測0件を報告。バックエンドSQLiteには接続・ダウンロードしない。
+- **B：外部公開ソース**：[限定ワークフロー](../../../.github/workflows/wiki-masterdata-cargo-gap.yml)にて**公開テンプレート展開の実測**。Wiki自身の比較ロジックによる「masterdataにあってCargoにないID」の観測0件を報告。バックエンドSQLiteには接続・ダウンロードしない。
 - **C：アプリ本体**：公開UI、イベントDB、ユーザー設定、Pagesへの変更なし。Linux Chromium回帰は実行するが、Android・Windows物理端末受け入れは別件。
 
 ## 次工程

@@ -1,6 +1,6 @@
 # GameWithを主力参照元とする独自イベントDBの収録（2026-10-19）
 
-**【履歴上の方式に関する注意】** 本書の2026-10-19「GameWithを主力参照元」は当時の独自草稿ワークフローの記録であり、**現在の全件イベントDBの基本方針ではありません**。現在は [GameTora基準・GameWithは個別疑義裁定](gametora-baseline-event-policy-20261021.md)。ローカルGameWith記事解析と手作業用草稿の技術説明は残しますが、全件GameWith取得・全件GameWith正本を求める指示ではありません。[文書運用](documentation-policy.md)。
+**【履歴上の方式に関する注意】** 本書の2026-10-19「GameWithを主力参照元」は当時の独自草稿ワークフローの記録であり、**現在の全件イベントDBの基本方針ではありません**。現在は [GameTora基準・GameWithは個別疑義裁定](evidence/sources/gametora-baseline-event-policy-20261021.md)。ローカルGameWith記事解析と手作業用草稿の技術説明は残しますが、全件GameWith取得・全件GameWith正本を求める指示ではありません。[文書運用](documentation-policy.md)。
 
 ## データ管理の方針
 

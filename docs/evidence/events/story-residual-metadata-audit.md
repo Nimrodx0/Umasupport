@@ -1,6 +1,6 @@
 # Phase 2：旧マスターの未一致ストーリーIDとイベント種別の監査
 
-更新：2026-10-17。事前計画（実ソース計測前）。関連：[既存イベント名照合](event-title-fingerprint-audit.md)、[旧ゲームマスター](historical-event-story-audit.md)。
+更新：2026-10-17。事前計画（実ソース計測前）。関連：[既存イベント名照合](event-title-fingerprint-audit.md)、[旧ゲームマスター](../sources/historical-event-story-audit.md)。
 
 ## 目的と入力境界
 

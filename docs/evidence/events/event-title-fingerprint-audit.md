@@ -1,6 +1,6 @@
 # Phase 2：旧マスターのストーリー名とChecker候補の文字列照合
 
-検証日：2026-10-17。関連：[ストーリーID監査](historical-event-story-audit.md)、[工程ゲート](verification-plan.md)。
+検証日：2026-10-17。関連：[ストーリーID監査](../sources/historical-event-story-audit.md)、[工程ゲート](../../verification-plan.md)。
 **目的は、30241「旧マスター直結18 ID / Checker候補17イベント」という数量差を、イベント名の一致・不一致まで分解すること。** 一対一の正式ゲームイベントID同定や完全収録の主張はしない。
 
 ## 入力と事前条件
@@ -24,9 +24,9 @@
 - 前段のChecker候補は、人手によるソース表記対応を経た候補で、ゲーム内正式イベントIDではない。
 - カテゴリー181の旧マスター表記が2026年の公開攻略資料と一致する保証はない。名前が一致しないケースを直ちに「イベント欠損」としない。
 - 0件の意味を「未確認／元データ未掲載／ゲーム内になし」にすり替えない。グループカードは構成員の複数キャラ経路を別途調べる。
-- 通常CIでは人工SQLiteのみ。実ソースは[限定ワークフロー](../.github/workflows/historical-event-master-audit.yml)で固定版を一時取得し、**タイトル／本文もハッシュも標準出力しない**。
+- 通常CIでは人工SQLiteのみ。実ソースは[限定ワークフロー](../../../.github/workflows/historical-event-master-audit.yml)で固定版を一時取得し、**タイトル／本文もハッシュも標準出力しない**。
 
-検査コード：[候補のタイトル指紋生成](../poc/src/checker_candidate_pipeline.cjs)、[独立照合](../poc/tools/audit_story_title_links.py)、[人工データ回帰](../poc/tests/test_story_title_links.py)。
+検査コード：[候補のタイトル指紋生成](../../../poc/src/checker_candidate_pipeline.cjs)、[独立照合](../../../poc/tools/audit_story_title_links.py)、[人工データ回帰](../../../poc/tests/test_story_title_links.py)。
 
 
 ## 固定実データの結果（2026-10-17）

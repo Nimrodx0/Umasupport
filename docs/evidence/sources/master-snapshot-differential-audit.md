@@ -4,7 +4,7 @@
 
 ## 目的
 
-2025年の[固定旧マスター監査](story-residual-metadata-audit.md)には、現在採用しているUmaSim563枚のうち495枚が存在し、68枚は当時の資料にない。SSR30241の旧story_id=830241004は2025年版では存在する。将来、適正な手続きで**別時点の**master.mdb（SQLite）が用意できたときに、上記の版差とイベントの同一性を推測なく検証できるようにする。
+2025年の[固定旧マスター監査](../events/story-residual-metadata-audit.md)には、現在採用しているUmaSim563枚のうち495枚が存在し、68枚は当時の資料にない。SSR30241の旧story_id=830241004は2025年版では存在する。将来、適正な手続きで**別時点の**master.mdb（SQLite）が用意できたときに、上記の版差とイベントの同一性を推測なく検証できるようにする。
 
 - source population：UmaSim固定ファイルの563枚・レアリティと5段階（厳密検証済み）
 - 旧master：2025-10-10の固定blob、SHA-256=46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb
@@ -40,4 +40,4 @@ python3 poc/tools/compare_event_master_snapshots.py \
 
 2026年10月17日時点、2025年固定版より新しく、検証可能な数値ID・ハッシュと再利用条件を兼ね備えたmaster.mdbの公開取得元を本工程では**確定していない**。第三者のツールが「手元のmaster.mdbを読める」と記載することは、そのmaster.mdb本体を安全に再取得できることや、ゲームの現行版と同じことの証拠にはならない。[SimpleSandmanの保存リポジトリ](https://github.com/SimpleSandman/UmaMusumeMetaMasterMDB) は2025年に運用を終了した旨を記載。新しいSQLiteの入手条件が整うまでBゲートは未通過。
 
-関連：[ロードマップ](roadmap.md)、[検証基準](verification-plan.md)。公開DBの実イベント0件、Phase 2未完了を維持。
+関連：[ロードマップ](../../roadmap.md)、[検証基準](../../verification-plan.md)。公開DBの実イベント0件、Phase 2未完了を維持。

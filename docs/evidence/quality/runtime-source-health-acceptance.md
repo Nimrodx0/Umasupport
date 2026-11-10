@@ -1,6 +1,6 @@
 # Phase 3 F-08：実行時のデータ収録・取得状況と障害表示
 
-更新：2026-10-18。関連：[要件F-08](requirements.md)、[検証基準](verification-plan.md)。
+更新：2026-10-18。関連：[要件F-08](../../requirements.md)、[検証基準](../../verification-plan.md)。
 
 ## 設計と表示
 

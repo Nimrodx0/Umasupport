@@ -8,10 +8,10 @@
 
 ## 今回追加した研究実装
 
-- [4脚質比較器](../poc/tools/globalsim_four_style_rank_fit.cjs)：固定GlobalSimの順位別走行距離占有割合から、4脚質の占有割合と6ペアの符号を個別に集計。
-- [研究再現器](../poc/tools/globalsim_rank_band_study.cjs)：以前と同じ2,160レース、4局面×11順位帯×72条件を用い、既存の `rank-band-direction.json` を変更せず、追加成果物 `four-style-pairwise.json` を出力。
-- [検証](../poc/tests/globalsim_four_style_rank_fit.test.cjs)：中団に先行と差しがともに位置する人工例、逃げ不在、同値、未確定な走者、シード前半と後半の不一致を検査。
-- [GitHub Actions](../.github/workflows/globalsim-rank-band-dominance.yml)：固定モデルの再実行時に、新レポートの母集団、264ペア集計（4局面×11順位帯×6組）、176脚質集計（4×11×4）を検査し、成果物として保存する。
+- [4脚質比較器](../../../poc/tools/globalsim_four_style_rank_fit.cjs)：固定GlobalSimの順位別走行距離占有割合から、4脚質の占有割合と6ペアの符号を個別に集計。
+- [研究再現器](../../../poc/tools/globalsim_rank_band_study.cjs)：以前と同じ2,160レース、4局面×11順位帯×72条件を用い、既存の `rank-band-direction.json` を変更せず、追加成果物 `four-style-pairwise.json` を出力。
+- [検証](../../../poc/tests/globalsim_four_style_rank_fit.test.cjs)：中団に先行と差しがともに位置する人工例、逃げ不在、同値、未確定な走者、シード前半と後半の不一致を検査。
+- [GitHub Actions](../../../.github/workflows/globalsim-rank-band-dominance.yml)：固定モデルの再実行時に、新レポートの母集団、264ペア集計（4局面×11順位帯×6組）、176脚質集計（4×11×4）を検査し、成果物として保存する。
 
 比較の「一貫して高い／低い」は、**同じ元順位帯・局面の全比較可能条件**で向きが揃い、前後15シードの双方でも向きが揃ったペアに限る。逃げ不在の編成は逃げを0%と扱わず、逃げが参加するペアの比較分母から除外。未解決／同値／逆転があれば該当ペアは保留。中団で両脚質が他の2脚質より高い場合も、それら2脚質間の優劣は同値・未決のまま独立に保存する。
 

@@ -1,6 +1,6 @@
 # GameTora個別カードの通常ヒント22枚・180件の照合
 
-検証日：2026-10-17（JST）　関連：[Phase 1](roadmap.md) / [通常ヒントの拡大監査](expanded-card-hint-crosscheck.md) / [カードID母集団監査](card-population-independent-audit.md) / [PR #40](https://github.com/Nimrodx0/Umasupport/pull/40)
+検証日：2026-10-17（JST）　関連：[Phase 1](../../roadmap.md) / [通常ヒントの拡大監査](expanded-card-hint-crosscheck.md) / [カードID母集団監査](card-population-independent-audit.md) / [PR #40](https://github.com/Nimrodx0/Umasupport/pull/40)
 
 ## 目的・調査対象
 
@@ -36,10 +36,10 @@
 
 ## 再現とセーフガード
 
-- [固定IDを対象にした監査コード](../poc/tools/probe_gametora_hint_page.cjs)はPlaywright Chromiumを起動し、サイトのサポカ一覧を開き、**実際のリンク先のスラッグ付きURL**を特定する（例：[30311 エフフォーリア](https://gametora.com/ja/umamusume/supports/30311-efforia)）。数値IDだけの `/supports/30311` は404のため使わない。
+- [固定IDを対象にした監査コード](../../../poc/tools/probe_gametora_hint_page.cjs)はPlaywright Chromiumを起動し、サイトのサポカ一覧を開き、**実際のリンク先のスラッグ付きURL**を特定する（例：[30311 エフフォーリア](https://gametora.com/ja/umamusume/supports/30311-efforia)）。数値IDだけの `/supports/30311` は404のため使わない。
 - 対象22枚のみ順番に開き、画像・フォントをブロックし、通常ヒントの「サポートヒント」から次の「イベントで貰えるスキル」または「育成イベント」までの範囲にあるスキル名称だけ取得する。
 - **22枚・180件の両方向完全一致を期待するfail-closedゲート**。DOMの変更、404、重複、取得失敗、ヒントの改訂で一致しなくなれば失敗として再審査する。異常を自動補完せず公開データの採用に転用しない。
-- [独立パーサーの人工DOMテスト](../poc/tests/gametora_hint_parser.test.cjs)と[限定的GitHub Actions](../.github/workflows/gametora-hint-structure.yml)で再実行。通常CI/Pages配信の立ち上げでは外部サイトへ問い合わせない。原文／カード画像／HTMLをレポジトリやActionsアーティファクトに保存しない。
+- [独立パーサーの人工DOMテスト](../../../poc/tests/gametora_hint_parser.test.cjs)と[限定的GitHub Actions](../../../.github/workflows/gametora-hint-structure.yml)で再実行。通常CI/Pages配信の立ち上げでは外部サイトへ問い合わせない。原文／カード画像／HTMLをレポジトリやActionsアーティファクトに保存しない。
 - 調査初期にはスラッグのないURL404、一覧の描画待ち不足、カードによりイベント獲得スキル節がないこと、人工テストファイルの取り違えという**監査コード由来の失敗**があった。これらを個別に修正し、**最終版の実データ監査・通常CIの両方が成功したこと**をもって検証結果とする。過去の失敗を元データの不一致としない。
 
 ## Phase 1 の判定

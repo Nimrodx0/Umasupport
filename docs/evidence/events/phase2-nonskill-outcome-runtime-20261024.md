@@ -19,7 +19,7 @@
 
 ### 非公開試作用「労いのエール」
 
-元の[編集採用台帳](../poc/data/curation/adjudicated/phase2_p1_scenario_event_facts.v1.json)から、`poc/src/phase2_mei_overseas_nonskill_preview.cjs`でR10094・SSR30160のカードごとに別のIDを付けて2イベントレコードを生成。出典が報じた「1種類・2カード」について、技術上のレコード数2と実ゲームのイベント種類数1を区別する。結果の大成功・成功をそれぞれ明示し、元の根性・やる気・絆とL'Arc固有のスキルPt・適性Pt・絆を区別する。絆が+5と+2の場合は単純な`+7`記録ではなく**2成分を保持**し、監査できるようにする。
+元の[編集採用台帳](../../../poc/data/curation/adjudicated/phase2_p1_scenario_event_facts.v1.json)から、`poc/src/phase2_mei_overseas_nonskill_preview.cjs`でR10094・SSR30160のカードごとに別のIDを付けて2イベントレコードを生成。出典が報じた「1種類・2カード」について、技術上のレコード数2と実ゲームのイベント種類数1を区別する。結果の大成功・成功をそれぞれ明示し、元の根性・やる気・絆とL'Arc固有のスキルPt・適性Pt・絆を区別する。絆が+5と+2の場合は単純な`+7`記録ではなく**2成分を保持**し、監査できるようにする。
 
 `UmaCore.directEffectRoutes(card,{choices,outcomes})`は各非スキル数値をイベントID・結果ID・結果条件・成分付きで返す。結果未選択なら**大成功と成功の両方を条件付き候補**として表示し、合計した獲得済み値にはしない。選択済みでも`scenario-overseas`の発生条件は残る。一方`UmaCore.directRoutes`と`aggregate`は従来どおりスキル数値IDだけを集計し、非スキル効果や絆から新しいスキル提供カードを生成しない。
 

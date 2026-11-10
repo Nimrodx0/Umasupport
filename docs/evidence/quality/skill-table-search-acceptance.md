@@ -1,6 +1,6 @@
 # Phase 3 F-05：スキル一覧のフィルター・並べ替えと逆引き
 
-更新：2026-10-18。対象：F-05の部分実装。[要件定義](requirements.md)、[検証計画](verification-plan.md)。
+更新：2026-10-18。対象：F-05の部分実装。[要件定義](../../requirements.md)、[検証計画](../../verification-plan.md)。
 
 ## 実装範囲
 

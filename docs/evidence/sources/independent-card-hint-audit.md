@@ -1,6 +1,6 @@
 # 別系統サポカ資料による通常ヒントID→名称の独立照合
 
-検証日：2026-10-17（JST）　関連：[Phase 1](roadmap.md) / [カード母集団ID監査](card-population-independent-audit.md) / [金白辞書照合](independent-skill-json-audit.md)
+検証日：2026-10-17（JST）　関連：[Phase 1](../../roadmap.md) / [カード母集団ID監査](card-population-independent-audit.md) / [金白辞書照合](independent-skill-json-audit.md)
 
 ## 目的と検証入力
 
@@ -53,4 +53,4 @@
 - **C（実機）**：CLI監査のみであり、この監査単独ではスマートフォン・Windows実端末のアプリ動作を検証していない。ユーザーの合意に従い、追加実機テストはまとめて管理。
 - 公開ゲームデータをアプリに新規同梱したり、イベントJSONへ転記したりはしない。
 
-コード：[通常ヒント監査](../poc/tools/audit_independent_card_hints.cjs)／[人工入力の回帰](../poc/tests/card_hint_audit.test.cjs)／[限定取得ワークフロー](../.github/workflows/independent-card-hint-audit.yml)。
+コード：[通常ヒント監査](../../../poc/tools/audit_independent_card_hints.cjs)／[人工入力の回帰](../../../poc/tests/card_hint_audit.test.cjs)／[限定取得ワークフロー](../../../.github/workflows/independent-card-hint-audit.yml)。

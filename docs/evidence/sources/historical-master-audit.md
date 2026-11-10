@@ -1,6 +1,6 @@
 # 旧ゲームマスターと現行UmaSimの限定的クロスチェック
 
-更新：2026-10-17　関連：[検証計画](verification-plan.md) / [スキル監査](skill-hierarchy-coverage.md)
+更新：2026-10-17　関連：[検証計画](../../verification-plan.md) / [スキル監査](../skills/skill-hierarchy-coverage.md)
 
 ## 目的
 
@@ -13,7 +13,7 @@
 
 ## 実行方法と安全性
 
-[限定的GitHub Actions](../.github/workflows/historical-skill-master-audit.yml) は、ワークフローファイル自身のPR変更時または手動のときだけ実行する。**通常CIとPages起動に外部取得は増やさない**。固定版の公開データを一時的なランナーディレクトリへ1回ずつダウンロードし、終了時に破棄する。第三者生データをこのリポジトリ、公開JSON、Actionsアーティファクトに保存しない。ログには件数、判定分類、SHA-256のみを出す。
+[限定的GitHub Actions](../../../.github/workflows/historical-skill-master-audit.yml) は、ワークフローファイル自身のPR変更時または手動のときだけ実行する。**通常CIとPages起動に外部取得は増やさない**。固定版の公開データを一時的なランナーディレクトリへ1回ずつダウンロードし、終了時に破棄する。第三者生データをこのリポジトリ、公開JSON、Actionsアーティファクトに保存しない。ログには件数、判定分類、SHA-256のみを出す。
 
 `poc/tools/verify_skill_master.py` をあえて `--strict` なしで呼び出す。古いマスターに存在しないIDが大量にあるのは予測可能であり、同時期の完全一致と偽って失敗させない。
 

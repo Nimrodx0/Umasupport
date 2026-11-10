@@ -2,7 +2,7 @@
 
 ## 目的と今回の成果
 
-[GameToraを基礎、GameWithを疑義裁定に使う開発方針](gametora-baseline-event-policy-20261021.md)を実現するため、GameTora由来固定ソースに存在するイベントを一件も省略せず、カード→イベント→選択肢→結果経路→効果→数値スキル情報の形で中間DBに変換した。**GameWith記事から全件を作り直していない。**
+[GameToraを基礎、GameWithを疑義裁定に使う開発方針](../sources/gametora-baseline-event-policy-20261021.md)を実現するため、GameTora由来固定ソースに存在するイベントを一件も省略せず、カード→イベント→選択肢→結果経路→効果→数値スキル情報の形で中間DBに変換した。**GameWith記事から全件を作り直していない。**
 
 実行可能コード：
 

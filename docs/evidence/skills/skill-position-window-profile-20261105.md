@@ -10,7 +10,7 @@
 
 ## 対象区間と出典契約
 
-対象の境界は手入力の判断値ではなく、既存の[発動時期の構造解析](../poc/src/skill_rank_timing.js)の timing() 関数により取得する。
+対象の境界は手入力の判断値ではなく、既存の[発動時期の構造解析](../../../poc/src/skill_rank_timing.js)の timing() 関数により取得する。
 
 | 条件 | レース進行率 | 現在の9地点における観測点 |
 | --- | --- | --- |
@@ -24,7 +24,7 @@
 ## 集計方法とデータの境界
 
 - 入力：PR #336で作成した固定GlobalSim v77の summary.json（派生した位置分布の9地点集計）。
-- 処理：[globalsim_window_profile.cjs](../poc/tools/globalsim_window_profile.cjs)。各脚質・コースID・9/12頭・実測別脚質構成・ステータス設定を**混ぜずに**、各区間の隣り合う地点の割合を台形積分し、区間長で規格化。
+- 処理：[globalsim_window_profile.cjs](../../../poc/tools/globalsim_window_profile.cjs)。各脚質・コースID・9/12頭・実測別脚質構成・ステータス設定を**混ぜずに**、各区間の隣り合う地点の割合を台形積分し、区間長で規格化。
 - 出力：window-profile.json。上位半数と後方半数の割合、元区間ID、サンプル地点数、各地点の順位有効件数と不明数、固定ソースのコミットを保持。CIでは元のサマリーとともに同一artifactへ保存。
 - **欠測をゼロと見なさない**：区間内の観測地点が1つでも欠落していれば incomplete-grid、地点の有効順位件数が0なら no-valid-ranks として数値を出さない。
 - **統合の対象は地点別のモデル上の順位割合**：同じレースの馬や地点の相関を独立サンプルとみなした信頼区間は付けない。
@@ -44,7 +44,7 @@
 
 ## 実行
 
-固定GlobalSimをビルドし、[拡張実験ワークフロー](../.github/workflows/globalsim-position-expanded.yml)で位置分布の summary.json を生成した後：
+固定GlobalSimをビルドし、[拡張実験ワークフロー](../../../.github/workflows/globalsim-position-expanded.yml)で位置分布の summary.json を生成した後：
 
 ~~~sh
 node poc/tools/globalsim_window_profile.cjs \

@@ -27,7 +27,7 @@
 - 各条件のシード：15個。**3コース×2頭数×2脚質構成×2能力設定×15シード＝360レース**。
 - 対象区間：中盤全体、終盤前半の前半／全体／後半。直線・コーナー限定のランダム発動条件はこの集計に含めない。
 
-計算コードは[globalsim_seed_stability.cjs](../poc/tools/globalsim_seed_stability.cjs)、回帰試験は[globalsim_seed_stability.test.cjs](../poc/tests/globalsim_seed_stability.test.cjs)、実行CIは[GlobalSim race-seed stability study](../.github/workflows/globalsim-seed-stability.yml)。
+計算コードは[globalsim_seed_stability.cjs](../../../poc/tools/globalsim_seed_stability.cjs)、回帰試験は[globalsim_seed_stability.test.cjs](../../../poc/tests/globalsim_seed_stability.test.cjs)、実行CIは[GlobalSim race-seed stability study](../../../.github/workflows/globalsim-seed-stability.yml)。
 
 出力は脚質・距離・頭数・脚質構成・能力設定・発動候補区間ごとに分け、**該当脚質が出走したレース数**、観測した走者数、累積推計、2群の差、レース単位で再抽出した参考区間を記録する。
 

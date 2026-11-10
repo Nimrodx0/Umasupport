@@ -48,7 +48,7 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 ## 2026-10-28：SSR吾妻の5段階と完走条件（PR #246）
 
 - GameTora本体6見出しの一意照合（PR #244）、解放2択ゲート（PR #245）を踏まえて、Game8の明示「5段階目」とWikiの「連続イベント（お出かけ）」「完走／未完走」を新たに裁定。
-- 3段階目の両選択肢の後続可否・途中打ち切り、育成終了イベント名と条件の直接対応は未確認のまま隔離。ゲーム内条件や配布許可を証明したとは扱わない。[個別監査](official-gametora-azuma-outing-20261028.md)。
+- 3段階目の両選択肢の後続可否・途中打ち切り、育成終了イベント名と条件の直接対応は未確認のまま隔離。ゲーム内条件や配布許可を証明したとは扱わない。[個別監査](evidence/sources/official-gametora-azuma-outing-20261028.md)。
 
 ## 2026-10-16：GitHub Pages公開と設定保護
 
@@ -93,9 +93,9 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 
 ## 2026-10-17：過去の実マスターデータによる限定照合
 
-2025-10-10公開終了版と2026-10-13 UmaSimのID・グループ・昇格順を、一時的に照合するGitHub Actions限定ワークフローを追加。版差を未照合として切り分け、実データをリポジトリに保存せず、[専用記録](historical-master-audit.md)に実測を記す。工程の全件完了は別。
+2025-10-10公開終了版と2026-10-13 UmaSimのID・グループ・昇格順を、一時的に照合するGitHub Actions限定ワークフローを追加。版差を未照合として切り分け、実データをリポジトリに保存せず、[専用記録](evidence/sources/historical-master-audit.md)に実測を記す。工程の全件完了は別。
 
-**履歴照合の実測（[Actions #38937045493](https://github.com/Nimrodx0/Umasupport/actions/runs/38937045493)）：** 現行金325中、旧版と昇格順を含めて一致251、旧版欠損53、同グループに旧版余剰18、白なし3。直接のレアリティ・グループ・昇格順矛盾0。旧版との版差があるためPhase 1の独立全件照合ゲートは未通過。[詳細](historical-master-audit.md)。
+**履歴照合の実測（[Actions #38937045493](https://github.com/Nimrodx0/Umasupport/actions/runs/38937045493)）：** 現行金325中、旧版と昇格順を含めて一致251、旧版欠損53、同グループに旧版余剰18、白なし3。直接のレアリティ・グループ・昇格順矛盾0。旧版との版差があるためPhase 1の独立全件照合ゲートは未通過。[詳細](evidence/sources/historical-master-audit.md)。
 
 **追加調査による訂正：** 旧版マスターに余分なIDがある18組の全IDで `group_rate=-1` を実測（[Actions #38937531528](https://github.com/Nimrodx0/Umasupport/actions/runs/38937531528)）。初回251組という数字は、この非昇格IDを誤ってグループ衝突と扱ったため過少計上。照合器に負値除外と回帰テストを追加し、[修正後のActions #38937864644](https://github.com/Nimrodx0/Umasupport/actions/runs/38937864644) で、旧マスター一致269組、旧版欠損53組、白なし3組、非昇格負値ID18件を実測。
 
@@ -104,44 +104,44 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 
 - 2026-10-13 UmaSimと2026-09-30抽出の別系統スキルJSONを固定版・SHA-256で突き合わせる読み取り専用監査器を追加。人工JSON回帰もCIに実装。公開元データをPublicリポジトリに保存しない。
 - [実測 #38944822566](https://github.com/Nimrodx0/Umasupport/actions/runs/38944822566)：金325、金白322候補のうち**321組（2段階290、3段階31）**でID・昇格順・**双方向704参照一致**。白なし3組は別資料でも白なし。唯一の欠損はグループ20480の金204801・白204802。
-- 欠損組の「抜山蓋世→規格外」は2026-10-13更新[GameWith](https://gamewith.jp/uma-musume/article/show/582564)が名称関係を裏付ける。ただし数値IDの第三者確認ではない。[検証結果](independent-skill-json-audit.md)。**Phase 1全体は未完**。
+- 欠損組の「抜山蓋世→規格外」は2026-10-13更新[GameWith](https://gamewith.jp/uma-musume/article/show/582564)が名称関係を裏付ける。ただし数値IDの第三者確認ではない。[検証結果](evidence/sources/independent-skill-json-audit.md)。**Phase 1全体は未完**。
 
 ## 2026-10-17：公開Pagesの実データChromium検証（PR #31）
 
-[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)で、配信コードのSHA-256一致を確認したLinux Chromium/140からGitHub Pagesを起動。外部UmaSim2ソースを実ブラウザで取得し、カード563/通常ヒント4,015/辞書836/金325/連鎖322/白なし3/未解決0、カード編成・目標直接カバー・表示切替、両IndexedDB保存と遮断後の再読込を確認。390pxの表示幅で継承側のカード選択と目標モーダルも操作（**Android実機ではない**）。[受け入れ記録](pages-browser-acceptance-20261017.md)。実イベント0件、実機OS差・オンライン復帰後再GET、Phase 1の完全化は未達。
+[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)で、配信コードのSHA-256一致を確認したLinux Chromium/140からGitHub Pagesを起動。外部UmaSim2ソースを実ブラウザで取得し、カード563/通常ヒント4,015/辞書836/金325/連鎖322/白なし3/未解決0、カード編成・目標直接カバー・表示切替、両IndexedDB保存と遮断後の再読込を確認。390pxの表示幅で継承側のカード選択と目標モーダルも操作（**Android実機ではない**）。[受け入れ記録](evidence/quality/pages-browser-acceptance-20261017.md)。実イベント0件、実機OS差・オンライン復帰後再GET、Phase 1の完全化は未達。
 
 ## 2026-10-17：公開Pagesの異常系とオンライン復帰（PR #32）
 
-[明示実行Actions #38950280170](https://github.com/Nimrodx0/Umasupport/actions/runs/38950280170)で、前回のLinux Chromium実Pages受け入れテストへ、破損オンラインスキル辞書の安全な拒否、スキル／サポカの個別キャッシュ破損、初回完全障害、IndexedDB拒否時のオンライン起動、遮断解除後のPublisher実再取得を追加して合格。[詳細](pages-browser-acceptance-20261017.md)。**実装修正は発生せず、継続的に再現可能な検証が増えた**。Android・Windows実機の試験やPhase 1の性能・表示順・全カード網羅は未完。
+[明示実行Actions #38950280170](https://github.com/Nimrodx0/Umasupport/actions/runs/38950280170)で、前回のLinux Chromium実Pages受け入れテストへ、破損オンラインスキル辞書の安全な拒否、スキル／サポカの個別キャッシュ破損、初回完全障害、IndexedDB拒否時のオンライン起動、遮断解除後のPublisher実再取得を追加して合格。[詳細](evidence/quality/pages-browser-acceptance-20261017.md)。**実装修正は発生せず、継続的に再現可能な検証が増えた**。Android・Windows実機の試験やPhase 1の性能・表示順・全カード網羅は未完。
 
 ## 2026-10-17：実端末フィードバックとヒント性能（PR #33 / #34）
 
 - 利用者が実端末で公開試験版を確認し、「対応する金スキル」の冗長な表記を削除してほしい、ほかに目立つ問題はないと報告。PR #33で**一覧だけの余計な補足表記を削除**。スキルの金白リンクや間接カバーは維持。機種・OS・全受け入れ項目の確認記録がないため、Android等の正式なC軸全合格にはしない。
-- 続いて[PR #34](https://github.com/Nimrodx0/Umasupport/pull/34)でF-07のヒント関連性能へ進む。[2,815行の一時取得・全件監査](hint-performance-audit.md)を行い、UmaSimの`hintLevel`・`hintFrequency`（基本/固有）の元ソース列と段階別数値を検査。ゲーム内の確率推定や特殊固有は表示対象外。
+- 続いて[PR #34](https://github.com/Nimrodx0/Umasupport/pull/34)でF-07のヒント関連性能へ進む。[2,815行の一時取得・全件監査](evidence/quality/hint-performance-audit.md)を行い、UmaSimの`hintLevel`・`hintFrequency`（基本/固有）の元ソース列と段階別数値を検査。ゲーム内の確率推定や特殊固有は表示対象外。
 
 ## 2026-10-17：公開Pagesの実データヒント性能UI受け入れ（PR #35）
 
-[Actions #38953159885](https://github.com/Nimrodx0/Umasupport/actions/runs/38953159885)でLinux Chromium/140の公開Pages実体へ接続し、実カードの0凸／4凸ごとの基礎ヒントLv・発生率アップ基本／固有が実取得元パラメータから期待した画面文字列と一致することを検証。既存の編成・目標・金白・通信遮断／キャッシュ破損復旧も再度合格。[詳細](pages-browser-acceptance-20261017.md)。Android物理実機の新性能UIについては未検証。
+[Actions #38953159885](https://github.com/Nimrodx0/Umasupport/actions/runs/38953159885)でLinux Chromium/140の公開Pages実体へ接続し、実カードの0凸／4凸ごとの基礎ヒントLv・発生率アップ基本／固有が実取得元パラメータから期待した画面文字列と一致することを検証。既存の編成・目標・金白・通信遮断／キャッシュ破損復旧も再度合格。[詳細](evidence/quality/pages-browser-acceptance-20261017.md)。Android物理実機の新性能UIについては未検証。
 
 ## 2026-10-17：サポカ全563件の別系統ID照合（PR #36）
 
-[GameTora日本版一覧とUmaSim固定版の全563個のID集合が一致](card-population-independent-audit.md)し、片側のみに存在するIDは双方0。さらに日本版選択JSONの45枚と英語版カード台帳の259枚（互いに重複なし）のID・レアリティを全件照合し、合計304枚に矛盾0。日本版45枚の完全名称も一致。[限定監査Actions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930)で再現。**RタッカーブラインはUmaSim上にID10128で既に存在**。旧「Rタッカーブライン未照合」を「UmaSim未収録」と解釈しないよう訂正。ゲーム公式マスターの全件照合・個別性能・表示順などは未確認。アプリ内カードを自動追加する変更は発生せず。
+[GameTora日本版一覧とUmaSim固定版の全563個のID集合が一致](evidence/sources/card-population-independent-audit.md)し、片側のみに存在するIDは双方0。さらに日本版選択JSONの45枚と英語版カード台帳の259枚（互いに重複なし）のID・レアリティを全件照合し、合計304枚に矛盾0。日本版45枚の完全名称も一致。[限定監査Actions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930)で再現。**RタッカーブラインはUmaSim上にID10128で既に存在**。旧「Rタッカーブライン未照合」を「UmaSim未収録」と解釈しないよう訂正。ゲーム公式マスターの全件照合・個別性能・表示順などは未確認。アプリ内カードを自動追加する変更は発生せず。
 
 ## 2026-10-17：通常ヒント独立照合と表示順ソース調査（PR #37）
 
-[限定監査](independent-card-hint-audit.md)で、別系統日本版45サポカが指定する通常ヒント527件をUmaSimのヒント一覧・数値スキル辞書と照合。**45/45枚の0/4凸名称集合一致**、数値ID526件はUmaSim辞書内、1件（`201012`「後方釘付」）は別系統の数値辞書とUmaSimカード内名称で確認、UmaSimのスキル辞書にはID未収録。元データを書き換えず例外を記録。別系統スキルJSON2,194件に`disp_order`相当フィールドがなく、UIゲーム標準順への変更は見送った。[Umamusume Wikiのマスター変換コード](https://umamusu.wiki/Module:Game/Skills/Data)に`skill_data.disp_order`の利用例はあるので、実データとゲームUIとの関係を今後調査する。
+[限定監査](evidence/sources/independent-card-hint-audit.md)で、別系統日本版45サポカが指定する通常ヒント527件をUmaSimのヒント一覧・数値スキル辞書と照合。**45/45枚の0/4凸名称集合一致**、数値ID526件はUmaSim辞書内、1件（`201012`「後方釘付」）は別系統の数値辞書とUmaSimカード内名称で確認、UmaSimのスキル辞書にはID未収録。元データを書き換えず例外を記録。別系統スキルJSON2,194件に`disp_order`相当フィールドがなく、UIゲーム標準順への変更は見送った。[Umamusume Wikiのマスター変換コード](https://umamusu.wiki/Module:Game/Skills/Data)に`skill_data.disp_order`の利用例はあるので、実データとゲームUIとの関係を今後調査する。
 
 ## 2026-10-17：旧マスターのスキル並び順列と数値辞書IDの確認（PR #38）
 
-[履歴的`disp_order`の実測](historical-skill-order-probe.md)では2025年と2026年の共通スキルID1,786件全件に正値があり、753種類の値に対して同値214グループ（1,247行）が存在。2026年の353件は2025年資料にはない。`201012`「後方釘付」は旧マスターにも存在しrarity=1、group=20101、order=20120。**ゲーム内UIの標準順は引き続き未確認でアプリ表示を変更しない**。また、過去に独立カード監査の人工テストをCIへ登録し忘れた点を修正し、新たに回帰を明示実行する。
+[履歴的`disp_order`の実測](evidence/sources/historical-skill-order-probe.md)では2025年と2026年の共通スキルID1,786件全件に正値があり、753種類の値に対して同値214グループ（1,247行）が存在。2026年の353件は2025年資料にはない。`201012`「後方釘付」は旧マスターにも存在しrarity=1、group=20101、order=20120。**ゲーム内UIの標準順は引き続き未確認でアプリ表示を変更しない**。また、過去に独立カード監査の人工テストをCIへ登録し忘れた点を修正し、新たに回帰を明示実行する。
 
 ## 2026-10-17：通常ヒントの別系統カタログ560枚へ拡大（PR #39）
 
-[監査記録](expanded-card-hint-crosscheck.md)。GameWith参照を明記するdareumaデッキビルドツールの2026-10-02リリース560サポカを2026-10-13 UmaSim563枚と照合。名称厳密553・検証した別名7で全560枚対応し、通常ヒント3,986件中3,965名称を含むこと、19枚・21名称は最新公開カタログに未掲載なことを確認。未掲載の3枚はRのID10146〜10148で計29ヒント。さらに旧資料は503区画中502読取可能、494枚がUmaSimと厳密名対応、通常ヒントの情報がある412枚中403枚で4凸集合完全一致。最新資料の21未掲載名のうち14件は旧資料でも通常ヒントとして掲載。残7件は旧資料で情報なし。出典に共通GameWithの可能性があるため**独立原マスター検証の全件Passではない**。第三者データをGitHub Pagesへ同梱せず、一時取得とSHA照合を使用。アプリの実コードと表示順は変更しない。
+[監査記録](evidence/sources/expanded-card-hint-crosscheck.md)。GameWith参照を明記するdareumaデッキビルドツールの2026-10-02リリース560サポカを2026-10-13 UmaSim563枚と照合。名称厳密553・検証した別名7で全560枚対応し、通常ヒント3,986件中3,965名称を含むこと、19枚・21名称は最新公開カタログに未掲載なことを確認。未掲載の3枚はRのID10146〜10148で計29ヒント。さらに旧資料は503区画中502読取可能、494枚がUmaSimと厳密名対応、通常ヒントの情報がある412枚中403枚で4凸集合完全一致。最新資料の21未掲載名のうち14件は旧資料でも通常ヒントとして掲載。残7件は旧資料で情報なし。出典に共通GameWithの可能性があるため**独立原マスター検証の全件Passではない**。第三者データをGitHub Pagesへ同梱せず、一時取得とSHA照合を使用。アプリの実コードと表示順は変更しない。
 
 ## 2026-10-17：0〜4凸全2,815行と別公開資料のヒント性能値10件（PR #41）
 
-[ステージ別ヒント監査](stage-hint-consistency-audit.md)。[限定的Actions #39029848046](https://github.com/Nimrodx0/Umasupport/actions/runs/39029848046)で、UmaSim固定版563×5レコードの各凸ヒント集合が完全に一致し、4,015名×5段階、段階間追加/削除0、ヒントLv・発生率補正の減少0を確認。**GameWith 2026-10 SSRエフフォーリアの5段階のヒントLvアップと発生率アップ、合計10数値がすべて一致**。初回人工回帰では監査器の5番目の変化検知配列が不足していたためCIが失敗し、修正してから再試験した。ソース変更があれば停止して再審査する限定監査であり、実アプリの段階別ヒントサポートは変更していない。ゲーム内での全件実測や他562枚の補正値独立保証・実端末検証を済ませた扱いにはしない。
+[ステージ別ヒント監査](evidence/quality/stage-hint-consistency-audit.md)。[限定的Actions #39029848046](https://github.com/Nimrodx0/Umasupport/actions/runs/39029848046)で、UmaSim固定版563×5レコードの各凸ヒント集合が完全に一致し、4,015名×5段階、段階間追加/削除0、ヒントLv・発生率補正の減少0を確認。**GameWith 2026-10 SSRエフフォーリアの5段階のヒントLvアップと発生率アップ、合計10数値がすべて一致**。初回人工回帰では監査器の5番目の変化検知配列が不足していたためCIが失敗し、修正してから再試験した。ソース変更があれば停止して再審査する限定監査であり、実アプリの段階別ヒントサポートは変更していない。ゲーム内での全件実測や他562枚の補正値独立保証・実端末検証を済ませた扱いにはしない。
 
 
 ## 2026-10-17：ヒント性能の別公開資料照合を6枚・60数値へ拡大（PR #42）
@@ -149,14 +149,14 @@ python tools/build_v8.py --input inputs/full_support_hints.psv --full --output d
 [PR #42](https://github.com/Nimrodx0/Umasupport/pull/42) をmainへ統合。GameWith個別資料を6枚分に拡張し、ヒントLvとヒント発生率アップを各0〜4凸の全5段階で照合。二つ名を含む正確なカード名・UmaSim ID・性能値を照合する仕組みへ拡張した。古いウイニングチケットのGameWith「サポート効果」は固有ヒント発生率+20を含まないため、基礎値だけを比較。ほか5枚は固定ヒント補正が0なので合算値との比較で一致する。
 
 - **A 機構**：途中段階の異常、同一ID重複、参照欠損、フル名称違い、基礎／合算取り違えを人工データで回帰。初回の通常CIでは旧スナップショットの期待項目不足により1件失敗したが、期待値を直して[通常CI #39033434439](https://github.com/Nimrodx0/Umasupport/actions/runs/39033434439)で全ジョブ成功。
-- **B データ**：[限定実ソース監査 #39033434433](https://github.com/Nimrodx0/Umasupport/actions/runs/39033434433) 成功。固定版UmaSim 563枚・2,815行の内部不変性を再確認し、6枚の外部照合**60/60数値**・フル名称・カードIDすべて一致。**残557枚の性能独立照合・公式ゲームマスター・特殊固有・表示順は未完**。[詳細](stage-hint-consistency-audit.md)。
+- **B データ**：[限定実ソース監査 #39033434433](https://github.com/Nimrodx0/Umasupport/actions/runs/39033434433) 成功。固定版UmaSim 563枚・2,815行の内部不変性を再確認し、6枚の外部照合**60/60数値**・フル名称・カードIDすべて一致。**残557枚の性能独立照合・公式ゲームマスター・特殊固有・表示順は未完**。[詳細](evidence/quality/stage-hint-consistency-audit.md)。
 - **C 実機**：アプリ画面には変更なし。新規Android・Windowsの物理実機試験は行わず、既存の保留リストを維持。
 
 第三者生データはレポジトリにもActionsアーティファクトにも保存せず、明示的な限定監査だけ外部GETを行う。
 
 ## 2026-10-17：歴史ゲームマスターのサポカ直結ストーリーIDとの独立照合（PR #43）
 
-Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Umasupport/actions/runs/39034550562)が合格。2025年旧マスターのサポカID495が2026年UmaSim563の一部であり、直結ストーリー1,028行（SSR837/SR180/R11）。旧版にない現行カード68、旧版でカード直結イベントIDがない134（うちR126）。Checker固定版のSSR・SR417カード／候補2,099件と比べ、旧マスター直接ストーリー数を候補数が下回るカードは3枚：30240(3対0)、30241(18対17、グループSSR)、30269(3対0)。コードは[監査ツール](../poc/tools/audit_historical_event_master.py)・人工SQLite回帰・限定ワークフローを追加。数値の比較は調査優先順位だけであり、共有キャラクターイベント・経路・スキル報酬・2026年の正式マスター・転載許可は未検証。実イベント公開JSON0件を維持。[監査文書](historical-event-story-audit.md)。
+Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Umasupport/actions/runs/39034550562)が合格。2025年旧マスターのサポカID495が2026年UmaSim563の一部であり、直結ストーリー1,028行（SSR837/SR180/R11）。旧版にない現行カード68、旧版でカード直結イベントIDがない134（うちR126）。Checker固定版のSSR・SR417カード／候補2,099件と比べ、旧マスター直接ストーリー数を候補数が下回るカードは3枚：30240(3対0)、30241(18対17、グループSSR)、30269(3対0)。コードは[監査ツール](../poc/tools/audit_historical_event_master.py)・人工SQLite回帰・限定ワークフローを追加。数値の比較は調査優先順位だけであり、共有キャラクターイベント・経路・スキル報酬・2026年の正式マスター・転載許可は未検証。実イベント公開JSON0件を維持。[監査文書](evidence/sources/historical-event-story-audit.md)。
 
 ## 2026-10-17：キャラクター共通イベント経路を別計上（PR #44）
 
@@ -164,7 +164,7 @@ Phase 2の[限定実ソース監査 #39034550562](https://github.com/Nimrodx0/Um
 
 ## 2026-10-17：旧ストーリー名の指紋・Checker候補の突合（PR #45）
 
-2025年固定SQLiteのsingle_mode_story_data.story_idをtext_data(category=181)に結合し、カード直結1,028件でタイトル解決1,028、未解決0。内部id・short_story_idでは全件解決不能であったため、テーブルのキーを区別して修正した。[限定Actions #39036365422](https://github.com/Nimrodx0/Umasupport/actions/runs/39036365422)成功。Checker候補名称のSHA-256（NFKC＋空白正規化）を一時作成し、SSR/SR旧1,017タイトルに対して956名称一致、61は同名候補なし。**SSR30241グループカードは旧18／Checker17のうち15名称一致、旧のみ3／Checkerのみ2**。いずれもゲーム正式ストーリーIDとのペア承認やイベントの不在を証明しない。人工SQLiteで重複タイトル、多重集合、テキスト欠損、不正指紋を試験、通常CIにも追加。出典・残件：[監査文書](event-title-fingerprint-audit.md)。UIと公開イベント0件は変更なし。
+2025年固定SQLiteのsingle_mode_story_data.story_idをtext_data(category=181)に結合し、カード直結1,028件でタイトル解決1,028、未解決0。内部id・short_story_idでは全件解決不能であったため、テーブルのキーを区別して修正した。[限定Actions #39036365422](https://github.com/Nimrodx0/Umasupport/actions/runs/39036365422)成功。Checker候補名称のSHA-256（NFKC＋空白正規化）を一時作成し、SSR/SR旧1,017タイトルに対して956名称一致、61は同名候補なし。**SSR30241グループカードは旧18／Checker17のうち15名称一致、旧のみ3／Checkerのみ2**。いずれもゲーム正式ストーリーIDとのペア承認やイベントの不在を証明しない。人工SQLiteで重複タイトル、多重集合、テキスト欠損、不正指紋を試験、通常CIにも追加。出典・残件：[監査文書](evidence/events/event-title-fingerprint-audit.md)。UIと公開イベント0件は変更なし。
 
 ## 2026-10-17：30241の記号差を独立した診断へ（PR #46）
 
@@ -172,83 +172,83 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 
 ## 2026-10-17：旧イベント名称の残差からstory_id・数値カテゴリへ（PR #47）
 
-[限定監査 #39037787554](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787554)成功、[通常CI #39037787528](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787528)成功。2025年固定masterのSSR/SRカード直結1,017件とChecker2,099候補の補助名称一致985を維持し、未一致32行（25カード）をすべて数値メタデータで分類。同名候補と未一致が競合しIDが特定できない残数2。**SSR30241は数値story_id=830241004**（event_category=4、show_progress_1/2/3すべて0、ending_type=0、gallery_main_scenario=0、gallery_condition=0）を特定。残り32のevent_categoryも全て4。外部Wikiの変換コードでは進行数値0はchainNum=0、chainMax=0、isGroupChain=falseに対応。発生条件／現在も実装されているか／Checker欠損かどうかは未検証。イベントタイトル・指紋・元DBをPublicへ配布せず、アプリUI・イベント公開DB0件を維持。[監査記録](story-residual-metadata-audit.md)。
+[限定監査 #39037787554](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787554)成功、[通常CI #39037787528](https://github.com/Nimrodx0/Umasupport/actions/runs/39037787528)成功。2025年固定masterのSSR/SRカード直結1,017件とChecker2,099候補の補助名称一致985を維持し、未一致32行（25カード）をすべて数値メタデータで分類。同名候補と未一致が競合しIDが特定できない残数2。**SSR30241は数値story_id=830241004**（event_category=4、show_progress_1/2/3すべて0、ending_type=0、gallery_main_scenario=0、gallery_condition=0）を特定。残り32のevent_categoryも全て4。外部Wikiの変換コードでは進行数値0はchainNum=0、chainMax=0、isGroupChain=falseに対応。発生条件／現在も実装されているか／Checker欠損かどうかは未検証。イベントタイトル・指紋・元DBをPublicへ配布せず、アプリUI・イベント公開DB0件を維持。[監査記録](evidence/events/story-residual-metadata-audit.md)。
 
 ## 2026-10-17：30241の第三サイト見出し件数・3資料照合機構（PR #48）
 
-[U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)のSSR30241イベント一覧はページ閲覧で連続5・ランダム13の計18見出しを観測。Checker17と数が違うが、旧マスター18との**名称・ID対応は未確認**。[限定Actions #39039021792](https://github.com/Nimrodx0/Umasupport/actions/runs/39039021792)で外部HTML取得を試したところHTTP 403。意図的に取得制限の回避はせず外部GETをワークフローから削除。第三サイト・Checker・旧masterをローカル入力で多重集合比較し、曖昧IDを拒否する純粋照合器／人工HTML回帰を追加した。外部サイトに対するデータBの3者一致ゲートは未達、現行ゲーム実装・報酬・権利も未合格。詳細[監査文書](utools-third-source-event-audit.md)。
+[U-tools](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)のSSR30241イベント一覧はページ閲覧で連続5・ランダム13の計18見出しを観測。Checker17と数が違うが、旧マスター18との**名称・ID対応は未確認**。[限定Actions #39039021792](https://github.com/Nimrodx0/Umasupport/actions/runs/39039021792)で外部HTML取得を試したところHTTP 403。意図的に取得制限の回避はせず外部GETをワークフローから削除。第三サイト・Checker・旧masterをローカル入力で多重集合比較し、曖昧IDを拒否する純粋照合器／人工HTML回帰を追加した。外部サイトに対するデータBの3者一致ゲートは未達、現行ゲーム実装・報酬・権利も未合格。詳細[監査文書](evidence/sources/utools-third-source-event-audit.md)。
 
 ## 2026-10-17：新しいmaster.mdbを入手した場合の差分照合（PR #49）
 
-[詳細](master-snapshot-differential-audit.md)。旧2025年SQLiteを固定SHAで検査し、別リビジョンのSQLiteが正当に用意できた場合のみ、採用元563枚のカードID増減、2025→新版の数値story_id維持、830241004の存在・同カード所属、名称（記号差を除く）・数値メタデータ変更を出力する独立ツールを追加。重複・表欠落・孤児ID・同一SHA・不明リビジョンを拒否する人工SQLite通常CI。**新版ゲームマスターの実データを入手・実行した記録ではない。** アプリUI・公開イベント0件は維持。
+[詳細](evidence/sources/master-snapshot-differential-audit.md)。旧2025年SQLiteを固定SHAで検査し、別リビジョンのSQLiteが正当に用意できた場合のみ、採用元563枚のカードID増減、2025→新版の数値story_id維持、830241004の存在・同カード所属、名称（記号差を除く）・数値メタデータ変更を出力する独立ツールを追加。重複・表欠落・孤児ID・同一SHA・不明リビジョンを拒否する人工SQLite通常CI。**新版ゲームマスターの実データを入手・実行した記録ではない。** アプリUI・公開イベント0件は維持。
 
 ## 2026-10-17：Phase 3 F-01 複数の名前付きデッキ（PR #50）
 
-本育成・継承育成各々にデッキ選択・管理UIを実装。空作成・選択・複製（カード、0～4凸、イベント選択の深いコピー）・改名・削除、各種類50件上限、最後1件の削除拒否を搭載。旧単一デッキ保存v1をパース時に新v2へ変換し、既存設定を読み込めない場合は元localStorageを確認なく上書きしない。テストはsettings.test.cjsと人工563カードの実Chromium DOM操作（開閉、作成、削除、再読込、390px）を追加。実ゲームデータ・公開イベントDBは変更なし。[受け入れマトリクス](named-deck-library-acceptance.md)。
+本育成・継承育成各々にデッキ選択・管理UIを実装。空作成・選択・複製（カード、0～4凸、イベント選択の深いコピー）・改名・削除、各種類50件上限、最後1件の削除拒否を搭載。旧単一デッキ保存v1をパース時に新v2へ変換し、既存設定を読み込めない場合は元localStorageを確認なく上書きしない。テストはsettings.test.cjsと人工563カードの実Chromium DOM操作（開閉、作成、削除、再読込、390px）を追加。実ゲームデータ・公開イベントDBは変更なし。[受け入れマトリクス](evidence/quality/named-deck-library-acceptance.md)。
 
 ## 2026-10-18：Phase 3 F-02 所持サポカ台帳と一括登録（PR #51）
 
-画面上に「所持サポカ管理」を設け、採用元563枚のカードからキャラクター・タイプ・レアリティ・通常ヒント名を検索。所持／未所持／未登録を明示区別し、所持凸0～4を記録。36枚/ページのグリッド、条件一致全件に対する確認付き一括変更、編成ピッカーでの所持のみ絞り込みを実装。所持凸は6枠の想定凸と独立。設定JSONはv3、旧v1/v2は無損失変換して所有情報はすべて未登録を初期値にする。人工563カードのPlaywrightで111件バルク・ページ送り・3状態・再読込・JSON保護をテスト。カード画像は権利未確認のため略字アイコンを維持し、F-02の画像付きグリッド等は未完。[詳細](owned-card-registry-acceptance.md)。実イベントDB0件、Phase 2独立マスター未入手のまま。
+画面上に「所持サポカ管理」を設け、採用元563枚のカードからキャラクター・タイプ・レアリティ・通常ヒント名を検索。所持／未所持／未登録を明示区別し、所持凸0～4を記録。36枚/ページのグリッド、条件一致全件に対する確認付き一括変更、編成ピッカーでの所持のみ絞り込みを実装。所持凸は6枠の想定凸と独立。設定JSONはv3、旧v1/v2は無損失変換して所有情報はすべて未登録を初期値にする。人工563カードのPlaywrightで111件バルク・ページ送り・3状態・再読込・JSON保護をテスト。カード画像は権利未確認のため略字アイコンを維持し、F-02の画像付きグリッド等は未完。[詳細](evidence/quality/owned-card-registry-acceptance.md)。実イベントDB0件、Phase 2独立マスター未入手のまま。
 
 ## 2026-10-18：Phase 3 F-02 スキル名・提供経路検索と全カードピッカー（PR #52）
 
-[技術・受け入れ](card-route-search-acceptance.md)。所持サポカ管理と6枚編成ピッカーに、カード名・スキル名（ID含む）・タイプ・レアリティ・所有状態の複合検索を追加。提供経路の区分は検証済み通常ヒントと公開承認済みイベントのみを利用し、2026年Checkerの未承認候補や旧資料の参考スキルを混入させない。イベントDB0件は未収録として0件表示。元の120枚先頭固定のピッカーにページ操作を付け、末尾563枚目まで全検索可能にした。第三者カード画像は利用条件未確認のため未搭載、略字表示を維持。A/B/Cゲートと未検証範囲を区別。
+[技術・受け入れ](evidence/quality/card-route-search-acceptance.md)。所持サポカ管理と6枚編成ピッカーに、カード名・スキル名（ID含む）・タイプ・レアリティ・所有状態の複合検索を追加。提供経路の区分は検証済み通常ヒントと公開承認済みイベントのみを利用し、2026年Checkerの未承認候補や旧資料の参考スキルを混入させない。イベントDB0件は未収録として0件表示。元の120枚先頭固定のピッカーにページ操作を付け、末尾563枚目まで全検索可能にした。第三者カード画像は利用条件未確認のため未搭載、略字表示を維持。A/B/Cゲートと未検証範囲を区別。
 
 ## 2026-10-18：Phase 3 F-05 スキル比較の複合絞り込み・並べ替え・逆引き（PR #53）
 
-[仕様と検証](skill-table-search-acceptance.md)。スキル表に金/白/未確認、通常ヒント/選択済みイベント/両方、直接/間接のみ/条件付/未カバーの目標のフィルターと、名前・本育成/継承育成/合計の**直接提供枚数**・目標優先のソートを実装。金→下位白→さらに下位を同一グループで扱い、親の提供枚数で順位を定める。スキル詳細の逆引きは全カードの0～4凸の検証済み通常ヒント和集合と承認済みイベント報酬ID、所有状態・経路で検索。逆引き候補を現在編成の直接提供と混同せず、未承認イベントを公開DBへ追加しない。実画像、適性/因子化条件、ゲーム順の実機照合は未完。
+[仕様と検証](evidence/quality/skill-table-search-acceptance.md)。スキル表に金/白/未確認、通常ヒント/選択済みイベント/両方、直接/間接のみ/条件付/未カバーの目標のフィルターと、名前・本育成/継承育成/合計の**直接提供枚数**・目標優先のソートを実装。金→下位白→さらに下位を同一グループで扱い、親の提供枚数で順位を定める。スキル詳細の逆引きは全カードの0～4凸の検証済み通常ヒント和集合と承認済みイベント報酬ID、所有状態・経路で検索。逆引き候補を現在編成の直接提供と混同せず、未承認イベントを公開DBへ追加しない。実画像、適性/因子化条件、ゲーム順の実機照合は未完。
 
 ## 2026-10-18：F-06/F-09 目標セットの保存安全性とJSON統合（PR #54）
 
-[技術・受け入れ基準](settings-import-merge-acceptance.md)。日付時刻依存の目標セットIDを廃止し、一意ID採番・100件上限・削除確認・編集画面内のセット切替を実装。設定JSONを読んでも即変更せず、プレビューで統合と置換を選択。統合は両比較枠のデッキと目標セットを新しいIDで追加、現行の選択と所有状態・表示を優先し、現行で未登録のカードの状態だけ補完する。両入力をclone/検証し上限・未知ID等の例外で部分適用を防ぐ。公開イベントDB0件・実カード画像未使用を維持。
+[技術・受け入れ基準](evidence/quality/settings-import-merge-acceptance.md)。日付時刻依存の目標セットIDを廃止し、一意ID採番・100件上限・削除確認・編集画面内のセット切替を実装。設定JSONを読んでも即変更せず、プレビューで統合と置換を選択。統合は両比較枠のデッキと目標セットを新しいIDで追加、現行の選択と所有状態・表示を優先し、現行で未登録のカードの状態だけ補完する。両入力をclone/検証し上限・未知ID等の例外で部分適用を防ぐ。公開イベントDB0件・実カード画像未使用を維持。
 
 ## 2026-10-18：実行時ソース収録・障害状態の表示（PR #55）
 
-[詳細](runtime-source-health-acceptance.md)。ヘッダーからデータ取得元・取得/キャッシュ経路・受信日時・検証5段階ヒント枚数・承認済みイベント数を閲覧可能にした。イベントJSONの取得または検証失敗と、正常に検証した公開イベント0件を区別し、空カタログを代替反映しても失敗の来歴を保持。元ソースの新規ダウンロードや更新ボタンは追加しない。回帰テストで通常/キャッシュ/イベント障害を別判定。実イベント0件/画像未収録は従来通り。
+[詳細](evidence/quality/runtime-source-health-acceptance.md)。ヘッダーからデータ取得元・取得/キャッシュ経路・受信日時・検証5段階ヒント枚数・承認済みイベント数を閲覧可能にした。イベントJSONの取得または検証失敗と、正常に検証した公開イベント0件を区別し、空カタログを代替反映しても失敗の来歴を保持。元ソースの新規ダウンロードや更新ボタンは追加しない。回帰テストで通常/キャッシュ/イベント障害を別判定。実イベント0件/画像未収録は従来通り。
 
 ## 2026-10-18：Phase 3 F-03 六枠イベント管理と安全な選択解除（PR #56）
 
-[実装と検証](deck-event-overview-acceptance.md)。デッキイベント管理の未設定/設定済み/到達不可/自動/未収録・条件付きの集計を実装し、状態フィルターと確認付きカード/デッキ選択解除を追加。到達判定はフィルターに関係なく元の全イベントグラフで行う。公開実イベント0件を維持し、連続人工イベントを使うNodeとChromiumで機構・両育成の独立を検証する。
+[実装と検証](evidence/quality/deck-event-overview-acceptance.md)。デッキイベント管理の未設定/設定済み/到達不可/自動/未収録・条件付きの集計を実装し、状態フィルターと確認付きカード/デッキ選択解除を追加。到達判定はフィルターに関係なく元の全イベントグラフで行う。公開実イベント0件を維持し、連続人工イベントを使うNodeとChromiumで機構・両育成の独立を検証する。
 
 ## 2026-10-18：F-04 直接提供カードの重複排除、F-07 ヒントLv詳細、残件棚卸し（PR #57）
 
-[検証・残件マトリクス](phase3-gap-matrix-20261018.md)。以前の`core.aggregate`はスロット数を提供枚数にしていたが、要件の『異なるサポカ枚数』に揃えるため、同じカードIDが同じデッキに複数枠存在しても1枚と数える。段階・イベント・経路はスロット別に保持。スキル詳細の通常ヒント経路には該当凸の検証可能なヒントLvだけを表示し、未収録なら不明。人工データで機構とChromiumを検査。F-01〜F-09の残件をデータ/実機ゲートと区別して一覧化した。
+[検証・残件マトリクス](evidence/quality/phase3-gap-matrix-20261018.md)。以前の`core.aggregate`はスロット数を提供枚数にしていたが、要件の『異なるサポカ枚数』に揃えるため、同じカードIDが同じデッキに複数枠存在しても1枚と数える。段階・イベント・経路はスロット別に保持。スキル詳細の通常ヒント経路には該当凸の検証可能なヒントLvだけを表示し、未収録なら不明。人工データで機構とChromiumを検査。F-01〜F-09の残件をデータ/実機ゲートと区別して一覧化した。
 
 ## 2026-10-18：Phase 1 SR/Rヒント性能の独立参照を追加（PR #58）
 
-[監査対象と結果](stage-hint-consistency-audit.md)。従来のSSR6枚60セルに、GameWith個別記事からSR5枚・R1枚の通常のサポート効果表（計60数値）を追加。UmaSim固定版のカードID・正式名称・レアリティ・全5段階の基礎数値を突合するゲートを構築し、SHA256固定をCLIで確認。元データをPublicへコピーせず、取得を限定Actionsに集約。SSR/SR/Rの12枚120数値のみ独立照合で、他551枚や条件付き特殊固有の全件確認とは扱わない。
+[監査対象と結果](evidence/quality/stage-hint-consistency-audit.md)。従来のSSR6枚60セルに、GameWith個別記事からSR5枚・R1枚の通常のサポート効果表（計60数値）を追加。UmaSim固定版のカードID・正式名称・レアリティ・全5段階の基礎数値を突合するゲートを構築し、SHA256固定をCLIで確認。元データをPublicへコピーせず、取得を限定Actionsに集約。SSR/SR/Rの12枚120数値のみ独立照合で、他551枚や条件付き特殊固有の全件確認とは扱わない。
 
 ## 2026-10-18：Wiki Cargoと固定UmaSimの563カードID集合一致（PR #59）
 
-[証拠](wiki-cargo-support-id-audit.md)。MediaWiki Cargo公開API Game_Supports.support_id の数値フィールドを上限5 GET・今回実測3ページ（200+200+163）だけ取得し、古い2025 masterとは別の独立したコミュニティ索引を照合。採用UmaSim 563枚とWikiの563枚は全ID一致（SSR316 SR101 R146）、両方の片側だけのIDなし。APIレスポンスのキーが `support id` になることも確認。スナップショットが更新されれば不一致で監査を停止。ゲーム最新マスター全件の証拠や実イベントデータ導入ではなく、公開承認イベント0件は維持。
+[証拠](evidence/sources/wiki-cargo-support-id-audit.md)。MediaWiki Cargo公開API Game_Supports.support_id の数値フィールドを上限5 GET・今回実測3ページ（200+200+163）だけ取得し、古い2025 masterとは別の独立したコミュニティ索引を照合。採用UmaSim 563枚とWikiの563枚は全ID一致（SSR316 SR101 R146）、両方の片側だけのIDなし。APIレスポンスのキーが `support id` になることも確認。スナップショットが更新されれば不一致で監査を停止。ゲーム最新マスター全件の証拠や実イベントデータ導入ではなく、公開承認イベント0件は維持。
 
 ## 2026-10-18：Wikiイベントページ索引と2025年旧master story_idを照合（PR #60）
 
-[結果と制約](wiki-event-story-index-audit.md)。公開WikiのGame_Training_Event.story_idを数値で限定取得。SSR30241ではWiki個別解説ページ0件、旧masterの直結story_id18件との一致も0件。ただし同索引で既知イベント830021001は登録されており、APIは動作。WikiのLuaモジュールは存在するがコード自体に830241004の文字列埋込なし。**Wikiの解説ページ索引とゲームmasterのイベント全件DBは別物**と確定し、Checker未収録／現行ゲーム削除といった根拠のない推論を回避。公開実イベントDB0件。
+[結果と制約](evidence/sources/wiki-event-story-index-audit.md)。公開WikiのGame_Training_Event.story_idを数値で限定取得。SSR30241ではWiki個別解説ページ0件、旧masterの直結story_id18件との一致も0件。ただし同索引で既知イベント830021001は登録されており、APIは動作。WikiのLuaモジュールは存在するがコード自体に830241004の文字列埋込なし。**Wikiの解説ページ索引とゲームmasterのイベント全件DBは別物**と確定し、Checker未収録／現行ゲーム削除といった根拠のない推論を回避。公開実イベントDB0件。
 
 ## 2026-10-18：WikiレンダリングのイベントIDが旧master18件と完全一致（PR #61）
 
-[証拠・制約](wiki-masterdata-rendered-event-audit.md)。Wiki Cargoイベント解説索引の30241登録0件と異なり、公開WikiのSSR30241サポカ記事にはstory_id数値リンク18件（連続5・その他13）が存在し、2025年固定マスターの30241直結ID18件と**18/18一致**。焦点830241004も両方に存在。さらに2026年8月登場SSRエフフォーリア30311の公開記事にイベント5件、その5 IDはいずれも固定2025年マスターには存在しなかった。公開Luaの`masterdata`照会仕様・2025年8月のプログラム編集日時は確認できたが、Wikiサーバー上のSQLite版・正規入手条件は未確認。本文/報酬を公開アプリへ移さずイベントDB0件を維持。
+[証拠・制約](evidence/sources/wiki-masterdata-rendered-event-audit.md)。Wiki Cargoイベント解説索引の30241登録0件と異なり、公開WikiのSSR30241サポカ記事にはstory_id数値リンク18件（連続5・その他13）が存在し、2025年固定マスターの30241直結ID18件と**18/18一致**。焦点830241004も両方に存在。さらに2026年8月登場SSRエフフォーリア30311の公開記事にイベント5件、その5 IDはいずれも固定2025年マスターには存在しなかった。公開Luaの`masterdata`照会仕様・2025年8月のプログラム編集日時は確認できたが、Wikiサーバー上のSQLite版・正規入手条件は未確認。本文/報酬を公開アプリへ移さずイベントDB0件を維持。
 
 ## 2026-10-18：Wiki JP masterdataからWiki掲載サポカへの未掲載ID0件（PR #62）
 
-[監査正本](wiki-masterdata-cargo-gap-audit.md)。公開WikiのModule:Game/Contribution.listMissingがExternalDataのJP masterdataからsupport_card_dataを照会し、Cargo Game_Supportsに存在しないIDを調べる既存機能を、公開MediaWiki APIのテンプレート展開で一回だけ実行。Supports/CardsともにUp to date、未掲載0件。リクエストは1回、テキストなどは保存せず、失敗を0と誤認しないPythonテストを追加。**masterdata自身の時点・ハッシュ・逆方向完全性は未確認**。公開承認済み実イベントは0件のまま。
+[監査正本](evidence/sources/wiki-masterdata-cargo-gap-audit.md)。公開WikiのModule:Game/Contribution.listMissingがExternalDataのJP masterdataからsupport_card_dataを照会し、Cargo Game_Supportsに存在しないIDを調べる既存機能を、公開MediaWiki APIのテンプレート展開で一回だけ実行。Supports/CardsともにUp to date、未掲載0件。リクエストは1回、テキストなどは保存せず、失敗を0と誤認しないPythonテストを追加。**masterdata自身の時点・ハッシュ・逆方向完全性は未確認**。公開承認済み実イベントは0件のまま。
 
 ## 2026-10-18：第三者イベント報酬候補45枚126件を限定監査（PR #63）
 
-[証拠と不足](unreviewed-event-numeric-candidate-audit.md)。Tsuyuchan-jp公開配信repoの版0.1.14、抽出2026-09-30/生成2026-10-04の固定データを、配信manifest SHAとUmaSimの563カード・数値スキル辞書に照合。45カード・126候補（正規9桁story_id124、独自イベントID2）、スキル参照222レコード・191数値ID。2 ID（200831、200851）はUmaSim固定数値辞書に不在。Wikiの30311公開記事5 ID中、候補3 IDは全件一致、2 ID未収録。GameWithの30311の3スキル大成功時だけは名称・Lv一致するが、**成功時の低Lv結果が候補に無いため、正確な報酬全体とは扱えない**。出典の選択モードautoは『計画時自動計上』で実ゲーム確定取得ではない。元抽出コード非公開、再配布権利未確認。公開イベント0件のまま。
+[証拠と不足](evidence/events/unreviewed-event-numeric-candidate-audit.md)。Tsuyuchan-jp公開配信repoの版0.1.14、抽出2026-09-30/生成2026-10-04の固定データを、配信manifest SHAとUmaSimの563カード・数値スキル辞書に照合。45カード・126候補（正規9桁story_id124、独自イベントID2）、スキル参照222レコード・191数値ID。2 ID（200831、200851）はUmaSim固定数値辞書に不在。Wikiの30311公開記事5 ID中、候補3 IDは全件一致、2 ID未収録。GameWithの30311の3スキル大成功時だけは名称・Lv一致するが、**成功時の低Lv結果が候補に無いため、正確な報酬全体とは扱えない**。出典の選択モードautoは『計画時自動計上』で実ゲーム確定取得ではない。元抽出コード非公開、再配布権利未確認。公開イベント0件のまま。
 
 ## 2026-10-18：未照合スキルID2件の歴史的名称証拠と承認ゲートを分離（PR #64）
 
-[監査記録](unreviewed-event-numeric-candidate-audit.md)。200831「逃げけん制」と200851「逃げためらい」は、採用UmaSim辞書に不在だが過去の別資料に数値ID/名称の一致がある。監査器がこの限定的証拠を別欄に記録し、過去のIDの存在を現行ゲームでの有効性やイベント報酬承認と混同しないよう人工回帰を追加。採用辞書未照合2件と公開承認済みイベント0件を維持。外部資料の上流独立性・2026年のイベント分岐と報酬・配布可否は未検証。
+[監査記録](evidence/events/unreviewed-event-numeric-candidate-audit.md)。200831「逃げけん制」と200851「逃げためらい」は、採用UmaSim辞書に不在だが過去の別資料に数値ID/名称の一致がある。監査器がこの限定的証拠を別欄に記録し、過去のIDの存在を現行ゲームでの有効性やイベント報酬承認と混同しないよう人工回帰を追加。採用辞書未照合2件と公開承認済みイベント0件を維持。外部資料の上流独立性・2026年のイベント分岐と報酬・配布可否は未検証。
 
 ## 2026-10-18：30311のWiki側未収録イベント2件を数値IDで確定（PR #65）
 
-[詳細](unreviewed-event-numeric-candidate-audit.md)。Wiki公開SSRエフフォーリア記事（revision 74431）の5イベント数値リンクと固定版の候補3 IDを集合で比較し、共通3件 `801146002`/`830311002`/`830311003`、Wiki記事のみ2件 `801146001`/`830311001`、候補のみ0件を確認。出力は9桁IDのみで選択肢や報酬を持たない。実ゲームの発生条件と選択結果・報酬、および転載条件の独立審査は未完。公開承認済み実イベント0件を維持。
+[詳細](evidence/events/unreviewed-event-numeric-candidate-audit.md)。Wiki公開SSRエフフォーリア記事（revision 74431）の5イベント数値リンクと固定版の候補3 IDを集合で比較し、共通3件 `801146002`/`830311002`/`830311003`、Wiki記事のみ2件 `801146001`/`830311001`、候補のみ0件を確認。出力は9桁IDのみで選択肢や報酬を持たない。実ゲームの発生条件と選択結果・報酬、および転載条件の独立審査は未完。公開承認済み実イベント0件を維持。
 
 ## 2026-10-18：SSRエフフォーリア5イベントの選択肢・結果枝の不足を数値監査（PR #66）
 
-[監査記録](unreviewed-event-numeric-candidate-audit.md)。Wikiの5 story_idとGameWithの5イベントを対応付け、連続2/2/3・通常2/2の計11選択肢位置を手動確認。固定候補には3位置のみ（他8位置欠損、イベントID2件不在・既存2イベントの選択肢省略）。連続3段目は大成功時の3選択肢8スキルヒント（ID/名前/Lv）の一致だけ検査し、通常成功3結果群とその他報酬は未収録。候補データから実ゲームの無条件取得・公開承認を推論しない。人工単体テスト・限定実データ監査を追加し、公開JSONの実イベント0件と実機ゲート未通過を維持。
+[監査記録](evidence/events/unreviewed-event-numeric-candidate-audit.md)。Wikiの5 story_idとGameWithの5イベントを対応付け、連続2/2/3・通常2/2の計11選択肢位置を手動確認。固定候補には3位置のみ（他8位置欠損、イベントID2件不在・既存2イベントの選択肢省略）。連続3段目は大成功時の3選択肢8スキルヒント（ID/名前/Lv）の一致だけ検査し、通常成功3結果群とその他報酬は未収録。候補データから実ゲームの無条件取得・公開承認を推論しない。人工単体テスト・限定実データ監査を追加し、公開JSONの実イベント0件と実機ゲート未通過を維持。
 
 ## 2026-10-18：イベント選択肢の成功・大成功を安全に出力するレビュー変換（PR #67）
 
@@ -272,21 +272,21 @@ Checker候補名の `typographicFingerprint` を一時生成し、旧masterカ�
 
 ## 2026-10-18：SSR30311 5イベントの実ID候補とGameWithスキルヒントの結合プレビュー（PR #74）
 
-[検証範囲と留保](efforia30311-preview.md)。GameWith優先で把握したスキル報酬（連続2段目の1選択肢、通常イベントの1選択肢、連続3段目の成功/大成功の3選択肢×2結果）を、Wiki上の数値story IDと**仮の順序対応**でつなぎ、**5イベント・11選択肢・6条件付き結果群・18件のスキルヒント項目**をレビュー専用メモリ上の公開形式v1で組み立てる。実行コマンドは `node poc/tools/inspect_efforia30311_review_preview.cjs`。スキルID・名称は仮のUmaSim辞書でruntime bridge検査、選択状態と連続条件は本番schema/coreでテスト。台詞・他サイトの選択肢文言・画像は追加しない。**GameWith記事からWiki story_idへの直接照合、連続打ち切り条件、権利承認、実機受け入れは未完**。本番JSONの実イベント0件を維持。
+[検証範囲と留保](evidence/sources/efforia30311-preview.md)。GameWith優先で把握したスキル報酬（連続2段目の1選択肢、通常イベントの1選択肢、連続3段目の成功/大成功の3選択肢×2結果）を、Wiki上の数値story IDと**仮の順序対応**でつなぎ、**5イベント・11選択肢・6条件付き結果群・18件のスキルヒント項目**をレビュー専用メモリ上の公開形式v1で組み立てる。実行コマンドは `node poc/tools/inspect_efforia30311_review_preview.cjs`。スキルID・名称は仮のUmaSim辞書でruntime bridge検査、選択状態と連続条件は本番schema/coreでテスト。台詞・他サイトの選択肢文言・画像は追加しない。**GameWith記事からWiki story_idへの直接照合、連続打ち切り条件、権利承認、実機受け入れは未完**。本番JSONの実イベント0件を維持。
 
 ## 2026-10-18：Wikiエフフォーリアのイベント見出し・数値story_idの機械的結合検査（PR #76）
 
-[範囲と未確認項目](efforia30311-preview.md)。Wikiの公開SSR30311サポカHTMLから3連続＋2通常イベントの日本語見出しと隣接する数値リンク5件を照合するPythonパーサと人工HTML回帰を実装。すでに他の監査で取得する限定APIレスポンスを再利用する専用Actionsに実データ検証ステップを追加。GameWithの同じ見出しとの対応を、ページ内の順番に加え数値リンクでも検査する。生のWikiページや攻略文章は保存せず、ゲーム内分岐・報酬・版・権利を裏付けたものではない。公開イベントDB0件。
+[範囲と未確認項目](evidence/sources/efforia30311-preview.md)。Wikiの公開SSR30311サポカHTMLから3連続＋2通常イベントの日本語見出しと隣接する数値リンク5件を照合するPythonパーサと人工HTML回帰を実装。すでに他の監査で取得する限定APIレスポンスを再利用する専用Actionsに実データ検証ステップを追加。GameWithの同じ見出しとの対応を、ページ内の順番に加え数値リンクでも検査する。生のWikiページや攻略文章は保存せず、ゲーム内分岐・報酬・版・権利を裏付けたものではない。公開イベントDB0件。
 
 ## 2026-10-18：エフフォーリア候補の8数値スキルIDと固定UmaSim辞書の全件突合（PR #77）
 
-[検証範囲](efforia30311-preview.md)。Wiki名↔IDの実データ監査がrev74431に対し成功した後、プレビューの8種類の数値スキルIDと名称を、固定UmaSimスキル辞書2,139件から直接抽出・照合する限定Actionsステップを追加。全18スキルヒント項目の数値とLv形式、名称一致、参照欠落時の拒否を通常CIの人工回帰でも検査。これは辞書上のID名称であり、GameWithの結果別スキル報酬が現行ゲームで有効と証明したものではない。公開DBには追加しない。
+[検証範囲](evidence/sources/efforia30311-preview.md)。Wiki名↔IDの実データ監査がrev74431に対し成功した後、プレビューの8種類の数値スキルIDと名称を、固定UmaSimスキル辞書2,139件から直接抽出・照合する限定Actionsステップを追加。全18スキルヒント項目の数値とLv形式、名称一致、参照欠落時の拒否を通常CIの人工回帰でも検査。これは辞書上のID名称であり、GameWithの結果別スキル報酬が現行ゲームで有効と証明したものではない。公開DBには追加しない。
 
 [PR #77 実ソース結果追補] [Actions #39142875109](https://github.com/Nimrodx0/Umasupport/actions/runs/39142875109) 成功。固定UmaSim 2,139スキル（SHA-256 `b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec`）に対して、SSR30311プレビューの数値ID・名称**8/8件一致**。18件のスキルヒント報酬候補の数値形式も合格。ゲーム実イベント獲得の確証ではなく本番収録0件を維持。
 
 ## 2026-10-18：実画面でSSR30311イベントの試用を可能にする（PR #78）
 
-[`?eventPreview=30311` の専用モード](efforia30311-preview.md)を `poc/live.html` に追加。本番と同じカード選択・イベント分岐・スキル比較UIに5イベント候補をロード。ただし明示的URL限定、承認済みイベントの正常かつ空のJSONとスキル辞書が必須、試用データは原子的検証後のみモデルへ入れる。承認済み件数は0のまま。画面に未承認・暫定効果を掲示、保存キーを通常版と分離。候補JSONと開発ビルダーの同一性をNode自動検証、Chromium上で試用中の分岐設定と通常版への非混入・試用JSON故障を検査。外部文章・サポカ画像を追加しない。今後の全カードの段階的プレビュー拡張に再利用する。
+[`?eventPreview=30311` の専用モード](evidence/sources/efforia30311-preview.md)を `poc/live.html` に追加。本番と同じカード選択・イベント分岐・スキル比較UIに5イベント候補をロード。ただし明示的URL限定、承認済みイベントの正常かつ空のJSONとスキル辞書が必須、試用データは原子的検証後のみモデルへ入れる。承認済み件数は0のまま。画面に未承認・暫定効果を掲示、保存キーを通常版と分離。候補JSONと開発ビルダーの同一性をNode自動検証、Chromium上で試用中の分岐設定と通常版への非混入・試用JSON故障を検査。外部文章・サポカ画像を追加しない。今後の全カードの段階的プレビュー拡張に再利用する。
 
 ## 2026-10-19：SSR30311一枚の試用から45枚124イベント候補へ拡大（PR #80）
 
@@ -337,38 +337,38 @@ GameWithサポカ個別記事とUmaSimのサポカIDを照合。SSRトウカイ�
 独自イベント収録の実体を増やすため、固定UmaSimカードIDとGameWith R個別記事を照合し、6枚それぞれの通常イベント2件、スキル報酬位置とヒントLvを元原稿に頼らない数値／独自ラベル草稿へ保存。選択肢順・ヒント名称をNode回帰テストへ固定し、既存の公開ゲートと実ソース辞書照合を継続。合計28/563枚、68件、未索引535枚、公開承認0件。発生条件・正式story_id・ゲーム正確性・公開権利は未承認。詳細は `curated-event-intake.md`。
 
 
-- 2026-10-23：4SSR通常8イベントを正式なイベント公開スキーマの未署名候補として自動生成。元数値・ID・SHAを固定し、実公開JSONへの誤混入を防止。[詳細](phase2-eight-release-schema-candidate-20261023.md)。
+- 2026-10-23：4SSR通常8イベントを正式なイベント公開スキーマの未署名候補として自動生成。元数値・ID・SHAを固定し、実公開JSONへの誤混入を防止。[詳細](evidence/events/phase2-eight-release-schema-candidate-20261023.md)。
 
-- 2026-10-23：固定GT2,488イベントの短い見出しを、イベント位置と元SHAの一致で非公開候補へ注入する工程を追加。原文と候補DBのGitHub公開なし。[詳細](phase2-gametora-short-title-intake-20261023.md)。
+- 2026-10-23：固定GT2,488イベントの短い見出しを、イベント位置と元SHAの一致で非公開候補へ注入する工程を追加。原文と候補DBのGitHub公開なし。[詳細](evidence/events/phase2-gametora-short-title-intake-20261023.md)。
 
-- 2026-10-23：GT欠損4SSRの通常8イベント・16択をGitHub Pagesの独立デモへ配置。通常版のイベントDBと公開承認ゲートはそのまま。[試用と制限](phase2-eight-pages-browser-preview-20261023.md)。
+- 2026-10-23：GT欠損4SSRの通常8イベント・16択をGitHub Pagesの独立デモへ配置。通常版のイベントDBと公開承認ゲートはそのまま。[試用と制限](evidence/events/phase2-eight-pages-browser-preview-20261023.md)。
 
-- 2026-10-23：固定GT全イベントの非公開投影を、元イベントSHAと旧辞書／元分岐の注意位置を含む未署名レビュー索引へ分類する工程を追加。[個別記録](phase2-gametora-unsigned-release-review-20261023.md)。
+- 2026-10-23：固定GT全イベントの非公開投影を、元イベントSHAと旧辞書／元分岐の注意位置を含む未署名レビュー索引へ分類する工程を追加。[個別記録](evidence/events/phase2-gametora-unsigned-release-review-20261023.md)。
 
-- 2026-10-23：未署名のGT全2,488イベントとChecker重点差異65を照合し、旧UmaSim辞書の根本保留75と後続35を区別する非公開トリアージを追加。[概要](phase2-source-exception-overlay-20261023.md)。
+- 2026-10-23：未署名のGT全2,488イベントとChecker重点差異65を照合し、旧UmaSim辞書の根本保留75と後続35を区別する非公開トリアージを追加。[概要](evidence/events/phase2-source-exception-overlay-20261023.md)。
 
-- 2026-10-23：固定GT特定SSR30080/6の操作なし1行を、GameWith裁定済み実3選択の本番イベント型へ元ID保持で非公開上書き。[詳細](phase2-30080-private-runtime-overlay-20261023.md)。
+- 2026-10-23：固定GT特定SSR30080/6の操作なし1行を、GameWith裁定済み実3選択の本番イベント型へ元ID保持で非公開上書き。[詳細](evidence/events/phase2-30080-private-runtime-overlay-20261023.md)。
 
-- 2026-10-23：固定GT559枚・2,488イベントにGameWith裁定済み4SSR通常8イベントとSSR30080の3択補正を加えた、563枚・2,496件の非公開統合実行候補を実装。[詳細](phase2-integrated-2496-private-runtime-20261023.md)。
+- 2026-10-23：固定GT559枚・2,488イベントにGameWith裁定済み4SSR通常8イベントとSSR30080の3択補正を加えた、563枚・2,496件の非公開統合実行候補を実装。[詳細](evidence/events/phase2-integrated-2496-private-runtime-20261023.md)。
 
-- 2026-10-23：非公開統合2,496件の本番`public_event_catalog.preflight/attach`、現行固定UmaSim＋独立2026名による数値スキル照合、元入力不変の全件ゲートを追加。[設計](phase2-integrated-private-loader-acceptance-20261023.md)。
+- 2026-10-23：非公開統合2,496件の本番`public_event_catalog.preflight/attach`、現行固定UmaSim＋独立2026名による数値スキル照合、元入力不変の全件ゲートを追加。[設計](evidence/events/phase2-integrated-private-loader-acceptance-20261023.md)。
 
-- 2026-10-23：4SSRの未確証連続イベント12段階を、段階ごとに明示到達した場合だけスキル候補を試算するブラウザ画面へ拡張。15の未確証経路は自動接続せず。[仕様](phase2-chain-pages-manual-review-20261023.md)。
+- 2026-10-23：4SSRの未確証連続イベント12段階を、段階ごとに明示到達した場合だけスキル候補を試算するブラウザ画面へ拡張。15の未確証経路は自動接続せず。[仕様](evidence/events/phase2-chain-pages-manual-review-20261023.md)。
 
-- 2026-10-23：ユーザー指定により連続イベント試用の8スキル名を数値ID表示から固定辞書照合済みの日本語名へ変更。12件の正式イベント短見出しも追加し、未知名はfail-closed。[機構と出典](phase2-chain-pages-manual-review-20261023.md)。
+- 2026-10-23：ユーザー指定により連続イベント試用の8スキル名を数値ID表示から固定辞書照合済みの日本語名へ変更。12件の正式イベント短見出しも追加し、未知名はfail-closed。[機構と出典](evidence/events/phase2-chain-pages-manual-review-20261023.md)。
 
-- 2026-10-23：SSR30221のGameWith裁定済み3段階を、手動到達の連続イベント試用画面へ追加。試用対象を5SSR／15段階／9ヒントに広げ、未確証の2遷移を追加で隔離。[仕様](phase2-30221-chain-pages-preview-20261023.md)。
+- 2026-10-23：SSR30221のGameWith裁定済み3段階を、手動到達の連続イベント試用画面へ追加。試用対象を5SSR／15段階／9ヒントに広げ、未確証の2遷移を追加で隔離。[仕様](evidence/events/phase2-30221-chain-pages-preview-20261023.md)。
 
-- 2026-10-23：明示 `chain_end` なしの通常継続という既定方針を、5SSRの計画用連続17経路に適用。手動到達不要の選択連鎖試用を作成し、出典ごとの確証・発生保証と区別。[詳細](phase2-chain-ordinary-continuation-planner-20261023.md)。
+- 2026-10-23：明示 `chain_end` なしの通常継続という既定方針を、5SSRの計画用連続17経路に適用。手動到達不要の選択連鎖試用を作成し、出典ごとの確証・発生保証と区別。[詳細](evidence/events/phase2-chain-ordinary-continuation-planner-20261023.md)。
 
-- 2026-10-23：5SSRのGameWith編集採用済み15連続段階（7選択／8自動・22結果行・9ヒント・通常フラグ17）を非公開全2,496イベントへ加え、2,511件の本番読込・集計ゲートを追加。[設計と状態](phase2-private-2511-chain-loader-20261023.md)。
+- 2026-10-23：5SSRのGameWith編集採用済み15連続段階（7選択／8自動・22結果行・9ヒント・通常フラグ17）を非公開全2,496イベントへ加え、2,511件の本番読込・集計ゲートを追加。[設計と状態](evidence/events/phase2-private-2511-chain-loader-20261023.md)。
 
-- 2026-10-23：旧GT/Checker差異65位置を統合済み非公開2,511件に対して再監査し、20件をGT欠損4SSRのカード単位補完、3件を30221補完、24件はGT基準に既収録、1件は30080分岐補正、と分離。Checker側の未対応17位置＋固定両元にない30240の3段階を開発キューに集約。[証拠と限界](phase2-2511-residual-source-gaps-20261023.md)。
+- 2026-10-23：旧GT/Checker差異65位置を統合済み非公開2,511件に対して再監査し、20件をGT欠損4SSRのカード単位補完、3件を30221補完、24件はGT基準に既収録、1件は30080分岐補正、と分離。Checker側の未対応17位置＋固定両元にない30240の3段階を開発キューに集約。[証拠と限界](evidence/events/phase2-2511-residual-source-gaps-20261023.md)。
 
-- 2026-10-23：SSR30301のChecker-only一位置を、GameToraの連続3段階／通常ヒントとGameWithの表示差としてGT優先の個別編集裁定。追加イベント0、未対Checker位置17→16、SSR30240欠損3を含む調査対象19位置へ。[根拠](phase2-30301-gt-hint-vs-checker-event-20261023.md)。
+- 2026-10-23：SSR30301のChecker-only一位置を、GameToraの連続3段階／通常ヒントとGameWithの表示差としてGT優先の個別編集裁定。追加イベント0、未対Checker位置17→16、SSR30240欠損3を含む調査対象19位置へ。[根拠](evidence/events/phase2-30301-gt-hint-vs-checker-event-20261023.md)。
 
-- 2026-10-23：残るChecker未対16元位置と非公開2,511件の全カード内イベントヒントIDを突き合わせ、スキル数値ID・条件分岐の未収録リスクをP0/P1/P2に分類する固定全件CIを追加。[機構と限界](phase2-remaining-checker-skill-impact-20261023.md)。
+- 2026-10-23：残るChecker未対16元位置と非公開2,511件の全カード内イベントヒントIDを突き合わせ、スキル数値ID・条件分岐の未収録リスクをP0/P1/P2に分類する固定全件CIを追加。[機構と限界](evidence/events/phase2-remaining-checker-skill-impact-20261023.md)。
 
-- 2026-10-23：残存Checker16位置のP0・SSR30180の未収録イベントヒントをGameWithから採用し、非公開2,511候補＋1の本番型検証を追加。[根拠](phase2-30180-special-cornering-2512-20261023.md)。
+- 2026-10-23：残存Checker16位置のP0・SSR30180の未収録イベントヒントをGameWithから採用し、非公開2,511候補＋1の本番型検証を追加。[根拠](evidence/events/phase2-30180-special-cornering-2512-20261023.md)。
 
-- 2026-10-23：Checker残存P1の4位置（条件付き10行、抽出ヒント0）を固定sourceKey/digestで監査。30067「鍛えよ共に」は非スキル報酬の成功／失敗分岐とGameWithで採用し、残3位置は継続調査。[監査](phase2-four-p1-conditional-result-review-20261023.md)。
+- 2026-10-23：Checker残存P1の4位置（条件付き10行、抽出ヒント0）を固定sourceKey/digestで監査。30067「鍛えよ共に」は非スキル報酬の成功／失敗分岐とGameWithで採用し、残3位置は継続調査。[監査](evidence/events/phase2-four-p1-conditional-result-review-20261023.md)。

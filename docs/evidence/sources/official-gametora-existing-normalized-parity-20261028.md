@@ -13,7 +13,7 @@
 - スキルID：UmaSim `skill_data.txt` 固定Git blob `0c6ea6d72b037b24ee40860f73b0e86db47aab1d`。元サイトのスキル名を独立した数値IDに一意照合してから比較。
 - 方法：旧出典から**同じ変換器で**5イベントを正規化。元サイト側ではイベント名を既存の一意照合で元位置と結び、各経路の数値効果種別・符号付き増減・数値スキルID・ヒントLvを別々に読み込んだ。経路候補が**多重集合の一意割当**にならない場合は合格しない。選択肢の日本語文章、HTML、画像、元イベント本文はリポジトリ・CIログへ持ち出さない。
 
-コード：[既存変換済み候補との照合器](../poc/src/official_gametora_existing_normalized_parity.cjs)、[実Chromeでの比較](../poc/tools/probe_official_gametora_browser.cjs)、[合成・異常系試験](../poc/tests/official_gametora_existing_normalized_parity.test.cjs)。
+コード：[既存変換済み候補との照合器](../../../poc/src/official_gametora_existing_normalized_parity.cjs)、[実Chromeでの比較](../../../poc/tools/probe_official_gametora_browser.cjs)、[合成・異常系試験](../../../poc/tests/official_gametora_existing_normalized_parity.test.cjs)。
 
 ## 2026-10-28の実測（固定1カード）
 

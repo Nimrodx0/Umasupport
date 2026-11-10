@@ -17,7 +17,7 @@
 
 実行条件はNode.js 22以降。**このツールにネットワーク通信・アップロード機能はない**。出典元や権利が確認できない第三者画像・ログを入力したりGitHubへ公開したりしない。
 
-1. リポジトリのルートで `mkdir -p poc/private-rosters` し、[CSVのヘッダーだけのテンプレート](../poc/examples/private-roster-nine.template.csv) と [コホート情報テンプレート](../poc/examples/private-roster-nine.metadata-template.json) を `poc/private-rosters/` にコピーする。このディレクトリは `.gitignore` に追加する。
+1. リポジトリのルートで `mkdir -p poc/private-rosters` し、[CSVのヘッダーだけのテンプレート](../../../poc/examples/private-roster-nine.template.csv) と [コホート情報テンプレート](../../../poc/examples/private-roster-nine.metadata-template.json) を `poc/private-rosters/` にコピーする。このディレクトリは `.gitignore` に追加する。
 2. CSVの各行へ、同一試合の `race_key,own_nige,own_senkou,own_sasi,own_oikomi,opp_nige,opp_senkou,opp_sasi,opp_oikomi,oonige_check` を入力。**`race_key` は自身の記録内だけで重複しない、個人情報ではない `race-001` など**。ゲームのマッチIDやアカウント番号は使用しない。自分3頭＋相手6頭の計9頭に一致しなければ拒否する。
 3. コホート情報の `eventMonth`、`round`、`captureMethod`、`cohortId` を実際の観測条件へ修正する。`expectedRaceCount` は事前に対象数が決まっていた場合にその数を、未定なら `null` を入れる。予め宣言した試合数に足りない場合は「不足」として明示される。
 4. 実行：
@@ -67,6 +67,6 @@ local-002,1,1,0,1,0,3,2,1,verified-none
 
 ## 検証の区別
 
-- **A 機構**：[取り込み器](../poc/tools/skill_local_roster_intake.cjs)と[人工テスト](../poc/tests/skill_local_roster_intake.test.cjs)で、人数合計、異常値、匿名キー重複、ラウンド、未確定大逃げ、30件未満の割合 `null`、レース単位の不在数と相手6頭の不在数の違い、出力に生データが漏れないことを検証する。
+- **A 機構**：[取り込み器](../../../poc/tools/skill_local_roster_intake.cjs)と[人工テスト](../../../poc/tests/skill_local_roster_intake.test.cjs)で、人数合計、異常値、匿名キー重複、ラウンド、未確定大逃げ、30件未満の割合 `null`、レース単位の不在数と相手6頭の不在数の違い、出力に生データが漏れないことを検証する。
 - **B データ**：実レースの追加CSVは未入力。前回の[実対戦公開記事の証拠監査](skill-real-joint-roster-evidence-20261109.md)から実観測の9頭同時編成1件・別標本の相手6頭×40戦周辺度数があることだけ確認済み。
 - **C 実環境**：観測時のゲーム画面での誤入力や大逃げ識別、マッチング重複、実機でのCSV入力操作・公開アプリ連携は未確認。研究CLIのテスト成功を実対戦確認とみなさない。

@@ -37,7 +37,7 @@ node poc/tools/verify_event_release.cjs
 2. GameWithに明記された**操作選択肢2個**を採用する。報酬数値と技能IDは編集採用済みだが、**成功／失敗など全結果が網羅されているか**は別。
 3. GameWithの表示順と数値報酬を基準に、プレイヤーに選択肢を識別できる**公開用の独自日本語表示案**をレビューする。今ある位置だけの仮ラベルで完了と見なさない。
 4. 技能辞書の現行数値ID・名称との整合、既存の通常ヒントとの重複計上抑止、ヒントLvを実UIで照合する。
-5. [権利・取得利用条件](event-data-acquisition-rights-20261019.md)に従って文章・構成の公開利用根拠を確認し、[既存6観点の承認台帳](checker-public-catalog.md)へ**人手で判断を記録**する。何の根拠もなく承認フラグを自動で立てない。
+5. [権利・取得利用条件](../../event-data-acquisition-rights-20261019.md)に従って文章・構成の公開利用根拠を確認し、[既存6観点の承認台帳](../../checker-public-catalog.md)へ**人手で判断を記録**する。何の根拠もなく承認フラグを自動で立てない。
 6. `poc/data/reviewed_events.v1.json`へ個別に取り込むときは、独自表示、イベントSHA、出典リンク、全結果・分岐の検査を実施し、GitHub Pages／Chromium／Windows／Androidを別々に受け入れる。
 
 ## ゲート結果

@@ -15,7 +15,7 @@ PR #250では、同カードを`phase2_gt_whole_nonskill_effect_inventory.analyz
 - **C: 実ブラウザ**。固定元と**独立に**、GameTora本体のChrome DOMでイベント名と表示経路を結び、各経路の数値スキルID＋ヒントLvと、非スキル効果の種類＋符号付き増減値を読み取る。元サイトの経路対応が重複・不明なら拒否。これらと**結合後の同一結果葉の両配列**を比較する。
 - **D: 配信**。未承認の結合JSON、元イベント文章、選択肢名、HTML、画像はGitHub/Public/CIログに出さない。公開イベント0件のまま。
 
-対象コード：[実統合＋元サイト比較](../poc/src/official_gametora_combined_app_parity.cjs)／[合成の異常系検査](../poc/tests/official_gametora_combined_app_parity.test.cjs)／[Chrome直接比較](../poc/tools/probe_official_gametora_browser.cjs)。
+対象コード：[実統合＋元サイト比較](../../../poc/src/official_gametora_combined_app_parity.cjs)／[合成の異常系検査](../../../poc/tests/official_gametora_combined_app_parity.test.cjs)／[Chrome直接比較](../../../poc/tools/probe_official_gametora_browser.cjs)。
 
 ## 合格の境界
 

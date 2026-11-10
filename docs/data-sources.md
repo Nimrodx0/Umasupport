@@ -2,7 +2,7 @@
 
 **読む前に：** この文書は現行の入力元と2026年10月の比較調査を同居させた記録です。現行の主入力と公開条件は冒頭および[アーキテクチャ](architecture.md)・[ロードマップ](roadmap.md)で確認してください。日付付きの候補比較、未収録・未解決件数は**当時の観測**であり、最新の公開件数・実装状態は[status.md](status.md)を正本とします。
 
-**イベント取得の現行判断（2026-10-29）：** 主経路は[`systemless10/UmamusumePS`のGameTora派生構造化JSON](https://github.com/systemless10/UmamusumePS/tree/main/server/data/events/gametora)、元GameTora HTMLからの汎用直接取得は未完成のまま保留。通常ヒント／スキル辞書のUmaSim直接読込・IndexedDBキャッシュは変更しない。[正式な製品完成計画](derived-github-primary-restart-20261029.md)／[元資料採用ルール](gametora-baseline-event-policy-20261021.md)。以降にある2026-10-16当時の候補・順位は履歴であり現行の優先順位ではない。
+**イベント取得の現行判断（2026-10-29）：** 主経路は[`systemless10/UmamusumePS`のGameTora派生構造化JSON](https://github.com/systemless10/UmamusumePS/tree/main/server/data/events/gametora)、元GameTora HTMLからの汎用直接取得は未完成のまま保留。通常ヒント／スキル辞書のUmaSim直接読込・IndexedDBキャッシュは変更しない。[正式な製品完成計画](evidence/sources/derived-github-primary-restart-20261029.md)／[元資料採用ルール](evidence/sources/gametora-baseline-event-policy-20261021.md)。以降にある2026-10-16当時の候補・順位は履歴であり現行の優先順位ではない。
 
 
 ## 比較した過去の候補・固定観測（2026-10-16の履歴）
@@ -59,7 +59,7 @@
 
 `umamusume-data` の45件のサポカIDと名称はUmaSimと全件一致。イベント126件中124件は5桁のIDを直接抽出でき、残り2件は隔離。124イベントの189種類のスキルIDでは通常ヒント名との厳密一致が79種類、未照合は110種類。名称の一致を正式なスキルID対応として自動採用しない。
 
-元JSONだけでは連続順・打ち切り・成功失敗が十分に確認できないため、IDが一致してもイベント報酬を自動計上しない。詳細は [照合記録](event-source-audit.md)。
+元JSONだけでは連続順・打ち切り・成功失敗が十分に確認できないため、IDが一致してもイベント報酬を自動計上しない。詳細は [照合記録](evidence/events/event-source-audit.md)。
 
 ## 履歴：2026-10-16の供給元選定の優先順位（現在は不適用）
 
@@ -81,7 +81,7 @@
 
 ## U-tools直接利用の検証（2026-10-16）
 
-U-toolsの公開サポカイベントページには5桁IDと連続・ランダム分類、選択肢とスキルヒントLvを確認。一方、GitHub Actionsからの通常GETはCloudflare challenge付き403となり、通常応答時のCORS許可は未判定。公開API・データ提供権限・一括利用条件も未確認。サイトを閲覧できることをデータ再利用やブラウザ直接取得ができることと混同しない。詳細は [評価記録](utools-source-evaluation.md)。
+U-toolsの公開サポカイベントページには5桁IDと連続・ランダム分類、選択肢とスキルヒントLvを確認。一方、GitHub Actionsからの通常GETはCloudflare challenge付き403となり、通常応答時のCORS許可は未判定。公開API・データ提供権限・一括利用条件も未確認。サイトを閲覧できることをデータ再利用やブラウザ直接取得ができることと混同しない。詳細は [評価記録](evidence/sources/utools-source-evaluation.md)。
 
 ## 履歴：2026-10-16の公開イベントDB方針（入力元の優先は後続決定で変更）
 
@@ -91,13 +91,13 @@ U-toolsの公開サポカイベントページには5桁IDと連続・ランダ�
 
 ## UmaUmaCheckerの全SSR・SR対応結果（2026-10-16）
 
-実ソースの名称一致393＋明示した表記差24＝417/417枚を照合。2,099イベント候補・3,438効果行が存在するが、5枚は0件。GameWithの欠損5枚のうち3枚はイベント欄「検証中」であるため、個別記事だけでは補完できない。U-toolsは使用しない。詳しくは[監査記録](checker-aliases-and-gaps.md)。公開イベントデータは0件。
+実ソースの名称一致393＋明示した表記差24＝417/417枚を照合。2,099イベント候補・3,438効果行が存在するが、5枚は0件。GameWithの欠損5枚のうち3枚はイベント欄「検証中」であるため、個別記事だけでは補完できない。U-toolsは使用しない。詳しくは[監査記録](evidence/sources/checker-aliases-and-gaps.md)。公開イベントデータは0件。
 
 ## 2026-10-16 Game8の4枚＋Wikiの1枚：イベント事実候補
 
-Game8（SSR30320、30302、30295、30269）に各連続3＋ランダム2イベントを確認。スキルヒント獲得位置14行を元記事の文章なしで検証用候補として整理。30240はUmamusume Wiki等で連続3とその他2の見出しのみ確認し、報酬は未確定。**Game8の選択肢を全件独立検証したわけではない**。確認内容は[独立検証記録](game8-missing-ssr-review.md)を参照。U-tools不使用。公開イベントDBは未変更。
+Game8（SSR30320、30302、30295、30269）に各連続3＋ランダム2イベントを確認。スキルヒント獲得位置14行を元記事の文章なしで検証用候補として整理。30240はUmamusume Wiki等で連続3とその他2の見出しのみ確認し、報酬は未確定。**Game8の選択肢を全件独立検証したわけではない**。確認内容は[独立検証記録](evidence/sources/game8-missing-ssr-review.md)を参照。U-tools不使用。公開イベントDBは未変更。
 
 
 ## 2026-10-16 UmaSim技能数値IDでのSSR候補監査
 
-[照合記録](skill-id-candidate-audit.md)：UmaSim の `data/skill_data.txt` にスキル名14種類中13種類が厳密一意に対応。『逃げためらい』はUmaSimになく、BWikiの対照表と独立したスキル資料で **200851** と確認し、暫定対応で隔離。ジャングルポケット30240のイベント獲得スキル『迅速果断』『がむしゃら』はGameWithとｽｯﾍﾟﾝﾍﾟﾝ Wikiの双方に列挙されるが、イベント獲得位置は未判明。ソースの利用許可や正式スキルIDとの独立照合まで、本番獲得経路へは追加しない。U-toolsは使わない。
+[照合記録](evidence/skills/skill-id-candidate-audit.md)：UmaSim の `data/skill_data.txt` にスキル名14種類中13種類が厳密一意に対応。『逃げためらい』はUmaSimになく、BWikiの対照表と独立したスキル資料で **200851** と確認し、暫定対応で隔離。ジャングルポケット30240のイベント獲得スキル『迅速果断』『がむしゃら』はGameWithとｽｯﾍﾟﾝﾍﾟﾝ Wikiの双方に列挙されるが、イベント獲得位置は未判明。ソースの利用許可や正式スキルIDとの独立照合まで、本番獲得経路へは追加しない。U-toolsは使わない。

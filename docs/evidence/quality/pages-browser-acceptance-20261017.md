@@ -1,7 +1,7 @@
 # 公開GitHub Pagesの実ソースChromium受け入れ検証
 
 検証日：2026-10-17（JST）
-参照：[三軸ゲート](verification-plan.md) / [Phase 1](roadmap.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28)
+参照：[三軸ゲート](../../verification-plan.md) / [Phase 1](../../roadmap.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28)
 
 ## 目的と実施環境
 
@@ -11,7 +11,7 @@ GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaSc
 - **環境**：GitHub Actions Ubuntu runner、Playwright、Linuxの **HeadlessChrome/140.0.7339.186**。
 - **公開URL**：https://nimrodx0.github.io/Umasupport/poc/live.html
 - **実測ログ**：[Actions #38947134180](https://github.com/Nimrodx0/Umasupport/actions/runs/38947134180)（成功、PR #31）。
-- **実行プログラム**：[pages_live_browser.cjs](../poc/tests/pages_live_browser.cjs) と [明示実行限定ワークフロー](../.github/workflows/pages-real-browser-acceptance.yml)。ワークフローファイルを変更するPRまたは手動起動時のみ。通常のCI/Pages公開時には外部ソースへの追加リクエストを行わない。
+- **実行プログラム**：[pages_live_browser.cjs](../../../poc/tests/pages_live_browser.cjs) と [明示実行限定ワークフロー](../../../.github/workflows/pages-real-browser-acceptance.yml)。ワークフローファイルを変更するPRまたは手動起動時のみ。通常のCI/Pages公開時には外部ソースへの追加リクエストを行わない。
 
 ## 事前に定義した合格条件と観測結果
 
@@ -31,7 +31,7 @@ GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaSc
 ## 検証結果の範囲と未達
 
 - **A 機構：一部Pass**。実スキル階層に対する上下位・`coverage`の判定、実カードのUI反映とキャッシュ復帰を確認。ただし公開イベントは承認済み**0件**のため、金スキルを本当に提供するイベント経路は試験できていない。間接カバーは仮想の直接提供を使う。
-- **B データ：このブラウザ検証は全ゲームマスターの網羅を保証しない**。表示数は公開UmaSimの取得元内実測。2026年9月版独立JSONによる321組照合＋残り1組の別資料確認は[独立監査](independent-skill-json-audit.md)の別の根拠。
+- **B データ：このブラウザ検証は全ゲームマスターの網羅を保証しない**。表示数は公開UmaSimの取得元内実測。2026年9月版独立JSONによる321組照合＋残り1組の別資料確認は[独立監査](../sources/independent-skill-json-audit.md)の別の根拠。
 - **C 配信実ブラウザ：Linux Chromiumで上記のケースPass**。ただし**Windows実PC、Android/iOS実端末、Edge/Safari/Firefox、低速通信・動的更新、オンライン復帰後の再GET、カード性能値と正式ゲームUI**は未実施。幅390pxのテストをAndroid実機と呼ばない。
 - アセットHTML/JSの完全オフライン再起動はテストしていない。HTML/CSS/JSは配信可能なまま**ゲームデータ2取得先のみ**を遮断した。
 - 全フェーズ完了ゲートは未通過。利用条件・ゲーム実装全体のデータ品質・実イベント等の別未解決が残る。
@@ -41,7 +41,7 @@ GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaSc
 1. Android Chrome実端末とWindows Chrome/Edgeで同じ操作と表示を再現し、OS/バージョン、端末幅、Pagesコミット、スクリーンショット等の証拠を記録。
 2. 取得元遮断解除後の**再取得**と、誤ったキャッシュ/ストレージ拒否時の例外回復を実機確認。
 3. 実イベント承認後、金報酬による間接カバーの実ブラウザ結合を個別に追加。
-4. Phase 1の「カード母集団・性能値・表示順」は[ロードマップ](roadmap.md)のB軸で引き続き管理。
+4. Phase 1の「カード母集団・性能値・表示順」は[ロードマップ](../../roadmap.md)のB軸で引き続き管理。
 
 ## 追加検証：通信復旧とキャッシュ異常（2026-10-17、PR #32）
 
@@ -59,7 +59,7 @@ GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaSc
 
 **証拠の限界**：ストレージ拒否試験は既に実取得した内容を一時メモリから供給する人工的な権限障害試験で、OSや実際のプライベートブラウズ設定の検査ではない。今回の「異常系」は公開アプリのコードをChromium上で動かしたもので、端末実機の再現を保証しない。URL解除後のGETは実際の公開元へ接続して検証。HTML/JSを含む完全オフライン起動、物理Android／Windows／Safari、ゲーム全カード、実イベントの獲得判定は未検証。**Phase 1全体は未完了**。
 
-[テスト実装](../poc/tests/pages_live_browser.cjs)。当該ワークフロー自身またはPages受け入れテストを更新したPRと明示手動起動でのみPublisherへアクセスする。通常のPush CIに外部ダウンロードは追加しない。
+[テスト実装](../../../poc/tests/pages_live_browser.cjs)。当該ワークフロー自身またはPages受け入れテストを更新したPRと明示手動起動でのみPublisherへアクセスする。通常のPush CIに外部ダウンロードは追加しない。
 
 ## 追加検証：ヒント性能UIと実データ0/4凸一致（2026-10-17、PR #35）
 

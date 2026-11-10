@@ -1,6 +1,6 @@
 # サポートカード0〜4凸の通常ヒント不変性と独立ヒント性能照合
 
-検証日：2026-10-17（日本時間）　対象：[Phase 1](roadmap.md) / [ヒント性能の既存監査](hint-performance-audit.md) / [通常ヒント4凸全4,015件の公開資料照合](gametora-targeted-hint-audit.md)
+検証日：2026-10-17（日本時間）　対象：[Phase 1](../../roadmap.md) / [ヒント性能の既存監査](hint-performance-audit.md) / [通常ヒント4凸全4,015件の公開資料照合](../sources/gametora-targeted-hint-audit.md)
 
 ## 二種類の検証を分ける
 
@@ -11,7 +11,7 @@
 
 ## 採用ソース563枚の全段階実測
 
-[限定ソース監査のActions #39029848046](https://github.com/Nimrodx0/Umasupport/actions/runs/39029848046)（最新版のログを確認して判定）。検証器：[audit_stage_hint_integrity.cjs](../poc/tools/audit_stage_hint_integrity.cjs)。
+[限定ソース監査のActions #39029848046](https://github.com/Nimrodx0/Umasupport/actions/runs/39029848046)（最新版のログを確認して判定）。検証器：[audit_stage_hint_integrity.cjs](../../../poc/tools/audit_stage_hint_integrity.cjs)。
 
 | 項目 | 実測 |
 |---|---:|
@@ -51,7 +51,7 @@
 - **B（データ）**：UmaSim固定版内部の5段階・4,015名称不変性を全件確認。エフフォーリア1枚の0〜4凸ヒント性能10数値だけは別の攻略資料と一致。**他562枚の0〜4凸性能値、独立元ゲームマスター・全数値ID、特殊固有、標準スキル表示順は未確認**。Phase 1全体は未完了。
 - **C（実機）**：この監査はNode CLI。新しいUIや利用者の物理端末に変更・テストはなく、端末依存の受け入れは保留リストに集約する。
 
-監査起動：[限定ワークフロー](../.github/workflows/stage-hint-integrity-audit.yml)（対象コードのPR変更または手動起動のみ）／[人工テスト](../poc/tests/stage_hint_integrity.test.cjs)。通常CIでは外部データへのHTTP取得を行わない。
+監査起動：[限定ワークフロー](../../../.github/workflows/stage-hint-integrity-audit.yml)（対象コードのPR変更または手動起動のみ）／[人工テスト](../../../poc/tests/stage_hint_integrity.test.cjs)。通常CIでは外部データへのHTTP取得を行わない。
 
 ## 追補：6枚の全5段階・数値計60件を外部照合（2026-10-17）
 
@@ -68,7 +68,7 @@
 
 **値の範囲に関する重要な区別：** 最後のウイニングチケットはGameWithのサポート効果欄が**基礎値のみ**を掲載し、別欄の固有効果にヒント発生率アップがある。従ってこの1枚だけ、UmaSimの基礎列23/24と直接突合する。UmaSimにある固定固有発生率+20（列50）を合算して照合すると誤判定になる。他5枚の照合対象では、固定ヒント補正が0で基礎と合算の結果が等しい。特殊固有条件・発生確率は別問題。
 
-**ゲート**：対象全6枚についてフルカード名、ID、0〜4凸の各2数値がすべて一致したときだけ監査成功。1セルの不一致、ID欠落、名前食い違いは失敗。検査器と回帰テストは[監査スクリプト](../poc/tools/audit_stage_hint_integrity.cjs)と[通常CI](../.github/workflows/ci.yml)、固定版UmaSimでの実データ確認は[限定監査](../.github/workflows/stage-hint-integrity-audit.yml)を使用。
+**ゲート**：対象全6枚についてフルカード名、ID、0〜4凸の各2数値がすべて一致したときだけ監査成功。1セルの不一致、ID欠落、名前食い違いは失敗。検査器と回帰テストは[監査スクリプト](../../../poc/tools/audit_stage_hint_integrity.cjs)と[通常CI](../../../.github/workflows/ci.yml)、固定版UmaSimでの実データ確認は[限定監査](../../../.github/workflows/stage-hint-integrity-audit.yml)を使用。
 
 **適用範囲**：この6枚は資料で照合しやすい選択サンプルで、無作為抽出ではない。残る**557枚の性能数値は未独立確認**。両公開サイトが共通のゲームマスターを利用し得るため、ゲーム公式の独立検証でもない。アプリ本体の変更はなく、PC/Android物理実機の検証状態は変わらない。
 
@@ -92,4 +92,4 @@
 
 **範囲制限：** 12/563枚の選定サンプルでありランダム抽出ではない。残り**551枚の性能値は独立未照合**。全カード・全レアリティに一般化しない。SSRとSR/Rの数値表は異なるゲーム画面や情報元を用いている可能性もあり、GameWithとUmaSim双方が同じ一次マスターに依存する可能性は残る。通常ヒント4,015件の全件検査は「UmaSim内部の構造検証」であって独立したゲーム内検証ではない。
 
-対応：[検証計画](verification-plan.md)、[スキル性能の監査](hint-performance-audit.md)。実イベントのレビュー承認0件、Android/Windows物理端末未検証というゲートは変わらない。
+対応：[検証計画](../../verification-plan.md)、[スキル性能の監査](hint-performance-audit.md)。実イベントのレビュー承認0件、Android/Windows物理端末未検証というゲートは変わらない。

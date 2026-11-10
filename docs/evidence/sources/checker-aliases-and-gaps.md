@@ -2,7 +2,7 @@
 
 ## 目的
 
-SSR・SR計417枚のカード名表記が異なる場合、**推測による自動対応をせず、既知の一対一対応だけを適用**するための設定。データは [checker-name-aliases.json](../poc/config/checker-name-aliases.json)。
+SSR・SR計417枚のカード名表記が異なる場合、**推測による自動対応をせず、既知の一対一対応だけを適用**するための設定。データは [checker-name-aliases.json](../../../poc/config/checker-name-aliases.json)。
 
 ## 検証方法・結果
 
@@ -19,7 +19,7 @@ SSR・SR計417枚のカード名表記が異なる場合、**推測による自�
 
 ## 追加カード・イベント0件の扱い
 
-[`gamewith-ssr-review-status.json`](../poc/config/gamewith-ssr-review-status.json) は、UmaUmaCheckerのイベントが0件だったSSR5枚について、GameWithの個別記事と**記事内のイベント詳細の掲載状態**だけを追跡する。
+[`gamewith-ssr-review-status.json`](../../../poc/config/gamewith-ssr-review-status.json) は、UmaUmaCheckerのイベントが0件だったSSR5枚について、GameWithの個別記事と**記事内のイベント詳細の掲載状態**だけを追跡する。
 
 | UmaSim ID | GameWith個別記事 | イベント選択肢欄（2026-10-16） |
 |---|---|---|

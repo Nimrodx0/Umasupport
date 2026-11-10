@@ -6,7 +6,7 @@
 
 固定UmaSim全2162スキル（commit f6e4501ee6c6c2d4ac8698e7796e309d31575bde、辞書SHA256 4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5）から、[順位帯×局面の研究 #351](skill-position-rank-band-fit-20261106.md)に一致する4脚質すべての高／低判定が得られた24スキルを自動抽出した。例示した14IDのみの監査ではない。
 
-同じ固定版のsupport_card.txtから公開アプリモデルを構築し、承認済み reviewed_events.v1.json を適用。**566サポカ・881スキル**となり、既存の [P1条件構造解析器](../poc/src/skill_condition_profiles.js) が818件の元条件を照合し、63件は未照合だった。
+同じ固定版のsupport_card.txtから公開アプリモデルを構築し、承認済み reviewed_events.v1.json を適用。**566サポカ・881スキル**となり、既存の [P1条件構造解析器](../../../poc/src/skill_condition_profiles.js) が818件の元条件を照合し、63件は未照合だった。
 
 照合要件は**数値ID完全一致 AND NFKC空白正規化後の名称一致 AND 元の条件構造の照合成功**。同名別ID、同ID別名、重複、未照合は別区分にし、欠損を脚質適性0としない。
 
@@ -57,7 +57,7 @@
 
 ## 検証と未完の境界
 
-[成功したGitHub Actions #42138762511](https://github.com/Nimrodx0/Umasupport/actions/runs/42138762511)、派生結果のartifact ID **13467200517**、名称 rank-band-24-source-app-identity-audit。モデルとIDを再取得して照合する[研究用監査器](../poc/tools/rank_band_app_identity_audit.cjs)、[曖昧な名称・元ID・OR経路の単体テスト](../poc/tests/rank_band_app_identity_audit.test.cjs)、[再現CI](../.github/workflows/rank-band-app-identity-audit.yml)。第三者の辞書全文と未承認イベントは成果物に含めない。
+[成功したGitHub Actions #42138762511](https://github.com/Nimrodx0/Umasupport/actions/runs/42138762511)、派生結果のartifact ID **13467200517**、名称 rank-band-24-source-app-identity-audit。モデルとIDを再取得して照合する[研究用監査器](../../../poc/tools/rank_band_app_identity_audit.cjs)、[曖昧な名称・元ID・OR経路の単体テスト](../../../poc/tests/rank_band_app_identity_audit.test.cjs)、[再現CI](../../../.github/workflows/rank-band-app-identity-audit.yml)。第三者の辞書全文と未承認イベントは成果物に含めない。
 
 次は研究用高／低と元の絶対発動条件を保存しつつ、**サポートカードの通常ヒント・公開イベント・実選択済み分岐との獲得経路照合**を独立に行う必要がある。17件のアプリ存在確認は、カード入手経路、スキルの取得価値、ゲーム上の実発動確率を証明するものではない。
 

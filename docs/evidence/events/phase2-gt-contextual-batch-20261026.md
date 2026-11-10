@@ -11,7 +11,7 @@
 
 ## 共通変換機構
 
-[出典監査・共通変換](../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)に `CONTEXT_OPERATIONS` を追加し、下記3種類を `dynamicEffects[]` に出力。通常の確定能力値やスキル報酬には混ぜない。
+[出典監査・共通変換](../../../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)に `CONTEXT_OPERATIONS` を追加し、下記3種類を `dynamicEffects[]` に出力。通常の確定能力値やスキル報酬には混ぜない。
 
 | 固定元コード | 正規化された `kind` | 保存する主要条件 |
 | --- | --- | --- |
@@ -19,7 +19,7 @@
 | `yhs_tix` | `onsen-bathing-tickets` | `delta`、`scenario:'yukoma-onsen'`、`targetSelection:'bath-ticket-count'` |
 | `yhs_sr` | `onsen-next-bath-super-recovery` | `scenario:'yukoma-onsen'`、`activation:'next-bath'`、`targetSelection:'next-bath-super-recovery'`、**delta無し** |
 
-全種類 `possible:true`、コア出力 `conditional:true`・`unresolvedTargets:true` とする。これは条件付き効果経路の記録で、現行ゲームに対して発生・取得を実測したことを意味しない。`ntsr`・`yhs_tix` は `type,value` のみ、`yhs_sr` は `type` のみを元データから許容。幅値、未知の追加プロパティ、同じ結果内の同一kind重複、誤ったシナリオ／次回発生条件は拒否。[合成Node試験](../poc/tests/phase2_gt_contextual_effect_batch.test.cjs)で2カード横断、選択肢独立、無選択の報酬非表示、符号と正規化結果を確認。
+全種類 `possible:true`、コア出力 `conditional:true`・`unresolvedTargets:true` とする。これは条件付き効果経路の記録で、現行ゲームに対して発生・取得を実測したことを意味しない。`ntsr`・`yhs_tix` は `type,value` のみ、`yhs_sr` は `type` のみを元データから許容。幅値、未知の追加プロパティ、同じ結果内の同一kind重複、誤ったシナリオ／次回発生条件は拒否。[合成Node試験](../../../poc/tests/phase2_gt_contextual_effect_batch.test.cjs)で2カード横断、選択肢独立、無選択の報酬非表示、符号と正規化結果を確認。
 
 ## 固定元全件の実測
 

@@ -2,7 +2,7 @@
 
 ## 目的と非対象
 
-[直接取得移行の現行方針](upstream-refresh-operations.md)に従い、第三者GitHubの派生JSONを本番更新資料に必須としない構成にできるか、**最初はわずかなカードだけ**確認する。GameTora本体を「ゲーム開発元の一次資料」とは呼ばず、GameTora派生JSONより直接のサイト出典として扱う。
+[直接取得移行の現行方針](../../upstream-refresh-operations.md)に従い、第三者GitHubの派生JSONを本番更新資料に必須としない構成にできるか、**最初はわずかなカードだけ**確認する。GameTora本体を「ゲーム開発元の一次資料」とは呼ばず、GameTora派生JSONより直接のサイト出典として扱う。
 
 - 静的HTTP応答検査：固定対象3枚のみ、既存SSR `30001`、新規SSR `30322`／`30323`。
 - ブラウザ表示検査：既存SSR `30001` のみ。URLから追加カードを検索・巡回しない。
@@ -62,7 +62,7 @@
 | 結果ごとの数値効果・スキルID・ヒントLv照合 | **未実施** | 正式なイベントデータ収録の根拠にはならない |
 | 打ち切りと前段依存関係 | **未実施** | 連続イベントの内部制御を未検証 |
 
-比較コードは [一時的なタイトル照合器](../poc/src/official_gametora_title_crosscheck.cjs)、固定カードしか巡回しない [通常ブラウザのDOM調査](../poc/tools/probe_official_gametora_browser.cjs)、[独立した人工試験](../poc/tests/official_gametora_title_crosscheck.test.cjs) で管理する。判定器は`sourceRoutesAndRenderedRowsSemanticallyEquivalent:false`、`rewardAndOutcomeFactsVerified:false`、`chainTerminationVerified:false`、`resultForPublication:false`を常時出力する。現時点の採用／公開承認済みイベント0件は変更しない。
+比較コードは [一時的なタイトル照合器](../../../poc/src/official_gametora_title_crosscheck.cjs)、固定カードしか巡回しない [通常ブラウザのDOM調査](../../../poc/tools/probe_official_gametora_browser.cjs)、[独立した人工試験](../../../poc/tests/official_gametora_title_crosscheck.test.cjs) で管理する。判定器は`sourceRoutesAndRenderedRowsSemanticallyEquivalent:false`、`rewardAndOutcomeFactsVerified:false`、`chainTerminationVerified:false`、`resultForPublication:false`を常時出力する。現時点の採用／公開承認済みイベント0件は変更しない。
 
 この実測から、**GameTora本体のHTMLからイベントの見出し・通常／連続のグループ・展開パネルを構造的に取得できる**ことが分かった。第三者派生JSONが恒久的な実行時の入手元である必要はない可能性が高い。一方、表示された内部報酬値を数値IDへ厳密に結びつけるには、**Choice／Result／EffectのDOM層を区別するアダプタ**が必要。特に連続イベントは、暫定的なDOMの行数を結果分岐数として即採用してはいけない。
 
@@ -71,7 +71,7 @@
 
 ## 追加実験：公式サイトの数値報酬をイベント別に照合（2026-10-27）
 
-[実ブラウザでの候補報酬比較](https://github.com/Nimrodx0/Umasupport/actions/runs/40469880077)で、引き続き既存カード30001の同一1ページ・5イベントだけに限定して、各パネルに描画された数値テキストを暫定的に「種類・増減量」の組に変換した。[読み取り器](../poc/src/official_gametora_numeric_fact_parser.cjs)はスピード／スタミナ／体力／ヒントLv等を区別し、読み取れない形式を**未分類**に残す。原イベント台詞・選択肢・記事の原文・ゲーム画像をGit／ログへ出さない。
+[実ブラウザでの候補報酬比較](https://github.com/Nimrodx0/Umasupport/actions/runs/40469880077)で、引き続き既存カード30001の同一1ページ・5イベントだけに限定して、各パネルに描画された数値テキストを暫定的に「種類・増減量」の組に変換した。[読み取り器](../../../poc/src/official_gametora_numeric_fact_parser.cjs)はスピード／スタミナ／体力／ヒントLv等を区別し、読み取れない形式を**未分類**に残す。原イベント台詞・選択肢・記事の原文・ゲーム画像をGit／ログへ出さない。
 
 検証中、複数イベントが同じパネル領域を使用していることが判明。クリック直後に次のイベントのデータを読もうとすると**前のイベントの値を誤って引き継ぐ**ため、イベントボタンを都度開いて画面更新を待ってから抽出する処理に修正した。最初の取得で見えた大きな数字の不一致をそのまま元サイトの誤りと断定しない。
 
@@ -114,7 +114,7 @@
 
 照合器は、元のスキル名・原文をGitHubへ保存しない。辞書内で同じ名称に複数IDが付く場合、別スキル名も同じ範囲に含まれる場合、ヒント周辺の範囲が確定できない場合は**未解決**にする。パーサ・ブラウザテストが合格しても、**選択肢／成功失敗の内部経路とID・ヒントLvの結合まで検証したことにはならない**。正式な公開収録は現時点で0件。
 
-追加コード：[独立スキルID照合](../poc/src/official_gametora_skill_id_crosswalk.cjs)、[テスト](../poc/tests/official_gametora_skill_id_crosswalk.test.cjs)。
+追加コード：[独立スキルID照合](../../../poc/src/official_gametora_skill_id_crosswalk.cjs)、[テスト](../../../poc/tests/official_gametora_skill_id_crosswalk.test.cjs)。
 
 ## 追加実験：結果経路単位の効果・数値スキルID・ヒントLv照合（2026-10-27）
 
@@ -132,7 +132,7 @@
 
 **解釈の境界**：報酬の組合せが一致することと、「一方が選択肢、もう一方が成功・失敗」「前段で打ち切る」等のゲーム上の意味を確定することは別。`visualGroupSemanticsVerified`、`choiceAndOutcomeLabelsVerified`、`explicitChainTerminationVerified`、`publicationApproved` はfalseを維持する。旧固定データは参照用に使うだけで、GameTora本体から未確認の数値IDや経路を逆算して取り込まない。
 
-関連実装：[試験用の経路署名比較器](../poc/src/official_gametora_route_group_probe.cjs)と[その合成試験](../poc/tests/official_gametora_route_group_probe.test.cjs)。この結果だけで全カード・全経路の自動収録や、ゲーム内分岐の正しさは証明できない。
+関連実装：[試験用の経路署名比較器](../../../poc/src/official_gametora_route_group_probe.cjs)と[その合成試験](../../../poc/tests/official_gametora_route_group_probe.test.cjs)。この結果だけで全カード・全経路の自動収録や、ゲーム内分岐の正しさは証明できない。
 
 ### OR分岐の実ブラウザ再検証結果
 
@@ -155,7 +155,7 @@
 
 [GameTora本体の限定ブラウザ検証](https://github.com/Nimrodx0/Umasupport/actions/runs/40477838405)では、既存SSR30001の5イベントについて、参照GT由来の「プレイヤー選択肢数」=画面上のトップレベル表示グループ数が各2／2／1／2／1で一致した。結果経路の個数は各2／2／1／2／2。最終連続イベントではトップレベルの1グループ内に可視OR区切りが1箇所あり、2結果に分岐していることを、前段の[9/9経路署名照合](https://github.com/Nimrodx0/Umasupport/actions/runs/40474474931)と別軸で確認した。
 
-連続イベント途中（固定元の4番目）には元JSON側の `chain_end` が1経路存在し、GameTora本体でも連続打ち切りを示す文言が含まれる表示グループ1件を観測した。ただし「同じ報酬経路に紐付くか」は [新たに実装した数値経路対応チェック](../poc/src/official_gametora_choice_outcome_semantics.cjs) の追加検証対象とした。サイトに打ち切り文言が現れた事実から、ゲームの次段が必ず発生しなくなる条件まで自動的に証明したと扱わない。
+連続イベント途中（固定元の4番目）には元JSON側の `chain_end` が1経路存在し、GameTora本体でも連続打ち切りを示す文言が含まれる表示グループ1件を観測した。ただし「同じ報酬経路に紐付くか」は [新たに実装した数値経路対応チェック](../../../poc/src/official_gametora_choice_outcome_semantics.cjs) の追加検証対象とした。サイトに打ち切り文言が現れた事実から、ゲームの次段が必ず発生しなくなる条件まで自動的に証明したと扱わない。
 
 同検証では、固定派生GT側で空欄ではない**選択肢ラベル6件**が、今回抽出した**報酬グループ本文**には一つも完全一致しなかった。元ラベルが別の表示階層にある場合と、サイトの現在表記と歴史的固定元で文言が異なる場合を分けて再調査する。数値署名が一意に照合できることを理由に、**選択肢ラベルの一致まで検証済みとしない**。
 

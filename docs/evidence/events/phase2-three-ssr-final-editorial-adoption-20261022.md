@@ -10,7 +10,7 @@
 | SSR30319 ナリタブライアン | https://gametora.com/ja/umamusume/supports/30319-narita-brian | https://gamewith.jp/uma-musume/article/show/578819 | 5 |
 | SSR30320 アドマイヤグルーヴ | https://gametora.com/ja/umamusume/supports/30320-admire-groove | https://gamewith.jp/uma-musume/article/show/578818 | 5 |
 
-調査日2026-10-22。GameTora 30318・30319は個別ページで3連続＋2通常の見出しまで確認、30320は**カード概要を確認したがイベント全5件の個別展開までは検証していない**。後者でもGT固定元の当該カードJSONが欠損することは既に確認されており、GameWithカード記事で5件の個別数値が明示されているので、[採用契約](event-adjudication-enforcement.md)に従って編集上の値は採用する。第二の独立資料やゲーム実機を編集採用の必須条件にはしない。
+調査日2026-10-22。GameTora 30318・30319は個別ページで3連続＋2通常の見出しまで確認、30320は**カード概要を確認したがイベント全5件の個別展開までは検証していない**。後者でもGT固定元の当該カードJSONが欠損することは既に確認されており、GameWithカード記事で5件の個別数値が明示されているので、[採用契約](../../event-adjudication-enforcement.md)に従って編集上の値は採用する。第二の独立資料やゲーム実機を編集採用の必須条件にはしない。
 
 **表示矛盾の限定解消：30319の通常イベント位置5**。カード別GameWith一覧の第1行には「選択肢なし」と誤解を招く表示がある一方、同じGameWithの[イベント単独記事](https://gamewith.jp/uma-musume/article/show/289111)は男性・女性別の操作2択と各報酬を明記する。したがって操作2択と各数値効果・後者でのスキルID201641 Lv1を採用し、元記事の表示相違と解消リンクを独立データへ保存した。選択肢本文そのものは収録しない。
 

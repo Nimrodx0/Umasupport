@@ -1,6 +1,6 @@
 # P2：スキル発動条件の2軸評価（均衡編成、2026-11-06）
 
-**方針はユーザー合意済み。評価尺度の数値区分とサポカ集約方法は未確定。** 実装はGlobalSimモデルの順位帯という**部分条件の研究専用**。公開アプリと既存53＋追加24スキルの高／低ラベルは変更しない。[有効要件](requirements.md)・[意思決定](decisions.md)・[固定4脚質研究](skill-position-balanced-four-style-rule-20261106.md)。
+**方針はユーザー合意済み。評価尺度の数値区分とサポカ集約方法は未確定。** 実装はGlobalSimモデルの順位帯という**部分条件の研究専用**。公開アプリと既存53＋追加24スキルの高／低ラベルは変更しない。[有効要件](../../requirements.md)・[意思決定](../../decisions.md)・[固定4脚質研究](skill-position-balanced-four-style-rule-20261106.md)。
 
 ## 区別する3つの概念
 
@@ -15,8 +15,8 @@
 GlobalSim v77固定2,160レースから、**均衡編成だけ**（9頭：逃2、先2、差3、追2／12頭：各3）を抽出。4局面×11順位帯×4脚質＝**176脚質・帯域の研究データ**を生成する。
 
 - [元データの固定ソース](https://github.com/Nimrodx0/Umasupport/actions/runs/42164735064) の `four-style-pairwise.json` SHA256 `62764af14894ed0ef5354f3136b8d9eaae0dc8426ca2d8a0f146ccd24ea25cc9` を照合する。順位帯の9/12頭への整数換算、元の4脚質ペア方向表、24均衡設定の母数を変えない。
-- [2軸集計器](../poc/tools/globalsim_balanced_two_axis.cjs) は2軸を独立出力し、完全な固定出典に反するデータと、不明脚質の0%補完を拒否する。
-- [研究用スキル適用器](../poc/src/skill_two_axis_research.cjs) は既存の[4脚質条件照合](../poc/src/skill_balanced_four_style_fit.cjs)のAND／OR・発動制限・前提条件の保留を引き継ぐ。スキルの高低適性そのものを確定しない。
+- [2軸集計器](../../../poc/tools/globalsim_balanced_two_axis.cjs) は2軸を独立出力し、完全な固定出典に反するデータと、不明脚質の0%補完を拒否する。
+- [研究用スキル適用器](../../../poc/src/skill_two_axis_research.cjs) は既存の[4脚質条件照合](../../../poc/src/skill_balanced_four_style_fit.cjs)のAND／OR・発動制限・前提条件の保留を引き継ぐ。スキルの高低適性そのものを確定しない。
 
 | 研究指標 | 中盤、順位40～80%、均衡編成 | 解釈 |
 | --- | --- | --- |

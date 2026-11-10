@@ -2,11 +2,11 @@
 
 ## 目的とスコープ
 
-[汎用イベント変換器の先行ゲート](verification-plan.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)は、SSRサンプルだけでは合格できない。SSR30030／30041／30080およびSSR30322／30323の限定実証に加え、**R10016** と **SR20075** の元GameTora表示にも**同じ**DOM抽出器・スキル辞書ID照合・四系統統合器・非公開アプリ型投影を適用する。実際の新カードを検出する運用テストではなく、**既存カード2枚による診断専用の合成取り込み計画**を使い、読み取り以外の操作はしない。
+[汎用イベント変換器の先行ゲート](../../verification-plan.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)は、SSRサンプルだけでは合格できない。SSR30030／30041／30080およびSSR30322／30323の限定実証に加え、**R10016** と **SR20075** の元GameTora表示にも**同じ**DOM抽出器・スキル辞書ID照合・四系統統合器・非公開アプリ型投影を適用する。実際の新カードを検出する運用テストではなく、**既存カード2枚による診断専用の合成取り込み計画**を使い、読み取り以外の操作はしない。
 
 ## 方法
 
-- [.github/workflows/official-gametora-r-sr-source-browser.yml](../.github/workflows/official-gametora-r-sr-source-browser.yml) はGitHub Actionsの実ChromeでGameTora元サイト一覧を1回参照し、そこに掲載された対象2枚の実在URLだけへ進む。事前にrobotsを読み、1回の実行で訪問するカードページは最大2枚。HTTP制限を回避しない。
+- [.github/workflows/official-gametora-r-sr-source-browser.yml](../../../.github/workflows/official-gametora-r-sr-source-browser.yml) はGitHub Actionsの実ChromeでGameTora元サイト一覧を1回参照し、そこに掲載された対象2枚の実在URLだけへ進む。事前にrobotsを読み、1回の実行で訪問するカードページは最大2枚。HTTP制限を回避しない。
 - 変換器にはR／SR用特別コードを加えない。事前に固定した独立UmaSimスキル辞書を用い、ヒント名からの数値ID解決を厳格に実施。サイトに表示されない報酬・選択肢・連続条件は補わない。
 - 原ページの文章・HTML・画像・生のイベントJSONをGit／ログへ保存しない。出力するのはカードIDとイベントパネル数・共通スキーマ形イベント数・結果数・数値効果数・ヒント数だけ。取得できなかったパネルは「報酬なし」にせず保留し、**形式的に処理できたものも承認済みへ格上げしない**。
 

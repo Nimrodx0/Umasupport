@@ -1,6 +1,6 @@
 # ヒントLv・ヒント発生率の0〜4凸別データ監査
 
-更新：2026-10-17　対象：[F-07](requirements.md#f-07-ヒント関連性能)／[Phase 1](roadmap.md)／[PR #34](https://github.com/Nimrodx0/Umasupport/pull/34)
+更新：2026-10-17　対象：[F-07](../../requirements.md#f-07-ヒント関連性能)／[Phase 1](../../roadmap.md)／[PR #34](https://github.com/Nimrodx0/Umasupport/pull/34)
 
 ## 取得元と列定義
 
@@ -20,7 +20,7 @@
 ## 実ソース全件計測
 
 実行証拠：[Actions #38952732567](https://github.com/Nimrodx0/Umasupport/actions/runs/38952732567)（成功）。
-実行コード：[監査スクリプト](../poc/tools/audit_hint_performance.cjs)／[限定実行ワークフロー](../.github/workflows/hint-performance-audit.yml)。
+実行コード：[監査スクリプト](../../../poc/tools/audit_hint_performance.cjs)／[限定実行ワークフロー](../../../.github/workflows/hint-performance-audit.yml)。
 
 | 項目 | 実測 |
 |---|---:|

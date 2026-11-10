@@ -1,6 +1,6 @@
 # Phase 3 F-03：6枚分のイベント設定と分岐状態の俯瞰
 
-更新：2026-10-18。対象：[要件F-03](requirements.md)、[検証計画](verification-plan.md)。
+更新：2026-10-18。対象：[要件F-03](../../requirements.md)、[検証計画](../../verification-plan.md)。
 
 ## 実装・操作
 

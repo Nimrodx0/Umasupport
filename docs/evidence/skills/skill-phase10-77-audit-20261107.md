@@ -5,10 +5,10 @@
 ## 対象・実行根拠
 
 - 固定UmaSim辞書 `f6e4501ee6c6c2d4ac8698e7796e309d31575bde`、`skill_data.txt` SHA256 `4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5`。
-- アプリの過去の脚質傾向で監査済みの**53件**を、元の[53件監査器](../poc/tools/skill_activation_fit_v1_report.cjs)と元辞書のID・正規化名・全AND/ORの照合で再構成。
-- 旧2群研究で追加された**24件**は[全元辞書からの候補抽出器](../poc/tools/rank_band_app_identity_audit.cjs)で再抽出。固定アプリ881件への三点照合は**17件あり・7件なし**。アプリで見えることはカードから獲得できることではない。
-- [10m成立機会研究器](../poc/tools/globalsim_phase_random_10m.cjs)により固定GlobalSim v77の**均衡720レース**（6コース×9/12頭×2能力条件×30シード）を再生。モデルレポートSHA256 `f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58`。
-- [今回の全77件監査器](../poc/tools/skill_phase10_cohort_review.cjs)と[専用CI](../.github/workflows/p2-phase10-77-skill-review.yml)が固定出典を照合し、**77スキル×4脚質**の元経路別結果を数値の小さな成果物として保管。著作権のある第三者辞書全文やサポカの未承認データは再配布しない。
+- アプリの過去の脚質傾向で監査済みの**53件**を、元の[53件監査器](../../../poc/tools/skill_activation_fit_v1_report.cjs)と元辞書のID・正規化名・全AND/ORの照合で再構成。
+- 旧2群研究で追加された**24件**は[全元辞書からの候補抽出器](../../../poc/tools/rank_band_app_identity_audit.cjs)で再抽出。固定アプリ881件への三点照合は**17件あり・7件なし**。アプリで見えることはカードから獲得できることではない。
+- [10m成立機会研究器](../../../poc/tools/globalsim_phase_random_10m.cjs)により固定GlobalSim v77の**均衡720レース**（6コース×9/12頭×2能力条件×30シード）を再生。モデルレポートSHA256 `f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58`。
+- [今回の全77件監査器](../../../poc/tools/skill_phase10_cohort_review.cjs)と[専用CI](../../../.github/workflows/p2-phase10-77-skill-review.yml)が固定出典を照合し、**77スキル×4脚質**の元経路別結果を数値の小さな成果物として保管。著作権のある第三者辞書全文やサポカの未承認データは再配布しない。
 
 ## 条件ごとの判定範囲
 

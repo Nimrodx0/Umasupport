@@ -89,7 +89,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 `src/event_source_audit.js` はIDと名称を照合し、未確認の連続イベントは勝手に有効化しない。`src/event_review_compiler.js` はレビュー済みの打ち切り・依存条件とスキルID対応が揃ったレコードのみ内部形式へ変換する。人工データの検証は `tests/event_source_audit.test.cjs`、`tests/event_review_compiler.test.cjs`。2026-11-02の初回公開ではGT直接系統2,487イベントを承認済みとして配信し、別出典25イベントは引き続き未公開。
 
-[照合記録](../docs/event-source-audit.md)。
+[照合記録](../docs/evidence/events/event-source-audit.md)。
 
 ## 大規模イベントJSONの全件測定
 
@@ -107,7 +107,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 ## U-tools取得試験
 
-`tools/probe_utools.cjs` は2026-10-16の**少数回の試験用**。手動実行した際、GitHub ActionsのイベントページGETはCloudflare challenge付き403で停止。通常CIでは**このツールを実行しない**。承認のない再試行や保護回避、大量アクセスは行わず、結果は [U-tools評価](../docs/utools-source-evaluation.md) に記録。 
+`tools/probe_utools.cjs` は2026-10-16の**少数回の試験用**。手動実行した際、GitHub ActionsのイベントページGETはCloudflare challenge付き403で停止。通常CIでは**このツールを実行しない**。承認のない再試行や保護回避、大量アクセスは行わず、結果は [U-tools評価](../docs/evidence/sources/utools-source-evaluation.md) に記録。
 
 ## SSR・SRイベントを候補から公開DBへ
 
@@ -119,16 +119,16 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 
 ## Game8からの欠損SSR事実候補
 
-`config/missing-ssr-event-facts.v1.json` はSSR4枚の連続3＋ランダム2、選択位置別のスキルヒント・Lvを人手で整理した未承認の構造化候補。SSR30240はイベント報酬不明として保持。選択肢原文は含めず、公開データ `data/reviewed_events.v1.json` に結合しない。`src/missing_ssr_fact_review.cjs` がイベント型・スキルLv・候補ID・許可URL等を検証。`tests/missing_ssr_fact_review.test.cjs` は不正データを拒否するテスト。[詳細](../docs/game8-missing-ssr-review.md)。
+`config/missing-ssr-event-facts.v1.json` はSSR4枚の連続3＋ランダム2、選択位置別のスキルヒント・Lvを人手で整理した未承認の構造化候補。SSR30240はイベント報酬不明として保持。選択肢原文は含めず、公開データ `data/reviewed_events.v1.json` に結合しない。`src/missing_ssr_fact_review.cjs` がイベント型・スキルLv・候補ID・許可URL等を検証。`tests/missing_ssr_fact_review.test.cjs` は不正データを拒否するテスト。[詳細](../docs/evidence/sources/game8-missing-ssr-review.md)。
 
 
 ## イベント候補の技能数値ID照合
 
-`tools/audit_skill_candidate_ids.cjs` はUmaSimの `data/skill_data.txt` を直接読み、`src/skill_candidate_id_audit.cjs` で欠損SSR候補14スキルのID・レアリティ・グループを厳密照合。オフライン版：`node poc/tools/audit_skill_candidate_ids.cjs --local local-data/skill_data.txt`。`config/missing-ssr-skill-id-candidates.v1.json` は13件のUmaSim一致＋1件の外部暫定IDを区別して保持する。今後の公式・ソース更新でIDが変化すれば監査失敗にする。`config/missing-ssr-event-facts.v1.json` 内のジャングルポケット30240のスキル名2件はカード単位の取得候補で、イベント段階・選択肢は一切未特定。詳細：[技能ID監査](../docs/skill-id-candidate-audit.md)。
+`tools/audit_skill_candidate_ids.cjs` はUmaSimの `data/skill_data.txt` を直接読み、`src/skill_candidate_id_audit.cjs` で欠損SSR候補14スキルのID・レアリティ・グループを厳密照合。オフライン版：`node poc/tools/audit_skill_candidate_ids.cjs --local local-data/skill_data.txt`。`config/missing-ssr-skill-id-candidates.v1.json` は13件のUmaSim一致＋1件の外部暫定IDを区別して保持する。今後の公式・ソース更新でIDが変化すれば監査失敗にする。`config/missing-ssr-event-facts.v1.json` 内のジャングルポケット30240のスキル名2件はカード単位の取得候補で、イベント段階・選択肢は一切未特定。詳細：[技能ID監査](../docs/evidence/skills/skill-id-candidate-audit.md)。
 
 ## 全件スキル階層のランタイム導入（2026-10-16）
 
-`src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はイベントJSONが取得できない場合でも、金白辞書を別経路で直接GETしIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/skill-hierarchy-coverage.md)。
+`src/skill_hierarchy.js` がUmaSim金325件のグループを全件検査し、白あり322組（284単純一対一、7例外、31の○◎2段階）を構造的に結び、白なし3組を別扱いにする。 `live.html` はイベントJSONが取得できない場合でも、金白辞書を別経路で直接GETしIndexedDBにキャッシュする。データの表示・間接カバーは `tests/full_skill_hierarchy.test.cjs` の架空スキルテストで検証。未確認のソース構造を自動で確定扱いしない。独立検証と実ブラウザ検証は引き続き必要。[全件結果](../docs/evidence/skills/skill-hierarchy-coverage.md)。
 
 ## Chromiumの自動ブラウザ回帰（2026-10-17）
 
@@ -150,12 +150,12 @@ python3 poc/tools/verify_skill_master.py --umasim local-data/skill_data.txt \
 
 ## 固定版旧マスターとのクロスチェック
 
-[履歴照合](../docs/historical-master-audit.md)と[限定的Actions](../.github/workflows/historical-skill-master-audit.yml)を参照。2025年で更新が停止したSQLiteなので、2026年の全322組の独立確認とは区別する。通常CIとブラウザでの外部通信は増やさない。
+[履歴照合](../docs/evidence/sources/historical-master-audit.md)と[限定的Actions](../.github/workflows/historical-skill-master-audit.yml)を参照。2025年で更新が停止したSQLiteなので、2026年の全322組の独立確認とは区別する。通常CIとブラウザでの外部通信は増やさない。
 
 ## 公開Pagesの実データChromium受け入れ（2026-10-17）
 
-[実測記録](../docs/pages-browser-acceptance-20261017.md)、[スクリプト](tests/pages_live_browser.cjs)、[限定的Actions](../.github/workflows/pages-real-browser-acceptance.yml)を参照。公開中の配信物5ファイルのバイト一致、UmaSim2ファイルを各1回の実GET、ブラウザ描画/編成/目標/IndexedDB、データ取得先のみ遮断した復旧を自動検証。実測はLinux HeadlessChrome/140・390px幅の操作であり、Android実機でも全イベント/全ゲームデータの保証でもない。通常CIでは外部GETを追加せず、明示実行のみ。
+[実測記録](../docs/evidence/quality/pages-browser-acceptance-20261017.md)、[スクリプト](tests/pages_live_browser.cjs)、[限定的Actions](../.github/workflows/pages-real-browser-acceptance.yml)を参照。公開中の配信物5ファイルのバイト一致、UmaSim2ファイルを各1回の実GET、ブラウザ描画/編成/目標/IndexedDB、データ取得先のみ遮断した復旧を自動検証。実測はLinux HeadlessChrome/140・390px幅の操作であり、Android実機でも全イベント/全ゲームデータの保証でもない。通常CIでは外部GETを追加せず、明示実行のみ。
 
 ### 2026-10-17：旧マスターのイベントタイトル指紋照合
 
-[イベント名の監査結果](../docs/event-title-fingerprint-audit.md)。候補専用JSONに `titleFingerprint`（NFKC＋空白統一したイベント見出しのSHA-256）を追加。旧masterの `single_mode_story_data.story_id` と `text_data.category=181` から得られたタイトルのハッシュと、**タイトル名の暫定一致**のみ比較する。固定版旧マスターのカード直結1,028件はタイトル全件取得、SSR/SR1,017件のうちChecker候補との暫定一致956件。30241は旧18、Checker17、同名15、旧だけ3、Checkerだけ2。元イベント名・本文をPublicへ保存せず、正式ゲームID・報酬・分岐の確認として扱わない。監査は通常CIの人工SQLite回帰と、明示／PR限定の[ワークフロー](../.github/workflows/historical-event-master-audit.yml)で実行。
+[イベント名の監査結果](../docs/evidence/events/event-title-fingerprint-audit.md)。候補専用JSONに `titleFingerprint`（NFKC＋空白統一したイベント見出しのSHA-256）を追加。旧masterの `single_mode_story_data.story_id` と `text_data.category=181` から得られたタイトルのハッシュと、**タイトル名の暫定一致**のみ比較する。固定版旧マスターのカード直結1,028件はタイトル全件取得、SSR/SR1,017件のうちChecker候補との暫定一致956件。30241は旧18、Checker17、同名15、旧だけ3、Checkerだけ2。元イベント名・本文をPublicへ保存せず、正式ゲームID・報酬・分岐の確認として扱わない。監査は通常CIの人工SQLite回帰と、明示／PR限定の[ワークフロー](../.github/workflows/historical-event-master-audit.yml)で実行。

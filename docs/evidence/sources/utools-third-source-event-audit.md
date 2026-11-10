@@ -1,6 +1,6 @@
 # SSR30241：第三資料のイベント見出し照合（2026-10-17）
 
-対象：[2025年版マスターstory_id監査](story-residual-metadata-audit.md)の未一致ID **830241004**。2026年10月17日のSSR30241（グループ「［導きの光］伝説の体現者」）について、UmaUmaCheckerの候補イベント17件と2025年旧masterカード直結18件を、[U-toolsイベント一覧](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)の見出しで第三者照合する。
+対象：[2025年版マスターstory_id監査](../events/story-residual-metadata-audit.md)の未一致ID **830241004**。2026年10月17日のSSR30241（グループ「［導きの光］伝説の体現者」）について、UmaUmaCheckerの候補イベント17件と2025年旧masterカード直結18件を、[U-toolsイベント一覧](https://xn--gck1f423k.xn--1bvt37a.tools/supports/30241/event)の見出しで第三者照合する。
 
 ## 事前合格条件
 
@@ -12,9 +12,9 @@
 
 ## 方法・出典
 
-- 固定2025年masterと固定Checkerの監査は[限定的実ソースワークフロー](../.github/workflows/historical-event-master-audit.yml)を継続。U-toolsサイトは**GitHub ActionsからHTTP 403でアクセス不可**のため、自動取得を試みるステップを削除した。サイトの制限を回避せず、HTMLを正当に入手できた場合だけローカルの一時ファイルを入力とする。データ取得・パースの障害を「イベントが無い」とは解釈しない。
-- [監査コード](../poc/tools/audit_three_source_event_headings.py)はページ見出しと旧masterのカード直結story_idを、推測で直接1対1結合しない。全て「タイトルの一致候補」のみ。
-- [人工データテスト](../poc/tests/test_three_source_event_headings.py)は正常時、ソースにしかない見出し、旧masterの重複タイトル、ページ構造の崩れを検証する。
+- 固定2025年masterと固定Checkerの監査は[限定的実ソースワークフロー](../../../.github/workflows/historical-event-master-audit.yml)を継続。U-toolsサイトは**GitHub ActionsからHTTP 403でアクセス不可**のため、自動取得を試みるステップを削除した。サイトの制限を回避せず、HTMLを正当に入手できた場合だけローカルの一時ファイルを入力とする。データ取得・パースの障害を「イベントが無い」とは解釈しない。
+- [監査コード](../../../poc/tools/audit_three_source_event_headings.py)はページ見出しと旧masterのカード直結story_idを、推測で直接1対1結合しない。全て「タイトルの一致候補」のみ。
+- [人工データテスト](../../../poc/tests/test_three_source_event_headings.py)は正常時、ソースにしかない見出し、旧masterの重複タイトル、ページ構造の崩れを検証する。
 
 **未解決の課題：** 同じ表記であっても、発生するシナリオ・条件、選択肢、報酬、金スキル、現在のゲーム実装、転載可能性の別証明が必要。U-toolsとCheckerが共通元を持つ可能性を除外しない。正式イベントDB0件を維持する。
 

@@ -89,17 +89,17 @@
 
 ### GameWith優先の数値比較ルール
 
-[意思決定ログ](decisions.md)と [機械可読ルール](../poc/config/event-source-priority.v1.json) に従う。検証補助 `poc/src/event_source_precedence.cjs` はGameWith/Game8の数値・出典URLだけを受け取り、GameWith値を選定し、不一致を保持。GameWith側に同一項目の根拠がなければ未解決のまま止める。架空・局所実例の人工テストでは上記3件のGameWith値が選定されることを確認する。**これはゲーム内実測や公式データとの数値照合を自動化したものではない**。サイトに記載のある効果が状況によって変化する可能性も維持する。
+[意思決定ログ](../../decisions.md)と [機械可読ルール](../../../poc/config/event-source-priority.v1.json) に従う。検証補助 `poc/src/event_source_precedence.cjs` はGameWith/Game8の数値・出典URLだけを受け取り、GameWith値を選定し、不一致を保持。GameWith側に同一項目の根拠がなければ未解決のまま止める。架空・局所実例の人工テストでは上記3件のGameWith値が選定されることを確認する。**これはゲーム内実測や公式データとの数値照合を自動化したものではない**。サイトに記載のある効果が状況によって変化する可能性も維持する。
 
 ## SSR30311のリリース前スキル経路プレビュー（2026-10-18、PR #74）
 
-[プレビュー仕様と制約](efforia30311-preview.md)。ゲーム台詞などをコピーせず、GameWith優先のスキルヒントの数値報酬だけを5個のID付きイベントモデルへ写した**開発用メモリ上のスキーマv1サンプル**を追加した。5イベント11選択肢位置、連続最終の3×2結果群、最終16＋連続2段目1＋通常イベント1＝18ヒント参照を、通常CIで本番のvalidation/core/skill bridgeに通す。連続順・終了条件はWikiとGameWithのイベントリスト順からの**仮接続**であり、実ゲーム確認はしていない。ブラウザへ配信する公開JSONは空のまま。
+[プレビュー仕様と制約](../sources/efforia30311-preview.md)。ゲーム台詞などをコピーせず、GameWith優先のスキルヒントの数値報酬だけを5個のID付きイベントモデルへ写した**開発用メモリ上のスキーマv1サンプル**を追加した。5イベント11選択肢位置、連続最終の3×2結果群、最終16＋連続2段目1＋通常イベント1＝18ヒント参照を、通常CIで本番のvalidation/core/skill bridgeに通す。連続順・終了条件はWikiとGameWithのイベントリスト順からの**仮接続**であり、実ゲーム確認はしていない。ブラウザへ配信する公開JSONは空のまま。
 
 ## 分離した検証ゲート
 
 **A：監査器の機構。** `poc/tools/audit_unreviewed_numeric_event_candidates.py` と `poc/tests/test_unreviewed_numeric_event_candidates.py`。manifest版と配信ファイルのSHA、採用UmaSimサポカの固定SHA・全563×5段階、カードID/イベントIDの型・重複・収録範囲、選択モード、スキルID/名称/Lv、30311の限定大成功サンプル、Wiki数値IDの差分を検査。壊れた入力で失敗する人工回帰を通常CIに含む。
 
-**B：実データの限定監査。** [専用Actions](../.github/workflows/event-candidate-numeric-audit.yml)だけが固定版JSON3ファイルとUmaSim2ファイル、およびWiki公開記事を**1回だけ**読み、構造化した個数と数値IDのみを出力する。元データの著作物、サポカ画像・イベント本文・選択肢テキストをPublicに同梱しない。GameWithの3報酬の一致は別資料の**1枝の人手による限定確認**であって、126件の自動独立報酬照合ではない。
+**B：実データの限定監査。** [専用Actions](../../../.github/workflows/event-candidate-numeric-audit.yml)だけが固定版JSON3ファイルとUmaSim2ファイル、およびWiki公開記事を**1回だけ**読み、構造化した個数と数値IDのみを出力する。元データの著作物、サポカ画像・イベント本文・選択肢テキストをPublicに同梱しない。GameWithの3報酬の一致は別資料の**1枝の人手による限定確認**であって、126件の自動独立報酬照合ではない。
 
 **C：実ブラウザ。** このPRでアプリUI・イベントデータJSON自体は一切変更しない。Linux Chromiumの既存回帰を通すが、Android/Windowsの実機受入れには含めない。
 

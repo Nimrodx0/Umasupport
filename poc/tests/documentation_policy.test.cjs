@@ -39,7 +39,7 @@ test('historical decisions and verification remain available without being treat
 });
 
 test('automatic delivery priority is coherent, and unapproved private source is never silently fetched',()=>{
- const plan=read('docs/phase2-event-delivery-route-assessment-20261030.md');
+ const plan=read('docs/evidence/events/phase2-event-delivery-route-assessment-20261030.md');
  const roadmap=read('docs/roadmap.md');
  const decisions=read('docs/decisions.md');
  const app=read('poc/live.html');

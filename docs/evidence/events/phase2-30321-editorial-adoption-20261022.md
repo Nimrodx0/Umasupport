@@ -4,7 +4,7 @@
 - 基準の固定GT: `systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`。この固定版にSSR30321のイベントJSONはなく、イベントがゲームに存在しない意味ではない。
 - 対象カードのGT掲載確認: https://gametora.com/ja/umamusume/supports/30321-duramente （2026-10-22、イベント一覧まで確認した過去監査）。
 - 欠損項目の採用正本: https://gamewith.jp/uma-musume/article/show/578817 （2026-10-22閲覧、記事の表示更新日2026-10-12）。
-- 先行裁定: [PR #164](https://github.com/Nimrodx0/Umasupport/pull/164)、[4SSR個別検証](phase2-four-ssr-cross-site-editorial-review-20261022.md)、[採用契約](event-adjudication-enforcement.md)。
+- 先行裁定: [PR #164](https://github.com/Nimrodx0/Umasupport/pull/164)、[4SSR個別検証](phase2-four-ssr-cross-site-editorial-review-20261022.md)、[採用契約](../../event-adjudication-enforcement.md)。
 
 ## 今回の編集データ
 

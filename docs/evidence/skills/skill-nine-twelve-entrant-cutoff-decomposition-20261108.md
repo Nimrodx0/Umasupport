@@ -2,7 +2,7 @@
 
 **研究結果：固定GlobalSim v77で、元の9頭の初期条件を保持して追加3頭の脚質だけを5パターンに変え、9頭と12頭の10m順位条件成立機会を比較した。同じ12頭の軌跡で9頭用・12頭用の整数順位境界を別々に当てた結果、順位境界の変更分を厳密に切り出せた。残りは「追加馬と展開の複合影響」であり、純粋な頭数効果として識別したわけではない。** スキルの発動確率、高／中／低適合性、効果の有用性、サポカP3/P4への反映は未確定。
 
-前提：[元77件の文脈感度監査](skill-context-stability-77-audit-20261107.md)、[元の整数順位境界](../poc/src/skill_order_rate_bounds.cjs)、[固定GlobalSim v77](https://github.com/daftuyda/GlobalSim/tree/80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1)。
+前提：[元77件の文脈感度監査](skill-context-stability-77-audit-20261107.md)、[元の整数順位境界](../../../poc/src/skill_order_rate_bounds.cjs)、[固定GlobalSim v77](https://github.com/daftuyda/GlobalSim/tree/80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1)。
 
 ## 1. 今回の対照と出典
 
@@ -106,7 +106,7 @@
 
 ## 6. 再現方法・品質境界
 
-- [研究コード](../poc/tools/globalsim_paired_nine_twelve.cjs)、[元9頭の一致／整数順位境界／欠測／分解恒等式テスト](../poc/tests/globalsim_paired_nine_twelve.test.cjs)、[固定source・モデルの720レースCI](../.github/workflows/p2-paired-nine-twelve.yml)。
+- [研究コード](../../../poc/tools/globalsim_paired_nine_twelve.cjs)、[元9頭の一致／整数順位境界／欠測／分解恒等式テスト](../../../poc/tests/globalsim_paired_nine_twelve.test.cjs)、[固定source・モデルの720レースCI](../../../.github/workflows/p2-paired-nine-twelve.yml)。
 - 実験結果には、5条件×4脚質×2能力モード×30seed×5編成＝**6,000組の元9頭と12頭の比較**を保存。5条件×4脚質の平均・整数境界・残差・5編成の幅を別にまとめる。
 - **A 機構**：同一9頭の出走入力・元AND・9/12の整数順位境界・10m元窓・恒等式・欠測時の中断をテスト。
 - **B 固定モデル**：出典UmaSim 2,162スキルSHA確認、GlobalSim v77モデル・芝ダート距離1600m実コース形状、720レース結果、各種統計を専用CIで検証。

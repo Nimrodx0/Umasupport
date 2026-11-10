@@ -4,7 +4,7 @@
   "source": {
     "repository": "Nimrodx0/Umasupport",
     "commitOfReview": "d68f8aeffb8e5f3652800dc1d3dc0a29fa93a7e9",
-    "previousResearch": "docs/skill-context-stability-77-audit-20261107.md",
+    "previousResearch": "docs/evidence/skills/skill-context-stability-77-audit-20261107.md",
     "previousArtifactSha256": "71251951444fbe4cbef8502422deebaf489941f817a8830c5038176be59f9fcd",
     "umaSimSkillDataSha256": "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5",
     "globalSimRevision": "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"

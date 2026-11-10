@@ -21,7 +21,7 @@
 5. 頭数、脚質構成、能力設定、コースごとの結果を分け、勝手に全条件の「全国平均」にまとめない。脚質が出走しない場合は欠測であり、0%ではない。
 6. 「成立しやすい」は**指定区間内で、順位条件に該当する位置を走っていた距離の割合**である。発動候補位置の一様抽選・発動条件の全AND成立・スキル抽選・最終発動率は測定していない。
 
-実装：[`skill_position_model_join.cjs`](../poc/src/skill_position_model_join.cjs)、[人工データの回帰テスト](../poc/tests/skill_position_model_join.test.cjs)、[結果出力](../poc/tools/skill_position_case_report.cjs)、[固定出典による再現CI](../.github/workflows/skill-position-case-review.yml)。
+実装：[`skill_position_model_join.cjs`](../../../poc/src/skill_position_model_join.cjs)、[人工データの回帰テスト](../../../poc/tests/skill_position_model_join.test.cjs)、[結果出力](../../../poc/tools/skill_position_case_report.cjs)、[固定出典による再現CI](../../../.github/workflows/skill-position-case-review.yml)。
 
 ## 固定出典を使った実際の結果
 

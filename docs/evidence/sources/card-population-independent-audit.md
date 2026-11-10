@@ -1,6 +1,6 @@
 # サポートカード母集団の別系統ID照合（2026-10-17）
 
-関連：[Phase 1](roadmap.md) / [検証計画](verification-plan.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28) / [PR #36](https://github.com/Nimrodx0/Umasupport/pull/36)
+関連：[Phase 1](../../roadmap.md) / [検証計画](../../verification-plan.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28) / [PR #36](https://github.com/Nimrodx0/Umasupport/pull/36)
 
 ## 目的と今回の結論
 
@@ -47,8 +47,8 @@ Rカードの存在については[GameWithのRタッカーブライン記事](h
 
 ## 実行・再現・次の判断
 
-- 照合コード：[audit_card_coverage.cjs](../poc/tools/audit_card_coverage.cjs)、架空データ回帰：[card_coverage.test.cjs](../poc/tests/card_coverage.test.cjs)。
-- [ワークフロー](../.github/workflows/independent-card-coverage-audit.yml)：そのワークフロー/監査実装のPR変更、または手動起動に限定。通常のPoC CI/Pagesデプロイに外部サイトへの自動GETを追加しない。
+- 照合コード：[audit_card_coverage.cjs](../../../poc/tools/audit_card_coverage.cjs)、架空データ回帰：[card_coverage.test.cjs](../../../poc/tests/card_coverage.test.cjs)。
+- [ワークフロー](../../../.github/workflows/independent-card-coverage-audit.yml)：そのワークフロー/監査実装のPR変更、または手動起動に限定。通常のPoC CI/Pagesデプロイに外部サイトへの自動GETを追加しない。
 - 実ソース照合：**[Actions #38955129930](https://github.com/Nimrodx0/Umasupport/actions/runs/38955129930) 成功**。元の生データは成果物化せず、ソースの版／SHAと件数／差分IDだけを出力した。
 
 **A（機構）**：人工入力のID重複・欠損・レアリティ・名称衝突・解放段階欠落のテストを追加してCIで合格。

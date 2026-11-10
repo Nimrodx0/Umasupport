@@ -27,7 +27,7 @@
 - **数値・検証**：ダート6コースの全局面176組＋短窓176組（それぞれ24設定別）を作成し、別実装の順位帯ヒストグラムで走行距離割合を照合。CIでは以前の芝720レースも再実行し、芝全局面SHA-256 `f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58` と芝短窓SHA-256 `206d9db77299189f91fea649a40effbe9ca2d2203c9d0b69c7873bfacee04c27` が完全一致することを確認した。
 - **今回のダートレポート SHA-256**：`242273c0903f37f4c8817e2d8c95325c6f14758fb8edc544974f78f3bf2328d1`。出力は元辞書全件や生モデルを含めず、**17件の元ID＋限定された元条件＋派生した数値**のみの成果物にする。
 
-再現用：[ダート固定コース実験器](../poc/tools/globalsim_dirt_10m.cjs)、[17スキル元条件照合器](../poc/tools/skill_dirt17_opportunity_review.cjs)、[人工回帰](../poc/tests/skill_dirt17_opportunity_review.test.cjs)、[専用GitHub Actions](../.github/workflows/p2-dirt17-10m.yml)。
+再現用：[ダート固定コース実験器](../../../poc/tools/globalsim_dirt_10m.cjs)、[17スキル元条件照合器](../../../poc/tools/skill_dirt17_opportunity_review.cjs)、[人工回帰](../../../poc/tests/skill_dirt17_opportunity_review.test.cjs)、[専用GitHub Actions](../../../.github/workflows/p2-dirt17-10m.yml)。
 
 ## 3. 元17スキルと条件の検証結果
 

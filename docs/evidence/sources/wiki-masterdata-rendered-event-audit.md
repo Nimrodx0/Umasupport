@@ -49,7 +49,7 @@
 ## 3．検証・セキュリティ境界
 
 - **A／機構：** \`poc/tools/audit_wiki_rendered_support_events.py\` と \`poc/tests/test_wiki_rendered_support_events.py\`。HTMLParserで Training Events のh2内のh3「Event Chain」「Other Events」からのみ9桁IDを抽出し、Episode等は対象外。同じIDを異なる群に二重計上しない。リダイレクト/タイトル・改訂番号・必須見出し欠落、曖昧な数値ID、旧マスターの\`id\`/\`story_id\`取り違い、SHA違いを拒否。人工ページ・SQLiteの回帰テストを通常CIへ含む。
-- **B／実ソース：** [限定監査Workflow](../.github/workflows/wiki-masterdata-provenance.yml)が公開の3 Luaモジュールと**2サポカ記事だけ**を読み、2025年マスターをSHA固定して比較。30241は18/18一致、連続5＋その他13という旧レンダリングをスナップショットとして固定。更新で数値ID・分類が変われば再調査が必要になる。
+- **B／実ソース：** [限定監査Workflow](../../../.github/workflows/wiki-masterdata-provenance.yml)が公開の3 Luaモジュールと**2サポカ記事だけ**を読み、2025年マスターをSHA固定して比較。30241は18/18一致、連続5＋その他13という旧レンダリングをスナップショットとして固定。更新で数値ID・分類が変われば再調査が必要になる。
 - **C／実機：** 公開アプリや承認イベントDBは**未変更**。Node/Pythonのテスト・Chromium回帰は実Android/Windowsの受け入れではない。
 
 ページには未入力イベントの「No data yet!」が30241で18個、30311で5個表示される。**Wikiで正式選択肢・報酬・連続分岐結果を検証できたわけではなく、イベントの本文や配布許可の確認にもならない。** 第三者素材をコピーせず、数値の監査だけを公開する。

@@ -26,16 +26,16 @@
 
 ## 実験方法と検証
 
-[独立検証器](../poc/tools/globalsim_phase_random_10m.cjs)は、GlobalSim v77の固定コース・能力・脚質構成・シード（元の2,160レース研究と同じ計画のうち**均衡編成720レース**）を対象とする。各走者・局面ごとに全記録フレームから相対順位が変化する時点を線形補間で復元し、11個の固定元順位AND帯について `O` と `W` を比較する。
+[独立検証器](../../../poc/tools/globalsim_phase_random_10m.cjs)は、GlobalSim v77の固定コース・能力・脚質構成・シード（元の2,160レース研究と同じ計画のうち**均衡編成720レース**）を対象とする。各走者・局面ごとに全記録フレームから相対順位が変化する時点を線形補間で復元し、11個の固定元順位AND帯について `O` と `W` を比較する。
 
-- 元の[順位帯ヒストグラム](../poc/tools/globalsim_rank_distribution.cjs)の `O` を別途全走者で再計算し、実験の独立実装と一致しない場合は中断する。
-- 境界・終端の特殊処理・複数順位変化・欠測を[人工試験](../poc/tests/globalsim_phase_random_10m.test.cjs)で検証する。
-- 固定モデルの再実行は [専用GitHub Actions](../.github/workflows/p2-phase-random-10m.yml) で行い、`phase-random-10m-opportunity.json` を数値のみの成果物として保管する。出典コードや外部データの無断転載はしない。
+- 元の[順位帯ヒストグラム](../../../poc/tools/globalsim_rank_distribution.cjs)の `O` を別途全走者で再計算し、実験の独立実装と一致しない場合は中断する。
+- 境界・終端の特殊処理・複数順位変化・欠測を[人工試験](../../../poc/tests/globalsim_phase_random_10m.test.cjs)で検証する。
+- 固定モデルの再実行は [専用GitHub Actions](../../../.github/workflows/p2-phase-random-10m.yml) で行い、`phase-random-10m-opportunity.json` を数値のみの成果物として保管する。出典コードや外部データの無断転載はしない。
 - 4局面×11順位帯×4脚質＝176組について、全24均衡設定の占有率平均・10m機会平均・差の分布を保存する。**平均だけで高／低を決めない**。
 
 ## 固定GlobalSim実験の実測結果（A/Bで検証）
 
-[研究用720レース再実行（Actions #42274562056）](https://github.com/Nimrodx0/Umasupport/actions/runs/42274562056)で成功。固定GlobalSim v77の**均衡編成のみ**を30シード×6コース×9/12頭×2能力モード＝720レース再実行し、元[histogram](../poc/tools/globalsim_rank_distribution.cjs)で測った単純占有率と10m機会を全走者・全局面・全11順位帯で一致照合した。出力はActionsの `globalsim-balanced-phase-random-10m` アーティファクト `phase-random-10m-opportunity.json`（artifact ID `13532677116`、保持期限あり）。
+[研究用720レース再実行（Actions #42274562056）](https://github.com/Nimrodx0/Umasupport/actions/runs/42274562056)で成功。固定GlobalSim v77の**均衡編成のみ**を30シード×6コース×9/12頭×2能力モード＝720レース再実行し、元[histogram](../../../poc/tools/globalsim_rank_distribution.cjs)で測った単純占有率と10m機会を全走者・全局面・全11順位帯で一致照合した。出力はActionsの `globalsim-balanced-phase-random-10m` アーティファクト `phase-random-10m-opportunity.json`（artifact ID `13532677116`、保持期限あり）。
 
 **中盤・順位帯40～80%（局面1、均衡24設定の各設定を等重み）**：
 

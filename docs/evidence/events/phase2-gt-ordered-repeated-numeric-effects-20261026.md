@@ -12,7 +12,7 @@
 - `poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs`：全GT効果を引き続き1行ずつ走査し、同じ数値効果のキー（効果種別＋数値の受け手）を2回目以降に検出した場合、直前の同対象行と現在行に**実際の元`effectIndex+1`**を記録する。`all_stats`は元1行から5能力を展開するが、その5能力は同じ元位置を参照し、単独の`speed`等と重なっても元順序は保持する。異なる絆相手はそもそも重複ではなく従来通り個別成分のまま。
 - `poc/src/core.js`：`UmaCore.directEffectRoutes`の結果へ`sourceEffectOrdinal`を元のまま伝播。これは**各効果行の所在を示すものであり、ゲーム内部の体力キャップややる気変化を完全シミュレートした値ではない**。`effects`の配列順は変えず、確定合計・能力／キャラの新規名を創作しない。
 - `poc/src/phase2_2512_private_effect_join.cjs`：元カードID＋元イベント順位＋元選択肢／結果番号＋停止条件が完全に一致した既存スキル用2,512イベントへ、各数値の元位置情報ごと結合。すべての`effects`を除いたSHAは既存のスキル専用候補と全件一致しなければ失敗する。SSR30080#6の既知のGTのautoとGameWithの3択の不一致は残して保留する。
-- [合成回帰](../poc/tests/phase2_gt_ordered_duplicate_numeric_effects.test.cjs)で、体力とやる気の正負順、`all_stats`と同能力の重複、同じ／別の絆相手、元位置がない・逆転・同じ番号のスキーマ拒否、結果別停止のスキル不変を検査した。従来[非スキル分類器のテスト](../poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs)も正しい順序保持に合わせて更新した。
+- [合成回帰](../../../poc/tests/phase2_gt_ordered_duplicate_numeric_effects.test.cjs)で、体力とやる気の正負順、`all_stats`と同能力の重複、同じ／別の絆相手、元位置がない・逆転・同じ番号のスキーマ拒否、結果別停止のスキル不変を検査した。従来[非スキル分類器のテスト](../../../poc/tests/phase2_gt_whole_nonskill_effect_inventory.test.cjs)も正しい順序保持に合わせて更新した。
 
 ## 固定GT全件監査の結果（B）
 

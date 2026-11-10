@@ -4,7 +4,7 @@
 
 これまでの1カード／1イベント専用overlay追加から、**元GT2,488イベントの保留理由を全件分類→同一効果型の元イベントすべてを共通変換→全件CIで検査**という工程に切り替える。技術分類と編集上の採用・正式公開を混同しない。元の第三者文章・報酬JSON・絵をPublicへ移さない。
 
-[共通保留分析器](../poc/src/phase2_gt_blocker_cohorts.cjs)は、[全件効果監査](../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)の結果行を元カードID／イベント・選択肢・結果順位で固定ソースと再照合し、保留84イベントをそれぞれ**1つの主要原因群**に分類（補助の理由・コード重複を保持）。母集団は全563サポカ・GT固定元559サポカ・2,488元イベント、4,376結果経路。本文・選択肢文・報酬数量は出力しない。
+[共通保留分析器](../../../poc/src/phase2_gt_blocker_cohorts.cjs)は、[全件効果監査](../../../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)の結果行を元カードID／イベント・選択肢・結果順位で固定ソースと再照合し、保留84イベントをそれぞれ**1つの主要原因群**に分類（補助の理由・コード重複を保持）。母集団は全563サポカ・GT固定元559サポカ・2,488元イベント、4,376結果経路。本文・選択肢文・報酬数量は出力しない。
 
 | 主原因群 | 当初84イベント | 今回の一括変換後74イベント |
 |---|---:|---:|
@@ -20,7 +20,7 @@
 
 [固定GT出典](https://github.com/systemless10/UmamusumePS/tree/6e38b54af4fad397ff4491e63007a90705a4fe67/server/data/events/gametora)の元効果コード `all_disc` は、[GameToraのU.A.F.シナリオ説明](https://gametora.com/umamusume/uaf)に対応する**全15のスポーツ競技レベル**の変動。通常の5能力値やスキルPtへの増分ではない。
 
-[共通変換器](../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)で元 `all_disc` に正負非0整数の単一の `value` だけを認め、`{kind:'uaf-all-disciplines', delta:N, scenario:'uaf', possible:true, targetSelection:'all-15-sports-disciplines'}` へ変換。従来の `effects[]` の5能力確定値には絶対に配分しない。原型に幅値・未定義フィールド・複数同効果があれば保留。スキーマと `UmaCore.directDynamicEffectRoutes` もこの型を処理できるようにし、ゲームプレイ時のU.A.F.適用条件・レベル上限に依存する候補として `conditional:true` を保持。出現率やゲーム結果を創作しない。
+[共通変換器](../../../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)で元 `all_disc` に正負非0整数の単一の `value` だけを認め、`{kind:'uaf-all-disciplines', delta:N, scenario:'uaf', possible:true, targetSelection:'all-15-sports-disciplines'}` へ変換。従来の `effects[]` の5能力確定値には絶対に配分しない。原型に幅値・未定義フィールド・複数同効果があれば保留。スキーマと `UmaCore.directDynamicEffectRoutes` もこの型を処理できるようにし、ゲームプレイ時のU.A.F.適用条件・レベル上限に依存する候補として `conditional:true` を保持。出現率やゲーム結果を創作しない。
 
 固定全件では **`all_disc` 記載14 → 14件を動的効果として分類**、`unsupported` 数は90→76記載、一般構造化2,404→**2,414元イベント**、保留84→**74元イベント**。該当する新規解除イベントは10件で、シナリオ対応カード2枚（固定元10104/30188）の各複数イベントにまたがる。
 

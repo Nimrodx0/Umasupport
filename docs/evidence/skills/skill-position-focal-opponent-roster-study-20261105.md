@@ -28,7 +28,7 @@ GlobalSim固定エンジン v77（コミット \`80b54cacf174b54ff6f7ca27ee7f88b
 
 再現：[Actions #42049330904](https://github.com/Nimrodx0/Umasupport/actions/runs/42049330904)（成功）、派生結果artifact \`globalsim-focal-opponent-roster-intervention\`（ID **13426790150**、保存期限付き）。\`report.json\` SHA-256：\`e287ff12626db30cb0390a47065baa7753966a1ccda6954e4f6d3da8466068a0\`。第三者ソースの本文・生のリプレイ位置データは公開しない。
 
-実装：[\`globalsim_roster_only_intervention.cjs\`](../poc/tools/globalsim_roster_only_intervention.cjs)、[人工データの回帰検証](../poc/tests/globalsim_roster_only_intervention.test.cjs)、[固定GlobalSimの研究CI](../.github/workflows/globalsim-roster-only-intervention.yml)。
+実装：[\`globalsim_roster_only_intervention.cjs\`](../../../poc/tools/globalsim_roster_only_intervention.cjs)、[人工データの回帰検証](../../../poc/tests/globalsim_roster_only_intervention.test.cjs)、[固定GlobalSimの研究CI](../../../.github/workflows/globalsim-roster-only-intervention.yml)。
 
 ## 2. 終盤後半の上位50%では、相手構成が大きく効く
 

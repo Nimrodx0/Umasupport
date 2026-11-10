@@ -10,7 +10,7 @@
 
 **元サイト側**：[SSR30001 GameTora本体](https://gametora.com/ja/umamusume/supports/30001-special-week)をGitHub ActionsのChromeで閲覧。5イベントの見出し位置を既存の一意対応で固定し、結果ごとに効果の種類・符号付き数値、**ヒントLvと数値スキルID**を独立パース。旧固定元の選択肢・結果番号を突合の結び目にするが、**旧固定から元サイトにない報酬を補う実装はしない**。
 
-[コード](../poc/src/official_gametora_app_schema_parity.cjs)／[元サイトChrome検証](../poc/tools/probe_official_gametora_browser.cjs)／[異常系テスト](../poc/tests/official_gametora_app_schema_parity.test.cjs)。
+[コード](../../../poc/src/official_gametora_app_schema_parity.cjs)／[元サイトChrome検証](../../../poc/tools/probe_official_gametora_browser.cjs)／[異常系テスト](../../../poc/tests/official_gametora_app_schema_parity.test.cjs)。
 
 ## 実測
 

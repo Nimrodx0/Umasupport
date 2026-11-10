@@ -14,7 +14,7 @@
 - 4区間：中盤全体、終盤前半のさらに前半、終盤前半全体、終盤前半のさらに後半。終盤後半・直線／コーナー限定は今回未評価。
 - **比較条件単位**：6コース×2頭数×6脚質構成×2能力設定×4区間＝**576件**。脚質構成と能力設定は同じ型を用いるが、コースIDによって**乱数初期値は異なる**ため、コース以外の全要因が個々のレース単位で一致する実験ではない。
 
-再現コード：[globalsim_course_generalization.cjs](../poc/tools/globalsim_course_generalization.cjs)、[人工反例テスト](../poc/tests/globalsim_course_generalization.test.cjs)、[固定データのActions](../.github/workflows/globalsim-course-generalization.yml)（成功 [#42032645955](https://github.com/Nimrodx0/Umasupport/actions/runs/42032645955)、派生成果物 `globalsim-six-course-generalization`、artifact ID 13415609826）。入力2ファイルのSHA-256と、元の9地点データから算出し直した区間割合を照合している。
+再現コード：[globalsim_course_generalization.cjs](../../../poc/tools/globalsim_course_generalization.cjs)、[人工反例テスト](../../../poc/tests/globalsim_course_generalization.test.cjs)、[固定データのActions](../../../.github/workflows/globalsim-course-generalization.yml)（成功 [#42032645955](https://github.com/Nimrodx0/Umasupport/actions/runs/42032645955)、派生成果物 `globalsim-six-course-generalization`、artifact ID 13415609826）。入力2ファイルのSHA-256と、元の9地点データから算出し直した区間割合を照合している。
 
 ## 1. 脚質群の優劣：すべての対象条件で維持
 

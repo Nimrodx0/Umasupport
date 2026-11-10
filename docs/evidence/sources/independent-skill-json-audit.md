@@ -1,6 +1,6 @@
 # 2026年9月版の別スキルJSONによる金白全件クロスチェック
 
-更新：2026-10-17　関連：[Phase 1](roadmap.md) / [金白構造監査](skill-hierarchy-coverage.md) / [旧版マスター照合](historical-master-audit.md)
+更新：2026-10-17　関連：[Phase 1](../../roadmap.md) / [金白構造監査](../skills/skill-hierarchy-coverage.md) / [旧版マスター照合](historical-master-audit.md)
 
 ## 目的と証拠の強さ
 
@@ -15,7 +15,7 @@ Bは配信向けに加工されたJSONであり、ゲームの生マスターや
 
 ## 実測：全325金スキルを分類
 
-比較コード：[`poc/tools/audit_independent_skill_json.py`](../poc/tools/audit_independent_skill_json.py)、[実行 #38944822566](https://github.com/Nimrodx0/Umasupport/actions/runs/38944822566)（成功、2026-10-17）。
+比較コード：[`poc/tools/audit_independent_skill_json.py`](../../../poc/tools/audit_independent_skill_json.py)、[実行 #38944822566](https://github.com/Nimrodx0/Umasupport/actions/runs/38944822566)（成功、2026-10-17）。
 
 | 項目 | 件数 | 証拠の意味 |
 |---|---:|---|
@@ -47,7 +47,7 @@ SHA-256：UmaSim `b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25
 
 ## 再現手順
 
-[限定的ワークフロー](../.github/workflows/skill-json-schema-probe.yml)を手動実行するか、そのワークフローを変更するPR内で実行。普通のCIやPages起動では別の公開元への通信を増やさない。
+[限定的ワークフロー](../../../.github/workflows/skill-json-schema-probe.yml)を手動実行するか、そのワークフローを変更するPR内で実行。普通のCIやPages起動では別の公開元への通信を増やさない。
 
 利用条件を守ってローカルで取得した同じ版を使う場合：
 

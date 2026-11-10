@@ -11,7 +11,7 @@
 
 ## 共通実装
 
-[全件の共通変換器](../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)で `SCENARIO_RESOURCES` に次の2つの**独立した型**を定義。
+[全件の共通変換器](../../../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs)で `SCENARIO_RESOURCES` に次の2つの**独立した型**を定義。
 
 | GT効果コード | schema `dynamicEffects[].kind` | `scenario` | `targetSelection` |
 |---|---|---|---|
@@ -39,7 +39,7 @@
 
 ### A/B/C
 
-A：[専用回帰](../poc/tests/phase2_gt_scenario_resource_batch.test.cjs)で2効果コードの動的型分離、選択未決定時の非表示、選択肢ごとの非二重計上、不正値・重複・スキーマ不正の拒否を試験。B：固定GT559カード／2,488イベント／4,376経路の全件監査と、2,512候補の一時preflight/attachをGitHub Actionsで実施。C：CIの既存Chromiumは公開中のWebアプリの保護回帰。今回追加した未公開イベントの画面確認、現行ゲーム内でのシナリオ効果の発生、Windows／Android物理端末では未検証。**今回も未承認イベント・イベント本文をPagesへ出さない。**
+A：[専用回帰](../../../poc/tests/phase2_gt_scenario_resource_batch.test.cjs)で2効果コードの動的型分離、選択未決定時の非表示、選択肢ごとの非二重計上、不正値・重複・スキーマ不正の拒否を試験。B：固定GT559カード／2,488イベント／4,376経路の全件監査と、2,512候補の一時preflight/attachをGitHub Actionsで実施。C：CIの既存Chromiumは公開中のWebアプリの保護回帰。今回追加した未公開イベントの画面確認、現行ゲーム内でのシナリオ効果の発生、Windows／Android物理端末では未検証。**今回も未承認イベント・イベント本文をPagesへ出さない。**
 
 ## 次のまとまり
 

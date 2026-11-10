@@ -9,9 +9,9 @@
 
 ## 共通変換と安全な表現
 
-既存の [`SCENARIO_RESOURCES`](../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs) に、上記2コードを追加する。各結果は `type` と符号付き整数 `value` のみを許容し、`possible:true`、`scenario:'legends'`、型ごとの `targetSelection` を持つ `dynamicEffects[]` へ正規化する。元結果での重複効果、未確認追加フィールド、数値幅、数値でない値は元イベント全体を保留する。元の結果・選択肢・継続フラグ・ヒントIDは変更せず、シナリオ特有のゲージを通常の能力値／スキル獲得に換算しない。
+既存の [`SCENARIO_RESOURCES`](../../../poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs) に、上記2コードを追加する。各結果は `type` と符号付き整数 `value` のみを許容し、`possible:true`、`scenario:'legends'`、型ごとの `targetSelection` を持つ `dynamicEffects[]` へ正規化する。元結果での重複効果、未確認追加フィールド、数値幅、数値でない値は元イベント全体を保留する。元の結果・選択肢・継続フラグ・ヒントIDは変更せず、シナリオ特有のゲージを通常の能力値／スキル獲得に換算しない。
 
-[イベントスキーマ](../poc/src/event_schema.js)・[`UmaCore.directDynamicEffectRoutes`](../poc/src/core.js) に両効果型を追加し、`conditional:true`、`unresolvedTargets:true` 付きで結果を列挙する。選択肢が未指定なら1名用ゲージは取得候補として出さず、全員への3重加算も行わない。実ゲームのシナリオ内報酬反映を直接再現する実装ではない。**技術変換結果であり、現行ゲームや正式公開を保証するものではない。**
+[イベントスキーマ](../../../poc/src/event_schema.js)・[`UmaCore.directDynamicEffectRoutes`](../../../poc/src/core.js) に両効果型を追加し、`conditional:true`、`unresolvedTargets:true` 付きで結果を列挙する。選択肢が未指定なら1名用ゲージは取得候補として出さず、全員への3重加算も行わない。実ゲームのシナリオ内報酬反映を直接再現する実装ではない。**技術変換結果であり、現行ゲームや正式公開を保証するものではない。**
 
 ## 固定元2,488イベントの全件結果
 
@@ -29,7 +29,7 @@
 
 ## 検証と公開の独立性（A／B／C）
 
-A：[`phase2_gt_legends_gauge_batch.test.cjs`](../poc/tests/phase2_gt_legends_gauge_batch.test.cjs) が7全員＋2選択相手の各元値、全員型と個人型の区別、元3択の非二重計上、不正元属性や誤ったシナリオ／対象指定の拒否を確認。B：固定GT559ソースカード・2,488イベント・4,376展開経路の全件検証と、2,512非公開スキル候補への同一元位置による結合、全563カードの元スキル経路SHA照合。C：公開中の既存GitHub Pages UIのChromium保護回帰のみ。ゲーム実機・Windows/Android物理端末・未承認イベントの実ブラウザ表示確認は未実施。
+A：[`phase2_gt_legends_gauge_batch.test.cjs`](../../../poc/tests/phase2_gt_legends_gauge_batch.test.cjs) が7全員＋2選択相手の各元値、全員型と個人型の区別、元3択の非二重計上、不正元属性や誤ったシナリオ／対象指定の拒否を確認。B：固定GT559ソースカード・2,488イベント・4,376展開経路の全件検証と、2,512非公開スキル候補への同一元位置による結合、全563カードの元スキル経路SHA照合。C：公開中の既存GitHub Pages UIのChromium保護回帰のみ。ゲーム実機・Windows/Android物理端末・未承認イベントの実ブラウザ表示確認は未実施。
 
 出典本文・選択肢文・未許諾元生データ・画像を公開ファイルに追加しない。正式公開承認は**0件**。今回の技術改善は一般Webアプリのイベント表示を自動的に拡充しない。
 

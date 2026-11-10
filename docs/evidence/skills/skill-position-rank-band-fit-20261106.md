@@ -63,8 +63,8 @@ GlobalSim固定コミット **80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1**。6コ�
 ## 再現コードと根拠
 
 - [GlobalSim再現Actions #42135649519](https://github.com/Nimrodx0/Umasupport/actions/runs/42135649519)、成果物artifact **13465705919**（保存期限あり）。派生のrank-band-direction.json SHA256 **7bd254e3b10d58119caeab7eadee27d96b0a9946856b2812ffc40bc697df0eca**。全順位full-rank-profile.json SHA256 **bf863a78910ecaef6277841111af773dc74803d825903f8bdaf089401b1f7c54**。
-- [全順位帯比較](../poc/tools/globalsim_rank_band_dominance.cjs)、[2,160レース実行](../poc/tools/globalsim_rank_band_study.cjs)、[44条件の固定派生証拠](../poc/data/p2_rank_band_model_direction.v1.json)、[元条件・局面・集計SHAの厳格照合](../poc/tools/verify_rank_band_model_evidence.cjs)。
-- [固定元辞書の脚質候補監査 Actions #42136999383](https://github.com/Nimrodx0/Umasupport/actions/runs/42136999383)、[全2,162スキル集計器](../poc/tools/rank_band_fit_population_audit.cjs)。元スキル辞書や生のレースリプレイは成果物へ同梱しない。
+- [全順位帯比較](../../../poc/tools/globalsim_rank_band_dominance.cjs)、[2,160レース実行](../../../poc/tools/globalsim_rank_band_study.cjs)、[44条件の固定派生証拠](../../../poc/data/p2_rank_band_model_direction.v1.json)、[元条件・局面・集計SHAの厳格照合](../../../poc/tools/verify_rank_band_model_evidence.cjs)。
+- [固定元辞書の脚質候補監査 Actions #42136999383](https://github.com/Nimrodx0/Umasupport/actions/runs/42136999383)、[全2,162スキル集計器](../../../poc/tools/rank_band_fit_population_audit.cjs)。元スキル辞書や生のレースリプレイは成果物へ同梱しない。
 - 以前の15シード1,080レースの最初の15シードは今回の30シードと重なるため、2つの試験を独立した追試とは数えない。
 
 **次の実務ゲート**：追加24スキルと公開アプリのスキルID・名称の照合、他の明示脚質・追加AND・複数Invoke/preConditionsを含む条件の慎重な研究判定。実ゲーム発動率・スキルの強さ・P3サポカ集約・P4公開UIは未評価のまま。

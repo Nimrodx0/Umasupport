@@ -24,45 +24,45 @@
 
 `kind`は`speed`/`stamina`/`power`/`guts`/`wisdom`/`energy`/`max_energy`/`mood`/`bond`/`skill_points`/`aptitude_points`に限定。`delta`は正負の非0整数、`sourceComponent`は`event-result`/`scenario-bonus`または省略。同じ能力への元報酬とシナリオ追加分は別記録とし、同一能力・同一成分の二重登録は拒否。同じ親で`effects`と`outcomes`は併用不可、結果が複数の場合は各結果に必要な成分を置く。
 
-`availabilityKind:'scenario-overseas'`は海外の発生条件を**獲得候補の条件ラベル**として扱うだけで、出現確率はモデル化しない。`UmaCore.directEffectRoutes`はスキル経路と別の結果別一覧を返し、`directRoutes`・`aggregate`に新たなスキル提供枚数を生まない。実出典の一例は[佐岳メイのR/SSR非公開2カード×2結果の検証](phase2-nonskill-outcome-runtime-20261024.md)。**旧非公開2,512件は不変、公開イベント0件**。公開JSONへの転送・正式収録を意味しない。
+`availabilityKind:'scenario-overseas'`は海外の発生条件を**獲得候補の条件ラベル**として扱うだけで、出現確率はモデル化しない。`UmaCore.directEffectRoutes`はスキル経路と別の結果別一覧を返し、`directRoutes`・`aggregate`に新たなスキル提供枚数を生まない。実出典の一例は[佐岳メイのR/SSR非公開2カード×2結果の検証](evidence/events/phase2-nonskill-outcome-runtime-20261024.md)。**旧非公開2,512件は不変、公開イベント0件**。公開JSONへの転送・正式収録を意味しない。
 
 ## 2026-10-24：効果の受け手と全件数値監査
 
 非スキル効果の `effects[]` は `recipientCharId`（正の整数、省略可）を扱う。これは元GameToraの絆 `char_id` の対象を保持する数値であり、キャラクター名を推測しない。同じ種類・成分でも受け手が違えば別の効果。同じ種類・成分・受け手の重複は拒否する。`core.directEffectRoutes` もIDを維持。
 
-[GameTora全2,488イベントの数値監査](phase2-gt-whole-nonskill-effect-audit-20261024.md)では、2,181イベントについて非スキル効果の匿名・孤立した形状だけを変換した。連続経路の完全性、シナリオ条件、公開承認は別に審査する。
+[GameTora全2,488イベントの数値監査](evidence/events/phase2-gt-whole-nonskill-effect-audit-20261024.md)では、2,181イベントについて非スキル効果の匿名・孤立した形状だけを変換した。連続経路の完全性、シナリオ条件、公開承認は別に審査する。
 
 ## 2026-10-24：固定GameTora `all_stats` の5能力展開
 
-固定GT実行コードの `all_stats` はスピード・スタミナ・パワー・根性・賢さの5属性に**同じ符号付き値**を適用する。技術用監査では5つの `effects[]` 行へ展開し、元が複合1記載だったことを`sourceBundle:'all_stats'`で保持。スキーマは `sourceBundle` を5能力以外の行へ付けることを拒否する。結果から`core.directEffectRoutes`へ出典由来も伝える。`random_stats`は同一視しない。[固定元コードと全件68記載の監査](phase2-all-stats-five-attributes-20261024.md)。
+固定GT実行コードの `all_stats` はスピード・スタミナ・パワー・根性・賢さの5属性に**同じ符号付き値**を適用する。技術用監査では5つの `effects[]` 行へ展開し、元が複合1記載だったことを`sourceBundle:'all_stats'`で保持。スキーマは `sourceBundle` を5能力以外の行へ付けることを拒否する。結果から`core.directEffectRoutes`へ出典由来も伝える。`random_stats`は同一視しない。[固定元コードと全件68記載の監査](evidence/events/phase2-all-stats-five-attributes-20261024.md)。
 
 ## 2026-10-25：スキルと非スキルの同一イベント内結合（非公開）
 
-固定GTのカードID＋元イベント位置、選択肢ID・元結果の番号が**完全に追跡できる場合だけ**、従来の`rewards`（スキル獲得候補）と`effects`（非スキル効果）を同じイベントの結果に保持する。既存`requires`／`terminal`／`availabilityKind`／各報酬は不変。元`skill_hint_or`等で一方だけ結果数が増えた場合も、`route-NN-or-M`の元番号・派生番号が連続しており、各候補の元結果が一意なら元の非スキル効果を各候補へ保持する。候補は排他的で、同時取得として合算しない。元番号が確認できない場合は統合を保留。実測結果・未公開ゲートは[統合監査](phase2-private-2512-skill-nonskill-join-20261025.md)。
+固定GTのカードID＋元イベント位置、選択肢ID・元結果の番号が**完全に追跡できる場合だけ**、従来の`rewards`（スキル獲得候補）と`effects`（非スキル効果）を同じイベントの結果に保持する。既存`requires`／`terminal`／`availabilityKind`／各報酬は不変。元`skill_hint_or`等で一方だけ結果数が増えた場合も、`route-NN-or-M`の元番号・派生番号が連続しており、各候補の元結果が一意なら元の非スキル効果を各候補へ保持する。候補は排他的で、同時取得として合算しない。元番号が確認できない場合は統合を保留。実測結果・未公開ゲートは[統合監査](evidence/events/phase2-private-2512-skill-nonskill-join-20261025.md)。
 
 ## 2026-10-25：状態の付与・回復候補を数値効果と分離
 
 イベント・選択肢・結果の末端には、従来の数値`effects[]`とは**独立**した`statusEffects[]`を任意で持たせる。`{kind:'add-condition',conditionId:10,possible:true}`は状態ID10の付与**候補**、`{kind:'cure-one-bad',possible:true}`は保有する悪い状態のうちランダムに**1つ回復する操作候補**。出典に明示された場合のみ`chance`（0超1以下の数）を保持。元コードに隠れた個別の状態適用条件・確率・治療対象の選択は、出典に明記された範囲以上の保証をしない。状態効果は能力値増減でもスキル取得でもないため、`UmaCore.directStatusRoutes`は必ず`possible:true`かつ`conditional:true`で返す。状態操作・効果を同じ結果の末端に併記できるが、結果分岐の外へ移動して無条件取得にはしない。
 
-[GameTora固定状態効果121記載の詳細監査](phase2-gt-status-operation-adoption-20261025.md)では、保留元イベント268→200、技術構造試作2,220→2,288件。スキル用2,512イベントと固定出典順序で統合するが、正式公開イベントは0件。
+[GameTora固定状態効果121記載の詳細監査](evidence/events/phase2-gt-status-operation-adoption-20261025.md)では、保留元イベント268→200、技術構造試作2,220→2,288件。スキル用2,512イベントと固定出典順序で統合するが、正式公開イベントは0件。
 
 ## 2026-10-25：ランダムな対象能力の増減を数値確定効果と区別
 
 固定GTの`random_stats`は5能力から重複なくN種類をランダムに選ぶため、選択される能力を勝手に決めて`effects[]`へ格納してはならない。非公開技術用のイベント・選択肢・結果の末端では別フィールド`dynamicEffects[]`を用い、`{kind:'random-stats',delta:10,statCount:2,targetSelection:'random-distinct'}`のように符号付き数値と**対象数のみ**を保持する。
 
-`UmaCore.directDynamicEffectRoutes`は既存のイベント到達・選択・結果条件を使い、`unresolvedTargets:true`かつ`conditional:true`の**対象能力未確定**経路を返す。単一選択でも能力の名前が特定されるわけではない。この候補をスキル集計・確定能力合計へ混入しない。GT固定2,488件から2,306イベントを孤立した非スキル効果形式へ変換し、そのうち2,305件を非公開スキル用2,512イベントへ同一位置で結合。元GTがautoで既に3択補正したSSR30080#6だけは構造相違により保留。[固定18記載と元コードの根拠・統合監査](phase2-gt-random-stat-targets-20261025.md)。
+`UmaCore.directDynamicEffectRoutes`は既存のイベント到達・選択・結果条件を使い、`unresolvedTargets:true`かつ`conditional:true`の**対象能力未確定**経路を返す。単一選択でも能力の名前が特定されるわけではない。この候補をスキル集計・確定能力合計へ混入しない。GT固定2,488件から2,306イベントを孤立した非スキル効果形式へ変換し、そのうち2,305件を非公開スキル用2,512イベントへ同一位置で結合。元GTがautoで既に3択補正したSSR30080#6だけは構造相違により保留。[固定18記載と元コードの根拠・統合監査](evidence/events/phase2-gt-random-stat-targets-20261025.md)。
 
 ## 2026-10-25：グランドライブ最少パフォーマンスと現最大体力回復
 
 元GameToraの`mt`は固定の能力値・スキルPtではなく、グランドライブにおける**実行時最少のパフォーマンス項目**へ加算する動的効果。専用の`dynamicEffects[]`形式として`{kind:'grand-live-lowest-performance',delta:20,possible:true,scenario:'grand-live',targetSelection:'lowest-performance-at-runtime'}`を保持する。元GTの`full_energy`は体力+100ではなく、**実行時点の最大体力へ設定する**ため`{kind:'restore-current-max-energy',possible:true,targetSelection:'current-max-energy'}`とし、固定回復量の`delta`は指定しない。`UmaCore.directDynamicEffectRoutes`は結果選択・到達条件を守り、対象能力／効果量の実行時解決が必要な非公開の候補として返す。通常スキル`rewards[]`や確定増減`effects[]`には混合しない。
 
-固定元全件で`mt`4記載、`full_energy`1記載を元型として追加認識し、孤立した非スキル構造対象イベント2,306→**2,309**。既存SSR30080イベント#6の裁定済み3択例外は元GTのauto効果を勝手に配らず保留する。[固定出典・全件測定](phase2-grand-live-lowest-and-full-energy-20261025.md)。
+固定元全件で`mt`4記載、`full_energy`1記載を元型として追加認識し、孤立した非スキル構造対象イベント2,306→**2,309**。既存SSR30080イベント#6の裁定済み3択例外は元GTのauto効果を勝手に配らず保留する。[固定出典・全件測定](evidence/events/phase2-grand-live-lowest-and-full-energy-20261025.md)。
 
 ## 2026-10-25：GameToraの結果別`chain_end`の確認と非スキル報酬の結合
 
 固定GameToraの`chain_end`は、その**結果**で後続の連続イベントを打ち切ることを示す。単なるイベント全体の終了や他の結果の継続停止とは区別する。非公開非スキル構造プレビューは`section:'arrows'`かつパラメータなしの`chain_end`だけを該当する結果・選択肢の`terminal:true`として保持する。それ以外の制御マーカー、前段結果条件や状態による異なる進行は勝手に解釈しない。
 
-非スキル元とスキルイベントを結合する際は、カードID・元イベント・選択肢・結果／OR派生を確実に照合した上で、**双方の`terminal`値が正確に一致する場合だけ**数値効果・状態操作・動的効果を移す。スキル側`requires`や`terminal`は一切書き換えず、スキル報酬のSHA不変を検査する。[打ち切り109記載の固定全件監査](phase2-gt-chain-end-outcome-proof-20261025.md)により、91記載を出典由来の終了として解釈し、非スキル技術構造化が2,309→2,395件となった。**元ゲームの全連続条件再現・正式公開は未完了**。
+非スキル元とスキルイベントを結合する際は、カードID・元イベント・選択肢・結果／OR派生を確実に照合した上で、**双方の`terminal`値が正確に一致する場合だけ**数値効果・状態操作・動的効果を移す。スキル側`requires`や`terminal`は一切書き換えず、スキル報酬のSHA不変を検査する。[打ち切り109記載の固定全件監査](evidence/events/phase2-gt-chain-end-outcome-proof-20261025.md)により、91記載を出典由来の終了として解釈し、非スキル技術構造化が2,309→2,395件となった。**元ゲームの全連続条件再現・正式公開は未完了**。
 
 ## 2026-10-26：同一結果で同じ対象へ数値効果が繰り返される場合
 
@@ -70,13 +70,13 @@
 
 `all_stats`の1行は5能力への構造展開となるが、重複する個別能力行の元位置が一致していないか確認する。絆効果の異なる受け手を勝手に同一にしない。`UmaCore.directEffectRoutes`は元の`sourceEffectOrdinal`を返す。**体力・やる気の上限を含む最終値のシミュレーションや適用完了を保証しない**。単純な符号付き報酬を既存イベント結果へ非公開で統合する際も、スキル取得候補と連続条件は元SHAで不変検証する。
 
-[固定GT2,488件の追加監査](phase2-gt-ordered-repeated-numeric-effects-20261026.md)では、重複効果25記載のうち他に保留理由のない10記載を活用し、非スキル構造化2,395→**2,402件**、既存2,512件中の結合2,394→**2,401件**。正式公開0件は不変。
+[固定GT2,488件の追加監査](evidence/events/phase2-gt-ordered-repeated-numeric-effects-20261026.md)では、重複効果25記載のうち他に保留理由のない10記載を活用し、非スキル構造化2,395→**2,402件**、既存2,512件中の結合2,394→**2,401件**。正式公開0件は不変。
 
 ## 2026-10-26：同一結果で繰り返す状態操作の位置を保存
 
 `statusEffects[]`の`add-condition`（同じ`conditionId`）または`cure-one-bad`が同じ結果に複数回あるときは、各操作行に固定GameTora元結果内の**1始まりの`sourceEffectOrdinal`**を保持する。元の正整数位置が欠ける、同じ位置を重複する、配列内で逆順になる場合は不正として拒否。重複する状態付与・ランダムな悪い状態回復を一つへ合成せず、明示の`chance`と現在状態による判定を個別の`possible:true`候補として維持する。`UmaCore.directStatusRoutes`は元位置も返し、`conditional:true`を維持する。回復が2行あるからといって、2つの状態が確実に治ることやすべて治ることを保証しない。
 
-[固定GameToraの121状態記載の監査](phase2-gt-ordered-repeated-status-effects-20261026.md)では、重複元記載5行のうち、ほかに保留理由がない2行を採用。GT元イベントの非スキル構造2,402→**2,404件**、非公開スキル2,512件との同結果結合2,401→**2,403件**。正式公開イベント0件は不変。
+[固定GameToraの121状態記載の監査](evidence/events/phase2-gt-ordered-repeated-status-effects-20261026.md)では、重複元記載5行のうち、ほかに保留理由がない2行を採用。GT元イベントの非スキル構造2,402→**2,404件**、非公開スキル2,512件との同結果結合2,401→**2,403件**。正式公開イベント0件は不変。
 
 ## 2026-10-26：`+5/+10`のような同一結果に連動した範囲の扱い
 
@@ -84,13 +84,13 @@
 
 非公開のSSR30028イベント#4・選択肢#2では、既存スキルの`route-01-or-1`ヒントID200362・Lv1と`route-01-or-2`同Lv3へ、GT元スピード+5／+10と共通絆+5を結果別に対応づける。別の選択肢#1（体力+10、やる気+1、絆+5）はその選択肢内だけに保持。元カード・イベント順位・選択肢数・出典スキルID・結果ID・数値が一つでも異なると統合を拒否し、前段連続条件・スキル報酬自体は書き換えない。
 
-[GT全14範囲イベント、15記載とSSR30028限定結合の監査](phase2-gt-coupled-range-numeric-outcomes-20261026.md)。一般のGT非スキル孤立構造化候補2,404件と保留84件は変えず、**別経路でSSR30028の1イベントを非公開ランタイムへ追加**した。本番公開イベント数0件は不変。
+[GT全14範囲イベント、15記載とSSR30028限定結合の監査](evidence/events/phase2-gt-coupled-range-numeric-outcomes-20261026.md)。一般のGT非スキル孤立構造化候補2,404件と保留84件は変えず、**別経路でSSR30028の1イベントを非公開ランタイムへ追加**した。本番公開イベント数0件は不変。
 
 ## 2026-10-26：スキル報酬を含まない能力値の2段階範囲
 
 固定GameToraの`energy:+10/+30`や`skill_points:+15/+45`が特定のプレイヤー選択肢の中だけにあり、既存スキル用候補に結果分岐がない場合、**その選択肢だけ**非公開`outcomes`を低側・高側の2件に分離できる。ただし元イベントID・カードID・元選択肢の順序・`requires`・`availabilityKind`が一致し、元GTデータで別の`outcomes/segments`やスキル報酬がなく、既存選択肢が`rewards:[]`・非スキル効果未追加であることを厳格に検査する。元の確率は根拠がないため設定しない。
 
-今回の限定対象は[GT30030イベント#3選択肢#2、GT30041イベント#3選択肢#1](phase2-gt-nonskill-only-range-pair-20261026.md)。それぞれの低側・高側`outcomes[]`には`rewards:[]`を明示し、同じ結果に固定の体力・絆・スキルPtを置く。他方のプレイヤー選択肢は従来のflat効果。**下位の結果IDが増えたことで元の連続イベントの継続可否やスキル計算が変わらないか、結果未選択・低側・高側・他のカードの経路を独立検査**する。単純に全ゲームの数値範囲を自動昇格しない。正式公開イベントは0件のまま。
+今回の限定対象は[GT30030イベント#3選択肢#2、GT30041イベント#3選択肢#1](evidence/events/phase2-gt-nonskill-only-range-pair-20261026.md)。それぞれの低側・高側`outcomes[]`には`rewards:[]`を明示し、同じ結果に固定の体力・絆・スキルPtを置く。他方のプレイヤー選択肢は従来のflat効果。**下位の結果IDが増えたことで元の連続イベントの継続可否やスキル計算が変わらないか、結果未選択・低側・高側・他のカードの経路を独立検査**する。単純に全ゲームの数値範囲を自動昇格しない。正式公開イベントは0件のまま。
 
 ## データ構造
 
@@ -115,7 +115,7 @@
 
 元の`random`には無関係な通常イベントもあるため、**すべてのランダムイベントに同じルールを適用してはならない**。現在の技術用変換器が自動連結を試すのは、同一カードにお出かけ系列があり、通常`arrows`がなく、複数選択肢を持つ唯一のランダム終了イベントから非終了経路を確認できる場合のみ。複数の終了候補や意味論が不明な場合は全体を保留。開始イベント自体のスキル報酬が未解析なら、その後のお出かけも成功扱いにしない。
 
-固定ソースでの実際の分類・適合数は[個別監査](phase2-outing-unlock-terminal-review-20261021.md)と[開発状況](status.md)を参照。技術スキーマが表現できることと、現行ゲームで検証・公開承認されたことは別。
+固定ソースでの実際の分類・適合数は[個別監査](evidence/events/phase2-outing-unlock-terminal-review-20261021.md)と[開発状況](status.md)を参照。技術スキーマが表現できることと、現行ゲームで検証・公開承認されたことは別。
 
 ## スキルヒントと直接習得・マイナススキル付与の区別
 
@@ -123,13 +123,13 @@
 
 イベント分岐の選択・結果による到達判定はこれまでと同じだが、**マイナススキル付与を有益な提供スキルとして`core.directRoutes`と`aggregate`に加えない**。イベントの選択肢／結果表示には「マイナススキル付与」を明示する。これにより目標スキルのカバー率は増えない。正の`obtained`（直接習得）はヒントLv無しで候補に入り、区別した名称で表示する。
 
-この機能を導入した根拠は[固定GameToraの直接付与全件監査](phase2-negative-skill-grant-schema-20261021.md)。固定版の直接付与7効果は**全て`minus`**であるが、これは最新ゲーム全体の習得種類を制約する事実ではない。文面・画像・正式公開の別ゲートを通していないため、本番用イベントJSONに自動収録しない。
+この機能を導入した根拠は[固定GameToraの直接付与全件監査](evidence/events/phase2-negative-skill-grant-schema-20261021.md)。固定版の直接付与7効果は**全て`minus`**であるが、これは最新ゲーム全体の習得種類を制約する事実ではない。文面・画像・正式公開の別ゲートを通していないため、本番用イベントJSONに自動収録しない。
 
 ## 先行結果に依存する後続スキル報酬（結果の排他性）
 
 後続のイベントだけでなく、`outcomes[]` の個々の結果にも `requires:{any:[{all:[{eventId,choiceId?,outcomeId?},...]},...]}` で**過去の選択肢と結果の組合せ**を記録できる。AND配列の一つでも不一致なら、その結果は到達不可。いずれのOR節も成立しないなら表示・報酬集計しない。結果が未指定なら「条件付き候補」であり、成功率やヒントLvを無条件としない。
 
-マチカネタンホイザの固定元には前段2イベントの成功／失敗の4組合せから同一スキルのヒントLv3／2／1を選ぶ経路がある。エルコンドルパサーでは「前段の上選択肢**かつ成功**」の場合だけLv3、それ以外はLv1。この条件は [固定スナップショットと独立資料の個別監査](phase2-final-three-outcome-review-20261021.md) を前提に、該当カード・結果順序・数値IDがすべて一致する技術用モデルへ限定して追加した。別カードのゲーム規則として一般化しない。
+マチカネタンホイザの固定元には前段2イベントの成功／失敗の4組合せから同一スキルのヒントLv3／2／1を選ぶ経路がある。エルコンドルパサーでは「前段の上選択肢**かつ成功**」の場合だけLv3、それ以外はLv1。この条件は [固定スナップショットと独立資料の個別監査](evidence/events/phase2-final-three-outcome-review-20261021.md) を前提に、該当カード・結果順序・数値IDがすべて一致する技術用モデルへ限定して追加した。別カードのゲーム規則として一般化しない。
 
 また、1つの元データ結果に同一ヒントブロックが重複する場合は、**単に同一IDを重複排除したり、Lvを加算したりしない**。元ブロックが完全一致し、別資料で実際の各ヒントLvが1回ずつと確認できたケースのみ、スキル候補を1回分とし、元の重複記載数を監査で保持する。能力値・絆・やる気など、本アプリのスキル投影で対象外の効果は再現済みとは呼ばない。
 
@@ -182,13 +182,13 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 
 ## 外部イベントソースとの接続
 
-[実ソース照合記録](event-source-audit.md) にID一致・例外・スキル未照合をまとめた。`poc/src/event_review_compiler.js` は、個別イベントの到達・打ち切り・報酬条件を `chainVerified:true` と `rewardSemanticsVerified:true` でそれぞれ確認し、数値スキルID対応も明示したの場合に限ってスキーマv1を出力する。元JSONの `defaultChoiceId` を育成で選択済みのルートとみなしてはいけない。
+[実ソース照合記録](evidence/events/event-source-audit.md) にID一致・例外・スキル未照合をまとめた。`poc/src/event_review_compiler.js` は、個別イベントの到達・打ち切り・報酬条件を `chainVerified:true` と `rewardSemanticsVerified:true` でそれぞれ確認し、数値スキルID対応も明示したの場合に限ってスキーマv1を出力する。元JSONの `defaultChoiceId` を育成で選択済みのルートとみなしてはいけない。
 
 ## 選択分岐に依存しない連続継続（2026-10-16、PR #20）
 
 従来の `requires:{all:[{eventId,choiceId}]}` に加え、**親が選択式でも** `requires:{all:[{eventId}]}` を記述できるようにした。この場合「親の選択肢が実際に一つ選ばれ、かつ打ち切りではないなら後続へ進む」意味。未選択、打ち切りは後続へ進まない。すべて打ち切り選択肢の親をこの形で参照することは検証エラー。`src/core.js` の実行時判定と検証器を一致させた。
 
-このルールはイベントの発生率や成功失敗の自動確定を意味しない。Game8の欠損4枚の**検証用候補**と、残り1枚の未確認記録は [Game8のSSR欠損監査](game8-missing-ssr-review.md) を参照。
+このルールはイベントの発生率や成功失敗の自動確定を意味しない。Game8の欠損4枚の**検証用候補**と、残り1枚の未確認記録は [Game8のSSR欠損監査](evidence/sources/game8-missing-ssr-review.md) を参照。
 
 ## 2026-10-18：結果分岐のレビュー済みオーバーライドと公開条件（PR #67）
 
@@ -236,13 +236,13 @@ poc/src/core.js は親イベントの到達可否を連鎖的に評価する。�
 - テストは `poc/tests/outcome_dependent_branches.test.cjs`。これは人工グラフの機構テストであり、563枚の実ゲーム分岐の照合ではない。全件監査索引は `phase2-result-branch-and-roster-index-20261019.md` に記録。公開イベント0件を維持。
 ## 2026-10-26：U.A.F.全競技レベルのシナリオ限定動的報酬（共通変換）
 
-GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ競技レベルすべてに関わる効果。`dynamicEffects[]`の`{kind:'uaf-all-disciplines',delta:N,scenario:'uaf',possible:true,targetSelection:'all-15-sports-disciplines'}`に保存し、`UmaCore.directDynamicEffectRoutes`ではシナリオ条件付き・対象値未確定として返す。`effects[]`へ5能力増分として入れるのは誤り。元値が不正、幅値、重複などでは保留。2,488イベントの共通変換で10イベントを追加して2,414を構造化、残り74を保留。[全件原因別コホートと根拠](phase2-gt-batch-cohort-uaf-20261026.md)。公開0件は不変。
+GT固定元の`all_disc`は、基本5能力ではなくU.A.F.の15スポーツ競技レベルすべてに関わる効果。`dynamicEffects[]`の`{kind:'uaf-all-disciplines',delta:N,scenario:'uaf',possible:true,targetSelection:'all-15-sports-disciplines'}`に保存し、`UmaCore.directDynamicEffectRoutes`ではシナリオ条件付き・対象値未確定として返す。`effects[]`へ5能力増分として入れるのは誤り。元値が不正、幅値、重複などでは保留。2,488イベントの共通変換で10イベントを追加して2,414を構造化、残り74を保留。[全件原因別コホートと根拠](evidence/events/phase2-gt-batch-cohort-uaf-20261026.md)。公開0件は不変。
 ## 2026-10-26：シナリオ別資源の共通動的効果型
 
-[固定GT同一イベント位置の2コード一括変換](phase2-scenario-resources-batch-20261026.md)。`dynamicEffects[]`の`great-food-festival-all-vegetables`は大豊食祭限定の5種野菜それぞれに対する増減、`scenario14-secret-ingredients`はシナリオ14の秘密素材表示候補（固定元実行器では事前表示のみ）であり、通常5能力値でも実際の付与が確認済みの取得量でもない。いずれも`scenario`・`targetSelection`・`possible:true`を厳格検証し、候補を`conditional:true`・`unresolvedTargets:true`で返す。元結果での重複、元効果の追加フィールド、幅値を自動解釈しない。今回の一般変換はGT2,488イベントの2,427構造化／保留61、非公開スキル2,512のうち通常結合2,426。正式公開0件を維持。
+[固定GT同一イベント位置の2コード一括変換](evidence/events/phase2-scenario-resources-batch-20261026.md)。`dynamicEffects[]`の`great-food-festival-all-vegetables`は大豊食祭限定の5種野菜それぞれに対する増減、`scenario14-secret-ingredients`はシナリオ14の秘密素材表示候補（固定元実行器では事前表示のみ）であり、通常5能力値でも実際の付与が確認済みの取得量でもない。いずれも`scenario`・`targetSelection`・`possible:true`を厳格検証し、候補を`conditional:true`・`unresolvedTargets:true`で返す。元結果での重複、元効果の追加フィールド、幅値を自動解釈しない。今回の一般変換はGT2,488イベントの2,427構造化／保留61、非公開スキル2,512のうち通常結合2,426。正式公開0件を維持。
 ## 2026-10-26：翌ターン補正と次回温泉入浴フラグの条件付き動的効果
 
-[出典と実装詳細](phase2-gt-contextual-batch-20261026.md)。元GTの`ntsr`を`next-turn-other-support-specialty-rate`（`delta`、`duration:'next-turn'`）、`yhs_tix`を`onsen-bathing-tickets`（`delta`、`scenario:'yukoma-onsen'`）、`yhs_sr`を`onsen-next-bath-super-recovery`（`activation:'next-bath'`、`delta`無し、`scenario:'yukoma-onsen'`）で保持。各`targetSelection`と`possible:true`を必須にして、不明な報酬・確率・ゲーム外条件を勝手に通常報酬へ変換しない。固定GTの一般構造化2,449／保留39、非公開スキル同結果結合2,448、公開0。
+[出典と実装詳細](evidence/events/phase2-gt-contextual-batch-20261026.md)。元GTの`ntsr`を`next-turn-other-support-specialty-rate`（`delta`、`duration:'next-turn'`）、`yhs_tix`を`onsen-bathing-tickets`（`delta`、`scenario:'yukoma-onsen'`）、`yhs_sr`を`onsen-next-bath-super-recovery`（`activation:'next-bath'`、`delta`無し、`scenario:'yukoma-onsen'`）で保持。各`targetSelection`と`possible:true`を必須にして、不明な報酬・確率・ゲーム外条件を勝手に通常報酬へ変換しない。固定GTの一般構造化2,449／保留39、非公開スキル同結果結合2,448、公開0。
 ## 2026-10-26：レジェンズの指南ゲージを個別・全員に分ける共通動的型
 
-[全件の出典と実装](phase2-legends-gauge-batch-20261026.md)。元GT `ttl_gauge_all` は `{kind:'legends-all-guide-gauges',delta:N,scenario:'legends',possible:true,targetSelection:'all-three-legend-guides'}`、`ttl_gauge` は `{kind:'legends-choice-guide-gauge',delta:N,scenario:'legends',possible:true,targetSelection:'chosen-legend-from-event-choice'}`。後者の元効果には個人IDがないので、元の選択枝で一意にするだけで特定のキャラクターIDは捏造しない。どちらも通常能力値ではなく、動的な条件付き候補。GT2,488イベントの一般構造化2,458／保留30、技術的な非公開統合2,457、正式公開0件。
+[全件の出典と実装](evidence/events/phase2-legends-gauge-batch-20261026.md)。元GT `ttl_gauge_all` は `{kind:'legends-all-guide-gauges',delta:N,scenario:'legends',possible:true,targetSelection:'all-three-legend-guides'}`、`ttl_gauge` は `{kind:'legends-choice-guide-gauge',delta:N,scenario:'legends',possible:true,targetSelection:'chosen-legend-from-event-choice'}`。後者の元効果には個人IDがないので、元の選択枝で一意にするだけで特定のキャラクターIDは捏造しない。どちらも通常能力値ではなく、動的な条件付き候補。GT2,488イベントの一般構造化2,458／保留30、技術的な非公開統合2,457、正式公開0件。

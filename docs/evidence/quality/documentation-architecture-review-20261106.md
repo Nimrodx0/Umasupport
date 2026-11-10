@@ -4,7 +4,7 @@
 
 過去のChatGPT会話やAIの記憶を**唯一の開発コンテクストにしない**。新しいエージェント・開発者が、GitHubの現行ブランチから「何を／なぜ／どう／どこまで／次に何を／何が未検証か」を判断できることを受入基準とする。
 
-参考：Diátaxis（学習・手順・参照・説明の目的を混ぜない）、ADR（決定に背景・理由・置換関係を残す）。**本レポジトリに新しいドキュメント体系を機械的に全面適用するものではない**。文書の役割と具体的な更新先は [documentation-policy.md](documentation-policy.md) が正本。
+参考：Diátaxis（学習・手順・参照・説明の目的を混ぜない）、ADR（決定に背景・理由・置換関係を残す）。**本レポジトリに新しいドキュメント体系を機械的に全面適用するものではない**。文書の役割と具体的な更新先は [documentation-policy.md](../../documentation-policy.md) が正本。
 
 原則は次の4点：
 
@@ -21,12 +21,12 @@
 
 | 発見 | 対応 | 留保 |
 | --- | --- | --- |
-| `docs/index.md` の入口に多数の日時付き監査が並び、現在の仕様が見つけにくい | [index.md](index.md) を現在の正本への短い経路へ、詳細一覧を [evidence-index.md](evidence-index.md) へ移す | 日付付き監査の個別の技術的正しさは今回再評価しない |
+| `docs/index.md` の入口に多数の日時付き監査が並び、現在の仕様が見つけにくい | [index.md](../../index.md) を現在の正本への短い経路へ、詳細一覧を [evidence-index.md](../../evidence-index.md) へ移す | 日付付き監査の個別の技術的正しさは今回再評価しない |
 | `AGENTS.md` に具体的な過去工程・固定件数・例外が多く混在 | 恒久境界と参照のみに整理。元の詳細は決定・出典・工程・監査とGit履歴で確認可能 | 製品の個別契約が既存資料ですべて完全に表現できているかは継続確認対象 |
-| `verification-plan.md` が現在のA/B/C受入条件と古い試験結果を同時記載 | 基準を [verification-plan.md](verification-plan.md)、旧実績・休止4Aを [verification-history.md](verification-history.md) に分離 | 旧実績を新しい検証結果として繰り上げない |
-| `poc/README.md` の主要手順が旧v8.1中心 | 現行の静的アプリ起動・試験入口に書換、旧文を [legacy-runbook](../poc/legacy-runbook.md) に保存 | ローカル手順は実環境の独立試験が別途必要 |
+| `verification-plan.md` が現在のA/B/C受入条件と古い試験結果を同時記載 | 基準を [verification-plan.md](../../verification-plan.md)、旧実績・休止4Aを [verification-history.md](../../verification-history.md) に分離 | 旧実績を新しい検証結果として繰り上げない |
+| `poc/README.md` の主要手順が旧v8.1中心 | 現行の静的アプリ起動・試験入口に書換、旧文を [legacy-runbook](../../../poc/legacy-runbook.md) に保存 | ローカル手順は実環境の独立試験が別途必要 |
 | `architecture.md` と `requirements.md` に公開0件の古い「現行」記載がある | それぞれ現在の公開状況をstatusへ参照させ、歴史的な事実と現行配信方式を区別 | ゲームの網羅・再利用許可は公開件数から推論しない |
-| 監査可能な導線と現在／履歴の区別に自動ゲートが不足 | [document policy test](../poc/tests/documentation_policy.test.cjs) の文書リンク確認対象と構造テストを拡張、PRテンプレートを全種変更に適用可能な構成へ | CIは会話内容の欠落・意味上の矛盾を自動保証しない |
+| 監査可能な導線と現在／履歴の区別に自動ゲートが不足 | [document policy test](../../../poc/tests/documentation_policy.test.cjs) の文書リンク確認対象と構造テストを拡張、PRテンプレートを全種変更に適用可能な構成へ | CIは会話内容の欠落・意味上の矛盾を自動保証しない |
 
 ## 再開時に守る判断の境界
 
@@ -44,4 +44,4 @@
 
 ## 参照
 
-[文書運用規約](documentation-policy.md)／[入口](index.md)／[現行の状況](status.md)／[作業順](roadmap.md)／[スキル発動条件研究](skill-activation-tendencies-design.md)
+[文書運用規約](../../documentation-policy.md)／[入口](../../index.md)／[現行の状況](../../status.md)／[作業順](../../roadmap.md)／[スキル発動条件研究](../../skill-activation-tendencies-design.md)

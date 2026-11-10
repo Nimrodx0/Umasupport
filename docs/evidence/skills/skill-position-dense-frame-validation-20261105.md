@@ -28,7 +28,7 @@
 - 原則は各セル3シード、手動CIは1～20シード。計3×2×2×2×3＝**72シミュレーションレース**（標準設定）。前回の2,160レースを全件再計算するのではなく、誤差検証のための固定代表パイロット。
 - すべての走者はスキルなし。出走者の脚質構成は、イベントごとの周辺分布から抽選したものであり、全国的な平均レースでも本物の各マッチでもない。
 
-解析器：[globalsim_dense_window_validation.cjs](../poc/tools/globalsim_dense_window_validation.cjs)、単体試験：[globalsim_dense_window_validation.test.cjs](../poc/tests/globalsim_dense_window_validation.test.cjs)、固定ソース実CI：[GlobalSim dense-frame window crosscheck](../.github/workflows/globalsim-dense-window-validation.yml)。
+解析器：[globalsim_dense_window_validation.cjs](../../../poc/tools/globalsim_dense_window_validation.cjs)、単体試験：[globalsim_dense_window_validation.test.cjs](../../../poc/tests/globalsim_dense_window_validation.test.cjs)、固定ソース実CI：[GlobalSim dense-frame window crosscheck](../../../.github/workflows/globalsim-dense-window-validation.yml)。
 
 ## 固定実エンジンでの検証結果（2026-11-05）
 

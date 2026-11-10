@@ -2,7 +2,7 @@
 
 ## 目標と現状
 
-[PR #20の未承認イベント候補](game8-missing-ssr-review.md)（SSR30320、30302、30295、30269のスキルヒント14行）と、今回別記事で調べたジャングルポケットSSR30240のイベント取得スキル2種類を、**数値IDとレアリティを失わずに**内部スキルへ対応付ける準備をした。U-toolsは使用しない。
+[PR #20の未承認イベント候補](../sources/game8-missing-ssr-review.md)（SSR30320、30302、30295、30269のスキルヒント14行）と、今回別記事で調べたジャングルポケットSSR30240のイベント取得スキル2種類を、**数値IDとレアリティを失わずに**内部スキルへ対応付ける準備をした。U-toolsは使用しない。
 
 - 既存4枚のスキルヒント：14行、重複のある「一所懸命」を含む。
 - ジャングルポケット30240：GameWithの[該当SSR個別ページ](https://gamewith.jp/uma-musume/article/show/490549)にイベントスキル「迅速果断」「がむしゃら」の2つが列挙されている。[ｽｯﾍﾟﾝﾍﾟﾝ Wiki](https://wikiwiki.jp/sppenpen/怪文書まとめ5)の該当サポカ節でもイベント獲得スキルとして両方を掲載。ただし、**イベント進行の何段階目・どの選択肢で得られるかは未確認**。JSONの `cardLevelSkillCandidates` にのみ記録し、`chain[].hints` や `random[].hints` には入れない。
@@ -12,7 +12,7 @@
 
 ## ID対応表
 
-唯一の管理ファイル：[`poc/config/missing-ssr-skill-id-candidates.v1.json`](../poc/config/missing-ssr-skill-id-candidates.v1.json)
+唯一の管理ファイル：[`poc/config/missing-ssr-skill-id-candidates.v1.json`](../../../poc/config/missing-ssr-skill-id-candidates.v1.json)
 
 | スキル名 | 数値ID | UmaSim区分 | 証拠 |
 |---|---:|---|---|
@@ -35,11 +35,11 @@
 
 ## 実装と安全性
 
-- [`poc/src/skill_candidate_id_audit.cjs`](../poc/src/skill_candidate_id_audit.cjs)：UmaSimの構造化JSONを読み、カードから抽出済みの**事実としてのスキル名**だけをUnicode NFKC＋空白正規化で厳密照合。候補名が1レコードのみで `normal`／`rare` のときだけUmaSim一意候補を返す。複数同名・通常／レア以外・不存在は自動確定しない。
+- [`poc/src/skill_candidate_id_audit.cjs`](../../../poc/src/skill_candidate_id_audit.cjs)：UmaSimの構造化JSONを読み、カードから抽出済みの**事実としてのスキル名**だけをUnicode NFKC＋空白正規化で厳密照合。候補名が1レコードのみで `normal`／`rare` のときだけUmaSim一意候補を返す。複数同名・通常／レア以外・不存在は自動確定しない。
 - `verifyCandidateTable`：14種すべてがマッピング表にあるか、UmaSim一意13種のID・分類・グループが元データと完全一致するか、外部暫定1種が依然UmaSim未収録かを確認。将来UmaSimに逃げためらいが追加された場合、暫定のまま進まず**再レビューを要求**する。
-- [`poc/tools/audit_skill_candidate_ids.cjs`](../poc/tools/audit_skill_candidate_ids.cjs)：開発者が明示的に実行するときのみUmaSim `skill_data.txt` をGETし検証、または `--local path/to/skill_data.txt` でローカルファイルを利用。ゲーム文章の転載・第三者サイト巡回はしない。
-- [`poc/src/missing_ssr_fact_review.cjs`](../poc/src/missing_ssr_fact_review.cjs)：カード単位の獲得スキル名を、**イベント位置が分からない状態の候補**として保持することを認めた一方、イベント毎の報酬への変換を防止。
-- [`poc/tests/skill_candidate_id_audit.test.cjs`](../poc/tests/skill_candidate_id_audit.test.cjs)：ID誤変更、二重候補、抜け、未確定情報からの勝手な登録を回帰テスト。
+- [`poc/tools/audit_skill_candidate_ids.cjs`](../../../poc/tools/audit_skill_candidate_ids.cjs)：開発者が明示的に実行するときのみUmaSim `skill_data.txt` をGETし検証、または `--local path/to/skill_data.txt` でローカルファイルを利用。ゲーム文章の転載・第三者サイト巡回はしない。
+- [`poc/src/missing_ssr_fact_review.cjs`](../../../poc/src/missing_ssr_fact_review.cjs)：カード単位の獲得スキル名を、**イベント位置が分からない状態の候補**として保持することを認めた一方、イベント毎の報酬への変換を防止。
+- [`poc/tests/skill_candidate_id_audit.test.cjs`](../../../poc/tests/skill_candidate_id_audit.test.cjs)：ID誤変更、二重候補、抜け、未確定情報からの勝手な登録を回帰テスト。
 
 ### 開発者向けの監査方法
 
@@ -57,7 +57,7 @@ node poc/tools/audit_skill_candidate_ids.cjs --local local-data/skill_data.txt
 2. **金白の系統を確認する。** UmaSimの `group` を候補に使えるが、金の上位・白の下位の関係はゲームデータとの独立照合が必要。
 3. **分岐・成功失敗・連続の打ち切り**を4枚の攻略記事で確認し、獲得できる確率や条件を不明のまま無条件扱いしない。
 4. **30240の2スキルのイベント配置を確認**する。スキル名だけ確認してもイベント獲得経路として公開DBに登録しない。
-5. 利用範囲と各イベントの内容を独立にレビューしてから[公開イベントDB](../poc/data/reviewed_events.v1.json)を段階的に拡充する。**現時点で公開イベントDBは実イベント0件**。
+5. 利用範囲と各イベントの内容を独立にレビューしてから[公開イベントDB](../../../poc/data/reviewed_events.v1.json)を段階的に拡充する。**現時点で公開イベントDBは実イベント0件**。
 
 ## 2026-10-17：公開イベント向けのランタイムID変換層（PR #22予定）
 

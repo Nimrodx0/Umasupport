@@ -1,6 +1,6 @@
 # サポートカード画像の利用条件：確認結果と実装境界
 
-更新：2026-10-18。関連：[Phase 3のF-02検索・画像グリッド](card-route-search-acceptance.md)、[要件](requirements.md)。今回の調査は公開ガイドライン上の利用可能性を確認したもので、法的意見や個別許諾の取得ではない。
+更新：2026-10-18。関連：[Phase 3のF-02検索・画像グリッド](evidence/quality/card-route-search-acceptance.md)、[要件](requirements.md)。今回の調査は公開ガイドライン上の利用可能性を確認したもので、法的意見や個別許諾の取得ではない。
 
 ## 確認した公式資料
 

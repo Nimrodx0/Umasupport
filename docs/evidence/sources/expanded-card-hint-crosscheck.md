@@ -1,6 +1,6 @@
 # 2026年版・2025年版の別サポカ資料による通常ヒント網羅の拡大監査
 
-検証日：2026-10-17（JST）　関連：[Phase 1](roadmap.md) / [45枚の数値ヒント照合](independent-card-hint-audit.md) / [カードID母集団](card-population-independent-audit.md) / [PR #39](https://github.com/Nimrodx0/Umasupport/pull/39)
+検証日：2026-10-17（JST）　関連：[Phase 1](../../roadmap.md) / [45枚の数値ヒント照合](independent-card-hint-audit.md) / [カードID母集団](card-population-independent-audit.md) / [PR #39](https://github.com/Nimrodx0/Umasupport/pull/39)
 
 ## 目的と証拠の限界
 
@@ -16,7 +16,7 @@
 | [dareuma cards.json](https://github.com/dareuma/umamusume-deck-build-tool/releases/download/updata/cards.json) | [GitHub release asset](https://github.com/dareuma/umamusume-deck-build-tool/releases)・2026-10-02更新、**560カード**、`Skills`は通常ヒントとイベント由来のスキルを混在させたリスト | `fdf8cc300d24e8770fdcf2a1fb3af532c7d139d24a2357ee5c0fdd99b1020265` |
 | [ktkhikr1228-lab raw_data.txt](https://github.com/ktkhikr1228-lab/uma-tool/blob/4bfc708a558bc2ac02266860b42e61fec8a6ffe4/raw_data.txt) | 2025年11月実装カードまでを含む日本語サポカ一覧。所持スキルと育成イベントスキルの欄が別 | 実行ログ参照 |
 
-公開リポジトリへ第三者のカード/スキル本文や画像を取り込まない。監査の[限定ワークフロー](../.github/workflows/release-card-source-probe.yml)が明示的PR変更/手動で起動された場合のみ一時取得し、発売元リリースJSONのSHA-256を事前照合。取得元への通常CI・Pages稼働中の新たなリクエストは増えない。
+公開リポジトリへ第三者のカード/スキル本文や画像を取り込まない。監査の[限定ワークフロー](../../../.github/workflows/release-card-source-probe.yml)が明示的PR変更/手動で起動された場合のみ一時取得し、発売元リリースJSONのSHA-256を事前照合。取得元への通常CI・Pages稼働中の新たなリクエストは増えない。
 
 ## 2026-10の560カード照合
 
@@ -86,4 +86,4 @@
 - **表示順：** 外部カードの`Skills`の順序がゲーム内のスキル一覧順だと示す資料はない。2025年の`disp_order`問題も未解決につきアプリUIの五十音順＋金白階層を変更しない。
 - **権利・ライセンス：** データを自動再配布しない。参照サイトの利用条件・共有元の真正性は正式公開の前に別途確認する。
 
-再現コード：[最新560枚監査](../poc/tools/audit_deckbuilder_cards.cjs)／[旧資料三角照合](../poc/tools/audit_legacy_raw_hints.cjs)／[限定GitHub Actions](../.github/workflows/release-card-source-probe.yml)／[関連テスト](../poc/tests/deckbuilder_cards.test.cjs)と[旧資料パーサーテスト](../poc/tests/legacy_raw_hints.test.cjs)。
+再現コード：[最新560枚監査](../../../poc/tools/audit_deckbuilder_cards.cjs)／[旧資料三角照合](../../../poc/tools/audit_legacy_raw_hints.cjs)／[限定GitHub Actions](../../../.github/workflows/release-card-source-probe.yml)／[関連テスト](../../../poc/tests/deckbuilder_cards.test.cjs)と[旧資料パーサーテスト](../../../poc/tests/legacy_raw_hints.test.cjs)。

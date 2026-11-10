@@ -87,7 +87,7 @@ v1.1で先に判定できたダート条件付きスキル：**目指せセン�
 
 ## 4. 採用・未承認と次の条件
 
-- **判定規則v1.2は馬場条件の独立性を維持し、固定GlobalSim上で検証した3部分区間だけ定性的な脚質方向を追加**。実装：[評価器](../poc/src/skill_activation_fit_v1.cjs)、[53件レビュー作成器](../poc/tools/skill_activation_fit_v1_report.cjs)、[固定元データ照合とゲート](../poc/tools/verify_subphase_model_direction.cjs)、[再現CI](../.github/workflows/skill-activation-fit-v1.yml)。
+- **判定規則v1.2は馬場条件の独立性を維持し、固定GlobalSim上で検証した3部分区間だけ定性的な脚質方向を追加**。実装：[評価器](../../../poc/src/skill_activation_fit_v1.cjs)、[53件レビュー作成器](../../../poc/tools/skill_activation_fit_v1_report.cjs)、[固定元データ照合とゲート](../../../poc/tools/verify_subphase_model_direction.cjs)、[再現CI](../../../.github/workflows/skill-activation-fit-v1.yml)。
 - **根拠のA／B境界**：A：人工データテストで未知AND・複数OR・明示脚質除外・補助条件保留を検証。B：固定UmaSim源から53件×4脚質を再計算し、元の53件の脚質ラベルとの一致を確認。
 - **未承認**：他の828スキルへの正式判定、明示脚質・距離以外の様々な条件の実ゲーム照合、適合性をアプリで常時表示すること、数値による発動率計算、スキル効果の有用性、カード集約P3。
 - **次の検証先**：今回の53件の研究用判定は全件完了。他のスキルへの適用前に、元のorder_rate>=40等の演算子・整数順位への変換、複雑なAND/OR・複数Invoke・明示脚質制限を検証する。モデル上の順位割合は実発動確率ではない。

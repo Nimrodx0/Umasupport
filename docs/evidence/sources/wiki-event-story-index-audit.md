@@ -4,7 +4,7 @@
 
 ## 問題と公開情報源
 
-2025年固定マスター（`SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135`、SHA-256 `46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb`）には、SSR30241と直結する`single_mode_story_data.story_id`が18件ある。2026年Checker候補が17件と観測されたため、2025年マスター側の一意な未一致数値ID **830241004** が残っていた（[過去の監査](story-residual-metadata-audit.md)）。
+2025年固定マスター（`SimpleSandman/UmaMusumeMetaMasterMDB@5a8ec135`、SHA-256 `46363929ab097edf164d78a1e8f8d212dbf8c440a7c44431079198ca167002cb`）には、SSR30241と直結する`single_mode_story_data.story_id`が18件ある。2026年Checker候補が17件と観測されたため、2025年マスター側の一意な未一致数値ID **830241004** が残っていた（[過去の監査](../events/story-residual-metadata-audit.md)）。
 
 Umamusume Wikiの[イベント定義テンプレート](https://umamusu.wiki/Template:Game_Training_Event_Definition)は、イベント解説ページの`story_id`を**Cargoの`Game_Training_Event`テーブル**に登録する構造。これはWikiが作成したページの索引であり、ゲーム内マスターのstory_id全件を表すものではない。実際のサポートカード表示モジュールでは、`Game/Supports/Data/Events` からサポカとイベントを取得し、Wikiのイベント解説ページに追記されたデータをCargoから結合する。[Wikiの公開Luaロジック](https://umamusu.wiki/Module:Game/TrainingEvents)から読み取れる範囲の仕様である。
 
@@ -32,7 +32,7 @@ Umamusume Wikiの[イベント定義テンプレート](https://umamusu.wiki/Tem
 ## 再現できる監査とゲート
 
 - **A：** `poc/tools/audit_wiki_event_index_focus.py` と `poc/tests/test_wiki_event_index_focus.py`。`single_mode_story_data.id`（DB内部行識別子）ではなく、**`story_id`**を照合する。人工SQLiteによる18件に相当する数値リンク、APIレスポンス`title['story id']`、無記録・部分収録・重複・レスポンス不正・ページ打切り・参照元マスターSHA不一致の条件を確認する。
-- **B：** [限定GitHub Actions](../.github/workflows/wiki-event-story-id-probe.yml)が2025年固定マスターのSHAを確認したうえでWikiの掲載story_idを比較。**Wikiの解説ページ索引だけを検証し、2026年現行マスターとの全数比較ではない。**
+- **B：** [限定GitHub Actions](../../../.github/workflows/wiki-event-story-id-probe.yml)が2025年固定マスターのSHAを確認したうえでWikiの掲載story_idを比較。**Wikiの解説ページ索引だけを検証し、2026年現行マスターとの全数比較ではない。**
 - **C：** 公開アプリUIやイベントDBへの追加なし。Android/Windows実機は今回の検証対象ではない。
 
 ## 次のデータ取得方針

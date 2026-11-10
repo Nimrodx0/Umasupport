@@ -36,10 +36,10 @@ SSR30322の通常ヒントに対する固有IDは、実際のUmaSim辞書に対�
 
 ## 監査の設計・実行確認
 
-[`current_new_card_skill_event_audit.cjs`](../poc/src/current_new_card_skill_event_audit.cjs) は**既存のライブローダー `UmaLiveLoader.buildModel` を使用**して `hint:...` の内部参照から通常ヒント名を復元し、`UmaSkillBridge.parseSource` の数値ID辞書と照合する。単なる名称一致での曖昧な数値IDへの変換や異レア度への誤マップをしない。旧新スキル辞書は両方Git blob SHA-1で固定し、旧IDの変更・削除を監査出力で明示。新3カードのイベント欄が未承認のまま空であることも検査。
+[`current_new_card_skill_event_audit.cjs`](../../../poc/src/current_new_card_skill_event_audit.cjs) は**既存のライブローダー `UmaLiveLoader.buildModel` を使用**して `hint:...` の内部参照から通常ヒント名を復元し、`UmaSkillBridge.parseSource` の数値ID辞書と照合する。単なる名称一致での曖昧な数値IDへの変換や異レア度への誤マップをしない。旧新スキル辞書は両方Git blob SHA-1で固定し、旧IDの変更・削除を監査出力で明示。新3カードのイベント欄が未承認のまま空であることも検査。
 
-- **A 機構**：[合成Node試験](../poc/tests/current_new_card_skill_event_audit.test.cjs) で全3カード・全段階、数値ID一意照合、同名複数ID・欠損・誤った`rare`分類・旧ID変更の報告・不正TSVの拒否を確認。
-- **B 固定データ**：[最新UmaSim全件監査CI](../.github/workflows/current-roster-audit.yml) で2つのカード版＋2つのスキル辞書版を一時的に取得し、2組のblobを検算。**566枚、2,162スキルID、14/14通常ヒント**を確認。外部TSV・JSON全文はリポジトリやPagesに同梱しない。
+- **A 機構**：[合成Node試験](../../../poc/tests/current_new_card_skill_event_audit.test.cjs) で全3カード・全段階、数値ID一意照合、同名複数ID・欠損・誤った`rare`分類・旧ID変更の報告・不正TSVの拒否を確認。
+- **B 固定データ**：[最新UmaSim全件監査CI](../../../.github/workflows/current-roster-audit.yml) で2つのカード版＋2つのスキル辞書版を一時的に取得し、2組のblobを検算。**566枚、2,162スキルID、14/14通常ヒント**を確認。外部TSV・JSON全文はリポジトリやPagesに同梱しない。
 - **C 実ブラウザ**：同CIで新固定566カードをGitHub Pagesと同じ `/Umasupport/` サブパスのChromiumに読み込み、カード検索・新3カードの本育成／継承デッキ登録、通常版のイベント0件を再確認。スキル辞書はC試験では合成のため、**実Chromiumで新3カードの数値スキルID表示を確認した試験ではない**。公開配信ドメインとWindows/Androidの物理端末テストは未実施。
 
 **公開承認イベント0件**は変化なし。従来の旧固定GT **2,488イベント／非公開スキル候補2,512件**は2026-10-26最新カードまで網羅する母集団ではなく、誤って566へ拡大しない。最優先の次工程は、GameToraの新カードイベント出典が機械可読な形で入手可能になったかの差分監査と、GameWithから確認できる選択肢・結果・後続分岐の採用裁定。

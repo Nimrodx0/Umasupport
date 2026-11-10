@@ -5,7 +5,7 @@
 現行[非スキル効果スキーマ](phase2-nonskill-outcome-runtime-20261024.md)を、GameTora由来の**固定スナップショット**全イベントへ適用する前に、元データの数値スカラー・選択肢・分岐構造・効果の受け手をすべて監査する。
 
 - 基準ソース：`systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`、`server/data/events/gametora/support_*.json`。
-- 対象カード：固定UmaSim台帳563枚、GTイベントファイル559枚、元イベント2,488件、選択肢4,129、展開後結果経路4,376（元サポカと元イベントの収録範囲は[status.md](status.md)を参照）。
+- 対象カード：固定UmaSim台帳563枚、GTイベントファイル559枚、元イベント2,488件、選択肢4,129、展開後結果経路4,376（元サポカと元イベントの収録範囲は[status.md](../../status.md)を参照）。
 - 計測器：`poc/src/phase2_gt_whole_nonskill_effect_inventory.cjs`、実行用`poc/tools/audit_phase2_gt_whole_nonskill_effects.cjs`。結果は`.github/workflows/whole-event-inventory.yml`のActionsの一時ファイルに置き、公開JSONに同梱しない。
 - 機構での意味：**その出典位置の非スキル数値効果だけを、匿名の結果形状で壊さず表現できるか**。イベントそのものの実ゲーム分岐・発生率・連続の後続関係まで完全に認証されたという意味ではない。
 

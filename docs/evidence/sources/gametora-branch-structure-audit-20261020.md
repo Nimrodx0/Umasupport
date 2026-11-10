@@ -11,7 +11,7 @@
 - 原文のイベント名・説明文・選択肢文章・ソースのJSON全体を当レポジトリへ同梱しない。GitHub Actionsは外部公開リポジトリを一時checkoutし、**独自に集計した数値事実だけ**をartifactへ保存。
 
 監査ツール: `poc/tools/audit_gametora_branches.cjs`。テスト: `poc/tests/gametora_branch_audit.test.cjs`。
-ワークフロー: [Audit pinned GameTora-derived event branches](../.github/workflows/gametora-branch-structure-audit.yml)。PRおよび手動起動に対応。
+ワークフロー: [Audit pinned GameTora-derived event branches](../../../.github/workflows/gametora-branch-structure-audit.yml)。PRおよび手動起動に対応。
 
 ## 測定の定義
 

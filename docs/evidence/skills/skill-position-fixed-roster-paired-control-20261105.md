@@ -21,7 +21,7 @@
 
 **実行証拠**：[Actions #42044549108](https://github.com/Nimrodx0/Umasupport/actions/runs/42044549108)（成功）、成果物 \`globalsim-fixed-roster-matched-course-study\`（artifact ID **13424336826**）、\`report.json\` SHA-256 \`ab004d977251f6ca6f4a3db19c9a2736650cef1d50abb1a9daea904c6e7aae81\`。
 
-コード：[固定編成・コース間の照合処理](../poc/tools/globalsim_paired_rank_controls.cjs) ／ [人工回帰テスト](../poc/tests/globalsim_paired_rank_controls.test.cjs) ／ [固定GlobalSimによる再現CI](../.github/workflows/globalsim-paired-rank-controls.yml)。
+コード：[固定編成・コース間の照合処理](../../../poc/tools/globalsim_paired_rank_controls.cjs) ／ [人工回帰テスト](../../../poc/tests/globalsim_paired_rank_controls.test.cjs) ／ [固定GlobalSimによる再現CI](../../../.github/workflows/globalsim-paired-rank-controls.yml)。
 
 ## 実測1：上位50%の脚質群の優劣
 

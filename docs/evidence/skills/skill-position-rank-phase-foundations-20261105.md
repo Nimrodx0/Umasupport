@@ -15,7 +15,7 @@
 - rank-source-distribution.json SHA-256：01ccee6be919b910670b2a33f92251351d9758adb7184495a2a65ae2357b2e00
 - rank-profile.json SHA-256：5ccab2cd69bba58150a930e97075ce16de5c0d9e8851ee5edd7816c54dbc60d0
 
-再現コード：[元条件頻度集計](../poc/tools/rank_source_distribution.cjs)、[全順位の区間割合計算](../poc/tools/globalsim_rank_distribution.cjs)、[回帰テスト](../poc/tests/globalsim_rank_distribution.test.cjs)、[Actions設定](../.github/workflows/globalsim-rank-distribution.yml)。
+再現コード：[元条件頻度集計](../../../poc/tools/rank_source_distribution.cjs)、[全順位の区間割合計算](../../../poc/tools/globalsim_rank_distribution.cjs)、[回帰テスト](../../../poc/tests/globalsim_rank_distribution.test.cjs)、[Actions設定](../../../.github/workflows/globalsim-rank-distribution.yml)。
 
 ## 2. 実スキルの順位条件に多い数値
 
