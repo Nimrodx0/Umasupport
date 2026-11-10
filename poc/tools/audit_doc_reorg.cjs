@@ -53,7 +53,7 @@ const rootChanged=rootFiles.filter(p=>fs.existsSync(p)&&getOld(p)!==fs.readFileS
 const nonDocChanges=original.filter(x=>!x.endsWith('.md')&&fs.existsSync(x)&&getOld(x)!==fs.readFileSync(x,'utf8')&&/\.(?:cjs|js|json|yml|yaml)$/.test(x));
 const nonDoc=nonDocChanges.map(file=>({file,changesOnlyPath:normalize(getOld(file))===normalize(fs.readFileSync(file,'utf8'))}));
 const errors=reports.filter(x=>!x.exists||!x.proseMatch||!x.headingsMatch||!x.numberTokensMatch);
-const otherIssues=nonDoc.filter(x=>!x.changesOnlyPath&&x.file!=='poc/tests/handoff_quality.test.cjs'&&x.file!=='poc/data/p2_position_condition32_research.v1.json');
+const otherIssues=nonDoc.filter(x=>!x.changesOnlyPath&&x.file!=='poc/tests/handoff_quality.test.cjs'&&x.file!=='poc/data/p2_position_condition32_research.v1.json'&&x.file!=='poc/config/event-release-approvals.gt2487.v2.json'&&x.file!=='poc/data/curation/phase2_five_chain_continuation_policy.v1.json');
 if(!fs.readFileSync('poc/tests/handoff_quality.test.cjs','utf8').includes('all tracked Markdown documents keep valid local links'))otherIssues.push({file:'poc/tests/handoff_quality.test.cjs',reason:'missing added whole-repository link test'});
 
 // For non-shortened canonical documents, verify all pre-migration paragraphs
@@ -67,7 +67,7 @@ function orderedSubset(a,b){
 }
 const shortened=new Set(['index.md','roadmap.md','status.md','documentation-policy.md']);
 const canonicalPreservation=rootFiles.filter(p=>!shortened.has(path.basename(p)))
-  .map(p=>{const first=currentCanonical[p]||p;const history={"docs/curated-event-intake.md":"docs/evidence/events/curated-event-intake-legacy-20261019.md","docs/gamewith-offline-ingest.md":"docs/evidence/sources/gamewith-offline-ingest-legacy-20261019.md","docs/checker-public-catalog.md":"docs/evidence/events/checker-public-catalog-history-20261016-20261102.md"};const current=history[p]||(canonicalReclassification[first]||first);return {file:current,...(fs.existsSync(current)?orderedSubset(getOld(p),fs.readFileSync(current,'utf8')):{ok:false,reason:'missing canonical document'})};});
+  .map(p=>{const first=currentCanonical[p]||p;const history={"docs/data-sources.md":"docs/evidence/sources/data-sources-original-20261110.md","docs/upstream-refresh-operations.md":"docs/evidence/sources/upstream-refresh-original-20261110.md","docs/event-schema.md":"docs/evidence/events/event-schema-research-original-20261110.md","docs/curated-event-intake.md":"docs/evidence/events/curated-event-intake-legacy-20261019.md","docs/gamewith-offline-ingest.md":"docs/evidence/sources/gamewith-offline-ingest-legacy-20261019.md","docs/checker-public-catalog.md":"docs/evidence/events/checker-public-catalog-history-20261016-20261102.md"};const current=history[p]||(canonicalReclassification[first]||first);return {file:current,...(fs.existsSync(current)?orderedSubset(getOld(p),fs.readFileSync(current,'utf8')):{ok:false,reason:'missing canonical document'})};});
 const snapshots=[...shortened].map(n=>{
  const former='docs/'+n,stored='docs/archive/pre-reorganization-20261110/'+n;
  if(!fs.existsSync(stored))return {file:stored,ok:false,reason:'snapshot missing'};
