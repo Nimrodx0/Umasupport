@@ -21,7 +21,9 @@ function getAnchors(p){
   if(fenced)continue;
   const h=/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
   if(h){const slug=headingSlug(h[1]),c=seen.get(slug)||0;out.add(slug+(c?'-'+c:''));seen.set(slug,c+1);}
-  const ids=line.matchAll(/<a\b[^>]*\bid=["']([^"']+)["'][^>]*>/gi);
+  // Inline code examples must not masquerade as real HTML anchors.
+  const plain=line.replace(/`[^`]*`/g,'');
+  const ids=plain.matchAll(/<a\b[^>]*\bid=["']([^"']+)["'][^>]*>/gi);
   for(const id of ids)out.add(id[1]);
  }
  cache.set(p,out);return out;

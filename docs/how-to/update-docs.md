@@ -6,7 +6,7 @@
 
 1. **有効要件・技術契約**：[要件](../reference/requirements.md)・[アーキテクチャ](../reference/architecture.md)・[イベントスキーマ](../reference/event-schema.md)。実装とテストが一致するか確認する。
 2. **実施順・未完**：[ロードマップ](../project/roadmap.md)と[小工程](../plans/index.md)、現在の確認済み[status](../project/status.md)。日時付きのデータ根拠は[evidence](../evidence/README.md)へ。
-3. **利用者の新しい確定判断**：[原文ログ](../decisions/log.md)へ見出しを追加するか独立した判断文書を作り、[状態台帳](../decisions/registry.json)へ一意ID・出典・判定状態・後続ID・根拠・判定日を登録する。判断ログの見出しにも同じIDの安定アンカー（既存の`<a id="decision-d-001"></a>`形式）を付ける。既存判断を消さず、置換関係を付ける。
+3. **利用者の新しい確定判断**：[原文ログ](../decisions/log.md)へ見出しを追加するか独立した判断文書を作り、[状態台帳](../decisions/registry.json)へ一意ID・出典・判定状態・後続ID・根拠・判定日を登録する。判断ログの見出しにも同じIDの安定アンカー（既存の`decision-d-001`と対応するHTMLアンカー形式）を付ける。既存判断を消さず、置換関係を付ける。
 4. **設計上の重要な選択**：代替案と長期的影響がある場合だけ[ADRテンプレート](../adr/template.md)を使う。提案→採用→置換の条件と証拠は[ADR運用](../adr/README.md)。利用者判断をADRへ重複コピーしない。
 5. **現行手順の変更**：[How-toの入口](README.md)に現行指示を置き、撤回した作業や固定結果の全文は[evidence](../evidence/README.md)へ保存する。歴史的「現在」「公開0件」を実行指示にしない。
 
