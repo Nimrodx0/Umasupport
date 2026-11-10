@@ -1,0 +1,37 @@
+name: One-time documentation remediation PR 384
+on:
+  push:
+    branches:
+      - docs/reorganize-navigation-and-phase-plans-20261110
+    paths:
+      - .github/workflows/docs-remediation-once.yml
+permissions:
+  contents: write
+jobs:
+  remediation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reclassify selected evidence and correct its backlinks
+        run: |
+          node --check poc/tools/remediate_docs_20261110_once.cjs
+          node poc/tools/remediate_docs_20261110_once.cjs
+          git add -A -- docs poc README.md AGENTS.md
+      - name: Preserve text, validate repository links, pinned references, decisions, and live inventory
+        run: |
+          node --test poc/tests/handoff_quality.test.cjs poc/tests/documentation_policy.test.cjs poc/tests/docs_integrity.test.cjs
+          node poc/tools/audit_doc_reorg.cjs --strict
+          node poc/tools/check_project_tracking.cjs
+          git diff --cached --check
+      - name: Commit docs and test changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: correct evidence classification, link provenance, and obsolete procedures"
+          git push origin HEAD:docs/reorganize-navigation-and-phase-plans-20261110
