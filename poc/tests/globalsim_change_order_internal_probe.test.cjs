@@ -36,23 +36,25 @@ test('direct internal signed difference is checked against both source rank buff
  for(const p of plans){
   const physical=Array.from({length:p.fieldSize},(_,i)=>[
    (p.fieldSize-i)*10,20,100,0.2,0,-1]);
-  const original={frames:[{t:1,horses:physical},{t:2,horses:physical}]};
+  const original={frames:[{t:0,horses:physical},{t:1,horses:physical},{t:2,horses:physical}]};
   const patched=physical.map((h,i)=>{
    const current=i+1,prev=i===0?2:i===1?1:current;
    return [...h.slice(0,4),current-prev,current*64+prev];
   });
   originals.push(original);
-  probes.push({frames:[{t:1,horses:patched},{t:2,horses:patched}]});
+  probes.push({frames:[{t:0,horses:physical},{t:1,horses:patched},{t:2,horses:patched}]});
  }
  const r=study.analyze(originals,probes,plans);
  assert.equal(r.status,'P2-GlobalSim-direct-cached-order-change-state-probe-only');
  assert.equal(r.rows.length,32);
  assert.equal(r.design.races,32);
+ assert.equal(r.observations.uninstrumentedRetailInitializationSamples,
+  plans.reduce((sum,p)=>sum+p.fieldSize,0));
  assert(r.observations.movedUpTicks>0);
  assert(r.observations.movedDownTicks>0);
  assert.equal(r.validation.allModelPhysicsColumnsIdentical,true);
  const corrupt=structuredClone(probes);
- corrupt[0].frames[0].horses[0][4]=7;
+ corrupt[0].frames[1].horses[0][4]=7;
  assert.throws(()=>study.analyze(originals,corrupt,plans),/condition formula/);
  const physics=structuredClone(probes);
  physics[0].frames[0].horses[0][0]+=0.5;
