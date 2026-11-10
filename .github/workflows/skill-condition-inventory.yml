@@ -6,6 +6,8 @@ on:
     paths:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
+      - 'poc/src/skill_condition_mixed_cohort.cjs'
+      - 'poc/tests/skill_condition_mixed_cohort.test.cjs'
       - 'poc/tests/skill_condition_research_triage.test.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
       - 'poc/tests/skill_condition_inventory.test.cjs'
@@ -42,6 +44,7 @@ jobs:
         run: |
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
+          node --check poc/src/skill_condition_mixed_cohort.cjs
           node --check poc/src/skill_condition_tags.js
           node --check poc/src/skill_condition_profiles.js
           node --check poc/tools/audit_skill_conditions.cjs
@@ -51,6 +54,7 @@ jobs:
           node --check poc/src/skill_style_tendency.js
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
+          node --test poc/tests/skill_condition_mixed_cohort.test.cjs
           node --test poc/tests/skill_condition_inventory.test.cjs poc/tests/skill_condition_profiles.test.cjs poc/tests/skill_condition_combinations.test.cjs poc/tests/skill_rank_timing.test.cjs poc/tests/skill_rank_timing_audit.test.cjs poc/tests/skill_style_tendency.test.cjs poc/tests/skill_style_review.test.cjs
       - name: Audit pinned skill registry and current published app model
         env:
@@ -74,6 +78,29 @@ jobs:
             t.appMatchedSkills>=0&&typeof t.group==='string'));
           console.log('P2 condition research triage complete:',JSON.stringify(x.summary,null,2));
           NODE
+      - name: Verify actual mixed rank/deferred source-path population
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const a=JSON.parse(fs.readFileSync('p2-mixed-rank-deferred-audit.json'));
+          assert.equal(a.schemaVersion,1);
+          assert.equal(a.mixedSkills,17);
+          assert.equal(a.sourceDenominator,818);
+          assert.equal(a.cases.length,17);
+          assert.equal(new Set(a.cases.map(x=>x.sourceNumericId)).size,17);
+          assert.equal(a.byRelation.sameAnd+a.byRelation.sameInvokeOnlyWithoutSameAnd+
+            a.byRelation.differentInvokeOnly,17);
+          assert(a.cases.every(x=>x.disposition==='hold-whole-skill-style-suitability'));
+          console.log(JSON.stringify({status:a.status,
+            mixedSkills:a.mixedSkills,byRelation:a.byRelation,
+            byDeferredType:a.byDeferredType},null,2));
+          NODE
+      - name: Upload read-only P2 mixed rank/deferred cohort audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-mixed-rank-deferred-cohort
+          path: p2-mixed-rank-deferred-audit.json
+          retention-days: 14
       - name: Upload bounded P2 condition research triage report
         if: always()
         uses: actions/upload-artifact@v4
