@@ -77,3 +77,14 @@ test('owner-approved cross-cutting docs track is reachable from project, plans a
  assert.match(plan,/個別.+発見時/);
  assert.match(plan,/複数.+一括改修/);
 });
+
+test('new cross-cutting track creation includes top-level discovery checklist',()=>{
+ const guide=read('docs/how-to/update-docs.md');
+ assert.match(guide,/新しい独立工程・トラックを設ける場合/);
+ for(const name of ['project/roadmap.md','project/README.md',
+  'plans/index.md','docs/index.md','AGENTS.md']){
+  assert.ok(guide.includes(name),'missing track-check entry: '+name);
+ }
+ assert.match(guide,/一情報・一正本/);
+ assert.match(guide,/不要な更新は強制しません/);
+});
