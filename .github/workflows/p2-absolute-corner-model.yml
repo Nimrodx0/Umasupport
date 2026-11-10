@@ -130,6 +130,8 @@ jobs:
           assert.equal(x.crossHeadcount.W['held-at-least-one-field-size'],218);
           assert.equal(x.crossHeadcount.W['strict-direction-reversed-between-field-sizes'],0);
           assert.equal(x.maximumAbsoluteSingleStyleW15SplitDeltaPoints,16.468879);
+          assert.equal(x.sharedMeasurementAudit.sourcePaths,32);
+          assert.equal(x.sharedMeasurementAudit.distinctMeasuredPathProfiles,14);
           console.log(JSON.stringify({
             W:x.axis.W.bySplitHalfStatus,O:x.axis.O.bySplitHalfStatus,
             crossHeadcountW:x.crossHeadcount.W,
