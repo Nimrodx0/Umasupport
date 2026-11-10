@@ -69,6 +69,15 @@ jobs:
           assert(x.observations.movedDownTicks>0);
           assert.equal(x.rows.length,32);
           const digest=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(digest,'ab601d3aaae6a789ad3bb6132c40dd2e72d914f42ffa3dd87ffff5cae1405b8f',
+           'Fixed 32-race model-state evidence drift');
+          assert.equal(x.validation.framePairs,41704);
+          assert.equal(x.validation.unchangedPhysicsColumns,1751724);
+          assert.equal(x.validation.exactRankDifferenceTicks,435558);
+          assert.equal(x.observations.movedUpTicks,2044);
+          assert.equal(x.observations.movedDownTicks,2096);
+          assert.equal(x.observations.unchangedRankTicks,431418);
+          assert.equal(x.observations.uninstrumentedRetailInitializationSamples,336);
           console.log(JSON.stringify({status:x.status,
            modelSHA256:digest,
            design:x.design,validation:x.validation,observations:x.observations},null,2));
