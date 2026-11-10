@@ -83,7 +83,15 @@ jobs:
             'source-rank-subcondition-only-not-skill-rating'));
           assert(x.contextCells.every(c=>c.W10mOpportunityPercent===null||
             c.OPointOccupancyPercent<=c.W10mOpportunityPercent+0.00001));
-          console.log('Derived research SHA256: '+crypto.createHash('sha256').update(bytes).digest('hex'));
+          const sha256=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(sha256,
+            '0ad669a4dca52ca652009a0702037281a2044bd7ba0c5d1a057a053b954df7bd',
+            'Fixed GlobalSim original source rank/corner study changed unexpectedly');
+          assert.equal(x.matchedContextCells,1632);
+          assert.equal(x.absoluteContextCells,576);
+          assert.equal(x.cornerContextCells,1056);
+          assert.equal(x.unresolvedContextCells,0);
+          console.log('Pinned derived research SHA256: '+sha256);
           console.log(JSON.stringify({
             status:x.status,simulations:x.simulations,
             candidatePaths:x.eligibleSourcePaths,
