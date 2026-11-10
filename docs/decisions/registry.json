@@ -11,15 +11,29 @@
   ],
   "entries": [
     {
+      "id": "D-042",
+      "date": "2026-11-10",
+      "heading": "2026-11-10：文書改善は個別不備を即時修正し、構造課題だけをまとめて改修する",
+      "status": "current",
+      "relation": [],
+      "note": "個別リンク・旧パスは発見時に修正。複数領域を同時に変更した方が合理的な構造課題だけをDトラックに蓄積",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-042",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-042",
+      "reviewedAt": "2026-11-10"
+    },
+    {
       "id": "D-041",
       "date": "2026-11-10",
       "heading": "2026-11-10：文書構成の改善を製品・研究から独立した継続トラックとして記録する",
-      "status": "current",
-      "relation": [],
-      "note": "文書改善を独立Dトラックで継続し、実開発で観測した問題・手戻りをIssue #388と計画へ記録。フォルダ移動自体を目的化しない",
+      "status": "qualified",
+      "relation": [
+        "D-042"
+      ],
+      "note": "文書改善の継続方針は維持。ただし個別不備も一律記録する運用は後続D-042で限定し、横断課題のみバッチ改善する",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-041",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-041",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-042",
       "reviewedAt": "2026-11-10"
     },
     {
