@@ -15,6 +15,7 @@ const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
+const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
 const get=async url=>{
@@ -60,6 +61,10 @@ function matchedRecord(skill,live,old){
  const relevant=inventory([...seen.values()]);
  const p2Triage=researchTriage.examine(whole,relevant,
   {matchedRecords:[...seen.values()]});
+ const mixed=mixedResearch.analyze([...seen.values()]);
+ if(mixed.mixedSkills!==p2Triage.summary.matchedSkillStructure.candidateAndDeferredMixed)
+  throw Error('P2 mixed cohort no longer matches independent triage population');
+
  const applied=profiles.attach(model,{skillText,pinnedSkillText:pinnedText});
  if(applied.matched!==relevant.shape.valid||
     applied.unavailable!==unknown.length||applied.noActivationRecord!==0)
@@ -164,6 +169,17 @@ function matchedRecord(skill,live,old){
  if(whole.shape.invalid||relevant.shape.invalid)
   throw Error('Unexpected malformed source skill predicates: '+whole.shape.invalid+'/'+relevant.shape.invalid);
  fs.writeFileSync('skill-condition-inventory-audit.json',JSON.stringify(report,null,2)+'\n');
+ fs.writeFileSync('p2-mixed-rank-deferred-audit.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},...mixed},
+   null,2)+'\n');
+ console.log('P2_MIXED_RANK_COHORT_SUMMARY_START');
+ console.log(JSON.stringify({mixedSkills:mixed.mixedSkills,
+  byRelation:mixed.byRelation,byDeferredType:mixed.byDeferredType,
+  cases:mixed.cases.map(c=>({sourceNumericId:c.sourceNumericId,
+   skillName:c.skillName,cohort:c.cohort,
+   allRankTypes:c.allRankTypes,allDeferredTypes:c.allDeferredTypes,
+   sameAndRows:c.sameAndRows}))},null,2));
+ console.log('P2_MIXED_RANK_COHORT_SUMMARY_END');
  fs.writeFileSync('p2-condition-research-triage.json',
   JSON.stringify({source:report.source,...p2Triage},null,2)+'\n');
  console.log('P2_CONDITION_TRIAGE_SUMMARY_START');
