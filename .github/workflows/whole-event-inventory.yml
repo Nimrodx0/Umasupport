@@ -154,9 +154,9 @@ on:
       - 'poc/tests/test_direct_historical_chain.py'
       - 'poc/tools/inspect_direct_historical_gaps.py'
       - 'poc/tests/test_targeted_historical_gaps.py'
-      - 'docs/phase2-whole-chain-topology-20261020.md'
+      - 'docs/evidence/events/phase2-whole-chain-topology-20261020.md'
       - '.github/workflows/whole-event-inventory.yml'
-      - 'docs/phase2-whole-event-intake-plan-20261020.md'
+      - 'docs/evidence/events/phase2-whole-event-intake-plan-20261020.md'
   push:
     branches: [main]
     paths:
