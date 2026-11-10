@@ -181,6 +181,15 @@ function matchedRecord(skill,live,old){
   null,2)+'\n');
  console.log('P2_RANK_CORNER_CANDIDATES_START');
  console.log(JSON.stringify(pilotCandidates.summary,null,2));
+ console.log('P2_RANK_CORNER_MEASURABLE_PATHS_START');
+ console.log(JSON.stringify(pilotCandidates.paths.filter(x=>x.feasibility!=='held-source-window-or-compound')
+  .map(x=>({id:x.sourceNumericId,candidate:x.candidate,
+   index:x.sourceCornerIndex,time:x.timingPredicates,
+   rank:x.rankPredicates,explicit:x.explicitPredicates,
+   other:x.otherAndTypes,side:x.side,
+   orCount:x.siblingORCount,preCount:x.preconditionsGroups,
+   invokes:x.invokeCount})),null,2));
+ console.log('P2_RANK_CORNER_MEASURABLE_PATHS_END');
  console.log('P2_RANK_CORNER_CANDIDATES_END');
  fs.writeFileSync('p2-mixed-rank-deferred-audit.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},...mixed},
