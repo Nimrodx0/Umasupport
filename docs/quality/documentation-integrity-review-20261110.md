@@ -26,7 +26,7 @@
 
 ## 4. 方法論の適用
 
-- [Diátaxis／WBS／ADR／Docs as Codeの対応表](../documentation-methodology.md)を追加。
+- [Diátaxis／WBS／ADR／Docs as Codeの対応表](../governance/documentation-methodology.md)を追加。
 - 工程は[WBS Dictionary](../plans/wbs-dictionary.md)で成果物・依存関係・終了条件を定義。
 - [ADR](../adr/README.md)は決定記録用の形式とし、未承認の提案を採用済みと断定しません。
 
@@ -35,3 +35,7 @@
 リンクの構造が通ることや数値トークンが一致することは、**読者にとっての意味の完全一致**、現行ゲームでの事実性、外部素材の利用権まで証明するものではありません。また個別文書の長い段落や時系列追記は、原文を維持した上で今後さらに編集できます。
 
 検証対象の分母、見出し階層、文書種別ごとの残課題は[文書構成レビュー台帳](document-review-inventory-20261110.md)にも整理します。
+
+## 第二段階：docs直下の25文書を責務別に分類（2026-11-10）
+
+旧docs直下の現行文書25件をproject/reference/how-to/decisions/explanation/governance/quality/history/evidenceへ移動しました。本文の削除・要約は行わず、旧パスからの相対参照とプログラム内の正本パス、CIを更新しました。docs/index.mdのみをルートに残すテストを追加しました。変更前後の関係は本PRのGit差分で再現できます。

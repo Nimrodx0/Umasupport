@@ -1,31 +1,42 @@
-# 文書の入口
+# ウマサルタントの文書
 
-[README](../README.md)はアプリの概要、[AGENTS](../AGENTS.md)は開発原則です。ここは**情報を探すための入口**であり、実測値や仕様の正本ではありません。
+ここが文書の入口です。**docs直下にはこのindex.md以外のMarkdownを置きません。** 各ファイルは読者の目的と責任範囲に応じて整理しています。
 
-## まず知りたいこと
+## まず探すもの
 
-| 質問 | 読む文書 |
+| 知りたいこと | 文書 |
 | --- | --- |
-| 今どこまでできている？ | [開発状況](status.md) |
-| 次に何を作る？ | [ロードマップ](roadmap.md) |
-| P0～P5の下位計画と結果は？ | [詳細計画](plans/index.md) |
+| 何ができるアプリか | [現在有効な要件](reference/requirements.md) |
+| 今どこまで完成しているか | [現在の状況](project/status.md) |
+| 次に何を作るのか | [上位ロードマップ](project/roadmap.md) |
+| P0～P5の細かい研究工程と結果 | [研究計画](plans/skill-conditions/index.md) |
+| 仕様がそうなった理由 | [確定した判断](decisions/log.md) |
+| データの構造と取り込み方 | [技術リファレンス](reference/index.md) |
+| 実際の作業の手順 | [How-to](how-to/README.md) |
+| 実験や監査の根拠 | [固定研究の索引](evidence/catalog.md) |
 
-## 目的から探す
+## フォルダ一覧
 
-[初回演習](tutorials/first-session.md) ／ [文書更新手順](how-to/update-docs.md) ／ [技術リファレンス](reference/index.md) ／ [設計の解説](explanation/index.md) ／ [方法論と適用範囲](documentation-methodology.md) ／ [ADR](adr/README.md) ／ [WBS Dictionary](plans/wbs-dictionary.md)
+| フォルダ | 役割 |
+| --- | --- |
+| [project](project/README.md) | 現在の進捗と上位計画 |
+| [plans](plans/index.md) | 製品・研究の小工程、依存、受入基準 |
+| [reference](reference/index.md) | 有効要件、技術・データ・イベントの定義 |
+| [how-to](how-to/README.md) | 出典更新、イベント取込、公開審査などの手順 |
+| [tutorials](tutorials/first-session.md) | 初めての開発・確認演習 |
+| [explanation](explanation/index.md) | 設計や推定の根拠と限界 |
+| [decisions](decisions/index.md) | ユーザー判断、権利、出典選定の経緯 |
+| [adr](adr/README.md) | 設計上の重要判断（採用・提案を区別） |
+| [quality](quality/README.md) | 受入ゲート、文書の検証 |
+| [governance](governance/README.md) | 文書運用と設計方法論 |
+| [evidence](evidence/README.md) | 分野別の固定調査・監査 |
+| [history](history/README.md) | 継続して記録する開発・検証の履歴 |
+| [archive](archive/) | 凍結した過去の文書 |
 
-## 文書の地図
+## 正本と履歴の読み分け
 
-| 分類 | 入口 | 役割 |
-| --- | --- | --- |
-| 企画・工程 | [plans](plans/index.md) | 製品W1～W5・研究P0～P5の小工程、状態、成果と未完ゲート |
-| 要件・判断 | [requirements](requirements.md)／[decisions](decisions.md) | 有効な仕様・ユーザー判断と変更理由 |
-| 設計 | [architecture](architecture.md)／[event-schema](event-schema.md)／[data-sources](data-sources.md) | 技術・データ契約 |
-| 実装・検証 | [PoC手順](../poc/README.md)／[検証計画](verification-plan.md) | 起動方法・A/B/C受け入れ |
-| 研究・監査 | [evidence](evidence/README.md)／[主要証拠の索引](evidence-index.md) | 分野別の個別記録 |
-| 履歴 | [archive](archive/)／[開発履歴](development-history.md)／[検証履歴](verification-history.md) | 旧記録。当時の指示は現行指示ではない |
-| 文書の規則 | [documentation-policy](documentation-policy.md) | 保存先と更新ルール |
+有効な仕様は[requirements](reference/requirements.md)、現時点の検証結果は[status](project/status.md)、優先順位は[roadmap](project/roadmap.md)、実行可能な下位工程は[plans](plans/index.md)で扱います。
 
-## 食い違いがある場合
+過去の採用・撤回の理由は[decisions](decisions/log.md)、実験の数値や反例は[evidence](evidence/README.md)を参照します。日付の古い資料にある「現在」「次工程」は現行の指示ではありません。
 
-有効要件は[requirements](requirements.md)、現在の動作事実はコード・公開JSON・検証、優先順位は[roadmap](roadmap.md)、**細分化した計画と進捗**は[plans](plans/index.md)、日付付きの実測は[status](status.md)を確認してください。決定理由は[decisions](decisions.md)、研究の詳細は[evidence](evidence/README.md)から辿れます。
+[リポジトリ全体のREADME](../README.md) ／ [開発者向けAGENTS](../AGENTS.md)

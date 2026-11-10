@@ -1,13 +1,13 @@
 # 旧ゲームマスターの `disp_order` 候補とスキルID `201012` の照合
 
 > **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../reference/data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
-実施：2026-10-17（JST）　関連：[Phase 1](../../roadmap.md) / [通常ヒント独立照合](independent-card-hint-audit.md) / [過去マスターによる金白検証](historical-master-audit.md)
+実施：2026-10-17（JST）　関連：[Phase 1](../../project/roadmap.md) / [通常ヒント独立照合](independent-card-hint-audit.md) / [過去マスターによる金白検証](historical-master-audit.md)
 
 ## 資料と目的
 
-ゲーム内の標準スキル表示順を目指す仕様[F-05](../../requirements.md#f-05-スキル一覧比較ui)について、`disp_order`が実際にどの範囲のスキルで取得できるか、同じ値を持つスキルが何件あるかを調べる。さらに、[通常ヒント監査](independent-card-hint-audit.md)で見つかったUmaSim数値スキル辞書の欠損 `201012` の実ゲームマスターにおける存在を確認する。
+ゲーム内の標準スキル表示順を目指す仕様[F-05](../../reference/requirements.md#f-05-スキル一覧比較ui)について、`disp_order`が実際にどの範囲のスキルで取得できるか、同じ値を持つスキルが何件あるかを調べる。さらに、[通常ヒント監査](independent-card-hint-audit.md)で見つかったUmaSim数値スキル辞書の欠損 `201012` の実ゲームマスターにおける存在を確認する。
 
 - 現行寄りの入力：[UmaSim `skill_data.txt` 2026-10-13](https://github.com/mee1080/umasim/blob/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt)（固定コミット`cf9366f6...`、2,139スキル）。
 - 歴史的な照合資料：[SimpleSandmanの `master.mdb` 2025-10-10](https://github.com/SimpleSandman/UmaMusumeMetaMasterMDB/tree/5a8ec1356859a35e245edef0d40da740e652df68/master)（固定コミット`5a8ec135...`、スキル1,847）。

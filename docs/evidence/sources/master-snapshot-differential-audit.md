@@ -1,7 +1,7 @@
 # 旧・新ゲームマスターSQLiteの差分監査器（Phase 2）
 
 > **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../reference/data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
 更新：2026-10-17。**仕組み実装と人工データ検証のみ。2026年現行ゲームの新しいSQLiteを入手したという意味ではない。**
 
@@ -43,4 +43,4 @@ python3 poc/tools/compare_event_master_snapshots.py \
 
 2026年10月17日時点、2025年固定版より新しく、検証可能な数値ID・ハッシュと再利用条件を兼ね備えたmaster.mdbの公開取得元を本工程では**確定していない**。第三者のツールが「手元のmaster.mdbを読める」と記載することは、そのmaster.mdb本体を安全に再取得できることや、ゲームの現行版と同じことの証拠にはならない。[SimpleSandmanの保存リポジトリ](https://github.com/SimpleSandman/UmaMusumeMetaMasterMDB) は2025年に運用を終了した旨を記載。新しいSQLiteの入手条件が整うまでBゲートは未通過。
 
-関連：[ロードマップ](../../roadmap.md)、[検証基準](../../verification-plan.md)。公開DBの実イベント0件、Phase 2未完了を維持。
+関連：[ロードマップ](../../project/roadmap.md)、[検証基準](../../quality/verification-plan.md)。公開DBの実イベント0件、Phase 2未完了を維持。

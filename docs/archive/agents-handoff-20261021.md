@@ -1,5 +1,5 @@
 > **履歴保存版（2026-10-21）。現在の仕様・AI指示・進捗の正本ではありません。**
-> 元の位置：`AGENTS.md`。現行入口は [文書索引](../index.md) / [文書運用規約](../documentation-policy.md)。旧決定・旧数値は当時の記録であり、現在の方針と相違する場合があります。移動したためローカルリンクのみ相対パスを調整しています。
+> 元の位置：`AGENTS.md`。現行入口は [文書索引](../index.md) / [文書運用規約](../governance/documentation-policy.md)。旧決定・旧数値は当時の記録であり、現在の方針と相違する場合があります。移動したためローカルリンクのみ相対パスを調整しています。
 
 ---
 
@@ -31,7 +31,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 
 ## 【最優先・2026-10-19後刻】連続イベント内の選択肢依存・打ち切りを再現する
 
-ユーザーからの最新の明示指示は **「発生条件は不要。ただし連続イベントで何を選んだかによって後に選べる選択肢や獲得できる報酬が変わるなら、ウマサルタント上でも分岐を再現する」**。先行する同日PR #105等の「連続途中の到達条件・打ち切りは収録必須でない」を、この点について訂正。正本は [要件定義](../../docs/requirements.md) と [意思決定](../../docs/decisions.md) の「同日後刻」追記。
+ユーザーからの最新の明示指示は **「発生条件は不要。ただし連続イベントで何を選んだかによって後に選べる選択肢や獲得できる報酬が変わるなら、ウマサルタント上でも分岐を再現する」**。先行する同日PR #105等の「連続途中の到達条件・打ち切りは収録必須でない」を、この点について訂正。正本は [要件定義](../reference/requirements.md) と [意思決定](../decisions/log.md) の「同日後刻」追記。
 
 - **対象外：** 絆・ターン・レース・確率等、実ゲーム内でそのイベントがいつ起きるかの外部トリガー。
 - **必須：** 連続イベント内の先行選択肢→次段階/別イベント/利用可能選択肢/報酬の分岐、打ち切り。前段変更で到達不可になった後続の選択とスキル報酬は削除・非計上。成果判定はA/B/終了の別経路と前段変更のCI回帰テスト。
@@ -41,11 +41,11 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 
 ## 2026-10-19：イベントの取得・利用条件の解除方針（PR #97）
 
-[取得方法と利用許可の意思決定](../../docs/event-data-acquisition-rights-20261019.md)を正本とする。事実データ（ヒントLv・カードID・スキルID等）と第三者の文章・画像の著作物性を混同しない。またGameWith.jp利用規約による大量自動アクセスの条件は著作権上の扱いとは**独立**。英語版gamewith.netの創作許諾はgamewith.jpに適用されない。**GameWithの大規模GETは正式な許可・範囲が確定するまで実行しない**。記事・メディア問い合わせ窓口と具体的な質問を上記文書に記載。許可がなくても既存Checker候補の構造統計・UmaSim実ID検査・Wiki数値照合などの既存オフライン作業を止める理由にはならない。ただし第三者出典の大量データを権利未確認で本番DBへ無審査転用しない。563枚を1枚ずつ手入力する方式には戻さず、一括処理＋例外だけ人手審査を主軸とする。
+[取得方法と利用許可の意思決定](../decisions/event-data-acquisition-rights-20261019.md)を正本とする。事実データ（ヒントLv・カードID・スキルID等）と第三者の文章・画像の著作物性を混同しない。またGameWith.jp利用規約による大量自動アクセスの条件は著作権上の扱いとは**独立**。英語版gamewith.netの創作許諾はgamewith.jpに適用されない。**GameWithの大規模GETは正式な許可・範囲が確定するまで実行しない**。記事・メディア問い合わせ窓口と具体的な質問を上記文書に記載。許可がなくても既存Checker候補の構造統計・UmaSim実ID検査・Wiki数値照合などの既存オフライン作業を止める理由にはならない。ただし第三者出典の大量データを権利未確認で本番DBへ無審査転用しない。563枚を1枚ずつ手入力する方式には戻さず、一括処理＋例外だけ人手審査を主軸とする。
 
 ## 2026-10-19：417枚の一括候補をウマサルタントの独自DBに永続化（PR #100）
 
-[正本](../../docs/checker-persistent-candidate-database.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
+[正本](../reference/checker-persistent-candidate-database.md)。`poc/data/candidates/checker_event_hints.v1.json` はSSR/SR全417カード・2,109イベント候補の数値ID、ヒントLv、選択肢序数、未解決のスキル事実、出典コミット/SHA、P0/P1/P2レビューキューを持つ**未承認候補DB**。元イベントタイトル・選択肢文章・効果文・画像は含まれない。数値照合できた1,406ヒント記載、未照合98、優先レビュー344。`poc/src/checker_candidate_database.cjs` の厳格スキーマと `poc/tools/build_checker_candidate_database.cjs` の固定4資料オフライン再生成、`poc/tools/query_checker_candidate_database.cjs` のカードID検索を利用する。**`forSkillGrant:false` を維持、`reviewed_events.v1.json` に紛れ込ませない。** GameWith本人許諾・ゲーム内のイベント分岐／連続条件・再利用条件の検証は独立の残課題。通常公開0件のまま。
 
 ## 2026-10-19：全2,109イベント候補の経路状態と歴史マスター照合（PR #101）
 
@@ -65,7 +65,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 
 ## 2026-10-19：優先仕様を「選択肢→結果→スキル／ヒントLv」に変更
 
-最新ユーザー指示は [requirements.md](../../docs/requirements.md) と [decisions.md](../../docs/decisions.md) の2026-10-19追記が正本。**実ゲームでのイベント出現条件、連続イベントの打ち切りと次段階への到達、成功確率、ゲーム内実証を必須の獲得経路DB取り込み条件にしない。** 必要なのはカードとイベント候補を識別したうえで「どの選択肢→どの結果（記載がある場合のみ）→どの数値スキルIDとヒントLvか」の正確な表。獲得に結果差があれば分岐を保持し、未記載の分岐を捏造して無条件にしない。編集用の provenance・未確認条件は内部のまま、利用者向けの余計なゲートバッジ不要。
+最新ユーザー指示は [requirements.md](../reference/requirements.md) と [decisions.md](../decisions/log.md) の2026-10-19追記が正本。**実ゲームでのイベント出現条件、連続イベントの打ち切りと次段階への到達、成功確率、ゲーム内実証を必須の獲得経路DB取り込み条件にしない。** 必要なのはカードとイベント候補を識別したうえで「どの選択肢→どの結果（記載がある場合のみ）→どの数値スキルIDとヒントLvか」の正確な表。獲得に結果差があれば分岐を保持し、未記載の分岐を捏造して無条件にしない。編集用の provenance・未確認条件は内部のまま、利用者向けの余計なゲートバッジ不要。
 
 公開GitHub（Checker/Cruise/UmaSim等）は**単なる事実データを抽出・加工・相互照合してウマサルタント独自DB化する**ことを進める。元の文章・画像・創作的DB構成をそのまま複製しない。単純数値データへの一律転載許可取得を開発停止条件にしない。GameWithは従来どおり個別補助参照＋数値不一致の優先基準として利用可能。大量自動GETや文章転載は別問題として扱い、必要になった場合に限り条件を評価する。旧イベントスキーマの`requires`／`terminal`ゲートを新規ゲームデータ収録へ強制しない。**主眼は使えるイベントスキル候補データを蓄積すること。**
 
@@ -76,11 +76,11 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 ## 最初に読む順序
 
 1. [README.md](../../README.md)：公開版・現在の状態と各文書の入口。
-2. [docs/requirements.md](../../docs/requirements.md)：要件・対象外・受け入れ条件。
-3. [docs/roadmap.md](../../docs/roadmap.md)：6フェーズ、順序、現在位置、完了ゲート。
-4. [docs/verification-plan.md](../../docs/verification-plan.md)：機構／データ網羅／実ブラウザの独立検証。
-5. [docs/architecture.md](../../docs/architecture.md)、[docs/runtime-data-loading.md](../../docs/runtime-data-loading.md)、[poc/README.md](../../poc/README.md)：現行コード・データ取得・テスト手順。
-6. 必要なときだけ [docs/decisions.md](../../docs/decisions.md)、[docs/development-history.md](../../docs/development-history.md)、関連データ監査文書・Issueへ進む。
+2. [docs/reference/requirements.md](../reference/requirements.md)：要件・対象外・受け入れ条件。
+3. [docs/project/roadmap.md](../project/roadmap.md)：6フェーズ、順序、現在位置、完了ゲート。
+4. [docs/quality/verification-plan.md](../quality/verification-plan.md)：機構／データ網羅／実ブラウザの独立検証。
+5. [docs/reference/architecture.md](../reference/architecture.md)、[docs/reference/runtime-data-loading.md](../reference/runtime-data-loading.md)、[poc/README.md](../../poc/README.md)：現行コード・データ取得・テスト手順。
+6. 必要なときだけ [docs/decisions/log.md](../decisions/log.md)、[docs/history/development-history.md](../history/development-history.md)、関連データ監査文書・Issueへ進む。
 
 **仕様変更**はrequirements＋decisions、**工程・ゲート変更**はroadmap＋verification-plan、**実装・検証の実績**はdevelopment-history・個別監査・Issueへ記録。似た進捗文を複数ファイルへ重複追加しない。
 
@@ -95,7 +95,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 - イベント：SSR・SR417の候補表記対応は完了。候補イベント2,099件。ソース上イベント記録0件のSSRが5枚。**公開イベントDBの実ゲームイベントは0件**。入力候補はUmaUmaChecker、欠損／新規はGameWith個別資料。U-toolsは当面使用しない。
 - 独自イベント公開DB：`poc/data/reviewed_events.v1.json`。元の効果文をそのまま配布せず、イベントID・分岐・報酬スキルID・公開可否を別々に検証して承認したレコードだけを反映。
 - **2026-10-18現在の追加実装**：レビュー変換器は `chainVerified`、`rewardSemanticsVerified`、`selectionSemanticsVerified`、`publicationReviewed` をすべて要求。結果分岐の成功／大成功は `outcomes` に別々に記録し、同位置に無条件 `rewards` を同時記録することを禁止。Checker候補で選択肢が2件以上のとき `type:auto` への平坦化を禁止。公開イベントJSONの実イベントは引き続き**0件**。
-- **公開前の最終ゲート（PR #70）**：`poc/config/event-release-approvals.v1.json` と実際の公開JSONを `node poc/tools/verify_event_release.cjs` で照合。全イベントのカードID・イベントID・SHA・6種類の根拠リンク・公開判断が一致しなければCIで拒否。**自動CIの合格は根拠そのものの独立性・ゲーム内正確性・転載権利を証明しない**。詳細は [公開手順](../../docs/checker-public-catalog.md) と [30311監査](../evidence/events/unreviewed-event-numeric-candidate-audit.md)。
+- **公開前の最終ゲート（PR #70）**：`poc/config/event-release-approvals.v1.json` と実際の公開JSONを `node poc/tools/verify_event_release.cjs` で照合。全イベントのカードID・イベントID・SHA・6種類の根拠リンク・公開判断が一致しなければCIで拒否。**自動CIの合格は根拠そのものの独立性・ゲーム内正確性・転載権利を証明しない**。詳細は [公開手順](../how-to/checker-public-catalog.md) と [30311監査](../evidence/events/unreviewed-event-numeric-candidate-audit.md)。
 - 旧v8.1の全実データ同梱HTMLはPublicに存在せず、再ビルド用旧入力は一部未移管。現行PoCと混同しない。
 
 ## 守るべきルール
@@ -108,7 +108,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 6. ユーザー用のデータ更新ボタンは作らない。通常ヒント・スキル辞書は起動時直接取得＋IndexedDB検証済みキャッシュ。イベントは独自公開JSON。通常CIに頻繁な外部GETを追加しない。
 7. 設定不正は確認付き初期化まで保存値を上書きしない。一般利用者不在の開発段階では旧ユーザー設定の保存ID・スキーマ互換を維持しない。ゲームデータのID照合は厳密に続ける。
 8. 構文・人工データ回帰、公開元を使う限定的な実ソース検証、Pages実ブラウザ操作を区別して結果を記録する。実施していないものを「検証済み」と言わない。
-9. 公開イベントの承認は `poc/src/event_review_compiler.js`、`poc/src/checker_candidate_pipeline.cjs`、`poc/src/public_event_catalog.js`、[レビュー仕様](../../docs/checker-public-catalog.md)に従う。最終的に `node poc/tools/verify_event_release.cjs` を必ず実行。依存・打ち切り・結果別報酬・ID・公開権利の未承認レコードを自動実装しない。
+9. 公開イベントの承認は `poc/src/event_review_compiler.js`、`poc/src/checker_candidate_pipeline.cjs`、`poc/src/public_event_catalog.js`、[レビュー仕様](../how-to/checker-public-catalog.md)に従う。最終的に `node poc/tools/verify_event_release.cjs` を必ず実行。依存・打ち切り・結果別報酬・ID・公開権利の未承認レコードを自動実装しない。
 10. 変更によってソース版・例外が変わった場合は、旧監査値を現行網羅率として再利用しない。
 
 ## ユーザーとの作業連携（2026-10-17）
@@ -133,7 +133,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 - 直接取得の技術検証は `poc/tests/runtime.test.cjs`、金白の全件監査は `poc/tools/audit_skill_groups.cjs`、イベント候補は `poc/tools/build_checker_catalog.cjs`。オンライン実行は原則手動。
 - リポジトリのPRには該当Issue、差分、再現手順と三軸ゲートのPass／Fail／未実施を記載し、未通過であれば残件を引き継ぐ。
 
-**次の優先作業**：[近時点の独立金白照合](../evidence/sources/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。残る1組の数値IDの独立検証、Android/Windows実端末、Phase 1のカード・性能・表示順の全件監査は未完。[Pages Chromium実測](../evidence/quality/pages-browser-acceptance-20261017.md)を参照。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](../../docs/roadmap.md)参照。
+**次の優先作業**：[近時点の独立金白照合](../evidence/sources/independent-skill-json-audit.md)では322候補中321組が双方向ID・昇格順一致、残りの「抜山蓋世→規格外」はGameWithで名称対応確認。残る1組の数値IDの独立検証、Android/Windows実端末、Phase 1のカード・性能・表示順の全件監査は未完。[Pages Chromium実測](../evidence/quality/pages-browser-acceptance-20261017.md)を参照。並行してPhase 2のイベントの全件性・分岐・報酬・公開条件を照合する。[ロードマップ](../project/roadmap.md)参照。
 
 ## 2026-10-17の追加引き継ぎ
 
@@ -181,7 +181,7 @@ Phase 2③に続く監査サンプルは `poc/data/candidates/editorial_branch_c
 
 [受け入れ正本](../evidence/quality/card-route-search-acceptance.md)。`poc/src/card_search.js`は純粋検索関数で、`sourceStatus=verified_hints*` のカードの0～4凸の照合済みヒントIDと、公開イベント台帳で承認された`card.events`のスキルIDのみを検索に使う。`referenceSkills`やChecker候補・未承認イベントは混ぜない。所持一覧・編成ピッカーの複合絞り込みを共有し、ピッカー120枚固定から120枚/ページ方式へ。検索は到達や獲得確率の証明ではない。実イベント公開0件、画像は略字表示のまま、Android/Windows実機未受入れ。
 
-[公式ゲーム画像の扱い](../../docs/card-image-rights-decision.md)：Cygamesのゲームプレイ静止画「共有サイト投稿」条件をサポカ画像の複製・GitHub再配布・外部CDN大量参照の包括許諾とみなさない。カードの略字アイコンを維持し、実画像グリッドは別ゲート未完として残す。
+[公式ゲーム画像の扱い](../decisions/card-image-rights-decision.md)：Cygamesのゲームプレイ静止画「共有サイト投稿」条件をサポカ画像の複製・GitHub再配布・外部CDN大量参照の包括許諾とみなさない。カードの略字アイコンを維持し、実画像グリッドは別ゲート未完として残す。
 
 ## 2026-10-18：スキル一覧の表示と全カード逆引き（PR #53）
 
@@ -229,7 +229,7 @@ See [settings merge acceptance](../evidence/quality/settings-import-merge-accept
 
 ## 2026-10-18：GameWith優先の追加決定（PR #73）
 
-ユーザーは、攻略サイト間でSSR30311の絆・体力報酬の数字が異なる場合、**GameWith掲載値を暫定正として採用**する方針を選択した。詳細は [意思決定ログ](../../docs/decisions.md)、[30311監査](../evidence/events/unreviewed-event-numeric-candidate-audit.md)、機械可読の `poc/config/event-source-priority.v1.json` を参照。Game8との不一致そのものはリリースブロッカーではない。GameWithに存在しない項目は未解決（他資料を黙って採用しない）。**優先ソースの指定は、正式ゲームのデータID・イベント分岐・成功率・公開再利用権限の独立承認ではない。** 実公開DBのイベント0件を維持。
+ユーザーは、攻略サイト間でSSR30311の絆・体力報酬の数字が異なる場合、**GameWith掲載値を暫定正として採用**する方針を選択した。詳細は [意思決定ログ](../decisions/log.md)、[30311監査](../evidence/events/unreviewed-event-numeric-candidate-audit.md)、機械可読の `poc/config/event-source-priority.v1.json` を参照。Game8との不一致そのものはリリースブロッカーではない。GameWithに存在しない項目は未解決（他資料を黙って採用しない）。**優先ソースの指定は、正式ゲームのデータID・イベント分岐・成功率・公開再利用権限の独立承認ではない。** 実公開DBのイベント0件を維持。
 
 ## 2026-10-18：SSR30311の開発用in-memoryプレビュー（PR #74）
 
@@ -255,7 +255,7 @@ See [settings merge acceptance](../evidence/quality/settings-import-merge-accept
 
 ## 2026-10-19：イベントの未確認事項をUIで細分化しない（利用者判断）
 
-**禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions.md`、`docs/evidence/sources/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
+**禁止するUI追加：** GameWith掲載条件／結果依存／進行条件未確認の3分類を、イベント・スキル一覧のバッジ／専用列／絞り込み／説明パネルとして実装しない。調査状況は `docs/decisions/log.md`、`docs/evidence/sources/efforia30311-preview.md`、必要な監査書類だけに記録する。利用者向け表示はスキル、ヒントLv、選択肢、成功・大成功など**経路の理解に直接必要なゲーム上の分岐**に留める。既存の試用版と正式版の区別に必要な最低限の注意書きは可。GameWith優先の内部方針・取得条件の調査残件・公開承認の必須要件は継続し、表示省略を無根拠な事実認定の口実にしない。
 
 ## 2026-10-19：45カード候補プレビュー導線（PR #80）
 
@@ -263,11 +263,11 @@ See [settings merge acceptance](../evidence/quality/settings-import-merge-accept
 
 ## 2026-10-19：イベント正本をGameWith-firstの独自DBへ移行（PR #81）
 
-最優先は[カード単位の独自収録工程](../../docs/curated-event-intake.md)。外部Tsuyuchan45枚124候補の試用は参照実験として維持するが、本番イベントデータの網羅率に加算**禁止**。新規のpoc/data/curation/source_index.v1.jsonはカードIDとGameWith記事URL・調査日・JSON草稿の索引。poc/src/curated_event_inventory.cjsとCLIが全カード母集団・数値スキル辞書・個別草稿の整合と未入力数を監査する。SSR30311 5件に加えR10016 2件の原稿を新規入力、正式ゲームイベントIDが未確認ならdraft_ IDを使い本番に自動昇格させない。公開JSONは0件。GameWith.jp利用条件の確認なく大量クローリング・記事や画像の再配布を開始しない。画面への検証ラベル追加も行わない。UmaSim通常ヒント・スキル辞書の直接取得は従来どおり。
+最優先は[カード単位の独自収録工程](../how-to/curated-event-intake.md)。外部Tsuyuchan45枚124候補の試用は参照実験として維持するが、本番イベントデータの網羅率に加算**禁止**。新規のpoc/data/curation/source_index.v1.jsonはカードIDとGameWith記事URL・調査日・JSON草稿の索引。poc/src/curated_event_inventory.cjsとCLIが全カード母集団・数値スキル辞書・個別草稿の整合と未入力数を監査する。SSR30311 5件に加えR10016 2件の原稿を新規入力、正式ゲームイベントIDが未確認ならdraft_ IDを使い本番に自動昇格させない。公開JSONは0件。GameWith.jp利用条件の確認なく大量クローリング・記事や画像の再配布を開始しない。画面への検証ラベル追加も行わない。UmaSim通常ヒント・スキル辞書の直接取得は従来どおり。
 
 ## 2026-10-19：R/SRの第一独自イベントデータ収録バッチ（PR #82）
 
-[出典と既知の欠損](../../docs/curated-event-intake.md)を参照。GameWith個別記事に直接当たり、固定UmaSimサポカIDに照合して、独自JSON草稿9枚24イベント。内訳 R6枚12、SR2枚7、SSR1枚5。GameWith原文は同梱しない。SR20029の通常イベント1件（「直線コース◯」）はID照合未完なので**草稿に入っていない**。ないことがゲームにない証明ではない。Rの取得選択肢位置とLv、SR打ち切り・連続進行は回帰テストで固定し、今後もGameWith・UmaSimと照合する。通常版のイベント公開0件と、外部候補45枚の試用は変更しない。新しい草稿は`poc/data/curation/source_index.v1.json`と各`drafts/*.json`へ入力し、CIの実ソース監査を合格させる。
+[出典と既知の欠損](../how-to/curated-event-intake.md)を参照。GameWith個別記事に直接当たり、固定UmaSimサポカIDに照合して、独自JSON草稿9枚24イベント。内訳 R6枚12、SR2枚7、SSR1枚5。GameWith原文は同梱しない。SR20029の通常イベント1件（「直線コース◯」）はID照合未完なので**草稿に入っていない**。ないことがゲームにない証明ではない。Rの取得選択肢位置とLv、SR打ち切り・連続進行は回帰テストで固定し、今後もGameWith・UmaSimと照合する。通常版のイベント公開0件と、外部候補45枚の試用は変更しない。新しい草稿は`poc/data/curation/source_index.v1.json`と各`drafts/*.json`へ入力し、CIの実ソース監査を合格させる。
 
 ## 2026-10-19：イベント用スキルの全辞書解決・未照合原稿（PR #83）
 
@@ -287,11 +287,11 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 
 ## 2026-10-19：GameWithオフライン収録器（PR #86）
 
-詳細 [docs/gamewith-offline-ingest.md](../../docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` はユーザーが合法的に用意したMarkdown/HTML/可読テキストを**ローカルからのみ**解釈し、通常イベント枝を候補JSONとして提案。 `batch_gamewith_import.py` は固定UmaSim全563枚のカードごとにソース紐付け・欠損・解析状態の一覧を作る。GameWithへのHTTP取得は一切実装していない。記事タイトル／レアリティ／SR,SSR二つ名を照合し、報酬名を全数値スキル辞書・補完台帳と突き合わせ、結果依存や連続分岐は自動獲得にせず要手動へ。CIは架空例によるPythonテスト。生ページのHTMLでの正常率は未検証。 `poc/inputs/` と `local-data/` はGit除外。元JSONを上書きするコードは禁止、元記事原文も同梱禁止。GameWith日本語規約のWeb参照では大規模取得の権利を確認できていないため全件GET未実施。既存草稿20枚47件・承認0件。
+詳細 [docs/how-to/gamewith-offline-ingest.md](../how-to/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` はユーザーが合法的に用意したMarkdown/HTML/可読テキストを**ローカルからのみ**解釈し、通常イベント枝を候補JSONとして提案。 `batch_gamewith_import.py` は固定UmaSim全563枚のカードごとにソース紐付け・欠損・解析状態の一覧を作る。GameWithへのHTTP取得は一切実装していない。記事タイトル／レアリティ／SR,SSR二つ名を照合し、報酬名を全数値スキル辞書・補完台帳と突き合わせ、結果依存や連続分岐は自動獲得にせず要手動へ。CIは架空例によるPythonテスト。生ページのHTMLでの正常率は未検証。 `poc/inputs/` と `local-data/` はGit除外。元JSONを上書きするコードは禁止、元記事原文も同梱禁止。GameWith日本語規約のWeb参照では大規模取得の権利を確認できていないため全件GET未実施。既存草稿20枚47件・承認0件。
 
 ## 2026-10-19：オフラインGameWith候補の連続・成功分岐解析（PR #87）
 
-詳細は [docs/gamewith-offline-ingest.md](../../docs/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` の `manualCandidates` に、SR連続各段・SSRの成功／大成功による異なる数値スキル／Lv報酬を保留データとして残す。公開 `proposal` へ昇格させず、到達条件・打ち切り・出典差は人手で確かめる。未処理の通常イベントによる仮IDの再採番を修正し、差分比較でイベントIDとresult treeを照合。テストは人工R/SR/SSRモデルのみ。実サイトの563枚一括HTTP取得やGameWith記事原文の再配布は禁止。
+詳細は [docs/how-to/gamewith-offline-ingest.md](../how-to/gamewith-offline-ingest.md)。 `poc/tools/import_gamewith_article.py` の `manualCandidates` に、SR連続各段・SSRの成功／大成功による異なる数値スキル／Lv報酬を保留データとして残す。公開 `proposal` へ昇格させず、到達条件・打ち切り・出典差は人手で確かめる。未処理の通常イベントによる仮IDの再採番を修正し、差分比較でイベントIDとresult treeを照合。テストは人工R/SR/SSRモデルのみ。実サイトの563枚一括HTTP取得やGameWith記事原文の再配布は禁止。
 
 ## 2026-10-19：SSR30003／SR20043の条件分岐実例追加（PR #88）
 
@@ -323,15 +323,15 @@ GameWithはR10073カレンチャンの後方釘付Lv+1を掲載。Wiki公開Game
 
 ## 2026-10-19：Rカード6枚の独自イベント草稿追加（PR #95）
 
-GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に各2通常イベント・合計12草稿を追加。いずれも非スキル効果・選択肢原文・イベント見出しをコピーせず、選択肢順とスキルヒント1件/カード（Lv+1）のみ編集用JSONに記録。正本 `poc/data/curation/source_index.v1.json` に6 URL、草稿 `drafts/10010.v1.json`〜`10015.v1.json` と回帰を追加。総計28枚68イベント、未着手535枚（R23/SR3/SSR2）、公開0件。ヒント名は固定UmaSimの実データ監査で検証し、未確認IDを推定しない。事実の出典・限界は `docs/curated-event-intake.md`。未確認バッジなどUIの分類追加は行わない。
+GameWith個別R記事と固定UmaSimカードIDを照合し、R10010〜10015に各2通常イベント・合計12草稿を追加。いずれも非スキル効果・選択肢原文・イベント見出しをコピーせず、選択肢順とスキルヒント1件/カード（Lv+1）のみ編集用JSONに記録。正本 `poc/data/curation/source_index.v1.json` に6 URL、草稿 `drafts/10010.v1.json`〜`10015.v1.json` と回帰を追加。総計28枚68イベント、未着手535枚（R23/SR3/SSR2）、公開0件。ヒント名は固定UmaSimの実データ監査で検証し、未確認IDを推定しない。事実の出典・限界は `docs/how-to/curated-event-intake.md`。未確認バッジなどUIの分類追加は行わない。
 
 ## 2026-10-19：Checker候補のローカル数値ヒント全件抽出（PR #98）
 
-`poc/src/checker_hint_fact_extract.cjs` は既存の `checker_candidate_pipeline.inventory` のカード照合結果を再利用して、ローカル入力内の選択肢ごとの観測ヒント名・数値スキルID・ヒントLvのみを出力する（ゲームのスキル一覧との同一性を確認）。イベント見出し・選択肢文・効果文を出力しない。成功・失敗などの分岐は手動確認のまま。CLIの外部GETなし、出力はGit除外の `local-data` または外部一時領域のみ。限定CIは公開GitHub上のChecker候補ファイルを単発で読んで一時領域で集計し、GameWithへアクセスしない。**内部候補の大量抽出成功≠第三者データの公開再利用許可・ゲーム内正確性・正式公開。** 詳細は `docs/event-data-acquisition-rights-20261019.md`。本番イベントDBは引き続き0件。
+`poc/src/checker_hint_fact_extract.cjs` は既存の `checker_candidate_pipeline.inventory` のカード照合結果を再利用して、ローカル入力内の選択肢ごとの観測ヒント名・数値スキルID・ヒントLvのみを出力する（ゲームのスキル一覧との同一性を確認）。イベント見出し・選択肢文・効果文を出力しない。成功・失敗などの分岐は手動確認のまま。CLIの外部GETなし、出力はGit除外の `local-data` または外部一時領域のみ。限定CIは公開GitHub上のChecker候補ファイルを単発で読んで一時領域で集計し、GameWithへアクセスしない。**内部候補の大量抽出成功≠第三者データの公開再利用許可・ゲーム内正確性・正式公開。** 詳細は `docs/decisions/event-data-acquisition-rights-20261019.md`。本番イベントDBは引き続き0件。
 
 ## 2026-10-19：一括候補の問題箇所だけを優先審査する（PR #99）
 
-`poc/src/checker_review_queue.cjs` は候補の**未解析・未照合IDをP0、条件付き報酬をP1、Checker／Cruiseのタイトル差と空カードをP2**に整理する。報告はイベント元文章に依存しない `cardId`、`sourceKey`、イベント・選択肢序数、診断原因だけで、全項目を `requiresIndependentReview:true` とする。カード単位の資料差を勝手に該当イベントへ紐付けない。2資料ともGameWith由来なので一致＝独立正確性の証明ではない。GitHub Actionsは一時領域の入力を使いログは集計のみ。GameWithへ自動GETしない。本番0件を維持。実施方法は `docs/event-data-acquisition-rights-20261019.md`。
+`poc/src/checker_review_queue.cjs` は候補の**未解析・未照合IDをP0、条件付き報酬をP1、Checker／Cruiseのタイトル差と空カードをP2**に整理する。報告はイベント元文章に依存しない `cardId`、`sourceKey`、イベント・選択肢序数、診断原因だけで、全項目を `requiresIndependentReview:true` とする。カード単位の資料差を勝手に該当イベントへ紐付けない。2資料ともGameWith由来なので一致＝独立正確性の証明ではない。GitHub Actionsは一時領域の入力を使いログは集計のみ。GameWithへ自動GETしない。本番0件を維持。実施方法は `docs/decisions/event-data-acquisition-rights-20261019.md`。
 
 ## 2026-10-21：GameTora基準DB・GameWith例外裁定（旧PR #121方針訂正）
 

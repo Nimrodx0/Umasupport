@@ -43,6 +43,7 @@ for(const {from,to} of moved){
    numberTokensMatch:JSON.stringify(numbered(before))===JSON.stringify(numbered(after)),
    oldLines:before.split('\n').length,newLines:after.split('\n').length});
 }
+const currentCanonical={"docs/architecture.md":"docs/reference/architecture.md","docs/checker-persistent-candidate-database.md":"docs/reference/checker-persistent-candidate-database.md","docs/data-sources.md":"docs/reference/data-sources.md","docs/event-adjudication-enforcement.md":"docs/reference/event-adjudication-enforcement.md","docs/event-schema.md":"docs/reference/event-schema.md","docs/requirements.md":"docs/reference/requirements.md","docs/reviewed-skill-hierarchy.md":"docs/reference/reviewed-skill-hierarchy.md","docs/runtime-data-loading.md":"docs/reference/runtime-data-loading.md","docs/card-image-rights-decision.md":"docs/decisions/card-image-rights-decision.md","docs/event-data-acquisition-rights-20261019.md":"docs/decisions/event-data-acquisition-rights-20261019.md","docs/event-source-selection.md":"docs/decisions/event-source-selection.md","docs/checker-public-catalog.md":"docs/how-to/checker-public-catalog.md","docs/curated-event-intake.md":"docs/how-to/curated-event-intake.md","docs/gamewith-offline-ingest.md":"docs/how-to/gamewith-offline-ingest.md","docs/upstream-refresh-operations.md":"docs/how-to/upstream-refresh-operations.md","docs/development-history.md":"docs/history/development-history.md","docs/verification-history.md":"docs/history/verification-history.md","docs/documentation-methodology.md":"docs/governance/documentation-methodology.md","docs/documentation-policy.md":"docs/governance/documentation-policy.md","docs/skill-activation-tendencies-design.md":"docs/explanation/skill-activation-tendencies-design.md","docs/roadmap.md":"docs/project/roadmap.md","docs/status.md":"docs/project/status.md","docs/verification-plan.md":"docs/quality/verification-plan.md","docs/decisions.md":"docs/decisions/log.md","docs/evidence-index.md":"docs/evidence/catalog.md"};
 const rootFiles=original.filter(x=>/^docs\/[^/]+\.md$/.test(x)&&core.has(path.basename(x)));
 const rootChanged=rootFiles.filter(p=>fs.existsSync(p)&&getOld(p)!==fs.readFileSync(p,'utf8')).map(p=>({path:p,oldBytes:Buffer.byteLength(getOld(p)),newBytes:fs.statSync(p).size}));
 const nonDocChanges=original.filter(x=>!x.endsWith('.md')&&fs.existsSync(x)&&getOld(x)!==fs.readFileSync(x,'utf8')&&/\.(?:cjs|js|json|yml|yaml)$/.test(x));
@@ -61,8 +62,8 @@ function orderedSubset(a,b){
  return {ok:k===before.length,matched:k,total:before.length,next:before[k]||null};
 }
 const shortened=new Set(['index.md','roadmap.md','status.md','documentation-policy.md']);
-const canonicalPreservation=rootFiles.filter(p=>!shortened.has(path.basename(p))&&fs.existsSync(p))
-  .map(p=>({file:p,...orderedSubset(getOld(p),fs.readFileSync(p,'utf8'))}));
+const canonicalPreservation=rootFiles.filter(p=>!shortened.has(path.basename(p)))
+  .map(p=>{const current=currentCanonical[p]||p;return {file:current,...(fs.existsSync(current)?orderedSubset(getOld(p),fs.readFileSync(current,'utf8')):{ok:false,reason:'missing canonical document'})};});
 const snapshots=[...shortened].map(n=>{
  const former='docs/'+n,stored='docs/archive/pre-reorganization-20261110/'+n;
  if(!fs.existsSync(stored))return {file:stored,ok:false,reason:'snapshot missing'};

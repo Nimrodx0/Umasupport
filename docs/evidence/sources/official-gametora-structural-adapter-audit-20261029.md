@@ -1,11 +1,11 @@
 # GameTora元サイトの構造別汎用変換診断：既存SSR3枚（2026-10-29）
 
 > **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../reference/data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
 ## 位置づけと目的
 
-この監査は、[汎用変換器の先行ゲート](../../verification-plan.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)の**途中証拠**であり、同ゲートの合格ではない。これまで実Chromeで検証した新SSR30322／30323の2枚だけでなく、表示形式の異なるカードでも、同じ `official_gametora_route_dom_extractor.cjs` と `official_gametora_live_event_assembler.cjs` を使えるかを観測する。新規カードの自動検出・公開・DB追記へは進まない。
+この監査は、[汎用変換器の先行ゲート](../../quality/verification-plan.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)の**途中証拠**であり、同ゲートの合格ではない。これまで実Chromeで検証した新SSR30322／30323の2枚だけでなく、表示形式の異なるカードでも、同じ `official_gametora_route_dom_extractor.cjs` と `official_gametora_live_event_assembler.cjs` を使えるかを観測する。新規カードの自動検出・公開・DB追記へは進まない。
 
 検証対象は[事前の旧固定構造別監査](official-gametora-existing-structural-cohorts-20261028.md)で選んだ既存SSR30030／30041／30080。旧固定資料は**構造差がありそうなカードの選定**にだけ使い、表示値や選択肢・結果の正解として、元サイト変換器の入力に混入しない。
 

@@ -1,10 +1,10 @@
 # 開発・実行・検証の入口（PoC）
 
-現行アプリは **HTML / CSS / JavaScript の静的サイト**です。通常の実行画面は [live.html](live.html)、主なUIは [src/live_app.js](src/live_app.js)、集計の純粋ロジックは [src/core.js](src/core.js)。Node.js 22以降は試験・データ処理に使います。現時点の実装範囲・検証状況は [status](../docs/status.md) に集約しています。
+現行アプリは **HTML / CSS / JavaScript の静的サイト**です。通常の実行画面は [live.html](live.html)、主なUIは [src/live_app.js](src/live_app.js)、集計の純粋ロジックは [src/core.js](src/core.js)。Node.js 22以降は試験・データ処理に使います。現時点の実装範囲・検証状況は [status](../docs/project/status.md) に集約しています。
 
 ## 作業を始める前に
 
-[文書の入口](../docs/index.md) → [ロードマップ](../docs/roadmap.md) → [有効な要件](../docs/requirements.md) → [アーキテクチャ](../docs/architecture.md) を対象に応じて確認します。イベントの公開条件とデータ出典は [公開ゲート](../docs/checker-public-catalog.md)・[データソース](../docs/data-sources.md) に従います。未承認のイベント候補は本番カタログに混ぜません。
+[文書の入口](../docs/index.md) → [ロードマップ](../docs/project/roadmap.md) → [有効な要件](../docs/reference/requirements.md) → [アーキテクチャ](../docs/reference/architecture.md) を対象に応じて確認します。イベントの公開条件とデータ出典は [公開ゲート](../docs/how-to/checker-public-catalog.md)・[データソース](../docs/reference/data-sources.md) に従います。未承認のイベント候補は本番カタログに混ぜません。
 
 ## ローカル起動
 
@@ -27,7 +27,7 @@ node poc/tools/verify_event_release.cjs
 node poc/tools/check_project_tracking.cjs
 ```
 
-これは**代表的なチェック**であり全CIと同等ではありません。その他のモジュール・ブラウザ・固定データ監査は [通常CI](../.github/workflows/ci.yml) と [検証計画](../docs/verification-plan.md) に従い、対象変更に合わせて実行します。A（機構）／B（データ）／C（実環境）の合格は個別に記録してください。
+これは**代表的なチェック**であり全CIと同等ではありません。その他のモジュール・ブラウザ・固定データ監査は [通常CI](../.github/workflows/ci.yml) と [検証計画](../docs/quality/verification-plan.md) に従い、対象変更に合わせて実行します。A（機構）／B（データ）／C（実環境）の合格は個別に記録してください。
 
 ## 主要ファイル
 
@@ -36,8 +36,8 @@ node poc/tools/check_project_tracking.cjs
 | 公開UI | [live.html](live.html)、[live_app.js](src/live_app.js) |
 | スキル・デッキの集計 | [core.js](src/core.js) |
 | 保存と移行 | [settings.js](src/settings.js) |
-| 公開イベントDB | [reviewed_events.v1.json](data/reviewed_events.v1.json)、[公開ゲート](../docs/checker-public-catalog.md) |
-| 構造・状態・外部取得 | [アーキテクチャ](../docs/architecture.md)、[ランタイム読込](../docs/runtime-data-loading.md) |
+| 公開イベントDB | [reviewed_events.v1.json](data/reviewed_events.v1.json)、[公開ゲート](../docs/how-to/checker-public-catalog.md) |
+| 構造・状態・外部取得 | [アーキテクチャ](../docs/reference/architecture.md)、[ランタイム読込](../docs/reference/runtime-data-loading.md) |
 | 旧v8.1のビルド・試験手順 | [旧開発手順](legacy-runbook.md)（履歴であり現行手順ではない） |
 
 コードを修正しても、公開カタログの更新やゲームデータの正確性・権利確認が自動で完了するわけではありません。

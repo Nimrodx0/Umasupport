@@ -4,7 +4,7 @@
 
 ## 1. 現行の仕様と状況を把握する
 
-[要件](../requirements.md)、[開発状況](../status.md)、[工程](../roadmap.md)を読み、コードにある機能とP2の研究用指標を区別します。
+[要件](../reference/requirements.md)、[開発状況](../project/status.md)、[工程](../project/roadmap.md)を読み、コードにある機能とP2の研究用指標を区別します。
 
 ## 2. ローカル起動する
 

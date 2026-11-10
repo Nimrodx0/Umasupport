@@ -8,7 +8,7 @@
 - 固定GameTora元：`systemless10/UmamusumePS@6e38b54af4fad397ff4491e63007a90705a4fe67`、対象10094(R佐岳メイ)、30160(SSR佐岳メイ)、30067、30081、30137の`events_ja`。
 - 固定Checker元：`Cilda/UmaUmaChecker@8cf9fcb3cc7239041161be75c84daf9f8f22d29f`、未照合P1の30067/10、30081/12、30137/10、30160/10。R10094はChecker対象外なのでRへのChecker元キーを創作しない。
 - 例外裁定源：GameTora[SSR佐岳メイ](https://gametora.com/ja/umamusume/supports/30160-mei-satake)／[R佐岳メイ](https://gametora.com/ja/umamusume/supports/10094-mei-satake)を確認後、GameWithの[温かなメッセージ](https://gamewith.jp/uma-musume/article/show/414606)、[労いのエール個別記事](https://gamewith.jp/uma-musume/article/show/414373)、[SSR佐岳メイ一覧](https://gamewith.jp/uma-musume/article/show/413773)、[R佐岳メイ一覧](https://gamewith.jp/uma-musume/article/show/414258)。
-- 出典優先の根拠：[機械的採用契約](../../event-adjudication-enforcement.md)、[直前の元タイトルSHA確認](phase2-p1-title-key-crosscheck-20261023.md)。
+- 出典優先の根拠：[機械的採用契約](../../reference/event-adjudication-enforcement.md)、[直前の元タイトルSHA確認](phase2-p1-title-key-crosscheck-20261023.md)。
 
 ## 1. 「温かなメッセージ」3件の訂正
 

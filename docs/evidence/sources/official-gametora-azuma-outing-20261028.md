@@ -1,11 +1,11 @@
 # SSR30323 吾妻のお出かけ解放・候補段階の限定出典照合（2026-10-28）
 
 > **資料の位置づけ**：外部出典・派生DBの照合（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../reference/data-sources.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
 ## 対象と境界
 
-この文書は新SSR30323の**お出かけの解放**という未収録の個別事実を、GameTora本体とGameWithの実掲載から照合した記録である。編集上の事実の採否は[GameTora→GameWith裁定契約](../../event-adjudication-enforcement.md)に従う。現行の元サイトからの技術取得実証は[新SSRの全パネル監査](official-gametora-choice-label-and-new-cards-20261027.md)に分離する。
+この文書は新SSR30323の**お出かけの解放**という未収録の個別事実を、GameTora本体とGameWithの実掲載から照合した記録である。編集上の事実の採否は[GameTora→GameWith裁定契約](../../reference/event-adjudication-enforcement.md)に従う。現行の元サイトからの技術取得実証は[新SSRの全パネル監査](official-gametora-choice-label-and-new-cards-20261027.md)に分離する。
 
 参照：
 - **GameTora本体**：[SSR30323 吾妻のサポカページ](https://gametora.com/ja/umamusume/supports/30323-azuma)、2026-10-28の限定Chrome検証。

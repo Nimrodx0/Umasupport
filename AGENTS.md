@@ -1,13 +1,13 @@
 # 開発エージェントへの指示
 
-このファイルは**担当者が変わっても維持する作業原則と必須の境界**を示します。時点依存の工程・件数・研究結果はここへ重複記載しません。詳細な保存先は [文書運用規約](docs/documentation-policy.md) を参照してください。
+このファイルは**担当者が変わっても維持する作業原則と必須の境界**を示します。時点依存の工程・件数・研究結果はここへ重複記載しません。詳細な保存先は [文書運用規約](docs/governance/documentation-policy.md) を参照してください。
 
-読み手を意識した記述方法は[文書設計の方法論](docs/documentation-methodology.md)と[文書更新の手順](docs/how-to/update-docs.md)を参照します。
+読み手を意識した記述方法は[文書設計の方法論](docs/governance/documentation-methodology.md)と[文書更新の手順](docs/how-to/update-docs.md)を参照します。
 
 ## 作業を再開する
 
-1. [README](README.md) と [文書の入口](docs/index.md) から、[現行ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、[詳細計画](docs/plans/index.md)の担当小工程・結果、関連するOpen Issueを確認する。
-2. [有効な要件](docs/requirements.md)、[意思決定の履歴](docs/decisions.md)、[設計](docs/architecture.md)を対象範囲に応じて読む。過去のPR・研究監査・[履歴](docs/archive/)を現在の指示と見なさない。
+1. [README](README.md) と [文書の入口](docs/index.md) から、[現行ロードマップ](docs/project/roadmap.md)、[開発状況](docs/project/status.md)、[詳細計画](docs/plans/index.md)の担当小工程・結果、関連するOpen Issueを確認する。
+2. [有効な要件](docs/reference/requirements.md)、[意思決定の履歴](docs/decisions/log.md)、[設計](docs/reference/architecture.md)を対象範囲に応じて読む。過去のPR・研究監査・[履歴](docs/archive/)を現在の指示と見なさない。
 3. 該当するコード・公開データ・テスト・CIを確認し、文書と現物の不一致を調査する。根拠不明の矛盾や利用者判断が必要な変更を推測で解決しない。
 
 ## 引き継ぎと変更
@@ -19,12 +19,12 @@
 ## 製品とデータの不変条件
 
 - デッキの獲得**候補**と実ゲームでの獲得確定、固定ソース内の変換とゲーム全体の網羅、数値事実の採用と正式公開の承認を混同しない。未確認・未収録・存在しない根拠付きを分ける。
-- サポカ・イベント・スキルは根拠付きの数値IDと構造で照合する。同名の異ID、金／白／○／◎、通常ヒントとイベント結果を無断で統合しない。イベントの選択・排他的結果・内部の分岐／継続・打ち切りを保持し、外部発生確率は推測しない。詳細は [要件](docs/requirements.md) と [イベントスキーマ](docs/event-schema.md)。
-- **現行のイベント収録主経路は構造化されたGameTora由来GitHub JSON**。疑義・欠損の具体的な数値裁定にはGameWithを用い、元GameTora HTMLの全面直接取得を前提にしない。既存DBの一括利用と例外管理が主工程で、既存データを無断で全件再生成・上書きしない。細かい出典優先順位・機械的採用条件は [データソース](docs/data-sources.md)・[イベント裁定契約](docs/event-adjudication-enforcement.md)・[ロードマップ](docs/roadmap.md)を参照する。
-- 承認のないイベント候補・第三者原文・画像は公開データに混ぜない。公開境界は [公開ゲート](docs/checker-public-catalog.md) と [権利・取得条件](docs/event-data-acquisition-rights-20261019.md) を参照する。外部取得が不正・欠損した場合、検証済みキャッシュと保存設定を安全に扱う。
+- サポカ・イベント・スキルは根拠付きの数値IDと構造で照合する。同名の異ID、金／白／○／◎、通常ヒントとイベント結果を無断で統合しない。イベントの選択・排他的結果・内部の分岐／継続・打ち切りを保持し、外部発生確率は推測しない。詳細は [要件](docs/reference/requirements.md) と [イベントスキーマ](docs/reference/event-schema.md)。
+- **現行のイベント収録主経路は構造化されたGameTora由来GitHub JSON**。疑義・欠損の具体的な数値裁定にはGameWithを用い、元GameTora HTMLの全面直接取得を前提にしない。既存DBの一括利用と例外管理が主工程で、既存データを無断で全件再生成・上書きしない。細かい出典優先順位・機械的採用条件は [データソース](docs/reference/data-sources.md)・[イベント裁定契約](docs/reference/event-adjudication-enforcement.md)・[ロードマップ](docs/project/roadmap.md)を参照する。
+- 承認のないイベント候補・第三者原文・画像は公開データに混ぜない。公開境界は [公開ゲート](docs/how-to/checker-public-catalog.md) と [権利・取得条件](docs/decisions/event-data-acquisition-rights-20261019.md) を参照する。外部取得が不正・欠損した場合、検証済みキャッシュと保存設定を安全に扱う。
 
 ## 検証と完了の表現
 
-- 変更の対象・母集団・例外・合格条件を事前に定め、[検証計画](docs/verification-plan.md) の **A 機構／B データ／C 実環境**を独立に評価する。単体・CI成功、固定データ監査、Pagesのブラウザ確認、物理端末の検証は相互に代替しない。
+- 変更の対象・母集団・例外・合格条件を事前に定め、[検証計画](docs/quality/verification-plan.md) の **A 機構／B データ／C 実環境**を独立に評価する。単体・CI成功、固定データ監査、Pagesのブラウザ確認、物理端末の検証は相互に代替しない。
 - 原則として Node.js 22以上と既存CIを利用する。必要な監査、権利・公開ゲートは対象作業に応じて実行し、未実施をPassとしない。開発の実施手順は [poc/README.md](poc/README.md) を参照する。
-- 変更によって仕様・現状・作業順・小工程・Issueが変わる場合は、[文書運用規約](docs/documentation-policy.md)に従い必要な記録を同期する。PRで検証した事実と、利用者の明示確認が必要な判断を区別する。
+- 変更によって仕様・現状・作業順・小工程・Issueが変わる場合は、[文書運用規約](docs/governance/documentation-policy.md)に従い必要な記録を同期する。PRで検証した事実と、利用者の明示確認が必要な判断を区別する。

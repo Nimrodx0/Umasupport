@@ -11,7 +11,7 @@
 - **正式公開イベント**：内部の技術変換・プレビューとは独立し、イベント公開審査と権利・正確性の確認が必要です。試験変換件数がそのままゲーム内の正確性・網羅性を表すことはありません。
 - **本文・画像の取扱い**：第三者のイベント原文、選択肢文章、画像、無承認のマスターDBはそのまま再配布しません。
 
-固定データの集計値や検証したコミットなど、**日付と出典に依存する内容は [開発状況](docs/status.md) に集約**しています。
+固定データの集計値や検証したコミットなど、**日付と出典に依存する内容は [開発状況](docs/project/status.md) に集約**しています。
 
 ## 開発版の試用
 
@@ -22,7 +22,7 @@
 
 ## 文書の入口
 
-**[文書索引](docs/index.md)** から、[工程別の詳細計画](docs/plans/index.md)と[分野別の研究・監査記録](docs/evidence/README.md)を辿れます。要件・決定・設計・進捗の正本もこちらから確認できます。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/roadmap.md)、[開発状況](docs/status.md)、対象の[研究・監査記録](docs/evidence-index.md)を確認してください。詳細なルールは [文書運用規約](docs/documentation-policy.md) にあります。
+**[文書索引](docs/index.md)** から、[工程別の詳細計画](docs/plans/index.md)と[分野別の研究・監査記録](docs/evidence/README.md)を辿れます。要件・決定・設計・進捗の正本もこちらから確認できます。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/project/roadmap.md)、[開発状況](docs/project/status.md)、対象の[研究・監査記録](docs/evidence/catalog.md)を確認してください。詳細なルールは [文書運用規約](docs/governance/documentation-policy.md) にあります。
 
 ## 開発と検証
 
@@ -34,4 +34,4 @@ node --test poc/tests/core.test.js poc/tests/events.test.cjs
 node --test poc/tests/documentation_policy.test.cjs
 ```
 
-通常CIは [PoC Core Tests](.github/workflows/ci.yml)。固定GameTora全件の検証は [専用ワークフロー](.github/workflows/whole-event-inventory.yml)。ブラウザ・物理端末での確認は[検証計画](docs/verification-plan.md)の別ゲートです。
+通常CIは [PoC Core Tests](.github/workflows/ci.yml)。固定GameTora全件の検証は [専用ワークフロー](.github/workflows/whole-event-inventory.yml)。ブラウザ・物理端末での確認は[検証計画](docs/quality/verification-plan.md)の別ゲートです。

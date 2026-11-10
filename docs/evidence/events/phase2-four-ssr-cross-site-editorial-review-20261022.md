@@ -36,7 +36,7 @@ GameWithの[30319カード記事](https://gamewith.jp/uma-musume/article/show/57
 
 [GameWith30321](https://gamewith.jp/uma-musume/article/show/578817)では連続2・3は選択肢なしと明記。一方、[コミュニティーWiki](https://wikiwiki.jp/vip_umamusu/%E3%83%89%E3%82%A5%E3%83%A9%E3%83%A1%E3%83%B3%E3%83%86%E3%80%90%E2%80%9C%E6%9C%80%E5%BC%B7%E2%80%9D%E3%81%AA%E3%82%8B%E7%9C%B7%E5%B1%9E%E3%80%91)の「選択肢A/B」「成功/失敗」には、個別の選択文や数値効果がなく「ステ増減」とだけ記載されている。**未完成の汎用記入欄の可能性が高く、独立した競合分岐の証拠として使えない**。[ゲームエイト30321](https://game8.jp/umamusume/818829)は現時点でランダムイベントのみ記載し、連続2・3の詳細を独立確認できない。[GameToraサイト](https://gametora.com/ja/umamusume/supports/30321-duramente)は連続見出しまでは掲載しているが展開後の選択結果を本調査では直接取得できない。
 
-**当初の判断（PR #153、後に訂正）**：第二の直接資料を必要として2件を保留した。しかしこれは [GameToraを基準・GameWithを例外裁定元とする決定](../sources/gametora-baseline-event-policy-20261021.md) および [GameWithの掲載値を優先する決定](../../decisions.md) にない追加要件であり、**誤った運用だった**。以下の後続裁定が優先される。
+**当初の判断（PR #153、後に訂正）**：第二の直接資料を必要として2件を保留した。しかしこれは [GameToraを基準・GameWithを例外裁定元とする決定](../sources/gametora-baseline-event-policy-20261021.md) および [GameWithの掲載値を優先する決定](../../decisions/log.md) にない追加要件であり、**誤った運用だった**。以下の後続裁定が優先される。
 
 **当初の計測（PR #153時点、後続裁定により廃止）**：掲載構造整合18件、選択／結果の未決2件。**現在の有効値は下記「GameWithを採用値とする訂正」参照。**
 ## GameWithを採用値とする訂正：30321連続2・3（2026-10-22、PR #164）

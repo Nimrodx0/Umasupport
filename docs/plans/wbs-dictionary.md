@@ -1,6 +1,6 @@
 # WBS Dictionary：工程ごとの成果物・依存・受入基準
 
-[上位工程](../roadmap.md) ／ [詳細計画](index.md) ／ [検証ゲート](../verification-plan.md)
+[上位工程](../project/roadmap.md) ／ [詳細計画](index.md) ／ [検証ゲート](../quality/verification-plan.md)
 
 WBSは成果物に基づく分解です。詳細ページの小工程は成果物を得るための**作業**も含みますが、下表では各親工程が何を完成させるかを定義します。
 

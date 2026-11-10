@@ -2,7 +2,7 @@
 
 - **状態**：提案。PRレビュー中であり、利用者の確定判断とはしません。
 - **記録日**：2026-11-10
-- **関連**：[方法論](../documentation-methodology.md)／[PR #384](https://github.com/Nimrodx0/Umasupport/pull/384)
+- **関連**：[方法論](../governance/documentation-methodology.md)／[PR #384](https://github.com/Nimrodx0/Umasupport/pull/384)
 
 ## 背景
 

@@ -1,7 +1,7 @@
-<!-- Preservation snapshot: original docs/roadmap.md as of 1e366e2e5513d19171606b77b16a59a06c1f2e3a, with local links rebased. Do not treat historical "current" claims as current. -->
+<!-- Preservation snapshot: original docs/project/roadmap.md as of 1e366e2e5513d19171606b77b16a59a06c1f2e3a, with local links rebased. Do not treat historical "current" claims as current. -->
 # 開発ロードマップ
 
-この文書は**未完の作業順と完了条件だけ**を記す正本です。達成数と最新の検証結果は [開発状況](../../status.md)、旧工程・当時の未公開前提は [2026-11-05以前のロードマップ全文](../roadmap-through-20261105.md) に保存しています。旧文書に残る「次工程」を現行指示と解釈しません。
+この文書は**未完の作業順と完了条件だけ**を記す正本です。達成数と最新の検証結果は [開発状況](../../project/status.md)、旧工程・当時の未公開前提は [2026-11-05以前のロードマップ全文](../roadmap-through-20261105.md) に保存しています。旧文書に残る「次工程」を現行指示と解釈しません。
 
 ## 目的と判定
 
@@ -13,11 +13,11 @@
 | B：データ | 出典の版・ID・結果・公開承認と保留理由が対応し、未収録をゼロ報酬と誤認しない |
 | C：実環境 | Pages、Windows／Android物理端末の表示・操作、通信失敗・復帰・設定復元を独立検証 |
 
-合否基準は [verification-plan.md](../../verification-plan.md)。CIやChromiumが通っても、現ゲームの全件網羅や物理端末での合格は宣言しない。
+合否基準は [verification-plan.md](../../quality/verification-plan.md)。CIやChromiumが通っても、現ゲームの全件網羅や物理端末での合格は宣言しない。
 
 ## 現在の製品完成への作業順（正本）
 
-1. **公開済みイベントの利用受け入れ**：承認済みの公開イベントを基準に、デッキ・イベント設定・結果の排他・連続打ち切り・目標カバー・保存／復元を実ブラウザと物理端末で横断検証する。公開件数の実測は [status.md](../../status.md) を参照。旧「公開開始前に利用を止める」という工程は完了・置換済み。
+1. **公開済みイベントの利用受け入れ**：承認済みの公開イベントを基準に、デッキ・イベント設定・結果の排他・連続打ち切り・目標カバー・保存／復元を実ブラウザと物理端末で横断検証する。公開件数の実測は [status.md](../../project/status.md) を参照。旧「公開開始前に利用を止める」という工程は完了・置換済み。
 2. **出典別の保留例外と公開条件**：GT由来でGameWith補正が入ったイベントや別出典からの編集追加イベントは、別出典の利用条件・事実・イベント名・結果分岐をそれぞれ確認する。確認できないものは公開保留のまま維持し、承認を捏造しない。[Issue #302](https://github.com/Nimrodx0/Umasupport/issues/302)、[出典例外監査](../../evidence/events/phase2-source-lineage-exception-map-20261102.md)。
 3. **新サポカの継続更新**：UmaSim全カード名簿の差分で増分IDを検出し、第三者GitHubの構造化GameTora派生JSON（systemless10/UmamusumePS）を版固定で検証・変換。JSON未掲載は翌日以降も[Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283)に保留。既存の承認イベント・設定・カードを全件再生成／上書きせず、正式な増分公開ゲートを通す。
 4. **未解決のデータ差異を優先度別に再検証**：既存563カード・非公開2,512イベントの技術変換基盤は再作成しない。SSR30240の連続3段階は明示保留済み、CheckerのP2未同定11位置、条件付きヒントや非スキル効果の保留は必要な位置に限定して追跡。出典未掲載は当該位置だけ保留し、他の作業へ進む。[対応監査](../../evidence/events/phase2-remaining-checker-skill-impact-20261023.md)／[SSR30240](../../evidence/events/phase2-30240-gamewith-gap-utools-only-replay-20261022.md)。
@@ -27,7 +27,7 @@
 
 ## 並行トラック：スキル発動条件とサポカ傾向
 
-出典の明示条件（脚質、距離、馬場等）と順位・時期・位置から推定する傾向を分ける。GlobalSimで計測したモデル上の順位条件成立率を実ゲームの発動確率として表示しない。詳細は [設計](../../skill-activation-tendencies-design.md) と [現在のP0～P2進捗](../../status.md)。
+出典の明示条件（脚質、距離、馬場等）と順位・時期・位置から推定する傾向を分ける。GlobalSimで計測したモデル上の順位条件成立率を実ゲームの発動確率として表示しない。詳細は [設計](../../explanation/skill-activation-tendencies-design.md) と [現在のP0～P2進捗](../../project/status.md)。
 
 1. **P0 全件構造監査**：UmaSim条件型、AND/OR、複数発動条件を固定データで調査（実装済み、変更時再監査）。
 2. **P1 発動条件モデル**：明示制限・状況条件・追加効果条件を別々に表現（実装済み、回帰を維持）。
@@ -42,8 +42,8 @@
 
 - **主入力**：GameTora派生GitHub JSON。GameWithは元資料に具体的な欠損・疑義がある場合だけ採用事実を裁定する。旧GameWith-firstと、GameTora元サイトHTMLを必須で直接取得する計画は撤回・保留。直接取得の過去実験は保存し、製品完成の先行ゲートにしない。
 - **技術変換と公開を分離**：旧マスターを使う検証はその時点の固定技術変換の根拠で、現在のゲームの完全再現・ライセンス許可・公開承認の代わりにならない。イベント本文・画像・未承認の第三者DBをそのまま公開しない。
-- **優先順位の更新**：変更時はこの一つの番号付き作業順を**上書き**し、達成と実測は [status.md](../../status.md) を更新する。旧内容はPR・監査・必要時の履歴に保存。新しい公開判断や要件変更は [decisions.md](../../decisions.md)／[requirements.md](../../requirements.md) と一致させる。
+- **優先順位の更新**：変更時はこの一つの番号付き作業順を**上書き**し、達成と実測は [status.md](../../project/status.md) を更新する。旧内容はPR・監査・必要時の履歴に保存。新しい公開判断や要件変更は [decisions.md](../../decisions/log.md)／[requirements.md](../../reference/requirements.md) と一致させる。
 
 ## 関連
 
-[要件](../../requirements.md) ／ [決定](../../decisions.md) ／ [公開イベント監査](../../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) ／ [新サポカ監視](../../evidence/sources/derived-github-daily-pending-ledger-20261029.md) ／ [履歴ロードマップ](../roadmap-through-20261105.md)
+[要件](../../reference/requirements.md) ／ [決定](../../decisions/log.md) ／ [公開イベント監査](../../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) ／ [新サポカ監視](../../evidence/sources/derived-github-daily-pending-ledger-20261029.md) ／ [履歴ロードマップ](../roadmap-through-20261105.md)

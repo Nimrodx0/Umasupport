@@ -92,7 +92,7 @@
 
 ### GameWith優先の数値比較ルール
 
-[意思決定ログ](../../decisions.md)と [機械可読ルール](../../../poc/config/event-source-priority.v1.json) に従う。検証補助 `poc/src/event_source_precedence.cjs` はGameWith/Game8の数値・出典URLだけを受け取り、GameWith値を選定し、不一致を保持。GameWith側に同一項目の根拠がなければ未解決のまま止める。架空・局所実例の人工テストでは上記3件のGameWith値が選定されることを確認する。**これはゲーム内実測や公式データとの数値照合を自動化したものではない**。サイトに記載のある効果が状況によって変化する可能性も維持する。
+[意思決定ログ](../../decisions/log.md)と [機械可読ルール](../../../poc/config/event-source-priority.v1.json) に従う。検証補助 `poc/src/event_source_precedence.cjs` はGameWith/Game8の数値・出典URLだけを受け取り、GameWith値を選定し、不一致を保持。GameWith側に同一項目の根拠がなければ未解決のまま止める。架空・局所実例の人工テストでは上記3件のGameWith値が選定されることを確認する。**これはゲーム内実測や公式データとの数値照合を自動化したものではない**。サイトに記載のある効果が状況によって変化する可能性も維持する。
 
 ## SSR30311のリリース前スキル経路プレビュー（2026-10-18、PR #74）
 

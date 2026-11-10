@@ -1,6 +1,6 @@
 # スキル発動条件・サポカ傾向の研究工程
 
-[上位ロードマップ](../../roadmap.md) ／ [要件](../../requirements.md) ／ [研究設計](../../skill-activation-tendencies-design.md)
+[上位ロードマップ](../../project/roadmap.md) ／ [要件](../../reference/requirements.md) ／ [研究設計](../../explanation/skill-activation-tendencies-design.md)
 
 | Phase | 目的 | 現状 | 小工程 |
 | --- | --- | --- | --- |
@@ -11,4 +11,4 @@
 | P4 | UIと検索 | 未完 | [P4](p4.md) |
 | P5 | A/B/C統合検証 | 未完 | [P5](p5.md) |
 
-研究上の結論と、ユーザーが確定した製品仕様は別々です。[decisions](../../decisions.md)と[status](../../status.md)を必要に応じて参照します。
+研究上の結論と、ユーザーが確定した製品仕様は別々です。[decisions](../../decisions/log.md)と[status](../../project/status.md)を必要に応じて参照します。

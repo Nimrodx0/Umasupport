@@ -1,9 +1,9 @@
 # サポートカード0〜4凸の通常ヒント不変性と独立ヒント性能照合
 
 > **資料の位置づけ**：機能・開発品質の検証（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../verification-plan.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../quality/verification-plan.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
-検証日：2026-10-17（日本時間）　対象：[Phase 1](../../roadmap.md) / [ヒント性能の既存監査](hint-performance-audit.md) / [通常ヒント4凸全4,015件の公開資料照合](../sources/gametora-targeted-hint-audit.md)
+検証日：2026-10-17（日本時間）　対象：[Phase 1](../../project/roadmap.md) / [ヒント性能の既存監査](hint-performance-audit.md) / [通常ヒント4凸全4,015件の公開資料照合](../sources/gametora-targeted-hint-audit.md)
 
 ## 二種類の検証を分ける
 
@@ -95,4 +95,4 @@
 
 **範囲制限：** 12/563枚の選定サンプルでありランダム抽出ではない。残り**551枚の性能値は独立未照合**。全カード・全レアリティに一般化しない。SSRとSR/Rの数値表は異なるゲーム画面や情報元を用いている可能性もあり、GameWithとUmaSim双方が同じ一次マスターに依存する可能性は残る。通常ヒント4,015件の全件検査は「UmaSim内部の構造検証」であって独立したゲーム内検証ではない。
 
-対応：[検証計画](../../verification-plan.md)、[スキル性能の監査](hint-performance-audit.md)。実イベントのレビュー承認0件、Android/Windows物理端末未検証というゲートは変わらない。
+対応：[検証計画](../../quality/verification-plan.md)、[スキル性能の監査](hint-performance-audit.md)。実イベントのレビュー承認0件、Android/Windows物理端末未検証というゲートは変わらない。

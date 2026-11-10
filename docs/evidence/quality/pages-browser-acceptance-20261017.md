@@ -1,10 +1,10 @@
 # 公開GitHub Pagesの実ソースChromium受け入れ検証
 
 > **資料の位置づけ**：機能・開発品質の検証（時点付きの証拠）。本文の測定対象・出典版・留保を確認してください。
-> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../verification-plan.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
+> **現行の参照先**：[正本の入口](../../index.md) ／ [関連する工程・契約](../../quality/verification-plan.md)。執筆当時の「現在」「次工程」は現行の指示ではありません。
 
 検証日：2026-10-17（JST）
-参照：[三軸ゲート](../../verification-plan.md) / [Phase 1](../../roadmap.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28)
+参照：[三軸ゲート](../../quality/verification-plan.md) / [Phase 1](../../project/roadmap.md) / [Issue #28](https://github.com/Nimrodx0/Umasupport/issues/28)
 
 ## 目的と実施環境
 
@@ -44,7 +44,7 @@ GitHub Pagesに公開され、一般利用者が実際に受け取るHTML/JavaSc
 1. Android Chrome実端末とWindows Chrome/Edgeで同じ操作と表示を再現し、OS/バージョン、端末幅、Pagesコミット、スクリーンショット等の証拠を記録。
 2. 取得元遮断解除後の**再取得**と、誤ったキャッシュ/ストレージ拒否時の例外回復を実機確認。
 3. 実イベント承認後、金報酬による間接カバーの実ブラウザ結合を個別に追加。
-4. Phase 1の「カード母集団・性能値・表示順」は[ロードマップ](../../roadmap.md)のB軸で引き続き管理。
+4. Phase 1の「カード母集団・性能値・表示順」は[ロードマップ](../../project/roadmap.md)のB軸で引き続き管理。
 
 ## 追加検証：通信復旧とキャッシュ異常（2026-10-17、PR #32）
 

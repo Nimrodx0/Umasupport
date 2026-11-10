@@ -2,7 +2,7 @@
 
 ## 現行の更新経路を先に確認する
 
-最初に[2026-10-29の現行方針](decisions.md)と[W3の小工程](plans/product.md)を確認してください。現行の主な作業は、UmaSim名簿の差分から追加IDを特定し、派生GitHub JSONを固定コミット・blobで照合して**新規カードだけを増分追加する**ことです。
+最初に[2026-10-29の現行方針](../decisions/log.md)と[W3の小工程](../plans/product.md)を確認してください。現行の主な作業は、UmaSim名簿の差分から追加IDを特定し、派生GitHub JSONを固定コミット・blobで照合して**新規カードだけを増分追加する**ことです。
 
 元GameTora HTMLを汎用取得する旧方針は開発保留中です。この文書に残る2026-10-27以前の監視・取得手順を、そのまま必須ゲートとして再開しません。未掲載カードは欠損として持ち越し、承認済みの既存DBや利用者設定を全件置換しないことが条件です。
 
@@ -11,7 +11,7 @@
 
 **文書の種類**：運用手順と履歴。**用途**：固定出典の更新検知・保留。
 
-有効仕様は[要件](requirements.md)、現行の到達点は[status](status.md)、作業順は[ロードマップ](roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
+有効仕様は[要件](../reference/requirements.md)、現行の到達点は[status](../project/status.md)、作業順は[ロードマップ](../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
 
 ### 主な章
 
@@ -27,7 +27,7 @@
 - [全件preflightのカード別変化レポート（2026-10-27）](#全件preflightのカード別変化レポート2026-10-27)
 
 
-この文書は**新サポートカードやイベント追加を検知しても、現行ゲーム・イベントの正確性や公開承認を自動認定しない**運用の設計と実行手順です。イベントの正本方針は[GameTora基準／GameWith裁定](evidence/sources/gametora-baseline-event-policy-20261021.md)、具体的な採用判断は[出典優先順位の契約](event-adjudication-enforcement.md)に従います。
+この文書は**新サポートカードやイベント追加を検知しても、現行ゲーム・イベントの正確性や公開承認を自動認定しない**運用の設計と実行手順です。イベントの正本方針は[GameTora基準／GameWith裁定](../evidence/sources/gametora-baseline-event-policy-20261021.md)、具体的な採用判断は[出典優先順位の契約](../reference/event-adjudication-enforcement.md)に従います。
 
 ## 目的と対象
 
@@ -44,7 +44,7 @@
 
 既存データの一括差し替えは目的ではない。**UmaSimの旧・現行全カード名簿→追加カードIDの検出→第三者GitHubのGameTora派生JSONの対象新カードを取得・変換→既存独自DBへ追記**を自動化する。既存カードは編集せず、同一カードの二度目の追加を拒否し、新規取得が不完全な場合は元DBに何も書かない。
 
-増分検出・GitHub派生JSONの検証・既存全イベント変換器への接続・日次の未掲載Issue引継ぎは[新カード取込記録](evidence/sources/derived-github-daily-pending-ledger-20261029.md)と[既存変換器の再利用](evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)に整備済み。**実際の新3カードは派生JSON未掲載**のため、実イベントの公開審査と既存公開DBへの承認済み追記は未完了。GameTora本体HTMLの全パネルを直接取得・変換する旧経路は開発保留。下記の歴史的な取得実験は、既存カードを全部置換する指示ではない。
+増分検出・GitHub派生JSONの検証・既存全イベント変換器への接続・日次の未掲載Issue引継ぎは[新カード取込記録](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)と[既存変換器の再利用](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)に整備済み。**実際の新3カードは派生JSON未掲載**のため、実イベントの公開審査と既存公開DBへの承認済み追記は未完了。GameTora本体HTMLの全パネルを直接取得・変換する旧経路は開発保留。下記の歴史的な取得実験は、既存カードを全部置換する指示ではない。
 
 ## 旧方針：GameTora本体への直接取得への移行（2026-10-27決定、2026-10-29開発保留）
 
@@ -52,17 +52,17 @@
 
 **段階的移行**：
 
-1. **少数カード技術検証**：既存カード30001と新カード30322・30323の**公式カードページだけ**に限定し、HTTPで受け取るHTMLがイベント一覧・結果・連続分岐の取得に十分かを確認する。[限定プローブ](../poc/src/official_gametora_probe.cjs)はrobots.txtを確認し、最大3件・同時1件・6秒間隔・403/429即停止・サイズ上限を実装。本文・HTML・選択肢文章・画像・取得したJSONをGitHubやCIログに保存せず、構造シグナルのみ出力する。[検証ワークフロー](../.github/workflows/official-gametora-feasibility.yml)は限定的な手動／PRトリガーであり、定期自動巡回しない。
+1. **少数カード技術検証**：既存カード30001と新カード30322・30323の**公式カードページだけ**に限定し、HTTPで受け取るHTMLがイベント一覧・結果・連続分岐の取得に十分かを確認する。[限定プローブ](../../poc/src/official_gametora_probe.cjs)はrobots.txtを確認し、最大3件・同時1件・6秒間隔・403/429即停止・サイズ上限を実装。本文・HTML・選択肢文章・画像・取得したJSONをGitHubやCIログに保存せず、構造シグナルのみ出力する。[検証ワークフロー](../../.github/workflows/official-gametora-feasibility.yml)は限定的な手動／PRトリガーであり、定期自動巡回しない。
 2. **不足点の同定**：SSR30001の派生JSONとGameTora本体にはどちらも連続3件・ランダム2件のイベントが見えるが、選択肢／報酬／分岐が一致したとは断言できない。SSR30322・30323は公開カードページの存在とイベント詳細が揃ったことを混同しない。SSR30001の**5件**についてイベント結果の取得が技術的に可能か、JS描画／提供可能な正式インターフェース／アクセス条件を別に確認する。
 3. **取得・再利用条件の確定**：少数アクセスが成功しても、全カードへの継続的な巡回、原本文章やページ構成の大量取得、配信に使えることを保証しない。公式提供API・利用条件・必要な連絡手段を確認してから継続運用を設計する。未確認のAPIエンドポイントや技術的保護回避を実装しない。
 4. **段階切替**：公式から取り出せる個別数値事実を既存イベントスキーマへ正規化し、元カードID→イベント→選択肢→結果→スキルID→ヒントLv→連続分岐の各層を照合する。証拠と版・取得日を残し、編集上の採用・承認台帳・公開ゲートを個別に通す。旧固定GT監査は移行の確認が終わるまで保守する。
 5. **新カード運用**：UmaSimで新カードを検出したら、実装日の確証があればそれを記録し、公式GameToraでまず掲載状況を確認。未掲載なら無理に推定せず再試行し、一定期間後も元サイトで不足している部分にのみGameWithを使う。サイト取得失敗を未収録と決めつけない。確認間隔は実際の掲載速度を観測して決める。
 
-**少数カード実測**：[GameTora本体の直接取得可否とHTML／ブラウザの検証記録](evidence/sources/official-gametora-direct-feasibility-20261027.md)では3枚のカードページのHTTP取得と、既存30001での動的イベント一覧の描画を確認。ただし初期JSONと27件の動的JSON応答から結果分岐を直接正規化できることは**未立証**。この段階では本体を本番自動取得の正本に切り替えない。
+**少数カード実測**：[GameTora本体の直接取得可否とHTML／ブラウザの検証記録](../evidence/sources/official-gametora-direct-feasibility-20261027.md)では3枚のカードページのHTTP取得と、既存30001での動的イベント一覧の描画を確認。ただし初期JSONと27件の動的JSON応答から結果分岐を直接正規化できることは**未立証**。この段階では本体を本番自動取得の正本に切り替えない。
 
 **選択肢表示の性別固定（2026-10-28決定）**：男女で文章が違う場合はGameWithの**男性選択肢**だけを表示候補とする。女性側へのフォールバック、男女切替UI、併記は採用しない。GameWithに男性版の事実が見つからない場合は未確認にし、女性版から推測しない。選択肢の文言を表示できるかどうかは、選択肢IDや報酬結果の内部処理とは独立して判断する。
 
-**選択肢表示名だけの補完モデル（2026-10-27検証）**：SSR30001のGameTora本体は報酬・OR結果構造を確認できるが、旧GT固定資料の非空6選択肢ラベルは元ページの可視本文に一致しない。一方、[GameWithカードページ](https://gamewith.jp/uma-musume/article/show/257460)と対象イベントの個別記事には6件が掲載されている。個別文言をGameWithから補完する場合でも、効果・分岐の正本変更とは別操作とし、[選択肢文言の非公開ハッシュ台帳](../poc/review/choice-label-provenance-30001.v1.json)で**カードID・元イベント位置・選択肢位置・出典URL・文字列のハッシュ**だけを照合する。CIが確認するのは固定履歴と台帳の指紋一致であり、GameWithから現在毎回再取得・照合しているわけではない。男性／女性トレーナーの表現差やゲーム内表示、再配布条件は未承認であり、**文章をアプリの公開DBへ自動反映しない**。
+**選択肢表示名だけの補完モデル（2026-10-27検証）**：SSR30001のGameTora本体は報酬・OR結果構造を確認できるが、旧GT固定資料の非空6選択肢ラベルは元ページの可視本文に一致しない。一方、[GameWithカードページ](https://gamewith.jp/uma-musume/article/show/257460)と対象イベントの個別記事には6件が掲載されている。個別文言をGameWithから補完する場合でも、効果・分岐の正本変更とは別操作とし、[選択肢文言の非公開ハッシュ台帳](../../poc/review/choice-label-provenance-30001.v1.json)で**カードID・元イベント位置・選択肢位置・出典URL・文字列のハッシュ**だけを照合する。CIが確認するのは固定履歴と台帳の指紋一致であり、GameWithから現在毎回再取得・照合しているわけではない。男性／女性トレーナーの表現差やゲーム内表示、再配布条件は未承認であり、**文章をアプリの公開DBへ自動反映しない**。
 
 **実装境界**：現在正式公開済みの独自イベントDBは0件。`poc/config/event-source-priority.v1.json`の従来`baselineRepository`などは**現在動作中の歴史的固定データの監査契約**であり、直接取得へ切替済みを意味しない。限定プローブは実サイトの適用性調査のみで、本番取り込み、固定版切替、GameWithからの補完、全カード自動巡回は実装しない。旧方式の監視を削除する判断は、技術実証の結果を受けて別PRで行う。
 
@@ -73,17 +73,17 @@
 - **到着を待つ対象**：UmaSimで新規カードIDが初めて検出された日を起点に、通常ヒントの取込状態とは別にイベント情報の元版・掲載状況を管理する。実装日の確証があれば日付も別に保持し、監視開始日と取り違えない。
 - **暫定的な問い合わせ間隔**：0〜6日目は①のblob監視中心、7日目以降に②の該当カードページとイベント詳細を確認する。21日目以降、②で必要な事実が引き続き不足している場合に限り③を確認する。日数は運用調整可能な暫定閾値で、**①に元データが早期到着・改訂されたら待機期間に関係なく即座に全件preflight**。既存データに具体的な疑義がある場合も②へ即時進める。
 - **②の確認結果**を `not-checked`／`unavailable`（取得障害）／`not-found`／`card-only`／`partial`（不足項目を列挙）／`event-detail-reviewed`（必要な詳細を確認）として別々に記録する。検証日と対象カードURLも保持し、保存するのは独自の構造・数値の判断メタデータだけ。**公式ページが完全と記録されても、編集採用や配信承認とは別。**
-- **②に必要事実が揃った場合**はその事実を確認・編集採用する経路を優先し、GameWithの確認を義務化しない。③は②の本当の欠損・矛盾に限り、元の選択肢・結果に対応する**不足位置だけ**を対象とする。数値事実がGameWithに明記されていれば、既存の[裁定契約](event-adjudication-enforcement.md)に従う。二つ目のサイトや実機再現を余計に要求しない。
+- **②に必要事実が揃った場合**はその事実を確認・編集採用する経路を優先し、GameWithの確認を義務化しない。③は②の本当の欠損・矛盾に限り、元の選択肢・結果に対応する**不足位置だけ**を対象とする。数値事実がGameWithに明記されていれば、既存の[裁定契約](../reference/event-adjudication-enforcement.md)に従う。二つ目のサイトや実機再現を余計に要求しない。
 - **遅延・障害時**：GameTora公式が取得不能なら「未掲載」とみなさず再試行／必要なら人手確認。両方が更新されなくても既知のギャップは維持し、日々Issueを重複生成しない。掲載を待つだけの状態をエラーにせず、進捗に変化があった場合だけ通知する。
 - **公開条件**：元のテキスト／画像／イベントJSONをPublicへ取り込まない。GameTora公式のアクセス条件に反した大量巡回をしない。イベント選択肢・結果・連続内部の依存の欠損が残れば公開承認保留。固定元のピン切替も独立した正式採用工程とする。
 
-**実装境界**：[数値・更新元の待機判断器](../poc/src/upstream_event_source_triage.cjs) は上記の「次にどこを調べるか」だけをオフラインで計算し、[合成試験](../poc/tests/upstream_event_source_triage.test.cjs)で優先順序・未公開を確認する。**現状はGitHub ActionsからGameTora公式やGameWithへ自動HTTPアクセスする処理、個々のカード観測日の永続管理、元サイト事実の取得・取り込みは未接続**。現在稼働しているのは以下のGitHub blob監視と候補preflight。①/②/③の自動的な継続運用は次工程であり、この規則単体で自動更新が完成したとは宣言しない。
+**実装境界**：[数値・更新元の待機判断器](../../poc/src/upstream_event_source_triage.cjs) は上記の「次にどこを調べるか」だけをオフラインで計算し、[合成試験](../../poc/tests/upstream_event_source_triage.test.cjs)で優先順序・未公開を確認する。**現状はGitHub ActionsからGameTora公式やGameWithへ自動HTTPアクセスする処理、個々のカード観測日の永続管理、元サイト事実の取得・取り込みは未接続**。現在稼働しているのは以下のGitHub blob監視と候補preflight。①/②/③の自動的な継続運用は次工程であり、この規則単体で自動更新が完成したとは宣言しない。
 
 ## 日次監視（実装済み）
 
-[`Monitor pinned GT events and UmaSim sources`](../.github/workflows/upstream-refresh-monitor.yml) は GitHub Actions の毎日 **03:27 UTC／12:27 JST** の予約実行、または手動 `workflow_dispatch` で起動（実行時刻はGitHubのスケジューラ都合で遅れる場合がある）。
+[`Monitor pinned GT events and UmaSim sources`](../../.github/workflows/upstream-refresh-monitor.yml) は GitHub Actions の毎日 **03:27 UTC／12:27 JST** の予約実行、または手動 `workflow_dispatch` で起動（実行時刻はGitHubのスケジューラ都合で遅れる場合がある）。
 
-1. [`upstream_refresh_watch.cjs`](../poc/src/upstream_refresh_watch.cjs) はGithub REST APIのGitツリーメタデータを、固定GT／固定UmaSim／最新GT／最新UmaSimの計4版について取得する。対象はGameTora `support_<ID>.json` の**Git blob SHA** とUmaSimの2ファイルのGit blob SHAだけ。イベントJSON本文・画像・選択肢のコピーは行わない。
+1. [`upstream_refresh_watch.cjs`](../../poc/src/upstream_refresh_watch.cjs) はGithub REST APIのGitツリーメタデータを、固定GT／固定UmaSim／最新GT／最新UmaSimの計4版について取得する。対象はGameTora `support_<ID>.json` の**Git blob SHA** とUmaSimの2ファイルのGit blob SHAだけ。イベントJSON本文・画像・選択肢のコピーは行わない。
 2. GTの**追加・変更・削除ID**、対象のUmaSim元ファイルの変更を分類する。最新の上流リポジトリが無関係なファイルだけを変更した場合、コミットが進んでも **差分なし** と判断する。
 3. GitHub APIが `truncated:true` を返す・不正Git SHA・GT対象ファイル欠落・固定UmaSim blob不一致などは **判定不能として失敗**。欠落を「元イベント0件」「イベント削除」と取り違えない。
 4. 差分がある場合のみ `Upstream source update: pinned GT events / UmaSim require review` という同一タイトルの**一つのOpen Issue**を起票する。同じデータblob差分の指紋なら毎日Issue更新・コメント通知を繰り返さない。追加のソース差分があった場合は既存Issue本文の差分だけを更新する。新データは **自動承認・自動マージ・自動配布しない**。
@@ -105,13 +105,13 @@
 日次の監視ジョブで対象データのblob差分を検知すると、**レビューIssueの作成・更新に続いて、Gitツリーメタデータだけを記録したDraft PR**を自動作成／更新する。変更がなければ両方とも作らない。
 
 - ブランチ名は `automation/upstream-refresh-candidate` の**1本**。追加されるファイルは `poc/review/upstream-refresh-candidate.v1.json` の**1件だけ**で、ランタイムのGameTora／UmaSim固定ピン、イベントデータ、公開済みカタログ・ユーザー設定は書き換えない。
-- [候補生成・厳格検証器](../poc/src/upstream_refresh_candidate.cjs) は元イベントの選択肢文・報酬・原本JSONを含まない。監視済みの固定と候補のGit commit／tree SHA、UmaSimの2 Git blob SHA、GTの追加・変更・削除ID、既知新3カードの収録／未収録ID、差分ハッシュ、検証未実施の事実だけを収録する。
+- [候補生成・厳格検証器](../../poc/src/upstream_refresh_candidate.cjs) は元イベントの選択肢文・報酬・原本JSONを含まない。監視済みの固定と候補のGit commit／tree SHA、UmaSimの2 Git blob SHA、GTの追加・変更・削除ID、既知新3カードの収録／未収録ID、差分ハッシュ、検証未実施の事実だけを収録する。
 - 正式採用には、**対象候補の全件イベント数・結果分岐・終了制御・数値スキルID・独立GameTora→GameWith裁定・公開条件**を先に検証する必要がある。自動作成の候補マニフェストには `not-run-for-candidate`／`not-adjudicated`／`not-approved` を明記し、**Draftのマージを固定ピンの採用とみなさない**。正式採用は別の審査済みPRで行う。
 - 後から同一元カードIDのGit blobが更新された場合も、元blobの指紋が変われば**同じDraft PR**と既存Issueを更新する。差分が同一なら余分なcommitや通知を作らない。既存Draftに人が他のファイルを加えた、またはReady for reviewに変更した場合は**自動書き換えを停止**する。
 - Bot作成のブランチは通常のpush／PRイベントではCIが自動起動しないため、メタデータに変更が生じたときは明示的に `PoC Core Tests` の `workflow_dispatch` を実行する。候補JSONそのものを厳密検査し、元データの追加格納・承認済みの偽装を拒否する。**このread-only Core CIは、候補バージョンの全件イベントを実際に取り込むB検証の代用ではない**。
 - GitHub Actionsの既定権限によりBotのPull Request作成が禁止されている環境では、Repository Settings → Actions → Generalで「Allow GitHub Actions to create and approve pull requests」を有効にする管理者の操作が必要になる場合がある。書き込み権限不足ならジョブは失敗し、既存Issueからレビューの続きを行う。
 
-**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → read-only Core CI＋候補の全件ソース構造preflight」まで**。別の[実データ全件preflightの検証範囲・保留条件](evidence/sources/upstream-full-source-preflight-20261027.md)を参照。候補のGTイベント全件とUmaSim全カード・全数値スキルIDの取り込み**構造**を確認できても、イベント内部の意味・外部出典の裁定、第三者素材の配布権利、公開許諾、実ゲーム全体の網羅性を証明しない。新固定ピンの正式採用・未承認イベントの実公開は実装も許可もしていない。
+**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → read-only Core CI＋候補の全件ソース構造preflight」まで**。別の[実データ全件preflightの検証範囲・保留条件](../evidence/sources/upstream-full-source-preflight-20261027.md)を参照。候補のGTイベント全件とUmaSim全カード・全数値スキルIDの取り込み**構造**を確認できても、イベント内部の意味・外部出典の裁定、第三者素材の配布権利、公開許諾、実ゲーム全体の網羅性を証明しない。新固定ピンの正式採用・未承認イベントの実公開は実装も許可もしていない。
 
 ## 新3サポカのGameTora元データ収録の監視ゲート（2026-10-26）
 
@@ -132,6 +132,6 @@ GTの新JSONが1件追加されれば従来の`addedCardIds`の厳密なGit blob
 
 ## 全件preflightのカード別変化レポート（2026-10-27）
 
-[候補GTの実データ監査](../.github/workflows/upstream-candidate-full-preflight.yml)は、固定元と候補元の全 `support_<ID>.json` を一時環境で読み出し、GameTora各カードのイベント・選択肢・分岐を検証する。`changedCardTopologies` では元blob差分がある**追加・変更・削除カードすべて**について、変更前／後のイベント数、選択肢数、展開経路数、数値ヒント数、終了と未解決候補を、**元文章を載せず**に記録する。件数がすべて同一でも、元blobに変更があれば `sameCountButDifferentSource` として**人の意味・内容レビューが必要**な候補に残す。
+[候補GTの実データ監査](../../.github/workflows/upstream-candidate-full-preflight.yml)は、固定元と候補元の全 `support_<ID>.json` を一時環境で読み出し、GameTora各カードのイベント・選択肢・分岐を検証する。`changedCardTopologies` では元blob差分がある**追加・変更・削除カードすべて**について、変更前／後のイベント数、選択肢数、展開経路数、数値ヒント数、終了と未解決候補を、**元文章を載せず**に記録する。件数がすべて同一でも、元blobに変更があれば `sameCountButDifferentSource` として**人の意味・内容レビューが必要**な候補に残す。
 
 既存の候補preflightがOKでもイベント出典の事実採用、連続イベント内部の未解決条件や権利・公開許諾が自動承認されたとは扱わない。公開0件・本番固定pin不変。カード単位の変化だけでなく、全件母数・カードID、数値ID階層、旧固定データとの比較ゲートを引き続き併用する。

@@ -4,7 +4,7 @@
 
 **文書の種類**：技術契約。**用途**：イベント結果の裁定と公開条件。
 
-有効仕様は[要件](requirements.md)、現行の到達点は[status](status.md)、作業順は[ロードマップ](roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
+有効仕様は[要件](requirements.md)、現行の到達点は[status](../project/status.md)、作業順は[ロードマップ](../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
 
 ### 主な章
 
@@ -17,7 +17,7 @@
 
 ## なぜ必要か
 
-`AGENTS.md`・`docs/decisions.md`・[GameTora基準／GameWith裁定方針](evidence/sources/gametora-baseline-event-policy-20261021.md) に、2026-10-21時点で方針は既に明記されていた。にもかかわらず、30321ドゥラメンテの連続2・3を「GameWith記事には明記されるが、第二の独立サイトや実ゲームで実証できない」として保留した。**これは文書の欠落ではなく、方針を参照・適用できなかった作業上の失敗**。PR #164で2件だけ訂正しても、新しいカードで同じ判断を繰り返す危険はなくならない。
+`AGENTS.md`・`../docs/decisions/log.md`・[GameTora基準／GameWith裁定方針](../evidence/sources/gametora-baseline-event-policy-20261021.md) に、2026-10-21時点で方針は既に明記されていた。にもかかわらず、30321ドゥラメンテの連続2・3を「GameWith記事には明記されるが、第二の独立サイトや実ゲームで実証できない」として保留した。**これは文書の欠落ではなく、方針を参照・適用できなかった作業上の失敗**。PR #164で2件だけ訂正しても、新しいカードで同じ判断を繰り返す危険はなくならない。
 
 既存の汎用数値裁定関数`poc/src/event_source_precedence.cjs`にも、**GameToraのベース数値が欠落している場合にGameWithの値が存在しても`unresolved-baseline-missing`を返す**挙動があり、欠損ならGameWithで裁定する規則と矛盾していた。この点も修正し、GT元サイトをカード単位で確認してから、GameWithの明示的な事実を選択できるようにした。
 
@@ -42,7 +42,7 @@
 - **汎用数値優先判定の欠損修正**：`decideNumericEffect` はGT基準値がなくGameWith候補だけあるとき、GT元サイトの個別確認がなければ`pending-gametora-live-site-check`、確認済みなら`adjudicated-missing-baseline-by-gamewith`。GT値が正常なら引き続きGT採用。Game8だけでGTを置換しない。
 - **既存30321の後戻り防止**：`poc/src/phase2_four_ssr_editorial_review.cjs`で、PR #164のGameWith裁定2件に共通判定器を適用。Checkerの元行・ヒントID・GameWith値の個別検査も維持。
 - **必須CI**：`.github/workflows/ci.yml`に共通判定器、汎用数値裁定、30321の回帰テストを追加。新規判定器や方針の変更は`.github/workflows/whole-event-inventory.yml`の全件GT照合も起動させる。
-- **PRチェックリスト**：`.github/PULL_REQUEST_TEMPLATE.md`に元サイト確認、GameWithの個別事実の明記／未掲載、裁定・後続条件・公開ゲートの分離を入れる。
+- **PRチェックリスト**：`../.github/PULL_REQUEST_TEMPLATE.md`に元サイト確認、GameWithの個別事実の明記／未掲載、裁定・後続条件・公開ゲートの分離を入れる。
 
 ## できることと限界
 

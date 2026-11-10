@@ -1,8 +1,8 @@
 # 開発ロードマップ
 
-この文書は**上位工程の優先順位と依存関係**を示します。小工程ごとの実施内容・結果・残課題は[詳細計画](plans/index.md)、実測の現在値は[開発状況](status.md)、過去のロードマップは[履歴](archive/roadmap-through-20261105.md)を参照します。
+この文書は**上位工程の優先順位と依存関係**を示します。小工程ごとの実施内容・結果・残課題は[詳細計画](../plans/index.md)、実測の現在値は[開発状況](status.md)、過去のロードマップは[履歴](../archive/roadmap-through-20261105.md)を参照します。
 
-工程ごとの成果物と終了条件は[WBS Dictionary](plans/wbs-dictionary.md)で確認できます。
+工程ごとの成果物と終了条件は[WBS Dictionary](../plans/wbs-dictionary.md)で確認できます。
 
 ## 目的と判定
 
@@ -14,11 +14,11 @@
 | B：データ | 出典の版・ID・結果・承認・保留理由 |
 | C：実環境 | Pages、Windows・Android物理端末での操作と復帰 |
 
-合格基準は[検証計画](verification-plan.md)が正本です。Aの成功をBやCの合格とみなしません。
+合格基準は[検証計画](../quality/verification-plan.md)が正本です。Aの成功をBやCの合格とみなしません。
 
 ## 現在の製品完成への作業順（正本）
 
-この表は**製品完成の優先順位をひとつだけ**示します。W1～W5の下位タスクは[製品工程の詳細計画](plans/product.md)で管理します。
+この表は**製品完成の優先順位をひとつだけ**示します。W1～W5の下位タスクは[製品工程の詳細計画](../plans/product.md)で管理します。
 
 | 順位 | 工程 | 現状と次のゲート |
 | --- | --- | --- |
@@ -32,16 +32,16 @@
 
 ## 並行トラック：スキル発動条件とサポカ傾向
 
-研究工程の**P0～P5**と製品工程の**W1～W5**を混同しません。[P0～P5詳細計画](plans/skill-conditions/index.md)に独立した小工程と結果・未完ゲートを記載します。
+研究工程の**P0～P5**と製品工程の**W1～W5**を混同しません。[P0～P5詳細計画](../plans/skill-conditions/index.md)に独立した小工程と結果・未完ゲートを記載します。
 
 | Phase | 内容 | 現在の扱い |
 | --- | --- | --- |
-| [P0](plans/skill-conditions/p0.md) | 固定版のスキル条件・AND/OR全件監査 | 研究実施済み、出典更新時に再監査 |
-| [P1](plans/skill-conditions/p1.md) | 明示条件・状況条件を分離した内部モデル | 実装済み、回帰維持 |
-| [P2](plans/skill-conditions/p2.md) | 4脚質別の成立機会・脚質特異性を独立研究 | 固定モデル実験は進行。実対戦・閾値・全経路照合は未完 |
-| [P3](plans/skill-conditions/p3.md) | スキルの取得経路からカード単位への集約 | 未完 |
-| [P4](plans/skill-conditions/p4.md) | 検索フィルター・表示 | 未完 |
-| [P5](plans/skill-conditions/p5.md) | A/B/C統合受け入れ | 未完 |
+| [P0](../plans/skill-conditions/p0.md) | 固定版のスキル条件・AND/OR全件監査 | 研究実施済み、出典更新時に再監査 |
+| [P1](../plans/skill-conditions/p1.md) | 明示条件・状況条件を分離した内部モデル | 実装済み、回帰維持 |
+| [P2](../plans/skill-conditions/p2.md) | 4脚質別の成立機会・脚質特異性を独立研究 | 固定モデル実験は進行。実対戦・閾値・全経路照合は未完 |
+| [P3](../plans/skill-conditions/p3.md) | スキルの取得経路からカード単位への集約 | 未完 |
+| [P4](../plans/skill-conditions/p4.md) | 検索フィルター・表示 | 未完 |
+| [P5](../plans/skill-conditions/p5.md) | A/B/C統合受け入れ | 未完 |
 
 **P2からP3への境界**：モデル上の順位占有割合は実ゲームのスキル発動率ではありません。逃げ・先行・差し・追込を独立比較し、①成立機会と②脚質特異性を別々に評価します。③発動後の効果の有用性は別の将来軸です。P3標準評価は均衡編成の研究結果のみを基準にし、他の脚質編成での変動を標準評価へ混ぜません。従来2群の研究ラベルをP3/P4や公開UIに自動反映しません。
 
@@ -51,8 +51,8 @@
 
 - **主入力はGameTora派生GitHub JSON**。GameWithは具体的な欠損・疑義の個別裁定用です。元GameTora HTMLの汎用直接取得は保留した旧計画です。
 - 技術変換、現在のゲームとの一致、第三者データの利用条件、正式公開の承認は別物です。未承認の本文・画像・DBを公開しません。
-- 優先順位変更はこのロードマップ、詳細な小工程と結果は[plans](plans/index.md)、実測は[status](status.md)、確定した仕様判断は[requirements](requirements.md)と[decisions](decisions.md)へ反映します。
+- 優先順位変更はこのロードマップ、詳細な小工程と結果は[plans](../plans/index.md)、実測は[status](status.md)、確定した仕様判断は[requirements](../reference/requirements.md)と[decisions](../decisions/log.md)へ反映します。
 
 ## 関連
 
-[文書索引](index.md) ／ [製品計画](plans/product.md) ／ [研究計画](plans/skill-conditions/index.md) ／ [公開例外](evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) ／ [新カード保留](evidence/sources/derived-github-daily-pending-ledger-20261029.md)
+[文書索引](../index.md) ／ [製品計画](../plans/product.md) ／ [研究計画](../plans/skill-conditions/index.md) ／ [公開例外](../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) ／ [新カード保留](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)

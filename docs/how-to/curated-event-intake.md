@@ -4,7 +4,7 @@
 
 **文書の種類**：運用手順。**用途**：イベントの取込・検証。
 
-有効仕様は[要件](requirements.md)、現行の到達点は[status](status.md)、作業順は[ロードマップ](roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
+有効仕様は[要件](../reference/requirements.md)、現行の到達点は[status](../project/status.md)、作業順は[ロードマップ](../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
 
 ### 主な章
 
@@ -20,7 +20,7 @@
 - [2026-10-19：選択なし連続・成功／失敗の実カードを2枚追加（PR #88）](#2026-10-19選択なし連続成功失敗の実カードを2枚追加pr-88)
 
 
-**【履歴上の方式に関する注意】** 本書の2026-10-19「GameWithを主力参照元」は当時の独自草稿ワークフローの記録であり、**現在の全件イベントDBの基本方針ではありません**。現在は [GameTora基準・GameWithは個別疑義裁定](evidence/sources/gametora-baseline-event-policy-20261021.md)。ローカルGameWith記事解析と手作業用草稿の技術説明は残しますが、全件GameWith取得・全件GameWith正本を求める指示ではありません。[文書運用](documentation-policy.md)。
+**【履歴上の方式に関する注意】** 本書の2026-10-19「GameWithを主力参照元」は当時の独自草稿ワークフローの記録であり、**現在の全件イベントDBの基本方針ではありません**。現在は [GameTora基準・GameWithは個別疑義裁定](../evidence/sources/gametora-baseline-event-policy-20261021.md)。ローカルGameWith記事解析と手作業用草稿の技術説明は残しますが、全件GameWith取得・全件GameWith正本を求める指示ではありません。[文書運用](../governance/documentation-policy.md)。
 
 ## データ管理の方針
 

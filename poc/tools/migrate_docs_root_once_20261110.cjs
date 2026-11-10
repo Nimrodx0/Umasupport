@@ -13,8 +13,8 @@
   };
   const moves=new Map();
   for(const [dir,items] of Object.entries(groups))for(const name of items)moves.set('docs/'+name+'.md','docs/'+dir+'/'+name+'.md');
-  moves.set('docs/decisions.md','docs/decisions/log.md');
-  moves.set('docs/evidence-index.md','docs/evidence/catalog.md');
+  moves.set('docs/decisions/log.md','docs/decisions/log.md');
+  moves.set('docs/evidence/catalog.md','docs/evidence/catalog.md');
   const tracked=cp.execFileSync('git',['ls-files','-z'],{encoding:'utf8',maxBuffer:80*1024*1024}).split('\0').filter(Boolean);
   const rootDocs=tracked.filter(p=>/^docs\/[^/]+\.md$/.test(p)).sort();
   assert.deepEqual(rootDocs.filter(p=>p!=='docs/index.md'),[...moves.keys()].sort(),'Root docs changed; classify all before migrating');

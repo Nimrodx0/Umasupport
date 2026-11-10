@@ -2,17 +2,17 @@
 
 この文書は、移管前のPoC v8.1・2026年10月当時の検証方法を**原文のまま保持**しています。「現在」「未実装」「優先事項」はその時点の記述であり、現行mainの実行手順・検証済み状態ではありません。
 
-現在の手順は [poc/README.md](README.md)、現行構成は [architecture.md](../docs/architecture.md)、未完と実測は [roadmap.md](../docs/roadmap.md)・[status.md](../docs/status.md) を参照してください。
+現在の手順は [poc/README.md](README.md)、現行構成は [architecture.md](../docs/reference/architecture.md)、未完と実測は [roadmap.md](../docs/project/roadmap.md)・[status.md](../docs/project/status.md) を参照してください。
 
 ---
 
 # PoC v8.1：ソース移管と動作手順
 
-**文書の役割：** このファイルはPoCの実装・テスト手順と旧v8.1の再現上の注意を含む技術手順書です。最新の優先度やイベント変換件数は [開発状況](../docs/status.md) と [ロードマップ](../docs/roadmap.md) へ、AIの恒久的ルールは [AGENTS.md](../AGENTS.md) へ記載してください。以下の旧版記録を現行の完成状況と読み替えないでください。
+**文書の役割：** このファイルはPoCの実装・テスト手順と旧v8.1の再現上の注意を含む技術手順書です。最新の優先度やイベント変換件数は [開発状況](../docs/project/status.md) と [ロードマップ](../docs/project/roadmap.md) へ、AIの恒久的ルールは [AGENTS.md](../AGENTS.md) へ記載してください。以下の旧版記録を現行の完成状況と読み替えないでください。
 
 **現行公開版はHTML/CSS/JavaScriptの直接取得型PoC。React/TypeScript/Viteは未導入。** 旧v8.1のPythonビルド・実データ同梱版は履歴として以下に残す。
 
-> 最新の進捗・工程完了ゲート：[ロードマップ](../docs/roadmap.md)／[検証計画](../docs/verification-plan.md)。現行`poc/live.html`はサポカ通常ヒントと金白スキル辞書の取得に対応し、イベント公開DBには2026-11-02に利用者が承認したGT由来**2,487件**を初回公開済み（残り25件は除外）。2026-10-16の実ソースNode結合試験は成功したが、最新の階層画面のPages／スマホ検証は未完。以降の旧記述はその機能を実装した当時の状態を説明する場合がある。
+> 最新の進捗・工程完了ゲート：[ロードマップ](../docs/project/roadmap.md)／[検証計画](../docs/quality/verification-plan.md)。現行`poc/live.html`はサポカ通常ヒントと金白スキル辞書の取得に対応し、イベント公開DBには2026-11-02に利用者が承認したGT由来**2,487件**を初回公開済み（残り25件は除外）。2026-10-16の実ソースNode結合試験は成功したが、最新の階層画面のPages／スマホ検証は未完。以降の旧記述はその機能を実装した当時の状態を説明する場合がある。
 
 ## 公開できる動作デモ
 
@@ -61,7 +61,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 3. 全カードのイベント報酬・分岐のデータモデルを整備。
 4. 新しい版ごとに集計テストとブラウザテストを実行。
 
-[要件定義](../docs/requirements.md) ｜ [意思決定](../docs/decisions.md) ｜ [ロードマップ](../docs/roadmap.md)
+[要件定義](../docs/reference/requirements.md) ｜ [意思決定](../docs/decisions/log.md) ｜ [ロードマップ](../docs/project/roadmap.md)
 
 ## ブラウザから公開元を直接取得する新方式
 
@@ -69,7 +69,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 - 起動時取得→検証→IndexedDBキャッシュ。失敗したときは検証済みの前回データを使用。利用者向け更新ボタンはない。
 - 金白スキル階層は実装・Node実ソース検証済みで最新ブラウザ確認待ち。GT由来2,487件のイベント候補を正式公開JSONから起動時に検証・自動読込する。GameWith等による25件の編集例外は初回公開対象外。初回利用にはネット接続が必要。
 - テスト：`node --test poc/tests/runtime.test.cjs`。Pages上での通常起動・データ読込・表示は2026-10-16にユーザー確認済み。IndexedDB保存・サポカデータ取得先遮断時復旧・再取得は2026-10-16のPages実ブラウザで確認済み。スキル辞書側の実機検証は未完。
-- [設計と未解決課題](../docs/runtime-data-loading.md)。
+- [設計と未解決課題](../docs/reference/runtime-data-loading.md)。
 
 ## 直接取得版の保存設定（開発中）
 
@@ -111,7 +111,7 @@ python poc/tools/build_v8.py --input poc/inputs/full_support_hints.psv --full --
 
 ## SSR・SRイベントを候補から公開DBへ
 
-詳しくは [公開イベントDB手順](../docs/checker-public-catalog.md)。CLI：node poc/tools/build_checker_catalog.cjs（読み取り専用、SSR・SRの元ファイルから実カード名厳密照合とイベント候補件数）。ローカル入力：--local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json。エイリアスは --aliases、レビュー済みイベントは --review と --output のセットで独立JSONへ出力。
+詳しくは [公開イベントDB手順](../docs/how-to/checker-public-catalog.md)。CLI：node poc/tools/build_checker_catalog.cjs（読み取り専用、SSR・SRの元ファイルから実カード名厳密照合とイベント候補件数）。ローカル入力：--local local-data/support_card.txt local-data/Events.json --candidates local-data/candidates.json。エイリアスは --aliases、レビュー済みイベントは --review と --output のセットで独立JSONへ出力。
 
 poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全件検証してからカードへイベントを装着。2026-11-02以降の正式公開JSONにはGT直接系統2,487イベントを収録。src/checker_candidate_pipeline.cjsでは自然文の報酬を自動的に確定スキル扱いしない。testは checker_candidate_pipeline.test.cjs と public_event_catalog.test.cjs。
 
@@ -134,7 +134,7 @@ poc/data/reviewed_events.v1.json が公開DB。src/public_event_catalog.jsは全
 
 §poc/tests/browser_skill_smoke.cjs§ を実行すると、PlaywrightのChromiumで現行§live.html§をHTTP配信・操作します。§node poc/tests/browser_skill_smoke.cjs§ は§playwright@1.55.1§とChromiumが別途必要です。CIの§browser-smoke§ジョブはセットアップから行います。
 
-第三者元データはダウンロードせず、563枚×5段階の架空カードと126個の架空スキルをネットワーク代用応答として返します。階層の実表示と金白辞書のIndexedDB復旧、イベントJSON失敗時の階層維持をテストします。**本テスト合格は実ゲーム金白322組の独立裏付けやPages／スマホ実機の合格ではありません。** [検証ゲート](../docs/verification-plan.md)で区別します。
+第三者元データはダウンロードせず、563枚×5段階の架空カードと126個の架空スキルをネットワーク代用応答として返します。階層の実表示と金白辞書のIndexedDB復旧、イベントJSON失敗時の階層維持をテストします。**本テスト合格は実ゲーム金白322組の独立裏付けやPages／スマホ実機の合格ではありません。** [検証ゲート](../docs/quality/verification-plan.md)で区別します。
 
 ## マスター由来データによる金白関係の独立監査
 

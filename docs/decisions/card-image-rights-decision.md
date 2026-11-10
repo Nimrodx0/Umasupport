@@ -4,7 +4,7 @@
 
 **文書の種類**：判断履歴。**用途**：画像の権利と公開範囲。
 
-有効仕様は[要件](requirements.md)、現行の到達点は[status](status.md)、作業順は[ロードマップ](roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
+有効仕様は[要件](../reference/requirements.md)、現行の到達点は[status](../project/status.md)、作業順は[ロードマップ](../project/roadmap.md)を優先します。日付付きの過去の観測・決定を、現在の値や指示として読まないでください。
 
 ### 主な章
 
@@ -13,7 +13,7 @@
 - [検証ゲート](#検証ゲート)
 
 
-更新：2026-10-18。関連：[Phase 3のF-02検索・画像グリッド](evidence/quality/card-route-search-acceptance.md)、[要件](requirements.md)。今回の調査は公開ガイドライン上の利用可能性を確認したもので、法的意見や個別許諾の取得ではない。
+更新：2026-10-18。関連：[Phase 3のF-02検索・画像グリッド](../evidence/quality/card-route-search-acceptance.md)、[要件](../reference/requirements.md)。今回の調査は公開ガイドライン上の利用可能性を確認したもので、法的意見や個別許諾の取得ではない。
 
 ## 確認した公式資料
 

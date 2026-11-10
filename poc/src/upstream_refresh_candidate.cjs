@@ -155,7 +155,7 @@ function draftBody(manifest,issueNumber){
   '',
   '> 自動化の範囲は候補作成までです。カード数・JSON存在だけではイベントの正確性は検証されていません。',
   '',
-  '根拠・手順: [固定版の継続更新運用](https://github.com/Nimrodx0/Umasupport/blob/main/docs/upstream-refresh-operations.md)',
+  '根拠・手順: [固定版の継続更新運用](https://github.com/Nimrodx0/Umasupport/blob/main/docs/how-to/upstream-refresh-operations.md)',
   '<!-- umasupport-candidate-draft fingerprint:'+manifest.reviewFingerprint+' -->'
  ].join('\n');
 }
