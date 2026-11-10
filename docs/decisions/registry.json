@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-041",
+      "date": "2026-11-10",
+      "heading": "2026-11-10：文書構成の改善を製品・研究から独立した継続トラックとして記録する",
+      "status": "current",
+      "relation": [],
+      "note": "文書改善を独立Dトラックで継続し、実開発で観測した問題・手戻りをIssue #388と計画へ記録。フォルダ移動自体を目的化しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-041",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-041",
+      "reviewedAt": "2026-11-10"
+    },
+    {
       "id": "D-001",
       "date": "2026-11-06",
       "heading": "2026-11-06：発動条件の成立機会と脚質特異性を独立した2軸とする",
