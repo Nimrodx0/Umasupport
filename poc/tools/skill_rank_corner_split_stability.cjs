@@ -130,6 +130,32 @@ function compareSizes(a,b){
 function count(rows,property,values){
  return Object.fromEntries(values.map(v=>[v,rows.filter(x=>x[property]===v).length]));
 }
+function measurementIdentity(source){
+ const byPath=new Map();
+ for(const c of source.contextCells){
+  if(!byPath.has(c.sourcePathId))byPath.set(c.sourcePathId,[]);
+  byPath.get(c.sourcePathId).push([
+   c.candidate,c.windowKind,c.courseId,c.fieldSize,c.mode,c.style,
+   c.sourceRankPositions,c.W10mOpportunityPercent,c.OPointOccupancyPercent,
+   c.split15SeedGroups.map(h=>[h.WmeanPercent,h.OmeanPercent])
+  ]);
+ }
+ const identities=new Map();
+ for(const [path,parts] of byPath){
+  const txt=JSON.stringify(parts.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
+  const key=crypto.createHash('sha256').update(txt).digest('hex');
+  if(!identities.has(key))identities.set(key,[]);
+  identities.get(key).push(path);
+ }
+ return {
+  sourcePaths:byPath.size,
+  distinctMeasuredPathProfiles:identities.size,
+  reusedProfileGroups:[...identities.values()].filter(x=>x.length>1).length,
+  largestSharedPathGroup:Math.max(...[...identities.values()].map(x=>x.length)),
+  note:'Identical W/O and split-15 measurements across source pathways are deduplicated for descriptive provenance, NOT independent races or independent statistical tests.'
+ };
+}
+
 function audit(source){
  const groups=validate(source),pairs=[],fullFour=[];
  const pairStatus=['strict-direction-repeated','both-halves-tied',
@@ -204,6 +230,7 @@ function audit(source){
   crossHeadcount:between,
   crossHeadcountComparedPairs:headcount.length/2,
   fullFourContextCount:fullFour.length,
+  sharedMeasurementAudit:measurementIdentity(source),
   maximumAbsoluteSingleStyleW15SplitDeltaPoints:Number(Math.max(
    ...source.contextCells.map(c=>Math.abs(c.split15SeedGroups[0].WmeanPercent-
     c.split15SeedGroups[1].WmeanPercent))).toFixed(6)),
@@ -242,4 +269,4 @@ if(require.main===module){
  catch(error){console.error(error.stack||error);process.exitCode=1}
 }
 module.exports={STATUS,MODEL,SOURCE,PIN,STYLES,AXES,EPS,validate,pair,
- compareSizes,audit,main};
+ compareSizes,measurementIdentity,audit,main};
