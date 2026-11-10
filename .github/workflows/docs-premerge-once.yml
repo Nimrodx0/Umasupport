@@ -5,6 +5,10 @@ on:
       - docs/reorganize-navigation-and-phase-plans-20261110
     paths:
       - '.github/workflows/docs-premerge-once.yml'
+      - 'docs/**'
+      - 'poc/tools/check_markdown_anchors.cjs'
+      - 'poc/config/event-release-approvals.gt2487.v2.json'
+      - 'poc/tests/doc_process.test.cjs'
 permissions:
   contents: read
 jobs:
