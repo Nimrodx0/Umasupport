@@ -24,3 +24,5 @@
 - [利用者の判断状態索引](../decisions/index.md)
 
 参考：[Architecture Decision Records（Michael Nygard）](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) ／ [英国政府GDS ADR運用](https://gds-way.digital.cabinet-office.gov.uk/standards/architecture-decisions.html)。
+
+新規ADRの追加時は索引へファイル名を追記し、`node --test poc/tests/doc_process.test.cjs`で提案日・状態・採用日／却下日・置換先を確認してください。`Accepted`には判断主体と根拠、`Rejected`には却下日、`Superseded`には置換先番号を必須とします。

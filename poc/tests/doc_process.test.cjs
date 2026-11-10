@@ -103,3 +103,30 @@ test('current documentation rules do not require a deleted tutorials folder',()=
  assert.ok(text.includes('poc/README.md'));
  assert.ok(!fs.existsSync(path.join(root,'docs/tutorials/first-session.md')));
 });
+
+test('all ADR documents have a lifecycle status, dated proposals and a discoverable entry',()=>{
+ const dir=path.join(root,'docs/adr');
+ const docs=fs.readdirSync(dir).filter(p=>/^\d{4}-.*\.md$/.test(p)).sort();
+ const readme=load('docs/adr/README.md');
+ const ids=new Set();
+ assert.ok(docs.length>=1);
+ for(const name of docs){
+  const src=load('docs/adr/'+name),id=name.slice(0,4);
+  assert.ok(!ids.has(id),'duplicate ADR number '+id);ids.add(id);
+  assert.match(src,new RegExp('^# ADR-'+id+'[：:]','m'),name+' has an unexpected ADR title');
+  assert.ok(readme.includes('('+name+')'),'ADR missing from index '+name);
+  const state=/^- \*\*状態\*\*：(Proposed|Accepted|Rejected|Superseded)/m.exec(src)?.[1];
+  assert.ok(state,name+' has no recognized lifecycle state');
+  assert.match(src,/^- \*\*提案日\*\*：\d{4}-\d\d-\d\d/m,name);
+  if(state==='Proposed'){
+   assert.match(src,/^- \*\*採用日\*\*：未採用/m,name+' proposal must not present itself as accepted');
+  }else if(state==='Accepted'){
+   assert.match(src,/^- \*\*採用日\*\*：\d{4}-\d\d-\d\d/m,name);
+   assert.match(src,/^- \*\*判断主体と根拠\*\*：(?!未決定|未採用|なし).+/m,name);
+  }else if(state==='Rejected'){
+   assert.match(src,/^- \*\*却下日\*\*：\d{4}-\d\d-\d\d/m,name);
+  }else if(state==='Superseded'){
+   assert.match(src,/^- \*\*置換先\*\*：ADR-\d{4}/m,name);
+  }
+ }
+});
