@@ -19,7 +19,8 @@ function group(n) {
 }
 const moved=original.filter(n=>/^docs\/[^/]+\.md$/.test(n)&&!core.has(path.basename(n))).map(from=>({from,to:'docs/evidence/'+group(path.basename(from))+'/'+path.basename(from)}));
 function normalize(text) {
- return text.replace(/\n> \*\*資料の位置づけ\*\*：[^\n]*\n> \*\*現行の参照先\*\*：[^\n]*\n/g,'')
+ return text.replace(/\n> \*\*個別の参照先\*\*：[^\n]*\n/g,'\n')
+ .replace(/\n> \*\*資料の位置づけ\*\*：[^\n]*\n> \*\*現行の参照先\*\*：[^\n]*\n/g,'')
  .replace(/\r\n/g,'\n')
  .replace(/(!?\[[^\]\n]*\]\()([^) \n]+)([^)\n]*\))/g,(m,p,url,tail)=>{
   if(/^(?:[a-z][\w+.-]*:|\/\/|#)/i.test(url))return m;
