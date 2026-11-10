@@ -67,3 +67,22 @@ test('inconsistent inventory or duplicate source identities fail closed',()=>{
  assert.throws(()=>triage.examine(inventory(app),inventory(app),
   {matchedRecords:[app[0],app[0]]}),/Repeated matched/);
 });
+
+test('pilot audit refuses to combine AND predicates from distinct OR paths',()=>{
+ const app=[
+  make(1,[[c('order_rate',40),c('phase_random',1),c('is_overtake',1)]]),
+  make(2,[[c('order_rate',50)],[c('is_overtake',1),c('phase_random',1)]]),
+  make(3,[[c('distance_diff_top',4),c('order_rate',50),c('phase_random',1)]])
+ ];
+ const report=triage.examine(inventory(app),inventory(app),{matchedRecords:app});
+ const overtake=report.summary.pilotPathAudit.find(x=>x.type==='is_overtake');
+ assert.equal(overtake.appSkills,2);
+ assert.equal(overtake.sameAndRank,1);
+ assert.equal(overtake.sameAndWindow,2);
+ assert.equal(overtake.sameAndRankWindow,1);
+ assert.equal(overtake.withOr,1);
+ const diff=report.summary.pilotPathAudit.find(x=>x.type==='distance_diff_top');
+ assert.equal(diff.sameAndRankWindow,1);
+ assert.equal(diff.group,'no-general-style-inference');
+ assert.equal(report.summary.noAutomaticStyleLabels,true);
+});
