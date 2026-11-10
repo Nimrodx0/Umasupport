@@ -1,29 +1,27 @@
 # 文書の入口
 
-[README](../README.md) がプロジェクトの概要、[AGENTS.md](../AGENTS.md) がエージェントの作業入口です。**このページは索引であり、仕様や現在値の正本ではありません。**
+[README](../README.md)はアプリの概要、[AGENTS](../AGENTS.md)は開発原則です。ここは**情報を探すための入口**であり、実測値や仕様の正本ではありません。
 
-## 開発を引き継ぐとき
+## まず知りたいこと
 
-1. **現行の作業**：[ロードマップ](roadmap.md) の未完工程を確認し、[開発状況](status.md) の実測・未検証項目、関連するOpen Issueを照合する。
-2. **何を・なぜ**：[要件](requirements.md) を現在有効な仕様として読み、理由や撤回関係が必要なとき [意思決定ログ](decisions.md) を参照する。
-3. **どう実現・どう検証**：[アーキテクチャ](architecture.md)、[イベントスキーマ](event-schema.md)、[検証計画](verification-plan.md)、対象コード／テストを参照する。
-4. **研究の再開**：対象の[設計](skill-activation-tendencies-design.md)と[調査・監査資料の索引](evidence-index.md)から出典・モデル・限界を確かめ、未確定事項を決定済みと扱わない。
-
-## 文書の役割
-
-| 情報 | 正本 |
+| 質問 | 読む文書 |
 | --- | --- |
-| 開発者・AIの作業規則 | [AGENTS.md](../AGENTS.md)、[文書運用規約](documentation-policy.md) |
-| 機能要件・対象外・受入条件 | [requirements.md](requirements.md) |
-| 確定した仕様判断とその変更理由 | [decisions.md](decisions.md)（履歴）、有効仕様は requirements |
-| 現行のソース・モジュール・データ契約 | [architecture.md](architecture.md)、[event-schema.md](event-schema.md)、[data-sources.md](data-sources.md) |
-| 未来の優先順位・依存関係 | [roadmap.md](roadmap.md)、具体的な残課題は [GitHub Issues](https://github.com/Nimrodx0/Umasupport/issues) |
-| 実装・公開・試験の最新到達点 | [status.md](status.md) |
-| 検証の合格条件 | [verification-plan.md](verification-plan.md) |
-| 日付付き監査・研究成果 | [evidence-index.md](evidence-index.md) と各監査ファイル |
-| 作業・検証の旧記録 | [verification-history.md](verification-history.md)、[development-history.md](development-history.md)、[archive/](archive/) |
-| 実装・試験コマンド | [poc/README.md](../poc/README.md) |
+| 今どこまでできている？ | [開発状況](status.md) |
+| 次に何を作る？ | [ロードマップ](roadmap.md) |
+| P0～P5の下位計画と結果は？ | [詳細計画](plans/index.md) |
 
-## 情報が食い違うとき
+## 文書の地図
 
-**現在有効な要求は requirements、実装の観測事実はコード／配信データと検証結果、未完の優先順位は roadmap** で確認します。意思決定ログと研究資料は背景を追うための記録であり、旧実測を現在値としてコピーしません。判断を更新する場合は [文書運用規約](documentation-policy.md) に従い、関係する正本を必要最小限更新します。
+| 分類 | 入口 | 役割 |
+| --- | --- | --- |
+| 企画・工程 | [plans](plans/index.md) | 製品W1～W5・研究P0～P5の小工程、状態、成果と未完ゲート |
+| 要件・判断 | [requirements](requirements.md)／[decisions](decisions.md) | 有効な仕様・ユーザー判断と変更理由 |
+| 設計 | [architecture](architecture.md)／[event-schema](event-schema.md)／[data-sources](data-sources.md) | 技術・データ契約 |
+| 実装・検証 | [PoC手順](../poc/README.md)／[検証計画](verification-plan.md) | 起動方法・A/B/C受け入れ |
+| 研究・監査 | [evidence](evidence/README.md)／[主要証拠の索引](evidence-index.md) | 分野別の個別記録 |
+| 履歴 | [archive](archive/)／[開発履歴](development-history.md)／[検証履歴](verification-history.md) | 旧記録。当時の指示は現行指示ではない |
+| 文書の規則 | [documentation-policy](documentation-policy.md) | 保存先と更新ルール |
+
+## 食い違いがある場合
+
+有効要件は[requirements](requirements.md)、現在の動作事実はコード・公開JSON・検証、優先順位は[roadmap](roadmap.md)、**細分化した計画と進捗**は[plans](plans/index.md)、日付付きの実測は[status](status.md)を確認してください。決定理由は[decisions](decisions.md)、研究の詳細は[evidence](evidence/README.md)から辿れます。
