@@ -47,6 +47,7 @@ function reasonedPath(row){
   timeTypes:[...new Set(timing.map(x=>x.type))].sort(),
   timingPredicates:timing.map(x=>({type:x.type,operator:x.operator,value:x.value})),
   explicitTypes:[...new Set(explicit.map(x=>x.type))].sort(),
+  explicitPredicates:explicit.map(({type,operator,value})=>({type,operator,value})),
   otherAndTypes:[...new Set(extra.map(x=>x.type))].sort(),
   fullyModeledSkill:false,
   missingOriginalConditionsAreNotNeutral:true};
