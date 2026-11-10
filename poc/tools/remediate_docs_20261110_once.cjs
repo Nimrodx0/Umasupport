@@ -119,8 +119,6 @@
    '日付付きの文書レビューと全件点検台帳は`evidence/quality/`の**固定記録**として扱います。現在の検証基準は`quality/`です。日付付きの研究記録は既存の');
  wr('docs/governance/documentation-policy.md',gov);
  let quality=rd('docs/quality/README.md');
- quality=quality.replace('document-review-inventory-20261110.md','../evidence/quality/document-review-inventory-20261110.md');
- quality=quality.replace('documentation-integrity-review-20261110.md','../evidence/quality/documentation-integrity-review-20261110.md');
  quality=quality.replace('個別文書の構成レビュー台帳','当時278件の構成レビュー（固定記録）');
  quality+='\n最新ファイル一覧の取得は`node poc/tools/list_doc_inventory.cjs`を実行します。当時の台帳の件数を現在値として使用しません。\n';
  wr('docs/quality/README.md',quality);
