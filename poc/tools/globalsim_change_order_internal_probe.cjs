@@ -70,7 +70,7 @@ function analyze(original,probe,manifest){
  const groups=new Map();
  let frames=0,matchedColumns=0,sampled=0,
   movedUp=0,movedDown=0,unchanged=0,finished=0,
-  positionRankDisagreement=0;
+  positionRankDisagreement=0,initialSamplesHeld=0;
  for(const [trial,p] of manifest.entries()){
   const A=original[trial].frames,B=probe[trial].frames,n=p.fieldSize;
   if(A.length!==B.length)throw Error('Instrumented race length drift');
@@ -89,6 +89,10 @@ function analyze(original,probe,manifest){
      matchedColumns++;
     }
     const encoded=get(k,5),difference=get(k,4);
+    // Retail runtime records t=0 initialization separately before our only
+    // patch site (the post-step snapshot). Never read original blocker ID
+    // as if it were instrumented rank data.
+    if(tick===0&&a.t===0){initialSamplesHeld++;continue}
     if(encoded===-999&&difference===-999){finished++;continue}
     if(!Number.isSafeInteger(encoded)||!Number.isSafeInteger(difference))
      throw Error('Probe readout is not exact integer rank state');
@@ -141,10 +145,12 @@ function analyze(original,probe,manifest){
    formula:'field.order_of(i) - field.previous_order_of(i)'},
   observations:{movedUpTicks:movedUp,movedDownTicks:movedDown,
    unchangedRankTicks:unchanged,finishedOrMissingSamples:finished,
+   uninstrumentedRetailInitializationSamples:initialSamplesHeld,
    currentPointRankDisagreesWithCachedRankTicks:positionRankDisagreement},
   rows,
   limitations:[
    'Original source activation code is not changed. Temporary patch replaces replay slots 4 and 5; slots 0-3 must exactly match original engine on every frame.',
+   'Pinned example enables experimentalRetailRuntime and emits a separate t=0 initialized frame outside the patched post-step site. It is explicitly held and never counted as a rank-change tick.',
    'Post-step source rank change readout is not identical to testing a complete original skill predicate at its exact activation instant; same-tick skill AND/OR/Invoke not tested.',
    'Counters are correlated model tick observations, NOT real game skill activation probabilities or independent races.',
    'One synthetic model and only two courses/two rosters cannot establish four-style general tendency or game mechanic fidelity.',
