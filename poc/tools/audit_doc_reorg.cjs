@@ -26,8 +26,8 @@ function normalize(text) {
   return p+'__LOCAL_DESTINATION__'+tail;
  })
  // Repairing explicit paths in prose or code is not a change to the technical claim.
- .replace(/(?:\.\.\/)*(?:docs\/)?(?:evidence\/(?:skills|events|sources|quality)\/)?([A-Za-z0-9_.-]+\.md)/g,
-     (m,filename)=>'__DOC_PATH__'+filename)
+ .replace(/(?:\.\.\/)*(?:docs\/)?(?:[A-Za-z0-9_.-]+\/)*([A-Za-z0-9_.-]+\.md)/g,
+     (m,filename)=>'__DOC_PATH__'+(filename==='log.md'&&/decisions\/log\.md$/.test(m)?'decisions.md':filename==='catalog.md'&&/evidence\/catalog\.md$/.test(m)?'evidence-index.md':filename))
  .replace(/[ \t]+$/gm,'');
 }
 function numbered(text){return [...normalize(text).matchAll(/(?<!\w)[0-9][0-9.,%/-]*/g)].map(m=>m[0]);}

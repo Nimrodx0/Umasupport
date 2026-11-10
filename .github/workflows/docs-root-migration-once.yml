@@ -5,6 +5,7 @@ on:
       - docs/reorganize-navigation-and-phase-plans-20261110
     paths:
       - .github/workflows/docs-root-migration-once.yml
+      - poc/tools/audit_doc_reorg.cjs
 
 permissions:
   contents: write
