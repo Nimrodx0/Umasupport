@@ -8,9 +8,9 @@ const root=path.resolve(__dirname,'../..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 
 test('active product documentation retains source and publication boundaries',()=>{
- const req=read('docs/requirements.md');
- const roadmap=read('docs/roadmap.md');
- const decisions=read('docs/decisions.md');
+ const req=read('docs/reference/requirements.md');
+ const roadmap=read('docs/project/roadmap.md');
+ const decisions=read('docs/decisions/log.md');
  assert.match(req,/現行の主入力は第三者GitHubの構造化GameTora派生JSON/);
  assert.match(decisions,/現行.*GameTora派生JSONを主経路/);
  assert.match(roadmap,/GameTora派生GitHub JSON/);
@@ -18,7 +18,7 @@ test('active product documentation retains source and publication boundaries',()
  assert.match(roadmap,/公開済みイベントの利用受け入れ/);
  assert.doesNotMatch(roadmap,/次の実装順は上の3→4/);
  assert.doesNotMatch(roadmap,/最優先：自動提供方法・利用条件/);
- const verification=read('docs/verification-plan.md');
+ const verification=read('docs/quality/verification-plan.md');
  assert.match(verification,/2,512件を1件ずつ人手承認する手順は主工程ではない/);
 });
 
@@ -27,21 +27,21 @@ test('historical decisions and verification remain available without being treat
   'docs/archive/agents-handoff-20261021.md',
   'docs/archive/readme-before-20261021.md',
   'docs/archive/roadmap-progress-log-20261021.md',
-  'docs/verification-history.md',
+  'docs/history/verification-history.md',
   'poc/legacy-runbook.md'
  ]) assert.ok(fs.existsSync(path.join(root,p)),p+' must remain recoverable');
- assert.match(read('docs/status.md'),/archive\/status-through-20261105\.md/);
- assert.match(read('docs/roadmap.md'),/archive\/roadmap-through-20261105\.md/);
- for(const p of ['docs/architecture.md','docs/requirements.md']) {
+ assert.match(read('docs/project/status.md'),/archive\/status-through-20261105\.md/);
+ assert.match(read('docs/project/roadmap.md'),/archive\/roadmap-through-20261105\.md/);
+ for(const p of ['docs/reference/architecture.md','docs/reference/requirements.md']) {
   assert.doesNotMatch(read(p),/現状の公開イベント0件は変わらない|公開DBへの承認済み実イベント収録は0件/,
    p+' must not advertise the superseded zero-release state as current');
  }
 });
 
 test('automatic delivery priority is coherent, and unapproved private source is never silently fetched',()=>{
- const plan=read('docs/phase2-event-delivery-route-assessment-20261030.md');
- const roadmap=read('docs/roadmap.md');
- const decisions=read('docs/decisions.md');
+ const plan=read('docs/evidence/events/phase2-event-delivery-route-assessment-20261030.md');
+ const roadmap=read('docs/project/roadmap.md');
+ const decisions=read('docs/decisions/log.md');
  const app=read('poc/live.html');
  const approved=JSON.parse(read('poc/data/reviewed_events.v1.json'));
  assert.match(plan,/ユーザーがアプリを開けば自動的にイベントを使える状態/);

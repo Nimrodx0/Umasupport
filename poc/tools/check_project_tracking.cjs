@@ -7,8 +7,8 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 
 function validateDocs() {
-  const status = read('docs/status.md');
-  const roadmap = read('docs/roadmap.md');
+  const status = read('docs/project/status.md');
+  const roadmap = read('docs/project/roadmap.md');
   const catalog = JSON.parse(read('poc/data/reviewed_events.v1.json'));
   if (!Array.isArray(catalog.cards)) throw new Error('Unexpected approved catalog shape: cards array missing');
   const cards = catalog.cards.length;
@@ -18,15 +18,15 @@ function validateDocs() {
   }, 0);
 
   const match = status.match(/公開イベント（公開JSON実測）：\*\*([\d,]+)件\*\*／\*\*([\d,]+)カード\*\*/);
-  if (!match) throw new Error('Missing canonical release-count field in docs/status.md');
+  if (!match) throw new Error('Missing canonical release-count field in docs/project/status.md');
   const reported = [Number(match[1].replaceAll(',', '')), Number(match[2].replaceAll(',', ''))];
   if (reported[0] !== events || reported[1] !== cards)
-    throw new Error('docs/status.md release count ' + reported.join('/') +
+    throw new Error('docs/project/status.md release count ' + reported.join('/') +
       ' disagrees with approved JSON ' + events + '/' + cards + '; update status in the release PR');
 
   if (!/^# 開発状況（現行スナップショット）/m.test(status) ||
       !/\*\*測定日：20\d{2}-\d{2}-\d{2}。\*\*/.test(status))
-    throw new Error('docs/status.md must begin with a dated current summary');
+    throw new Error('docs/project/status.md must begin with a dated current summary');
   if (!/archive\/status-through-20261105\.md/.test(status) ||
       !fs.existsSync(path.join(root, 'docs/archive/status-through-20261105.md')))
     throw new Error('Status migration must retain historical evidence');

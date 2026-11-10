@@ -4,7 +4,7 @@
  * has an exact pinned source shape and independently corroborated SKILL facts.
  * Stat/bond differences are NOT reconstructed by these rules.
  *
- * References and competing claims: docs/phase2-final-three-outcome-review-20261021.md
+ * References and competing claims: docs/evidence/events/phase2-final-three-outcome-review-20261021.md
  */
 const KEY=(c,e,o,r,i)=>JSON.stringify([c,e,o,r,i]);
 function hint({cardId,ordinal,choice=1,route=1,index,fact,locator,registry,supplementalIds,historicalIds}){

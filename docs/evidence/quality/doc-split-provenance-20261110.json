@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "eac1cc4e0e2913efd17f3fac66009880c4029efe",
+  "description": "Source document bodies retained in dated evidence; relative Markdown links adjusted for new location",
+  "snapshots": [
+    {
+      "sourcePath": "docs/reference/data-sources.md",
+      "snapshotPath": "docs/evidence/sources/data-sources-original-20261110.md",
+      "sourceBlobSha": "c9a44422561d614f127762f0420001c67a224f9f"
+    },
+    {
+      "sourcePath": "docs/how-to/upstream-refresh-operations.md",
+      "snapshotPath": "docs/evidence/sources/upstream-refresh-original-20261110.md",
+      "sourceBlobSha": "fea9f8503b6a9a8a7bbd3185b24d0c83a1ffe15d"
+    },
+    {
+      "sourcePath": "docs/reference/event-schema.md",
+      "snapshotPath": "docs/evidence/events/event-schema-research-original-20261110.md",
+      "sourceBlobSha": "0fcba53707eef924025583fb95e3d931bf68950d"
+    }
+  ]
+}

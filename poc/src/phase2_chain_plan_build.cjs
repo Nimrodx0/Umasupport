@@ -22,7 +22,7 @@ function build(){
     POLICY.publicationApproved!==false||
     POLICY.ordinaryContinuationFlagRule!=='NO_EXPLICIT_CHAIN_END_SETS_NEXT_STAGE_FLAG'||
     POLICY.mechanicsScope!=='CHOICE_DEPENDENT_UNLOCK_FLAGS_WITHOUT_EVENT_SPAWN_MODEL'||
-    POLICY.policyBasis!=='docs/gametora-baseline-event-policy-20261021.md'||
+    POLICY.policyBasis!=='docs/evidence/sources/gametora-baseline-event-policy-20261021.md'||
     !Array.isArray(POLICY.cards)||POLICY.cards.length!==5)
   fail('参照した5サポカ・未確定17経路・方針が変更されました');
  const seen=new Set();

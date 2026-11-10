@@ -9,15 +9,15 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const core = [
   'README.md', 'AGENTS.md', 'poc/README.md', 'docs/index.md',
-  'docs/documentation-policy.md', 'docs/requirements.md', 'docs/decisions.md',
-  'docs/roadmap.md', 'docs/status.md', 'docs/architecture.md',
-  'docs/verification-plan.md', 'docs/evidence-index.md',
-  'docs/verification-history.md'
+  'docs/governance/documentation-policy.md', 'docs/reference/requirements.md', 'docs/decisions/log.md',
+  'docs/project/roadmap.md', 'docs/project/status.md', 'docs/reference/architecture.md',
+  'docs/quality/verification-plan.md', 'docs/evidence/catalog.md',
+  'docs/history/verification-history.md'
 ];
 const destinations = [
-  'docs/requirements.md', 'docs/decisions.md', 'docs/roadmap.md',
-  'docs/status.md', 'docs/architecture.md', 'docs/verification-plan.md',
-  'docs/evidence-index.md', 'docs/documentation-policy.md'
+  'docs/reference/requirements.md', 'docs/decisions/log.md', 'docs/project/roadmap.md',
+  'docs/project/status.md', 'docs/reference/architecture.md', 'docs/quality/verification-plan.md',
+  'docs/evidence/catalog.md', 'docs/governance/documentation-policy.md'
 ];
 
 function withoutCodeFences(markdown) {
@@ -120,38 +120,72 @@ test('new agents and developers can navigate to authoritative sources from entry
 test('current work is traceable to versioned research, beyond generic entries', () => {
   const {graph, errors} = scan(root, core);
   assert.deepEqual(errors, []);
-  for (const file of ['docs/roadmap.md', 'docs/status.md', 'docs/evidence-index.md']) {
+  for (const file of ['docs/project/roadmap.md', 'docs/project/status.md', 'docs/evidence/catalog.md']) {
     assert.ok(topicalEvidence(graph, file).length > 0,
       file + ' should link to at least one concrete audit, study or implementation record');
   }
-  assert.ok(shortestRoute(graph, 'docs/requirements.md', 'docs/decisions.md'),
+  assert.ok(shortestRoute(graph, 'docs/reference/requirements.md', 'docs/decisions/log.md'),
     'Requirements should lead to decision reasons and supersessions');
-  assert.ok(shortestRoute(graph, 'docs/verification-plan.md', 'docs/verification-history.md'),
+  assert.ok(shortestRoute(graph, 'docs/quality/verification-plan.md', 'docs/history/verification-history.md'),
     'Acceptance criteria should link to prior test evidence without treating it as current');
 });
 
 test('broken evidence and disconnected decisions fail while harmless prose changes pass', () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'handoff-check-'));
   try {
-    fs.mkdirSync(path.join(temp, 'docs'));
+    fs.mkdirSync(path.join(temp, 'docs/reference'), {recursive: true});
     fs.writeFileSync(path.join(temp, 'README.md'),
       '# Any heading\n[Navigation](docs/index.md)\n');
     fs.writeFileSync(path.join(temp, 'docs/index.md'),
-      '[Current contract](requirements.md)\n');
-    fs.writeFileSync(path.join(temp, 'docs/requirements.md'), '# Effective requirements\n');
-    let result = scan(temp, ['README.md', 'docs/index.md', 'docs/requirements.md']);
+      '[Current contract](reference/requirements.md)\n');
+    fs.writeFileSync(path.join(temp, 'docs/reference/requirements.md'), '# Effective requirements\n');
+    let result = scan(temp, ['README.md', 'docs/index.md', 'docs/reference/requirements.md']);
     assert.deepEqual(result.errors, []);
-    assert.deepEqual(shortestRoute(result.graph, 'README.md', 'docs/requirements.md'),
-      ['README.md', 'docs/index.md', 'docs/requirements.md']);
+    assert.deepEqual(shortestRoute(result.graph, 'README.md', 'docs/reference/requirements.md'),
+      ['README.md', 'docs/index.md', 'docs/reference/requirements.md']);
     fs.writeFileSync(path.join(temp, 'README.md'),
       '# Renamed heading\n[Start here instead](docs/index.md)\n');
-    result = scan(temp, ['README.md', 'docs/index.md', 'docs/requirements.md']);
+    result = scan(temp, ['README.md', 'docs/index.md', 'docs/reference/requirements.md']);
     assert.deepEqual(result.errors, []);
     fs.writeFileSync(path.join(temp, 'docs/index.md'), '[Missing](missing.md)\n');
-    result = scan(temp, ['README.md', 'docs/index.md', 'docs/requirements.md']);
+    result = scan(temp, ['README.md', 'docs/index.md', 'docs/reference/requirements.md']);
     assert.ok(result.errors.some(e => e.includes('missing.md')));
-    assert.equal(shortestRoute(result.graph, 'README.md', 'docs/requirements.md'), null);
+    assert.equal(shortestRoute(result.graph, 'README.md', 'docs/reference/requirements.md'), null);
   } finally {
     fs.rmSync(temp, {recursive: true, force: true});
   }
+});
+
+test('all tracked Markdown documents keep valid local links after reorganization', () => {
+  const {execFileSync} = require('node:child_process');
+  const files = execFileSync('git', ['ls-files', '--', '*.md'], {cwd: root, encoding: 'utf8'})
+    .split('\n').map(line => line.trim()).filter(Boolean);
+  const {errors} = scan(root, files);
+  assert.deepEqual(errors, [], 'Every local Markdown destination must exist, including archived evidence');
+});
+
+test('agent entry points resolve task-specific authoritative documents without prescribing folder counts',()=>{
+ const agents=fs.readFileSync(path.join(root,'AGENTS.md'),'utf8');
+ const index=fs.readFileSync(path.join(root,'docs/index.md'),'utf8');
+ assert.match(agents,/タスクに必要な文書を段階的に取得する/);
+ for(const canonical of [
+  'docs/reference/requirements.md',
+  'docs/reference/architecture.md',
+  'docs/reference/data-sources.md',
+  'docs/project/roadmap.md',
+  'docs/project/status.md',
+  'docs/plans/index.md',
+  'docs/quality/verification-plan.md',
+  'docs/decisions/log.md'
+ ]){
+  assert.ok(fs.existsSync(path.join(root,canonical)),canonical+' must remain reachable');
+  assert.ok(agents.includes(canonical),canonical+' should be discoverable from the automatic agent entry');
+ }
+ assert.match(index,/作業別入口/);
+ const {graph,errors}=scan(root,core);
+ assert.deepEqual(errors,[]);
+ for(const target of destinations){
+  const pathToDoc=shortestRoute(graph,'AGENTS.md',target);
+  assert.ok(pathToDoc && pathToDoc.length<=4,target+' must be reachable from agent entry within three links');
+ }
 });
