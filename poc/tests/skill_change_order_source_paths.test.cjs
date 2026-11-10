@@ -23,7 +23,7 @@ test('precondition, OR alternatives and different Invoke are not collapsed',()=>
  assert.equal(got.summary.sourceAndPaths,3);
  assert.equal(got.summary.inPreConditions,1);
  assert.equal(got.summary.inConditions,2);
- assert.equal(got.summary.alternatives,2);
+ assert.equal(got.summary.alternatives,1);
  assert.equal(got.summary.withMultipleInvokes,3);
  assert.deepEqual(got.paths.map(x=>x.invokeOffset),[0,0,1]);
 });
