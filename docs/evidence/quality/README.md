@@ -5,3 +5,5 @@
 [証拠の入口](../README.md) ／ [主題別の索引](../catalog.md) ／ [ロードマップ](../../project/roadmap.md)
 
 カードID・スキル名・出典名・日付からこのフォルダ内を検索できます。
+
+- [現行契約への分離における旧原本の固定Git blob対応表](doc-split-provenance-20261110.json)（分割時点の監査用）

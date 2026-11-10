@@ -9,3 +9,5 @@
 品質基準と、過去に実行した試験の結果を分けて管理します。
 
 最新ファイル一覧の取得は`node poc/tools/list_doc_inventory.cjs`を実行します。当時の台帳の件数を現在値として使用しません。
+
+- [3件の現行契約分離時点の原本照合](../evidence/quality/doc-split-provenance-20261110.json)

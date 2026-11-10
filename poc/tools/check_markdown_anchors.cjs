@@ -15,7 +15,10 @@ function headingSlug(text){
 function getAnchors(p){
  if(cache.has(p))return cache.get(p);
  const s=get(p),seen=new Map(),out=new Set();
+ let fenced=false;
  for(const line of s.split(/\r?\n/)){
+  if(/^\s{0,3}(`{3,}|~{3,})/.test(line)){fenced=!fenced;continue;}
+  if(fenced)continue;
   const h=/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
   if(h){const slug=headingSlug(h[1]),c=seen.get(slug)||0;out.add(slug+(c?'-'+c:''));seen.set(slug,c+1);}
   const ids=line.matchAll(/<a\b[^>]*\bid=["']([^"']+)["'][^>]*>/gi);

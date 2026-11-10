@@ -5,3 +5,6 @@
 [証拠の入口](../README.md) ／ [主題別の索引](../catalog.md) ／ [ロードマップ](../../project/roadmap.md)
 
 カードID・スキル名・出典名・日付からこのフォルダ内を検索できます。
+
+- [出典比較・現行契約分離前の全文](data-sources-original-20261110.md)（2026年10月の当時の比較）
+- [旧監視運用と撤回済み直接取得手順の全文](upstream-refresh-original-20261110.md)（当時の実験）

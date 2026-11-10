@@ -5,3 +5,5 @@
 [証拠の入口](../README.md) ／ [主題別の索引](../catalog.md) ／ [ロードマップ](../../project/roadmap.md)
 
 カードID・スキル名・出典名・日付からこのフォルダ内を検索できます。
+
+- [イベントスキーマv1の旧原文と非公開の技術拡張](event-schema-research-original-20261110.md)：当時の試作・履歴（現行の正式スキーマは[こちら](../../reference/event-schema.md)）
