@@ -24,12 +24,13 @@ jobs:
         run: |
           node --check poc/tools/migrate_docs_root_once_20261110.cjs
           node poc/tools/migrate_docs_root_once_20261110.cjs
+          git add -A -- docs README.md AGENTS.md poc .github/workflows
       - name: Assert root isolation, local links, document preservation and tracking
         run: |
           node --test poc/tests/handoff_quality.test.cjs poc/tests/documentation_policy.test.cjs
           node poc/tools/audit_doc_reorg.cjs --strict
           node poc/tools/check_project_tracking.cjs
-          git diff --check
+          git diff --cached --check
       - name: Commit data-safe Markdown reorganization
         run: |
           git config user.name "github-actions[bot]"
