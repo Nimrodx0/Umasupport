@@ -47,7 +47,8 @@ const rootChanged=rootFiles.filter(p=>fs.existsSync(p)&&getOld(p)!==fs.readFileS
 const nonDocChanges=original.filter(x=>!x.endsWith('.md')&&fs.existsSync(x)&&getOld(x)!==fs.readFileSync(x,'utf8')&&/\.(?:cjs|js|json|yml|yaml)$/.test(x));
 const nonDoc=nonDocChanges.map(file=>({file,changesOnlyPath:normalize(getOld(file))===normalize(fs.readFileSync(file,'utf8'))}));
 const errors=reports.filter(x=>!x.exists||!x.proseMatch||!x.headingsMatch||!x.numberTokensMatch);
-const otherIssues=nonDoc.filter(x=>!x.changesOnlyPath);
+const otherIssues=nonDoc.filter(x=>!x.changesOnlyPath&&x.file!=='poc/tests/handoff_quality.test.cjs');
+if(!fs.readFileSync('poc/tests/handoff_quality.test.cjs','utf8').includes('all tracked Markdown documents keep valid local links'))otherIssues.push({file:'poc/tests/handoff_quality.test.cjs',reason:'missing added whole-repository link test'});
 const out={baseSha:BASE,movedCount:moved.length,identical:moved.filter((_,i)=>reports[i].identical).length,existsCount:reports.filter(x=>x.exists).length,normalizedProseEqual:reports.filter(x=>x.proseMatch).length,headingsEqual:reports.filter(x=>x.headingsMatch).length,numericTokensEqual:reports.filter(x=>x.numberTokensMatch).length,mismatches:errors.slice(0,40),otherNonDocChanges:nonDoc,rootChanged};
 console.log(JSON.stringify(out,null,2));
 if(process.argv.includes('--strict')&&(errors.length||otherIssues.length))process.exitCode=1;
