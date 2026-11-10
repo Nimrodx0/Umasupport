@@ -6,7 +6,7 @@
 
 状態：`current`（確認された最新の判断）、`superseded`（明示的に置換）、`qualified`（後続判断で一部限定）、`review-required`（適用状態未確定）。いずれも原文を消したり実装を自動変更するものではありません。
 
-**ログ40件の状態**：current 10件、superseded 3件、qualified 4件、review-required 23件。独立した判断文書 2件は別集計です。
+**ログ内判断の状態**：current 10件、superseded 3件、qualified 4件、review-required 23件。独立した判断文書 2件は別集計です。
 
 ## ログ内の判断
 

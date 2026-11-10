@@ -72,7 +72,8 @@ test('dated document inventory is explicitly frozen; current inventory comes fro
  assert.match(old,/固定/);
  assert.ok(fs.existsSync(here('poc/tools/list_doc_inventory.cjs')));
  const j=JSON.parse(git('ls-files','--','docs/**/*.md','docs/*.md').split('\n').filter(Boolean).length>0 ? cp.execFileSync(process.execPath,['poc/tools/list_doc_inventory.cjs','--json'],{cwd:root,encoding:'utf8'}):'{}');
- assert.ok(j.count>=200,'Live inventory has unexpectedly low count');
+ const actual=git('ls-files','--','docs/**/*.md','docs/*.md').split('\n').filter(Boolean).filter(p=>fs.existsSync(here(p))).sort();
  assert.equal(j.rows.length,j.count);
+ assert.deepEqual(j.rows.map(x=>x.file),actual,'Live inventory must exactly match tracked documentation rather than a frozen minimum count');
  assert.ok(!j.rows.some(x=>!fs.existsSync(here(x.file))),'Live inventory must exclude non-existing docs');
 });
