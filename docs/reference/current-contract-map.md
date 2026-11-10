@@ -4,16 +4,19 @@
 
 | 変更・調査対象 | 先に読む正本 | 実際の実装・検証 |
 | --- | --- | --- |
-| デッキ・スキル集計 | [機能要件](requirements.md)、[アーキテクチャ](architecture.md) | [core.js](../../poc/src/core.js)、[core.test.js](../../poc/tests/core.test.js) |
+| デッキ・スキル集計 | [機能要件の章](requirements.md#3-機能要件)、[現行アーキテクチャ](architecture.md#現行構成) | [core.js](../../poc/src/core.js)、[core.test.js](../../poc/tests/core.test.js) |
 | UI、カードの識別・保存 | [要件](requirements.md)、[ランタイム読込](runtime-data-loading.md) | [live_app.js](../../poc/src/live_app.js)、[settings.js](../../poc/src/settings.js) |
-| 公開イベントの分岐・候補 | [イベントスキーマ](event-schema.md)、[公開承認の手順](../how-to/checker-public-catalog.md) | [公開カタログ](../../poc/src/public_event_catalog.js)、[公開JSON](../../poc/data/reviewed_events.v1.json) |
-| 新しいカードの増分取込 | [出典契約](data-sources.md)、[現行イベント取込手順](../how-to/curated-event-intake.md) | [stage bridge](../../poc/src/derived_github_staging_bridge.cjs)、[増分追加](../../poc/src/new_card_event_incremental.cjs) |
+| 公開イベントの分岐・候補 | [イベントのデータ構造](event-schema.md#データ構造)、[公開承認の手順](../how-to/checker-public-catalog.md) | [公開カタログ](../../poc/src/public_event_catalog.js)、[公開JSON](../../poc/data/reviewed_events.v1.json) |
+| 新しいカードの増分取込 | [現在の出典経路](data-sources.md#まず確認する現在のデータ経路)、[現行イベント取込手順](../how-to/curated-event-intake.md) | [stage bridge](../../poc/src/derived_github_staging_bridge.cjs)、[増分追加](../../poc/src/new_card_event_incremental.cjs) |
 | 公開承認・内容ハッシュ | [公開条件と例外](../how-to/checker-public-catalog.md)、[出典裁定](event-adjudication-enforcement.md) | [承認台帳の選択](../../poc/src/current_public_event_approvals.cjs)、[verify_event_release.cjs](../../poc/tools/verify_event_release.cjs) |
 | スキルの上位・下位対応 | [確定要件](requirements.md)、[階層レビュー](reviewed-skill-hierarchy.md) | [skill_hierarchy.js](../../poc/src/skill_hierarchy.js) |
 | P2の脚質研究 | [現在の決定](../decisions/index.md)、[研究設計](../explanation/skill-activation-tendencies-design.md) | [P2の小工程](../plans/skill-conditions/p2.md)、[研究証拠](../evidence/skills/README.md) |
 | 受入・品質判定 | [検証計画](../quality/verification-plan.md)、[現在の実測](../project/status.md) | [実行手順](../../poc/README.md)、[CI](../../.github/workflows/ci.yml) |
 
 ## 使い方
+
+大きな参照文書を取得する場合は、索引から**必要な章だけ**を開き、実装確認が必要になった部分を追加取得します。これは現在有効な正本を要約して置換するものではなく、元文書内の現行章と実際のコードへの導線です。
+
 
 1. 担当変更箇所のコードを確認してから、該当する仕様書・判断・証拠を**必要な分だけ**開きます。
 2. 現行仕様は`reference/`、過去の監査は`evidence/`、旧方針は`history/`や`archive/`で位置づけを確認します。時間順で後にあることだけで有効仕様とは判断しません。
