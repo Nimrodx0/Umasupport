@@ -50,6 +50,28 @@ const nonDoc=nonDocChanges.map(file=>({file,changesOnlyPath:normalize(getOld(fil
 const errors=reports.filter(x=>!x.exists||!x.proseMatch||!x.headingsMatch||!x.numberTokensMatch);
 const otherIssues=nonDoc.filter(x=>!x.changesOnlyPath&&x.file!=='poc/tests/handoff_quality.test.cjs');
 if(!fs.readFileSync('poc/tests/handoff_quality.test.cjs','utf8').includes('all tracked Markdown documents keep valid local links'))otherIssues.push({file:'poc/tests/handoff_quality.test.cjs',reason:'missing added whole-repository link test'});
-const out={baseSha:BASE,movedCount:moved.length,identical:moved.filter((_,i)=>reports[i].identical).length,existsCount:reports.filter(x=>x.exists).length,normalizedProseEqual:reports.filter(x=>x.proseMatch).length,headingsEqual:reports.filter(x=>x.headingsMatch).length,numericTokensEqual:reports.filter(x=>x.numberTokensMatch).length,mismatches:errors.slice(0,40),otherNonDocChanges:nonDoc,rootChanged};
+
+// For non-shortened canonical documents, verify all pre-migration paragraphs
+// remain in order even when navigation sections are added.
+function orderedSubset(a,b){
+ const before=normalize(a).split('\n').map(x=>x.trim()).filter(Boolean);
+ const after=normalize(b).split('\n').map(x=>x.trim()).filter(Boolean);
+ let k=0;
+ for(const line of after){if(k<before.length && line===before[k])k++;}
+ return {ok:k===before.length,matched:k,total:before.length,next:before[k]||null};
+}
+const shortened=new Set(['index.md','roadmap.md','status.md','documentation-policy.md']);
+const canonicalPreservation=rootFiles.filter(p=>!shortened.has(path.basename(p))&&fs.existsSync(p))
+  .map(p=>({file:p,...orderedSubset(getOld(p),fs.readFileSync(p,'utf8'))}));
+const snapshots=[...shortened].map(n=>{
+ const former='docs/'+n,stored='docs/archive/pre-reorganization-20261110/'+n;
+ if(!fs.existsSync(stored))return {file:stored,ok:false,reason:'snapshot missing'};
+ const text=fs.readFileSync(stored,'utf8').replace(/^<!-- Preservation snapshot:[^\n]*-->\n/,'');
+ return {file:stored,...orderedSubset(getOld(former),text)};
+});
+const canonicalIssues=canonicalPreservation.filter(x=>!x.ok);
+const snapshotIssues=snapshots.filter(x=>!x.ok);
+
+const out={baseSha:BASE,movedCount:moved.length,identical:moved.filter((_,i)=>reports[i].identical).length,existsCount:reports.filter(x=>x.exists).length,normalizedProseEqual:reports.filter(x=>x.proseMatch).length,headingsEqual:reports.filter(x=>x.headingsMatch).length,numericTokensEqual:reports.filter(x=>x.numberTokensMatch).length,mismatches:errors.slice(0,40),otherNonDocChanges:nonDoc,rootChanged,canonicalPreservation,snapshots};
 console.log(JSON.stringify(out,null,2));
-if(process.argv.includes('--strict')&&(errors.length||otherIssues.length))process.exitCode=1;
+if(process.argv.includes('--strict')&&(errors.length||otherIssues.length||canonicalIssues.length||snapshotIssues.length))process.exitCode=1;
