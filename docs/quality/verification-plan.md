@@ -79,6 +79,7 @@
 
 **機構と実運用の区別**：新カード判定の `derived_github_new_card_source_plan.cjs` に加え、既存の全イベント変換器を再利用するアダプタ、JSON受入検証、日次保留Issue更新は実装済み。ただし2026-10-29実新カード3枚は派生JSON未掲載で、**対象新カードの実イベント変換・編集承認・公開DB追記は未達**。[実測](../project/status.md)を参照。GameTora HTML取得器の未解析件数は4Bの合否と無関係。
 
+<a id="4a-gametora汎用取得変換器の次工程引き渡しゲート"></a>
 ## 4A. GameTora汎用取得・変換器の次工程引き渡しゲート（現行では休止）
 
 2026-10-29の後続決定により、GameTora本体HTMLの共通直接取得は現在のデータ収録・製品完成の先行ゲートではありません。当時の実証・合否条件は[旧検証記録](../history/verification-history.md#4a-gametora汎用取得変換器の次工程引き渡しゲート)に保存しました。再開する場合は利用者による方針変更と、現在の[ロードマップ](../project/roadmap.md)・[出典優先順位](../reference/data-sources.md)との整合を確認します。

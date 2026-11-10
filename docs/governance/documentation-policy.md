@@ -4,6 +4,8 @@
 
 [文書体系の方法論](documentation-methodology.md) ／ [成果物と受入条件](../plans/wbs-dictionary.md) ／ [ADRの管理](../adr/README.md) ／ [情報保全の監査](../evidence/quality/documentation-integrity-review-20261110.md)
 
+現在の正本の検索には[タスク別の契約マップ](../reference/current-contract-map.md)を使います。要約で新しい仕様を創作せず、既存の詳細文書とコードに参照を戻すことを必須とします。
+
 ## AIエージェントへの情報の渡し方
 
 1. **小さな常時入口**：リポジトリの[AGENTS.md](../../AGENTS.md)には変わりにくい制約と必要文書の所在だけを残す。文書本文を重複させない。

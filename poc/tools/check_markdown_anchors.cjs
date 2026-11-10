@@ -10,7 +10,7 @@ const cache=new Map();
 function headingSlug(text){
  const pure=text.replace(/<[^>]*>/g,'').replace(/!\[([^\]]+)\]\([^)]+\)/g,'$1')
    .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').trim();
- return pure.toLowerCase().replace(/[^\p{L}\p{N}\p{M}\p{Pc}\p{Pd} -]/gu,'').replace(/ /g,'-');
+ return pure.toLowerCase().replace(/[^\p{L}\p{N}\p{M}_ -]/gu,'').replace(/ /g,'-');
 }
 function getAnchors(p){
  if(cache.has(p))return cache.get(p);
