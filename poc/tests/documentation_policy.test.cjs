@@ -88,3 +88,38 @@ test('new cross-cutting track creation includes top-level discovery checklist',(
  assert.match(guide,/一情報・一正本/);
  assert.match(guide,/不要な更新は強制しません/);
 });
+
+test('terminology governance keeps one canonical definition entry, agent instructions and D.3 migration discoverable',()=>{
+ const agents=read('AGENTS.md');
+ const terms=read('docs/reference/terminology.md');
+ const policy=read('docs/governance/documentation-policy.md');
+ const d=read('docs/plans/documentation-maintenance.md');
+ const howto=read('docs/how-to/update-docs.md');
+ const reference=read('docs/reference/index.md');
+ const docs=read('docs/index.md');
+ const log=read('docs/decisions/log.md');
+ const decisions=JSON.parse(read('docs/decisions/registry.json'));
+ const index=read('docs/decisions/index.md');
+ for(const name of [
+  '概念を先に明確化する','意味を読み取りやすく命名する',
+  '定義を明示する','一概念一優先用語を徹底する',
+  '定義の正本を維持する','名称・定義の変更を管理する'
+ ])assert.ok(agents.includes(name),'missing permanent agent rule: '+name);
+ for(const x of [agents,policy,howto,reference,docs])
+  assert.match(x,/terminology\.md/);
+ assert.match(d,/D\.3/);
+ assert.match(d,/棚卸し/);
+ assert.match(d,/全領域の棚卸しと移行は未完/);
+ assert.match(terms,/一概念・一優先用語・一つの定義の正本/);
+ assert.match(terms,/脚質間の条件成立機会差/);
+ assert.match(terms,/判定用閾値（仮）/);
+ assert.match(terms,/仮の最小差幅/);
+ assert.match(terms,/非推奨の曖昧な言い方/);
+ assert.match(terms,/個別コース・シードの差の最小値ではない/);
+ assert.match(terms,/P2以外の同義語、旧呼称/);
+ assert.match(log,/decision-d-044/);
+ assert.ok(decisions.entries.some(e=>e.id==='D-044'&&e.status==='current'&&
+  e.sourceAnchor==='decision-d-044'));
+ assert.match(index,/<a id="d-044"><\/a>/);
+ assert.match(read('docs/project/roadmap.md'),/D\.3：専門用語と定義の正本/);
+});
