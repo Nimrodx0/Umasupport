@@ -693,6 +693,10 @@ jobs:
         run: node poc/tests/browser_skill_smoke.cjs
       - name: Browser-test approved 2512-event auto-load and skill route without file chooser (synthetic only)
         run: node poc/tests/browser_approved_bulk_auto_load.cjs
+      - name: Browser-test real approved event JSON and pinned UmaSim sources (local Pages-style)
+        run: |
+          node --check poc/tests/browser_w1_pinned_public_integration.cjs
+          node poc/tests/browser_w1_pinned_public_integration.cjs
       - name: Browser-test opt-in SSR30311 candidate routes and isolated settings
         run: node poc/tests/browser_event_preview_smoke.cjs
       - name: Browser-test explicit full 2512-event offline file import and isolation
