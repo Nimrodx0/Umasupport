@@ -7,6 +7,8 @@ on:
       - 'poc/src/skill_change_order_source_paths.cjs'
       - 'poc/tests/skill_change_order_source_paths.test.cjs'
       - 'poc/tools/globalsim_change_order_skill_tick.cjs'
+      - 'poc/tools/skill_change_order_joint_context_review.cjs'
+      - 'poc/tests/skill_change_order_joint_context_review.test.cjs'
       - 'poc/tests/globalsim_change_order_skill_tick.test.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
       - '.github/workflows/p2-change-order-skill-tick.yml'
@@ -27,7 +29,8 @@ jobs:
         run: |
           node --check poc/src/skill_change_order_source_paths.cjs
           node --check poc/tools/globalsim_change_order_skill_tick.cjs
-          node --test poc/tests/skill_change_order_source_paths.test.cjs poc/tests/globalsim_change_order_skill_tick.test.cjs
+          node --check poc/tools/skill_change_order_joint_context_review.cjs
+          node --test poc/tests/skill_change_order_source_paths.test.cjs poc/tests/globalsim_change_order_skill_tick.test.cjs poc/tests/skill_change_order_joint_context_review.test.cjs
       - name: Build source-exact 30-skill predicate cohort from pinned UmaSim
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
@@ -111,12 +114,56 @@ jobs:
              trueTicks:p.predicateTrueModelRunnerTicks,denominator:p.denominatorModelRunnerTicks}))},
            contexts:x.styleContexts.length},null,2));
           NODE
+      - name: Intersect observed pre-skill rank signs with exact source style and distance predicates
+        run: |
+          node poc/tools/skill_change_order_joint_context_review.cjs \
+            /tmp/p2-skill-tick-report/source-exact-skill-stage.json \
+            p2-change-order-source-paths.json \
+            /tmp/p2-skill-tick-report/source-rank-style-distance-intersection.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const r=JSON.parse(fs.readFileSync(
+            '/tmp/p2-skill-tick-report/source-rank-style-distance-intersection.json','utf8'));
+          assert.equal(r.schemaVersion,1);
+          assert.equal(r.status,'P2.20-pre-skill-rank-static-source-gate-intersection-v1');
+          assert.equal(r.denominator.sourceSkills,30);
+          assert.equal(r.denominator.originalReferenceRunnerTicks,435222);
+          assert.equal(r.design.modelSkillList,'none');
+          assert.equal(r.design.races,32);
+          assert.equal(r.totals.sourcePaths,r.denominator.sourceAndPaths);
+          assert.equal(r.totals.modelSignOnlyPaths,30);
+          assert.equal(r.totals.sourcePathsWithUnknownRequiredConditions,30);
+          assert.equal(r.totals.sourcePathsWithSomeSignModelTicks,26);
+          assert.equal(r.zeroObservedSignSourcePaths.length,4);
+          assert.equal(r.totals.pathWeightedRunnerTicksAfterStaticStyleDistanceFilter,6071105);
+          assert.equal(r.totals.pathWeightedSignedRunnerTicksAfterStaticStyleDistanceFilter,28390);
+          assert(r.limitations.some(x=>x.includes('NOT unique runner/tick sample sizes')),
+            'Repeated source paths must never be misrepresented as independent trials');
+          assert.equal(r.totals.modelSignOnlyPaths+r.totals.heldNonSignOnlyPaths,
+            r.totals.sourcePaths);
+          assert(r.rows.every(row=>row.researchStatus===
+            'source-model-partial-necessary-gate-only'&&
+            !Object.hasOwn(row,'skillActivationRate')&&
+            Object.keys(row.byStyle).join(',')==='Nige,Senkou,Sasi,Oikomi'));
+          assert(!Object.hasOwn(r,'cardScore'));
+          console.log('P2_20_SOURCE_JOINT_GATES='+JSON.stringify({
+            denominator:r.denominator,totals:r.totals,
+            sourcePathSample:r.rows.slice(0,5).map(x=>({
+              sourceNumericId:x.sourceNumericId,
+              conditions:x.signedRankCondition,
+              otherAND:x.unmeasuredRequiredPredicateTypes,
+              byStyle:Object.fromEntries(Object.entries(x.byStyle)
+                .map(([name,v])=>[name,{
+                  ticks:v.observedReferenceRunnerTicks,
+                  signedTicks:v.signedRankMatchedRunnerTicks}]))}))}));
+          NODE
       - name: Upload bounded derived source/path and model-stage study
         uses: actions/upload-artifact@v4
         with:
           name: p2-skill-check-priority-vs-replay-model-stage
           path: |
             /tmp/p2-skill-tick-report/source-exact-skill-stage.json
+            /tmp/p2-skill-tick-report/source-rank-style-distance-intersection.json
             /tmp/p2-skill-tick-report/patch-provenance.json
           retention-days: 14
           if-no-files-found: error
