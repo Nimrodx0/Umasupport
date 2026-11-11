@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const model=require('../tools/skill_halfphase_two_axis_review.cjs');
 const original=require('../tools/globalsim_subphase_random_10m.cjs');
 const expanded=require('../tools/globalsim_position_expanded.cjs');
+const PIN=require('../tools/globalsim_position_pilot.cjs').PIN;
 const bands=require('../tools/globalsim_rank_band_dominance.cjs').BANDS;
 const r6=x=>Number(x.toFixed(6));
 const STYLES=expanded.STYLES;
@@ -43,12 +44,12 @@ function fixture(){
  return {
   short:{schemaVersion:1,status:
    'research-GlobalSim-subphase-random-10m-rank-opportunity-not-game-skill-rate',
-   sourceRevision:expanded.PIN,scenario:'balanced',simulations:720,
+   sourceRevision:PIN,scenario:'balanced',simulations:720,
    seedsPerCell:30,contextsPerWindow:24,perContextRows:full.length,
    windows:original.WINDOWS,contextRows:full},
   split:{schemaVersion:1,status:
    'p2-fixed-15-plus-15-short-window-bands-not-game-activation',
-   sourceRevision:expanded.PIN,seedsPerHalf:15,baseRaces:720,
+   sourceRevision:PIN,seedsPerHalf:15,baseRaces:720,
    perContextRows:split.length,contextRows:split},
   source:{status:'P2-source-only-half-phase-rank-feasibility-not-style-rating',
    source:{sha256:model.SOURCE_SHA},
