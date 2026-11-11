@@ -205,6 +205,12 @@ async function appCases(page){
  await outcomeRouteCheck(sample.outcome.firstResult);
  await resultBox.selectOption(sample.outcome.secondResult);
  await outcomeRouteCheck(sample.outcome.secondResult);
+ await page.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="'+
+  sample.outcome.eventId+'"][value=""]').check();
+ const resetOutcome=await saved(page);
+ assert.equal(resetOutcome.main.slots[1].choices[sample.outcome.eventId],undefined);
+ assert.equal(resetOutcome.main.slots[1].outcomes[sample.outcome.eventId],undefined,
+  'Clearing the parent choice must invalidate its previously selected outcome');
  await page.locator('button[data-action="close"]').click();
  // Independently exercise a real UmaSim hint record through the same GUI.
  // The source snapshot is pinned, not an assertion about the current game.
