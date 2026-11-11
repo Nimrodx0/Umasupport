@@ -83,3 +83,29 @@ test('full app cohort remains four independent rows and unknowns do not become g
  assert.equal(report.skillCoverage.unavailable,1);
  assert.equal(report.rows[2].styles['逃げ'].status,'unavailable');
 });
+
+test('held research gaps count distinct skills not repeated four-style cells',()=>{
+ const x=skill('skill:5',profile([[
+  c('phase_random','==',1),c('order_rate','<=',50),
+  c('is_overtake','==',1)]]));
+ const a=rough.report({skills:[x,x]});
+ assert.equal(a.heldGapInventory.heldSkillCount,2);
+ const blocker=a.heldGapInventory.blockedReviewReasons
+  .find(v=>v.key==='extra-AND-conditions-unmeasured');
+ assert.equal(blocker.skills,2);
+ const overtaking=a.heldGapInventory.sourceConditionTypesInHeldSkills
+  .find(v=>v.key==='is_overtake');
+ assert.equal(overtaking.skills,2);
+ assert.match(a.heldGapInventory.caveat,/not the number/);
+});
+test('an unresolved OR is recorded separately from condition-type prevalence',()=>{
+ const p=profile([
+  [c('phase_random','==',1),c('order_rate','<=',50)],
+  [c('is_overtake','==',1)]]);
+ const r=rough.report({skills:[skill('skill:6',p)]});
+ assert.equal(r.heldGapInventory.heldSkillCount,1);
+ const reasons=r.heldGapInventory.blockedReviewReasons.map(x=>x.key);
+ assert(reasons.includes('multiple-source-OR-or-invoke-paths'));
+ assert.equal(r.heldGapInventory.sourceConditionTypesInHeldSkills
+  .find(x=>x.key==='is_overtake').skills,1);
+});
