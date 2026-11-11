@@ -110,13 +110,26 @@ test('terminology governance keeps one canonical definition entry, agent instruc
  assert.match(d,/D\.3/);
  assert.match(d,/棚卸し/);
  assert.match(d,/全領域の棚卸しと移行は未完/);
- assert.match(terms,/一概念・一優先用語・一つの定義の正本/);
+ // Rules belong to AGENTS; the index only routes terms to their
+ // domain-specific primary definitions. No research report content belongs here.
+ assert.match(agents,/命名・定義の規則はこの節が正本/);
+ assert.match(agents,/用語索引/);
+ assert.match(terms,/^# 用語と定義の索引$/m);
+ assert.match(terms,/^## 用語の参照先$/m);
+ assert.match(terms,/定義そのものは各分野の仕様書・研究資料に置き/);
+ assert.match(terms,/AGENTS\.md/);
+ assert.match(terms,/条件成立機会（W）/);
  assert.match(terms,/脚質間の条件成立機会差/);
- assert.match(terms,/判定用閾値（仮）/);
- assert.match(terms,/仮の最小差幅/);
- assert.match(terms,/非推奨の曖昧な言い方/);
- assert.match(terms,/個別コース・シードの差の最小値ではない/);
- assert.match(terms,/P2以外の同義語、旧呼称/);
+ assert.match(terms,/skill-specificity32-two-axis-20261109\.md#1-/);
+ assert.match(terms,/skill-p2-30-context-margin-sensitivity-20261111\.md#方法と限界/);
+ assert.match(terms,/requirements\.md/);
+ assert.match(terms,/event-schema\.md/);
+ assert.doesNotMatch(terms,/^## 正本の管理原則|^## P2の研究用指標/m);
+ assert.doesNotMatch(terms,/5,760|0・1・3・5|10m|仮の最小差幅/);
+ assert.doesNotMatch(terms,/初出時に説明する|名称・意味を変える場合は/);
+ assert.match(policy,/必須規則は\[AGENTS\.md\]/);
+ assert.match(policy,/定義の正本を探す入口/);
+ assert.match(d,/索引に研究本文や定義・管理規則を重複記載しない/);
  assert.match(log,/decision-d-044/);
  assert.ok(decisions.entries.some(e=>e.id==='D-044'&&e.status==='current'&&
   e.sourceAnchor==='decision-d-044'));
