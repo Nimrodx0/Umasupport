@@ -8,6 +8,9 @@ on:
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
+      - 'poc/src/skill_full_condition_path_audit.cjs'
+      - 'poc/tests/skill_full_condition_path_audit.test.cjs'
+      - 'docs/plans/skill-conditions/p2.md'
       - 'poc/src/skill_halfphase_feasibility.cjs'
       - 'poc/tests/skill_halfphase_feasibility.test.cjs'
       - 'poc/tests/skill_coarse_style_review.test.cjs'
@@ -53,6 +56,7 @@ jobs:
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_coarse_style_review.cjs
+          node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_halfphase_feasibility.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
           node --check poc/src/skill_change_order_source_paths.cjs
@@ -67,6 +71,7 @@ jobs:
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
           node --test poc/tests/skill_coarse_style_review.test.cjs
+          node --test poc/tests/skill_full_condition_path_audit.test.cjs
           node --test poc/tests/skill_halfphase_feasibility.test.cjs
           node --test poc/tests/skill_condition_mixed_cohort.test.cjs
           node --test poc/tests/skill_change_order_source_paths.test.cjs
@@ -188,6 +193,46 @@ jobs:
            skillCoverage:x.skillCoverage},null,2));
           console.log('P2_COARSE_SKILL_COVERAGE_END');
           NODE
+      - name: Verify P2.15 exact-source AND/OR and precondition paths (no model rating)
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-15-full-condition-paths.json','utf8'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'p2-15-full-source-path-necessary-gate-audit-only');
+          assert.equal(x.modelScenario,'no-simulation-performed');
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatched,818);
+          assert.equal(x.denominators.unavailable,63);
+          assert.equal(x.rows.length,881);
+          assert.equal(new Set(x.rows.map(r=>r.skillId)).size,881);
+          assert.equal(x.denominators.reportedStylePathCells,
+            x.denominators.reportedPathRows*4);
+          const expectedStyles=['逃げ','先行','差し','追込'];
+          for(const r of x.rows)if(r.status!=='source-unavailable'){
+            assert.deepEqual(Object.keys(r.byStyle),expectedStyles);
+            assert.equal(r.paths.length,r.paths.filter(p=>p.orIndex!==null).length+
+              r.emptyConditionInvokes);
+            for(const p of r.paths){
+              assert.deepEqual(Object.keys(p.byStyle),expectedStyles);
+              assert(!Object.hasOwn(p,'activationProbability'));
+              assert(!Object.hasOwn(p,'cardScore'));
+            }
+            assert(!Object.hasOwn(r,'skillFitScore'));
+          }
+          assert.equal(x.boundaries.some(s=>s.includes('no contradiction')),true);
+          console.log('P2_15_VALIDATED_PATHS='+JSON.stringify({
+            denominators:x.denominators,shape:x.shape,byStyles:x.byStyles,
+            unverifiedTypes:x.sourceConditionTypesOnNonExcludedPaths.slice(0,16),
+            preconditionTypes:x.typesInPreconditions.slice(0,16)}));
+          NODE
+      - name: Archive P2.15 bounded source-path numeric facts only
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-complete-source-path-gate-audit-not-ratings
+          path: p2-15-full-condition-paths.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Count researchable half-phase rank cases without assigning suitability
         run: |
           node - <<'NODE'
