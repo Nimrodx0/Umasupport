@@ -272,13 +272,21 @@ function eventHTML(card,slot,k,i,onlyEventId=null,compactHeader=false){
    resultSelector(selectedPart,slot,k,i,e,!blocked,card)+'</div>';
  }).join('');
 }
+function cardEventSectionHTML(card,slot,deckKey,index){
+ const info=window.UmaCardSearch.eventCatalogState(card,data);
+ if(info.status==='unverified')
+  return '<p class="help">イベント情報を検証できませんでした。イベント候補は未反映です。</p>';
+ if(info.status==='unrecorded')
+  return '<p class="help">このカードのイベント情報は未収録です。実ゲームでイベントが発生しないことを意味しません。通常ヒントは別途利用できます。</p>';
+ return eventHTML(card,slot,deckKey,index);
+}
 function hintPerformanceHTML(card,slot){
  const p=card.hintPerformanceByStage?.[String(slot.stage)];
  if(!p)return '<div class="info-item"><strong>ヒント関連性能</strong><div class="sub">未収録・不明</div></div>';
  const hintLevel=1+p.levelBase+p.levelUnique;
  return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div></div>`;
 }
-function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
+function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${cardEventSectionHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
  titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
 function accordionKey(deckKey,deckId,slotIndex,eventId=''){
  return deckKey+'|'+deckId+'|'+slotIndex+'|'+eventId;
