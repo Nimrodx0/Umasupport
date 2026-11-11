@@ -15,7 +15,7 @@ function cohort(model){
  if(!model||!Array.isArray(model.skills))throw Error('App registry required');
  const preview=rough.report(model);
  const counts={
-  sourceMatched:0,heldSkills:0,
+  sourceMatched:0,heldSkills:0,needsFourStyleStudy:0,
   halfTimeWithOrderRate:0,
   halfTimeAndExactBand:0,
   halfTimeExactBandDirect:0,
@@ -32,9 +32,14 @@ function cohort(model){
   const profile=skill.activationProfile;
   if(profile?.status!=='source-structure')continue;
   counts.sourceMatched++;
-  const held=STYLE_NAMES.some(n=>preview.rows[i].styles[n].status==='held');
+  const statuses=STYLE_NAMES.map(n=>preview.rows[i].styles[n].status);
+  const held=statuses.includes('held');
+  const needsStudy=statuses.some(x=>[
+   'held','two-group-reference','partial-four-style-direction'
+  ].includes(x));
   if(held)counts.heldSkills++;
-  if(!held)continue;
+  if(needsStudy)counts.needsFourStyleStudy++;
+  if(!needsStudy)continue;
   const groups=[],halfNoRank=[],nonExact=[],otherRank=[];
   for(const [invokeIndex,inv] of profile.invokes.entries()){
    for(const [orIndex,row] of (inv.conditions||[]).entries()){
@@ -99,11 +104,12 @@ function cohort(model){
  return {schemaVersion:1,
   status:'P2-source-only-half-phase-rank-feasibility-not-style-rating',
   baseline:{appSkills:model.skills.length,
-   sourceMatched:counts.sourceMatched,heldSkills:counts.heldSkills},
+   sourceMatched:counts.sourceMatched,heldSkills:counts.heldSkills,
+   needsFourStyleStudy:counts.needsFourStyleStudy},
   counts,halfTimingRowsByType:sourceRowCounts,
   examples,
   limitations:[
-   'Counts are distinct source-matched SKILLS among those with at least one held style; count categories may overlap.',
+   'Counts are distinct source-matched SKILLS needing a four-style study: held, legacy-two-group-only or partial-four-style. Counts overlap; heldSkills separately matches prior 584.',
    'Potential direct candidates do NOT have measured half-phase rank style directions yet and are not newly evaluated.',
    'Source OR/precondition/extra AND paths retain their actual structure; counts do not infer simultaneous occurrence or proc probability.',
    'Exact matching against prior rank bands may be restrictive and excludes other known corner/absolute rank experiments.',
