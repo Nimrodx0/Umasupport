@@ -16,6 +16,7 @@ const REV='cf9366f6a487bd8f197b53d8a11981207beb9f6c';
 const SUPPORT_URL='https://raw.githubusercontent.com/mee1080/umasim/'+REV+'/data/support_card.txt';
 const SKILL_URL=bridge.PINNED_URL;
 const PINNED_SKILL_SHA=bridge.PINNED_SHA256;
+const PINNED_SUPPORT_SHA='153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424';
 const SAVE_KEY='uma-support-lab-runtime-umasim-v1';
 const sha=text=>crypto.createHash('sha256').update(text).digest('hex');
 
@@ -29,7 +30,8 @@ async function readPinned(url){
 async function getSources(){
  const [supports,skills]=await Promise.all([readPinned(SUPPORT_URL),readPinned(SKILL_URL)]);
  assert.equal(sha(skills),PINNED_SKILL_SHA,'approved-event registry pin drift');
- assert.ok(loader.parseSupportCards(supports).cards.size>=500);
+ assert.equal(sha(supports),PINNED_SUPPORT_SHA,'immutable support roster bytes drift');
+ assert.equal(loader.parseSupportCards(supports).cards.size,563);
  assert.ok(bridge.parseSource(skills).count>=100);
  return {supports,skills};
 }
@@ -76,8 +78,13 @@ async function appCases(page){
    if(model.meta.runtimeSources.events.mode!=='reviewed')
     throw Error('Public event data was not attached');
   }
-  let choice=null,outcome=null;
+  let choice=null,outcome=null,hint=null;
   for(const card of model.cards){
+   if(!hint&&card.hintsByStage?.['4']?.length&&card.hintPerformanceByStage?.['4'])
+    hint={card:{id:card.id,name:card.name},
+     skillId:card.hintsByStage['4'][0],
+     stageFour:card.hintsByStage['4'].slice(),
+     stageZero:card.hintsByStage['0'].slice()};
    for(const e of card.events||[]){
     if(e.type!=='choice'||e.requires)continue;
     for(const opt of e.choices){
@@ -98,12 +105,13 @@ async function appCases(page){
     }
    }
   }
-  return {choice,outcome,cards:model.cards.length,skills:model.skills.length};
+  return {choice,outcome,hint,cards:model.cards.length,skills:model.skills.length};
  });
  assert.ok(sample.cards>=500);
  assert.ok(sample.skills>=700);
  assert.ok(sample.choice,'No published choice grants an independent skill candidate');
  assert.ok(sample.outcome,'No published exclusive-result choice exists');
+ assert.ok(sample.hint,'No actual stage-4 normal hints exist in pinned source');
  const chosen=sample.choice;
  const errors=[];
  page.on('pageerror',e=>errors.push(String(e.message)));
@@ -172,6 +180,29 @@ async function appCases(page){
  const after=await saved(page);
  assert.equal(after.main.slots[1].outcomes[sample.outcome.eventId],sample.outcome.firstResult);
  await page.locator('button[data-action="close"]').click();
+ // Independently exercise a real UmaSim hint record through the same GUI.
+ // The source snapshot is pinned, not an assertion about the current game.
+ await chooseCard(page,'main',2,sample.hint.card);
+ const hintAtFour=await page.evaluate(({cardId,skillId,key})=>{
+  const model=window.UmaDemoData,core=window.UmaCore,s=JSON.parse(localStorage.getItem(key));
+  const deck=s.decks.main.find(d=>d.id===s.activeDecks.main),slot=deck.slots[2];
+  const routes=core.directRoutes(model.cardById[cardId],slot);
+  const summary=core.aggregate(deck,model)[skillId];
+  return {stage:slot.stage,matched:routes.some(r=>r.source==='hint'&&r.skillId===skillId),
+   provider:!!summary?.providers['2']?.routes.some(r=>r.source==='hint'&&r.skillId===skillId)};
+ },{cardId:sample.hint.card.id,skillId:sample.hint.skillId,key:SAVE_KEY});
+ assert.deepEqual(hintAtFour,{stage:4,matched:true,provider:true});
+ await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="2"]').click();
+ await page.locator('select[data-stage][data-deck="main"][data-index="2"]').selectOption('0');
+ const hintAtZero=await page.evaluate(({cardId,key})=>{
+  const model=window.UmaDemoData,core=window.UmaCore,s=JSON.parse(localStorage.getItem(key));
+  const deck=s.decks.main.find(d=>d.id===s.activeDecks.main),slot=deck.slots[2];
+  return {stage:slot.stage,hints:core.directRoutes(model.cardById[cardId],slot)
+   .filter(r=>r.source==='hint').map(r=>r.skillId)};
+ },{cardId:sample.hint.card.id,key:SAVE_KEY});
+ assert.equal(hintAtZero.stage,0);
+ assert.deepEqual(hintAtZero.hints,sample.hint.stageZero);
+ await page.locator('button[data-action="close"]').click();
  // Viewport smoke is NOT an Android physical-device acceptance.
  await page.setViewportSize({width:390,height:844});
  const geometry=await page.evaluate(()=>({
@@ -182,6 +213,7 @@ async function appCases(page){
  assert.deepEqual(errors,[]);
  return {cards:sample.cards,skills:sample.skills,reviewedEvents:2487,
   goalByBothDecks:true,choicePersistedAfterReload:true,exclusiveResultUI:true,
+  pinnedRealNormalHintsChecked:true,
   simulatedMobileWidth:geometry.width};
 }
 async function main(){
