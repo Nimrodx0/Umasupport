@@ -279,4 +279,4 @@ async function main(){
  }
 }
 if(require.main===module)main().catch(e=>{console.error('W1 browser test failed:',e);process.exitCode=1});
-module.exports={main};
+module.exports={main,getSources,server,boot,chooseCard,SAVE_KEY};
