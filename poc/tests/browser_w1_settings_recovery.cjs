@@ -41,17 +41,6 @@ async function reload(page,url,mode='online'){
  await page.locator('#app main.app').waitFor({timeout:40000});
  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),mode);
 }
-async function acceptNext(page,pattern){
- const listener=page.waitForEvent('dialog');
- return async fn=>{
-  const triggered=listener;
-  const action=fn();
-  const dialog=await triggered;
-  assert.match(dialog.message(),pattern);
-  await dialog.accept();
-  await action;
- };
-}
 async function main(){
  const inputs=await getSources(),srv=server();
  await new Promise((ok,bad)=>{srv.once('error',bad);srv.listen(0,'127.0.0.1',ok);});
