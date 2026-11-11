@@ -14,7 +14,8 @@ test('a single exact rank band and half-phase timing is a DIRECT research candid
  const source=skill(200001,[row()]);
  const r=cohort({skills:[source]});
  assert.equal(r.baseline.sourceMatched,1);
- assert.equal(r.baseline.heldSkills,1);
+ assert.equal(r.baseline.heldSkills,0);
+ assert.equal(r.baseline.needsFourStyleStudy,1);
  assert.equal(r.counts.halfTimeWithOrderRate,1);
  assert.equal(r.counts.halfTimeAndExactBand,1);
  assert.equal(r.counts.halfTimeExactBandDirect,1);
