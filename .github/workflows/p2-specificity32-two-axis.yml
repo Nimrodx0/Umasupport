@@ -113,6 +113,14 @@ jobs:
           assert.equal(consensus.originalSignatures,32);
           assert.equal(consensus.stylePairs,192);
           assert.equal(consensus.scenarioHeadcountCells,1536);
+          assert.equal(consensus.fullCoverageStrict,69);
+          assert.equal(consensus.observedStrictWithMissingStyle,66);
+          assert.equal(consensus.directionReversal,29);
+          assert.equal(consensus.heldOrTied,28);
+          assert.equal(consensus.noComparable,0);
+          assert.equal(consensus.fullCoverageStrict+
+           consensus.observedStrictWithMissingStyle+
+           consensus.directionReversal+consensus.heldOrTied,192);
           assert.equal(consensus.rows.length,192);
           assert.equal(Object.values(consensus.byStatus)
            .reduce((sum,v)=>sum+v,0),192);
