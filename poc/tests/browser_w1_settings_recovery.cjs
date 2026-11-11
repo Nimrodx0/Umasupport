@@ -210,7 +210,10 @@ async function main(){
   const brokenSkill=r=>r.fulfill({status:200,
    contentType:'application/json',body:'{"skills":[{"id":"missing"}]}'});
   await page.route('**/data/skill_data.txt',brokenSkill);
-  await reload(page,app,'cached');
+  // The bootstrap-level mode reflects the CARD roster. The skill source
+  // independently records its own cached status; do not conflate the two.
+  await reload(page,app,'online');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.cards.mode),'online');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.skills.mode),'cached');
   assert.equal(await getSaved(page),JSON.stringify(initial));
   assert.equal((await cachedEvent(page,null,SKILL_CACHE)).text,skillBefore.text,
