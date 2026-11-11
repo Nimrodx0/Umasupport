@@ -94,7 +94,6 @@ jobs:
           node poc/tools/skill_reference_scenario_gate.cjs \
             /tmp/p2-specified/two-axis-32.json \
             /tmp/p2-specified/reference-scenario-validity.json
-            /tmp/p2-specified/cross-context-certified-margin.json
           node - <<'NODE'
           const assert=require('node:assert/strict'),fs=require('node:fs');
           const a=JSON.parse(fs.readFileSync(
@@ -182,4 +181,5 @@ jobs:
           path: |
             /tmp/p2-specified/two-axis-32.json
             /tmp/p2-specified/reference-scenario-validity.json
+            /tmp/p2-specified/cross-context-certified-margin.json
           retention-days: 14
