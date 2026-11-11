@@ -15,6 +15,7 @@ const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
 const coarseReview=require('../src/skill_coarse_style_review.cjs');
+const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
@@ -107,6 +108,11 @@ function matchedRecord(skill,live,old){
   throw Error('P2 style tendency app coverage mismatch: '+JSON.stringify(styleApp));
  const allInferredReview=styleReview.summarize(model);
  const skillBySkill=coarseReview.report(model);
+ const halfPhaseStudy=halfFeasibility.cohort(model);
+ if(halfPhaseStudy.baseline.appSkills!==skillBySkill.appSkillCount||
+    halfPhaseStudy.baseline.sourceMatched!==skillBySkill.sourceMatchedSkills||
+    halfPhaseStudy.baseline.heldSkills!==skillBySkill.skillCoverage.held)
+  throw Error('Source half-phase feasibility cohort disagrees with per-skill review');
  if(skillBySkill.appSkillCount!==881||skillBySkill.sourceMatchedSkills!==818||
   skillBySkill.skillCoverage.unavailable!==63)
   throw Error('Coarse four-style review did not preserve fixed app cohort');
@@ -215,6 +221,16 @@ function matchedRecord(skill,live,old){
    allRankTypes:c.allRankTypes,allDeferredTypes:c.allDeferredTypes,
    sameAndRows:c.sameAndRows}))},null,2));
  console.log('P2_MIXED_RANK_COHORT_SUMMARY_END');
+ fs.writeFileSync('p2-halfphase-feasibility.json',
+  JSON.stringify({source:report.source,...halfPhaseStudy},null,2)+'\n');
+ console.log('P2_HALF_PHASE_FEASIBILITY_START');
+ console.log(JSON.stringify({status:halfPhaseStudy.status,
+  baseline:halfPhaseStudy.baseline,counts:halfPhaseStudy.counts,
+  halfTimingRowsByType:halfPhaseStudy.halfTimingRowsByType,
+  directExamples:halfPhaseStudy.examples.filter(x=>x.paths.some(p=>p.direct)).slice(0,8).map(x=>({
+   skillId:x.skillId,name:x.name,
+   time:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
+ console.log('P2_HALF_PHASE_FEASIBILITY_END');
  fs.writeFileSync('p2-skill-coarse-four-style-review.json',
   JSON.stringify({source:report.source,...skillBySkill},null,2)+'\n');
  console.log('P2_COARSE_SKILL_REVIEW_SUMMARY_START');
