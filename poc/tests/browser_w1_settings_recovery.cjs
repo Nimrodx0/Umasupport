@@ -9,13 +9,15 @@ const {getSources,server,boot,chooseCard,SAVE_KEY}=
  require('./browser_w1_pinned_public_integration.cjs');
 
 const EVENT_CACHE='umasupport/public/reviewed_events.v1.json/v1';
+const SUPPORT_CACHE='umasupport/umasim/support_card.txt/v1';
+const SKILL_CACHE='umasupport/umasim/skill_data.txt/v1';
 const getSaved=page=>page.evaluate(key=>localStorage.getItem(key),SAVE_KEY);
 async function importJSON(page,body,name='w1-settings.json'){
  await page.locator('#import-file').setInputFiles({
   name,mimeType:'application/json',buffer:Buffer.from(body)
  });
 }
-async function cachedEvent(page,edit){
+async function cachedEvent(page,edit,key=EVENT_CACHE){
  return page.evaluate(async({key,edit})=>{
   const request=indexedDB.open('uma-support-lab-runtime-data',1);
   const db=await new Promise((ok,bad)=>{
@@ -34,7 +36,7 @@ async function cachedEvent(page,edit){
    }
    return prior||null;
   }finally{db.close();}
- },{key:EVENT_CACHE,edit});
+ },{key,edit});
 }
 async function reload(page,url,mode='online'){
  await page.goto(url,{waitUntil:'domcontentloaded'});
@@ -190,6 +192,35 @@ async function main(){
    '**/reviewed_events.v1.json'])await page.unroute(uri,block);
   await reload(page,app);
   assert.equal(await getSaved(page),JSON.stringify(initial));
+  // W5.1: changes in upstream support-card TSV shape or skill JSON must
+  // fail the live-source preflight, never poison a previously verified cache.
+  const supportBefore=await cachedEvent(page,null,SUPPORT_CACHE);
+  const skillBefore=await cachedEvent(page,null,SKILL_CACHE);
+  assert.ok(supportBefore?.text?.length>100000&&skillBefore?.text?.length>100000,
+   'The known-good upstream data must have been cached before drift tests');
+  const brokenSupport=r=>r.fulfill({status:200,
+   contentType:'text/plain',body:'wrong-column-count\\t30001\\n'.repeat(12000)});
+  await page.route('**/data/support_card.txt',brokenSupport);
+  await reload(page,app,'cached');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.cards.mode),'cached');
+  assert.equal(await getSaved(page),JSON.stringify(initial));
+  assert.equal((await cachedEvent(page,null,SUPPORT_CACHE)).text,supportBefore.text,
+   'Malformed source TSV must not replace the verified card roster');
+  await page.unroute('**/data/support_card.txt',brokenSupport);
+  const brokenSkill=r=>r.fulfill({status:200,
+   contentType:'application/json',body:'{"skills":[{"id":"missing"}]}'});
+  await page.route('**/data/skill_data.txt',brokenSkill);
+  await reload(page,app,'cached');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.skills.mode),'cached');
+  assert.equal(await getSaved(page),JSON.stringify(initial));
+  assert.equal((await cachedEvent(page,null,SKILL_CACHE)).text,skillBefore.text,
+   'Invalid replacement skill JSON must not poison the verified skills');
+  assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
+  await page.unroute('**/data/skill_data.txt',brokenSkill);
+  await reload(page,app);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.cards.mode),'online');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.skills.mode),'online');
+
   // Damaged settings are not silently replaced. Rejecting reset preserves bytes.
   const raw='{broken-settings';
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key:SAVE_KEY,raw});
@@ -253,6 +284,7 @@ async function main(){
    cohort:2487,pinnedSource:true,exportAndReplace:true,cancelAndMerge:true,
    invalidImportAtomic:true,offlineVerifiedCache:true,corruptEventCacheFailClosed:true,
    invalidOnlineEventKeptCache:true,corruptSettingsPreserved:true,coldOfflineFailClosed:true,
+   malformedSupportSkillRejected:true,upstreamCacheNotPoisoned:true,
    realWindowsAndroidTested:false,publishedPagesTested:false
   }));
  }finally{
