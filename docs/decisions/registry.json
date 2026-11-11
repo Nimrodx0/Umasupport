@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-10",
+  "asOf": "2026-11-11",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-043",
+      "date": "2026-11-11",
+      "heading": "2026-11-11：単一の代表条件に限定せず、条件を横断した脚質傾向を研究する",
+      "status": "current",
+      "relation": [],
+      "note": "均衡編成は人工比較対照として保持し、9/12頭・編成・コース・能力条件で一貫する方向と逆転・欠測を研究。P3の単一標準方式は再検討、正式UI未採用",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-043",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-043",
+      "reviewedAt": "2026-11-11"
+    },
     {
       "id": "D-042",
       "date": "2026-11-10",
@@ -52,13 +64,15 @@
       "id": "D-002",
       "date": "2026-11-06",
       "heading": "2026-11-06：サポカ標準適性は均衡脚質構成だけを基準に集約する",
-      "status": "current",
-      "relation": [],
-      "note": "標準P3では均衡編成のみ、別編成は研究・感度分析",
+      "status": "qualified",
+      "relation": [
+        "D-043"
+      ],
+      "note": "2026-11-11のD-043で均衡編成のみをP3の必須標準とする拘束を再検討。均衡は再現可能な実験対照として継続、正式表示方式は未決",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-002",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-002",
-      "reviewedAt": "2026-11-10"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-043",
+      "reviewedAt": "2026-11-11"
     },
     {
       "id": "D-003",
