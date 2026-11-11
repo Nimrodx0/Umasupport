@@ -413,6 +413,11 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Validate P2.20 fixed context and pre-skill signed rank conjunction (synthetic only)
+        run: |
+          node --check poc/src/skill_change_order_source_paths.cjs
+          node --check poc/tools/skill_change_order_joint_context_review.cjs
+          node --test poc/tests/skill_change_order_source_paths.test.cjs poc/tests/skill_change_order_joint_context_review.test.cjs
       - name: Validate P0/P1 skill activation condition taxonomy (synthetic only)
         run: |
           node --check poc/src/skill_condition_inventory.cjs
