@@ -173,6 +173,28 @@ async function main(){
    assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ562');
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
    await pickerPage.locator('button[data-action="close"]').click();
+   // Real browser product flow: source-verified empty events mean "unrecorded",
+   // not zero game events. Goal matching honors the active deck scope.
+   await pickerPage.locator('button[data-action="goals"]').click();
+   await pickerPage.locator('#new-goal-skill-search').fill('右回り○');
+   await pickerPage.locator('#new-goal-skill').selectOption('hint:右回り○');
+   await pickerPage.locator('#new-goal-scope').selectOption('main');
+   await pickerPage.locator('button[data-action="add-goal"]').click();
+   await pickerPage.locator('button[data-action="close"]').click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="2"]').click();
+   await pickerPage.locator('button[data-action="picker-filters-reset"]').click();
+   await pickerPage.locator('#picker-sort').selectOption('goals-desc');
+   assert.equal(await pickerPage.locator('.picker-card').first().getAttribute('data-id'),'30001');
+   assert.match(await pickerPage.locator('.picker-card').first().innerText(),/目標候補1件/);
+   assert.match(await pickerPage.locator('.picker-card').first().innerText(),/イベント未収録/);
+   assert.match(await pickerPage.locator('#picker-cards').innerText(),/獲得保証/);
+   assert.match(await pickerPage.locator('.picker-card').nth(1).innerText(),/目標候補0件/);
+   await pickerPage.locator('button[data-action="close"]').click();
+   await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="2"]').click();
+   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'goals-desc');
+   assert.doesNotMatch(await pickerPage.locator('.picker-card').first().innerText(),/目標候補/,
+    'Main-only goals must never inflate inheritance matching counts');
+   await pickerPage.locator('button[data-action="close"]').click();
   }finally{await pickerContext.close();}
   // F-08: source status must report genuinely validated empty events.
   await page.locator('button[data-action="source-health"]').click();
