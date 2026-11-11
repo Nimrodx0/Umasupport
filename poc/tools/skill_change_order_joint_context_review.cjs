@@ -108,8 +108,8 @@ function inspect(model,source){
  const seen=new Set(),rows=[];
  const totals={sourcePaths:0,modelSignOnlyPaths:0,heldNonSignOnlyPaths:0,
   sourcePathsWithUnknownRequiredConditions:0,
-  modelRunnerTicksAfterStaticStyleDistanceFilter:0,
-  signedModelRunnerTicksAfterStaticStyleDistanceFilter:0,
+  pathWeightedRunnerTicksAfterStaticStyleDistanceFilter:0,
+  pathWeightedSignedRunnerTicksAfterStaticStyleDistanceFilter:0,
   sourcePathsWithSomeSignModelTicks:0};
  for(const p of source.paths){
   if(!/^[0-9]+$/.test(p.sourceNumericId||'')||
@@ -160,8 +160,8 @@ function inspect(model,source){
   if(flags)totals.modelSignOnlyPaths++;
   else totals.heldNonSignOnlyPaths++;
   if(unknown)totals.sourcePathsWithUnknownRequiredConditions++;
-  totals.modelRunnerTicksAfterStaticStyleDistanceFilter+=totalCompatible;
-  if(flags)totals.signedModelRunnerTicksAfterStaticStyleDistanceFilter+=totalTrue;
+  totals.pathWeightedRunnerTicksAfterStaticStyleDistanceFilter+=totalCompatible;
+  if(flags)totals.pathWeightedSignedRunnerTicksAfterStaticStyleDistanceFilter+=totalTrue;
   if(flags&&totalTrue>0)totals.sourcePathsWithSomeSignModelTicks++;
   rows.push({
    sourceNumericId:p.sourceNumericId,
@@ -196,10 +196,16 @@ function inspect(model,source){
    modelReferenceContexts:contexts.length,
    originalReferenceRunnerTicks:model.partialConditionOpportunity.evaluablePreSkillRunnerTicks},
   totals,rows,
+  zeroObservedSignSourcePaths:rows.filter(p=>
+   Object.values(p.byStyle).every(v=>v.signedRankMatchedRunnerTicks===0))
+   .map(p=>({sourceNumericId:p.sourceNumericId,
+    sourceStaticPredicates:p.fixedSourceGate.sameAndStatic,
+    unmeasuredRequiredPredicateTypes:p.unmeasuredRequiredPredicateTypes})),
   limitations:[
    'Model sign intersections are exact for the recorded no-skill pre-priority rank cache AND static style/distance of the SAME fixed runner and tick, not an independent-marginal multiplication.',
    'The model report stores only rank-change signs. Magnitude-dependent operators are held and never approximated.',
    'Other mandatory source predicates remain UNMEASURED; a tick counted here is never a full skill trigger or proc probability.',
+   'Path-weighted totals count the SAME model runner/tick again for every distinct source skill path; they are NOT unique runner/tick sample sizes.',
    'No real skill is loaded; sources are the fixed UmaSim registry and GlobalSim artificial no-skill race plan.',
    'Zero matching ticks in 32 artificial races does not imply a skill is globally unusable.',
    'No user-facing labels, real-game skill probabilities, P3 card grades or effects are inferred.'
@@ -213,6 +219,7 @@ function main(args){
  fs.writeFileSync(outputPath,JSON.stringify(out,null,2)+'\n');
  console.log('P2_20_JOINT_CONTEXT_REVIEW='+JSON.stringify({
   status:out.status,denominator:out.denominator,totals:out.totals,
+  zeroSignSourcePaths:out.zeroObservedSignSourcePaths,
   exampleRows:out.rows.slice(0,8).map(row=>({
    sourceNumericId:row.sourceNumericId,
    signedRankCondition:row.signedRankCondition,
