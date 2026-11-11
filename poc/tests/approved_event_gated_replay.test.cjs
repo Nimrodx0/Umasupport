@@ -127,7 +127,7 @@ test('all approved prerequisites are classified and replayed using only publishe
  assert.equal(catalog.schemaVersion,1);
  assert.equal(cases.length,559);
  let events=0,targets=0,satisfied=0,unresolved=0,auto=0,choice=0,result=0,
-  conditional=0,unblockedWithoutParents=0,negativeChecks=0;
+  conditional=0,unblockedWithoutParents=0,negativeChecks=0,terminalChecks=0;
  const failures=[],categories={eventRequires:0,optionRequires:0,outcomeRequires:0,
   outcomeAndEvent:0,outcomeAndOption:0,availability:0,
   eventPrerequisiteChoice:0,eventPrerequisiteAuto:0,
@@ -208,6 +208,26 @@ test('all approved prerequisites are classified and replayed using only publishe
    // so only assert this when the parent is of type choice.
    const deps=[...prereqs(target.event),
     ...(target.choice?prereqs(target.choice):[])];
+   // Published termination is an actual blocking contract, even if a
+   // stale child choice remains present in the persisted map.
+   for(const dep of prereqs(target.event)){
+    const parent=byId.get(dep.eventId);
+    const terminating=parent?.type==='choice'
+     ?parent.choices.find(c=>c.terminal===true)
+     :parent?.outcomes?.find(o=>o.terminal===true);
+    if(!terminating)continue;
+    const quit=clone(state);
+    if(parent.type==='choice'){
+     quit.choices[parent.id]=terminating.id;
+     delete quit.outcomes[parent.id];
+    }else quit.outcomes[parent.id]=terminating.id;
+    assert.equal(core.reachability(target.event,quit.choices,card.events,quit.outcomes).status,
+     'blocked','terminated parent must block dependent event card='+card.id);
+    assert.deepEqual(core.directRoutes(card,{stage:4,...quit})
+     .filter(r=>r.source==='event'&&r.eventId===target.event.id),[],
+     'terminal parent must suppress all stale child rewards');
+    terminalChecks++;
+   }
    for(const dep of deps){
     if(byId.get(dep.eventId)?.type!=='choice'||!own(state.choices,dep.eventId))
      continue;
@@ -227,7 +247,7 @@ test('all approved prerequisites are classified and replayed using only publishe
  }
  const report={approvedEvents:events,approvedCards:cases.length,targets,
   satisfied,unresolved,auto,choice,result,conditional,
-  unblockedWithoutParents,negativeChecks,categories,failureKinds,
+  unblockedWithoutParents,negativeChecks,terminalChecks,categories,failureKinds,
   failures:failures.slice(0,30)};
  console.log('W1_REVIEWED_GATED_REPLAY_AUDIT='+JSON.stringify(report));
  assert.equal(events,2487);
