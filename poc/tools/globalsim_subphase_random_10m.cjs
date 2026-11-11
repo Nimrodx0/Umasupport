@@ -51,7 +51,8 @@ function collect(){
    groups.set(key,{courseId:plan.course.id,
     fieldSize:plan.fieldSize,mode:plan.mode,windowKey:window.key,
     bandId:band.id,style,observations:0,pointSum:0,
-    windowSum:0,minRunnerDelta:Infinity,maxRunnerDelta:-Infinity});
+    windowSum:0,minRunnerDelta:Infinity,maxRunnerDelta:-Infinity,
+    split:[{n:0,pointSum:0,windowSum:0},{n:0,pointSum:0,windowSum:0}]});
   }
   const g=groups.get(key);
   g.observations++;
@@ -59,6 +60,16 @@ function collect(){
   g.windowSum+=measure.tenMetreWindowOpportunity;
   g.minRunnerDelta=Math.min(g.minRunnerDelta,measure.difference);
   g.maxRunnerDelta=Math.max(g.maxRunnerDelta,measure.difference);
+  // Preserve the original 30-seed aggregate output byte-for-byte.
+  // Additional split observations are collected only when the source plan
+  // exposes its fixed replicate index; synthetic legacy tests omit it.
+  if(Number.isSafeInteger(plan.rep)){
+   if(plan.rep<0||plan.rep>=30)throw Error('Source replicate out of range');
+   const half=plan.rep<15?0:1;
+   const h=g.split[half];h.n++;
+   h.pointSum+=measure.pointOccupancy;
+   h.windowSum+=measure.tenMetreWindowOpportunity;
+  }
  };
  return {groups,append};
 }
@@ -155,6 +166,32 @@ function report(aggregation,seedsPerCell=30){
    'No P3/P4 user-facing suitability, new high/medium/low threshold, or card score is defined.'
   ]};
 }
+function splitReport(aggregation,seedsPerCell=30){
+ if(seedsPerCell!==30)throw Error('P2.28 seed stability requires fixed 15+15 of 30');
+ const data=[...aggregation.groups.values()].flatMap(g=>g.split.map((h,i)=>{
+  if(!h.n||h.n<15||h.n>90)throw Error('Missing fixed-model half-cohort observations');
+  const p=h.pointSum/h.n,w=h.windowSum/h.n;
+  if(p<0||w<p-1e-8||w>1+1e-8)
+   throw Error('Malformed split-half point/window metrics');
+  return {courseId:g.courseId,fieldSize:g.fieldSize,mode:g.mode,
+   windowKey:g.windowKey,bandId:g.bandId,style:g.style,
+   half:i===0?'first15':'last15',
+   runners:h.n,pointPercent:round(p*100),
+   random10mOpportunityPercent:round(w*100)};
+ })).sort((a,b)=>a.windowKey.localeCompare(b.windowKey)||
+  a.bandId.localeCompare(b.bandId)||a.style.localeCompare(b.style)||
+  a.courseId-b.courseId||a.fieldSize-b.fieldSize||
+  a.mode.localeCompare(b.mode)||a.half.localeCompare(b.half));
+ if(data.length!==2*24*WINDOWS.length*bands.length*STYLES.length)
+  throw Error('Incomplete 4-short-window fixed split report');
+ return {schemaVersion:1,status:'p2-fixed-15-plus-15-short-window-bands-not-game-activation',
+  sourceRevision:pilot.PIN,scenario:'balanced',seedsPerHalf:15,
+  baseRaces:720,perContextRows:data.length,contextRows:data,
+  limitations:['Split-half runner observations share a race and are descriptive, not independent inferential samples.',
+   'Point occupancy and 10m window opportunity remain separate metrics; no W-minus-uniform comparison.',
+   'Same original four source short windows, frozen model seed identities and 11 rank bands.',
+   'No source skill activation, scenario weights, production UI, effect utility or suitability grade.']};
+}
 async function execute(template,engine,{seedsPerCell=30}={}){
  if(!Number.isSafeInteger(seedsPerCell)||seedsPerCell<2||
   seedsPerCell>30||seedsPerCell%2)
@@ -197,17 +234,20 @@ async function execute(template,engine,{seedsPerCell=30}={}){
   throw Error('Incomplete model replay '+JSON.stringify({
    exit,expected:plans.length,count,stderr}));
  return {full:old.report(full,{seedsPerCell}),
-  short:report(sub,seedsPerCell)};
+  short:report(sub,seedsPerCell),
+  split:seedsPerCell===30?splitReport(sub,seedsPerCell):null};
 }
-async function main([templatePath,engine,fullOutput,shortOutput,seeds]){
+async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput]){
  if(!templatePath||!engine||!fullOutput||!shortOutput)
   throw Error('Usage: globalsim_subphase_random_10m.cjs original.jsonl engine full-phase.json short-windows.json [seeds]');
  const text=fs.readFileSync(templatePath,'utf8').trim().split(/\r?\n/);
  if(text.length!==1)throw Error('Requires exactly one frozen GlobalSim template');
- const {full,short}=await execute(JSON.parse(text[0]),engine,
+ const {full,short,split}=await execute(JSON.parse(text[0]),engine,
   {seedsPerCell:Number(seeds||30)});
  fs.writeFileSync(fullOutput,JSON.stringify(full,null,2)+'\n');
  fs.writeFileSync(shortOutput,JSON.stringify(short,null,2)+'\n');
+ if(splitOutput){if(!split)throw Error('Fixed 30 source seeds required for split');
+  fs.writeFileSync(splitOutput,JSON.stringify(split,null,2)+'\n')}
  console.log(JSON.stringify({races:short.simulations,windows:short.windows,
   windowBands:short.windowBands,perContextRows:short.perContextRows,
   sample:short.byWindowBand.filter(x=>
@@ -216,4 +256,4 @@ async function main([templatePath,engine,fullOutput,shortOutput,seeds]){
 }
 if(require.main===module)main(process.argv.slice(2)).catch(e=>{
  console.error(e.stack||e);process.exitCode=1});
-module.exports={WINDOWS,exactWindow,collect,inspectRace,report,execute,main};
+module.exports={WINDOWS,exactWindow,collect,inspectRace,report,splitReport,execute,main};
