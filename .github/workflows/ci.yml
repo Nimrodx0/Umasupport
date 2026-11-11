@@ -413,6 +413,10 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Validate P2.31 course/mode sensitivity and source provenance (synthetic)
+        run: |
+          node --check poc/tools/skill_context_individual_margin.cjs
+          node --test poc/tests/skill_context_individual_margin.test.cjs
       - name: Validate P2.30 conservative mean margin without suitability labels
         run: |
           node --check poc/tools/skill_context_margin_sensitivity.cjs
