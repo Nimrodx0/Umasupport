@@ -22,6 +22,7 @@
 | 次に何を作るのか | [上位ロードマップ](project/roadmap.md) |
 | P0～P5の細かい研究工程と結果 | [研究計画](plans/skill-conditions/index.md) |
 | 仕様がそうなった理由 | [原文と状態別の判断索引](decisions/index.md) |
+| プロジェクトで使う専門用語の意味・表記 | [用語・定義の正本](reference/terminology.md) |
 | データの構造と取り込み方 | [技術リファレンス](reference/index.md) |
 | 実際の作業の手順 | [How-to](how-to/README.md) |
 | 実験や監査の根拠 | [固定研究の索引](evidence/catalog.md) |

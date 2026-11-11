@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-044",
+      "date": "2026-11-11",
+      "heading": "2026-11-11：専門用語を意味の読み取りやすい名称で定義し、一貫して管理する",
+      "status": "current",
+      "relation": [],
+      "note": "AGENTS.mdに6原則、reference/terminology.mdに優先用語・定義正本、D.3で分野横断の用語棚卸しと表記統一を管理。既存の分野固有定義はその正本を参照",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-044",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-044",
+      "reviewedAt": "2026-11-11"
+    },
+    {
       "id": "D-043",
       "date": "2026-11-11",
       "heading": "2026-11-11：単一の代表条件に限定せず、条件を横断した脚質傾向を研究する",
