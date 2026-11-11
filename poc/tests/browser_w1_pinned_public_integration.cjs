@@ -98,9 +98,10 @@ async function appCases(page){
       if(added)choice={card:{id:card.id,name:card.name},
        eventId:e.id,choiceId:opt.id,skillId:added.skillId};
      }
-     if(!outcome&&opt.outcomes?.length>=2&&opt.outcomes.every(x=>!x.requires)){
+     if(!outcome&&opt.outcomes?.length>=2&&opt.outcomes.every(x=>!x.requires)&&
+       opt.outcomes.some(x=>(x.rewards||[]).some(r=>r.kind!=='negative'))){
       outcome={card:{id:card.id,name:card.name},eventId:e.id,choiceId:opt.id,
-       firstResult:opt.outcomes[0].id};
+       firstResult:opt.outcomes[0].id,secondResult:opt.outcomes[1].id};
      }
     }
    }
@@ -179,6 +180,31 @@ async function appCases(page){
  assert.equal(await resultBox.inputValue(),sample.outcome.firstResult);
  const after=await saved(page);
  assert.equal(after.main.slots[1].outcomes[sample.outcome.eventId],sample.outcome.firstResult);
+ async function outcomeRouteCheck(resultId){
+  const snapshot=await page.evaluate(({cardId,eventId,choiceId,resultId,key})=>{
+   const model=window.UmaDemoData,core=window.UmaCore;
+   const card=model.cardById[cardId],event=card.events.find(e=>e.id===eventId);
+   const option=event.choices.find(c=>c.id===choiceId);
+   const result=option.outcomes.find(o=>o.id===resultId);
+   const settings=JSON.parse(localStorage.getItem(key));
+   const deck=settings.decks.main.find(d=>d.id===settings.activeDecks.main);
+   const slot=deck.slots[1];
+   const direct=core.directRoutes(card,slot).filter(r=>r.source==='event'&&r.eventId===eventId);
+   const project=rs=>rs.map(r=>({skillId:r.skillId,level:r.level??null}))
+    .sort((x,y)=>x.skillId.localeCompare(y.skillId)||((x.level??-1)-(y.level??-1)));
+   return {savedResult:slot.outcomes[eventId],
+    expected:project((result.rewards||[]).filter(r=>r.kind!=='negative')),
+    actual:project(direct)};
+  },{cardId:sample.outcome.card.id,eventId:sample.outcome.eventId,
+   choiceId:sample.outcome.choiceId,resultId,key:SAVE_KEY});
+  assert.equal(snapshot.savedResult,resultId);
+  assert.deepEqual(snapshot.actual,snapshot.expected,
+   'selected result must replace competing event rewards without changing hint levels');
+  return snapshot;
+ }
+ await outcomeRouteCheck(sample.outcome.firstResult);
+ await resultBox.selectOption(sample.outcome.secondResult);
+ await outcomeRouteCheck(sample.outcome.secondResult);
  await page.locator('button[data-action="close"]').click();
  // Independently exercise a real UmaSim hint record through the same GUI.
  // The source snapshot is pinned, not an assertion about the current game.
