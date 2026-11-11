@@ -127,8 +127,9 @@ function isReachable(event,choices,events,outcomes={}){
 }
 function directRoutes(card,config){
   const choices=(config&&config.choices)||{},outcomes=(config&&config.outcomes)||{},routes=[];
-  const hintList=(card.hintsByStage&&Object.prototype.hasOwnProperty.call(card.hintsByStage,String(config?.stage??4)))
-    ?card.hintsByStage[String(config.stage)]:card.hints||[];
+  const stageKey=String(config?.stage??4);
+  const hintList=(card.hintsByStage&&Object.prototype.hasOwnProperty.call(card.hintsByStage,stageKey))
+    ?card.hintsByStage[stageKey]:card.hints||[];
   const perf=card.hintPerformanceByStage?.[String(config?.stage??4)];
   const validHintLevel=perf&&Number.isSafeInteger(perf.levelBase)&&Number.isSafeInteger(perf.levelUnique)&&
     perf.levelBase>=0&&perf.levelUnique>=0;

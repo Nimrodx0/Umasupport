@@ -17,7 +17,21 @@ const goalSet=()=>state.goalSets.find(x=>x.id===state.currentGoalSet)||state.goa
 const activeDeck=k=>window.UmaSettings.activeDeck(state,k);
 const results=()=>{const main=core.aggregate(activeDeck('main'),data),inherit=core.aggregate(activeDeck('inherit'),data),goals=goalSet().goals;return {main,inherit,goals,rows:core.combinedRows(main,inherit,goals,data)};};
 let settingsLoadError=null;
-function store(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){console.warn('保存できません',e)}}
+let saveFailureNotified=false;
+function store(){
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+  saveFailureNotified=false;
+ }catch(e){
+  console.warn('保存できません',e);
+  // A silent console warning looks like a successful save. Notify once per
+  // failure streak; a subsequent successful write re-arms the warning.
+  if(!saveFailureNotified){
+   saveFailureNotified=true;
+   alert('設定をブラウザに保存できませんでした。保存領域やブラウザ設定を確認してください。再読み込みすると今回の変更が失われる可能性があります。');
+  }
+ }
+}
 try {
  const raw=localStorage.getItem(SAVE_KEY);
  if(raw)state=window.UmaSettings.parse(raw,data);

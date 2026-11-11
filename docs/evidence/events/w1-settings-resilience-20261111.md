@@ -1,0 +1,37 @@
+# W1.4：実データ保存・JSON入出力・障害復帰の自動検証（2026-11-11）
+
+**工程状態：A（自動機構）の検証を進めた。CのWindows／Android実機検証は利用者の指示により保留。W1.4の完成・W1.5の受入完了は宣言しない。**
+
+## 対象・合格条件
+
+- [W1～W5工程表](../../plans/product.md)のW1.4、[F-09](../../reference/requirements.md) と [検証計画](../../quality/verification-plan.md) を適用する。
+- 出典固定：[W1.2/W1.3の実データ結合記録](w1-approved-event-integration-20261111.md) と同じ承認済み公開イベント（559カード／2,487件）およびSHA-256検証済み固定UmaSimデータ。アプリ内の出典本文を再配布・改変しない。
+- 変更された本番コードは [`live_app.js`](../../../poc/src/live_app.js) の保存失敗通知のみ。保存失敗が発生した場合は利用者に再読み込みで変更が失われる可能性を警告し、同じ失敗の連続中は繰り返し通知しない。いったん書込みに成功すれば、次の失敗時に再通知する。
+
+## 新規テストと期待値
+
+| 自動試験 | 実行 | 期待値／判定 |
+| --- | --- | --- |
+| JSON保存（実データ） | [`browser_w1_settings_recovery.cjs`](../../../poc/tests/browser_w1_settings_recovery.cjs) | 実際の画面のJSON保存ボタンから得たファイルがlocalStorage上の設定と一致 |
+| 不正入力 | 同上 | 壊れたJSON／現モデルにないスキルIDを拒否し、既存設定のバイト列を維持 |
+| インポート方式 | 同上 | プレビュー・キャンセルは無変更、統合は別IDでデッキと目標セットを追加し現行選択を保持、置換は確認拒否で無変更、確認許可で元の内容へ復元 |
+| 実データ＋保存 | 同上 | 承認済み選択イベント・目標スキルと表示モードが再読み込み後も保存される |
+| 外部取得先遮断 | 同上 | サポカ・スキル・イベントを取得できない場合、検証済みIndexedDBのみ使用し、設定を無変更で再表示 |
+| 不正なオンラインイベント | 同上 | 新規不正JSONで正常キャッシュを上書きせず、前回承認済みイベントのまま動作 |
+| キャッシュ破損＋障害 | 同上 | イベントJSONを利用不可と明示し、イベント・デッキ設定を自動破棄しない。正常キャッシュに戻せば設定が回復 |
+| 保存設定破損 | 同上 | 画面にエラーを出し、初期化の確認が拒否された場合は元バイト列を保存 |
+| 新規プロファイルで通信不能 | 同上 | 架空データを捏造せず起動エラー、デッキ設定を勝手に生成・保存しない |
+| ブラウザの書込み失敗 | [`settings.test.cjs`](../../../poc/tests/settings.test.cjs) ＋ [`browser_w1_settings_recovery.cjs`](../../../poc/tests/browser_w1_settings_recovery.cjs) | 単体テストで一度通知／再通知を検証。実Chromiumでも書込み拒否を模擬し、利用者への警告とlocalStorageに保存されないことを確認 |
+
+## 結果
+
+- [PR #398](https://github.com/Nimrodx0/Umasupport/pull/398)の一部として試験追加。
+- 新規の実データW1.4ブラウザテストを初めて含めた [PoC Core Tests #42948985741](https://github.com/Nimrodx0/Umasupport/actions/runs/42948985741)：core-testsとbrowser-smokeが成功。
+- 保存失敗通知（連続失敗時一度・書込み回復後に再通知）を含めた [PoC Core Tests #42949655493](https://github.com/Nimrodx0/Umasupport/actions/runs/42949655493)：core-testsとbrowser-smokeが成功。既存のW1.2/W1.3、W1.4ブラウザ試験とも非回帰。
+- ブラウザでのQuotaExceededError模擬を追加した実装コミット `6840b4775dbf8bf1350b5d3604dba4991522d5dd` に対して [PoC Core Tests #42949985726](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985726)、[Documentation Integrity #42949985728](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985728)、[Cross-source event inventory #42949985743](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985743) はすべて成功。**実機ではなくCIのChromiumである**。
+
+## 未完了（実機検証は保留）
+
+1. C：公開GitHub Pagesの配信コミット、Windows／Androidの物理ブラウザでの再現。ユーザー指示により現在保留し、Aのテスト結果で代替しない。
+2. B：実ゲームのイベント全件網羅率、最新版UmaSimとの差異、選択肢依存チェーンの未掲載事実。固定データと実ゲーム現行版を同一視しない。
+3. W1.5：対象端末・OS・ブラウザバージョン・公開コミットの受入記録は未記入。意図的に未実施をPassにしない。
