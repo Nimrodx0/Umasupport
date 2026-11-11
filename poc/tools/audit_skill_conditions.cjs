@@ -14,6 +14,7 @@ const rankTime=require('../src/skill_rank_timing_audit.cjs');
 const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
+const coarseReview=require('../src/skill_coarse_style_review.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
@@ -105,6 +106,10 @@ function matchedRecord(skill,live,old){
  if(styleApp.total!==model.skills.length||styleApp.unavailable!==unknown.length)
   throw Error('P2 style tendency app coverage mismatch: '+JSON.stringify(styleApp));
  const allInferredReview=styleReview.summarize(model);
+ const skillBySkill=coarseReview.report(model);
+ if(skillBySkill.appSkillCount!==881||skillBySkill.sourceMatchedSkills!==818||
+  skillBySkill.skillCoverage.unavailable!==63)
+  throw Error('Coarse four-style review did not preserve fixed app cohort');
  if(allInferredReview.total!==styleApp.inferred)
   throw Error('P2 review list lost inferred skills');
  const sourceStyles=raw.map(rec=>{
@@ -210,6 +215,15 @@ function matchedRecord(skill,live,old){
    allRankTypes:c.allRankTypes,allDeferredTypes:c.allDeferredTypes,
    sameAndRows:c.sameAndRows}))},null,2));
  console.log('P2_MIXED_RANK_COHORT_SUMMARY_END');
+ fs.writeFileSync('p2-skill-coarse-four-style-review.json',
+  JSON.stringify({source:report.source,...skillBySkill},null,2)+'\n');
+ console.log('P2_COARSE_SKILL_REVIEW_SUMMARY_START');
+ console.log(JSON.stringify({status:skillBySkill.status,
+  appSkills:skillBySkill.appSkillCount,
+  sourceMatched:skillBySkill.sourceMatchedSkills,
+  coverage:skillBySkill.skillCoverage,
+  perStyleCounts:skillBySkill.perStyleCounts},null,2));
+ console.log('P2_COARSE_SKILL_REVIEW_SUMMARY_END');
  fs.writeFileSync('p2-condition-research-triage.json',
   JSON.stringify({source:report.source,...p2Triage},null,2)+'\n');
  console.log('P2_CONDITION_TRIAGE_SUMMARY_START');
