@@ -413,6 +413,11 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Validate P2.30 minimum certified W-gap sensitivity (synthetic only)
+        run: |
+          node --check poc/tools/skill_specificity32_research.cjs
+          node --check poc/tools/skill_context_margin_sensitivity.cjs
+          node --test poc/tests/skill_specificity32_research.test.cjs poc/tests/skill_context_margin_sensitivity.test.cjs
       - name: Validate P2.29 cross-context consensus and preserve missing-style holds
         run: |
           node --check poc/tools/skill_reference_scenario_gate.cjs
