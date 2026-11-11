@@ -127,7 +127,11 @@ test('tampered half windows or aggregate totals are rejected, not promoted',()=>
  assert.throws(()=>split.audit(manifest,reports,halves,individual),
   /invalid disjoint/);
  halves.backHeavy[1].seedWindow.repStart=15;
- halves.frontHeavy[0].contextRows[0].opportunityLowerBoundPercent+=2;
+ const tampered=halves.frontHeavy[0].contextRows[0];
+ tampered.opportunityLowerBoundPercent+=2;
+ tampered.opportunityUpperBoundPercent+=2;
+ tampered.opportunityPercent+=2;
+ tampered.pointOccupancyPercent+=2;
  assert.throws(()=>split.audit(manifest,reports,halves,individual),
   /not reconstructed/);
 });
