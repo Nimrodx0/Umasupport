@@ -278,6 +278,22 @@ jobs:
           assert.equal(x.denominators.sourceUnmatchedSkills,63);
           assert.equal(x.denominators.allSourceStyleCells,3272);
           assert.equal(x.denominators.signedRankSourceSkills,30);
+          assert.deepEqual(x.byMinimumUnknownTypeCount,{
+           'only-finite-predicate-types-in-some-route':46,
+           'one-unverified-predicate-type-away-in-some-route':1192,
+           'two-or-more-unverified-types-in-every-route':1175,
+           'no-finite-domain-compatible-route':859});
+          assert.equal(x.zeroTypeBlockerSourceSkills,19);
+          assert.equal(x.oneTypeBlockerSourceSkills,357);
+          assert.deepEqual(x.cohortByMinimumUnknownTypeCount,{
+           'no-finite-domain-compatible-route':36,
+           'two-or-more-unverified-types-in-every-route':84});
+          assert.deepEqual(
+           x.impactIfOneTypeCouldBeMeasured.slice(0,4)
+            .map(z=>[z.type,z.uniqueSourceSkillsWithAtLeastOneStyleCell,
+             z.uniqueStyleCellsOneTypeAway]),
+           [['phase_random',102,315],['track_id',37,148],
+            ['all_corner_random',33,96],['straight_random',31,88]]);
           assert.equal(x.rows.length,818);
           assert.equal(Object.values(x.byMinimumUnknownTypeCount)
            .reduce((sum,n)=>sum+n,0),3272);
