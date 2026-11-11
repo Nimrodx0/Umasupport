@@ -12,8 +12,12 @@ function approvedEventSkillIds(card,model){
  // In explicit preview mode, the candidate catalog was schema-validated and
  // the UI's event-route filter should reach those candidates without marking
  // them approved. Normal mode still only exposes reviewed release data.
- const preview=model?.meta?.runtimeSources?.events?.mode==='preview';
- if(!(model?.meta?.reviewedEventRecords||preview)||!Array.isArray(card?.events))return out;
+ const mode=model?.meta?.runtimeSources?.events?.mode;
+ const preview=mode==='preview';
+ const reviewed=mode?
+  (mode==='reviewed'||mode==='cached')&&model?.meta?.reviewedEventRecords>0:
+  model?.meta?.reviewedEventRecords>0;
+ if(!(reviewed||preview)||!Array.isArray(card?.events))return out;
  function rewards(xs){
   if(!Array.isArray(xs))return;
   for(const r of xs)if(r?.kind!=='negative'&&typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId))out.add(r.skillId);
