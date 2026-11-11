@@ -222,4 +222,4 @@ function audit(model){
   ]
  };
 }
-module.exports={STYLES,DOMAINS,check,analyzePath,analyzeSkill,audit};
+module.exports={STYLES,DOMAINS,check,checkCombination,analyzePath,analyzeSkill,audit};

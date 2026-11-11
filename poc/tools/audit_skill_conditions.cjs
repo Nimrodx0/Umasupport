@@ -16,6 +16,7 @@ const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
 const coarseReview=require('../src/skill_coarse_style_review.cjs');
 const fullPaths=require('../src/skill_full_condition_path_audit.cjs');
+const blockerImpact=require('../src/skill_source_path_blocker_impact.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
@@ -111,6 +112,27 @@ function matchedRecord(skill,live,old){
  const skillBySkill=coarseReview.report(model);
  const halfPhaseStudy=halfFeasibility.cohort(model);
  const p215=fullPaths.audit(model);
+ const p215Blockers=blockerImpact.audit(model,
+  [...new Set(changeOrder.paths.map(x=>x.sourceNumericId))]);
+ if(p215Blockers.denominators.sourceMatchedSkills!==818||
+    p215Blockers.denominators.sourceUnmatchedSkills!==63||
+    p215Blockers.denominators.allSourceStyleCells!==3272||
+    p215Blockers.denominators.signedRankSourceSkills!==30||
+    Object.values(p215Blockers.byMinimumUnknownTypeCount)
+      .reduce((a,b)=>a+b,0)!==3272)
+  throw Error('P2.15 source blocker research population drift');
+ for(const row of p215Blockers.rows){
+  const old=p215.rows.find(x=>x.sourceNumericId===row.sourceNumericId);
+  if(!old)throw Error('P2.15 blocker lost original skill');
+  for(const style of fullPaths.STYLES){
+   const previous=old.byStyle[style.name].status;
+   const now=row.byStyle[style.name].status;
+   if((previous==='all-recorded-paths-explicitly-exclude-style')!==
+      (now==='no-finite-domain-compatible-route'))
+    throw Error('P2.15 blocker contradicts fixed style exclusion: '+
+     row.sourceNumericId+' '+style.name);
+  }
+ }
  const explicitlyExcluded=Object.values(p215.byStyles)
   .reduce((n,statuses)=>n+(statuses['all-recorded-paths-explicitly-exclude-style']||0),0);
  if(explicitlyExcluded!==skillBySkill.perStyleCounts['explicit-ineligible'])
@@ -244,6 +266,17 @@ function matchedRecord(skill,live,old){
    skillId:x.skillId,name:x.name,
    time:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
  console.log('P2_HALF_PHASE_FEASIBILITY_END');
+ fs.writeFileSync('p2-15-source-blocker-impact.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},
+   ...p215Blockers},null,2)+'\n');
+ console.log('P2_15_SOURCE_BLOCKER_IMPACT='+JSON.stringify({
+  denominators:p215Blockers.denominators,
+  byMinimumUnknownTypeCount:p215Blockers.byMinimumUnknownTypeCount,
+  zeroTypeBlockerSourceSkills:p215Blockers.zeroTypeBlockerSourceSkills,
+  oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
+  signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
+  mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
  fs.writeFileSync('p2-15-full-condition-paths.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText),
    pinnedSha256:digest(pinnedText),supportSha256:digest(supportText)},...p215},
