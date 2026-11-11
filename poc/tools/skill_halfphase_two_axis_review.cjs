@@ -44,7 +44,13 @@ function validate(short,split,cohort){
   short.simulations!==720||short.seedsPerCell!==30||
   short.contextsPerWindow!==24||short.perContextRows!==4224||
   !Array.isArray(short.contextRows)||short.contextRows.length!==4224)
-  throw Error('Not the pinned balanced 720-race model report');
+  throw Error('Not the pinned balanced 720-race model report '+JSON.stringify({
+   status:short?.status,modelRevision:short?.sourceRevision,
+   expectedRevision:expanded.PIN,scenario:short?.scenario,
+   simulations:short?.simulations,seedsPerCell:short?.seedsPerCell,
+   contextsPerWindow:short?.contextsPerWindow,
+   perContextRows:short?.perContextRows,
+   actualContextRows:short?.contextRows?.length}));
  if(split?.status!=='p2-fixed-15-plus-15-short-window-bands-not-game-activation'||
   split.sourceRevision!==expanded.PIN||split.seedsPerHalf!==15||
   split.baseRaces!==720||split.perContextRows!==8448||
