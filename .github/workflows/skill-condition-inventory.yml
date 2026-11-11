@@ -7,6 +7,8 @@ on:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
+      - 'poc/src/skill_coarse_style_review.cjs'
+      - 'poc/tests/skill_coarse_style_review.test.cjs'
       - 'poc/src/skill_change_order_source_paths.cjs'
       - 'poc/tests/skill_change_order_source_paths.test.cjs'
       - 'poc/src/skill_rank_corner_source_cohort.cjs'
@@ -48,6 +50,7 @@ jobs:
         run: |
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
+          node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
           node --check poc/src/skill_change_order_source_paths.cjs
           node --check poc/src/skill_rank_corner_source_cohort.cjs
@@ -60,6 +63,7 @@ jobs:
           node --check poc/src/skill_style_tendency.js
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
+          node --test poc/tests/skill_coarse_style_review.test.cjs
           node --test poc/tests/skill_condition_mixed_cohort.test.cjs
           node --test poc/tests/skill_change_order_source_paths.test.cjs
           node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
@@ -138,6 +142,48 @@ jobs:
           name: p2-change-order-source-predicate-cohort
           path: p2-change-order-source-paths.json
           retention-days: 14
+      - name: Verify that every app skill gets a small review-only four-style summary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-skill-coarse-four-style-review.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'P2-rough-skill-by-skill-evidence-review-not-production-rating');
+          assert.equal(x.appSkillCount,881);
+          assert.equal(x.sourceMatchedSkills,818);
+          assert.equal(x.skillCoverage.unavailable,63);
+          assert.equal(x.modelScenario,'balanced-only');
+          assert.equal(x.rows.length,881);
+          assert.equal(new Set(x.rows.map(r=>r.skillId)).size,881);
+          const status=new Set(['explicit-ineligible','four-style-direction',
+           'partial-four-style-direction','two-group-reference',
+           'race-global-only','held','unavailable']);
+          for(const r of x.rows){
+           assert.deepEqual(Object.keys(r.styles),x.styles);
+           for(const name of x.styles){
+            const v=r.styles[name];assert(status.has(v.status));
+            assert(!Object.hasOwn(v,'probability'));
+            assert(!Object.hasOwn(v,'cardScore'));
+            if(v.status==='partial-four-style-direction'){
+             assert(v.supportedRankBranches.length>0);
+             assert(!Object.hasOwn(v,'modelTier'));
+            }
+           }
+          }
+          const total=Object.values(x.perStyleCounts).reduce((a,b)=>a+b,0);
+          assert.equal(total,881*4);
+          console.log('P2_COARSE_SKILL_COVERAGE_START');
+          console.log(JSON.stringify({perStyleCounts:x.perStyleCounts,
+           skillCoverage:x.skillCoverage},null,2));
+          console.log('P2_COARSE_SKILL_COVERAGE_END');
+          NODE
+      - name: Keep derived four-style skill review for inspection, not production
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-coarse-four-style-skill-review-not-product
+          path: p2-skill-coarse-four-style-review.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload bounded source-verified P2 rank/corner candidate cohort
         uses: actions/upload-artifact@v4
         with:
