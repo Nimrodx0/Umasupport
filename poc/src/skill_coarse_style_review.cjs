@@ -95,6 +95,51 @@ function summarize(skill){
   sourceStatus:'source-structure',
   styles};
 }
+// A small frequency census to guide *further* focused research. Frequencies
+// describe how often a source feature/review blocker is seen in held skills;
+// they DO NOT prove it is the sole reason for holding or estimate unlock yield.
+function gapInventory(model,rows){
+ const reasons=new Map(),conditionTypes=new Map();
+ let heldSkillCount=0;
+ const add=(map,k)=>{
+  if(typeof k!=='string'||!k)return;
+  map.set(k,(map.get(k)||0)+1);
+ };
+ for(let i=0;i<rows.length;i++){
+  if(!STYLES.some(name=>rows[i].styles[name].status==='held'))continue;
+  const profile=model.skills[i].activationProfile;
+  if(profile?.status!=='source-structure')continue;
+  heldSkillCount++;
+  const tags=new Set(),blockers=new Set();
+  for(const invoke of profile.invokes||[]){
+   for(const side of ['preConditions','conditions'])
+    for(const row of invoke[side]||[])
+     for(const c of row)tags.add(c.type);
+  }
+  const f=four.evaluate(profile);
+  for(const name of STYLES){
+   if(rows[i].styles[name].status!=='held')continue;
+   const x=f.styles[name];
+   if(x.status==='held-multiple-OR-or-invoke-paths')
+    blockers.add('multiple-source-OR-or-invoke-paths');
+   for(const path of x.paths){
+    if(path.status!=='held')continue;
+    for(const reason of path.allReasons||[path.reason])
+     blockers.add(reason);
+   }
+  }
+  for(const t of tags)add(conditionTypes,t);
+  for(const x of blockers)add(reasons,x);
+ }
+ const sort=map=>[...map.entries()].map(([key,skills])=>({key,skills}))
+  .sort((a,b)=>b.skills-a.skills||a.key.localeCompare(b.key));
+ return {status:'observed-features-of-held-skills-not-sole-causes',
+  heldSkillCount,
+  distinctRuleBlockers:reasons.size,
+  blockedReviewReasons:sort(reasons),
+  sourceConditionTypesInHeldSkills:sort(conditionTypes),
+  caveat:'Multiple reasons or condition types can occur in one held skill; frequency is not the number that would be resolved by studying that condition.'};
+}
 function report(model){
  if(!model||!Array.isArray(model.skills))
   throw Error('Expected app skill registry');
@@ -127,7 +172,8 @@ function report(model){
   sourceMatchedSkills:rows.filter(x=>x.sourceStatus==='source-structure').length,
   appSkillCount:rows.length,styles:STYLES,
   modelScenario:'balanced-only',fixedReferenceFieldSizes:[9,12],
-  perStyleCounts:counts,skillCoverage:atLeastOne,rows,
+  perStyleCounts:counts,skillCoverage:atLeastOne,
+  heldGapInventory:gapInventory(model,rows),rows,
   warnings:[
    'Intended for rough skill-by-skill visual inspection, NOT quantitative probabilities or user-facing card scores.',
    'A model ordinal comparison is rank-condition evidence, never a full skill activation guarantee; 4-style relative tier does not assert in-game skill usefulness.',
@@ -137,4 +183,4 @@ function report(model){
    'Missing 63 source matches remain unknown rather than generic or false; no skill text/source payload is redistributed.'
   ]};
 }
-module.exports={VERSION,STYLES,TIER,labels,summarize,report};
+module.exports={VERSION,STYLES,TIER,labels,summarize,gapInventory,report};
