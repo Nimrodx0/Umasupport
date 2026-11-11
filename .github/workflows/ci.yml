@@ -409,6 +409,10 @@ jobs:
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs
 
+      - name: Validate P2.15 source AND/OR and precondition path gate research
+        run: |
+          node --check poc/src/skill_full_condition_path_audit.cjs
+          node --test poc/tests/skill_full_condition_path_audit.test.cjs
       - name: Validate P0/P1 skill activation condition taxonomy (synthetic only)
         run: |
           node --check poc/src/skill_condition_inventory.cjs
