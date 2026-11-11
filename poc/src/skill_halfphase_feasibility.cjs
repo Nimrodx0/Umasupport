@@ -26,6 +26,7 @@ function cohort(model){
   noHalfTimeWithRank:0
  };
  const sourceRowCounts={};
+ const sourceWindowSkills={},directWindowSkills={};
  const examples=[];
  function add(k){counts[k]=(counts[k]||0)+1}
  for(const [i,skill] of model.skills.entries()){
@@ -92,6 +93,11 @@ function cohort(model){
     for(const group of groups){
      sourceRowCounts[group.timeType]=(sourceRowCounts[group.timeType]||0)+1;
     }
+    for(const key of new Set(groups.map(g=>g.timeType+':'+g.phaseIndex)))
+     sourceWindowSkills[key]=(sourceWindowSkills[key]||0)+1;
+    for(const key of new Set(groups.filter(g=>g.direct)
+      .map(g=>g.timeType+':'+g.phaseIndex)))
+     directWindowSkills[key]=(directWindowSkills[key]||0)+1;
    }
    if(examples.length<70)examples.push({skillId:skill.id,sourceNumericId:profile.sourceNumericId,
     name:skill.name,paths:groups,nonExact,halfNoRank});
@@ -107,6 +113,7 @@ function cohort(model){
    sourceMatched:counts.sourceMatched,heldSkills:counts.heldSkills,
    needsFourStyleStudy:counts.needsFourStyleStudy},
   counts,halfTimingRowsByType:sourceRowCounts,
+  sourceWindowSkills,directWindowSkills,
   examples,
   limitations:[
    'Counts are distinct source-matched SKILLS needing a four-style study: held, legacy-two-group-only or partial-four-style. Counts overlap; heldSkills separately matches prior 584.',
