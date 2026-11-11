@@ -99,7 +99,7 @@ function cohort(model){
       .map(g=>g.timeType+':'+g.phaseIndex)))
      directWindowSkills[key]=(directWindowSkills[key]||0)+1;
    }
-   if(examples.length<70)examples.push({skillId:skill.id,sourceNumericId:profile.sourceNumericId,
+   examples.push({skillId:skill.id,sourceNumericId:profile.sourceNumericId,
     name:skill.name,paths:groups,nonExact,halfNoRank});
   } else if(otherRank.length) {
    add('noHalfTimeWithRank');
