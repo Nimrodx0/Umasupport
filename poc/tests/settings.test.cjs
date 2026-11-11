@@ -39,7 +39,8 @@ const appSource=fs.readFileSync(path.join(__dirname,'../src/live_app.js'),'utf8'
 function mountApp(raw) {
   const key='uma-support-lab-runtime-umasim-v1';
   const values=new Map(raw===null?[]:[[key,raw]]);
-  let writes=0,allowReset=false;
+  const alerts=[];
+  let writes=0,allowReset=false,denyWrites=false;
   const nodes={app:{innerHTML:''},'modal-layer':{innerHTML:''}};
   const handlers={};
   const data={cards:[],skills:[],cardById:{},skillById:{},meta:{totalHints:0}};
@@ -47,8 +48,9 @@ function mountApp(raw) {
     window:{UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js'),UmaDeckEvents:require('../src/deck_events.js')},
     localStorage:{
       getItem:k=>values.get(k)??null,
-      setItem:(k,v)=>{writes++;values.set(k,v)}
+      setItem:(k,v)=>{if(denyWrites)throw Error('QuotaExceededError');writes++;values.set(k,v)}
     },
+    alert:message=>alerts.push(message),
     document:{
       getElementById:id=>nodes[id]||{innerHTML:''},
       addEventListener:(name,handler)=>{handlers[name]=handler}
@@ -58,8 +60,9 @@ function mountApp(raw) {
   };
   vm.runInNewContext(appSource,context,{timeout:1000});
   return {
-    nodes,values,get writes(){return writes},
+    nodes,values,alerts,get writes(){return writes},
     setAllowReset:v=>{allowReset=v},
+    setDenyWrites:v=>{denyWrites=v},
     clickReset:()=>handlers.click({target:{closest:()=>({dataset:{action:'reset'}})}})
   };
 }
@@ -78,6 +81,26 @@ test('invalid stored settings show an error without an automatic overwrite',()=>
   assert.match(app.nodes.app.innerHTML,/サポカ編成/);
   assert.equal(JSON.parse(app.values.get('uma-support-lab-runtime-umasim-v1')).version,3);
 });
+test('failed browser storage writes visibly warn once until a successful retry',()=>{
+ const app=mountApp(null);
+ app.setAllowReset(true);
+ app.setDenyWrites(true);
+ app.clickReset();
+ assert.equal(app.writes,0);
+ assert.equal(app.values.size,0);
+ assert.equal(app.alerts.length,1);
+ assert.match(app.alerts[0],/設定をブラウザに保存できませんでした/);
+ assert.match(app.alerts[0],/再読み込み/);
+ app.clickReset();
+ assert.equal(app.alerts.length,1,'avoid repeated dialogs while storage is still failing');
+ app.setDenyWrites(false);
+ app.clickReset();
+ assert.equal(app.writes,1);
+ app.setDenyWrites(true);
+ app.clickReset();
+ assert.equal(app.alerts.length,2,'re-arm the warning after a successful save');
+});
+
 test('fresh development settings launch directly without a recovery UI',()=>{
   const app=mountApp(null);
   assert.match(app.nodes.app.innerHTML,/サポカ編成/);
