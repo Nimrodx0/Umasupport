@@ -24,13 +24,20 @@
 
 | ゲート | 状態 | 根拠／今後の確認 |
 | --- | --- | --- |
-| A 機構 | **CI実行待ち** | 新テストは `.github/workflows/ci.yml` に追加。既存CI・固定リリース検証も実行対象。PRの実行結果を確認して確定する |
+| A 機構 | **追加試験の対象範囲はCI合格（6 Pass、1 Skip、0 Fail）** | [PoC Core Tests #42945587196](https://github.com/Nimrodx0/Umasupport/actions/runs/42945587196)。公開コホート・自動／選択／結果排他・重複・目標の検証に成功。**明示 choiceId の親子分岐に該当する公開実例がなく、連続打ち切り試験はスキップ**。旧人工データ回帰は別枠で成功 |
 | B データ | **既存公開審査の範囲を使用、追加の独立照合は未実施** | [公開審査](phase2-no-inquiry-publication-assessment-20261102.md)と`node poc/tools/verify_event_release.cjs`を参照。公開コホートを変更しない |
 | C 実環境 | **未実施** | Windows／Androidの物理端末・GitHub Pages上での実操作、選択と復元、公開版コミットの記録が必要 |
 
+## GitHub Actionsで確認した結果（2026-11-11）
+
+- [PoC Core Tests #42945587196](https://github.com/Nimrodx0/Umasupport/actions/runs/42945587196)：core-tests と browser-smoke のジョブがともに成功。追加試験は **7件中6 Pass／1 Skip／0 Fail**。スキップ対象は公開JSONから `requires.all[].choiceId` を使う選択肢依存の親子イベントを発見できなかったため。**連続イベントの実データ完全再現を証明しない**。
+- [Documentation Integrity #42945587240](https://github.com/Nimrodx0/Umasupport/actions/runs/42945587240)：成功。
+- [Audit complete cross-source support event inventory #42945587137](https://github.com/Nimrodx0/Umasupport/actions/runs/42945587137)：成功。独立した現ゲーム全体の網羅率の証明ではない。
+- いずれも作業ブランチのコミット `d2380cbf25647e73d85b1a0b6515cd9507062883` に対する結果。以後の文書修正は検査結果の記録のみで、機構・テストを変更しない。
+
 ## 後続
 
-- CIで該当結果を確認し、失敗すればコードまたは検証条件を調査。スキップは「検証済み」と扱わない。
+- 条件に合う公開実データが見つからない明示的な選択肢依存の連続打ち切りは、既存の人工モデル回帰を保持したまま、将来の承認済みイベント追加時または具体的な実ゲーム出典が確保された際に実データで再試験する。スキップを「検証済み」と扱わない。
 - W1.2では公開版実ブラウザで選択→結果変更→後続解除→打ち切りを操作し、具体的なイベントID・カードID・期待値・実測値を記録する。
 - W1.3ではUmaSim通常ヒントの実出典を固定し、イベントIDとスキルIDを独立に確認して目標セット・デッキ比較まで通し確認する。
 - W1.4の保存／復元／異常時保護およびW1.5のA/B/C受入記録は別工程。**W1.2とW1.3の完了宣言は行わない。**
