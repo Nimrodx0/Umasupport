@@ -15,6 +15,7 @@
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const expanded=require('./globalsim_position_expanded.cjs');
+const PIN=require('./globalsim_position_pilot.cjs').PIN;
 const bands=require('./globalsim_rank_band_dominance.cjs').BANDS;
 const projection=require('../src/skill_order_rate_bounds.cjs');
 const STYLES=expanded.STYLES;
@@ -40,19 +41,19 @@ const k=x=>[x.courseId,x.fieldSize,x.mode,x.windowKey,x.bandId,x.style].join('|'
 const h=x=>k(x)+'|'+x.half;
 function validate(short,split,cohort){
  if(short?.status!=='research-GlobalSim-subphase-random-10m-rank-opportunity-not-game-skill-rate'||
-  short.sourceRevision!==expanded.PIN||short.scenario!=='balanced'||
+  short.sourceRevision!==PIN||short.scenario!=='balanced'||
   short.simulations!==720||short.seedsPerCell!==30||
   short.contextsPerWindow!==24||short.perContextRows!==4224||
   !Array.isArray(short.contextRows)||short.contextRows.length!==4224)
   throw Error('Not the pinned balanced 720-race model report '+JSON.stringify({
    status:short?.status,modelRevision:short?.sourceRevision,
-   expectedRevision:expanded.PIN,scenario:short?.scenario,
+   expectedRevision:PIN,scenario:short?.scenario,
    simulations:short?.simulations,seedsPerCell:short?.seedsPerCell,
    contextsPerWindow:short?.contextsPerWindow,
    perContextRows:short?.perContextRows,
    actualContextRows:short?.contextRows?.length}));
  if(split?.status!=='p2-fixed-15-plus-15-short-window-bands-not-game-activation'||
-  split.sourceRevision!==expanded.PIN||split.seedsPerHalf!==15||
+  split.sourceRevision!==PIN||split.seedsPerHalf!==15||
   split.baseRaces!==720||split.perContextRows!==8448||
   !Array.isArray(split.contextRows)||split.contextRows.length!==8448)
   throw Error('Missing exact 15+15 pinned seed-split W/O data');
@@ -256,7 +257,7 @@ function evaluate(short,split,cohort){
   throw Error('Missing source skills from P2.28 review');
  return {schemaVersion:1,
   status:'P2.28-balanced-two-axis-source-short-window-model-not-game-proc',
-  source:{globalSimRevision:expanded.PIN,sourceUmaSimSHA256:SOURCE_SHA,
+  source:{globalSimRevision:PIN,sourceUmaSimSHA256:SOURCE_SHA,
    sourceShortWindowReportSHA256:SHORT_SHA,
    originalModelRaces:720,splitRacesPerContext:[15,15]},
   summary:stats,
