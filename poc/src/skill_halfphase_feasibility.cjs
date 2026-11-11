@@ -77,7 +77,8 @@ function cohort(model){
      direct:single&&noExtra&&allowed.length>0,
      extraAndTypes:(path.extraPredicates||[]).map(x=>x.type),
      hasAlternativePaths:!single,
-     sourcePredicateTypes:row.map(x=>x.type)});
+     sourcePredicateTypes:row.map(x=>x.type),
+     sourceConditions:row.map(x=>({type:x.type,operator:x.operator,value:x.value}))});
    }
   }
   if(groups.length||halfNoRank.length||nonExact.length) {
