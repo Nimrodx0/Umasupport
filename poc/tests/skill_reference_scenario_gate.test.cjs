@@ -56,6 +56,20 @@ test('fixed comparison baseline is explicitly NOT established as representative,
  assert.equal(z.comparisonSummary.balancedStrictButNotFourRobust,192);
  assert.equal(z.comparisonSummary.noFrontAbsencePairComparisons,192);
  assert.equal(z.comparisonSummary.crossHeadcountSameStrict,192);
+ assert.equal(z.crossContextConsistency.stylePairs,192);
+ assert.equal(z.crossContextConsistency.scenarioHeadcountCells,1536);
+ assert.equal(z.crossContextConsistency.fullCoverageStrict,96);
+ assert.equal(z.crossContextConsistency.observedStrictWithMissingStyle,96);
+ assert.equal(z.crossContextConsistency.directionReversal,0);
+ assert.equal(z.crossContextConsistency.heldOrTied,0);
+ assert(z.crossContextConsistency.rows.every(x=>
+  x.comparableScenarioHeadcounts+
+  x.missingStyleScenarioHeadcounts===8));
+ assert(z.crossContextConsistency.rows.filter(x=>
+  x.first==='Nige').every(x=>
+  x.result==='consistent-in-observed-contexts-missing-style-scenario'&&
+  x.coverage.absentScenarios.length===2));
+
  assert.equal(z.comparisonSummary.crossHeadcountStrictReverse,0);
  assert.deepEqual(z.comparisonSummary.sourceConditionHeadcountCourseCountDistribution,
   [{eligibleModelCourses:1,conditionHeadcounts:64}]);
@@ -86,6 +100,10 @@ test('separate headcount effects and roster sensitivity are held, not averaged o
  assert.equal(result.comparisonSummary.balancedStrictButNotFourRobust,193);
  assert.equal(result.comparisonSummary.byHeadcount['9'].pairs,192);
  assert.equal(result.comparisonSummary.byHeadcount['12'].pairs,192);
+ assert.equal(result.crossContextConsistency.directionReversal,1);
+ assert.equal(result.crossContextConsistency.fullCoverageStrict,95);
+ assert.equal(result.crossContextConsistency.observedStrictWithMissingStyle,96);
+
 });
 test('source statuses, full pair coverage, duplicate profiles and summary drift fail closed',()=>{
  const f=fake();
@@ -100,6 +118,20 @@ test('source statuses, full pair coverage, duplicate profiles and summary drift 
  const a=fake();a.conditions[0].pairwise[0].byScenario.noFront.status=
   'first-strict-all-matched-contexts';
  assert.throws(()=>audit.audit(a),/stale within-scenario/);
+});
+test('an observed tie holds the claim, even if other tested contexts agree',()=>{
+ const f=fake();
+ const p=f.conditions.find(x=>x.fieldSize===12).pairwise[4];
+ p.byScenario.backHeavy.status='held-overlap-or-context-mixed';
+ p.underFourArtificialRosters='held-some-roster-or-context-comparisons';
+ f.summary.fourRosterPairDirections[
+  'first-higher-in-all-four-rosters-and-matched-contexts']--;
+ f.summary.fourRosterPairDirections[
+  'held-some-roster-or-context-comparisons']=1;
+ const out=audit.audit(f);
+ assert.equal(out.crossContextConsistency.heldOrTied,1);
+ assert.equal(out.crossContextConsistency.fullCoverageStrict,95);
+ assert.equal(out.crossContextConsistency.observedStrictWithMissingStyle,96);
 });
 test('non-applicable Nige and invalid course contexts cannot masquerade as zero',()=>{
  const f=fake();
