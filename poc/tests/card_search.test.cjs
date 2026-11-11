@@ -112,7 +112,7 @@ test('goal candidate ranking only uses stage-4 normal hints and source-backed ev
   {skillId:'hint:右回り○',scope:'both'}];
  assert.deepEqual(goalCandidateIds(m.cards[0],m,goals,'main'),['skill:金'],
   'Earlier-stage-only hints cannot count as a 4-limit-break match');
- assert.deepEqual(goalCandidateIds(m.cards[0],m,goals,'inherit'),['hint:右回り○'].filter(()=>false));
+ assert.deepEqual(goalCandidateIds(m.cards[0],m,goals,'inherit'),[]);
  assert.deepEqual(goalCandidateIds(m.cards[1],m,goals,'main'),[]);
  assert.deepEqual(goalCandidateIds(m.cards[1],m,goals,'inherit'),['skill:夢']);
  assert.deepEqual(goalCandidateIds(m.cards[2],m,goals,'main'),['skill:金'],
