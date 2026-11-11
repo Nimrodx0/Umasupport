@@ -67,7 +67,9 @@ function analyze(source,baseline){
    manifest.get(k).push({c,p});
   }
  }
- if(manifest.size!==192||[...manifest.values()].some(x=>x.length!==2))
+ if(manifest.size!==192||[...manifest.values()].some(x=>
+  x.length!==2||x[0].c.fieldSize===x[1].c.fieldSize||
+  !x.some(v=>v.c.fieldSize===9)||!x.some(v=>v.c.fieldSize===12)))
   throw Error('P2.30 missing 9/12 condition pairs');
  const seen=new Set(),rows=[];
  for(const row of baseline.crossContextConsistency.rows){
