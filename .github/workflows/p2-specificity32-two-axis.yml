@@ -6,6 +6,8 @@ on:
     paths:
       - 'poc/tools/skill_specificity32_research.cjs'
       - 'poc/tools/skill_reference_scenario_gate.cjs'
+      - 'poc/tools/skill_context_margin_sensitivity.cjs'
+      - 'poc/tests/skill_context_margin_sensitivity.test.cjs'
       - 'poc/tests/skill_reference_scenario_gate.test.cjs'
       - 'docs/plans/skill-conditions/p2.md'
       - 'poc/tests/skill_specificity32_research.test.cjs'
@@ -33,6 +35,8 @@ jobs:
           node --test poc/tests/skill_specificity32_research.test.cjs
           node --check poc/tools/skill_reference_scenario_gate.cjs
           node --test poc/tests/skill_reference_scenario_gate.test.cjs
+          node --check poc/tools/skill_context_margin_sensitivity.cjs
+          node --test poc/tests/skill_context_margin_sensitivity.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
       - name: Fetch immutable source-validated 5760-race research artifacts
         run: |
@@ -142,6 +146,44 @@ jobs:
            fixedReferenceRosterCounts:a.fixedReferenceRosterCounts,
            unresolvedAxes:a.unresolvedReferenceDecisions.map(x=>x.axis)}));
           NODE
+      - name: P2.30 inspect minimum scenario mean difference and hypothetical threshold sensitivity
+        run: |
+          node poc/tools/skill_context_margin_sensitivity.cjs \
+            /tmp/p2-specified/two-axis-32.json \
+            /tmp/p2-specified/reference-scenario-validity.json \
+            /tmp/p2-specified/context-margin-sensitivity.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync(
+            '/tmp/p2-specified/context-margin-sensitivity.json','utf8'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,
+           'P2.30-conservative-mean-margin-sensitivity-research-only');
+          assert.equal(x.design.stylePairs,192);
+          assert.equal(x.design.userApprovedProductThreshold,'none');
+          assert.equal(x.summary.originalFullyConsistent,69);
+          assert.equal(x.summary.originalConsistentOnObservedOnly,66);
+          assert.equal(x.summary.heldOrReversal,57);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>x.summary.byThreshold[k].total),
+           [135,134,131,127]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>x.summary.byThreshold[k].fullCoverage),
+           [69,69,67,63]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>
+             x.summary.byThreshold[k].observedOnlyMissingStyle),
+           [66,65,64,64]);
+          for(const k of ['0','1','3','5']){
+            assert.equal(x.summary.byThreshold[k].marginPoints,Number(k));
+            assert(x.summary.byThreshold[k].total<=135);
+          }
+          assert(x.rows.every(r=>r.originalSourceConditionScope===
+           'partial-rank-and-timing-only'));
+          assert(!Object.hasOwn(x,'cardFitScore'));
+          console.log('P2_30_MARGIN_GATES='+JSON.stringify({
+           summary:x.summary,limitations:x.limitations.slice(0,2)}));
+          NODE
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
@@ -149,4 +191,5 @@ jobs:
           path: |
             /tmp/p2-specified/two-axis-32.json
             /tmp/p2-specified/reference-scenario-validity.json
+            /tmp/p2-specified/context-margin-sensitivity.json
           retention-days: 14
