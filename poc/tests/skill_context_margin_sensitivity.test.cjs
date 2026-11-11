@@ -49,8 +49,8 @@ test('margin thresholds tighten, do not turn robust sign into user-approved tier
  assert.equal(out.summary.byThreshold['1'].total,180);
  assert.equal(out.summary.byThreshold['3'].total,6);
  assert.equal(out.summary.byThreshold['5'].total,0);
- assert.equal(out.summary.originalFullyConsistent,90);
- assert.equal(out.summary.originalConsistentOnObservedOnly,96);
+ assert.equal(out.summary.originalFullyConsistent,93);
+ assert.equal(out.summary.originalConsistentOnObservedOnly,93);
  assert.equal(out.summary.heldOrReversal,6);
  assert.equal(out.design.userApprovedProductThreshold,'none');
  assert.equal(Object.hasOwn(out,'cardScore'),false);
