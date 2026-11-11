@@ -5,6 +5,9 @@ on:
   pull_request:
     paths:
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
+      - 'poc/tools/skill_halfphase_two_axis_review.cjs'
+      - 'poc/tests/skill_halfphase_two_axis_review.test.cjs'
+      - 'poc/src/skill_halfphase_feasibility.cjs'
       - 'poc/tools/skill_subphase10_cohort_review.cjs'
       - 'poc/tests/skill_subphase10_cohort_review.test.cjs'
       - '.github/workflows/p2-subphase10-77-skill-review.yml'
@@ -26,6 +29,8 @@ jobs:
           node --check poc/tools/globalsim_subphase_random_10m.cjs
           node --check poc/tools/skill_subphase10_cohort_review.cjs
           node --test poc/tests/skill_subphase10_cohort_review.test.cjs
+          node --check poc/tools/skill_halfphase_two_axis_review.cjs
+          node --test poc/tests/skill_halfphase_two_axis_review.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -75,6 +80,7 @@ jobs:
             /tmp/globalsim/target/release/race_engine_rs_v2 \
             /tmp/p2-subphase/full-phase-reference.json \
             /tmp/p2-subphase/short-phase.json 30 \
+            /tmp/p2-subphase/split15.json \
             > /tmp/p2-subphase/replay.log
       - name: Verify previous published FULL phase 720 race report unchanged by paired replay
         run: |
@@ -91,11 +97,91 @@ jobs:
           assert.equal(x.contextsPerWindow,24);
           assert.equal(x.windowBands,44);
           assert.equal(x.perContextRows,4224);
+          assert.equal(crypto.createHash('sha256').update(
+           fs.readFileSync('/tmp/p2-subphase/short-phase.json')).digest('hex'),
+           '206d9db77299189f91fea649a40effbe9ca2d2203c9d0b69c7873bfacee04c27');
+          const halves=JSON.parse(fs.readFileSync('/tmp/p2-subphase/split15.json'));
+          assert.equal(halves.baseRaces,720);
+          assert.equal(halves.seedsPerHalf,15);
+          assert.equal(halves.perContextRows,8448);
           assert.equal(x.windows.length,4);
           assert(x.contextRows.every(z=>z.runners>=30&&
            z.random10mOpportunityPercent+1e-6>=z.pointPercent));
           console.log('Same source, same seeds: full reference exact SHA; short windows 44 groups');
           NODE
+      - name: Reuse fixed 720 race short-window evidence for 75 source skills W and D
+        run: |
+          node poc/tools/skill_halfphase_two_axis_review.cjs \
+            /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/split15.json \
+            p2-halfphase-feasibility.json \
+            /tmp/p2-subphase/two-axis75.json \
+            > /tmp/p2-subphase/two-axis75.log
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const crypto=require('node:crypto');
+          const fs=require('node:fs');
+          const bytes=fs.readFileSync('/tmp/p2-subphase/two-axis75.json');
+          const x=JSON.parse(bytes);
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'P2.28-balanced-two-axis-source-short-window-model-not-game-proc');
+          assert.equal(x.source.originalModelRaces,720);
+          assert.equal(x.summary.directCandidates,75);
+          assert.equal(x.summary.modeled+x.summary.heldRaceQualifiers,75);
+          assert(x.items.every(x=>x.status==='held-source-race-qualifier'||
+           x.status==='model-two-axis-partial-original-condition-only'));
+          for(const s of x.items.filter(s=>s.styles)){
+           assert.equal(s.pairs.length,6);
+           for(const [style,values] of Object.entries(s.styles)){
+            assert(!Object.hasOwn(values,'actualSkillProcProbability'));
+            if(values.status!=='model-contexts-only')continue;
+            for(const cell of values.detail){
+             for(const part of ['all','first15','last15']){
+              const x=cell[part];
+              assert(Math.abs(x.D-(x.O-x.U))<0.00001);
+              assert(x.W+0.00001>=x.O);
+             }
+            }
+           }
+          }
+          const sha=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(sha,'10dcb03daf7ecab60ed88694b6ba2d465291aeda460adcb8a9bd74556c928e14',
+           'Pinned 75-skill W/D evidence changed');
+          assert.equal(x.summary.modeled,69);
+          assert.equal(x.summary.heldRaceQualifiers,6);
+          assert.equal(x.summary.modeledPairs,234);
+          assert.equal(x.summary.stableW,185);
+          assert.equal(x.summary.heldW,49);
+          assert.equal(x.summary.stableD,185);
+          assert.equal(x.summary.skillsWithStableWPair,39);
+          const modeled=x.items.filter(v=>v.styles);
+          const styles=['Nige','Senkou','Sasi','Oikomi'];
+          const eligibleCount=v=>styles.filter(s=>
+           v.styles[s].status==='model-contexts-only').length;
+          assert.equal(modeled.filter(v=>eligibleCount(v)===4).length,39);
+          assert.equal(modeled.filter(v=>eligibleCount(v)===1).length,30);
+          const signs=modeled.flatMap(v=>styles.map(s=>v.styles[s])
+           .filter(e=>e.status==='model-contexts-only')
+           .map(e=>e.deviationDirection.direction));
+          assert.equal(signs.length,186);
+          assert.equal(signs.filter(s=>s==='+'||s==='-').length,183);
+          assert.equal(modeled.filter(v=>v.pairs.every(p=>
+           p.WDirection?.direction==='+'||p.WDirection?.direction==='-')).length,2);
+          assert(x.items.filter(v=>v.status==='held-source-race-qualifier')
+           .every(v=>v.heldReasons.includes('unsupported-source-ground-type')));
+          console.log('P2.28_TWO_AXIS_REPORT_SHA256='+sha);
+          console.log('P2.28_TWO_AXIS_REPORT_SUMMARY_START');
+          console.log(JSON.stringify({source:x.source,summary:x.summary},null,2));
+          console.log('P2.28_TWO_AXIS_REPORT_SUMMARY_END');
+          NODE
+      - name: Keep P2.28 research-only two-axis evidence with original source cohort
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-28-balanced-short-window-two-axis-75-skills
+          path: /tmp/p2-subphase/two-axis75.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Evaluate original 77 skill IDs and keep OR paths separated
         run: |
           node poc/tools/skill_phase10_cohort_review.cjs \
@@ -165,6 +251,8 @@ jobs:
           rm -f /tmp/p2-fixed-skill-source.txt \
             /tmp/p2-subphase/full-phase-reference.json \
             /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/split15.json \
+            p2-halfphase-feasibility.json \
             /tmp/p2-subphase/old77.json \
             skill-condition-inventory-audit.json \
             /tmp/p2-53-rechecked.json
