@@ -44,7 +44,8 @@ function findOutcome(){
   if(event.type!=='choice'||event.requires)continue;
   for(const option of event.choices||[]){
    if(!option.requires&&Array.isArray(option.outcomes)&&option.outcomes.length>=2&&
-    option.outcomes.some(outcome=>positive(outcome.rewards).length))
+    option.outcomes.some(outcome=>positive(outcome.rewards).length)&&
+    option.outcomes.every(outcome=>!outcome.requires))
     return {card:cards[entry.cardId],event,option};
   }
  }
