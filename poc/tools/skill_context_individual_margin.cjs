@@ -61,7 +61,7 @@ function audit(manifest,reports,p230){
    JSON.stringify(THRESHOLDS))
   throw Error('P2.31 unverified P2.30 research source');
  const profiles=new Map(manifest.profiles.map(x=>[
-  key(x,model.STYLES[0],model.STYLES[1]).split('|').slice(0,5).join('|'),x
+  [x.sourceNumericId,x.surface,x.distanceScope,x.timing,x.bandId].join('|'),x
  ]));
  if(profiles.size!==32)throw Error('P2.31 source condition manifest drift');
  const checked=new Set(),rows=[];
@@ -159,9 +159,8 @@ function audit(manifest,reports,p230){
   ]};
 }
 function main(args){
- if(args.length!==8)throw Error('Usage: skill_context_individual_margin.cjs manifest balanced frontHeavy backHeavy noFront P2.30.json output.json [reserved]');
- const [manifest,balanced,frontHeavy,backHeavy,noFront,p230,out,reserved]=args;
- if(reserved!=='--verified')throw Error('Explicit verified source mode required');
+ if(args.length!==7)throw Error('Usage: skill_context_individual_margin.cjs manifest balanced frontHeavy backHeavy noFront P2.30.json output.json');
+ const [manifest,balanced,frontHeavy,backHeavy,noFront,p230,out]=args;
  const sourcePaths=[balanced,frontHeavy,backHeavy,noFront];
  const reports=sourcePaths.map((path,i)=>{
   const raw=fs.readFileSync(path);
