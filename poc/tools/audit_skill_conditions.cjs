@@ -15,6 +15,7 @@ const styleTendency=require('../src/skill_style_tendency.js');
 const skillTags=require('../src/skill_condition_tags.js');
 const styleReview=require('../src/skill_style_review.cjs');
 const coarseReview=require('../src/skill_coarse_style_review.cjs');
+const fullPaths=require('../src/skill_full_condition_path_audit.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
@@ -109,6 +110,13 @@ function matchedRecord(skill,live,old){
  const allInferredReview=styleReview.summarize(model);
  const skillBySkill=coarseReview.report(model);
  const halfPhaseStudy=halfFeasibility.cohort(model);
+ const p215=fullPaths.audit(model);
+ if(p215.denominators.appSkills!==881||p215.denominators.sourceMatched!==818||
+    p215.denominators.unavailable!==63||
+    p215.denominators.reportedStylePathCells!==
+      p215.denominators.reportedPathRows*4)
+  throw Error('P2.15 source-path structure population drift: '+
+   JSON.stringify(p215.denominators));
  if(halfPhaseStudy.baseline.appSkills!==skillBySkill.appSkillCount||
     halfPhaseStudy.baseline.sourceMatched!==skillBySkill.sourceMatchedSkills||
     halfPhaseStudy.baseline.heldSkills!==skillBySkill.skillCoverage.held)
@@ -231,6 +239,14 @@ function matchedRecord(skill,live,old){
    skillId:x.skillId,name:x.name,
    time:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
  console.log('P2_HALF_PHASE_FEASIBILITY_END');
+ fs.writeFileSync('p2-15-full-condition-paths.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText),
+   pinnedSha256:digest(pinnedText),supportSha256:digest(supportText)},...p215},
+  null,2)+'\n');
+ console.log('P2_15_FULL_PATH_AUDIT_SUMMARY='+JSON.stringify({
+  denominators:p215.denominators,shape:p215.shape,byStyles:p215.byStyles,
+  mostFrequentUnverifiedTypes:p215.sourceConditionTypesOnNonExcludedPaths.slice(0,18),
+  preconditionTypes:p215.typesInPreconditions.slice(0,12)}));
  fs.writeFileSync('p2-skill-coarse-four-style-review.json',
   JSON.stringify({source:report.source,...skillBySkill},null,2)+'\n');
  console.log('P2_COARSE_SKILL_REVIEW_SUMMARY_START');
