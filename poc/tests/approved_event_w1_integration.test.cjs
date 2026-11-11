@@ -127,6 +127,9 @@ test('approved chained choice prerequisite blocks and clears stale child setting
  {skip:!chain&&'No choice-dependent chain exists in this fixed release'},()=>{
  const {card,parent,child,required}=chain;
  assert.equal(core.reachability(child,{},card.events).status,'blocked');
+ const terminal=parent.choices.find(choice=>choice.terminal===true);
+ if(terminal)assert.equal(
+  core.reachability(child,{[parent.id]:terminal.id},card.events).status,'blocked');
  const staleChoices={[parent.id]:required,[child.id]:'stale-choice'};
  const staleOutcomes={[child.id]:'stale-outcome'};
  const next=core.clearDependentState(card,staleChoices,staleOutcomes,parent.id);
@@ -148,6 +151,19 @@ test('a real event reward overlapping a hint counts one card, not two routes as 
  assert.equal(bySkill[skillId].conditionalOnly,false);
  assert.deepEqual(core.coverage(skillId,bySkill,data),{
   kind:'direct',conditional:false,count:1});
+ const empty=core.aggregate(makeDeck(),data);
+ const mainGoal=core.goalStatus({skillId,scope:'main'},bySkill,empty,data);
+ assert.equal(mainGoal.satisfied,true);
+ assert.equal(mainGoal.conditional,false);
+ const inheritGoal=core.goalStatus({skillId,scope:'inherit'},bySkill,empty,data);
+ assert.equal(inheritGoal.satisfied,false);
+ const bothGoal=core.goalStatus({skillId,scope:'either'},bySkill,empty,data);
+ assert.equal(bothGoal.satisfied,true);
+ const row=core.combinedRows(bySkill,empty,[{skillId,scope:'main'}],
+  {...data,skillById:{[skillId]:{id:skillId,name:'tested skill'}}})
+  .find(r=>r.skill.id===skillId);
+ assert.equal(row.mainCover.kind,'direct');
+ assert.equal(row.inheritCover.kind,'missing');
  const two=makeDeck(makeSlot(card.id,{[event.id]:option.id}),makeSlot(second.id));
  const twoSkills=core.aggregate(two,data);
  assert.equal(twoSkills[skillId].count,2);
