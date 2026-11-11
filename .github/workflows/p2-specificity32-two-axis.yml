@@ -7,6 +7,8 @@ on:
       - 'poc/tools/skill_specificity32_research.cjs'
       - 'poc/tools/skill_reference_scenario_gate.cjs'
       - 'poc/tools/skill_context_margin_sensitivity.cjs'
+      - 'poc/tools/skill_context_individual_margin.cjs'
+      - 'poc/tests/skill_context_individual_margin.test.cjs'
       - 'poc/tests/skill_context_margin_sensitivity.test.cjs'
       - 'poc/tests/skill_reference_scenario_gate.test.cjs'
       - 'docs/plans/skill-conditions/p2.md'
@@ -37,6 +39,8 @@ jobs:
           node --test poc/tests/skill_reference_scenario_gate.test.cjs
           node --check poc/tools/skill_context_margin_sensitivity.cjs
           node --test poc/tests/skill_context_margin_sensitivity.test.cjs
+          node --check poc/tools/skill_context_individual_margin.cjs
+          node --test poc/tests/skill_context_individual_margin.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
       - name: Fetch immutable source-validated 5760-race research artifacts
         run: |
@@ -184,6 +188,62 @@ jobs:
           console.log('P2_30_MARGIN_GATES='+JSON.stringify({
            summary:x.summary,limitations:x.limitations.slice(0,2)}));
           NODE
+      - name: P2.31 measure minima in every eligible course and ability mode, not just scenario means
+        run: |
+          node poc/tools/skill_context_individual_margin.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specified/balanced.json \
+            /tmp/p2-specified/frontHeavy.json \
+            /tmp/p2-specified/backHeavy.json \
+            /tmp/p2-specified/noFront.json \
+            /tmp/p2-specified/context-margin-sensitivity.json \
+            /tmp/p2-specified/individual-course-mode-margin.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const z=JSON.parse(fs.readFileSync(
+           '/tmp/p2-specified/individual-course-mode-margin.json','utf8'));
+          assert.equal(z.schemaVersion,1);
+          assert.equal(z.status,
+           'P2.31-individual-course-mode-W-margin-vs-scenario-mean-research-only');
+          assert.equal(z.design.styleComparisons,192);
+          assert.equal(z.design.seedSplitStatus.startsWith('NOT TESTED'),true);
+          assert.equal(z.rows.length,192);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>z.summary[k].scenarioMeanPass),
+           [135,134,131,127]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>
+             z.summary[k].minimumAcrossIndividualCourseModePass),
+           [135,131,121,118]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>z.summary[k].scenarioMeanOnlyNotEveryCourseMode),
+           [0,3,10,9]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>z.summary[k].fullCoverageIndividualPass),
+           [69,66,57,54]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>
+             z.summary[k].observedOnlyMissingStyleIndividualPass),
+           [66,65,64,64]);
+          for(const k of ['0','1','3','5']){
+            assert.equal(z.summary[k].scenarioMeanPass,
+             z.summary[k].minimumAcrossIndividualCourseModePass+
+             z.summary[k].scenarioMeanOnlyNotEveryCourseMode);
+            assert(z.summary[k].minimumAcrossIndividualCourseModePass<=
+             z.summary[k].scenarioMeanPass);
+          }
+          assert(z.rows.every(x=>
+           x.measuredCourseModeContextCells+x.absentStyleCourseModeContextCells===
+            8*x.numberOfSourceEligibleCourses*2));
+          assert(z.limitations.some(x=>x.includes('NOT individual races')));
+          assert(!Object.hasOwn(z,'cardGrade'));
+          console.log('P2_31_INDIVIDUAL_CONTEXT_MARGIN='+JSON.stringify({
+           summary:z.summary,denominator:z.design.styleComparisons,
+           examples:z.rows.filter(x=>x.thresholds['5'].meanOnly).slice(0,5)
+            .map(x=>({id:x.sourceNumericId,first:x.first,second:x.second,
+             mean:x.originalMeanMinimumPoints,
+             individual:x.minimumIndividualCourseModeLowerBoundPoints}))}));
+          NODE
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
@@ -192,4 +252,5 @@ jobs:
             /tmp/p2-specified/two-axis-32.json
             /tmp/p2-specified/reference-scenario-validity.json
             /tmp/p2-specified/context-margin-sensitivity.json
+            /tmp/p2-specified/individual-course-mode-margin.json
           retention-days: 14
