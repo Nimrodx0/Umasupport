@@ -111,6 +111,11 @@ function matchedRecord(skill,live,old){
  const skillBySkill=coarseReview.report(model);
  const halfPhaseStudy=halfFeasibility.cohort(model);
  const p215=fullPaths.audit(model);
+ const explicitlyExcluded=Object.values(p215.byStyles)
+  .reduce((n,statuses)=>n+(statuses['all-recorded-paths-explicitly-exclude-style']||0),0);
+ if(explicitlyExcluded!==skillBySkill.perStyleCounts['explicit-ineligible'])
+  throw Error('P2.15 full-source explicit exclusions disagree with P2 coarse audit: '+
+   explicitlyExcluded+' != '+skillBySkill.perStyleCounts['explicit-ineligible']);
  if(p215.denominators.appSkills!==881||p215.denominators.sourceMatched!==818||
     p215.denominators.unavailable!==63||
     p215.denominators.reportedStylePathCells!==
