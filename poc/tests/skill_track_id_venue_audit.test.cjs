@@ -94,8 +94,10 @@ test('same AND plus each precondition alternative is preserved, no imaginary OR 
  const b=report.rows.find(x=>x.sourceNumericId==='101');
  assert(b.byStyle['差し'].branches[0].compatibleFixedCourseIds.includes(10508));
  assert(b.byStyle['差し'].branches[1].compatibleFixedCourseIds.includes(11302));
- assert(!b.byStyle['差し'].branches.some(x=>
-  x.compatibleFixedCourseIds.length>1));
+ assert(!b.byStyle['差し'].branches[0].compatibleFixedCourseIds.includes(11302),
+  'One source pre-OR venue must not inherit the other venue match');
+ assert(!b.byStyle['差し'].branches[1].compatibleFixedCourseIds.includes(10508),
+  'Separate preConditions alternatives must remain independent');
  assert(b.byStyle['追込'].hasSomeCompatibleFixedCourse);
  assert.equal(b.byStyle['逃げ'].hasSomeCompatibleFixedCourse,false);
  const c=report.rows.find(x=>x.sourceNumericId==='102');
