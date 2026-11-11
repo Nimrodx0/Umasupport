@@ -12,11 +12,15 @@ function approvedEventSkillIds(card,model){
  // In explicit preview mode, the candidate catalog was schema-validated and
  // the UI's event-route filter should reach those candidates without marking
  // them approved. Normal mode still only exposes reviewed release data.
- const preview=model?.meta?.runtimeSources?.events?.mode==='preview';
- if(!(model?.meta?.reviewedEventRecords||preview)||!Array.isArray(card?.events))return out;
+ const mode=model?.meta?.runtimeSources?.events?.mode;
+ const preview=mode==='preview';
+ const reviewed=mode?
+  (mode==='reviewed'||mode==='cached')&&model?.meta?.reviewedEventRecords>0:
+  model?.meta?.reviewedEventRecords>0;
+ if(!(reviewed||preview)||!Array.isArray(card?.events))return out;
  function rewards(xs){
   if(!Array.isArray(xs))return;
-  for(const r of xs)if(typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId))out.add(r.skillId);
+  for(const r of xs)if(r?.kind!=='negative'&&typeof r?.skillId==='string'&&Object.hasOwn(model.skillById||{},r.skillId))out.add(r.skillId);
  }
  function branch(x){
   if(!x||typeof x!=='object')return;
@@ -106,7 +110,43 @@ function sortCards(cards,mode='source',owned={}){
  if(!cmp)throw new Error('Unknown support-card sort: '+mode);
  return copy.sort(cmp);
 }
-const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards};
+// A source-verified but EMPTY event list means "not yet recorded", never
+// proof that the card has no events in the actual game.
+function eventCatalogState(card,model){
+ const meta=model?.meta||{},mode=meta.runtimeSources?.events?.mode;
+ const verified=['reviewed','cached','preview'].includes(mode)||
+  !mode&&['reviewed-empty','reviewed-partial'].includes(meta.eventStatus);
+ if(!verified)return {status:'unverified',count:null};
+ const count=Array.isArray(card?.events)?card.events.length:0;
+ return {status:count?'recorded':'unrecorded',count,
+  preview:mode==='preview'};
+}
+// Candidate ranking is NOT a guaranteed skill-coverage calculation. The
+// hypothetical new card enters a deck at stage 4. Event outcomes may be
+// conditional or exclusive; only explicitly reviewed/opt-in event IDs count.
+function goalCandidateIds(card,model,goals=[],deckKey='main'){
+ if(!card||!['main','inherit'].includes(deckKey)||!Array.isArray(goals))return [];
+ const eligible=[...new Set(goals.filter(g=>g&&
+  (g.scope===deckKey||g.scope==='either'||g.scope==='both')&&
+  typeof g.skillId==='string'&&Object.hasOwn(model?.skillById||{},g.skillId))
+  .map(g=>g.skillId))];
+ if(!eligible.length)return [];
+ const stage=card.hintsByStage&&Object.hasOwn(card.hintsByStage,'4')?
+  card.hintsByStage['4']:card.hints;
+ const hints=new Set(card.sourceStatus?.startsWith('verified_hints')?
+  ids(stage):[]);
+ const events=approvedEventSkillIds(card,model);
+ return eligible.filter(id=>hints.has(id)||events.has(id));
+}
+function sortByGoalCandidates(cards,model,goals=[],deckKey='main'){
+ if(!Array.isArray(cards))throw Error('Card list must be an array');
+ const score=new Map(cards.map(c=>[c.id,goalCandidateIds(c,model,goals,deckKey).length]));
+ // Stable tie order follows the existing source roster, not a guessed
+ // release date or automatically inferred event probability.
+ return cards.slice().sort((a,b)=>(score.get(b.id)||0)-(score.get(a.id)||0));
+}
+const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards,
+ eventCatalogState,goalCandidateIds,sortByGoalCandidates};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSearch=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

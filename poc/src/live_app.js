@@ -57,8 +57,9 @@ const SORT_LABELS=[
  ['name-asc','ウマ娘名：あいうえお順'],['name-desc','ウマ娘名：逆順'],
  ['type','タイプ順'],['hints-desc','通常ヒント数：多い順'],['owned-first','所持サポカ優先']
 ];
-function sortOptions(current){
- return SORT_LABELS.map(([value,label])=>`<option value="${value}" ${current===value?'selected':''}>${label}</option>`).join('');
+function sortOptions(current,picker=false){
+ const choices=picker?[['goals-desc','目標候補が多い順'],...SORT_LABELS]:SORT_LABELS;
+ return choices.map(([value,label])=>`<option value="${value}" ${current===value?'selected':''}>${label}</option>`).join('');
 }
 function cardIcon(c,sm=false){return `<span class="card-icon${sm?' small':''}" style="background:${esc(c.accent)}" aria-hidden="true">${esc((c.character||'?').slice(0,2))}</span>`;}
 function hintDetailText(c,sl){const hints=c.hintsByStage?.[String(sl.stage)]??c.hints;return hints.map(id=>esc(data.skillById[id]?.name||id)).join(' / ')||(c.sourceStatus?.startsWith('verified_hints')?'通常ヒントなし（データ収録済み）':'通常ヒントは未収録');}
@@ -161,21 +162,29 @@ function ownedManagerModal(){
  const body=`<div class="owned-filters"><input id="owned-search" class="field search" placeholder="カード名・キャラクター名…" aria-label="所持サポカ検索" value="${esc(ui.ownedQuery)}"><input id="owned-skill-search" class="field search" placeholder="提供スキル名・ID…" aria-label="提供スキル名で検索" value="${esc(ui.ownedSkillQuery)}"><select class="field" id="owned-route" aria-label="獲得経路">${routeOptions}</select><select class="field" id="owned-rarity" aria-label="レアリティ">${opts(['all',...rarities],ui.ownedRarity)}</select><select class="field" id="owned-type" aria-label="タイプ">${opts(['all',...types],ui.ownedType)}</select><select class="field" id="owned-filter" aria-label="所持状況">${[['all','すべて'],['owned','所持'],['unowned','未所持'],['unregistered','未登録']].map(([v,t])=>`<option value="${v}" ${ui.ownedFilter===v?'selected':''}>${t}</option>`).join('')}</select><label class="card-sort-label">並び順 <select id="owned-sort" class="field" aria-label="所持サポカの並べ替え">${sortOptions(ui.ownedSort)}</select></label><button class="btn tiny" data-action="owned-filters-reset">条件をクリア</button></div><div class="owned-bulk"><span class="tiny-note">一括操作は表示中のページではなく、<b>検索条件に一致する全カード</b>が対象です。確認後に適用します。</span><button class="btn tiny" data-action="owned-bulk" data-status="owned">一致する全件を所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unowned">全件を未所持に</button><button class="btn tiny" data-action="owned-bulk" data-status="unregistered">全件を未登録に</button></div><div id="owned-results">${ownedGridHtml()}</div>`;
  titleModal('所持サポカを一括登録',data.cards.length+'枚を検索・整理',body);
 }
+function pickerGoals(){
+ const scope=ui.modal?.deckKey;
+ return goalSet().goals.filter(g=>g.scope===scope||g.scope==='either'||g.scope==='both');
+}
 function pickerMatches(){
  const filtered=window.UmaCardSearch.filterCards(data.cards,data,{query:ui.pickerSearch,skillQuery:ui.pickerSkillQuery,rarity:ui.pickerRarity,type:ui.pickerType,route:ui.pickerRoute,ownership:ui.pickerOnlyOwned?'owned':'all'},state.ownedCards);
+ if(ui.pickerSort==='goals-desc')
+  return window.UmaCardSearch.sortByGoalCandidates(filtered,data,pickerGoals(),ui.modal.deckKey);
  return window.UmaCardSearch.sortCards(filtered,ui.pickerSort,state.ownedCards);
 }
 function pickerFiltersHtml(){
  const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort(),types=[...new Set(data.cards.map(c=>c.type))].sort();
  const opts=(list,current)=>list.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v==='all'?'すべて':v)}</option>`).join('');
  const routeOptions=[['all','全経路'],['hint','通常ヒント'],['event',window.UmaPreviewActive?'試用イベント':'イベント'],['both',window.UmaPreviewActive?'通常ヒント＋試用イベント':'通常ヒント＋イベント']].map(([v,t])=>`<option value="${v}" ${ui.pickerRoute===v?'selected':''}>${t}</option>`).join('');
- return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label><label class="card-sort-label">並び順 <select id="picker-sort" class="field" aria-label="編成候補の並べ替え">${sortOptions(ui.pickerSort)}</select></label><button class="btn tiny" data-action="picker-filters-reset">条件をクリア</button></div>`;
+ return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label><label class="card-sort-label">並び順 <select id="picker-sort" class="field" aria-label="編成候補の並べ替え">${sortOptions(ui.pickerSort,true)}</select></label><button class="btn tiny" data-action="picker-filters-reset">条件をクリア</button></div>`;
 }
 function pickerCardsHtml(){
  const matched=pickerMatches(),perPage=120,pages=Math.max(1,Math.ceil(matched.length/perPage));
  ui.pickerPage=Math.max(0,Math.min(ui.pickerPage,pages-1));
  const shown=matched.slice(ui.pickerPage*perPage,(ui.pickerPage+1)*perPage);
- return `<p class="tiny-note">候補 ${matched.length} 件 / ${ui.pickerPage+1} / ${pages} ページ（1ページ最大120枚）</p><div class="picker-list">${shown.map(pickerCard).join('')||'<p class="help">該当なし</p>'}</div><div class="owned-pages"><button class="btn tiny" data-action="picker-prev" ${ui.pickerPage===0?'disabled':''}>前へ</button><span class="tiny-note">${ui.pickerPage+1} / ${pages}</span><button class="btn tiny" data-action="picker-next" ${ui.pickerPage===pages-1?'disabled':''}>次へ</button></div>`;
+ const footnote=ui.pickerSort==='goals-desc'?
+  '<p class="tiny-note">目標候補順は現在の目標セットと対象デッキのスキルIDに一致するカードを優先。通常ヒントは4凸時、イベントは結果未確定の候補も含みます。獲得保証やイベントの収録完全性を意味しません。</p>':'';
+ return `<p class="tiny-note">候補 ${matched.length} 件 / ${ui.pickerPage+1} / ${pages} ページ（1ページ最大120枚）</p>${footnote}<div class="picker-list">${shown.map(pickerCard).join('')||'<p class="help">該当なし</p>'}</div><div class="owned-pages"><button class="btn tiny" data-action="picker-prev" ${ui.pickerPage===0?'disabled':''}>前へ</button><span class="tiny-note">${ui.pickerPage+1} / ${pages}</span><button class="btn tiny" data-action="picker-next" ${ui.pickerPage===pages-1?'disabled':''}>次へ</button></div>`;
 }
 function pickerModal(){
  const {deckKey,index}=ui.modal,d=activeDeck(deckKey),selected=d.slots[index];
@@ -184,7 +193,14 @@ function pickerModal(){
 }
 function pickerCard(c){
  const used=activeDeck(ui.modal.deckKey).slots.some(slot=>slot.cardId===c.id);
- return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span class="picker-card-detail">${cardIdentityHTML(c)}<small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${ownedLabel(c)}${used?' · 編成中':''}</small></span></button>`;
+ const event=window.UmaCardSearch.eventCatalogState(c,data);
+ const eventLabel=event.status==='unverified'?'イベント情報未検証':
+  event.status==='unrecorded'?'イベント未収録':
+   (event.preview?'試用イベント':'公開イベント')+event.count+'件';
+ const goals=pickerGoals();
+ const goalLabel=goals.length?' · 目標候補'+window.UmaCardSearch.goalCandidateIds(
+  c,data,goals,ui.modal.deckKey).length+'件':'';
+ return `<button class="picker-card" data-action="set-card" data-id="${c.id}">${cardIcon(c)}<span class="picker-card-detail">${cardIdentityHTML(c)}<small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${eventLabel}${goalLabel} · ${ownedLabel(c)}${used?' · 編成中':''}</small></span></button>`;
 }
 function pickerRefresh(){
  const el=document.getElementById('picker-cards');if(el)el.innerHTML=pickerCardsHtml();
@@ -256,13 +272,21 @@ function eventHTML(card,slot,k,i,onlyEventId=null,compactHeader=false){
    resultSelector(selectedPart,slot,k,i,e,!blocked,card)+'</div>';
  }).join('');
 }
+function cardEventSectionHTML(card,slot,deckKey,index){
+ const info=window.UmaCardSearch.eventCatalogState(card,data);
+ if(info.status==='unverified')
+  return '<p class="help">イベント情報を検証できませんでした。イベント候補は未反映です。</p>';
+ if(info.status==='unrecorded')
+  return '<p class="help">このカードのイベント情報は未収録です。実ゲームでイベントが発生しないことを意味しません。通常ヒントは別途利用できます。</p>';
+ return eventHTML(card,slot,deckKey,index);
+}
 function hintPerformanceHTML(card,slot){
  const p=card.hintPerformanceByStage?.[String(slot.stage)];
  if(!p)return '<div class="info-item"><strong>ヒント関連性能</strong><div class="sub">未収録・不明</div></div>';
  const hintLevel=1+p.levelBase+p.levelUnique;
  return `<div class="info-item"><strong>ヒント関連性能（${slot.stage}凸）</strong><div class="sub">通常ヒント取得Lv：基礎 Lv.${hintLevel}（ヒントLvアップ：基本 +${p.levelBase} / 固有 +${p.levelUnique}）</div><div class="sub">ヒント発生率アップ：基本 ${p.frequencyBase}% / 固有 ${p.frequencyUnique}%</div></div>`;
 }
-function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${eventHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
+function editCardModal(){const {deckKey,index}=ui.modal,sl=activeDeck(deckKey).slots[index],c=data.cardById[sl.cardId];if(!c){ui.modal={kind:'pick',deckKey,index};return pickerModal();}let r=core.directRoutes(c,sl);const body=`<div class="flex">${cardIcon(c)}<div><strong>${esc(c.character)}</strong><div class="muted">${esc(c.type)} / ${esc(c.rarity)}</div></div></div><div class="select-row"><label for="stage-select">想定性能解放：</label><select class="field stage" id="stage-select" data-stage data-deck="${deckKey}" data-index="${index}">${[0,1,2,3,4].map(x=>`<option value="${x}" ${sl.stage===x?'selected':''}>${x}凸</option>`).join('')}</select></div><div class="info-item"><strong>通常ヒント</strong><div class="sub">${hintDetailText(c,sl)}</div></div>${hintPerformanceHTML(c,sl)}${c.referenceSkills?.length?`<div class="info-item"><strong>参考スキル</strong><div class="sub">${c.referenceSkills.map(esc).join(' / ')}</div></div>`:''}<h3 style="margin:15px 0 6px">イベント選択と分岐</h3>${cardEventSectionHTML(c,sl,deckKey,index)}<div class="info-item"><strong>現在の獲得候補</strong><div class="sub">${r.length?r.map(x=>`${esc(data.skillById[x.skillId].name)}${x.conditional?`［${esc(x.condition)}］`:''}`).join(' / '):'候補なし'}</div></div>`;
  titleModal(c.name,`${scopeLabel[deckKey]} / スロット ${index+1}`,body,`<button class="btn danger" data-action="remove-card" data-deck="${deckKey}" data-index="${index}">この枠を空にする</button><button class="btn primary" data-action="pick" data-deck="${deckKey}" data-index="${index}">カードを入れ替える</button>`);}
 function accordionKey(deckKey,deckId,slotIndex,eventId=''){
  return deckKey+'|'+deckId+'|'+slotIndex+'|'+eventId;

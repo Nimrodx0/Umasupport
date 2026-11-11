@@ -1,7 +1,8 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches,sortCards}=require('../src/card_search.js');
+const {filterCards,routeOf,normalHintIds,approvedEventSkillIds,matches,sortCards,
+ eventCatalogState,goalCandidateIds,sortByGoalCandidates}=require('../src/card_search.js');
 
 function fixture(){
  const skills={
@@ -91,4 +92,46 @@ test('sorting is nonmutating and treats card IDs as IDs, never inferred release 
  assert.deepEqual(m.cards.map(c=>c.id),original);
  assert.throws(()=>sortCards(m.cards,'release-desc'),/Unknown support-card sort/);
  assert.throws(()=>sortCards(m.cards,'calendar-guessed-from-id'),/Unknown support-card sort/);
+});
+
+test('new cards with no reviewed event records are missing-data, never confirmed zero game events',()=>{
+ const m=fixture();m.meta.runtimeSources={events:{mode:'reviewed'}};
+ assert.deepEqual(eventCatalogState(m.cards[0],m),{status:'recorded',count:1,preview:false});
+ assert.deepEqual(eventCatalogState(m.cards[1],m),{status:'unrecorded',count:0,preview:false});
+ m.meta.runtimeSources.events.mode='failed';
+ assert.deepEqual(eventCatalogState(m.cards[1],m),{status:'unverified',count:null});
+ assert.deepEqual([...approvedEventSkillIds(m.cards[0],m)],[],
+  'A stale event record count must not defeat an explicit failed verification status');
+ m.meta.runtimeSources.events.mode='preview';
+ assert.deepEqual(eventCatalogState(m.cards[0],m),{status:'recorded',count:1,preview:true});
+});
+test('goal candidate ranking only uses stage-4 normal hints and source-backed event skills',()=>{
+ const m=fixture();m.meta.runtimeSources={events:{mode:'reviewed'}};
+ const goals=[{skillId:'skill:金',scope:'main'},
+  {skillId:'skill:夢',scope:'inherit'},
+  {skillId:'hint:右回り○',scope:'both'}];
+ assert.deepEqual(goalCandidateIds(m.cards[0],m,goals,'main'),['skill:金'],
+  'Earlier-stage-only hints cannot count as a 4-limit-break match');
+ assert.deepEqual(goalCandidateIds(m.cards[0],m,goals,'inherit'),[]);
+ assert.deepEqual(goalCandidateIds(m.cards[1],m,goals,'main'),[]);
+ assert.deepEqual(goalCandidateIds(m.cards[1],m,goals,'inherit'),['skill:夢']);
+ assert.deepEqual(goalCandidateIds(m.cards[2],m,goals,'main'),['skill:金'],
+  'A hint and an event route to the same skill count as ONE goal candidate');
+ assert.deepEqual(sortByGoalCandidates(m.cards,m,goals,'main').map(c=>c.id),['1','3','2','4'],
+  'Equal score cards preserve original roster order');
+ assert.deepEqual(sortByGoalCandidates(m.cards,m,goals,'inherit').map(c=>c.id),['2','1','3','4']);
+ assert.deepEqual(sortByGoalCandidates(m.cards,m,[], 'main').map(c=>c.id),
+  ['1','2','3','4']);
+ assert.deepEqual(m.cards.map(c=>c.id),['1','2','3','4'],
+  'Sorting must not mutate card data');
+ const invalid=[{skillId:'unknown',scope:'both'},{skillId:'skill:金',scope:'other'}];
+ assert.deepEqual(goalCandidateIds(m.cards[0],m,invalid,'main'),[]);
+});
+test('negative event skill effects never appear as recommended skill candidates',()=>{
+ const m=fixture();m.meta.runtimeSources={events:{mode:'reviewed'}};
+ m.cards[0].events[0].choices[0].rewards.push({skillId:'skill:展開',kind:'negative'});
+ assert.equal(approvedEventSkillIds(m.cards[0],m).has('skill:展開'),false);
+ assert.deepEqual(goalCandidateIds(m.cards[0],m,
+  [{skillId:'skill:展開',scope:'both'}],'main'),[]);
+ assert.deepEqual(filterCards(m.cards,m,{skillQuery:'展開',route:'event'}).map(c=>c.id),['3']);
 });

@@ -124,6 +124,18 @@ async function appCases(page){
  await page.locator('button[data-action="add-goal"]').click();
  await page.locator('button[data-action="close"]').click();
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
+ // The actual reviewed event target also participates in goal-candidate
+ // ranking, without requiring any event choice to be preselected.
+ await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+ await page.locator('#picker-sort').selectOption('goals-desc');
+ const firstMatchId=await page.locator('.picker-card').first().getAttribute('data-id');
+ assert.equal(await page.evaluate(({cardId,skillId})=>
+  window.UmaCardSearch.goalCandidateIds(
+   window.UmaDemoData.cardById[cardId],window.UmaDemoData,
+   [{skillId,scope:'both'}],'main').length,
+ {cardId:firstMatchId,skillId:chosen.skillId}),1);
+ assert.match(await page.locator('.picker-card').first().innerText(),/目標候補1件/);
+ await page.locator('button[data-action="close"]').click();
  await chooseCard(page,'main',0,chosen.card);
  // Placing a card must not auto-select a published choice event.
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
