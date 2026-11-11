@@ -64,7 +64,8 @@ function compareScenario(index,profile,n,a,b,scenario,courses){
  if(!presence[STYLES.indexOf(a)]||!presence[STYLES.indexOf(b)])
   return {scenario,status:'held-absent-style',contexts:0,
    means:null,lowerMeanDifferencePoints:null,
-   upperMeanDifferencePoints:null,contextDiagnostics:null};
+   upperMeanDifferencePoints:null,minimumCertifiedLeadPoints:null,
+   contextDiagnostics:null};
  for(const course of courses)for(const mode of model.MODES){
   const ca=index.get(scenario).get(k(course,n,mode,
    profile.timing,profile.bandId,a));
@@ -75,7 +76,17 @@ function compareScenario(index,profile,n,a,b,scenario,courses){
   cells.push(sameContextContrast(ca,cb));
  }
  const status=strictAcrossContexts(cells);
+ // Averages can hide a near-zero comparison or a context reversal.
+ // Use the smallest *interval-guaranteed* lead, across every eligible
+ // course/ability context, only when all original comparisons are strict.
+ const minLead=status==='first-strict-all-matched-contexts'?
+  Math.min(...cells.map(c=>c.differenceLowerPoints)):
+  status==='second-strict-all-matched-contexts'?
+  Math.min(...cells.map(c=>-c.differenceUpperPoints)):null;
+ if(minLead!==null&&minLead<=EPS)
+  throw Error('Strict pair direction lacks a certified minimum gap');
  return {scenario,status,contexts:cells.length,
+  minimumCertifiedLeadPoints:minLead===null?null:round(minLead),
   means:{
    firstLowerBoundPercent:round(mean(courses.flatMap(course=>
     model.MODES.map(mode=>index.get(scenario).get(k(course,n,mode,
