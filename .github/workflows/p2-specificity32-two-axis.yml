@@ -107,12 +107,30 @@ jobs:
           assert.equal(a.comparisonSummary.crossHeadcountSameStrict,156);
           assert.equal(a.comparisonSummary.crossHeadcountHeld,36);
           assert.equal(a.comparisonSummary.crossHeadcountStrictReverse,0);
+          const consensus=a.crossContextConsistency;
+          assert.equal(consensus.status,
+           'source-rank-condition-across-fixed-context-consensus-only');
+          assert.equal(consensus.originalSignatures,32);
+          assert.equal(consensus.stylePairs,192);
+          assert.equal(consensus.scenarioHeadcountCells,1536);
+          assert.equal(consensus.rows.length,192);
+          assert.equal(Object.values(consensus.byStatus)
+           .reduce((sum,v)=>sum+v,0),192);
+          assert(consensus.rows.every(x=>
+           x.comparableScenarioHeadcounts+
+             x.missingStyleScenarioHeadcounts<=8));
+          assert(consensus.rows.filter(x=>x.first==='Nige').every(x=>
+           x.missingStyleScenarioHeadcounts===2 &&
+           x.coverage.absentScenarios.every(v=>v.roster==='noFront')));
+          assert(consensus.limitations.some(x=>x.includes('NOT full-coverage')));
+
           assert.equal(a.decisionStatus.realRosterJointDistribution,'not-identified');
           assert.equal(a.decisionStatus.newSuitabilityLabel,'not-authorized');
           assert.equal(Object.hasOwn(a,'populationWeightedSuitability'),false);
           assert.equal(a.unresolvedReferenceDecisions.length,8);
           console.log('P2_29_CONTEXT_COMPARISON_GATES='+JSON.stringify({
            summary:a.comparisonSummary,
+           crossContextConsistency:consensus.byStatus,
            fixedReferenceRosterCounts:a.fixedReferenceRosterCounts,
            unresolvedAxes:a.unresolvedReferenceDecisions.map(x=>x.axis)}));
           NODE
