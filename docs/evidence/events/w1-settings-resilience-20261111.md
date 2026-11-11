@@ -21,13 +21,14 @@
 | キャッシュ破損＋障害 | 同上 | イベントJSONを利用不可と明示し、イベント・デッキ設定を自動破棄しない。正常キャッシュに戻せば設定が回復 |
 | 保存設定破損 | 同上 | 画面にエラーを出し、初期化の確認が拒否された場合は元バイト列を保存 |
 | 新規プロファイルで通信不能 | 同上 | 架空データを捏造せず起動エラー、デッキ設定を勝手に生成・保存しない |
-| ブラウザの書込み失敗 | [`settings.test.cjs`](../../../poc/tests/settings.test.cjs) | 保存に失敗したとき警告を一度表示、連続失敗では抑止、回復後の再失敗では再通知 |
+| ブラウザの書込み失敗 | [`settings.test.cjs`](../../../poc/tests/settings.test.cjs) ＋ [`browser_w1_settings_recovery.cjs`](../../../poc/tests/browser_w1_settings_recovery.cjs) | 単体テストで一度通知／再通知を検証。実Chromiumでも書込み拒否を模擬し、利用者への警告とlocalStorageに保存されないことを確認 |
 
 ## 結果
 
 - [PR #398](https://github.com/Nimrodx0/Umasupport/pull/398)の一部として試験追加。
 - 新規の実データW1.4ブラウザテストを初めて含めた [PoC Core Tests #42948985741](https://github.com/Nimrodx0/Umasupport/actions/runs/42948985741)：core-testsとbrowser-smokeが成功。
 - 保存失敗通知（連続失敗時一度・書込み回復後に再通知）を含めた [PoC Core Tests #42949655493](https://github.com/Nimrodx0/Umasupport/actions/runs/42949655493)：core-testsとbrowser-smokeが成功。既存のW1.2/W1.3、W1.4ブラウザ試験とも非回帰。
+- ブラウザでのQuotaExceededError模擬を追加した実装コミット `6840b4775dbf8bf1350b5d3604dba4991522d5dd` に対して [PoC Core Tests #42949985726](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985726)、[Documentation Integrity #42949985728](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985728)、[Cross-source event inventory #42949985743](https://github.com/Nimrodx0/Umasupport/actions/runs/42949985743) はすべて成功。**実機ではなくCIのChromiumである**。
 
 ## 未完了（実機検証は保留）
 
