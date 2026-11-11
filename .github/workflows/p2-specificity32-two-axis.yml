@@ -156,7 +156,6 @@ jobs:
             /tmp/p2-specified/two-axis-32.json \
             /tmp/p2-specified/reference-scenario-validity.json \
             /tmp/p2-specified/context-margin-sensitivity.json
-            /tmp/p2-specified/individual-course-mode-margin.json
           node - <<'NODE'
           const fs=require('node:fs'),assert=require('node:assert/strict');
           const x=JSON.parse(fs.readFileSync(
@@ -239,4 +238,5 @@ jobs:
             /tmp/p2-specified/two-axis-32.json
             /tmp/p2-specified/reference-scenario-validity.json
             /tmp/p2-specified/context-margin-sensitivity.json
+            /tmp/p2-specified/individual-course-mode-margin.json
           retention-days: 14
