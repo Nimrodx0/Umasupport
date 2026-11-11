@@ -181,9 +181,9 @@ function audit(model){
   for(const key of shapes)count(priorities,key);
  }
  const byStyles=Object.fromEntries(STYLES.map(style=>{
-  const statuses={};
+  const statuses=new Map();
   for(const row of matched)count(statuses,row.byStyle[style.name].status);
-  return [style.name,statuses];
+  return [style.name,Object.fromEntries(statuses)];
  }));
  const allPaths=sum(matched.map(r=>r.paths.length));
  const recordedPaths=sum(matched.map(r=>r.paths.filter(x=>x.orIndex!==null).length));
