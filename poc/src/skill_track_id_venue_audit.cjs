@@ -7,7 +7,6 @@
  * Static matching of an original AND + one original precondition alternative
  * never proves a full skill proc or a real-game rate.
  */
-const fs=require('node:fs');
 const full=require('./skill_full_condition_path_audit.cjs');
 const fixed=require('../tools/globalsim_roster32.cjs');
 const blockers=require('./skill_source_path_blocker_impact.cjs');
@@ -125,7 +124,7 @@ function audit(app,courses){
   new Set(courses.map(c=>c.courseId)).size!==12)
   throw Error('P2.15 venue audit requires matched app and 12 validated courses');
  const sourceCells=[],rows=[];
- let matched=0,unmatched=0,seenNames=new Set();
+ let matched=0,unmatched=0,seenNames=new Set(),seenSourceIds=new Set();
  const summary={
   matchedSourceSkillsWithTrackPredicate:0,
   trackPredicateSourceBranches:0,
@@ -148,7 +147,9 @@ function audit(app,courses){
   if(skill.activationProfile?.status!=='source-structure'){unmatched++;continue;}
   matched++;
   const id=skill.activationProfile.sourceNumericId;
-  if(!/^\d+$/.test(id))throw Error('Non-numeric original source skill');
+  if(!/^\d+$/.test(id)||seenSourceIds.has(id))
+   throw Error('Duplicate or non-numeric original source skill');
+  seenSourceIds.add(id);
   const branches=conjunctions(skill);
   if(!branches.length)continue;
   summary.matchedSourceSkillsWithTrackPredicate++;
@@ -227,17 +228,6 @@ function audit(app,courses){
    'A source skill/style cell matching an eligible course is NOT a completed skill-activation observation or rate.',
    'No game proc, random timing, global rank-time W or D=O-U, P3 card suitability or public UX is inferred.'
   ]};
-}
-function main(args){
- if(args.length!==4)throw Error('Usage: source_track_id_venue.cjs <source-rawData.kt> <global-course_data.json> <source-SkillChecker.kt> <model-catalog.json>');
- const [raw,glob,checker,modelFile]=args;
- const courses=verifyFixedCourses(fs.readFileSync(raw,'utf8'),
-  fs.readFileSync(glob,'utf8'),fs.readFileSync(checker,'utf8'));
- const app=JSON.parse(fs.readFileSync(modelFile,'utf8'));
- const result=audit(app,courses);
- console.log('P2_15_TRACK_VENUE_SCOPE='+JSON.stringify({
-  mapping:courses.map(c=>({courseId:c.courseId,venueId:c.venueId})),
-  summary:result.summary}));
 }
 module.exports={STATUS,parseSourceCourses,verifyFixedCourses,conjunctions,
  evaluateSourceFixedCourse,audit};
