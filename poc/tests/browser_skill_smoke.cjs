@@ -389,6 +389,8 @@ async function main(){
   await page.locator('button[data-action="set-card"][data-id="30563"]').click();
   assert.match(await page.locator('button.slot[data-action="edit-card"][data-deck="main"][data-index="1"]').innerText(),/サポカ562/);
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  assert.match(await page.locator('.modal-body').innerText(),
+   /イベント情報は未収録.*実ゲームでイベントが発生しないことを意味しません/);
   await page.locator('button[data-action="remove-card"][data-deck="main"][data-index="1"]').click();
 
   // Skill comparison filters are view-only, with root/child groups unchanged in model.
@@ -821,6 +823,9 @@ async function main(){
   assert.match(status,/金白構造候補 2\/3組/);
   assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),2);
   assert.equal(await failurePage.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
+  await failurePage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  assert.match(await failurePage.locator('.picker-card').first().innerText(),/イベント情報未検証/);
+  await failurePage.locator('button[data-action="close"]').click();
   assert.equal(await failurePage.locator('.notice').count(),1,
     'A failure warning must remain visible without raw diagnostics');
   await failureContext.close();
