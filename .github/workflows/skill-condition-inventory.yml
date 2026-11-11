@@ -336,6 +336,17 @@ jobs:
           assert.equal(x.scope.sourceUnmatchedSkills,63);
           assert.equal(x.scope.fixedModelCourses,12);
           assert.equal(x.summary.provenWholeSkillActivations,0);
+          assert.equal(x.scope.fixedModelVenues,6);
+          assert.equal(x.summary.matchedSourceSkillsWithTrackPredicate,37);
+          assert.equal(x.summary.trackPredicateSourceBranches,37);
+          assert.equal(x.summary.trackPredicatePreconditionBranches,0);
+          assert.equal(x.summary.trackPredicateNormalBranches,37);
+          assert.equal(x.summary.sourceStyleCellsWithTrackPredicate,148);
+          assert.equal(x.summary.sourceStyleCellsWithSomeCompatibleFixedCourse,52);
+          assert.equal(x.summary.sourceStyleCellsWithoutCompatibleFixedCourse,96);
+          assert.equal(x.summary.sourceSkillsWithAnyCompatibleFixedCourse,13);
+          assert.equal(x.summary.singletonTrackCandidateSourceSkillsWithCompatibleCourse,13);
+          assert.equal(x.summary.singletonTrackCandidateStyleCellsWithCompatibleCourse,52);
           assert.equal(x.summary.sourceStyleCellsWithTrackPredicate,
            4*x.summary.matchedSourceSkillsWithTrackPredicate);
           assert.equal(x.summary.sourceStyleCellsWithSomeCompatibleFixedCourse+
