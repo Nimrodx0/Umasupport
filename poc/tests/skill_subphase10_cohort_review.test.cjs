@@ -146,3 +146,34 @@ test('uncertified original full-phase result, blank or incomplete source context
   full.indexModel(mockFull())),/Missing matched model/);
  assert.throws(()=>overlay.checkSource({}),/Fixed full-phase/);
 });
+
+test('unchanged full 30-seed report and new 15+15 W/O observations use same exact source windows',()=>{
+ const agg=generator.collect();
+ const styles=Object.keys(full.STYLE_IDS);
+ for(const window of generator.WINDOWS)
+  for(const band of bands)
+   for(const mode of ['equal','jitter10'])
+    for(const courseId of [10501,10502,10304,10504,10604,10506])
+     for(const fieldSize of [9,12])
+      for(const style of styles)
+       for(let rep=0;rep<30;rep++)
+        agg.append({course:{id:courseId},fieldSize,mode,rep},
+         window,band,style,{pointOccupancy:.20+rep/1000,
+          tenMetreWindowOpportunity:.30+rep/1000,difference:.10});
+ const original=generator.report(agg,30);
+ const split=generator.splitReport(agg,30);
+ assert.equal(original.simulations,720);
+ assert.equal(original.perContextRows,4224);
+ assert.equal(split.perContextRows,8448);
+ assert.equal(split.seedsPerHalf,15);
+ const row=original.contextRows[0];
+ const halves=split.contextRows.filter(x=>x.courseId===row.courseId&&
+  x.fieldSize===row.fieldSize&&x.mode===row.mode&&
+  x.windowKey===row.windowKey&&x.bandId===row.bandId&&
+  x.style===row.style);
+ assert.equal(halves.length,2);
+ close((halves[0].pointPercent+halves[1].pointPercent)/2,row.pointPercent);
+ close((halves[0].random10mOpportunityPercent+
+  halves[1].random10mOpportunityPercent)/2,row.random10mOpportunityPercent);
+ assert.throws(()=>generator.splitReport(generator.collect(),30),/Incomplete/);
+});
