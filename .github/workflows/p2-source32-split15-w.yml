@@ -1,0 +1,184 @@
+name: P2.13 disjoint 15+15 fixed model W robustness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_roster32.cjs'
+      - 'poc/tools/skill_source32_split15_w.cjs'
+      - 'poc/tests/skill_source32_split15_w.test.cjs'
+      - 'poc/data/p2_position_condition32_research.v1.json'
+      - '.github/workflows/p2-source32-split15-w.yml'
+      - 'docs/plans/skill-conditions/p2.md'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build-source-pinned-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify two strict original-source half windows and source identity
+        run: |
+          node --check poc/tools/globalsim_roster32.cjs
+          node --check poc/tools/skill_source32_split15_w.cjs
+          node --test poc/tests/skill_source32_split15_w.test.cjs
+      - name: Build fixed original GlobalSim engine at exact v77 commit
+        run: |
+          mkdir -p /tmp/globalsim
+          cd /tmp/globalsim
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          cargo build --release --locked
+          test -x target/release/race_engine_rs_v2
+      - name: Preserve only an ephemeral fixed binary and original no-skill template
+        run: |
+          mkdir -p /tmp/p2-engine
+          cp /tmp/globalsim/target/release/race_engine_rs_v2 /tmp/p2-engine/race_engine_rs_v2
+          cp /tmp/globalsim/examples/v77-race.jsonl /tmp/p2-engine/v77-race.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-split15-fixed-engine
+          path: /tmp/p2-engine
+          retention-days: 1
+          if-no-files-found: error
+
+  replay-disjoint-seeds:
+    needs: build-source-pinned-engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [balanced, frontHeavy, backHeavy, noFront]
+        rep_start: [0, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-split15-fixed-engine
+          path: /tmp/p2-engine
+      - name: Run source-exact 720 races with original 0..14 or 15..29 seeds
+        run: |
+          chmod +x /tmp/p2-engine/race_engine_rs_v2
+          mkdir -p /tmp/p2-split15
+          node --max-old-space-size=4096 poc/tools/globalsim_roster32.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-engine/v77-race.jsonl \
+            /tmp/p2-engine/race_engine_rs_v2 \
+            "${{ matrix.scenario }}" \
+            "/tmp/p2-split15/${{ matrix.scenario }}-${{ matrix.rep_start }}.json" \
+            15 "${{ matrix.rep_start }}" \
+            > /tmp/p2-split15/model-summary.log
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const path='/tmp/p2-split15/${{ matrix.scenario }}-${{ matrix.rep_start }}.json';
+          const x=require(path);
+          assert.equal(x.schemaVersion,2);
+          assert.equal(x.seedsPerCell,15);
+          assert.equal(x.simulations,720);
+          assert.equal(x.seedWindow.repStart,Number('${{ matrix.rep_start }}'));
+          assert.equal(x.seedWindow.repEndExclusive,
+           Number('${{ matrix.rep_start }}')+15);
+          assert.equal(x.scenario,'${{ matrix.scenario }}');
+          assert.equal(x.profileCount,32);
+          if(x.scenario==='noFront')assert(x.missingStyleContextCells>0);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-split15-${{ matrix.scenario }}-${{ matrix.rep_start }}
+          path: /tmp/p2-split15/${{ matrix.scenario }}-${{ matrix.rep_start }}.json
+          retention-days: 14
+          if-no-files-found: error
+
+  audit-seed-stability:
+    needs: replay-disjoint-seeds
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download all 8 disjoint model shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: p2-split15-*
+          merge-multiple: true
+          path: /tmp/p2-split15
+      - name: Fetch independent SHA-pinned full30 source and previous P2.31 report
+        run: |
+          mkdir -p /tmp/p2-full30 /tmp/p2-prior
+          for scenario in balanced frontHeavy backHeavy noFront; do
+            gh run download 42413671565 -n "p2-roster32-$scenario" -D /tmp/p2-full30
+            test -s "/tmp/p2-full30/$scenario.json"
+          done
+          gh run download 43007305092 -n p2-two-axis-32-rank-specificity-research -D /tmp/p2-prior
+          test -s /tmp/p2-prior/individual-course-mode-margin.json
+      - name: Reconstruct original full30 and compare 192 conditions in both 15-seed halves
+        run: |
+          node poc/tools/skill_source32_split15_w.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-full30/balanced.json \
+            /tmp/p2-full30/frontHeavy.json \
+            /tmp/p2-full30/backHeavy.json \
+            /tmp/p2-full30/noFront.json \
+            /tmp/p2-split15/balanced-0.json \
+            /tmp/p2-split15/balanced-15.json \
+            /tmp/p2-split15/frontHeavy-0.json \
+            /tmp/p2-split15/frontHeavy-15.json \
+            /tmp/p2-split15/backHeavy-0.json \
+            /tmp/p2-split15/backHeavy-15.json \
+            /tmp/p2-split15/noFront-0.json \
+            /tmp/p2-split15/noFront-15.json \
+            /tmp/p2-prior/individual-course-mode-margin.json \
+            /tmp/p2-split15/source32-15plus15-W.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/source32-15plus15-W.json','utf8'));
+          assert.equal(x.status,'P2.13-fixed-split15-source32-W-robustness-no-real-game-procs');
+          assert.equal(x.design.distinctConditionStylePairs,192);
+          assert.equal(x.design.modelSeedsNewlySampled,false);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>
+            x.summary[k].original30SeedIndividualContextPass),
+           [135,131,121,118]);
+          for(const k of ['0','1','3','5']){
+            assert(x.summary[k].bothDisjoint15SeedHalvesPass<=
+             x.summary[k].original30SeedIndividualContextPass);
+            assert.equal(x.summary[k].original30OnlyNotBothHalves+
+             x.summary[k].bothDisjoint15SeedHalvesPass,
+             x.summary[k].original30SeedIndividualContextPass);
+          }
+          assert(x.rows.every(z=>z.thresholds&&
+           !Object.hasOwn(z,'realSkillActivationRate')));
+          assert(!Object.hasOwn(x,'cardScore'));
+          console.log('P2_13_SOURCE32_SPLIT15='+JSON.stringify({
+           design:x.design,summary:x.summary,
+           examples:x.rows.filter(y=>y.thresholds['5'].full30Only).slice(0,5)
+            .map(y=>({id:y.sourceNumericId,
+             pair:[y.first,y.second],
+             minima:y.minimumConservativeSignedWPointsByHalf}))}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-source32-15plus15-W-study
+          path: /tmp/p2-split15/source32-15plus15-W.json
+          retention-days: 14
+          if-no-files-found: error
