@@ -8,6 +8,8 @@ on:
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
+      - 'poc/src/skill_halfphase_feasibility.cjs'
+      - 'poc/tests/skill_halfphase_feasibility.test.cjs'
       - 'poc/tests/skill_coarse_style_review.test.cjs'
       - 'poc/src/skill_change_order_source_paths.cjs'
       - 'poc/tests/skill_change_order_source_paths.test.cjs'
@@ -51,6 +53,7 @@ jobs:
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_coarse_style_review.cjs
+          node --check poc/src/skill_halfphase_feasibility.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
           node --check poc/src/skill_change_order_source_paths.cjs
           node --check poc/src/skill_rank_corner_source_cohort.cjs
@@ -64,6 +67,7 @@ jobs:
           node --check poc/src/skill_style_review.cjs
           node --test poc/tests/skill_condition_research_triage.test.cjs
           node --test poc/tests/skill_coarse_style_review.test.cjs
+          node --test poc/tests/skill_halfphase_feasibility.test.cjs
           node --test poc/tests/skill_condition_mixed_cohort.test.cjs
           node --test poc/tests/skill_change_order_source_paths.test.cjs
           node --test poc/tests/skill_rank_corner_source_cohort.test.cjs
@@ -184,6 +188,36 @@ jobs:
            skillCoverage:x.skillCoverage},null,2));
           console.log('P2_COARSE_SKILL_COVERAGE_END');
           NODE
+      - name: Count researchable half-phase rank cases without assigning suitability
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-halfphase-feasibility.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'P2-source-only-half-phase-rank-feasibility-not-style-rating');
+          assert.equal(x.baseline.appSkills,881);
+          assert.equal(x.baseline.sourceMatched,818);
+          assert.equal(x.baseline.heldSkills,584);
+          assert(x.counts.halfTimeExactBandDirect<=x.counts.halfTimeAndExactBand);
+          assert(x.counts.halfTimeAndExactBand<=x.counts.halfTimeWithOrderRate);
+          assert(x.examples.every(e=>e.paths.every(p=>!p.direct||
+           p.extraAndTypes.length===0&&p.eligibleStyles.length>0&&!p.hasAlternativePaths)));
+          assert(!Object.hasOwn(x,'probability'));
+          console.log('P2_HALF_PHASE_RESEARCH_FEASIBILITY_START');
+          console.log(JSON.stringify({counts:x.counts,
+            halfTimingRowsByType:x.halfTimingRowsByType,
+            directExamples:x.examples.filter(e=>e.paths.some(p=>p.direct))
+             .slice(0,15).map(x=>({sourceId:x.sourceNumericId,name:x.name,
+              timeTypes:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
+          console.log('P2_HALF_PHASE_RESEARCH_FEASIBILITY_END');
+          NODE
+      - name: Keep only derived feasibility data for choosing next P2 research
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-halfphase-source-feasibility-not-ratings
+          path: p2-halfphase-feasibility.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Keep derived four-style skill review for inspection, not production
         uses: actions/upload-artifact@v4
         with:
