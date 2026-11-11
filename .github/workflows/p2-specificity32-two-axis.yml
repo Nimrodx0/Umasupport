@@ -6,6 +6,8 @@ on:
     paths:
       - 'poc/tools/skill_specificity32_research.cjs'
       - 'poc/tools/skill_reference_scenario_gate.cjs'
+      - 'poc/tools/skill_context_margin_sensitivity.cjs'
+      - 'poc/tests/skill_context_margin_sensitivity.test.cjs'
       - 'poc/tests/skill_reference_scenario_gate.test.cjs'
       - 'docs/plans/skill-conditions/p2.md'
       - 'poc/tests/skill_specificity32_research.test.cjs'
@@ -33,6 +35,8 @@ jobs:
           node --test poc/tests/skill_specificity32_research.test.cjs
           node --check poc/tools/skill_reference_scenario_gate.cjs
           node --test poc/tests/skill_reference_scenario_gate.test.cjs
+          node --check poc/tools/skill_context_margin_sensitivity.cjs
+          node --test poc/tests/skill_context_margin_sensitivity.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
       - name: Fetch immutable source-validated 5760-race research artifacts
         run: |
@@ -142,6 +146,34 @@ jobs:
            fixedReferenceRosterCounts:a.fixedReferenceRosterCounts,
            unresolvedAxes:a.unresolvedReferenceDecisions.map(x=>x.axis)}));
           NODE
+      - name: Probe certified minimum W gaps without claiming statistical or skill activation confidence
+        run: |
+          node poc/tools/skill_context_margin_sensitivity.cjs \
+            /tmp/p2-specified/two-axis-32.json \
+            /tmp/p2-specified/cross-context-certified-margin.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync(
+            '/tmp/p2-specified/cross-context-certified-margin.json','utf8'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,
+            'P2.30-interval-certified-relative-W-gap-sensitivity-not-skill-or-product-rating');
+          assert.equal(x.summary.sourceConditionStylePairs,192);
+          assert.equal(x.summary.fullCoverageDirectionOnly,69);
+          assert.equal(x.summary.observedOnlyDirectionOnly,66);
+          assert.equal(x.summary.reversedOrHeld,57);
+          assert.equal(x.summary.certifiedGapObservedIn,135);
+          assert.equal(x.summary.gapTrialSensitivity.length,4);
+          assert(x.summary.gapTrialSensitivity.every(z=>z.candidateNotAdopted));
+          assert.equal(x.reference.distinctSeedSplitConfidence,'NOT TESTED IN THIS STUDY');
+          assert.equal(x.reference.representativeness,'NOT ESTABLISHED');
+          assert(x.rows.every(z=>
+             (z.smallestIntervalCertifiedWGapPoints===null)===
+             (z.experimentalGapRequirements===null)));
+          assert(x.limitations.some(t=>t.includes('NOT a sampling confidence bound')));
+          console.log('P2_30_INTERVAL_GAP_SENSITIVITY='+JSON.stringify({
+            summary:x.summary,source:x.source,limits:x.limitations.slice(0,3)}));
+          NODE
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
@@ -149,4 +181,5 @@ jobs:
           path: |
             /tmp/p2-specified/two-axis-32.json
             /tmp/p2-specified/reference-scenario-validity.json
+            /tmp/p2-specified/cross-context-certified-margin.json
           retention-days: 14
