@@ -209,6 +209,35 @@ async function main(){
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   await context.close();
 
+  // Prove a quota/storage failure visibly informs a real Chromium user.
+  // The application must not pretend that an in-memory UI edit was saved.
+  const denied=await browser.newContext({locale:'ja-JP'});
+  await denied.addInitScript(key=>{
+   const original=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(k,v){
+    if(k===key)throw new DOMException('Storage quota unavailable','QuotaExceededError');
+    return original.call(this,k,v);
+   };
+  },SAVE_KEY);
+  const deniedPage=await denied.newPage();
+  await deniedPage.route('**/data/support_card.txt',r=>r.fulfill({
+   status:200,contentType:'text/plain',body:inputs.supports
+  }));
+  await deniedPage.route('**/data/skill_data.txt',r=>r.fulfill({
+   status:200,contentType:'application/json',body:inputs.skills
+  }));
+  await boot(deniedPage,app);
+  const quotaDialog=deniedPage.waitForEvent('dialog');
+  const quotaClick=deniedPage.locator('button[data-action="view"][data-value="split"]').click();
+  const quotaWarning=await quotaDialog;
+  assert.match(quotaWarning.message(),/設定をブラウザに保存できませんでした/);
+  assert.match(quotaWarning.message(),/再読み込み/);
+  await quotaWarning.accept();await quotaClick;
+  assert.equal(await getSaved(deniedPage),null,'failed save must not forge a persisted state');
+  await deniedPage.locator('button[data-action="density"][data-value="detailed"]').click();
+  assert.equal(await getSaved(deniedPage),null);
+  await denied.close();
+
   // A truly fresh, source-blocked browser must fail visibly, not create
   // placeholder cards, hint routes, or user settings.
   const cold=await browser.newContext();
