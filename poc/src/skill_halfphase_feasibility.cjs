@@ -75,10 +75,10 @@ function cohort(model){
      sourcePredicateTypes:row.map(x=>x.type)});
   }
   if(groups.length||halfNoRank.length||nonExact.length) {
-   add('halfTimeWithOrderRate');
+   if(groups.length||nonExact.length)add('halfTimeWithOrderRate');
+   if(halfNoRank.length)add('halfTimeWithoutOrderRate');
    if(!groups.length){
     if(nonExact.length)add('halfTimeNonExactBand');
-    if(halfNoRank.length)add('halfTimeWithoutOrderRate');
    } else {
     add('halfTimeAndExactBand');
     if(groups.some(g=>g.direct))add('halfTimeExactBandDirect');
