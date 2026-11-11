@@ -115,8 +115,6 @@ jobs:
             /tmp/p2-subphase/short-phase.json \
             /tmp/p2-subphase/split15.json \
             p2-halfphase-feasibility.json \
-            /tmp/p2-subphase/split15.json \
-            p2-halfphase-feasibility.json \
             /tmp/p2-subphase/two-axis75.json \
             > /tmp/p2-subphase/two-axis75.log
           node - <<'NODE'
