@@ -169,6 +169,54 @@ test('a real event reward overlapping a hint counts one card, not two routes as 
  assert.equal(twoSkills[skillId].count,2);
  assert.deepEqual(Object.keys(twoSkills[skillId].providers),['0','1']);
 });
+test('all independently selectable approved options and results preserve exact positive skill ID and level',()=>{
+ let cardsChecked=0,choiceCases=0,resultCases=0,skippedGates=0;
+ const project=items=>items.map(x=>({
+  skillId:x.skillId,level:x.kind==='obtained'?null:x.level??null,
+  kind:x.kind==='obtained'?'obtained':'hint'
+ })).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+ for(const card of Object.values(cards)){
+  let touched=false;
+  for(const event of card.events){
+   if(event.type!=='choice'||event.requires){
+    if(event.type==='choice'&&event.requires)skippedGates++;
+    continue;
+   }
+   for(const option of event.choices){
+    if(option.requires){skippedGates++;continue;}
+    const choices={[event.id]:option.id};
+    const outcomes=option.outcomes||[];
+    if(outcomes.some(o=>o.requires)){skippedGates++;continue;}
+    // An option with explicit result alternatives must not be flattened into
+    // its own unconditional reward. Check EVERY resolvable result separately.
+    if(outcomes.length){
+     for(const outcome of outcomes){
+      const selected=makeSlot(card.id,choices,{[event.id]:outcome.id});
+      const actual=project(eventRoutes(card,selected,event.id));
+      const expected=project(positive(outcome.rewards));
+      assert.deepEqual(actual,expected,card.id+':'+event.id+':'+outcome.id);
+      resultCases++;
+     }
+    }else{
+     const selected=makeSlot(card.id,choices);
+     const actual=project(eventRoutes(card,selected,event.id));
+     const expected=project(positive(option.rewards));
+     assert.deepEqual(actual,expected,card.id+':'+event.id+':'+option.id);
+    }
+    choiceCases++;touched=true;
+   }
+  }
+  if(touched)cardsChecked++;
+ }
+ assert.ok(cardsChecked>0&&choiceCases>0&&resultCases>0);
+ // This inventory is about routable records in the approved input, not
+ // actual game occurrence, external completeness or unapproved candidates.
+ console.log('W1_REVIEWED_OPTION_ROUTE_AUDIT='+JSON.stringify({
+  approvedEvents:allEvents.length,cardsChecked,choiceCases,
+  resultCases,skippedGates
+ }));
+});
+
 test('omitted slot configuration defaults to stage four without crashing hint lookup',()=>{
  const card={id:'artificial-stage-regression',events:[],
   hintsByStage:{'0':['hint:stage0'],'4':['hint:stage4']}};
