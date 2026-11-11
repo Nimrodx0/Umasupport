@@ -294,6 +294,7 @@ function main(args){
  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
  console.log('P2_29_REFERENCE_CONTEXT_AUDIT='+JSON.stringify({
   decisionStatus:report.decisionStatus,summary:report.comparisonSummary,
+  crossContextConsensus:report.crossContextConsistency.byStatus,
   unresolved:report.unresolvedReferenceDecisions.map(x=>x.axis)}));
 }
 if(require.main===module)try{main(process.argv.slice(2))}
