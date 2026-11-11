@@ -5,6 +5,25 @@
  * does not join different alternatives or infer skill/card activation rates.
  */
 const TARGET='change_order_onetime';
+const STATIC=new Set(['running_style','distance_type']);
+const sourcePredicate=c=>({type:c.type,operator:c.operator,value:c.value});
+function gateSource(and,pre){
+ // Only source numeric comparisons on these two known, fixed fields can
+ // be evaluated in the *existing* 32-race stage replay. This metadata is
+ // deliberately bounded to source paths using change_order_onetime.
+ if(!Array.isArray(and)||!Array.isArray(pre)||
+   pre.some(row=>!Array.isArray(row)))throw Error('Malformed P2.20 original AND/OR');
+ return {
+  sameAndStatic:and.filter(c=>STATIC.has(c.type)).map(sourcePredicate),
+  preconditionAlternatives:pre.map(row=>({
+   static:row.filter(c=>STATIC.has(c.type)).map(sourcePredicate),
+   unmeasuredTypes:[...new Set(row.filter(c=>!STATIC.has(c.type)).map(c=>c.type))].sort()
+  })),
+  unmeasuredSameAndTypes:[...new Set(and.filter(c=>
+   c.type!==TARGET&&!STATIC.has(c.type)).map(c=>c.type))].sort(),
+  scope:'exact-source-static-style-distance-and-signed-rank-only'
+ };
+}
 function audit(records){
  if(!Array.isArray(records))throw Error('Original matched source records required');
  const seen=new Set(),paths=[];
@@ -31,6 +50,7 @@ function audit(records){
       hasPreconditions:(inv.preConditions||[]).length>0,
       conditions:uses.map(c=>({operator:c.operator,value:c.value})),
       sameAndOtherTypes:and.filter(c=>c?.type!==TARGET).map(c=>c.type),
+      fixedContextGate:gateSource(and,inv.preConditions||[]),
       sameAndPredicateCount:and.length,
       status:'source-signed-rank-change-subcondition-only',
       fullSkillEvaluated:false
@@ -75,4 +95,4 @@ function audit(records){
    'No four-style final suitability label or skill effect usefulness is computed.'
   ]};
 }
-module.exports={TARGET,audit};
+module.exports={TARGET,STATIC,gateSource,audit};
