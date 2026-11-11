@@ -413,6 +413,10 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Validate P2.29 cross-context consensus and preserve missing-style holds
+        run: |
+          node --check poc/tools/skill_reference_scenario_gate.cjs
+          node --test poc/tests/skill_reference_scenario_gate.test.cjs
       - name: Validate P2.20 fixed context and pre-skill signed rank conjunction (synthetic only)
         run: |
           node --check poc/src/skill_change_order_source_paths.cjs

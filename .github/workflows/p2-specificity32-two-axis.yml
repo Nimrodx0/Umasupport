@@ -5,6 +5,9 @@ on:
   pull_request:
     paths:
       - 'poc/tools/skill_specificity32_research.cjs'
+      - 'poc/tools/skill_reference_scenario_gate.cjs'
+      - 'poc/tests/skill_reference_scenario_gate.test.cjs'
+      - 'docs/plans/skill-conditions/p2.md'
       - 'poc/tests/skill_specificity32_research.test.cjs'
       - '.github/workflows/p2-specificity32-two-axis.yml'
 
@@ -28,6 +31,8 @@ jobs:
         run: |
           node --check poc/tools/skill_specificity32_research.cjs
           node --test poc/tests/skill_specificity32_research.test.cjs
+          node --check poc/tools/skill_reference_scenario_gate.cjs
+          node --test poc/tests/skill_reference_scenario_gate.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
       - name: Fetch immutable source-validated 5760-race research artifacts
         run: |
@@ -80,9 +85,68 @@ jobs:
           assert(x.model.seedSplitConfirmation.startsWith('NOT TESTED'));
           console.log(JSON.stringify(x.summary,null,2));
           NODE
+      - name: Audit whether balanced reference is robust, not whether it represents live games
+        run: |
+          node poc/tools/skill_reference_scenario_gate.cjs \
+            /tmp/p2-specified/two-axis-32.json \
+            /tmp/p2-specified/reference-scenario-validity.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const a=JSON.parse(fs.readFileSync(
+           '/tmp/p2-specified/reference-scenario-validity.json','utf8'));
+          assert.equal(a.schemaVersion,1);
+          assert.equal(a.status,
+           'P2.29-comparison-reference-context-sensitivity-not-population-validation');
+          assert.equal(a.comparisonSummary.originalSourceConditions,64);
+          assert.equal(a.comparisonSummary.stylePairComparisons,384);
+          assert.equal(a.comparisonSummary.balancedStrict,337);
+          assert.equal(a.comparisonSummary.balancedHeld,47);
+          assert.equal(a.comparisonSummary.strictAcrossAllFourArtificialRosters,143);
+          assert.equal(a.comparisonSummary.balancedStrictButNotFourRobust,194);
+          assert.equal(a.comparisonSummary.noFrontAbsencePairComparisons,192);
+          assert.equal(a.comparisonSummary.crossHeadcountSameStrict,156);
+          assert.equal(a.comparisonSummary.crossHeadcountHeld,36);
+          assert.equal(a.comparisonSummary.crossHeadcountStrictReverse,0);
+          const consensus=a.crossContextConsistency;
+          assert.equal(consensus.status,
+           'source-rank-condition-across-fixed-context-consensus-only');
+          assert.equal(consensus.originalSignatures,32);
+          assert.equal(consensus.stylePairs,192);
+          assert.equal(consensus.scenarioHeadcountCells,1536);
+          assert.equal(consensus.fullCoverageStrict,69);
+          assert.equal(consensus.observedStrictWithMissingStyle,66);
+          assert.equal(consensus.directionReversal,29);
+          assert.equal(consensus.heldOrTied,28);
+          assert.equal(consensus.noComparable,0);
+          assert.equal(consensus.fullCoverageStrict+
+           consensus.observedStrictWithMissingStyle+
+           consensus.directionReversal+consensus.heldOrTied,192);
+          assert.equal(consensus.rows.length,192);
+          assert.equal(Object.values(consensus.byStatus)
+           .reduce((sum,v)=>sum+v,0),192);
+          assert(consensus.rows.every(x=>
+           x.comparableScenarioHeadcounts+
+             x.missingStyleScenarioHeadcounts<=8));
+          assert(consensus.rows.filter(x=>x.first==='Nige').every(x=>
+           x.missingStyleScenarioHeadcounts===2 &&
+           x.coverage.absentScenarios.every(v=>v.roster==='noFront')));
+          assert(consensus.limitations.some(x=>x.includes('NOT full-coverage')));
+
+          assert.equal(a.decisionStatus.realRosterJointDistribution,'not-identified');
+          assert.equal(a.decisionStatus.newSuitabilityLabel,'not-authorized');
+          assert.equal(Object.hasOwn(a,'populationWeightedSuitability'),false);
+          assert.equal(a.unresolvedReferenceDecisions.length,8);
+          console.log('P2_29_CONTEXT_COMPARISON_GATES='+JSON.stringify({
+           summary:a.comparisonSummary,
+           crossContextConsistency:consensus.byStatus,
+           fixedReferenceRosterCounts:a.fixedReferenceRosterCounts,
+           unresolvedAxes:a.unresolvedReferenceDecisions.map(x=>x.axis)}));
+          NODE
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
           name: p2-two-axis-32-rank-specificity-research
-          path: /tmp/p2-specified/two-axis-32.json
+          path: |
+            /tmp/p2-specified/two-axis-32.json
+            /tmp/p2-specified/reference-scenario-validity.json
           retention-days: 14
