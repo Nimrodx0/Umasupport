@@ -164,7 +164,16 @@ jobs:
           assert.equal(x.summary.originalFullyConsistent,69);
           assert.equal(x.summary.originalConsistentOnObservedOnly,66);
           assert.equal(x.summary.heldOrReversal,57);
-          assert.equal(x.summary.byThreshold['0'].total,135);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>x.summary.byThreshold[k].total),
+           [135,134,131,127]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>x.summary.byThreshold[k].fullCoverage),
+           [69,69,67,63]);
+          assert.deepEqual(
+           ['0','1','3','5'].map(k=>
+             x.summary.byThreshold[k].observedOnlyMissingStyle),
+           [66,65,64,64]);
           for(const k of ['0','1','3','5']){
             assert.equal(x.summary.byThreshold[k].marginPoints,Number(k));
             assert(x.summary.byThreshold[k].total<=135);
