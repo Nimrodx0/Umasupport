@@ -145,6 +145,30 @@ jobs:
            }
           }
           const sha=crypto.createHash('sha256').update(bytes).digest('hex');
+          assert.equal(sha,'10dcb03daf7ecab60ed88694b6ba2d465291aeda460adcb8a9bd74556c928e14',
+           'Pinned 75-skill W/D evidence changed');
+          assert.equal(x.summary.modeled,69);
+          assert.equal(x.summary.heldRaceQualifiers,6);
+          assert.equal(x.summary.modeledPairs,234);
+          assert.equal(x.summary.stableW,185);
+          assert.equal(x.summary.heldW,49);
+          assert.equal(x.summary.stableD,185);
+          assert.equal(x.summary.skillsWithStableWPair,39);
+          const modeled=x.items.filter(v=>v.styles);
+          const styles=['Nige','Senkou','Sasi','Oikomi'];
+          const eligibleCount=v=>styles.filter(s=>
+           v.styles[s].status==='model-contexts-only').length;
+          assert.equal(modeled.filter(v=>eligibleCount(v)===4).length,39);
+          assert.equal(modeled.filter(v=>eligibleCount(v)===1).length,30);
+          const signs=modeled.flatMap(v=>styles.map(s=>v.styles[s])
+           .filter(e=>e.status==='model-contexts-only')
+           .map(e=>e.deviationDirection.direction));
+          assert.equal(signs.length,186);
+          assert.equal(signs.filter(s=>s==='+'||s==='-').length,183);
+          assert.equal(modeled.filter(v=>v.pairs.every(p=>
+           p.WDirection?.direction==='+'||p.WDirection?.direction==='-')).length,2);
+          assert(x.items.filter(v=>v.status==='held-source-race-qualifier')
+           .every(v=>v.heldReasons.includes('unsupported-source-ground-type')));
           console.log('P2.28_TWO_AXIS_REPORT_SHA256='+sha);
           console.log('P2.28_TWO_AXIS_REPORT_SUMMARY_START');
           console.log(JSON.stringify({source:x.source,summary:x.summary},null,2));
@@ -227,6 +251,8 @@ jobs:
           rm -f /tmp/p2-fixed-skill-source.txt \
             /tmp/p2-subphase/full-phase-reference.json \
             /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/split15.json \
+            p2-halfphase-feasibility.json \
             /tmp/p2-subphase/old77.json \
             skill-condition-inventory-audit.json \
             /tmp/p2-53-rechecked.json
