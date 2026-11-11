@@ -92,16 +92,19 @@ function roster(n,scenario,rep){
  const strategies=entries.map((_,gate)=>entries[(gate+rep%n)%n]);
  return {counts:[...counts],strategies};
 }
-function plans(scenario,{seedsPerCell=30}={}){
+function plans(scenario,{seedsPerCell=30,repStart=0}={}){
+ const split=seedsPerCell===15&&[0,15].includes(repStart);
  if(!SCENARIOS.includes(scenario)||
   !Number.isSafeInteger(seedsPerCell)||seedsPerCell<2||
-  seedsPerCell>30||seedsPerCell%2)
-  throw Error('Fixed scenario and even seeds 2..30 required');
+  seedsPerCell>30||(seedsPerCell%2&&!split)||
+  !Number.isSafeInteger(repStart)||
+  (repStart!==0&&!split))
+  throw Error('Fixed scenario and even seeds 2..30, or 15-seed disjoint halves at 0/15, required');
  const out=[],seeds=new Set();
  for(const course of COURSES)
   for(const fieldSize of [9,12])
    for(const mode of MODES)
-    for(let rep=0;rep<seedsPerCell;rep++){
+    for(let rep=repStart;rep<repStart+seedsPerCell;rep++){
      // All variants share the BALANCED control seed. This contrasts roster
      // while preserving individual initial jitter draws for each gate.
      const seed=expanded.seedFor(course.id,fieldSize,'balanced',rep);
@@ -170,7 +173,7 @@ function observe(plan,frames,manifest,groups){
   }
  }
 }
-function report(manifest,groups,scenario,seedsPerCell){
+function report(manifest,groups,scenario,seedsPerCell,repStart=0){
  verifyManifest(manifest);
  if(!SCENARIOS.includes(scenario)||seedsPerCell<2)
   throw Error('Unrecognized report scenario');
@@ -239,6 +242,7 @@ function report(manifest,groups,scenario,seedsPerCell){
   profileCount:32,profileCourseInstances:94,
   observedRows:rows.length,missingStyleContextCells:absent,
   heldContextCells:held,unresolvedRunnerWindows:unresolved,
+  ...(seedsPerCell===15?{seedWindow:{repStart,repEndExclusive:repStart+15}}:{}),
   assumptions:['All scenarios have equal seed/gate/stat jitter design for fixed course/n/mode/rep.',
    'NoFront has zero Nige runners, so there is no Nige opportunity to measure; do not coerce absent to 0%.',
    'An unresolved exact positional tie yields a conservative 0..100% bound on that runner; source condition mean is a bounded interval, NOT a point estimate.',
@@ -247,9 +251,9 @@ function report(manifest,groups,scenario,seedsPerCell){
    'Only source rank/time/distance/ground predicates; no other AND, OR union, usefulness or published app labels.'],
   contextRows:rows};
 }
-async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
+async function execute(template,engine,manifest,scenario,{seedsPerCell=30,repStart=0}={}){
  verifyManifest(manifest);
- const runPlans=plans(scenario,{seedsPerCell}),groups=new Map();
+ const runPlans=plans(scenario,{seedsPerCell,repStart}),groups=new Map();
  const child=spawn(engine,[],{stdio:['pipe','pipe','pipe']});
  // If an unmodelled source case aborts replay, stop the writer cleanly.
  // Otherwise an EPIPE event can hide the real rank/simulator error.
@@ -299,15 +303,15 @@ async function execute(template,engine,manifest,scenario,{seedsPerCell=30}={}){
  if(exit.code!==0||received!==runPlans.length)
   throw Error('Not all fixed source model races completed '+
    JSON.stringify({exit,received,expected:runPlans.length,stderr}));
- return report(manifest,groups,scenario,seedsPerCell);
+ return report(manifest,groups,scenario,seedsPerCell,repStart);
 }
-async function main([manifestPath,templatePath,engine,scenario,outPath,seeds]){
- if(!outPath)throw Error('Usage: globalsim_roster32.cjs manifest.json template.jsonl engine scenario output.json [evenSeeds]');
+async function main([manifestPath,templatePath,engine,scenario,outPath,seeds,repStart]){
+ if(!outPath)throw Error('Usage: globalsim_roster32.cjs manifest.json template.jsonl engine scenario output.json [evenSeeds or 15] [repStart 0 or 15 for 15]');
  const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
  const lines=fs.readFileSync(templatePath,'utf8').trim().split(/\r?\n/);
  if(lines.length!==1)throw Error('Exactly one pinned GlobalSim model template needed');
  const output=await execute(JSON.parse(lines[0]),engine,manifest,scenario,
-  {seedsPerCell:Number(seeds||30)});
+  {seedsPerCell:Number(seeds||30),repStart:Number(repStart||0)});
  fs.writeFileSync(outPath,JSON.stringify(output,null,2)+'\n');
  console.log(JSON.stringify({scenario,simulations:output.simulations,
   rows:output.observedRows,missingStyle:output.missingStyleContextCells,

@@ -413,6 +413,11 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Validate P2.13 source-exact disjoint seed windows (synthetic)
+        run: |
+          node --check poc/tools/globalsim_roster32.cjs
+          node --check poc/tools/skill_source32_split15_w.cjs
+          node --test poc/tests/skill_source32_split15_w.test.cjs
       - name: Validate P2.31 course/mode sensitivity and source provenance (synthetic)
         run: |
           node --check poc/tools/skill_context_individual_margin.cjs
