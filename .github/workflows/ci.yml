@@ -409,6 +409,10 @@ jobs:
       - name: Validate GameTora-first and GameWith-dispute event source policy
         run: node --check poc/src/gametora_event_resolution.cjs && node --check poc/tools/report_gametora_baseline.cjs && node --test poc/tests/gametora_event_resolution.test.cjs
 
+      - name: Validate P2.15 single-type next-research impact without inferring activation
+        run: |
+          node --check poc/src/skill_source_path_blocker_impact.cjs
+          node --test poc/tests/skill_source_path_blocker_impact.test.cjs
       - name: Validate P2.15 source AND/OR and precondition path gate research
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
