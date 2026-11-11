@@ -27,7 +27,7 @@
 
 - [PR #398](https://github.com/Nimrodx0/Umasupport/pull/398)の一部として試験追加。
 - 新規の実データW1.4ブラウザテストを初めて含めた [PoC Core Tests #42948985741](https://github.com/Nimrodx0/Umasupport/actions/runs/42948985741)：core-testsとbrowser-smokeが成功。
-- 保存失敗通知の追加分は別コミットに対するCIで最終確認する。記録時点でのCI成功と、未実行の検証を混同しない。
+- 保存失敗通知（連続失敗時一度・書込み回復後に再通知）を含めた [PoC Core Tests #42949655493](https://github.com/Nimrodx0/Umasupport/actions/runs/42949655493)：core-testsとbrowser-smokeが成功。既存のW1.2/W1.3、W1.4ブラウザ試験とも非回帰。
 
 ## 未完了（実機検証は保留）
 
