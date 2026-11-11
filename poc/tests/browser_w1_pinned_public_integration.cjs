@@ -235,6 +235,76 @@ async function appCases(page){
  assert.equal(hintAtZero.stage,0);
  assert.deepEqual(hintAtZero.hints,sample.hint.stageZero);
  await page.locator('button[data-action="close"]').click();
+  // A source-backed two-stage support event is exercised through actual
+  // parent/child radio controls. Unlike a synthetic chain, both event IDs
+  // must exist in the published public catalog and the pinned card roster.
+  const chain=await page.evaluate(()=>{
+   const core=window.UmaCore;
+   for(const card of window.UmaDemoData.cards){
+    const events=card.events||[];
+    for(const child of events){
+     const reqs=child.requires?.all||[];
+     if(reqs.length!==1||reqs[0].choiceId!==undefined||
+       reqs[0].outcomeId!==undefined||child.availabilityKind)continue;
+     const parent=events.find(e=>e.id===reqs[0].eventId);
+     if(!parent||parent.type!=='choice'||parent.requires||parent.availabilityKind)continue;
+     const parentChoice=parent.choices.find(c=>
+      c.terminal!==true&&!c.requires&&!c.outcomes?.length);
+     if(!parentChoice)continue;
+     const childChoice=child.type==='choice'?child.choices.find(c=>
+      !c.requires&&!c.outcomes?.length&&(c.rewards||[]).some(r=>r.kind!=='negative')):null;
+     if(child.type==='choice'&&!childChoice)continue;
+     if(child.type==='auto'&&(child.outcomes?.length||
+       !(child.rewards||[]).some(r=>r.kind!=='negative')))continue;
+     const choices={[parent.id]:parentChoice.id};
+     if(childChoice)choices[child.id]=childChoice.id;
+     const selected=core.directRoutes(card,{stage:4,choices,outcomes:{}})
+      .find(r=>r.source==='event'&&r.eventId===child.id&&!r.conditional);
+     if(!selected)continue;
+     if(core.reachability(child,{},events).status!=='blocked')continue;
+     return {card:{id:card.id,name:card.name},parentId:parent.id,
+      parentChoiceId:parentChoice.id,childId:child.id,
+      childChoiceId:childChoice?.id||null,skillId:selected.skillId};
+    }
+   }
+   return null;
+  });
+  assert.ok(chain,'No actual approved parent-choice gated event was found');
+  await chooseCard(page,'main',3,chain.card);
+  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="3"]').click();
+  const parentRadio='input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
+   chain.parentId+'"][value="'+chain.parentChoiceId+'"]';
+  const childRadio=chain.childChoiceId?
+   'input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
+    chain.childId+'"][value="'+chain.childChoiceId+'"]':null;
+  if(childRadio)assert.equal(await page.locator(childRadio).isDisabled(),true);
+  await page.locator(parentRadio).check();
+  if(childRadio){
+   assert.equal(await page.locator(childRadio).isDisabled(),false);
+   await page.locator(childRadio).check();
+  }
+  const checkChain=async ()=>{
+   return page.evaluate(({id,childId,skillId,key})=>{
+    const s=JSON.parse(localStorage.getItem(key));
+    const d=s.decks.main.find(x=>x.id===s.activeDecks.main),slot=d.slots[3];
+    const event=window.UmaDemoData.cardById[id];
+    const routes=window.UmaCore.directRoutes(event,slot);
+    return {choice:slot.choices[childId]||null,
+     route:routes.some(r=>r.eventId===childId&&r.skillId===skillId&&
+       r.source==='event'&&!r.conditional)};
+   },{id:chain.card.id,childId:chain.childId,skillId:chain.skillId,key:SAVE_KEY});
+  };
+  const liveChain=await checkChain();
+  assert.equal(liveChain.route,true,
+   'published chained reward must emerge only when the parent selection is set');
+  if(childRadio)assert.equal(liveChain.choice,chain.childChoiceId);
+  await page.locator('input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
+   chain.parentId+'"][value=""]').check();
+  const removedChain=await checkChain();
+  assert.equal(removedChain.route,false,'unselected parent must remove downstream reward');
+  if(childRadio)assert.equal(removedChain.choice,null,
+   'editing parent must clear previously selected downstream child');
+  await page.locator('button[data-action="close"]').click();
  // Viewport smoke is NOT an Android physical-device acceptance.
  await page.setViewportSize({width:390,height:844});
  const geometry=await page.evaluate(()=>({
@@ -245,7 +315,7 @@ async function appCases(page){
  assert.deepEqual(errors,[]);
  return {cards:sample.cards,skills:sample.skills,reviewedEvents:2487,
   goalByBothDecks:true,choicePersistedAfterReload:true,exclusiveResultUI:true,
-  pinnedRealNormalHintsChecked:true,
+  pinnedRealNormalHintsChecked:true,sourceBackedParentChildUI:true,
   simulatedMobileWidth:geometry.width};
 }
 async function main(){
