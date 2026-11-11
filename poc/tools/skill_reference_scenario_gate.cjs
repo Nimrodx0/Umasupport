@@ -18,6 +18,88 @@ const tally=(rows,key)=>Object.fromEntries(
   [label,rows.filter(x=>x[key]===label).length]));
 const positive=(v,what)=>{if(!Number.isSafeInteger(v)||v<0)
  throw Error('Invalid '+what);return v};
+const DIRECTIONS=Object.freeze({
+ 'first-strict-all-matched-contexts':'first',
+ 'second-strict-all-matched-contexts':'second'
+});
+function contextConsensus(conditions){
+ // A source condition is the pair's own rank/time/surface/distance signature.
+ // Each (source signature, unordered style pair) must be present at 9 AND 12
+ // heads before any cross-context conclusion can be reported.
+ const map=new Map();
+ for(const condition of conditions){
+  for(const pair of condition.pairwise){
+   const key=[condition.sourceNumericId,condition.surface,
+    condition.distanceScope,condition.timing,condition.bandId,
+    pair.first,pair.second].join('|');
+   if(!map.has(key))map.set(key,{sourceNumericId:condition.sourceNumericId,
+    surface:condition.surface,distanceScope:condition.distanceScope,
+    timing:condition.timing,bandId:condition.bandId,
+    first:pair.first,second:pair.second,contexts:[]});
+   const row=map.get(key);
+   for(const scenario of SCENARIOS){
+    const v=pair.byScenario[scenario];
+    row.contexts.push({headcount:condition.fieldSize,roster:scenario,
+     status:v.status,matchedCourseModeCells:v.contexts});
+   }
+  }
+ }
+ if(map.size!==192)throw Error('P2.29 expected 32 source signatures × 6 style pairs');
+ const rows=[];
+ for(const row of map.values()){
+  if(row.contexts.length!==8||new Set(row.contexts.map(x=>
+   x.headcount+'|'+x.roster)).size!==8||
+   row.contexts.filter(x=>x.headcount===9).length!==4||
+   row.contexts.filter(x=>x.headcount===12).length!==4)
+   throw Error('P2.29 incomplete 9/12 headcount context contrast');
+  const compared=row.contexts.filter(x=>x.status!=='held-absent-style');
+  const missing=row.contexts.filter(x=>x.status==='held-absent-style');
+  const held=compared.filter(x=>!Object.hasOwn(DIRECTIONS,x.status));
+  const dirs=new Set(compared.map(x=>DIRECTIONS[x.status]).filter(Boolean));
+  const reversal=dirs.size>1||held.some(x=>x.status==='held-context-direction-reversal');
+  const status=reversal?'observed-context-direction-reversal':
+   !compared.length?'no-comparable-scenario':
+   held.length?'held-not-all-observed-contexts-strict':
+   missing.length?'consistent-in-observed-contexts-missing-style-scenario':
+   'consistent-in-all-tested-contexts';
+  rows.push({
+   sourceNumericId:row.sourceNumericId,surface:row.surface,
+   distanceScope:row.distanceScope,timing:row.timing,bandId:row.bandId,
+   first:row.first,second:row.second,
+   result:status,
+   observedDirection:!reversal&&dirs.size===1?[...dirs][0]:null,
+   comparableScenarioHeadcounts:compared.length,
+   missingStyleScenarioHeadcounts:missing.length,
+   heldOrTiedScenarioHeadcounts:held.length,
+   coverage:{
+    actualCompared:compared.length,possible:8,
+    bothHeadcountsPresent:compared.some(x=>x.headcount===9)&&
+     compared.some(x=>x.headcount===12),
+    absentScenarios:missing.map(x=>({headcount:x.headcount,roster:x.roster}))
+   }
+  });
+ }
+ const summary=tally(rows,'result');
+ const total=Object.values(summary).reduce((n,v)=>n+v,0);
+ if(total!==192)throw Error('P2.29 condition consensus population drift');
+ return {status:'source-rank-condition-across-fixed-context-consensus-only',
+  originalSignatures:32,stylePairs:192,scenarioHeadcountCells:1536,
+  fullCoverageStrict:(summary['consistent-in-all-tested-contexts']||0),
+  observedStrictWithMissingStyle:(summary[
+   'consistent-in-observed-contexts-missing-style-scenario']||0),
+  directionReversal:(summary['observed-context-direction-reversal']||0),
+  heldOrTied:(summary['held-not-all-observed-contexts-strict']||0),
+  noComparable:(summary['no-comparable-scenario']||0),
+  byStatus:summary,rows,
+  limitations:[
+   'Agreement covers only observed fixed courses, 9/12 field sizes, fixed opponent rosters and equal/artificial strength modes.',
+   'Missing Nige in noFront is missing evidence; agreement in other contexts is NOT full-coverage agreement.',
+   'A strict numerical comparison alone does not establish a meaningful effect size or statistical confidence.',
+   'All estimates concern partial rank/time predicates, not a complete skill activation or a card suitability rating.',
+   'Do not replace context-dependent evidence with a population-weighted score when opponent joint distributions remain unmeasured.'
+  ]};
+}
+
 function audit(input){
  if(!input||input.schemaVersion!==1||
   input.status!=='P2-source32-two-axis-point-specificity-and-10m-pairwise-research-only'||
@@ -126,6 +208,7 @@ function audit(input){
  tally(headcount,'relation')['same-strict-direction']!==
  input.summary.crossHeadcountPairs['same-strict-direction'])
   throw Error('P2.29 summary disagrees with individual paired comparisons');
+ const consensus=contextConsensus(input.conditions);
  const byHeadcount=Object.fromEntries([9,12].map(n=>{
   const subset=pairs.filter(x=>x.fieldSize===n);
   return [n,{pairs:subset.length,
@@ -171,8 +254,10 @@ function audit(input){
      .map(([eligibleModelCourses,conditionHeadcounts])=>
       ({eligibleModelCourses,conditionHeadcounts})),
    byHeadcount,
-   byFourRosterStatus:tally(pairs,'acrossFour')
+   byFourRosterStatus:tally(pairs,'acrossFour'),
+   crossContextConsensusCounts:consensus.byStatus
   },
+  crossContextConsistency:consensus,
   // Deliberately no real-world weights or adopted single aggregate score.
   unresolvedReferenceDecisions:[
    {axis:'competition-context',question:'What event, mode and round is the standard intended to represent?',
@@ -213,4 +298,4 @@ function main(args){
 }
 if(require.main===module)try{main(process.argv.slice(2))}
  catch(e){console.error(e.stack||e);process.exitCode=1}
-module.exports={audit,main,STRICT};
+module.exports={audit,main,STRICT,contextConsensus};
