@@ -9,6 +9,8 @@ on:
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
       - 'poc/src/skill_full_condition_path_audit.cjs'
+      - 'poc/src/skill_source_path_blocker_impact.cjs'
+      - 'poc/tests/skill_source_path_blocker_impact.test.cjs'
       - 'poc/tests/skill_full_condition_path_audit.test.cjs'
       - 'docs/plans/skill-conditions/p2.md'
       - 'poc/src/skill_halfphase_feasibility.cjs'
@@ -57,6 +59,8 @@ jobs:
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
+          node --check poc/src/skill_source_path_blocker_impact.cjs
+          node --test poc/tests/skill_source_path_blocker_impact.test.cjs
           node --check poc/src/skill_halfphase_feasibility.cjs
           node --check poc/src/skill_condition_mixed_cohort.cjs
           node --check poc/src/skill_change_order_source_paths.cjs
@@ -259,6 +263,44 @@ jobs:
               timeTypes:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
           console.log('P2_HALF_PHASE_RESEARCH_FEASIBILITY_END');
           NODE
+      - name: Audit AND/precondition-OR blocker types and exact singleton opportunities
+        run: |
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(
+           'p2-15-source-blocker-impact.json','utf8'));
+          assert.equal(x.status,
+           'P2.15-source-route-blocker-candidates-not-proc-possibility');
+          assert.equal(x.source.sha256,
+           '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatchedSkills,818);
+          assert.equal(x.denominators.sourceUnmatchedSkills,63);
+          assert.equal(x.denominators.allSourceStyleCells,3272);
+          assert.equal(x.denominators.signedRankSourceSkills,30);
+          assert.equal(x.rows.length,818);
+          assert.equal(Object.values(x.byMinimumUnknownTypeCount)
+           .reduce((sum,n)=>sum+n,0),3272);
+          assert(x.impactIfOneTypeCouldBeMeasured.every(y=>
+           y.uniqueSourceSkillsWithAtLeastOneStyleCell>0&&
+           y.uniqueStyleCellsOneTypeAway>=
+             y.uniqueSourceSkillsWithAtLeastOneStyleCell));
+          assert(x.rows.every(y=>Object.keys(y.byStyle).length===4));
+          assert(!Object.hasOwn(x,'skillSuitability'));
+          console.log('P2_15_SINGLE_TYPE_IMPACT='+JSON.stringify({
+           denominators:x.denominators,
+           statuses:x.byMinimumUnknownTypeCount,
+           zeroUnknownTypeSkills:x.zeroTypeBlockerSourceSkills,
+           oneUnknownTypeSkills:x.oneTypeBlockerSourceSkills,
+           signedRankCohort:x.cohortByMinimumUnknownTypeCount,
+           topCandidates:x.impactIfOneTypeCouldBeMeasured.slice(0,20)}));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-single-type-source-blocker-impact-not-activation
+          path: p2-15-source-blocker-impact.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Keep only derived feasibility data for choosing next P2 research
         uses: actions/upload-artifact@v4
         with:
