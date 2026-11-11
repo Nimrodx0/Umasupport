@@ -17,6 +17,7 @@ const styleReview=require('../src/skill_style_review.cjs');
 const coarseReview=require('../src/skill_coarse_style_review.cjs');
 const fullPaths=require('../src/skill_full_condition_path_audit.cjs');
 const blockerImpact=require('../src/skill_source_path_blocker_impact.cjs');
+const venueAudit=require('../src/skill_track_id_venue_audit.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
@@ -45,8 +46,15 @@ function matchedRecord(skill,live,old){
  return null;
 }
 (async()=>{
- const [skillText,supportText,pinnedText]=await Promise.all([
-  get(BASE+'skill_data.txt'),get(BASE+'support_card.txt'),get(bridge.PINNED_URL)]);
+ const [skillText,supportText,pinnedText,umaCourseText,
+  globalCourseText,umaSkillCheckerText]=await Promise.all([
+  get(BASE+'skill_data.txt'),get(BASE+'support_card.txt'),get(bridge.PINNED_URL),
+  get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
+   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data/rawData.kt'),
+  get('https://raw.githubusercontent.com/daftuyda/GlobalSim/'+
+   '80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1/data/course_data.json'),
+  get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
+   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt')]);
  const raw=JSON.parse(skillText.replace(/^\uFEFF/,''));
  const pinnedRaw=JSON.parse(pinnedText.replace(/^\uFEFF/,''));
  const source=bridge.parseSource(skillText),old=bridge.parseSource(pinnedText);
@@ -114,6 +122,15 @@ function matchedRecord(skill,live,old){
  const p215=fullPaths.audit(model);
  const p215Blockers=blockerImpact.audit(model,
   [...new Set(changeOrder.paths.map(x=>x.sourceNumericId))]);
+ const sourceVenueCourses=venueAudit.verifyFixedCourses(
+  umaCourseText,globalCourseText,umaSkillCheckerText);
+ const sourceVenueAudit=venueAudit.audit(model,sourceVenueCourses);
+ if(sourceVenueAudit.scope.matchedSourceSkills!==818||
+    sourceVenueAudit.scope.sourceUnmatchedSkills!==63||
+    sourceVenueAudit.scope.fixedModelCourses!==12||
+    sourceVenueAudit.summary.provenWholeSkillActivations!==0)
+  throw Error('P2.15 source venue audit population changed');
+
  if(p215Blockers.denominators.sourceMatchedSkills!==818||
     p215Blockers.denominators.sourceUnmatchedSkills!==63||
     p215Blockers.denominators.allSourceStyleCells!==3272||
@@ -266,6 +283,15 @@ function matchedRecord(skill,live,old){
    skillId:x.skillId,name:x.name,
    time:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
  console.log('P2_HALF_PHASE_FEASIBILITY_END');
+ fs.writeFileSync('p2-15-track-venue-context.json',
+  JSON.stringify({dataSource:{
+   umaSimRevision:REVISION,umaSimCourseSourceSha256:digest(umaCourseText),
+   umaSimSkillCheckerSourceSha256:digest(umaSkillCheckerText),
+   globalSimCourseSourceSha256:digest(globalCourseText)},
+   ...sourceVenueAudit},null,2)+'\n');
+ console.log('P2_15_TRACK_VENUE_CONTEXT='+JSON.stringify({
+  scope:sourceVenueAudit.scope,summary:sourceVenueAudit.summary
+ }));
  fs.writeFileSync('p2-15-source-blocker-impact.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},
    ...p215Blockers},null,2)+'\n');
