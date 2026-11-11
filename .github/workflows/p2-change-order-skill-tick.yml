@@ -131,6 +131,14 @@ jobs:
           assert.equal(r.design.modelSkillList,'none');
           assert.equal(r.design.races,32);
           assert.equal(r.totals.sourcePaths,r.denominator.sourceAndPaths);
+          assert.equal(r.totals.modelSignOnlyPaths,30);
+          assert.equal(r.totals.sourcePathsWithUnknownRequiredConditions,30);
+          assert.equal(r.totals.sourcePathsWithSomeSignModelTicks,26);
+          assert.equal(r.zeroObservedSignSourcePaths.length,4);
+          assert.equal(r.totals.pathWeightedRunnerTicksAfterStaticStyleDistanceFilter,6071105);
+          assert.equal(r.totals.pathWeightedSignedRunnerTicksAfterStaticStyleDistanceFilter,28390);
+          assert(r.limitations.some(x=>x.includes('NOT unique runner/tick sample sizes')),
+            'Repeated source paths must never be misrepresented as independent trials');
           assert.equal(r.totals.modelSignOnlyPaths+r.totals.heldNonSignOnlyPaths,
             r.totals.sourcePaths);
           assert(r.rows.every(row=>row.researchStatus===
