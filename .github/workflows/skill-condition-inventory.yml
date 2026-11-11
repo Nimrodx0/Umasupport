@@ -200,12 +200,15 @@ jobs:
           assert.equal(x.baseline.heldSkills,584);
           assert(x.counts.halfTimeExactBandDirect<=x.counts.halfTimeAndExactBand);
           assert(x.counts.halfTimeAndExactBand<=x.counts.halfTimeWithOrderRate);
+          assert(Object.values(x.directWindowSkills).reduce((a,b)=>a+b,0)===x.counts.halfTimeExactBandDirect);
           assert(x.examples.every(e=>e.paths.every(p=>!p.direct||
            p.extraAndTypes.length===0&&p.eligibleStyles.length>0&&!p.hasAlternativePaths)));
           assert(!Object.hasOwn(x,'probability'));
           console.log('P2_HALF_PHASE_RESEARCH_FEASIBILITY_START');
           console.log(JSON.stringify({counts:x.counts,
             halfTimingRowsByType:x.halfTimingRowsByType,
+            sourceWindowSkills:x.sourceWindowSkills,
+            directWindowSkills:x.directWindowSkills,
             directExamples:x.examples.filter(e=>e.paths.some(p=>p.direct))
              .slice(0,15).map(x=>({sourceId:x.sourceNumericId,name:x.name,
               timeTypes:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
