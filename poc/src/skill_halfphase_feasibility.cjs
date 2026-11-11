@@ -27,7 +27,6 @@ function cohort(model){
  };
  const sourceRowCounts={};
  const examples=[];
- const seenNames=new Set();
  function add(k){counts[k]=(counts[k]||0)+1}
  for(const [i,skill] of model.skills.entries()){
   const profile=skill.activationProfile;
@@ -73,6 +72,7 @@ function cohort(model){
      extraAndTypes:(path.extraPredicates||[]).map(x=>x.type),
      hasAlternativePaths:!single,
      sourcePredicateTypes:row.map(x=>x.type)});
+   }
   }
   if(groups.length||halfNoRank.length||nonExact.length) {
    if(groups.length||nonExact.length)add('halfTimeWithOrderRate');
