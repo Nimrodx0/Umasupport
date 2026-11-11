@@ -172,6 +172,13 @@ jobs:
           }
           const total=Object.values(x.perStyleCounts).reduce((a,b)=>a+b,0);
           assert.equal(total,881*4);
+          assert.equal(x.heldGapInventory.heldSkillCount,x.skillCoverage.held);
+          assert.equal(x.heldGapInventory.status,'observed-features-of-held-skills-not-sole-causes');
+          console.log('P2_HELD_SKILL_GAPS_START');
+          console.log(JSON.stringify({heldSkillCount:x.heldGapInventory.heldSkillCount,
+           topReviewBlockers:x.heldGapInventory.blockedReviewReasons.slice(0,15),
+           topOriginalConditionTypes:x.heldGapInventory.sourceConditionTypesInHeldSkills.slice(0,20)},null,2));
+          console.log('P2_HELD_SKILL_GAPS_END');
           console.log('P2_COARSE_SKILL_COVERAGE_START');
           console.log(JSON.stringify({perStyleCounts:x.perStyleCounts,
            skillCoverage:x.skillCoverage},null,2));
