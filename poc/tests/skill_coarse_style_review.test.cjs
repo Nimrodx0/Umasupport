@@ -86,7 +86,7 @@ test('full app cohort remains four independent rows and unknowns do not become g
 
 test('held research gaps count distinct skills not repeated four-style cells',()=>{
  const x=skill('skill:5',profile([[
-  c('phase_random','==',1),c('order_rate','<=',50),
+  c('phase_firsthalf_random','==',1),c('order_rate','<=',50),
   c('is_overtake','==',1)]]));
  const a=rough.report({skills:[x,{...x,id:'skill:6'}]});
  assert.equal(a.heldGapInventory.heldSkillCount,2);
@@ -100,7 +100,7 @@ test('held research gaps count distinct skills not repeated four-style cells',()
 });
 test('an unresolved OR is recorded separately from condition-type prevalence',()=>{
  const p=profile([
-  [c('phase_random','==',1),c('order_rate','<=',50)],
+  [c('phase_firsthalf_random','==',1),c('order_rate','<=',50)],
   [c('is_overtake','==',1)]]);
  const r=rough.report({skills:[skill('skill:6',p)]});
  assert.equal(r.heldGapInventory.heldSkillCount,1);
