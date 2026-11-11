@@ -697,6 +697,10 @@ jobs:
         run: |
           node --check poc/tests/browser_w1_pinned_public_integration.cjs
           node poc/tests/browser_w1_pinned_public_integration.cjs
+      - name: W1.4 export import and cache recovery with approved events (Chromium)
+        run: |
+          node --check poc/tests/browser_w1_settings_recovery.cjs
+          node poc/tests/browser_w1_settings_recovery.cjs
       - name: Browser-test opt-in SSR30311 candidate routes and isolated settings
         run: node poc/tests/browser_event_preview_smoke.cjs
       - name: Browser-test explicit full 2512-event offline file import and isolation
