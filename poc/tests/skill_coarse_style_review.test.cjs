@@ -88,7 +88,7 @@ test('held research gaps count distinct skills not repeated four-style cells',()
  const x=skill('skill:5',profile([[
   c('phase_random','==',1),c('order_rate','<=',50),
   c('is_overtake','==',1)]]));
- const a=rough.report({skills:[x,x]});
+ const a=rough.report({skills:[x,{...x,id:'skill:6'}]});
  assert.equal(a.heldGapInventory.heldSkillCount,2);
  const blocker=a.heldGapInventory.blockedReviewReasons
   .find(v=>v.key==='extra-AND-conditions-unmeasured');
