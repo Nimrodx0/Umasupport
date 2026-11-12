@@ -122,7 +122,11 @@ function makeEntries(cohort,plans){
    const japanese=['逃げ','先行','差し','追込'][expanded.STYLES.indexOf(name)];
    for(const entry of entries.values()){
     if(entry.style!==japanese)continue;
-    const state=staticContextMatch(entry.finitePredicates,plan,name);
+    // Even a precondition OR with only a phase_random predicate can be
+    // a historically latched gate. No same-tick truth claim is possible.
+    const state=entry.preconditionOrIndex!==null?
+     'held-unknown-context-or-historical-precondition':
+     staticContextMatch(entry.finitePredicates,plan,name);
     if(state==='static-context-matches'){entry.contextsWithStaticMatch++;list.push(entry)}
     else if(state==='context-excluded')entry.contextsExcluded++;
     else entry.contextsHeld++;
