@@ -102,7 +102,7 @@ test('mismatched independent model skill events and physics must be rejected',()
  const mutated=structuredClone(f.ranks);
  mutated[0].skillEvents.pop();
  assert.throws(()=>m.analyze(f.plans,f.original,f.windows,mutated),
-  /original GlobalSim skill events/);
+  /original GlobalSim skill event/);
  const physics=structuredClone(f.ranks);
  physics[0].frames[1].horses[3][2]=75;
  assert.throws(()=>m.analyze(f.plans,f.original,f.windows,physics),
