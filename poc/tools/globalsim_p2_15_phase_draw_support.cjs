@@ -128,6 +128,26 @@ function analyze(original,probe,plans,cohort,sourceVerification){
   a.style.localeCompare(b.style)||a.invokeOffset-b.invokeOffset||
   a.conditionOrIndex-b.conditionOrIndex||
   (a.preconditionOrIndex??-1)-(b.preconditionOrIndex??-1));
+ const byStyle=['逃げ','先行','差し','追込'].map(style=>{
+  const subset=rows.filter(row=>row.style===style);
+  const units=subset.reduce((n,row)=>
+   n+row.modelRunnerRaceUnitsWithObservedDrawSupport,0);
+  const supportSum=subset.reduce((n,row)=>
+   n+row.sumUniformDrawSupportFractions,0);
+  return {style,originalSourcePaths:subset.length,
+   originalSourcePathsWithObservedDrawSupport:
+    subset.filter(row=>row.modelRunnerRaceUnitsWithObservedDrawSupport>0).length,
+   modelSourcePathRunnerRaceUnits:units,
+   modelRunnerRaceUnitsWithPositiveDrawSupport:subset.reduce((n,row)=>
+    n+row.modelRunnerRaceUnitsWithPositiveDrawSupport,0),
+   modelRunnerRaceUnitsWithZeroDrawSupport:subset.reduce((n,row)=>
+    n+row.modelRunnerRaceUnitsWithZeroDrawSupport,0),
+   meanUniformDrawSupportFraction:units?supportSum/units:null,
+   originalSourceWholeSkillProcObserved:false};
+ });
+ fail(byStyle.reduce((n,row)=>n+row.modelSourcePathRunnerRaceUnits,0)===
+  evaluated&&byStyle.reduce((n,row)=>n+row.originalSourcePaths,0)===371,
+  'four original style strata lost model source-path units');
  fail(rows.length===371&&evaluated===positive+zero&&
   rows.reduce((x,y)=>x+y.modelRunnerRaceUnitsWithObservedDrawSupport,0)===
   evaluated&&
@@ -170,7 +190,7 @@ function analyze(original,probe,plans,cohort,sourceVerification){
     rows.filter(x=>x.modelRunnerRaceUnitsWithObservedDrawSupport===0).length,
    sumDrawSupportFractionsAcrossModelUnits:accumulated
   },
-  rows,
+  rows,byStyle,
   gates:{
    originalUmaSimSourceWindowFormulaAnchored:true,
    originalUmaSimActualRandomDrawObserved:false,
@@ -211,6 +231,7 @@ function main(args){
  fs.writeFileSync(outPath,JSON.stringify(result,null,2)+'\n');
  console.log('P2_15_ORIGINAL_SOURCE_ALL_DRAW_SUPPORT='+JSON.stringify({
   provenance:result.provenance,counts:result.counts,
+  byStyle:result.byStyle,
   matchedPhysics:result.priorModelParity.matchedOriginalModelPhysicalColumns,
   sourceWindowVerification:result.sourceVerification,
   gates:result.gates
