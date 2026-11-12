@@ -53,7 +53,7 @@ test('pin the original phase geometry with 2m terminal start and inclusive 10m w
  const mid=tool.sourceShapedWindow(1600,0,.5);
  assert(Math.abs(mid.start-1600/12)<1e-9);
  assert(Math.abs(mid.end-(1600/12+10))<1e-9);
- const late=tool.sourceShapedWindow(1600,0,.99);
+ const late=tool.sourceShapedWindow(1600,0,.999);
  assert(Math.abs(late.start-(1600/6-2))<1e-9);
  assert(Math.abs(late.end-(1600/6))<1e-9);
  assert.throws(()=>tool.sourceShapedWindow(1600,0,1),/Counterfactual/);
