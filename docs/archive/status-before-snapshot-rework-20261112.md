@@ -8,7 +8,7 @@
 
 **測定日：2026-11-06。** 公開アプリの計測基準日はこの日付。**P2追加監査日：2026-11-09。** 対象：公開アプリの現行mainと、GlobalSim v77によるP2モデル検証（[PR #335～#352](https://github.com/Nimrodx0/Umasupport/pull/352)）。モデル順位占有割合は現行ゲームの実際の発動率ではない。
 
-> **読む順番**：現在の到達点はこのページ、これからの仕事は [roadmap.md](roadmap.md)、過去のPR別報告・旧スナップショットは [移行前の全文](../archive/status-through-20261105.md) と [開発履歴](../history/development-history.md) を参照してください。過去の「次工程」を今の指示として扱わないでください。
+> **読む順番**：現在の到達点はこのページ、これからの仕事は [roadmap.md](../project/roadmap.md)、過去のPR別報告・旧スナップショットは [移行前の全文](../archive/status-through-20261105.md) と [開発履歴](../history/development-history.md) を参照してください。過去の「次工程」を今の指示として扱わないでください。
 
 ## ひと目で分かる現在の状態
 
@@ -115,6 +115,6 @@ P2の各実験を一行の文章に連結せず、[P2.1～P2.28](../plans/skill-
 ## 更新ルール
 
 1. 公開件数や機能の状態が変わったPRは、このスナップショットの該当行を**上書き**し、根拠PR・出典版・測定日とA/B/Cを記す。日付別の報告をこのページへ累積しない。
-2. 新しい優先順位は [roadmap.md](roadmap.md) の一つの作業順だけを修正。履歴の保存先は個別監査とPR、必要時のみ [development-history.md](../history/development-history.md)。
+2. 新しい優先順位は [roadmap.md](../project/roadmap.md) の一つの作業順だけを修正。履歴の保存先は個別監査とPR、必要時のみ [development-history.md](../history/development-history.md)。
 3. Open Issueには「現在の状態」を先頭に置き、過去の未完チェックや旧0件の記述は**履歴**と明示する。更新漏れを週次チェックで検出する。
 4. 上記の公開イベント数とロードマップの旧前提は `poc/tools/check_project_tracking.cjs` がCIで照合する。数字の自動検証は権利承認・実機試験を代替しない。
