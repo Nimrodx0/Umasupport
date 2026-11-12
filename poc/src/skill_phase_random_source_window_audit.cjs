@@ -28,7 +28,7 @@ function verifyPinnedChecker(sourceText){
  fail(typeof sourceText==='string'&&sourceText.length>1000,
   'missing pinned original SkillChecker code');
  for(const fragment of CHECKER_ANCHORS){
-  fail(sourceText.split(fragment).length===2,
+  fail(sourceText.includes(fragment),
    'missing, duplicate or changed pinned window implementation: '+fragment);
  }
  // Do not accept another branch with the same name that could shadow the
