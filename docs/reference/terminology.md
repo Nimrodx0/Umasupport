@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | 条件成立機会（W）、点順位占有率（O）、一様順位基準（U）、脚質特異性（D） | [順位条件研究の計算定義](../evidence/skills/skill-specificity32-two-axis-20261109.md#1-二軸を混ぜない計算定義) | P2のモデル研究 |
 | 脚質間の条件成立機会差・シナリオ平均差の下限・仮の判定閾値 | [P2.30の方法と限界](../evidence/skills/skill-p2-30-context-margin-sensitivity-20261111.md#方法と限界) | P2のモデル研究。製品の適性判定基準としては未採用 |
+| 適用範囲条件、脚質依存条件、文脈による相互作用 | [有効要件の適用範囲と文脈相互作用](requirements.md)・[P2.17の方法と観測](../evidence/skills/skill-p2-17-distance-context-style-gap-20261112.md) | P2のスキル条件。適用範囲と相互作用は排他的な区分ではない |
 | スキル発動条件、AND／OR、`Invoke`、`preConditions` | [スキル条件の研究設計](../explanation/skill-activation-tendencies-design.md) | スキル条件の構造・解釈 |
 | サポートカードの獲得候補、通常ヒント、イベント | [現行要件](requirements.md)・[イベントスキーマ](event-schema.md) | 製品の機能・データ構造 |
 | 出典、収録、公開承認 | [データソース契約](data-sources.md)・[公開ゲート](../how-to/checker-public-catalog.md) | データの取得・公開 |
