@@ -279,6 +279,18 @@ jobs:
           assert.equal(z.summary.sameVenueTokyoTurf.matchedRosterHeadModeContexts,336);
           assert.equal(z.summary.sameVenueTokyoTurf.missingStyleRosterHeadModeContexts,48);
           assert.equal(z.summary.sameVenueTokyoTurf.matchedCrossDistanceClassComparisons,2016);
+          assert.deepEqual([
+           z.summary.allOriginalEligibleCourses.pairsWithStrictCrossDistanceSignReversal,
+           z.summary.allOriginalEligibleCourses.pairsWithFivePointOrGreaterConservativeGapShift,
+           z.summary.allOriginalEligibleCourses.matchedContextsWithStrictCrossDistanceSignReversal,
+           z.summary.allOriginalEligibleCourses.matchedContextsWithFivePointConservativeGapShift],
+           [5,56,8,341]);
+          assert.deepEqual([
+           z.summary.sameVenueTokyoTurf.pairsWithStrictCrossDistanceSignReversal,
+           z.summary.sameVenueTokyoTurf.pairsWithFivePointOrGreaterConservativeGapShift,
+           z.summary.sameVenueTokyoTurf.matchedContextsWithStrictCrossDistanceSignReversal,
+           z.summary.sameVenueTokyoTurf.matchedContextsWithFivePointConservativeGapShift],
+           [5,23,11,148]);
           for(const group of Object.values(z.summary)){
             assert(group.pairsWithStrictCrossDistanceSignReversal<=
              group.sourceConditionStylePairs);
