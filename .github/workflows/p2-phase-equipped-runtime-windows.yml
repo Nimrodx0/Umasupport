@@ -64,7 +64,14 @@ jobs:
           a.equal(x.status,tool.STATUS);
           a.equal(x.provenance.globalSimRevision,'80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1');
           a.equal(x.experiment.fixedModelRaces,8);
-          a(x.totals.sampledWindows>0);
+          a.equal(x.totals.frames,10413);
+          a.equal(x.totals.identicalPhysicalValues,437364);
+          a.equal(x.totals.instantiatedSkillDetails,252);
+          a.equal(x.totals.pendingWindowEntriesIncludingInactive,252);
+          a.equal(x.totals.sampledWindows,210);
+          a.equal(x.totals.reservedInactiveDetails,42);
+          a.equal(x.totals.modelSkillEvents,173);
+          a.equal(x.totals.identicalOriginalSkillEvents,181);
           a(x.totals.observedSkillStagePositions>0);
           a.equal(x.totals.observedSkillStagePositions,x.totals.positionsMatchingPriorPostFrame);
           a(x.totals.identicalPhysicalValues>0);
