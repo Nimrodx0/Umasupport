@@ -3,7 +3,7 @@
   "kind": "source-refresh-candidate-review-only",
   "reviewState": "awaiting-human-preflight-and-source-adjudication",
   "reviewFingerprint": "22b2d99d45f4237a4577cf88e8fdfdc31147d109eb8830dc383a38b8f249c3a6",
-  "observedRun": "https://github.com/Nimrodx0/Umasupport/actions/runs/43010283845",
+  "observedRun": "https://github.com/Nimrodx0/Umasupport/actions/runs/43209930569",
   "currentPinned": {
     "gameToraCommit": "6e38b54af4fad397ff4491e63007a90705a4fe67",
     "umaSimCommit": "910dd79f046710245e0cc88a09c5c92b1044897e",
@@ -12,9 +12,9 @@
   },
   "proposedSnapshot": {
     "gameToraCommit": "6e38b54af4fad397ff4491e63007a90705a4fe67",
-    "umaSimCommit": "a7cc4ad643fcac79a8861d4489b01daf0b8eee4c",
+    "umaSimCommit": "af94a0bcdc268e7de9f35511f1f5a667bb8a6e4f",
     "gameToraTree": "6e38b54af4fad397ff4491e63007a90705a4fe67",
-    "umaSimTree": "a7cc4ad643fcac79a8861d4489b01daf0b8eee4c",
+    "umaSimTree": "af94a0bcdc268e7de9f35511f1f5a667bb8a6e4f",
     "umaSimCardBlob": "a6fec178de309785ce049966122d11dc29506b8a",
     "umaSimSkillBlob": "cb26a88050cd3c59de8fb91159501c249b1b5fe3"
   },
