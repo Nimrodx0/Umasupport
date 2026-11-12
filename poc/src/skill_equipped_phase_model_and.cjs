@@ -76,6 +76,12 @@ const tally=()=>({
  phaseWindowMemberRunnerTicks:0,wholeModelExpressionANDRunnerTicks:0,
  runnerRacesWithPhaseWindowVisit:0,runnerRacesWithANDVisit:0,
  runnerRacesWithNoANDVisit:0,runnerRacesWithNoSampledStage:0,
+ // Each contingency cell counts ONE (model skill, runner, model race).
+ // Model events are counted separately and may repeat on the same unit.
+ runnerRacesWithANDAndModelEvent:0,runnerRacesWithANDNoModelEvent:0,
+ runnerRacesWithNoANDAndModelEvent:0,runnerRacesWithNoANDNoModelEvent:0,
+ runnerRacesWithRepeatedModelEvents:0,
+ modelSkillEventsOnANDRunnerRaces:0,modelSkillEventsOnNoANDRunnerRaces:0,
  modelSkillEvents:0,actualUmaSimSourceSkillProcs:null,
  gameActivationProbability:null,approvedSuitabilityLabel:null
 });
@@ -109,6 +115,18 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
    Number.isSafeInteger(p.fieldSize)&&rankBounds.FIELDS.includes(p.fieldSize)&&
    modelRank.frames.length===sample.frames.length,
    'different equipped original/model-rank skillEvents or runner cohort');
+  // Join only the skill/runner/race identity. Model event time is NOT
+  // proven aligned to the sampled pre-priority frame in this experiment.
+  const eventsByRunner=Array.from({length:p.fieldSize},()=>
+   new Map(IDS.map(id=>[id,0])));
+  for(const event of control.skillEvents||[]){
+   const id=String(event.skillId);
+   if(!IDS.includes(id))continue;
+   const runner=event.horseIndex;
+   fail(Number.isSafeInteger(runner)&&runner>=0&&runner<p.fieldSize,
+    'equipped model skill event with no attributable runner');
+   eventsByRunner[runner].set(id,eventsByRunner[runner].get(id)+1);
+  }
   for(let i=0;i<p.fieldSize;i++){
    totalDistinctRunners++;
    const style=p.strategies?.[i];
@@ -147,6 +165,9 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
       if(state.andSatisfied)row.wholeModelExpressionANDRunnerTicks++;
      }
     }
+    const eventCount=eventsByRunner[i].get(id);
+    fail(Number.isSafeInteger(eventCount)&&eventCount>=0,
+     'unattributed equipped model skill event count');
     for(const row of [totals,current,styleRow]){
      row.equippedModelRunnerRaces++;
      if(detail===null)row.missingDetailRunnerRaces++;
@@ -157,20 +178,19 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
      if(sawAnd)row.runnerRacesWithANDVisit++;
      else row.runnerRacesWithNoANDVisit++;
      if(!visited)row.runnerRacesWithNoSampledStage++;
+     if(sawAnd){
+      if(eventCount)row.runnerRacesWithANDAndModelEvent++;
+      else row.runnerRacesWithANDNoModelEvent++;
+      row.modelSkillEventsOnANDRunnerRaces+=eventCount;
+     }else{
+      if(eventCount)row.runnerRacesWithNoANDAndModelEvent++;
+      else row.runnerRacesWithNoANDNoModelEvent++;
+      row.modelSkillEventsOnNoANDRunnerRaces+=eventCount;
+     }
+     if(eventCount>1)row.runnerRacesWithRepeatedModelEvents++;
+     row.modelSkillEvents+=eventCount;
     }
    }
-  }
-  // Skill activations are separate original-GlobalSim events. Do not
-  // re-label a skill-window membership or AND-gate tick as a proc.
-  for(const event of control.skillEvents||[]){
-   const id=String(event.skillId);
-   if(!IDS.includes(id))continue;
-   const runner=event.horseIndex;
-   fail(Number.isSafeInteger(runner)&&runner>=0&&runner<p.fieldSize,
-    'equipped model skill event with no attributable runner');
-   const style=p.strategies[runner],styleRow=byStyle.get(id+'|'+style);
-   fail(styleRow,'model event refers to no matching original style trace');
-   for(const row of [totals,skills[id],styleRow])row.modelSkillEvents++;
   }
  }
  fail(totalDistinctRunners===
@@ -201,8 +221,17 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
    result.wholeModelExpressionANDRunnerTicks<=result.phaseWindowMemberRunnerTicks&&
    result.phaseWindowMemberRunnerTicks<=result.validSampledWindowRunnerTicks&&
    result.validSampledWindowRunnerTicks<=result.inspectedSameStageModelRunnerTicks&&
-   result.runnerRacesWithANDVisit<=result.runnerRacesWithPhaseWindowVisit,
-   'equipped model window/rank source count inconsistent');
+   result.runnerRacesWithANDVisit<=result.runnerRacesWithPhaseWindowVisit&&
+   result.runnerRacesWithANDAndModelEvent+
+    result.runnerRacesWithANDNoModelEvent===result.runnerRacesWithANDVisit&&
+   result.runnerRacesWithNoANDAndModelEvent+
+    result.runnerRacesWithNoANDNoModelEvent===result.runnerRacesWithNoANDVisit&&
+   result.modelSkillEventsOnANDRunnerRaces+
+    result.modelSkillEventsOnNoANDRunnerRaces===result.modelSkillEvents&&
+   result.runnerRacesWithRepeatedModelEvents<=
+    result.runnerRacesWithANDAndModelEvent+
+    result.runnerRacesWithNoANDAndModelEvent,
+   'equipped model window/rank/event contingency count inconsistent');
  }
  fail(rows.length===IDS.length*4&&
   rows.reduce((n,row)=>n+row.equippedModelRunnerRaces,0)===
@@ -227,7 +256,9 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
    rule:'valid initialized model PendingSkill.windows contains position AND original model additional conditions hold',
    windowMembership:'start <= model pre-skill pos < end',
    ordinalRankRule:'GlobalSim original order_rate_get_pos (n*rate/100).round for 9/12 runners',
-   noSkillProcSubstitutedForConditionHit:true
+   noSkillProcSubstitutedForConditionHit:true,
+   eventOpportunityCrossTabulation:'one equipped model skill × one runner × one model race',
+   modelEventTimeAlignedToObservedPriorityTick:false
   },
   threeEngineValidation:rankEvidence.totals,
   priorEquippedWindowEvidence:{
@@ -243,6 +274,8 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
    actualModelPrePriorityRankAndPositionJoined:true,
    independentThreeEnginePhysicalAndSkillEventParity:true,
    modelConditionANDMeasuredForPinnedThreeSkills:true,
+   modelSkillEventPresenceCrossTabulatedWithANDRunnerRaces:true,
+   modelEventTickCausalityVerified:false,
    originalUmaSimRandomDrawsObserved:false,
    originalUmaSimFullSourceConditionsValidated:false,
    liveGameSkillActivationRateMeasured:false,
@@ -254,6 +287,8 @@ function analyze(plans,originalReplies,windowReplies,rankReplies){
    'These are real GlobalSim sampled windows, not the previously fabricated halfway draw or actual UmaSim/JP game draws.',
    'RNG, source skill initialization, physical trajectories and logged model skill events are unmodified across three independently built binaries.',
    'Window membership plus explicit model distance_type/order_rate AND is an opportunity at original model priority stage, NOT an observed activation or activation probability. Prior skill activation/cooldown may prevent an event.',
+   'The contingency compares any observed same-skill/same-runner model event with any captured same-runner AND-hit in one model race; no event timestamp is aligned to an exact skill-priority tick. A model event with no captured AND-hit is an audit exception, not automatically a bug or game counterexample.',
+   'Multiple emitted model events per skill/runner/race count once in the contingency but all events remain in modelSkillEvents.',
    'Reserved 9999m details are inactive, not actual 9999m random draws. Missing details are kept distinct.',
    'The fixed 8 artificial equipped races have correlated runner ticks and nonrepresentative opponents; no direct runner-style suitability grade follows.',
    'Stage rank data and sampled windows come from two separate read-only probes proven physical and event identical, not from guessed post-race ordering.'

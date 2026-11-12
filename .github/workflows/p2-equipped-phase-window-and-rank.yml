@@ -92,6 +92,34 @@ jobs:
           a.equal(r.totals.missingDetailRunnerRaces,0);
           a.equal(r.totals.phaseWindowMemberRunnerTicks,1512);
           a.equal(r.totals.modelSkillEvents,173);
+          a.equal(r.totals.runnerRacesWithANDAndModelEvent+
+            r.totals.runnerRacesWithANDNoModelEvent,r.totals.runnerRacesWithANDVisit);
+          a.equal(r.totals.runnerRacesWithNoANDAndModelEvent+
+            r.totals.runnerRacesWithNoANDNoModelEvent,r.totals.runnerRacesWithNoANDVisit);
+          a.equal(r.totals.runnerRacesWithANDVisit+
+            r.totals.runnerRacesWithNoANDVisit,252);
+          a.equal(r.totals.modelSkillEventsOnANDRunnerRaces+
+            r.totals.modelSkillEventsOnNoANDRunnerRaces,173);
+          a.equal(r.totals.runnerRacesWithANDAndModelEvent,173);
+          a.equal(r.totals.runnerRacesWithANDNoModelEvent,18);
+          a.equal(r.totals.runnerRacesWithNoANDAndModelEvent,0);
+          a.equal(r.totals.runnerRacesWithNoANDNoModelEvent,61);
+          a.equal(r.totals.runnerRacesWithRepeatedModelEvents,0);
+          for(const [id,expected] of Object.entries({
+            '200451':[74,10,0,0],'200501':[78,6,0,0],
+            '200701':[21,2,0,61]
+          })){
+            const z=r.skills[id];
+            a.deepEqual([
+              z.runnerRacesWithANDAndModelEvent,
+              z.runnerRacesWithANDNoModelEvent,
+              z.runnerRacesWithNoANDAndModelEvent,
+              z.runnerRacesWithNoANDNoModelEvent
+            ],expected,'model skill runner-race four-way comparison drift: '+id);
+          }
+          a.equal(r.modelDesign.modelEventTimeAlignedToObservedPriorityTick,false);
+          a.equal(r.evidenceGates.modelSkillEventPresenceCrossTabulatedWithANDRunnerRaces,true);
+          a.equal(r.evidenceGates.modelEventTickCausalityVerified,false);
           a.equal(r.threeEngineValidation.positionalProbePhysicalValuesMatched,437364);
           a.equal(r.threeEngineValidation.rankProbePhysicalValuesMatched,437364);
           a.equal(r.threeEngineValidation.modelPriorityPositionPairsMatched,108769);
@@ -121,6 +149,11 @@ jobs:
               active:z.validSampledWindowRunnerRaces,windowTicks:z.phaseWindowMemberRunnerTicks,
               andTicks:z.wholeModelExpressionANDRunnerTicks,
               andRunnerRaces:z.runnerRacesWithANDVisit,
+              ANDAndEvent:z.runnerRacesWithANDAndModelEvent,
+              ANDNoEvent:z.runnerRacesWithANDNoModelEvent,
+              noANDAndEvent:z.runnerRacesWithNoANDAndModelEvent,
+              noANDNoEvent:z.runnerRacesWithNoANDNoModelEvent,
+              repeatedEventsRunnerRaces:z.runnerRacesWithRepeatedModelEvents,
               events:z.modelSkillEvents
             })),gates:r.evidenceGates
           }));
