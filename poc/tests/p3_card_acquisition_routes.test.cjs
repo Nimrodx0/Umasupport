@@ -17,7 +17,7 @@ function fixture(){
    '3':['skill:101'],'4':['skill:101']},
   events:[
    {id:'auto-1',type:'auto',rewards:[
-    {skillId:'skill:102',kind:'hint',level:1},
+    {skillId:'skill:102',level:1} // omitted kind is the documented hint default,
     {skillId:'skill:103',kind:'negative'}]},
    {id:'choice-1',type:'choice',choices:[
     {id:'a',rewards:[{skillId:'skill:100',kind:'hint',level:2}]},
