@@ -13,6 +13,7 @@ const eventCatalog=require('../src/public_event_catalog.js');
 const bridge=require('../src/skill_bridge.js');
 const fixed=require('./globalsim_roster32.cjs');
 const routes=require('../src/p3_card_acquisition_routes.cjs');
+const p32=require('../src/p3_source_app_identity_audit.cjs');
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 function main(args){
  if(args.length!==6)throw Error(
@@ -41,6 +42,18 @@ function main(args){
   app.meta.reviewedEventRecords!==2487||
   coverage.matched!==818||coverage.unavailable!==63)
   throw Error('P3.3 fixed app population or approved event source changed');
+ // Reconcile P3.2 source identities AGAIN from the pinned original registry.
+ // A forged intermediary JSON with valid file hashes must not introduce a join.
+ const studied=identity.rows.map(r=>({
+  originalSourceCondition:{
+   originalSourceNumericId:r.originalSourceNumericId,
+   ...r.sourceConditionSignature
+  }
+ }));
+ const expected=p32.reconcile(studied,
+  JSON.parse(skillText.replace(/^\uFEFF/,'')),app);
+ if(JSON.stringify(expected.rows)!==JSON.stringify(identity.rows))
+  throw Error('P3.3 P3.2 identity rows disagree with pinned original source');
  const before=JSON.stringify(app.cards);
  const result=routes.audit({identity,appModel:app});
  if(JSON.stringify(app.cards)!==before||
