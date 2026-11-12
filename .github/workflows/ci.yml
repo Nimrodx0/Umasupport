@@ -426,6 +426,11 @@ jobs:
           node --check poc/tools/globalsim_roster32.cjs
           node --check poc/tools/skill_source32_split15_w.cjs
           node --test poc/tests/skill_source32_split15_w.test.cjs
+      - name: Validate P3.3 fixed approved card-route candidate audit without scores
+        run: |
+          node --check poc/src/p3_card_acquisition_routes.cjs
+          node --check poc/tools/audit_p3_3_card_routes.cjs
+          node --test poc/tests/p3_card_acquisition_routes.test.cjs
       - name: Validate P3.2 original source ID/name/AND-OR app identity without inventing card routes
         run: |
           node --check poc/src/p3_source_app_identity_audit.cjs
