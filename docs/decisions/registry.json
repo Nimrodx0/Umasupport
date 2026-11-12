@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-11",
+  "asOf": "2026-11-12",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-045",
+      "date": "2026-11-11",
+      "heading": "2026-11-11：適用範囲条件と脚質傾向への相互作用を分けて評価する",
+      "status": "current",
+      "relation": [],
+      "note": "距離・競馬場・芝ダートなどの静的条件は対象レースを限定するが、順位や追い抜き等とのANDによる脚質差の変化は否定しない。未検証を無影響と断定せず、P2.17で同一元条件を比較。P3適性未採用",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-045",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-045",
+      "reviewedAt": "2026-11-12"
+    },
     {
       "id": "D-044",
       "date": "2026-11-11",
