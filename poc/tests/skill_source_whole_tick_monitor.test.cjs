@@ -141,6 +141,26 @@ test('source predicate identity and source comparison operators must match, no f
   obs(0,'conditions',0,0,p('running_style','==',2),false)])]),
   /contradicts explicit race context/);
 });
+test('invalid later Invoke evidence never partially commits an earlier precondition latch',()=>{
+ const pre=p('is_overtake','==',1),now=p('phase_random','==',0),
+  style=p('running_style','==',2);
+ const t=new m.WholeTickMonitor(source([
+  inv([[now]],[[pre]]),inv([[style]],[])
+ ]));
+ assert.throws(()=>t.step(frame(0,{running_style:2},[
+  obs(0,'preConditions',0,0,pre,true),
+  obs(0,'conditions',0,0,now,true),
+  obs(1,'conditions',0,0,style,false)
+ ])),/contradicts explicit race context/);
+ assert.equal(t.lastTick,-1);
+ assert.deepEqual(t.preState,['false','true']);
+ const recovered=t.step(frame(0,{running_style:1},[
+  obs(0,'preConditions',0,0,pre,false),
+  obs(0,'conditions',0,0,now,true)
+ ]));
+ assert.equal(recovered.invokes[0].preconditionLatched,'false');
+ assert.equal(recovered.overallCondition,'false');
+});
 test('reject missing/out-of-order ticks, malformed source and unsupported unknown types',()=>{
  assert.throws(()=>m.compile({status:'unmatched',sourceNumericId:'1',invokes:[]}),
   /complete source profile/);
