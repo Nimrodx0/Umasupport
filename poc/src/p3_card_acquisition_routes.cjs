@@ -88,12 +88,14 @@ function directCandidates(card,skillId){
    for(const {part:leaf,outcomeId} of outcomes)
     for(const [index,reward] of (leaf.rewards||[]).entries()){
      if(reward?.skillId!==skillId||reward.kind==='negative')continue;
-     fail(['hint','obtained'].includes(reward.kind),
+     // event_schema: omitted kind is a normal hint, matching core.directRoutes.
+     const kind=reward.kind===undefined?'hint':reward.kind;
+     fail(['hint','obtained'].includes(kind),
       'unrecognized positive published skill reward kind');
      records.push({
       cardId:card.id,appSkillId:skillId,source:'approved-event',
       eventId:event.id,choiceId:choiceId||null,
-      outcomeId:outcomeId||null,rewardIndex:index,kind:reward.kind,
+      outcomeId:outcomeId||null,rewardIndex:index,kind,
       conditional:true,reason:'event-occurrence-branch-outcome-and-prerequisites-not-guaranteed'
      });
     }
