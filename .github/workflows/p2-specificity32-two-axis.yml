@@ -8,6 +8,8 @@ on:
       - 'poc/tools/skill_reference_scenario_gate.cjs'
       - 'poc/tools/skill_context_margin_sensitivity.cjs'
       - 'poc/tools/skill_context_individual_margin.cjs'
+      - 'poc/tools/skill_distance_style_interaction.cjs'
+      - 'poc/tests/skill_distance_style_interaction.test.cjs'
       - 'poc/tests/skill_context_individual_margin.test.cjs'
       - 'poc/tests/skill_context_margin_sensitivity.test.cjs'
       - 'poc/tests/skill_reference_scenario_gate.test.cjs'
@@ -41,6 +43,8 @@ jobs:
           node --test poc/tests/skill_context_margin_sensitivity.test.cjs
           node --check poc/tools/skill_context_individual_margin.cjs
           node --test poc/tests/skill_context_individual_margin.test.cjs
+          node --check poc/tools/skill_distance_style_interaction.cjs
+          node --test poc/tests/skill_distance_style_interaction.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
       - name: Fetch immutable source-validated 5760-race research artifacts
         run: |
@@ -244,6 +248,58 @@ jobs:
              mean:x.originalMeanMinimumPoints,
              individual:x.minimumIndividualCourseModeLowerBoundPoints}))}));
           NODE
+      - name: P2.17 compare W style gaps across race distance categories without inventing a distance causal effect
+        run: |
+          node poc/tools/skill_distance_style_interaction.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specified/balanced.json \
+            /tmp/p2-specified/frontHeavy.json \
+            /tmp/p2-specified/backHeavy.json \
+            /tmp/p2-specified/noFront.json \
+            /tmp/p2-specified/individual-course-mode-margin.json \
+            /tmp/p2-specified/distance-style-interaction.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const z=JSON.parse(fs.readFileSync(
+           '/tmp/p2-specified/distance-style-interaction.json','utf8'));
+          assert.equal(z.schemaVersion,1);
+          assert.equal(z.status,
+           'P2.17-distance-associated-style-gap-conditional-observation-not-causal');
+          assert.equal(z.design.distanceUnrestrictedSourceSignatures,10);
+          assert.equal(z.design.distanceRestrictedSourceSignaturesExcluded,22);
+          assert.equal(z.design.sourceSignatureStylePairs,60);
+          assert.equal(z.design.sourceSurfaceKeptFixed,true);
+          assert.equal(z.design.observedRealGameSkillProc,false);
+          assert.equal(z.design.hypotheticalGapShiftMarginPoints,5);
+          assert.equal(z.rows.length,60);
+          assert.equal(z.tokyoTurfRows.length,24);
+          assert.equal(z.summary.allOriginalEligibleCourses.matchedRosterHeadModeContexts,840);
+          assert.equal(z.summary.allOriginalEligibleCourses.missingStyleRosterHeadModeContexts,120);
+          assert.equal(z.summary.allOriginalEligibleCourses.matchedCrossDistanceClassComparisons,5040);
+          assert.equal(z.summary.sameVenueTokyoTurf.matchedRosterHeadModeContexts,336);
+          assert.equal(z.summary.sameVenueTokyoTurf.missingStyleRosterHeadModeContexts,48);
+          assert.equal(z.summary.sameVenueTokyoTurf.matchedCrossDistanceClassComparisons,2016);
+          for(const group of Object.values(z.summary)){
+            assert(group.pairsWithStrictCrossDistanceSignReversal<=
+             group.sourceConditionStylePairs);
+            assert(group.pairsWithFivePointOrGreaterConservativeGapShift<=
+             group.sourceConditionStylePairs);
+          }
+          assert(z.rows.every(x=>x.distanceScope==='all'));
+          assert(z.rows.every(x=>x.contexts.length+x.absent.length===16));
+          assert(!Object.hasOwn(z,'skillActivationRate'));
+          assert(!Object.hasOwn(z,'cardSuitability'));
+          console.log('P2_17_DISTANCE_GAP_OBSERVATION='+JSON.stringify({
+           summary:z.summary,
+           reversalExamples:z.rows.filter(x=>x.contexts.some(y=>
+            y.hasStrictSignReversalAcrossDistances)).slice(0,6)
+            .map(x=>({sourceNumericId:x.sourceNumericId,first:x.first,
+             second:x.second,surface:x.surface})),
+           tokyoExamples:z.tokyoTurfRows.filter(x=>x.contexts.some(y=>
+            y.hasStrictSignReversalAcrossDistances)).slice(0,4)
+            .map(x=>({sourceNumericId:x.sourceNumericId,first:x.first,
+             second:x.second}))}));
+          NODE
       - name: Retain research-only derived two-axis context comparisons
         uses: actions/upload-artifact@v4
         with:
@@ -253,4 +309,5 @@ jobs:
             /tmp/p2-specified/reference-scenario-validity.json
             /tmp/p2-specified/context-margin-sensitivity.json
             /tmp/p2-specified/individual-course-mode-margin.json
+            /tmp/p2-specified/distance-style-interaction.json
           retention-days: 14
