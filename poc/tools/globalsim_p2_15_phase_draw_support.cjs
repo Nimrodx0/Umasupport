@@ -60,10 +60,14 @@ function analyze(original,probe,plans,cohort,sourceVerification){
   accumulated=0,runnerRacesObserved=0,priorityPositionSamples=0;
  for(const [r,plan] of plans.entries()){
   const sample=probe[r],control=original[r];
+  // The fixed input has every horse.skills=[] (main() checks this).
+  // Some v77 model event records may be emitted regardless; they must
+  // match exactly across the two read-only instrumented engines. Do not
+  // infer whether any source skill was equipped from events alone.
   fail(Array.isArray(plan.strategies)&&plan.strategies.length===plan.fieldSize&&
-   (control.skillEvents||[]).length===0&&
-   (sample.skillEvents||[]).length===0,
-   'fixed GlobalSim research is not actually unskilled');
+   JSON.stringify(control.skillEvents??[])===
+    JSON.stringify(sample.skillEvents??[]),
+   'fixed GlobalSim probe changed model event records');
   for(let i=0;i<plan.fieldSize;i++){
    const style=plan.strategies[i];
    fail(expanded.STYLES.includes(style),'unknown model style');
