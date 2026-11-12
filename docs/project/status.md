@@ -26,11 +26,12 @@
 | P2 | 4脚質の部分条件成立機会W・脚質特異性D=O−U、頭数・編成・距離・コース感度・シード分割を研究 | 元全AND/OR・preConditions・Invokeの同時成立、現ゲームへの外挿、代表性、正式閾値は未完 |
 | P3.1 | 10元部分条件×脚質6ペア＝60件のW専用研究を出典固定で隔離受入・元ID検索可能 | D、全条件、取得経路、採点は未検証・未承認 |
 | P3.2 | 元10スキルをID・名称・全条件構造でアプリ照合。**9件一意一致／1件未収録**（[研究証拠](../evidence/skills/skill-p3-2-original-source-app-identity-20261112.md)） | P3.3の通常ヒント・イベント結果・カード取得経路は**未検証** |
+| P3.3（研究限定） | 11月12日の固定CIで、P3.2の9一致スキルについて承認済みイベントの直接獲得**候補6経路／5スキル**を照合。厳密IDによる通常ヒント候補は0（[P3.3証拠](../evidence/skills/skill-p3-3-approved-card-route-intake-20261112.md)） | 本番の選択済み分岐、間接取得、未確認通常ヒントの同定、実ゲーム獲得、適性スコアは未検証 |
 | P4／P5 | 研究から製品への工程・受入条件を定義 | 適性評価の公開UI・A/B/C統合受入は未完 |
 
 ## Pトラックの直近の根拠
 
-[P2.13の5,760レース・15＋15シード再実行](../evidence/skills/skill-p2-13-source32-split15-w-20261111.md)、[P2.15の元AND/OR構造監査](../evidence/skills/skill-p2-15-full-path-gate-audit-20261111.md)、[P2.17bの距離・コース文脈の分割検証](../evidence/skills/skill-p2-17b-distance-split15-20261112.md)、[P2.18の保留付き研究契約](../evidence/skills/skill-p2-18-research-evidence-contract-20261112.md)、[P3.1の隔離受入口](../evidence/skills/skill-p3-1-research-intake-20261112.md)、[P3.2のスキルID独立照合](../evidence/skills/skill-p3-2-original-source-app-identity-20261112.md)が現行の主要な根拠です。詳細な数値・母集団・例外・検証CIは各証拠が正本であり、ここへ実験別の長文を再掲しません。
+[P2.13の5,760レース・15＋15シード再実行](../evidence/skills/skill-p2-13-source32-split15-w-20261111.md)、[P2.15の元AND/OR構造監査](../evidence/skills/skill-p2-15-full-path-gate-audit-20261111.md)、[P2.17bの距離・コース文脈の分割検証](../evidence/skills/skill-p2-17b-distance-split15-20261112.md)、[P2.18の保留付き研究契約](../evidence/skills/skill-p2-18-research-evidence-contract-20261112.md)、[P3.1の隔離受入口](../evidence/skills/skill-p3-1-research-intake-20261112.md)、[P3.2のスキルID独立照合](../evidence/skills/skill-p3-2-original-source-app-identity-20261112.md)、[P3.3の固定承認データ直接候補監査](../evidence/skills/skill-p3-3-approved-card-route-intake-20261112.md)が現行の主要な根拠です。詳細な数値・母集団・例外・検証CIは各証拠が正本であり、ここへ実験別の長文を再掲しません。
 
 **重要な境界**：固定モデル上のWやDは、元スキル全条件の発動率・カードの適性スコアではありません。P3.2の9件一致も、そのカードから取得できるという証明ではありません。未観測・適用外・脚質不在を「0点」にしません。
 

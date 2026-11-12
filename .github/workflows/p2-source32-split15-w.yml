@@ -9,6 +9,9 @@ on:
       - 'poc/tools/skill_distance_split15_reliability.cjs'
       - 'poc/src/p2_skill_evidence_contract.cjs'
       - 'poc/src/p3_research_evidence_intake.cjs'
+      - 'poc/src/p3_card_acquisition_routes.cjs'
+      - 'poc/tools/audit_p3_3_card_routes.cjs'
+      - 'poc/tests/p3_card_acquisition_routes.test.cjs'
       - 'poc/src/p3_source_app_identity_audit.cjs'
       - 'poc/tools/audit_p3_2_source_app_identity.cjs'
       - 'poc/tests/p3_source_app_identity_audit.test.cjs'
@@ -458,6 +461,39 @@ jobs:
             id:x.originalSourceNumericId,name:x.originalSourceName,
             result:x.result,appSkillId:x.appSkillId}))}));
           NODE
+      - name: P3.3 audit verified card ID, hint stage and approved-event branch candidates without P3 scoring
+        run: |
+          node --check poc/src/p3_card_acquisition_routes.cjs
+          node --check poc/tools/audit_p3_3_card_routes.cjs
+          node --test poc/tests/p3_card_acquisition_routes.test.cjs
+          node poc/tools/audit_p3_3_card_routes.cjs \
+            /tmp/p2-split15/p3-2-source-app-identity-audit.json \
+            /tmp/p3-2-source/skill_data.txt \
+            /tmp/p3-2-source/support_card.txt \
+            /tmp/p3-2-source/reviewed_event_legacy_skills.txt \
+            poc/data/reviewed_events.v1.json \
+            /tmp/p2-split15/p3-3-approved-direct-candidate-routes.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const receipt=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p3-3-approved-direct-candidate-routes.json','utf8'));
+          const routes=require('./poc/src/p3_card_acquisition_routes.cjs');
+          assert.equal(receipt.status,routes.STATUS);
+          assert.equal(receipt.summary.sourceConditions,10);
+          assert.equal(receipt.summary.exactAppIdentityMatches,9);
+          assert.equal(receipt.summary.notInAppCatalog,1);
+          assert.equal(receipt.summary.productEligibleCardScores,0);
+          assert.equal(receipt.summary.directCandidateRecords,
+           receipt.summary.hintCandidateRecords+
+            receipt.summary.approvedEventCandidateRecords);
+          assert(receipt.rows.every(r=>r.cardScore===null&&
+           r.suitabilityLabel===null&&r.eligibleForP3CardScoring===false&&
+           r.indirectGrantRoutes==='not-assessed'));
+          assert(receipt.rows.every(r=>r.directCandidates.every(x=>
+           x.conditional===true&&
+           ['normal-hint','approved-event'].includes(x.source))));
+          console.log('P3.3 research evidence remains unqualified:',receipt.summary);
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-source32-15plus15-W-study
@@ -467,5 +503,6 @@ jobs:
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
             /tmp/p2-split15/p3-1-quarantined-research-receipt.json
             /tmp/p2-split15/p3-2-source-app-identity-audit.json
+            /tmp/p2-split15/p3-3-approved-direct-candidate-routes.json
           retention-days: 14
           if-no-files-found: error
