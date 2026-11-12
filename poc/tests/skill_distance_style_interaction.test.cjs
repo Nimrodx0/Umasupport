@@ -75,13 +75,13 @@ test('P2.17 only compares same original distance-unrestricted source predicate a
  assert.equal(a.summary.allOriginalEligibleCourses.missingStyleRosterHeadModeContexts,120);
  assert.equal(a.summary.allOriginalEligibleCourses.matchedCrossDistanceClassComparisons,5040);
  assert.equal(a.summary.sameVenueTokyoTurf.sourceConditionStylePairs,24);
- assert.equal(a.summary.sameVenueTokyo.matchedRosterHeadModeContexts,336);
- assert.equal(a.summary.sameVenueTokyo.missingStyleRosterHeadModeContexts,48);
- assert.equal(a.summary.sameVenueTokyo.matchedCrossDistanceClassComparisons,2016);
+ assert.equal(a.summary.sameVenueTokyoTurf.matchedRosterHeadModeContexts,336);
+ assert.equal(a.summary.sameVenueTokyoTurf.missingStyleRosterHeadModeContexts,48);
+ assert.equal(a.summary.sameVenueTokyoTurf.matchedCrossDistanceClassComparisons,2016);
  assert.equal(a.summary.allOriginalEligibleCourses.pairsWithStrictCrossDistanceSignReversal,0);
  assert.equal(a.summary.allOriginalEligibleCourses.pairsWithFivePointOrGreaterConservativeGapShift,0);
- assert.equal(a.summary.sameVenueTokyo.pairsWithStrictCrossDistanceSignReversal,0);
- assert.equal(a.summary.sameVenueTokyo.pairsWithFivePointOrGreaterConservativeGapShift,0);
+ assert.equal(a.summary.sameVenueTokyoTurf.pairsWithStrictCrossDistanceSignReversal,0);
+ assert.equal(a.summary.sameVenueTokyoTurf.pairsWithFivePointOrGreaterConservativeGapShift,0);
  assert.equal(a.rows.length,60);
  assert(a.rows.every(x=>x.distanceScope==='all'));
  assert(a.rows.filter(x=>x.first==='Nige').every(x=>x.absent.length===4));
