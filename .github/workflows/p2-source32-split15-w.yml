@@ -6,6 +6,9 @@ on:
     paths:
       - 'poc/tools/globalsim_roster32.cjs'
       - 'poc/tools/skill_source32_split15_w.cjs'
+      - 'poc/tools/skill_distance_split15_reliability.cjs'
+      - 'poc/tests/skill_distance_split15_reliability.test.cjs'
+      - 'poc/tools/skill_distance_style_interaction.cjs'
       - 'poc/tests/skill_source32_split15_w.test.cjs'
       - 'poc/data/p2_position_condition32_research.v1.json'
       - '.github/workflows/p2-source32-split15-w.yml'
@@ -29,6 +32,8 @@ jobs:
           node --check poc/tools/globalsim_roster32.cjs
           node --check poc/tools/skill_source32_split15_w.cjs
           node --test poc/tests/skill_source32_split15_w.test.cjs
+          node --check poc/tools/skill_distance_split15_reliability.cjs
+          node --test poc/tests/skill_distance_split15_reliability.test.cjs
       - name: Build fixed original GlobalSim engine at exact v77 commit
         run: |
           mkdir -p /tmp/globalsim
@@ -191,9 +196,93 @@ jobs:
              pair:[y.first,y.second],
              minima:y.minimumConservativeSignedWPointsByHalf}))}));
           NODE
+      - name: P2.17b require same-distance contrast orientation in BOTH original 15-seed partitions
+        run: |
+          node poc/tools/skill_distance_split15_reliability.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-full30/balanced.json \
+            /tmp/p2-full30/frontHeavy.json \
+            /tmp/p2-full30/backHeavy.json \
+            /tmp/p2-full30/noFront.json \
+            /tmp/p2-split15/balanced-0.json \
+            /tmp/p2-split15/balanced-15.json \
+            /tmp/p2-split15/frontHeavy-0.json \
+            /tmp/p2-split15/frontHeavy-15.json \
+            /tmp/p2-split15/backHeavy-0.json \
+            /tmp/p2-split15/backHeavy-15.json \
+            /tmp/p2-split15/noFront-0.json \
+            /tmp/p2-split15/noFront-15.json \
+            /tmp/p2-prior/individual-course-mode-margin.json \
+            /tmp/p2-split15/p2-17b-distance-split15.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const z=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p2-17b-distance-split15.json','utf8'));
+          assert.equal(z.schemaVersion,1);
+          assert.equal(z.status,
+           'P2.17b-fixed-distance-W-gap-split15-replication-not-causal');
+          assert.deepEqual(z.design.sampleHalfSeeds,['0..14','15..29']);
+          assert.equal(z.design.originalSourceRankTimingSignatures,10);
+          assert.equal(z.design.restrictedSourceDistanceProfilesExcluded,22);
+          assert.equal(z.design.noNewIndependentRealGameSamples,true);
+          assert.equal(z.summary.allOriginalEligibleCourses.sourceConditionStylePairs,60);
+          assert.equal(z.summary.allOriginalEligibleCourses.comparableEventContextCells,5040);
+          assert.equal(z.summary.allOriginalEligibleCourses.missingStyleRosterHeadModeContextCells,120);
+          assert.equal(z.summary.sameVenueTokyoTurf.sourceConditionStylePairs,24);
+          assert.equal(z.summary.sameVenueTokyoTurf.comparableEventContextCells,2016);
+          assert.equal(z.summary.sameVenueTokyoTurf.missingStyleRosterHeadModeContextCells,48);
+          // Source-pinned P2.17b outcome. Original30 reversal does NOT
+          // survive the stricter exact-context-and-orientation split gate.
+          for(const [group,expect] of [
+           [z.summary.allOriginalEligibleCourses,
+            {reversalPairs:0,reversalEvents:0,
+             shiftPairs:46,shiftEvents:385,shiftOriginalPairs:56,
+             shiftOriginalEvents:770}],
+           [z.summary.sameVenueTokyoTurf,
+            {reversalPairs:0,reversalEvents:0,
+             shiftPairs:20,shiftEvents:209,shiftOriginalPairs:23,
+             shiftOriginalEvents:387}]]){
+           assert.equal(group.strictSignReversal.bothHalvesConfirmedSourcePairCount,
+            expect.reversalPairs);
+           assert.equal(group.strictSignReversal.sameContextAndOrientationConfirmedEventCount,
+            expect.reversalEvents);
+           assert.equal(group.fivePointGapShift.original30SourcePairCount,
+            expect.shiftOriginalPairs);
+           assert.equal(group.fivePointGapShift.original30EventContextCount,
+            expect.shiftOriginalEvents);
+           assert.equal(group.fivePointGapShift.bothHalvesConfirmedSourcePairCount,
+            expect.shiftPairs);
+           assert.equal(group.fivePointGapShift.sameContextAndOrientationConfirmedEventCount,
+            expect.shiftEvents);
+          }
+          const expected=[
+           [z.summary.allOriginalEligibleCourses.strictSignReversal,5,13],
+           [z.summary.allOriginalEligibleCourses.fivePointGapShift,56,770],
+           [z.summary.sameVenueTokyoTurf.strictSignReversal,5,17],
+           [z.summary.sameVenueTokyoTurf.fivePointGapShift,23,387]];
+          for(const [item,sourcePairs,events] of expected){
+           assert.equal(item.original30SourcePairCount,sourcePairs);
+           assert.equal(item.original30EventContextCount,events);
+           assert.equal(item.sameContextAndOrientationConfirmedEventCount+
+            item.original30OnlyEventContextCount,events);
+           assert(item.bothHalvesConfirmedSourcePairCount<=sourcePairs);
+          }
+          assert(z.rows.every(x=>x.comparisons.every(c=>
+           c.bothHalvesConfirmOriginal30SignReversal===
+             (c.original30.signReversalOrientation!==null&&
+              c.first15.signReversalOrientation===
+               c.original30.signReversalOrientation&&
+              c.last15.signReversalOrientation===
+               c.original30.signReversalOrientation))));
+          assert(!Object.hasOwn(z,'skillActivationRate'));
+          assert(!Object.hasOwn(z,'cardSuitability'));
+          console.log('P2_17B_EXACT_SPLIT15_REPLICATION='+JSON.stringify(z.summary));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-source32-15plus15-W-study
-          path: /tmp/p2-split15/source32-15plus15-W.json
+          path: |
+            /tmp/p2-split15/source32-15plus15-W.json
+            /tmp/p2-split15/p2-17b-distance-split15.json
           retention-days: 14
           if-no-files-found: error
