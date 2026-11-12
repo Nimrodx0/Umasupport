@@ -10,7 +10,7 @@ function syntheticChecker(){
   '    baseSetting.initPhaseRandom(condition.value)',
   '}',
   ...src.CHECKER_ANCHORS.slice(2)
- ].join('\n');
+ ].join('\n')+'\n'+('x'.repeat(1100));
 }
 function skill(n,invokes){
  return {id:'skill:'+n,name:'Source '+n,activationProfile:{
