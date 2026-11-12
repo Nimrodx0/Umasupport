@@ -68,7 +68,7 @@ function makeReport(){
   schemaVersion:1,status:research.STATUS,
   source:{modelRevision:model.PIN,
    umaSimSkillRegistrySha256:model.SOURCE_SHA,
-   originalFull30ReportSha256:pair.PINNED},
+   originalFull30ReportSha256:structuredClone(pair.PINNED)},
   design:{originalSourceRankTimingSignatures:10,
    restrictedSourceDistanceProfilesExcluded:22,
    sampleHalfSeeds:['0..14','15..29'],
