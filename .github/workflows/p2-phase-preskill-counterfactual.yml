@@ -1,0 +1,124 @@
+name: P2.15 exact pre-skill runner position and controlled phase window
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_phase_random_source_window_audit.cjs'
+      - 'poc/tools/globalsim_p2_15_preskill_phase_position.cjs'
+      - 'poc/tests/globalsim_p2_15_preskill_phase_position.test.cjs'
+      - 'poc/tools/audit_skill_conditions.cjs'
+      - 'docs/plans/skill-conditions/p2.md'
+      - 'docs/evidence/skills/skill-p2-15-pre-skill-position-20261112.md'
+      - '.github/workflows/p2-phase-preskill-counterfactual.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compare-original-model-and-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate exact stage/phase source fixtures and fail-closed joins
+        run: |
+          node --check poc/tools/globalsim_p2_15_preskill_phase_position.cjs
+          node --check poc/src/skill_phase_random_source_window_audit.cjs
+          node --test poc/tests/globalsim_p2_15_preskill_phase_position.test.cjs
+          node --test poc/tests/skill_phase_random_source_window_audit.test.cjs
+      - name: Rebuild original pinned P2.15 102/315/371 source cohort without shipping source content
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs > /tmp/p2-15-phase-source-audit.log
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync('p2-15-phase-random-window-shape.json','utf8'));
+          a.equal(x.source.skillRegistrySha256,
+           '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          a.deepEqual([
+           x.summary.originalMatchedSkills,x.summary.phaseRandomSingletonCandidateSkills,
+           x.summary.phaseRandomSingletonCandidateStyleCells,
+           x.summary.exactPhaseWindowSourcePaths
+          ],[818,102,315,371]);
+          a(x.rows.every(row=>row.researchPaths.every(path=>
+           Array.isArray(path.finitePredicates)&&path.noFullConditionOrProcClaim===true)));
+          NODE
+      - name: Compile exact original fixed GlobalSim v77
+        run: |
+          mkdir -p /tmp/p2-15-phase-engine /tmp/p2-15-phase-study
+          cd /tmp/p2-15-phase-engine
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1"
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const t=fs.readFileSync('src/activation_sample_policy.rs','utf8');
+          a(t.includes('let upper = ((region.end as f32) - 10.0).max(start);'),
+           'Original GlobalSim v77 sampler changed; source-shaped draw must never be called the real sampled interval');
+          console.log('GlobalSim float32 upper=end-10 is different from pinned UmaSim upper=end-2');
+          NODE
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-phase-study/original-engine
+      - name: Instrument actual priority-call positions without changing skill or physics logic
+        run: |
+          node poc/tools/globalsim_p2_15_preskill_phase_position.cjs patch \
+            /tmp/p2-15-phase-engine > /tmp/p2-15-phase-study/patch.json
+          cd /tmp/p2-15-phase-engine
+          git diff --name-only | sort > /tmp/p2-15-phase-study/modified.txt
+          printf "src/lib.rs\nsrc/race_field.rs\nsrc/race_field_retail.rs\n" > /tmp/p2-15-phase-study/expected.txt
+          cmp /tmp/p2-15-phase-study/modified.txt /tmp/p2-15-phase-study/expected.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-phase-study/observed-engine
+      - name: Compare original and probe positions in 32 no-skill races and evaluate fixed 0.5 draw
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_preskill_phase_position.cjs replay \
+            /tmp/p2-15-phase-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-phase-study/original-engine \
+            /tmp/p2-15-phase-study/observed-engine \
+            p2-15-phase-random-window-shape.json \
+            /tmp/p2-15-phase-study/pre-skill-position-fixed-halfway-window.json \
+            > /tmp/p2-15-phase-study/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const p=require('./poc/tools/globalsim_p2_15_preskill_phase_position.cjs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-15-phase-study/pre-skill-position-fixed-halfway-window.json','utf8'));
+          a.equal(x.status,p.STATUS);
+          a.equal(x.provenance.globalSimRevision,p.PIN);
+          a.equal(x.provenance.fixedSourceCohortSkills,102);
+          a.equal(x.provenance.fixedSourceCohortStyleCells,315);
+          a.equal(x.provenance.sourcePaths,371);
+          a.equal(x.experiment.modelRaces,32);
+          a.equal(x.experiment.controlledOriginalSourceShapedWindowDrawFraction,0.5);
+          a.equal(x.experiment.noOriginalOrModelRandomWindowsDrawn,true);
+          a(x.totals.noSkillRunnerTicks>10000);
+          a.equal(x.totals.prePriority1MatchesPriority0,x.totals.noSkillRunnerTicks);
+          a.equal(x.totals.prePriorityMatchesPreviousPost,x.totals.noSkillRunnerTicks);
+          a.equal(x.totals.identicalPhysicalColumns,x.totals.framePairs*
+           (x.totals.initialFramesHeld/x.experiment.modelRaces)*4);
+          a.equal(x.rows.length,371);
+          a(x.rows.every(r=>r.fullSourceSkillTriggers===0));
+          a.deepEqual(Object.values(x.gates),[false,false,false,false,false,false,false]);
+          console.log('P2_15_FIXED_PRE_SKILL_WINDOW='+JSON.stringify({
+           totals:x.totals,
+           pathRows:x.rows.length,
+           fixedContextObservedPaths:x.rows.filter(r=>r.runnerTicksObserved>0).length,
+           hypotheticalPositivePaths:x.rows.filter(r=>r.sourceShapedHalfwayWindowHits>0).length
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-shaped-halfway-window-pre-skill-model-not-proc
+          path: |
+            /tmp/p2-15-phase-study/pre-skill-position-fixed-halfway-window.json
+            /tmp/p2-15-phase-study/patch.json
+            /tmp/p2-15-phase-study/summary.log
+          retention-days: 14
+          if-no-files-found: error
