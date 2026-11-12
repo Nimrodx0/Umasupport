@@ -69,7 +69,7 @@ test('exact source patch is read-only, includes restoration, and rejects rerun',
    fs.mkdirSync(path.dirname(file),{recursive:true});
    let body=steps.map(x=>x[0]).join('\n// marker\n');
    if(name==='src/lib.rs')body+='\n    let mut field = RaceField::new(solvers);'+
-    '\n    if spec.trace_conserve_power {'+
+    '\n    match frames.finish()? {'+
     '\nfor key in ["results", "finishFrames", "conservePowerDiagnostics"]';
    fs.writeFileSync(file,body);
   }
