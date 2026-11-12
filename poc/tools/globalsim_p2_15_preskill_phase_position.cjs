@@ -73,14 +73,17 @@ function staticContextMatch(finitePredicates,plan,style){
   ground_type:plan.course.surface==='turf'?1:plan.course.surface==='dirt'?2:null};
  if(vals.running_style<1||!Number.isInteger(vals.distance_type)||
   !Number.isInteger(vals.ground_type))throw Error('Unknown fixed race context');
+ let held=false;
  for(const p of finitePredicates){
   if(!Object.hasOwn(full.DOMAINS,p.type))throw Error('Unsupported finite predicate');
-  if(p.side==='preConditions'||p.type==='ground_condition')
-   return 'held-unknown-context-or-historical-precondition';
+  if(p.side==='preConditions'||p.type==='ground_condition'){
+   held=true;continue;
+  }
   if(!Object.hasOwn(vals,p.type))throw Error('Unobserved finite gate '+p.type);
   if(!full.check(vals[p.type],p.operator,p.value))return 'context-excluded';
  }
- return 'static-context-matches';
+ return held?'held-unknown-context-or-historical-precondition':
+  'static-context-matches';
 }
 function makeEntries(cohort,plans){
  if(!cohort||cohort.status!==phase.STATUS||
