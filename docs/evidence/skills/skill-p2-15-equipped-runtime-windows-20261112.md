@@ -56,7 +56,7 @@ GlobalSimの固定コミット 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1 に含�
 
 モデル技能イベントには抽選窓以外の成立条件・スキル発動判定が含まれるため、窓の重なり数とイベント数は同じにならない。1,512は複数tick・技能を跨いだ累積観測であり独立試行ではない。モデル上のイベント件数173を元UmaSim・実ゲーム発動率の分子にしない。
 
-[数値監査成果物（GitHub Actions、14日保持）](https://github.com/Nimrodx0/Umasupport/actions/runs/43169410849/artifacts/)は実装ログ、出典ソースのハッシュ、集計JSONを含み、第三者マスターデータ全文やビルド成果物は含まない。
+[数値監査成果物（GitHub Actions、14日保持）](https://github.com/Nimrodx0/Umasupport/actions/runs/43169410849/artifacts/13921228165)は実装ログ、出典ソースのハッシュ、集計JSONを含み、第三者マスターデータ全文やビルド成果物は含まない。
 
 ## 未完のゲート
 
