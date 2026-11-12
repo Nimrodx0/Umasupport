@@ -133,6 +133,12 @@ test('32-model-race-style original cohort supports per-path measurements, not wh
  assert(out.counts.modelSourcePathRunnerRaceUnitsEvaluated>0);
  assert.equal(out.counts.modelSourcePathRunnerRaceUnitsHeldMultiplePhasePredicates,0);
  assert.equal(out.counts.originalSourcePaths,371);
+ assert.deepEqual(out.byStyle.map(x=>x.style),['逃げ','先行','差し','追込']);
+ assert.equal(out.byStyle.reduce((n,x)=>n+x.originalSourcePaths,0),371);
+ assert.equal(out.byStyle.reduce((n,x)=>n+x.modelSourcePathRunnerRaceUnits,0),
+  out.counts.modelSourcePathRunnerRaceUnitsEvaluated);
+ assert(out.byStyle.filter(x=>x.modelSourcePathRunnerRaceUnits>0)
+  .every(x=>x.originalSourceWholeSkillProcObserved===false));
  const row=out.rows.find(x=>x.sourceNumericId==='300000'&&
    x.style==='逃げ'&&x.conditionOrIndex===0);
  assert(row);
@@ -166,6 +172,10 @@ test('source identity and model position parity failures abort full-source draw 
  const missing=fixtureCohort();missing.rows.pop();
  assert.throws(()=>study.analyze(f.orig,f.probe,f.plans,missing,verified()),
   /not pinned to 102\/315\/371/);
+ const changedEvents=structuredClone(f.probe);
+ changedEvents[0].skillEvents.push({skillId:123,horseIndex:0});
+ assert.throws(()=>study.analyze(f.orig,changedEvents,f.plans,cohort,verified()),
+  /probe changed model event records/);
  assert.throws(()=>study.analyze(f.orig,f.probe,f.plans,cohort,{
   ...verified(),actualDrawObserved:true}),
   /geometry was not independently source-checked/);
