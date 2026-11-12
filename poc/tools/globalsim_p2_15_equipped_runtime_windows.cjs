@@ -41,10 +41,10 @@ function patch(root){
  ].join('\n');
  let next=once(before,'    let mut field = RaceField::new(solvers);',
   windowCode,'PendingSkill.windows');
- next=once(next,'    if spec.trace_conserve_power {',
+ next=once(next,'    match frames.finish()? {',
   '    if let Value::Object(map) = &mut result {\n'+
   '        map.insert("p2SampledSkillWindows".into(), json::arr(p2_sampled_windows));\n'+
-  '    }\n    if spec.trace_conserve_power {','response field');
+  '    }\n    match frames.finish()? {','response field');
  next=once(next,
   'for key in ["results", "finishFrames", "conservePowerDiagnostics"]',
   'for key in ["results", "finishFrames", "conservePowerDiagnostics", "p2SampledSkillWindows"]',
