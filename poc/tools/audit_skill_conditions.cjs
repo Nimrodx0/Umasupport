@@ -17,6 +17,7 @@ const styleReview=require('../src/skill_style_review.cjs');
 const coarseReview=require('../src/skill_coarse_style_review.cjs');
 const fullPaths=require('../src/skill_full_condition_path_audit.cjs');
 const blockerImpact=require('../src/skill_source_path_blocker_impact.cjs');
+const phaseSource=require('../src/skill_phase_random_source_window_audit.cjs');
 const venueAudit=require('../src/skill_track_id_venue_audit.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
@@ -122,6 +123,7 @@ function matchedRecord(skill,live,old){
  const p215=fullPaths.audit(model);
  const p215Blockers=blockerImpact.audit(model,
   [...new Set(changeOrder.paths.map(x=>x.sourceNumericId))]);
+ const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
  const sourceVenueAudit=venueAudit.audit(model,sourceVenueCourses);
@@ -292,6 +294,12 @@ function matchedRecord(skill,live,old){
  console.log('P2_15_TRACK_VENUE_CONTEXT='+JSON.stringify({
   scope:sourceVenueAudit.scope,summary:sourceVenueAudit.summary
  }));
+ fs.writeFileSync('p2-15-phase-random-window-shape.json',
+  JSON.stringify({source:{
+   revision:REVISION,skillRegistrySha256:digest(skillText),
+   originalSkillCheckerSha256:digest(umaSkillCheckerText)},...p215Phase},
+   null,2)+'\n');
+ console.log('P2_15_PHASE_RANDOM_SOURCE_WINDOW='+JSON.stringify(p215Phase.summary));
  fs.writeFileSync('p2-15-source-blocker-impact.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},
    ...p215Blockers},null,2)+'\n');

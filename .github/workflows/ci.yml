@@ -417,6 +417,10 @@ jobs:
         run: |
           node --check poc/src/skill_source_path_blocker_impact.cjs
           node --test poc/tests/skill_source_path_blocker_impact.test.cjs
+      - name: Validate P2.15 pinned phase_random window shape and original OR/pre-OR retention
+        run: |
+          node --check poc/src/skill_phase_random_source_window_audit.cjs
+          node --test poc/tests/skill_phase_random_source_window_audit.test.cjs
       - name: Validate P2.15 source AND/OR and precondition path gate research
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs

@@ -10,6 +10,8 @@ on:
       - 'poc/src/skill_coarse_style_review.cjs'
       - 'poc/src/skill_full_condition_path_audit.cjs'
       - 'poc/src/skill_source_path_blocker_impact.cjs'
+      - 'poc/src/skill_phase_random_source_window_audit.cjs'
+      - 'poc/tests/skill_phase_random_source_window_audit.test.cjs'
       - 'poc/src/skill_track_id_venue_audit.cjs'
       - 'poc/tests/skill_track_id_venue_audit.test.cjs'
       - 'poc/tests/skill_source_path_blocker_impact.test.cjs'
@@ -62,6 +64,8 @@ jobs:
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
+          node --check poc/src/skill_phase_random_source_window_audit.cjs
+          node --test poc/tests/skill_phase_random_source_window_audit.test.cjs
           node --test poc/tests/skill_source_path_blocker_impact.test.cjs
           node --check poc/src/skill_track_id_venue_audit.cjs
           node --test poc/tests/skill_track_id_venue_audit.test.cjs
@@ -319,6 +323,37 @@ jobs:
         with:
           name: p2-15-single-type-source-blocker-impact-not-activation
           path: p2-15-source-blocker-impact.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Verify P2.15 original phase_random semantics and singleton research scope
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-15-phase-random-window-shape.json','utf8'));
+          const phase=require('./poc/src/skill_phase_random_source_window_audit.cjs');
+          assert.equal(x.status,phase.STATUS);
+          assert.equal(x.source.revision,phase.SOURCE_REV);
+          assert.equal(x.source.skillRegistrySha256,
+           '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(x.summary.originalMatchedSkills,818);
+          assert.equal(x.summary.phaseRandomSingletonCandidateSkills,102);
+          assert.equal(x.summary.phaseRandomSingletonCandidateStyleCells,315);
+          assert.equal(x.summary.fullyEvaluatedSourceRoutes,0);
+          assert.equal(x.summary.actualSkillProcObservations,0);
+          assert.equal(x.summary.officialSkillSuitabilityRatings,0);
+          assert.equal(x.summary.exactPhaseWindowSourcePaths,
+           x.summary.phaseWindowSourcePathsWithVerifiedShape+
+           x.summary.phaseWindowSourcePathsHeldForOperatorOrPhaseNumber);
+          assert(x.rows.every(r=>r.fullyEvaluatedSourceRoutes===0&&
+           r.completeSkillProcs===0&&r.researchPaths.every(p=>
+            p.noFullConditionOrProcClaim===true&&
+            p.allFinitePredicatesActuallyMeasured===false)));
+          console.log('P2_15_PHASE_RANDOM_FIXED='+JSON.stringify(x.summary));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-phase-random-window-shape-not-proc
+          path: p2-15-phase-random-window-shape.json
           retention-days: 14
           if-no-files-found: error
       - name: Verify exact original track_id venue semantics and tested static AND scope
