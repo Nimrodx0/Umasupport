@@ -100,6 +100,23 @@ jobs:
             r.totals.runnerRacesWithNoANDVisit,252);
           a.equal(r.totals.modelSkillEventsOnANDRunnerRaces+
             r.totals.modelSkillEventsOnNoANDRunnerRaces,173);
+          a.equal(r.totals.runnerRacesWithANDAndModelEvent,173);
+          a.equal(r.totals.runnerRacesWithANDNoModelEvent,18);
+          a.equal(r.totals.runnerRacesWithNoANDAndModelEvent,0);
+          a.equal(r.totals.runnerRacesWithNoANDNoModelEvent,61);
+          a.equal(r.totals.runnerRacesWithRepeatedModelEvents,0);
+          for(const [id,expected] of Object.entries({
+            '200451':[74,10,0,0],'200501':[78,6,0,0],
+            '200701':[21,2,0,61]
+          })){
+            const z=r.skills[id];
+            a.deepEqual([
+              z.runnerRacesWithANDAndModelEvent,
+              z.runnerRacesWithANDNoModelEvent,
+              z.runnerRacesWithNoANDAndModelEvent,
+              z.runnerRacesWithNoANDNoModelEvent
+            ],expected,'model skill runner-race four-way comparison drift: '+id);
+          }
           a.equal(r.modelDesign.modelEventTimeAlignedToObservedPriorityTick,false);
           a.equal(r.evidenceGates.modelSkillEventPresenceCrossTabulatedWithANDRunnerRaces,true);
           a.equal(r.evidenceGates.modelEventTickCausalityVerified,false);
