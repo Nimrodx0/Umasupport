@@ -10,7 +10,7 @@
 | --- | --- |
 | 公開アプリ | 2026-11-06基準のPages実ブラウザ確認。最近のChromium/CIは**物理端末の再検証ではない** |
 | 公開イベント | 現行mainの[承認済みJSON](../../poc/data/reviewed_events.v1.json)を対象に[件数検査](../../poc/tools/check_project_tracking.cjs)。現行ゲーム全体の網羅率ではない |
-| P2モデル | 固定GlobalSim v77による無スキルの人工条件実験。11月12日までの[P2小工程](../plans/skill-conditions/p2.md)・固定証拠を参照 |
+| P2モデル | 固定GlobalSim v77による無スキルの人工条件実験と、P2.15の3技能装備による限定モデル観測。11月12日までの[P2小工程](../plans/skill-conditions/p2.md)・固定証拠を参照 |
 | P3集約研究 | 11月12日統合の[P3.1・P3.2](../plans/skill-conditions/p3.md)を確認。出典固定の部分条件とアプリID照合に限定 |
 | 受入 | [A/B/Cゲート](../quality/verification-plan.md)を分離。Node/Chromium・研究CI成功は実機受入の代わりにならない |
 
@@ -23,7 +23,7 @@
 | 新サポカ | UmaSim追加ID検出、GameTora派生JSON確認、未入手の持越台帳・増分追加機構 | 未掲載イベントの収録・審査、監視用Draft PR作成の権限問題（[Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283)・[#386](https://github.com/Nimrodx0/Umasupport/issues/386)） |
 | スキル辞書 | 固定881スキルのうち818件の元効果・条件を照合 | 63件の効果・条件未照合。辞書収録とカード獲得可能性は別 |
 | P0／P1 | 元スキル条件監査と内部モデル実装済み | 出典更新時の回帰 |
-| P2 | 固定モデルのW・D=O−U、頭数・編成・コース・シード感度を研究。P2.15の元`phase_random`窓は102スキル／371経路で構造確認。モデル32無技能レースの判定直前位置435,558走者・tickを計測。追加の**3技能を実際に装備した8モデルレース**で有効窓210・予約無効42を分離し、物理値437,364・技能イベント181の全件一致（[追加証拠](../evidence/skills/skill-p2-15-equipped-runtime-windows-20261112.md)） | GlobalSim抽選は元UmaSim抽選や実ゲームではない。元全条件AND／OR・preConditions履歴、シミュレータの妥当性、正式3軸適性とP3カード採点は未完 |
+| P2 | 固定モデルのW・D=O−U、頭数・編成・コース・シード感度を研究。P2.15の元`phase_random`窓は102スキル／371経路で構造確認。モデル32無技能レースの判定直前位置435,558走者・tickを計測。追加の**3技能を実際に装備した8モデルレース**で有効窓210・予約無効42を分離し、物理値437,364・技能イベント181の全件一致（[追加証拠](../evidence/skills/skill-p2-15-equipped-runtime-windows-20261112.md)）。元全辞書2,162件のAND/OR・preConditions履歴を扱う三値tick判定器は[全件構造検証済み](../evidence/skills/skill-p2-15-whole-tick-logic-20261112.md) | GlobalSim抽選は元UmaSim抽選や実ゲームではない。**動的元条件の実レース同時観測**、シミュレータの妥当性、正式3軸適性とP3カード採点は未完 |
 | P3.1 | 10元部分条件×脚質6ペア＝60件のW専用研究を出典固定で隔離受入・元ID検索可能 | D、全条件、取得経路、採点は未検証・未承認 |
 | P3.2 | 元10スキルをID・名称・全条件構造でアプリ照合。**9件一意一致／1件未収録**（[研究証拠](../evidence/skills/skill-p3-2-original-source-app-identity-20261112.md)） | P3.3の通常ヒント・イベント結果・カード取得経路は**未検証** |
 | P3.3（研究限定） | 11月12日の固定CIで、P3.2の9一致スキルについて承認済みイベントの直接獲得**候補6経路／5スキル**を照合。厳密IDによる通常ヒント候補は0（[P3.3証拠](../evidence/skills/skill-p3-3-approved-card-route-intake-20261112.md)） | 本番の選択済み分岐、間接取得、未確認通常ヒントの同定、実ゲーム獲得、適性スコアは未検証 |
