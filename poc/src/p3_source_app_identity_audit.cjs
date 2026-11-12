@@ -13,6 +13,7 @@ const bridge=require('./skill_bridge.js');
 const profiles=require('./skill_condition_profiles.js');
 const intake=require('./p3_research_evidence_intake.cjs');
 const fixed=require('../tools/globalsim_roster32.cjs');
+const ORIGINAL_REVISION='f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const STATUS='P3.2-research-only-verified-original-app-skill-identity-not-acquisition';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const normalize=s=>String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();
@@ -175,7 +176,7 @@ function audit({manifest,p2Envelope,p3Receipt,originalSkillText,appModel}){
  const result={
   schemaVersion:1,status:STATUS,
   provenance:{
-   originalUmaSimRevision:manifest.source?.umaSimRevision||null,
+   originalUmaSimRevision:ORIGINAL_REVISION,
    originalSkillRegistrySha256:fixed.SOURCE_SHA,
    sourceP31ReceiptSha256:sha(JSON.stringify(p3Receipt)),
    originalP31ReceiptStatus:p3Receipt.status,
