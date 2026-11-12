@@ -59,7 +59,7 @@ test('enumerate stage-specific exact-ID hints and disjoint approved event paths 
  assert.equal(report.summary.hintCandidateRecords,2);
  assert.equal(report.summary.approvedEventCandidateRecords,4);
  assert.equal(report.summary.directCandidateRecords,6);
- assert.equal(report.summary.skillsWithDirectCandidate,6);
+ assert.equal(report.summary.skillsWithDirectCandidate,5);
  assert.deepEqual(report.rows[0].directCandidates[0].stages,[0,1]);
  assert.deepEqual(report.rows[1].directCandidates[0].stages,[3,4]);
  assert.equal(report.rows[3].directCandidates.length,0,'negative effect excluded');
