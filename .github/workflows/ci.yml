@@ -421,6 +421,11 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs
           node --test poc/tests/globalsim_p2_15_equipped_runtime_windows.test.cjs
+      - name: Validate P2.15 full source predicate AND/OR and precondition history monitor
+        run: |
+          node --check poc/src/skill_source_whole_tick_monitor.cjs
+          node --check poc/tools/audit_p2_15_source_tick_contract.cjs
+          node --test poc/tests/skill_source_whole_tick_monitor.test.cjs poc/tests/audit_p2_15_source_tick_contract.test.cjs
       - name: Validate P2.15 actual pre-skill position observer and synthetic source-window counterfactual
         run: |
           node --check poc/tools/globalsim_p2_15_preskill_phase_position.cjs
