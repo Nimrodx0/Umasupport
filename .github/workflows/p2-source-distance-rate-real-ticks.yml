@@ -1,0 +1,106 @@
+name: P2.15 source distance_rate on observed GlobalSim pre-skill positions
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs'
+      - 'poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs'
+      - 'poc/src/skill_source_whole_tick_monitor.cjs'
+      - 'poc/tools/globalsim_p2_15_preskill_phase_position.cjs'
+      - 'docs/evidence/skills/skill-p2-15-source-distance-rate-real-ticks-20261112.md'
+      - '.github/workflows/p2-source-distance-rate-real-ticks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-distance-rate-real-model-ticks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify strict Kotlin predicate compatibility and synthetic replay fail-closed unit tests
+        run: |
+          node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
+          node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs
+      - name: Fetch fixed original UmaSim skill data and semantic anchors (research runtime only)
+        run: |
+          mkdir -p /tmp/p2-15-dist-study
+          base=https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          curl --fail --silent --show-error --location "$base/data/skill_data.txt" -o /tmp/p2-15-dist-study/source-skills.txt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt" -o /tmp/p2-15-dist-study/checker.kt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt" -o /tmp/p2-15-dist-study/skillData.kt
+          echo "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5  /tmp/p2-15-dist-study/source-skills.txt" | sha256sum -c -
+      - name: Build fixed ORIGINAL GlobalSim retail engine
+        run: |
+          mkdir -p /tmp/p2-15-dist-engine
+          cd /tmp/p2-15-dist-engine
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-dist-study/original-engine
+      - name: Patch only observational position slots at original model priority call sites
+        run: |
+          node poc/tools/globalsim_p2_15_preskill_phase_position.cjs patch \
+            /tmp/p2-15-dist-engine > /tmp/p2-15-dist-study/source-position-patch.json
+          cd /tmp/p2-15-dist-engine
+          git diff --name-only | sort > /tmp/p2-15-dist-study/modified.txt
+          printf "src/lib.rs\nsrc/race_field.rs\nsrc/race_field_retail.rs\n" > /tmp/p2-15-dist-study/expected.txt
+          cmp /tmp/p2-15-dist-study/modified.txt /tmp/p2-15-dist-study/expected.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-dist-study/observed-engine
+      - name: Join actual model position and exact source distance_rate at same stage for 8 races
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs replay \
+            /tmp/p2-15-dist-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-dist-study/original-engine \
+            /tmp/p2-15-dist-study/observed-engine \
+            /tmp/p2-15-dist-study/source-skills.txt \
+            /tmp/p2-15-dist-study/checker.kt \
+            /tmp/p2-15-dist-study/skillData.kt \
+            /tmp/p2-15-dist-study/source-distance-rate-model-join.json \
+            > /tmp/p2-15-dist-study/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const t=require('./poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs');
+          const r=JSON.parse(fs.readFileSync('/tmp/p2-15-dist-study/source-distance-rate-model-join.json','utf8'));
+          a.equal(r.status,t.STATUS);
+          a.equal(r.totals.races,8);
+          a(r.denominators.sourceDistanceRateSkills>0);
+          a(r.denominators.sourcePredicateOccurrences>=r.denominators.sourceDistanceRateSkills);
+          a(r.totals.modelRunnerPriorityTicks>20000);
+          a(r.totals.distanceRatePredicateFacts>1000);
+          a.equal(r.totals.modelProgressRateKnownRunnerTicks+
+            r.totals.modelProgressRateHeldBoundaryRunnerTicks,
+            r.totals.modelRunnerPriorityTicks);
+          a.equal(r.totals.sourceConditionTrueSkillRunnerTicks+
+            r.totals.sourceConditionFalseSkillRunnerTicks+
+            r.totals.sourceConditionUnknownSkillRunnerTicks,
+            r.totals.modelRunnerPriorityTicks*r.denominators.sourceDistanceRateSkills);
+          a.equal(r.gates.realGlobalSimPreSkillPositionsObserved,true);
+          a.equal(r.gates.originalUmaSimRaceTicksObserved,false);
+          a.equal(r.gates.originalUmaSimAllDynamicPredicatesObserved,false);
+          a.equal(r.gates.originalSourceFullGameSkillActivated,false);
+          a.equal(r.gates.realGameSkillProcRateComputed,false);
+          a.equal(r.gates.P3CardScoringApproved,false);
+          a.equal(r.gates.P4UiChanged,false);
+          console.log('P2_15_DIST_REAL_TICKS='+JSON.stringify({
+            denominators:r.denominators,totals:r.totals,gates:r.gates
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-distance-rate-real-globalSim-position-not-umaSim-game
+          path: |
+            /tmp/p2-15-dist-study/source-distance-rate-model-join.json
+            /tmp/p2-15-dist-study/source-position-patch.json
+            /tmp/p2-15-dist-study/summary.log
+          retention-days: 14
+          if-no-files-found: error
