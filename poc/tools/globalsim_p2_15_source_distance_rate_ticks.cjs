@@ -220,7 +220,7 @@ function analyze(plans,control,probe,sourceProfiles){
   ]};
 }
 function main(args){
- if(args[0]!=='replay'||args.length!==7)throw Error(
+ if(args[0]!=='replay'||args.length!==8)throw Error(
   'replay <model-template> <original-engine> <position-probe-engine> <fixed-skill-data> <fixed-checker.kt> <fixed-skill-data.kt> <report.json>');
  const [_,templateFile,originalEngine,probeEngine,skillFile,checkerFile,skillCodeFile,outFile]=args;
  const source=validateSource(fs.readFileSync(skillFile,'utf8'),
