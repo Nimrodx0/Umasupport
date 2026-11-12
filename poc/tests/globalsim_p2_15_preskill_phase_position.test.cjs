@@ -47,10 +47,12 @@ function fixtures(){
  return {plans,orig,probe};
 }
 test('pin the original phase geometry with 2m terminal start and inclusive 10m window',()=>{
- assert.deepEqual(tool.phaseBounds(1600,1),[1600/6,1600*2/3]);
+ const [a,b]=tool.phaseBounds(1600,1);
+ assert(Math.abs(a-1600/6)<1e-9);
+ assert(Math.abs(b-1600*2/3)<1e-9);
  const mid=tool.sourceShapedWindow(1600,0,.5);
- assert.equal(mid.start,1600/12);
- assert.equal(mid.end,1600/12+10);
+ assert(Math.abs(mid.start-1600/12)<1e-9);
+ assert(Math.abs(mid.end-(1600/12+10))<1e-9);
  const late=tool.sourceShapedWindow(1600,0,.99);
  assert(Math.abs(late.start-(1600/6-2))<1e-9);
  assert(Math.abs(late.end-(1600/6))<1e-9);
