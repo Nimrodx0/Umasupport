@@ -134,7 +134,7 @@ test('source predicate identity and source comparison operators must match, no f
   obs(0,'conditions',0,0,rank,false)])),/duplicate observation/);
  assert.throws(()=>base.step(frame(0,{order_rate:50},[
   obs(0,'conditions',0,0,rank,true),
-  {invokeOffset:0,side:'conditions',orIndex:0,predicateIndex:2}]),
+  {invokeOffset:0,side:'conditions',orIndex:0,predicateIndex:2}])),
   /incomplete source predicate observation/);
  const ctx=source([inv([[p('running_style','==',2)]])]);
  assert.throws(()=>m.run(ctx,[frame(0,{running_style:2},[
