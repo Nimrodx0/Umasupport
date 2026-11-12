@@ -111,6 +111,12 @@ function audit(model,blockerAudit,sourceText){
      preconditionOrCount:r.preconditionOrCount,
      totalSourcePhasePredicates:observed.length,
      phasePredicates:observed,
+     // Derived numeric values only. The original AND-side placement must
+     // survive into later same-tick *counterfactual* research.
+     finitePredicates:[
+      ...normal.map((p,i)=>({side:'conditions',predicateIndex:i,...p})),
+      ...pre.map((p,i)=>({side:'preConditions',predicateIndex:i,...p}))
+     ].filter(p=>Object.hasOwn(full.DOMAINS,p.type)),
      otherUnverifiedTypes:[],
      allFinitePredicatesActuallyMeasured:false,
      state:supported?
