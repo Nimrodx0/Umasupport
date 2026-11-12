@@ -108,7 +108,8 @@ test('mismatched independent model skill events and physics must be rejected',()
  assert.throws(()=>m.analyze(f.plans,f.original,f.windows,physics),
   /observer changed original GlobalSim physics/);
  const stage=structuredClone(f.ranks);
- stage[0].frames[2].horses[4][5]=packed(5,5,5,5,4,5);
+ stage[0].frames[2].horses[4][5]=packed(4,5,4,5,4,5);
+ stage[0].frames[2].horses[4][4]=-1;
  assert.throws(()=>m.analyze(f.plans,f.original,f.windows,stage),
   /rank cache changed/);
 });
