@@ -1,0 +1,137 @@
+name: P2.15 actual equipped GlobalSim phase_random AND original-model rank at same priority stage
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_equipped_phase_model_and.cjs'
+      - 'poc/tests/skill_equipped_phase_model_and.test.cjs'
+      - 'poc/tools/globalsim_p2_15_equipped_phase_and_rank.cjs'
+      - 'poc/tests/globalsim_p2_15_equipped_phase_and_rank.test.cjs'
+      - 'poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs'
+      - 'poc/tools/globalsim_change_order_skill_tick.cjs'
+      - 'docs/evidence/skills/skill-p2-15-equipped-phase-rank-conjunction-20261112.md'
+      - '.github/workflows/p2-equipped-phase-window-and-rank.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  three-original-model-engines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact three pinned skills, interval semantics and synthetic model/phase/rank AND
+        run: |
+          node --check poc/src/skill_equipped_phase_model_and.cjs
+          node --check poc/tools/globalsim_p2_15_equipped_phase_and_rank.cjs
+          node --test poc/tests/skill_equipped_phase_model_and.test.cjs \
+            poc/tests/globalsim_p2_15_equipped_phase_and_rank.test.cjs
+      - name: Fetch and build fixed original GlobalSim v77 retail engine
+        run: |
+          mkdir -p /tmp/p2-15-phase-join-engine /tmp/p2-15-phase-join-study
+          cd /tmp/p2-15-phase-join-engine
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-phase-join-study/original-engine
+      - name: Build ACTUAL equipped sampled-window and priority-position observation engine
+        run: |
+          node poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs patch \
+            /tmp/p2-15-phase-join-engine > /tmp/p2-15-phase-join-study/window-source-patch.json
+          cd /tmp/p2-15-phase-join-engine
+          git diff --name-only | sort > /tmp/p2-15-phase-join-study/modified.txt
+          printf "src/lib.rs\nsrc/race_field.rs\nsrc/race_field_retail.rs\n" > /tmp/p2-15-phase-join-study/expected.txt
+          cmp /tmp/p2-15-phase-join-study/modified.txt /tmp/p2-15-phase-join-study/expected.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-phase-join-study/window-position-engine
+      - name: Restore original and build INDEPENDENT priority-rank source probe
+        run: |
+          cd /tmp/p2-15-phase-join-engine
+          git reset -q --hard 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          test -z "$(git status --porcelain)"
+          cd "$GITHUB_WORKSPACE"
+          node poc/tools/globalsim_change_order_skill_tick.cjs patch \
+            /tmp/p2-15-phase-join-engine > /tmp/p2-15-phase-join-study/rank-source-patch.json
+          cd /tmp/p2-15-phase-join-engine
+          git diff --name-only | sort > /tmp/p2-15-phase-join-study/modified.txt
+          cmp /tmp/p2-15-phase-join-study/modified.txt /tmp/p2-15-phase-join-study/expected.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-phase-join-study/rank-engine
+      - name: Join sampled phase windows, model rank, distance and original model skill events for eight equipped races
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_equipped_phase_and_rank.cjs replay \
+            /tmp/p2-15-phase-join-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-phase-join-study/original-engine \
+            /tmp/p2-15-phase-join-study/window-position-engine \
+            /tmp/p2-15-phase-join-study/rank-engine \
+            /tmp/p2-15-phase-join-engine/src/activation_conditions.rs \
+            /tmp/p2-15-phase-join-engine/src/retail_initialization.rs \
+            /tmp/p2-15-phase-join-engine/src/race_solver.rs \
+            /tmp/p2-15-phase-join-study/actual-model-sampled-phase-rank.json \
+            > /tmp/p2-15-phase-join-study/summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const t=require('./poc/tools/globalsim_p2_15_equipped_phase_and_rank.cjs');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-15-phase-join-study/actual-model-sampled-phase-rank.json','utf8'));
+          const r=x.originalModel;
+          a.equal(x.status,t.STATUS);
+          a.equal(x.sourceVerification.globalSimRevision,'80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1');
+          a.equal(r.modelDesign.fixedEquippedRaces,8);
+          a.equal(r.modelDesign.modelRunnerRaces,84);
+          a.equal(r.totals.equippedModelRunnerRaces,252);
+          a.equal(r.totals.validSampledWindowRunnerRaces,210);
+          a.equal(r.totals.reservedInactiveDetailRunnerRaces,42);
+          a.equal(r.totals.missingDetailRunnerRaces,0);
+          a.equal(r.totals.phaseWindowMemberRunnerTicks,1512);
+          a.equal(r.totals.modelSkillEvents,173);
+          a.equal(r.threeEngineValidation.positionalProbePhysicalValuesMatched,437364);
+          a.equal(r.threeEngineValidation.rankProbePhysicalValuesMatched,437364);
+          a.equal(r.threeEngineValidation.modelPriorityPositionPairsMatched,108769);
+          a.equal(r.threeEngineValidation.rankPriorityPairsMatched,108769);
+          a.equal(r.totals.wholeModelExpressionANDRunnerTicks,
+            r.skills['200451'].wholeModelExpressionANDRunnerTicks+
+            r.skills['200501'].wholeModelExpressionANDRunnerTicks+
+            r.skills['200701'].wholeModelExpressionANDRunnerTicks);
+          a.equal(r.skills['200451'].wholeModelExpressionANDRunnerTicks,
+            r.skills['200451'].phaseWindowMemberRunnerTicks);
+          a.equal(r.skills['200501'].wholeModelExpressionANDRunnerTicks,
+            r.skills['200501'].phaseWindowMemberRunnerTicks);
+          a(r.skills['200701'].wholeModelExpressionANDRunnerTicks<=
+            r.skills['200701'].phaseWindowMemberRunnerTicks);
+          a.equal(r.bySkillStyle.length,12);
+          a.equal(r.evidenceGates.originalUmaSimRandomDrawsObserved,false);
+          a.equal(r.evidenceGates.originalUmaSimFullSourceConditionsValidated,false);
+          a.equal(r.evidenceGates.entire102SourcePhaseRandomSkillsMeasured,false);
+          a.equal(r.evidenceGates.liveGameSkillActivationRateMeasured,false);
+          a.equal(r.evidenceGates.P3CardScoringApproved,false);
+          a.equal(r.evidenceGates.P4UiChanged,false);
+          console.log('P2_15_ACTUAL_MODEL_PHASE_RANK_AND='+JSON.stringify({
+            source:x.sourceVerification,stage:r.threeEngineValidation,
+            totals:r.totals,skills:r.skills,
+            perStyle:r.bySkillStyle.map(z=>({
+              skill:z.modelSkillId,style:z.style,runnerRaces:z.equippedModelRunnerRaces,
+              active:z.validSampledWindowRunnerRaces,windowTicks:z.phaseWindowMemberRunnerTicks,
+              andTicks:z.wholeModelExpressionANDRunnerTicks,
+              andRunnerRaces:z.runnerRacesWithANDVisit,
+              events:z.modelSkillEvents
+            })),gates:r.evidenceGates
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-three-independent-equipped-model-real-windows-plus-rank-not-UmaSim-or-game
+          path: |
+            /tmp/p2-15-phase-join-study/actual-model-sampled-phase-rank.json
+            /tmp/p2-15-phase-join-study/summary.log
+            /tmp/p2-15-phase-join-study/window-source-patch.json
+            /tmp/p2-15-phase-join-study/rank-source-patch.json
+          retention-days: 14
+          if-no-files-found: error

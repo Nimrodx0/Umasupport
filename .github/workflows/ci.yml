@@ -421,6 +421,11 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs
           node --test poc/tests/globalsim_p2_15_equipped_runtime_windows.test.cjs
+      - name: Validate actual equipped GlobalSim phase_random windows and priority-rank AND
+        run: |
+          node --check poc/src/skill_equipped_phase_model_and.cjs
+          node --check poc/tools/globalsim_p2_15_equipped_phase_and_rank.cjs
+          node --test poc/tests/skill_equipped_phase_model_and.test.cjs poc/tests/globalsim_p2_15_equipped_phase_and_rank.test.cjs
       - name: Validate independent model priority-rank source interpretation with original complete-skill AND/OR
         run: |
           node --check poc/src/skill_source_rank_tick_bridge.cjs
