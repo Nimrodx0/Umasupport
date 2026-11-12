@@ -90,12 +90,51 @@ test('direct 3 independent model replays keep skill and physics parity; actual w
  assert.equal(x.skills['200701'].runnerRacesWithANDVisit,4);
  assert.equal(x.totals.phaseWindowMemberRunnerTicks,26);
  assert.equal(x.totals.wholeModelExpressionANDRunnerTicks,26);
+ assert.equal(x.totals.runnerRacesWithANDAndModelEvent,2);
+ assert.equal(x.totals.runnerRacesWithANDNoModelEvent,11);
+ assert.equal(x.totals.runnerRacesWithNoANDAndModelEvent,0);
+ assert.equal(x.totals.runnerRacesWithNoANDNoModelEvent,14);
+ assert.equal(x.totals.modelSkillEventsOnANDRunnerRaces,2);
+ assert.equal(x.totals.modelSkillEventsOnNoANDRunnerRaces,0);
+ assert.equal(x.totals.runnerRacesWithRepeatedModelEvents,0);
+ assert.equal(x.skills['200701'].runnerRacesWithANDAndModelEvent,1);
+ assert.equal(x.skills['200701'].runnerRacesWithANDNoModelEvent,3);
+ assert.equal(x.modelDesign.modelEventTimeAlignedToObservedPriorityTick,false);
+ assert.equal(x.evidenceGates.modelSkillEventPresenceCrossTabulatedWithANDRunnerRaces,true);
+ assert.equal(x.evidenceGates.modelEventTickCausalityVerified,false);
  assert.equal(x.threeEngineValidation.modelPriorityPositionPairsMatched,18);
  assert.equal(x.threeEngineValidation.rankProbePhysicalValuesMatched,108);
  assert.equal(x.bySkillStyle.length,12);
  assert.equal(x.evidenceGates.originalUmaSimRandomDrawsObserved,false);
  assert.equal(x.evidenceGates.liveGameSkillActivationRateMeasured,false);
  assert.equal(x.totals.approvedSuitabilityLabel,null);
+});
+test('per-runner model event presence is counted once, duplicate events separately, and unmatched AND stays an audit cell',()=>{
+ const f=fixture();
+ for(const reply of [f.original[0],f.windows[0],f.ranks[0]]){
+  // Synthetic events deliberately carry times beyond this captured panel.
+  // The result must never claim same-tick causal corroboration.
+  reply.skillEvents.push({skillId:200501,horseIndex:0,t:20});
+  reply.skillEvents.push({skillId:200451,horseIndex:0,t:21});
+ }
+ const x=m.analyze(f.plans,f.original,f.windows,f.ranks);
+ assert.equal(x.totals.modelSkillEvents,4);
+ assert.equal(x.totals.runnerRacesWithANDAndModelEvent,2);
+ assert.equal(x.totals.runnerRacesWithANDNoModelEvent,11);
+ assert.equal(x.totals.runnerRacesWithNoANDAndModelEvent,1);
+ assert.equal(x.totals.runnerRacesWithNoANDNoModelEvent,13);
+ assert.equal(x.totals.runnerRacesWithRepeatedModelEvents,1);
+ assert.equal(x.totals.modelSkillEventsOnANDRunnerRaces,3);
+ assert.equal(x.totals.modelSkillEventsOnNoANDRunnerRaces,1);
+ assert.equal(x.skills['200501'].runnerRacesWithNoANDAndModelEvent,1);
+ assert.equal(x.evidenceGates.modelEventTickCausalityVerified,false);
+});
+test('event identity must refer to an actual runner, even when it has no sampled AND evidence',()=>{
+ const f=fixture();
+ for(const reply of [f.original[0],f.windows[0],f.ranks[0]])
+  reply.skillEvents.push({skillId:200701,horseIndex:99,t:1});
+ assert.throws(()=>m.analyze(f.plans,f.original,f.windows,f.ranks),
+  /no attributable runner/);
 });
 test('mismatched independent model skill events and physics must be rejected',()=>{
  const f=fixture();
