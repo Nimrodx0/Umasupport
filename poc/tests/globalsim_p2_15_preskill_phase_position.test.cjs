@@ -102,6 +102,19 @@ test('observed priority-call positions equal previous frame while geometric path
  assert.throws(()=>tool.analyze(orig,speed,plans,cohort()),
   /changed race physics/);
 });
+test('precondition-only phase windows stay held even if finite static gates match',()=>{
+ const {orig,probe,plans}=fixtures();
+ const c=cohort();
+ c.rows[0].researchPaths[0].preconditionOrIndex=0;
+ c.rows[0].researchPaths[0].phasePredicates[0].side='preConditions';
+ const result=tool.analyze(orig,probe,plans,c);
+ const held=result.rows.find(x=>x.sourceNumericId==='300000'&&
+  x.style==='逃げ'&&x.preconditionOrIndex===0);
+ assert(held);
+ assert.equal(held.runnerTicksObserved,0);
+ assert.equal(held.contextsHeld,1);
+ assert.equal(held.fullSourceSkillTriggers,0);
+});
 test('reject missing source path, unsupported operators and path denominator forgery',()=>{
  const {plans,orig,probe}=fixtures();
  const wrong=cohort();wrong.rows[0].researchPaths[0].phasePredicates[0].operator='!=';
