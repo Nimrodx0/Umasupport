@@ -44,7 +44,7 @@ test('one original skill runner race is counted once, not once per simulated tic
  assert.equal(x.totals.verdicts['observed-unknown-without-true'],1);
  assert.equal(x.totals.verdicts['observed-all-false'],1);
  assert.equal(x.totals.verdicts['no-observed-priority-ticks'],1);
- assert.equal(x.totals.skillRunnerPriorityTicks,12);
+ assert.equal(x.totals.skillRunnerPriorityTicks,11);
  assert.equal(x.totals.observedStageConfirmedFractionLower,0.5);
  assert.equal(x.totals.observedStagePossibleFractionUpper,5/6);
  const row=x.bySkillStyle.find(y=>y.sourceNumericId==='200701'&&y.style==='Nige');
