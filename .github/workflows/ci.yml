@@ -417,6 +417,10 @@ jobs:
         run: |
           node --check poc/src/skill_source_path_blocker_impact.cjs
           node --test poc/tests/skill_source_path_blocker_impact.test.cjs
+      - name: Validate P2.15 equipped runtime window sample observer (synthetic only)
+        run: |
+          node --check poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs
+          node --test poc/tests/globalsim_p2_15_equipped_runtime_windows.test.cjs
       - name: Validate P2.15 actual pre-skill position observer and synthetic source-window counterfactual
         run: |
           node --check poc/tools/globalsim_p2_15_preskill_phase_position.cjs
