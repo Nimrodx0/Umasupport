@@ -153,6 +153,23 @@ jobs:
           a.equal(x.status,t.STATUS);
           a.equal(x.validation.modelRunnerPriorityTicks,108844);
           a.equal(x.comparison.sourceSkillCount,253);
+          a.equal(x.validation.originalModelPhysicalColumnsUnchanged,437532);
+          a.equal(x.comparison.sourceSkillsWithNewPredicateFamilies,83);
+          a.equal(x.comparison.originalSourcePredicateOccurrences,152);
+          a.equal(x.comparison.emittedModelSourcePredicateFacts,16539766);
+          a.equal(x.comparison.modelPriorityRunnerTicksWithSourcePositionFacts,108844);
+          a.deepEqual(x.comparison.sourceWholeConditionSkillRunnerTickChanges,{
+            true:18997,false:3451969,unknown:-3470966
+          });
+          a.deepEqual(x.comparison.joinedRunnerRaceVerdicts,{
+            'observed-at-least-once-true':778,
+            'observed-unknown-without-true':16535,
+            'observed-all-false':3939,
+            'no-observed-priority-ticks':0
+          });
+          a.deepEqual(x.comparison.changedSkillStyleCells.map(z=>[
+            z.sourceNumericId,z.style,z.additionalConfirmedRunnerRaces
+          ]),[['112401111','Senkou',18],['120251','Sasi',26]]);
           a.deepEqual(x.design.verifiedSourceFamilies,[
             'phase','phase_firsthalf','phase_laterhalf','remain_distance','furlong'
           ]);
