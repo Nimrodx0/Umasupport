@@ -106,6 +106,16 @@ test('unobserved source rank or random requirements remain unknown, not silently
  assert.equal(x.totals.sourceConditionFalseSkillRunnerTicks,2);
  assert.equal(x.gates.originalUmaSimAllDynamicPredicatesObserved,false);
 });
+test('unseen t=0 precondition history is held unknown even if later progress gates are false',()=>{
+ const f=sample();
+ const p1=profile('100201',[inv([[p('distance_rate','<',50)]],
+  [[p('distance_rate','>=',80)]])]);
+ const x=t.analyze(f.plans,f.control,f.probe,[p1]);
+ assert.equal(x.totals.sourceConditionTrueSkillRunnerTicks,0);
+ assert.equal(x.totals.sourceConditionFalseSkillRunnerTicks,0);
+ assert.equal(x.totals.sourceConditionUnknownSkillRunnerTicks,4);
+ assert.equal(x.experiment.preconditionHistoryBeforeFirstObservedModelPriorityCall,'unknown');
+});
 test('mismatched source registry or checker cannot masquerade as original semantics',()=>{
  assert.throws(()=>t.validateSource('[]','x','y'),/SHA mismatch/);
  assert.equal(t.SOURCE_SHA.length,64);
