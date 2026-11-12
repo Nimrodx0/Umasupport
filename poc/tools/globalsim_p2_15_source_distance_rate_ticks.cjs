@@ -6,8 +6,10 @@
  *
  * GlobalSim v77 positions are MODEL observations, not UmaSim's own positions.
  * Original and instrumented no-skill engines MUST replay identically.
- * All other source dynamic predicates, including ignored order_rate, remain
- * UNKNOWN. No phase_random windows, original skill equip/proc or card scores.
+ * By default, all other source dynamic predicates, including ignored
+ * order_rate, remain UNKNOWN. Source-anchored positional clause families
+ * can optionally be joined using a separately verified provenance object.
+ * No phase_random draws, original skill equip/proc or card scores.
  */
 const fs=require('node:fs');
 const crypto=require('node:crypto');
