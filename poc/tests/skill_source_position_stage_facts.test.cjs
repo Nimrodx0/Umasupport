@@ -116,7 +116,9 @@ test('five new source facts join the SAME runner and priority tick and improve t
  assert(out.comparison.sourceWholeConditionSkillRunnerTickChanges.unknown<0);
  assert.equal(out.comparison.baselineRunnerRaceVerdicts['observed-at-least-once-true'],0);
  assert.equal(out.comparison.joinedRunnerRaceVerdicts['observed-at-least-once-true'],1);
- assert.equal(out.comparison.joinedRunnerRaceVerdicts['observed-unknown-without-true'],1);
+ assert.equal(out.comparison.joinedRunnerRaceVerdicts['observed-unknown-without-true'],0);
+ assert.equal(out.comparison.joinedRunnerRaceVerdicts['observed-all-false'],1,
+  'explicit nonmatching running_style is an exclusion, not a missing fact');
  assert.equal(out.gates.sourceOriginalFiveFormulasPinned,true);
  assert.equal(out.gates.originalSourceFullANDMeasured,false);
  assert.equal(out.comparison.gameRate,null);
