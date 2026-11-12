@@ -10,11 +10,11 @@
  * round-half-up boundary mapping in skill_order_rate_bounds.cjs.
  * Original UmaSim SkillChecker IGNORING order_rate is not papered over.
  */
-const original=require('./globalsim_p2_15_source_distance_rate_ticks.cjs');
-const stage=require('./globalsim_change_order_skill_tick.cjs');
-const legacy=require('./globalsim_change_order_internal_probe.cjs');
-const pre=require('./globalsim_p2_15_preskill_phase_position.cjs');
-const bounds=require('../src/skill_order_rate_bounds.cjs');
+const original=require('../tools/globalsim_p2_15_source_distance_rate_ticks.cjs');
+const stage=require('../tools/globalsim_change_order_skill_tick.cjs');
+const legacy=require('../tools/globalsim_change_order_internal_probe.cjs');
+const pre=require('../tools/globalsim_p2_15_preskill_phase_position.cjs');
+const bounds=require('./skill_order_rate_bounds.cjs');
 const MODEL_PIN='80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1';
 const STATUS='P2.15-independent-GlobalSim-priority-rank-evidence-not-game';
 const fail=(ok,why)=>{if(!ok)throw Error('P2.15 exact pre-skill rank: '+why)};
