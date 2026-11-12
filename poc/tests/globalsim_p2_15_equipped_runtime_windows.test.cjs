@@ -83,6 +83,22 @@ test('exact source patch is read-only, includes restoration, and rejects rerun',
   assert.throws(()=>tool.patch(dir),/pinned GlobalSim source moved/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('a pinned 9999m inactive reserved detail is not a sampled window',()=>{
+ const f=fixture();
+ f.probe[0].p2SampledSkillWindows[0].push({skillId:'200701',detailIndex:0,
+  windows:[[9999,9999]],hasPrerequisite:0});
+ const x=tool.analyze(f.plans,f.original,f.probe);
+ assert.equal(x.totals.pendingWindowEntriesIncludingInactive,3);
+ assert.equal(x.totals.sampledWindows,2);
+ assert.equal(x.totals.reservedInactiveDetails,1);
+ assert.equal(x.skills['200701'].instantiatedDetails,1);
+ assert.equal(x.skills['200701'].modelSampledWindows,0);
+ assert.equal(x.skills['200701'].reservedInactiveDetails,1);
+ assert.equal(x.totals.sampledWindowMemberRunnerTicks,3);
+ const bad=structuredClone(f.probe);
+ bad[0].p2SampledSkillWindows[0][0].windows=[[1700,1710]];
+ assert.throws(()=>tool.analyze(f.plans,f.original,bad),/out-of-course/);
+});
 test('template validation accepts only exact fixed source skill expressions',()=>{
  const t={experimentalRetailRuntime:true,experimentalRetailInitialization:true,
   horses:Array(9).fill({}),skillData:{}};
