@@ -1,0 +1,58 @@
+name: P2.15 entire original skill condition shape and three-valued tick contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_source_whole_tick_monitor.cjs'
+      - 'poc/tests/skill_source_whole_tick_monitor.test.cjs'
+      - 'poc/tools/audit_p2_15_source_tick_contract.cjs'
+      - 'poc/tests/audit_p2_15_source_tick_contract.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-whole-tick-logic-20261112.md'
+      - 'docs/plans/skill-conditions/p2.md'
+      - '.github/workflows/p2-source-whole-tick-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  full-original-registry-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source matrix, historical prerequisite and unknown-gated synthetic tests
+        run: |
+          node --check poc/src/skill_source_whole_tick_monitor.cjs
+          node --check poc/tools/audit_p2_15_source_tick_contract.cjs
+          node --test poc/tests/skill_source_whole_tick_monitor.test.cjs \
+            poc/tests/audit_p2_15_source_tick_contract.test.cjs
+      - name: Compile every pinned original source skill and evaluate static artificial context only
+        run: |
+          node poc/tools/audit_p2_15_source_tick_contract.cjs /tmp/p2-15-whole-tick-contract.json
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-15-whole-tick-contract.json'));
+          a.equal(x.status,'P2.15-full-original-source-logical-context-sweep-not-model-or-game');
+          a.equal(x.denominators.allOriginalSkills,2162);
+          a(x.denominators.sourceSkillsWithInvokeStructure>1500);
+          a(x.denominators.originalPredicateOccurrences>1000);
+          a.equal(x.proofGates.sourceDynamicPredicatesActuallyMeasured,false);
+          a.equal(x.proofGates.liveGlobalSimWholeSkillJoin,false);
+          a.equal(x.proofGates.gameSkillProcObserved,false);
+          a.equal(x.proofGates.cardScore,null);
+          a.equal(x.proofGates.suitabilityLabel,null);
+          console.log('P2_15_SOURCE_WHOLE_TICK_GATE='+JSON.stringify({
+            denominators:x.denominators,sourceShapeCounts:x.sourceShapeCounts,
+            artificialContext:x.artificialContext,proofGates:x.proofGates
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-full-registry-logical-sweep-not-model-or-proc
+          path: /tmp/p2-15-whole-tick-contract.json
+          retention-days: 14
+          if-no-files-found: error
