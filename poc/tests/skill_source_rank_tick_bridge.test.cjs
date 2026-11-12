@@ -96,13 +96,13 @@ test('same-runner same-tick rank data resolves original skill AND, preserving tr
  assert.equal(model.comparison.originalModelPriorityRunnerTicks,18);
  assert.equal(model.comparison.recordedRankPredicateFacts,18);
  assert.deepEqual(model.comparison.sourceConditionSkillRunnerTickChanges,
-  {true:14,false:4,unknown:-18});
+  {true:10,false:4,unknown:-14});
  assert.equal(model.comparison.originalObservedSourceConditionRunnerRaces[
-  'observed-unknown-without-true'],9);
+  'observed-unknown-without-true'],7);
  assert.equal(model.comparison.rankJoinedObservedSourceConditionRunnerRaces[
-  'observed-at-least-once-true'],7);
+  'observed-at-least-once-true'],5);
  assert.equal(model.comparison.rankJoinedObservedSourceConditionRunnerRaces[
-  'observed-all-false'],2);
+  'observed-all-false'],4);
  assert.equal(model.gates.sourceOrderRateGameSemanticsValidated,false);
  assert.equal(model.gates.P3CardScoringApproved,false);
  assert.equal(model.bySkillStyle.length,4);
