@@ -12,6 +12,7 @@
 const fs=require('node:fs');
 const crypto=require('node:crypto');
 const monitor=require('../src/skill_source_whole_tick_monitor.cjs');
+const raceOpportunity=require('../src/skill_source_race_opportunity.cjs');
 const profiles=require('../src/skill_condition_profiles.js');
 const full=require('../src/skill_full_condition_path_audit.cjs');
 const legacy=require('./globalsim_change_order_internal_probe.cjs');
@@ -116,6 +117,7 @@ function analyze(plans,control,probe,sourceProfiles){
    x.ast.invokes.filter(v=>v.preConditions.some(row=>row.some(p=>
     !monitor.STATIC_TYPES.has(p.type)))).length
  }]));
+ const opportunityTrials=[];
  const totals={races:plans.length,modelFrames:0,unchangedModelPhysicsValues:0,
   modelRunnerPriorityTicks:0,modelProgressRateKnownRunnerTicks:0,
   modelProgressRateHeldBoundaryRunnerTicks:0,distanceRatePredicateFacts:0,
@@ -133,7 +135,8 @@ function analyze(plans,control,probe,sourceProfiles){
    // never assumed false. A later positive fact can still establish true.
    logical.preState=logical.preState.map((state,index)=>
     x.ast.invokes[index].preConditions.length?monitor.UNKNOWN:state);
-   return {compiled:x.ast,monitor:logical,seenTrue:false,tick:0};
+   return {compiled:x.ast,monitor:logical,seenTrue:false,tick:0,
+    opportunityTrace:raceOpportunity.makeTrace()};
   }));
   for(let t=0;t<a.frames.length;t++){
    for(let i=0;i<plan.fieldSize;i++){
@@ -165,6 +168,7 @@ function analyze(plans,control,probe,sourceProfiles){
      summary['sourceCondition'+outcome[0].toUpperCase()+outcome.slice(1)]++;
      totals['sourceCondition'+outcome[0].toUpperCase()+outcome.slice(1)+
       'SkillRunnerTicks']++;
+     raceOpportunity.append(trace.opportunityTrace,outcome);
      if(outcome==='true')trace.seenTrue=true;
      check(result.gameProcMeasured===false&&
       result.eligibleForP3CardScoring===false,
@@ -172,11 +176,23 @@ function analyze(plans,control,probe,sourceProfiles){
     }
    }
   }
-  for(const byRunner of traces)for(const trace of byRunner)if(trace.seenTrue){
-   totals.sourceConditionEverTrueRunnerTraces++;
-   perSkill[trace.compiled.sourceNumericId].sourceConditionEverTrueRunnerTraces++;
+  for(let i=0;i<traces.length;i++)for(const trace of traces[i]){
+   opportunityTrials.push({
+    sourceNumericId:trace.compiled.sourceNumericId,
+    style:plan.strategies[i],
+    modelRaceIndex:r,runnerIndex:i,
+    courseId:plan.course.id,distanceType:plan.course.distanceType,
+    surface:plan.course.surface,fieldSize:plan.fieldSize,
+    scenario:plan.scenario,mode:plan.mode,
+    trace:trace.opportunityTrace
+   });
+   if(trace.seenTrue){
+    totals.sourceConditionEverTrueRunnerTraces++;
+    perSkill[trace.compiled.sourceNumericId].sourceConditionEverTrueRunnerTraces++;
+   }
   }
  }
+ const raceOpportunityReport=raceOpportunity.aggregate(opportunityTrials);
  const totalSourceTicks=totals.modelRunnerPriorityTicks*compiled.length;
  check(totals.modelRunnerPriorityTicks>0&&
   totals.modelProgressRateKnownRunnerTicks>0&&
@@ -186,9 +202,20 @@ function analyze(plans,control,probe,sourceProfiles){
   totals.sourceConditionTrueSkillRunnerTicks+
    totals.sourceConditionFalseSkillRunnerTicks+
    totals.sourceConditionUnknownSkillRunnerTicks===totalSourceTicks&&
-  Object.values(perSkill).every(x=>x.modelRunnerTicks===totals.modelRunnerPriorityTicks),
+  Object.values(perSkill).every(x=>x.modelRunnerTicks===totals.modelRunnerPriorityTicks)&&
+  raceOpportunityReport.totals.skillRunnerPriorityTicks===totalSourceTicks&&
+  raceOpportunityReport.totals.verdicts['observed-at-least-once-true']===
+   totals.sourceConditionEverTrueRunnerTraces&&
+  raceOpportunityReport.denominators.skillRunnerRaceTrials===
+   plans.reduce((n,p)=>n+p.fieldSize*compiled.length,0)&&
+  raceOpportunityReport.totals.sourceTickStates.true===
+   totals.sourceConditionTrueSkillRunnerTicks&&
+  raceOpportunityReport.totals.sourceTickStates.false===
+   totals.sourceConditionFalseSkillRunnerTicks&&
+  raceOpportunityReport.totals.sourceTickStates.unknown===
+   totals.sourceConditionUnknownSkillRunnerTicks,
   'real-model position-to-original-condition evidence count drift');
- return {schemaVersion:1,status:STATUS,
+ return {schemaVersion:2,status:STATUS,
   provenance:{originalUmaSimRevision:PIN,
    sourceSkillRegistrySHA256:SOURCE_SHA,
    originalConditionValue:'distance_rate=(simulation.position*100/courseLength).toInt()',
@@ -208,6 +235,7 @@ function analyze(plans,control,probe,sourceProfiles){
    sourcePredicateOccurrences:compiled.reduce((n,x)=>n+
     [...x.ast.lookup.values()].filter(y=>y.type==='distance_rate').length,0)},
   totals,
+  raceOpportunity:raceOpportunityReport,
   rows:Object.values(perSkill).sort((a,b)=>a.sourceNumericId.localeCompare(b.sourceNumericId)),
   gates:{realGlobalSimPreSkillPositionsObserved:true,
    originalUmaSimDistanceRateFormulaAppliedToModelPositions:true,
@@ -215,13 +243,17 @@ function analyze(plans,control,probe,sourceProfiles){
    originalUmaSimAllDynamicPredicatesObserved:false,
    originalSourceFullGameSkillActivated:false,
    realGameSkillProcRateComputed:false,
-   P3CardScoringApproved:false,P4UiChanged:false},
+   P3CardScoringApproved:false,P4UiChanged:false,
+   observedStageRaceRunnerOpportunityGrouped:true,
+   fullRaceSkillOpportunityRateEstablished:false},
   limitations:[
    'This is a source-formula interpretation of a REAL GlobalSim position at the original GlobalSim skill-priority stage. It is NOT a real UmaSim race-state observation or a live-game activation.',
    'The model is an unskilled fixed comparison race. Skills carrying distance_rate in the original registry were not installed in GlobalSim.',
    'Only distance_rate receives numeric predicate observations; phase_random, rank and all other dynamic source conditions remain unknown. Static ground condition and track venue are withheld unless separately proven.',
    'Original Kotlin SkillChecker ignores order_rate, so simulated proc records from that checker cannot certify game rank predicates; this study never substitutes model rank into them.',
    'True/false/unknown tallies are correlated model runner-ticks across skills, not independent activation events, measured source skill probabilities, or approved suitability scores.',
+   'The new raceOpportunity counts each original skill for each model runner once per modeled race, reporting confirmed-at-least-once, unresolved, observed-all-false, or zero-observed-stage separately. Different runners in one race are not independent race trials.',
+   'Observed-stage lower/upper fractions are descriptive bounds for this specific incomplete model priority-stage panel, not full-game race opportunity, statistical intervals, activation rates or recommendation grades.',
    'Near-integer progress fractions are withheld due to potential Kotlin double vs GlobalSim position precision differences.'
   ]};
 }
@@ -247,7 +279,13 @@ function main(args){
  fs.writeFileSync(outFile,JSON.stringify(result,null,2)+'\n');
  console.log('P2_15_SOURCE_DISTANCE_RATE='+JSON.stringify({
   status:result.status,denominators:result.denominators,
-  totals:result.totals,gates:result.gates}));
+  totals:result.totals,
+  raceOpportunity:{denominators:result.raceOpportunity.denominators,
+   verdicts:result.raceOpportunity.totals.verdicts,
+   byStyle:result.raceOpportunity.byStyle.map(x=>({
+    style:x.style,trials:x.runnerRaceTrials,
+    verdicts:x.verdicts}))},
+  gates:result.gates}));
 }
 if(require.main===module)try{main(process.argv.slice(2))}
 catch(e){console.error(e.stack||e);process.exitCode=1;}

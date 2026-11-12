@@ -7,6 +7,8 @@ on:
       - 'poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs'
       - 'poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs'
       - 'poc/src/skill_source_whole_tick_monitor.cjs'
+      - 'poc/src/skill_source_race_opportunity.cjs'
+      - 'poc/tests/skill_source_race_opportunity.test.cjs'
       - 'poc/tools/globalsim_p2_15_preskill_phase_position.cjs'
       - 'docs/evidence/skills/skill-p2-15-source-distance-rate-real-ticks-20261112.md'
       - '.github/workflows/p2-source-distance-rate-real-ticks.yml'
@@ -26,7 +28,8 @@ jobs:
       - name: Verify strict Kotlin predicate compatibility and synthetic replay fail-closed unit tests
         run: |
           node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
-          node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs
+          node --check poc/src/skill_source_race_opportunity.cjs
+          node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs poc/tests/skill_source_race_opportunity.test.cjs
       - name: Fetch fixed original UmaSim skill data and semantic anchors (research runtime only)
         run: |
           mkdir -p /tmp/p2-15-dist-study
@@ -91,8 +94,32 @@ jobs:
           a.equal(r.gates.realGameSkillProcRateComputed,false);
           a.equal(r.gates.P3CardScoringApproved,false);
           a.equal(r.gates.P4UiChanged,false);
+          a.equal(r.schemaVersion,2);
+          const opp=r.raceOpportunity;
+          a.equal(opp.status,'P2.15-source-condition-on-observed-model-race-runner-traces-not-game');
+          a.equal(opp.gates.originalSkillEquipped,false);
+          a.equal(opp.gates.actualSkillProcRateMeasured,false);
+          a.equal(opp.gates.eligibleForP3CardScoring,false);
+          a.equal(opp.gates.allActualGameRaceOpportunityObserved,false);
+          a.equal(r.gates.fullRaceSkillOpportunityRateEstablished,false);
+          a.equal(opp.totals.verdicts['observed-at-least-once-true'],734);
+          a.equal(opp.totals.sourceTickStates.true,r.totals.sourceConditionTrueSkillRunnerTicks);
+          a.equal(opp.totals.sourceTickStates.false,r.totals.sourceConditionFalseSkillRunnerTicks);
+          a.equal(opp.totals.sourceTickStates.unknown,r.totals.sourceConditionUnknownSkillRunnerTicks);
+          a.equal(opp.totals.skillRunnerPriorityTicks,
+            r.totals.modelRunnerPriorityTicks*r.denominators.sourceDistanceRateSkills);
+          a(opp.denominators.skillRunnerRaceTrials>opp.denominators.observedSkillRunnerRaceTrials/2);
+          a.equal(opp.totals.runnerRaceTrials,Object.values(opp.totals.verdicts).reduce((x,y)=>x+y,0));
+          a.equal(opp.byStyle.length,4);
+          a(opp.bySkillStyle.length>0&&opp.bySkillStyleContext.length>0);
+          a.equal(opp.bySkillStyle.reduce((x,y)=>x+y.runnerRaceTrials,0),opp.totals.runnerRaceTrials);
+          a.equal(opp.bySkillStyleContext.reduce((x,y)=>x+y.runnerRaceTrials,0),opp.totals.runnerRaceTrials);
+          a(opp.bySkillStyle.every(x=>x.suitabilityLabel===null));
           console.log('P2_15_DIST_REAL_TICKS='+JSON.stringify({
-            denominators:r.denominators,totals:r.totals,gates:r.gates
+            denominators:r.denominators,totals:r.totals,
+            raceOpportunity:{denominators:opp.denominators,verdicts:opp.totals.verdicts,
+              byStyle:opp.byStyle.map(x=>({style:x.style,runnerRaceTrials:x.runnerRaceTrials,
+                verdicts:x.verdicts}))},gates:r.gates
           }));
           NODE
       - uses: actions/upload-artifact@v4
