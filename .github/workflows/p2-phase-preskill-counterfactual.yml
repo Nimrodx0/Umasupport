@@ -158,8 +158,20 @@ jobs:
           a.equal(x.study.fixedNoSkillGlobalSimRaces,32);
           a(x.priorModelParity.modelPriorityPositions>10000);
           a.equal(x.counts.originalSourcePaths,371);
-          a(x.counts.modelSourcePathRunnerRaceUnitsEvaluated>0);
-          a(x.counts.originalSourcePathsWithAtLeastOneModelUnitEvaluated>0);
+          a.equal(x.counts.modelRunnerRacesWithPositionSamples,336);
+          a.equal(x.counts.modelPriorityPositionSamples,435558);
+          a.equal(x.counts.originalSourcePathsWithAtLeastOneModelUnitEvaluated,249);
+          a.equal(x.counts.originalSourcePathsWithoutEvaluatedModelUnit,122);
+          a.equal(x.counts.modelSourcePathRunnerRaceUnitsEvaluated,15760);
+          a.equal(x.counts.modelSourcePathRunnerRaceUnitsWithPositiveDrawSupport,15760);
+          a.equal(x.counts.modelSourcePathRunnerRaceUnitsWithZeroDrawSupport,0);
+          a.equal(x.counts.modelSourcePathRunnerRaceUnitsHeldMultiplePhasePredicates,0);
+          a.equal(x.counts.sumDrawSupportFractionsAcrossModelUnits,15760);
+          a(x.rows.filter(r=>r.modelRunnerRaceUnitsWithObservedDrawSupport>0)
+            .every(r=>r.meanUniformDrawSupportFraction===1));
+          a.deepEqual(x.byStyle.map(r=>r.style),['逃げ','先行','差し','追込']);
+          a.equal(x.byStyle.reduce((n,r)=>n+r.modelSourcePathRunnerRaceUnits,0),15760);
+          a(x.byStyle.every(r=>r.originalSourceWholeSkillProcObserved===false));
           a.equal(x.counts.modelSourcePathRunnerRaceUnitsEvaluated,
             x.counts.modelSourcePathRunnerRaceUnitsWithPositiveDrawSupport+
             x.counts.modelSourcePathRunnerRaceUnitsWithZeroDrawSupport);
