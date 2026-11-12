@@ -23,7 +23,7 @@ const fixture=()=>{
    const now=101-i*10+t*1.0,initial=[now,13.5,100,0.2,0,-1];
    const p1=101-i*10+(t-1)*1.0,k=i+1;
    const pi=t?[[...initial.slice(0,4),p1,p1]]:[[...initial]];
-   const ri=t?[...initial.slice(0,4),0,pack(k,t===1?0:k,k,t===1?0:k,k,k)]:
+   const ri=t?[...initial.slice(0,4),t===1?k:0,pack(k,t===1?0:k,k,t===1?0:k,k,k)]:
     initial.slice();
    fA.horses.push(initial);fP.horses.push(pi[0]);fR.horses.push(ri);
   }
