@@ -427,6 +427,19 @@ jobs:
           assert.equal(out.summary.confirmedSupportCardAcquisitionRoutes,0);
           assert.equal(out.summary.confirmedWholeSkillActivationRates,0);
           assert.equal(out.summary.productEligibleSkillRatings,0);
+          assert.equal(out.provenance.originalUmaSimRevision,
+           'f6e4501ee6c6c2d4ac8698e7796e309d31575bde');
+          assert.equal(out.provenance.appSourceProfileCoverage.matched,818);
+          assert.equal(out.provenance.appSourceProfileCoverage.unavailable,63);
+          assert.equal(out.summary[audit.SOURCE_MATCH],9);
+          assert.equal(out.summary['not-in-app-catalog'],1);
+          for(const status of audit.ALL_STATUSES.filter(s=>
+           s!==audit.SOURCE_MATCH&&s!=='not-in-app-catalog'))
+           assert.equal(out.summary[status],0);
+          assert.deepEqual(out.rows.filter(x=>x.result==='not-in-app-catalog')
+           .map(x=>x.originalSourceNumericId),['101902211']);
+          assert(out.rows.filter(x=>x.result===audit.SOURCE_MATCH)
+           .every(x=>x.appSkillId==='skill:'+x.originalSourceNumericId));
           assert.equal(out.rows.length,10);
           assert.equal(new Set(out.rows.map(x=>x.originalSourceNumericId)).size,10);
           assert.equal(out.rows.filter(x=>x.result===audit.SOURCE_MATCH).length,
