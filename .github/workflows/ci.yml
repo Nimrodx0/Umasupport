@@ -426,6 +426,10 @@ jobs:
           node --check poc/tools/globalsim_roster32.cjs
           node --check poc/tools/skill_source32_split15_w.cjs
           node --test poc/tests/skill_source32_split15_w.test.cjs
+      - name: Validate P2.17b two original 15-seed halves at identical source/distance context
+        run: |
+          node --check poc/tools/skill_distance_split15_reliability.cjs
+          node --test poc/tests/skill_distance_split15_reliability.test.cjs
       - name: Validate P2.17 distance-conditional W effect modification (synthetic, not skill proc)
         run: |
           node --check poc/tools/skill_distance_style_interaction.cjs
