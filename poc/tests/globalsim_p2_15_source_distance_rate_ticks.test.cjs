@@ -8,7 +8,7 @@ const profile=(id,invokes)=>({status:'source-structure',
  sourceNumericId:id,invokes});
 const r1=p('distance_rate','>=',20),r2=p('distance_rate','<',50);
 function sample(){
- const plan={seed:101,fieldSize:2,course:{
+ const plan={seed:101,fieldSize:2,scenario:'balanced',mode:'equal',course:{
   id:10502,distance:1600,distanceType:2,surface:'turf'
  },strategies:['Nige','Senkou']};
  const row=(pos)=>[pos,12,100,0,0,0];
@@ -51,6 +51,18 @@ test('fixed model position is measured at same original stage and joined to exac
  assert.equal(result.gates.originalUmaSimRaceTicksObserved,false);
  assert.equal(result.gates.P3CardScoringApproved,false);
  assert.equal(result.rows[0].distanceRateObservations,6);
+ assert.equal(result.schemaVersion,2);
+ assert.equal(result.raceOpportunity.denominators.skillRunnerRaceTrials,2);
+ assert.equal(result.raceOpportunity.denominators.sourceSkillStyleCells,2);
+ assert.equal(result.raceOpportunity.totals.verdicts['observed-at-least-once-true'],1);
+ assert.equal(result.raceOpportunity.totals.verdicts['observed-unknown-without-true'],1);
+ assert.equal(result.raceOpportunity.totals.verdicts['observed-all-false'],0);
+ assert.equal(result.raceOpportunity.totals.sourceTickStates.true,2);
+ assert.equal(result.raceOpportunity.totals.sourceTickStates.unknown,2);
+ assert.equal(result.raceOpportunity.bySkillStyle.length,2);
+ assert.equal(result.raceOpportunity.gates.actualSkillProcRateMeasured,false);
+ assert.equal(result.gates.observedStageRaceRunnerOpportunityGrouped,true);
+ assert.equal(result.gates.fullRaceSkillOpportunityRateEstablished,false);
 });
 test('Kotlin progress toInt comparison uses truncated integer and protects precision boundaries',()=>{
  assert.equal(t.originalRate(500,1600),31);
@@ -115,6 +127,8 @@ test('unseen t=0 precondition history is held unknown even if later progress gat
  assert.equal(x.totals.sourceConditionFalseSkillRunnerTicks,0);
  assert.equal(x.totals.sourceConditionUnknownSkillRunnerTicks,4);
  assert.equal(x.experiment.preconditionHistoryBeforeFirstObservedModelPriorityCall,'unknown');
+ assert.equal(x.raceOpportunity.totals.verdicts['observed-at-least-once-true'],0);
+ assert.equal(x.raceOpportunity.totals.verdicts['observed-unknown-without-true'],2);
 });
 test('mismatched source registry or checker cannot masquerade as original semantics',()=>{
  assert.throws(()=>t.validateSource('[]','x','y'),/SHA mismatch/);
