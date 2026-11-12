@@ -9,6 +9,9 @@ on:
       - 'poc/tools/skill_distance_split15_reliability.cjs'
       - 'poc/src/p2_skill_evidence_contract.cjs'
       - 'poc/src/p3_research_evidence_intake.cjs'
+      - 'poc/src/p3_source_app_identity_audit.cjs'
+      - 'poc/tools/audit_p3_2_source_app_identity.cjs'
+      - 'poc/tests/p3_source_app_identity_audit.test.cjs'
       - 'poc/tools/build_p3_1_research_intake.cjs'
       - 'poc/tests/p3_research_evidence_intake.test.cjs'
       - 'poc/tools/build_p2_18_evidence_contract.cjs'
@@ -46,6 +49,9 @@ jobs:
           node --check poc/src/p3_research_evidence_intake.cjs
           node --check poc/tools/build_p3_1_research_intake.cjs
           node --test poc/tests/p3_research_evidence_intake.test.cjs
+          node --check poc/src/p3_source_app_identity_audit.cjs
+          node --check poc/tools/audit_p3_2_source_app_identity.cjs
+          node --test poc/tests/p3_source_app_identity_audit.test.cjs
       - name: Build fixed original GlobalSim engine at exact v77 commit
         run: |
           mkdir -p /tmp/globalsim
@@ -373,6 +379,85 @@ jobs:
            outsideCohort:absent.status
           }));
           NODE
+      - name: Fetch fixed original UmaSim skill/support registry and event historical source for P3.2
+        run: |
+          mkdir -p /tmp/p3-2-source
+          curl --fail --show-error --silent --location --retry 3 --retry-delay 2 \
+            'https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt' \
+            -o /tmp/p3-2-source/skill_data.txt
+          curl --fail --show-error --silent --location --retry 3 --retry-delay 2 \
+            'https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/support_card.txt' \
+            -o /tmp/p3-2-source/support_card.txt
+          curl --fail --show-error --silent --location --retry 3 --retry-delay 2 \
+            'https://raw.githubusercontent.com/mee1080/umasim/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt' \
+            -o /tmp/p3-2-source/reviewed_event_legacy_skills.txt
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
+          const bridge=require('./poc/src/skill_bridge.js');
+          const fixed=require('./poc/tools/globalsim_roster32.cjs');
+          const digest=x=>crypto.createHash('sha256').update(
+           fs.readFileSync(x)).digest('hex');
+          assert.equal(digest('/tmp/p3-2-source/skill_data.txt'),fixed.SOURCE_SHA);
+          assert.equal(digest('/tmp/p3-2-source/reviewed_event_legacy_skills.txt'),
+           bridge.PINNED_SHA256);
+          console.log('P3.2 original source and reviewed historical snapshots SHA verified');
+          NODE
+      - name: P3.2 independently verify 10 original source skill identities against 881 published app skills
+        run: |
+          node poc/tools/audit_p3_2_source_app_identity.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json \
+            /tmp/p2-split15/p3-1-quarantined-research-receipt.json \
+            /tmp/p3-2-source/skill_data.txt \
+            /tmp/p3-2-source/support_card.txt \
+            /tmp/p3-2-source/reviewed_event_legacy_skills.txt \
+            poc/data/reviewed_events.v1.json \
+            /tmp/p2-split15/p3-2-source-app-identity-audit.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const audit=require('./poc/src/p3_source_app_identity_audit.cjs');
+          const out=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p3-2-source-app-identity-audit.json','utf8'));
+          assert.equal(out.schemaVersion,1);
+          assert.equal(out.status,audit.STATUS);
+          assert.equal(out.provenance.originalSkillRegistrySha256,
+           '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(out.summary.originalSourceConditions,10);
+          assert.equal(out.summary.appSkillRosterSize,881);
+          assert.equal(out.summary.confirmedSupportCardAcquisitionRoutes,0);
+          assert.equal(out.summary.confirmedWholeSkillActivationRates,0);
+          assert.equal(out.summary.productEligibleSkillRatings,0);
+          assert.equal(out.provenance.originalUmaSimRevision,
+           'f6e4501ee6c6c2d4ac8698e7796e309d31575bde');
+          assert.equal(out.provenance.appSourceProfileCoverage.matched,818);
+          assert.equal(out.provenance.appSourceProfileCoverage.unavailable,63);
+          assert.equal(out.summary[audit.SOURCE_MATCH],9);
+          assert.equal(out.summary['not-in-app-catalog'],1);
+          for(const status of audit.ALL_STATUSES.filter(s=>
+           s!==audit.SOURCE_MATCH&&s!=='not-in-app-catalog'))
+           assert.equal(out.summary[status],0);
+          assert.deepEqual(out.rows.filter(x=>x.result==='not-in-app-catalog')
+           .map(x=>x.originalSourceNumericId),['101902211']);
+          assert(out.rows.filter(x=>x.result===audit.SOURCE_MATCH)
+           .every(x=>x.appSkillId==='skill:'+x.originalSourceNumericId));
+          assert.equal(out.rows.length,10);
+          assert.equal(new Set(out.rows.map(x=>x.originalSourceNumericId)).size,10);
+          assert.equal(out.rows.filter(x=>x.result===audit.SOURCE_MATCH).length,
+           out.summary[audit.SOURCE_MATCH]);
+          assert.equal(Object.values(out.summary)
+           .filter(x=>Number.isSafeInteger(x)).length>=8,true);
+          assert.equal(audit.ALL_STATUSES.reduce((n,key)=>n+out.summary[key],0),10);
+          assert(out.rows.every(x=>
+           (x.result===audit.SOURCE_MATCH)===Boolean(x.appSkillId)&&
+           x.verifiedSupportCardAcquisition==='not-evaluated'&&
+           x.verifiedOriginalFullSkillProc==='not-measured'&&
+           x.eligibleForP3CardScoring===false&&
+           x.cardScore===null&&x.suitabilityLabel===null));
+          console.log('P3_2_FIXED_ORIGINAL_SKILL_IDENTITY='+JSON.stringify({
+           summary:out.summary,rows:out.rows.map(x=>({
+            id:x.originalSourceNumericId,name:x.originalSourceName,
+            result:x.result,appSkillId:x.appSkillId}))}));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-source32-15plus15-W-study
@@ -381,5 +466,6 @@ jobs:
             /tmp/p2-split15/p2-17b-distance-split15.json
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
             /tmp/p2-split15/p3-1-quarantined-research-receipt.json
+            /tmp/p2-split15/p3-2-source-app-identity-audit.json
           retention-days: 14
           if-no-files-found: error

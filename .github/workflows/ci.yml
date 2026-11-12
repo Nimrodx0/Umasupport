@@ -426,6 +426,11 @@ jobs:
           node --check poc/tools/globalsim_roster32.cjs
           node --check poc/tools/skill_source32_split15_w.cjs
           node --test poc/tests/skill_source32_split15_w.test.cjs
+      - name: Validate P3.2 original source ID/name/AND-OR app identity without inventing card routes
+        run: |
+          node --check poc/src/p3_source_app_identity_audit.cjs
+          node --check poc/tools/audit_p3_2_source_app_identity.cjs
+          node --test poc/tests/p3_source_app_identity_audit.test.cjs
       - name: Validate P3.1 safe research-only evidence intake and forbid unverified card suitability
         run: |
           node --check poc/src/p3_research_evidence_intake.cjs
