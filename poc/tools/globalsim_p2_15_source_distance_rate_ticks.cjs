@@ -100,7 +100,9 @@ function validatePaired(plan,control,probe){
   'observer changed original GlobalSim skill event records');
  return control.frames.length*plan.fieldSize*4;
 }
-function analyze(plans,control,probe,sourceProfiles){
+function analyze(plans,control,probe,sourceProfiles,{rankEvidence=null}={}){
+ const rankBridge=rankEvidence?require('../src/skill_source_rank_tick_bridge.cjs'):null;
+ if(rankBridge)rankBridge.validateEvidence(rankEvidence,plans);
  check(Array.isArray(plans)&&plans.length>0&&
   control?.length===plans.length&&probe?.length===plans.length&&
   Array.isArray(sourceProfiles)&&sourceProfiles.length>0,
@@ -113,7 +115,9 @@ function analyze(plans,control,probe,sourceProfiles){
   sourceNumericId:x.ast.sourceNumericId,modelRunnerTicks:0,
   distanceRateObservations:0,sourceConditionTrue:0,
   sourceConditionFalse:0,sourceConditionUnknown:0,
-  sourceConditionEverTrueRunnerTraces:0,sourcePreconditionsWithDynamicPredicates:
+  sourceConditionEverTrueRunnerTraces:0,
+  ...(rankBridge?{modelOrderRatePredicateFacts:0}:{}),
+  sourcePreconditionsWithDynamicPredicates:
    x.ast.invokes.filter(v=>v.preConditions.some(row=>row.some(p=>
     !monitor.STATIC_TYPES.has(p.type)))).length
  }]));
@@ -123,7 +127,9 @@ function analyze(plans,control,probe,sourceProfiles){
   modelProgressRateHeldBoundaryRunnerTicks:0,distanceRatePredicateFacts:0,
   sourceConditionTrueSkillRunnerTicks:0,sourceConditionFalseSkillRunnerTicks:0,
   sourceConditionUnknownSkillRunnerTicks:0,sourceConditionEverTrueRunnerTraces:0,
-  initializedOrFinishedRunnerFramesHeld:0};
+  initializedOrFinishedRunnerFramesHeld:0,
+  ...(rankBridge?{modelPrePriorityCachedRankRunnerTicks:0,
+    modelOrderRatePredicateFacts:0}:{}),};
  for(let r=0;r<plans.length;r++){
   const plan=plans[r],a=control[r],b=probe[r];
   totals.unchangedModelPhysicsValues+=validatePaired(plan,a,b);
@@ -155,14 +161,22 @@ function analyze(plans,control,probe,sourceProfiles){
     if(rate===null)totals.modelProgressRateHeldBoundaryRunnerTicks++;
     else totals.modelProgressRateKnownRunnerTicks++;
     const staticContext=context(plan,i);
+    const exactModelRank=rankBridge?rankEvidence.rankByRace[r][t][i]:null;
+    if(rankBridge&&exactModelRank!==null)totals.modelPrePriorityCachedRankRunnerTicks++;
     for(const trace of traces[i]){
      const id=trace.compiled.sourceNumericId,summary=perSkill[id];
      const facts=observations(trace.compiled,rate);
+     const rankFacts=rankBridge?rankBridge.observedOrderRateFacts(
+      trace.compiled,exactModelRank,plan.fieldSize):[];
      const result=trace.monitor.step({tickIndex:trace.tick++,
-      staticContext,observations:facts});
+      staticContext,observations:[...facts,...rankFacts]});
      summary.modelRunnerTicks++;
      summary.distanceRateObservations+=facts.length;
      totals.distanceRatePredicateFacts+=facts.length;
+     if(rankBridge){
+      summary.modelOrderRatePredicateFacts+=rankFacts.length;
+      totals.modelOrderRatePredicateFacts+=rankFacts.length;
+     }
      const outcome=result.overallCondition;
      check(['true','false','unknown'].includes(outcome),'unknown ternary outcome');
      summary['sourceCondition'+outcome[0].toUpperCase()+outcome.slice(1)]++;
@@ -215,7 +229,9 @@ function analyze(plans,control,probe,sourceProfiles){
   raceOpportunityReport.totals.sourceTickStates.unknown===
    totals.sourceConditionUnknownSkillRunnerTicks,
   'real-model position-to-original-condition evidence count drift');
- return {schemaVersion:2,status:STATUS,
+ return {schemaVersion:rankBridge?3:2,
+  status:rankBridge?
+   'P2.15-model-pre-priority-rank-plus-distance-original-source-condition-interpretation-not-game':STATUS,
   provenance:{originalUmaSimRevision:PIN,
    sourceSkillRegistrySHA256:SOURCE_SHA,
    originalConditionValue:'distance_rate=(simulation.position*100/courseLength).toInt()',
@@ -232,9 +248,21 @@ function analyze(plans,control,probe,sourceProfiles){
    boundaryToleranceFractionOfRaceProgress:UNRESOLVED_BOUNDARY,
    sourceExpressionCompiler:'previous P2.15 three-valued full-source AND/OR/preCondition/invoke monitor'},
   denominators:{sourceDistanceRateSkills:compiled.length,
+   ...(rankBridge?{
+    sourceOrderRateSkillsAmongDistanceRate:compiled.filter(x=>
+     [...x.ast.lookup.values()].some(y=>y.type==='order_rate')).length,
+    sourceOrderRatePredicateOccurrences:compiled.reduce((n,x)=>n+
+     [...x.ast.lookup.values()].filter(y=>y.type==='order_rate').length,0)
+   }:{}),
    sourcePredicateOccurrences:compiled.reduce((n,x)=>n+
     [...x.ast.lookup.values()].filter(y=>y.type==='distance_rate').length,0)},
   totals,
+  ...(rankBridge?{rankJoinEvidence:{
+   source:rankEvidence.source,
+   modelStageTotals:rankEvidence.totals,
+   interpretedRankCondition:'order_rate integer projection per verified GameTora explanation for 9/12 runners only',
+   warning:'This is not supported by the fixed original UmaSim runtime; it ignores order_rate. No JP game-level semantics claim.'
+  }}:{}),
   raceOpportunity:raceOpportunityReport,
   rows:Object.values(perSkill).sort((a,b)=>a.sourceNumericId.localeCompare(b.sourceNumericId)),
   gates:{realGlobalSimPreSkillPositionsObserved:true,
@@ -245,7 +273,13 @@ function analyze(plans,control,probe,sourceProfiles){
    realGameSkillProcRateComputed:false,
    P3CardScoringApproved:false,P4UiChanged:false,
    observedStageRaceRunnerOpportunityGrouped:true,
-   fullRaceSkillOpportunityRateEstablished:false},
+   fullRaceSkillOpportunityRateEstablished:false,
+   ...(rankBridge?{
+    modelPriorityCachedRankObserved:true,
+    sourceOrderRateModelInterpretationApplied:true,
+    originalUmaSimOrderRateConditionImplemented:false,
+    actualGameOrderRateSemanticsProven:false
+   }:{}),},
   limitations:[
    'This is a source-formula interpretation of a REAL GlobalSim position at the original GlobalSim skill-priority stage. It is NOT a real UmaSim race-state observation or a live-game activation.',
    'The model is an unskilled fixed comparison race. Skills carrying distance_rate in the original registry were not installed in GlobalSim.',
@@ -254,7 +288,11 @@ function analyze(plans,control,probe,sourceProfiles){
    'True/false/unknown tallies are correlated model runner-ticks across skills, not independent activation events, measured source skill probabilities, or approved suitability scores.',
    'The new raceOpportunity counts each original skill for each model runner once per modeled race, reporting confirmed-at-least-once, unresolved, observed-all-false, or zero-observed-stage separately. Different runners in one race are not independent race trials.',
    'Observed-stage lower/upper fractions are descriptive bounds for this specific incomplete model priority-stage panel, not full-game race opportunity, statistical intervals, activation rates or recommendation grades.',
-   'Near-integer progress fractions are withheld due to potential Kotlin double vs GlobalSim position precision differences.'
+   'Near-integer progress fractions are withheld due to potential Kotlin double vs GlobalSim position precision differences.',
+   ...(rankBridge?[
+    'order_rate mapped to ordinal rank via a documented 9/12-field rounding interpretation; the pinned original UmaSim checker IGNOREs it and these model numbers are not original UmaSim or JP game proof.',
+    'Rank is sampled from source GlobalSim priority=1/0 rank caches in an independent third engine. It is not inferred from post-step positions; game-proc semantics remain unknown.'
+   ]:[])
   ]};
 }
 function main(args){
