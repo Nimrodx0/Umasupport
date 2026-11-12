@@ -24,7 +24,7 @@
 
 ## 固定全件スイープの結果
 
-[GitHub Actions #43173415420](https://github.com/Nimrodx0/Umasupport/actions/runs/43173415420) **成功**。専用CIで元の技能辞書のSHAを検証し、固定元SkillCheckerのOR・事前条件保持コードも照合した後、すべてのスキル構造をコンパイル。独立した11件の人工単体テストも成功。
+[GitHub Actions #43173415420](https://github.com/Nimrodx0/Umasupport/actions/runs/43173415420) **成功**。専用CIで元の技能辞書のSHAを検証し、固定元SkillCheckerのOR・事前条件保持コードも照合した後、すべてのスキル構造をコンパイル。独立した12件の人工単体テストも成功。後段のInvokeに矛盾した観測がある場合も、前段Invokeの事前条件履歴が途中更新されないことを検証した。
 
 | 元UmaSim全辞書の母数 | 実測 |
 | --- | ---: |
