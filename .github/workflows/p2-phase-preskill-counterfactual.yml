@@ -7,6 +7,10 @@ on:
       - 'poc/src/skill_phase_random_source_window_audit.cjs'
       - 'poc/tools/globalsim_p2_15_preskill_phase_position.cjs'
       - 'poc/tests/globalsim_p2_15_preskill_phase_position.test.cjs'
+      - 'poc/src/skill_phase_random_draw_support.cjs'
+      - 'poc/tools/globalsim_p2_15_phase_draw_support.cjs'
+      - 'poc/tests/skill_phase_random_draw_support.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-original-phase-draw-support-20261112.md'
       - 'poc/tools/audit_skill_conditions.cjs'
       - 'docs/plans/skill-conditions/p2.md'
       - 'docs/evidence/skills/skill-p2-15-pre-skill-position-20261112.md'
@@ -28,6 +32,9 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_preskill_phase_position.cjs
           node --check poc/src/skill_phase_random_source_window_audit.cjs
+          node --check poc/src/skill_phase_random_draw_support.cjs
+          node --check poc/tools/globalsim_p2_15_phase_draw_support.cjs
+          node --test poc/tests/skill_phase_random_draw_support.test.cjs
           node --test poc/tests/globalsim_p2_15_preskill_phase_position.test.cjs
           node --test poc/tests/skill_phase_random_source_window_audit.test.cjs
       - name: Rebuild original pinned P2.15 102/315/371 source cohort without shipping source content
@@ -113,6 +120,63 @@ jobs:
            hypotheticalPositivePaths:x.rows.filter(r=>r.sourceShapedHalfwayWindowHits>0).length
           }));
           NODE
+      - name: Audit all hypothetical original source random draws against exact 32-race pre-priority stage traces
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const revision=process.env.UMASIM_REVISION;
+          const root='https://raw.githubusercontent.com/mee1080/umasim/'+revision+
+            '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/';
+          (async()=>{
+            for(const file of ['SkillChecker.kt','RaceState.kt']){
+              const res=await fetch(root+file,{signal:AbortSignal.timeout(60000)});
+              if(!res.ok)throw Error('Pinned source HTTP '+res.status+': '+file);
+              fs.writeFileSync('/tmp/p2-15-phase-study/'+file,await res.text());
+            }
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          NODE
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_phase_draw_support.cjs replay \
+            /tmp/p2-15-phase-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-phase-study/original-engine \
+            /tmp/p2-15-phase-study/observed-engine \
+            p2-15-phase-random-window-shape.json \
+            /tmp/p2-15-phase-study/SkillChecker.kt \
+            /tmp/p2-15-phase-study/RaceState.kt \
+            /tmp/p2-15-phase-study/all-hypothetical-source-draw-support.json \
+            > /tmp/p2-15-phase-study/full-draw-summary.log
+          node - <<'NODE'
+          const fs=require('node:fs'),a=require('node:assert/strict');
+          const tool=require('./poc/tools/globalsim_p2_15_phase_draw_support.cjs');
+          const x=JSON.parse(fs.readFileSync(
+            '/tmp/p2-15-phase-study/all-hypothetical-source-draw-support.json','utf8'));
+          a.equal(x.status,tool.STATUS);
+          a.equal(x.provenance.originalUmaSimRevision,
+            'f6e4501ee6c6c2d4ac8698e7796e309d31575bde');
+          a.equal(x.provenance.originalSourceRouteAlternatives,371);
+          a.equal(x.study.fixedNoSkillGlobalSimRaces,32);
+          a(x.priorModelParity.modelPriorityPositions>10000);
+          a.equal(x.counts.originalSourcePaths,371);
+          a(x.counts.modelSourcePathRunnerRaceUnitsEvaluated>0);
+          a(x.counts.originalSourcePathsWithAtLeastOneModelUnitEvaluated>0);
+          a.equal(x.counts.modelSourcePathRunnerRaceUnitsEvaluated,
+            x.counts.modelSourcePathRunnerRaceUnitsWithPositiveDrawSupport+
+            x.counts.modelSourcePathRunnerRaceUnitsWithZeroDrawSupport);
+          a.equal(x.counts.modelPriorityPositionSamples,
+            x.priorModelParity.modelPriorityPositions);
+          a(x.rows.every(r=>r.fullOriginalSourceConditionProven===false&&
+            r.gameActivationRate===null&&r.P3CardSuitabilityLabel===null));
+          a.equal(x.gates.originalUmaSimActualRandomDrawObserved,false);
+          a.equal(x.gates.sourcePhaseRandomSameTickActualRuntimeANDObserved,false);
+          a.equal(x.gates.originalSourceWholeSkillProcMeasured,false);
+          a.equal(x.gates.P3CardSuitabilityApproved,false);
+          a.equal(x.gates.P4PublicUiChanged,false);
+          console.log('P2_15_ORIGINAL_DRAW_GEOMETRY='+JSON.stringify({
+            source:x.sourceVerification,counts:x.counts,
+            scope:x.study,gates:x.gates
+          }));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-15-source-shaped-halfway-window-pre-skill-model-not-proc
@@ -120,5 +184,7 @@ jobs:
             /tmp/p2-15-phase-study/pre-skill-position-fixed-halfway-window.json
             /tmp/p2-15-phase-study/patch.json
             /tmp/p2-15-phase-study/summary.log
+            /tmp/p2-15-phase-study/all-hypothetical-source-draw-support.json
+            /tmp/p2-15-phase-study/full-draw-summary.log
           retention-days: 14
           if-no-files-found: error
