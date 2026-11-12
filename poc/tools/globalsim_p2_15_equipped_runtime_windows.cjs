@@ -72,7 +72,9 @@ function makeEquippedRace(template,plan){
  for(const h of r.horses)h.skills=IDS.map(skillId=>({skillId,level:1,isUnique:false}));
  return r;
 }
-function checkedWindows(reply,i){
+function checkedWindows(reply,i,distance){
+ if(!Number.isFinite(distance)||distance<=0||distance>=9999)
+  throw Error('Fixed model distance cannot certify reserved sample ranges');
  const rows=reply.p2SampledSkillWindows;
  if(!Array.isArray(rows)||!Array.isArray(rows[i]))throw Error('Missing runtime sampled window array');
  const seen=new Set();
@@ -85,7 +87,12 @@ function checkedWindows(reply,i){
   for(const w of r.windows)
    if(!Array.isArray(w)||w.length!==2||!w.every(Number.isFinite)||w[0]>w[1])
     throw Error('Invalid model sampled interval');
-  return r;
+  // The pinned builder inserts Region(9999,9999) when detail zero
+  // has no eligible region. It is a disabled sentinel, never a random draw.
+  const reserved=r.windows.length===1&&r.windows[0][0]===9999&&r.windows[0][1]===9999;
+  if(!reserved&&r.windows.some(w=>w[0]<0||w[1]>distance||w[0]===w[1]))
+   throw Error('Unknown out-of-course model skill window; not a sample');
+  return {...r,researchSampleStatus:reserved?'reserved-inactive-detail':'valid-in-course-runtime-window'};
  });
 }
 function analyze(plans,original,probe){
@@ -94,10 +101,12 @@ function analyze(plans,original,probe){
  const totals={races:plans.length,frames:0,identicalPhysicalValues:0,
   identicalOriginalSkillEvents:0,observedSkillStagePositions:0,
   positionsMatchingPriorPostFrame:0,instantiatedSkillDetails:0,
-  sampledWindows:0,sampledWindowMemberRunnerTicks:0,
+  pendingWindowEntriesIncludingInactive:0,sampledWindows:0,
+  reservedInactiveDetails:0,sampledWindowMemberRunnerTicks:0,
   modelSkillEvents:0,missingDetailContexts:0};
  const skills=Object.fromEntries(IDS.map(id=>[id,{
-  instantiatedDetails:0,modelSampledWindows:0,windowMemberRunnerTicks:0,
+  instantiatedDetails:0,modelSampledWindows:0,reservedInactiveDetails:0,
+  windowMemberRunnerTicks:0,
   modelSkillEvents:0,missingDetailContexts:0
  }]));
  for(let k=0;k<plans.length;k++){
@@ -115,14 +124,21 @@ function analyze(plans,original,probe){
    if(s){s.modelSkillEvents++;totals.modelSkillEvents++;}
   }
   const details=Array.from({length:n},(_,i)=>{
-   const rows=checkedWindows(b,i);
+   const rows=checkedWindows(b,i,p.course.distance);
    for(const id of IDS)if(!rows.some(r=>r.skillId===id)){
     skills[id].missingDetailContexts++;totals.missingDetailContexts++;
    }
    for(const r of rows){
     skills[r.skillId].instantiatedDetails++;
-    skills[r.skillId].modelSampledWindows+=r.windows.length;
-    totals.instantiatedSkillDetails++;totals.sampledWindows+=r.windows.length;
+    totals.instantiatedSkillDetails++;
+    totals.pendingWindowEntriesIncludingInactive+=r.windows.length;
+    if(r.researchSampleStatus==='reserved-inactive-detail'){
+     skills[r.skillId].reservedInactiveDetails++;
+     totals.reservedInactiveDetails++;
+    } else {
+     skills[r.skillId].modelSampledWindows+=r.windows.length;
+     totals.sampledWindows+=r.windows.length;
+    }
    }
    return rows;
   });
@@ -148,6 +164,7 @@ function analyze(plans,original,probe){
      throw Error('Equipped pre-skill stage is not prior post frame');
     totals.positionsMatchingPriorPostFrame++;
     for(const r of details[i]){
+     if(r.researchSampleStatus==='reserved-inactive-detail')continue;
      if(r.windows.some(([start,end])=>start<=first&&first<end)){
       skills[r.skillId].windowMemberRunnerTicks++;
       totals.sampledWindowMemberRunnerTicks++;
@@ -173,6 +190,7 @@ function analyze(plans,original,probe){
    gameProcRateEstablished:false,P3Suitable:false,P4UiChanged:false},
   limitations:[
    'These are actual sampled intervals in pinned GlobalSim retail runtime, not a fixed artificial 0.5 draw, but they are NOT UmaSim or live-game draws.',
+   'Source GlobalSim builder can insert an inactive 9999m reserved detail when the normal source path has no eligible region; this is excluded from sampled window counts.',
    'One source model skill also has a distance_type and order_rate AND; the runtime pending interval alone does not certify the whole condition.',
    'The emitted skillEvents are GlobalSim model events, not game activation probabilities. Shared runner-ticks are not independent trials.',
    'Fixed external example skillData is used only by CI. No third-party source corpus is redistributed and no card evaluation/UI changes.'
