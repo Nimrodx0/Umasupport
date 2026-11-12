@@ -24,9 +24,15 @@ function validateDocs() {
     throw new Error('docs/project/status.md release count ' + reported.join('/') +
       ' disagrees with approved JSON ' + events + '/' + cards + '; update status in the release PR');
 
+  const updated = status.match(/\*\*スナップショット更新日：(20\d{2}-\d{2}-\d{2})。\*\*/);
+  const scoped = status.match(/\*\*測定日：(20\d{2}-\d{2}-\d{2})。\*\*/);
   if (!/^# 開発状況（現行スナップショット）/m.test(status) ||
-      !/\*\*測定日：20\d{2}-\d{2}-\d{2}。\*\*/.test(status))
-    throw new Error('docs/project/status.md must begin with a dated current summary');
+      !updated || !scoped || updated[1] < scoped[1] ||
+      !/## 対象・測定日と範囲/.test(status))
+    throw new Error('status must separate snapshot update date and scoped measurement date');
+  if (/^## P[23]\.\d+[a-z]?：/m.test(status) ||
+      !/archive\/status-before-snapshot-rework-20261112\.md/.test(status))
+    throw new Error('status must retain detailed history without accumulating experiment reports');
   if (!/archive\/status-through-20261105\.md/.test(status) ||
       !fs.existsSync(path.join(root, 'docs/archive/status-through-20261105.md')))
     throw new Error('Status migration must retain historical evidence');
