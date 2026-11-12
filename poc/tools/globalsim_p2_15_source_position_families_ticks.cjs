@@ -124,7 +124,7 @@ function analyze(plans,baselineReplies,positionReplies,sourceProfiles,verifiedSo
   ]};
 }
 function main(args){
- if(args[0]!=='replay'||args.length!==9)
+ if(args[0]!=='replay'||args.length!==10)
   throw Error('replay <model-template.jsonl> <original-engine> <position-probe> <skill_data.txt> <SkillChecker.kt> <SkillData.kt> <RaceState.kt> <RaceCalculator.kt> <report.json>');
  const [_,templatePath,originalEngine,positionEngine,
   registry,checker,skillData,state,calculator,output]=args;
