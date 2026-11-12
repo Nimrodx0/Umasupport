@@ -122,20 +122,24 @@ class WholeTickMonitor {
   const staticContext=tick.staticContext??{};
   assert(isObj(staticContext),'staticContext must be an object');
   const facts=observationMap(this.compiled,tick.observations??[]);
+  // Stage all historical latch updates. Invalid data in a later Invoke
+  // cannot corrupt earlier latches or consume the tick before validation.
+  const nextPreState=this.preState.slice();
   const invokes=this.compiled.invokes.map((v,i)=>{
    const pre=evalMatrix(v.preConditions,staticContext,facts);
    // Original UmaSim: preChecked = preChecked || preCheck(this).
    // UNKNOWN persists across later false ticks, because an unobserved
    // historical true could have latched. A later TRUE resolves it.
-   this.preState[i]=OR([this.preState[i],pre.status]);
+   nextPreState[i]=OR([nextPreState[i],pre.status]);
    const normal=evalMatrix(v.conditions,staticContext,facts);
    return {invokeOffset:v.invokeOffset,invokeIndex:v.invokeIndex,
-    preconditionNow:pre.status,preconditionLatched:this.preState[i],
+    preconditionNow:pre.status,preconditionLatched:nextPreState[i],
     conditionNow:normal.status,conditionAlternatives:normal.pathStates,
     preconditionAlternatives:pre.pathStates,
-    conditionConjunction:AND([this.preState[i],normal.status])};
+    conditionConjunction:AND([nextPreState[i],normal.status])};
   });
   const overall=OR(invokes.map(x=>x.conditionConjunction));
+  this.preState=nextPreState;
   this.anyTickTrue=OR([this.anyTickTrue,overall]);
   this.lastTick=tick.tickIndex;this.tickCount++;
   return {status:'source-conditions-under-supplied-facts-not-proc',
