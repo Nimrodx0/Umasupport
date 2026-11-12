@@ -120,7 +120,11 @@ test('source fullAND/OR/Invoke, card score and unobserved D cannot be silently p
   x=>{x.records[0].applicableRaceScope.outsideScope='zero-score'},
   x=>{x.records[0].styleComparison.missingRunner='zero'},
   x=>{x.provenance.originalSourceRegistrySha256='not fixed source'},
-  x=>{x.population.recordsEligibleForProductCardScoring=1}
+  x=>{x.population.recordsEligibleForProductCardScoring=1},
+  x=>{x.records[0].styleComparison.W.allEligibleSameSurfaceCourses.contextComparisons=0},
+  x=>{x.records[0].styleComparison.W.allEligibleSameSurfaceCourses.missingStyleScenarioHeadMode=0},
+  x=>{x.records[0].styleComparison.W.allEligibleSameSurfaceCourses.strictlyReversed.original30Contexts=8},
+  x=>{x.researchSummary.allOriginalEligibleCourses.fivePointGapShift.original30ExactContextEvents++}
  ]){
   const bad=structuredClone(out);
   mutate(bad);
