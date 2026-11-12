@@ -309,6 +309,18 @@ function validateEnvelope(out){
   out.population?.verifiedWholeSkillActivationRecords===0&&
   out.population?.recordsEligibleForProductCardScoring===0,
   'unapproved research envelope provenance or product population');
+ const aggregate=Object.fromEntries([
+  'allEligibleSameSurfaceCourses','sameVenueTokyoTurf'
+ ].map(k=>[k,{sourceConditionStylePairs:0,
+  comparedContextCells:0,missingStyleContextCells:0,
+  strictReversal:{original30SourceConditionStylePairs:0,
+   confirmedInBoth15SourceConditionStylePairs:0,
+   original30ExactContextEvents:0,
+   confirmedInBoth15ExactContextEvents:0},
+  fivePointGapShift:{original30SourceConditionStylePairs:0,
+   confirmedInBoth15SourceConditionStylePairs:0,
+   original30ExactContextEvents:0,
+   confirmedInBoth15ExactContextEvents:0}}]));
  const ids=new Set();
  for(const e of out.records){
   const subj=e.subject,scope=e.applicableRaceScope,
@@ -351,6 +363,32 @@ function validateEnvelope(out){
       Number.isSafeInteger(a.confirmedExactContextAndDirectionInBoth15)&&
       a.original30Contexts>=a.confirmedExactContextAndDirectionInBoth15),
     'missing/nonexistent venue evidence substituted');
+   if(v!==null){
+    const expected=expectedContexts(style.first,style.second).size;
+    const expectedMissing=(style.first==='Nige'||style.second==='Nige')?4:0;
+    invariant(v.contextComparisons===expected&&
+     v.missingStyleScenarioHeadMode===expectedMissing,
+     'source context count or absent style not preserved');
+    const dest=aggregate[cohort];
+    dest.sourceConditionStylePairs++;
+    dest.comparedContextCells+=v.contextComparisons;
+    dest.missingStyleContextCells+=v.missingStyleScenarioHeadMode;
+    for(const [dataKey,aggKey] of [
+     ['strictlyReversed','strictReversal'],
+     ['hypotheticalFivePointGapShift','fivePointGapShift']]){
+     const ev=v[dataKey],stat=dest[aggKey];
+     invariant(ev.original30Contexts<=v.contextComparisons&&
+      ev.confirmedExactContextAndDirectionInBoth15<=ev.original30Contexts,
+      'event counts exceed source contexts');
+     stat.original30ExactContextEvents+=ev.original30Contexts;
+     stat.confirmedInBoth15ExactContextEvents+=
+      ev.confirmedExactContextAndDirectionInBoth15;
+     stat.original30SourceConditionStylePairs+=
+      Number(ev.original30Contexts>0);
+     stat.confirmedInBoth15SourceConditionStylePairs+=
+      Number(ev.confirmedExactContextAndDirectionInBoth15>0);
+    }
+   }
   }
   invariant(e.contextInteraction?.status===
    'observed-but-distance-confounded-with-course-geometry'&&
@@ -368,6 +406,31 @@ function validateEnvelope(out){
    'unapproved full skill/card suitability promotion');
  }
  invariant(ids.size===60,'incomplete partial-condition transport');
+ invariant(out.population.sourceDistanceUnrestrictedSignatures===10&&
+  out.population.sourceDistanceRestrictedExcluded===22&&
+  out.population.matchedConditionComparisons===5040,
+  'model cohort population not fully represented');
+ for(const [key,sName,numberOfPairs,numberOfCells,numberOfMissing] of [
+  ['allEligibleSameSurfaceCourses','allOriginalEligibleCourses',60,5040,120],
+  ['sameVenueTokyoTurf','sameVenueTokyoTurf',24,2016,48]]){
+  const a=aggregate[key],b=out.researchSummary?.[sName];
+  invariant(a.sourceConditionStylePairs===numberOfPairs&&
+   a.comparedContextCells===numberOfCells&&
+   a.missingStyleContextCells===numberOfMissing&&
+   b?.sourceConditionStylePairs===numberOfPairs&&
+   b.comparedContextCells===numberOfCells&&
+   b.missingStyleContextCells===numberOfMissing,
+   'aggregated source denominator consistency');
+  for(const category of ['strictReversal','fivePointGapShift'])
+   for(const field of [
+    'original30SourceConditionStylePairs',
+    'confirmedInBoth15SourceConditionStylePairs',
+    'original30ExactContextEvents',
+    'confirmedInBoth15ExactContextEvents']){
+    invariant(a[category][field]===b[category]?.[field],
+     'source W evidence summary does not equal recorded observations');
+   }
+ }
  return true;
 }
 module.exports={STATUS,sourceKey,pairKey,expectedContexts,
