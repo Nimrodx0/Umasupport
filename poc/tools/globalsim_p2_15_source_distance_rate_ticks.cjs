@@ -126,10 +126,15 @@ function analyze(plans,control,probe,sourceProfiles){
   const plan=plans[r],a=control[r],b=probe[r];
   totals.unchangedModelPhysicsValues+=validatePaired(plan,a,b);
   totals.modelFrames+=a.frames.length;
-  const traces=Array.from({length:plan.fieldSize},()=>compiled.map(x=>({
-   compiled:x.ast,monitor:new monitor.WholeTickMonitor(x.profile),
-   seenTrue:false,tick:0
-  })));
+  const traces=Array.from({length:plan.fieldSize},()=>compiled.map(x=>{
+   const logical=new monitor.WholeTickMonitor(x.profile);
+   // The model's initialized t=0 frame has no actual source skill-call
+   // observation. Earlier precondition latch history is therefore UNKNOWN,
+   // never assumed false. A later positive fact can still establish true.
+   logical.preState=logical.preState.map((state,index)=>
+    x.ast.invokes[index].preConditions.length?monitor.UNKNOWN:state);
+   return {compiled:x.ast,monitor:logical,seenTrue:false,tick:0};
+  }));
   for(let t=0;t<a.frames.length;t++){
    for(let i=0;i<plan.fieldSize;i++){
     if(t===0){totals.initializedOrFinishedRunnerFramesHeld++;continue;}
@@ -196,6 +201,7 @@ function analyze(plans,control,probe,sourceProfiles){
    otherDynamicSourcePredicateObservations:'none',
    staticContextFields:['running_style','distance_type','ground_type'],
    modelPositionIsOriginalUmaSimRuntime:false,
+   preconditionHistoryBeforeFirstObservedModelPriorityCall:'unknown',
    boundaryToleranceFractionOfRaceProgress:UNRESOLVED_BOUNDARY,
    sourceExpressionCompiler:'previous P2.15 three-valued full-source AND/OR/preCondition/invoke monitor'},
   denominators:{sourceDistanceRateSkills:compiled.length,
