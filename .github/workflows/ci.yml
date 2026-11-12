@@ -421,6 +421,10 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs
           node --test poc/tests/globalsim_p2_15_equipped_runtime_windows.test.cjs
+      - name: Validate P2.15 source skill runner-race opportunity and unknown denominator contract
+        run: |
+          node --check poc/src/skill_source_race_opportunity.cjs
+          node --test poc/tests/skill_source_race_opportunity.test.cjs
       - name: Validate P2.15 real-model positional source distance_rate adapter (synthetic only)
         run: |
           node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
