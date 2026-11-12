@@ -94,8 +94,10 @@ function aggregate(input){
  const ids=new Set(),bySkillStyle=new Map(),byContext=new Map(),
   totals=newGroup({});
  const perRaceStyles=new Map();
+ const allRaceIndices=new Set();
  for(const raw of input){
   const item=validateTrial(raw);
+  allRaceIndices.add(item.modelRaceIndex);
   const key=[item.modelRaceIndex,item.runnerIndex,item.sourceNumericId].join('/');
   fail(!ids.has(key),'duplicate skill × runner × model-race trial');
   ids.add(key);
@@ -133,7 +135,11 @@ function aggregate(input){
   String(a.mode??'').localeCompare(String(b.mode??''));
  const skillStyles=[...bySkillStyle.values()].map(finalize).sort(order);
  const contextRows=[...byContext.values()].map(finalize).sort(order);
+ totals.modelRacesWithStylePresent=allRaceIndices.size;
  const all=finalize(totals);
+ const distinctRacesByStyle=new Map(STYLES.map(style=>[style,new Set()]));
+ for(const present of perRaceStyles.values())
+  distinctRacesByStyle.get(present.style).add(present.modelRaceIndex);
  fail(all.runnerRaceTrials===skillStyles.reduce((sum,row)=>
    sum+row.runnerRaceTrials,0)&&
   all.runnerRaceTrials===contextRows.reduce((sum,row)=>
@@ -145,6 +151,7 @@ function aggregate(input){
  const styles=STYLES.map(style=>{
   const rows=skillStyles.filter(x=>x.style===style);
   const group=newGroup({style});
+  group.modelRacesWithStylePresent=distinctRacesByStyle.get(style).size;
   for(const r of rows){
    group.runnerRaceTrials+=r.runnerRaceTrials;
    group.observedRunnerRaceTrials+=r.observedRunnerRaceTrials;
