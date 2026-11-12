@@ -426,6 +426,11 @@ jobs:
           node --check poc/tools/globalsim_roster32.cjs
           node --check poc/tools/skill_source32_split15_w.cjs
           node --test poc/tests/skill_source32_split15_w.test.cjs
+      - name: Validate P2.18 unqualified partial-condition evidence and strict P3 gate (synthetic)
+        run: |
+          node --check poc/src/p2_skill_evidence_contract.cjs
+          node --check poc/tools/build_p2_18_evidence_contract.cjs
+          node --test poc/tests/p2_skill_evidence_contract.test.cjs
       - name: Validate P2.17b two original 15-seed halves at identical source/distance context
         run: |
           node --check poc/tools/skill_distance_split15_reliability.cjs

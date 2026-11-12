@@ -7,6 +7,9 @@ on:
       - 'poc/tools/globalsim_roster32.cjs'
       - 'poc/tools/skill_source32_split15_w.cjs'
       - 'poc/tools/skill_distance_split15_reliability.cjs'
+      - 'poc/src/p2_skill_evidence_contract.cjs'
+      - 'poc/tools/build_p2_18_evidence_contract.cjs'
+      - 'poc/tests/p2_skill_evidence_contract.test.cjs'
       - 'poc/tests/skill_distance_split15_reliability.test.cjs'
       - 'poc/tools/skill_distance_style_interaction.cjs'
       - 'poc/tests/skill_source32_split15_w.test.cjs'
@@ -34,6 +37,9 @@ jobs:
           node --test poc/tests/skill_source32_split15_w.test.cjs
           node --check poc/tools/skill_distance_split15_reliability.cjs
           node --test poc/tests/skill_distance_split15_reliability.test.cjs
+          node --check poc/src/p2_skill_evidence_contract.cjs
+          node --check poc/tools/build_p2_18_evidence_contract.cjs
+          node --test poc/tests/p2_skill_evidence_contract.test.cjs
       - name: Build fixed original GlobalSim engine at exact v77 commit
         run: |
           mkdir -p /tmp/globalsim
@@ -278,11 +284,49 @@ jobs:
           assert(!Object.hasOwn(z,'cardSuitability'));
           console.log('P2_17B_EXACT_SPLIT15_REPLICATION='+JSON.stringify(z.summary));
           NODE
+      - name: P2.18 export research-only evidence without false source skill and card suitability claims
+        run: |
+          node poc/tools/build_p2_18_evidence_contract.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-split15/p2-17b-distance-split15.json \
+            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const a=require('./poc/src/p2_skill_evidence_contract.cjs');
+          const out=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p2-18-unqualified-evidence-contract.json','utf8'));
+          assert.equal(a.validateEnvelope(out),true);
+          assert.equal(out.status,
+           'P2.18-original-partial-condition-research-transport-not-P3-suitability');
+          assert.equal(out.population.sourceDistanceUnrestrictedSignatures,10);
+          assert.equal(out.population.sourceDistanceRestrictedExcluded,22);
+          assert.equal(out.population.sourceConditionStylePairRecords,60);
+          assert.equal(out.population.matchedConditionComparisons,5040);
+          assert.equal(out.population.sourceSkillAppCatalogMatchedRecords,0);
+          assert.equal(out.population.verifiedWholeSkillActivationRecords,0);
+          assert.equal(out.population.recordsEligibleForProductCardScoring,0);
+          const z=out.researchSummary;
+          assert.equal(z.allOriginalEligibleCourses.strictReversal.confirmedInBoth15SourceConditionStylePairs,0);
+          assert.equal(z.allOriginalEligibleCourses.fivePointGapShift.confirmedInBoth15SourceConditionStylePairs,46);
+          assert.equal(z.sameVenueTokyoTurf.strictReversal.confirmedInBoth15SourceConditionStylePairs,0);
+          assert.equal(z.sameVenueTokyoTurf.fivePointGapShift.confirmedInBoth15SourceConditionStylePairs,20);
+          assert(out.records.every(x=>
+           x.promotionGate.eligibleForP3CardScoring===false&&
+           x.promotionGate.suitabilityLabel===null&&
+           x.promotionGate.cardScore===null&&
+           x.styleComparison.D.value===null&&
+           x.styleComparison.fullSkillActivationRate.value===null));
+          console.log('P2_18_FIXED_SOURCE_RESEARCH_CONTRACT='+JSON.stringify({
+           status:out.status,population:out.population,
+           summary:out.researchSummary
+          }));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-source32-15plus15-W-study
           path: |
             /tmp/p2-split15/source32-15plus15-W.json
             /tmp/p2-split15/p2-17b-distance-split15.json
+            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
           retention-days: 14
           if-no-files-found: error
