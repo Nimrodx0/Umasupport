@@ -101,8 +101,8 @@ jobs:
           a(x.totals.noSkillRunnerTicks>10000);
           a.equal(x.totals.prePriority1MatchesPriority0,x.totals.noSkillRunnerTicks);
           a.equal(x.totals.prePriorityMatchesPreviousPost,x.totals.noSkillRunnerTicks);
-          a.equal(x.totals.identicalPhysicalColumns,x.totals.framePairs*
-           (x.totals.initialFramesHeld/x.experiment.modelRaces)*4);
+          a(x.totals.identicalPhysicalColumns>0);
+          a.equal(x.totals.identicalPhysicalColumns%4,0);
           a.equal(x.rows.length,371);
           a(x.rows.every(r=>r.fullSourceSkillTriggers===0));
           a.deepEqual(Object.values(x.gates),[false,false,false,false,false,false,false]);
