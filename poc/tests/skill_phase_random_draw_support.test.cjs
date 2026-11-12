@@ -75,7 +75,7 @@ test('pinned UmaSim source checks original phase boundaries, closed intervals, R
   s.checker.replace('ClosedFloatingPointRange<Double> by start..end','OpenInterval'),
   s.race),/interval no longer closed/);
  assert.throws(()=>geometry.verifyPinnedSources(
-  s.checker.replace('RandomPosition.RANDOM -> Random.nextDouble()',
+  s.checker.replaceAll('RandomPosition.RANDOM -> Random.nextDouble()',
    'RandomPosition.RANDOM -> 0.5'),s.race),
   /missing, duplicate or changed|uniform draw setting changed/);
 });
