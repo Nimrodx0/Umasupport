@@ -96,10 +96,10 @@ test('source b-2 clipping contributes a genuine nonzero final random-draw fracti
 test('overlapping observed position ranges are unioned over ONE source draw per runner-race',()=>{
  const a=geometry.measuredPositionSupport(120,0,[10]);
  approximately(a.drawFractionWithAnyObservedWindowHit,.5);
- const b=geometry.measuredPositionSupport(120,0,[15]);
+ const b=geometry.measuredPositionSupport(120,0,[13]);
  approximately(b.drawFractionWithAnyObservedWindowHit,.5);
- const joined=geometry.measuredPositionSupport(120,0,[10,15,10]);
- approximately(joined.drawFractionWithAnyObservedWindowHit,.75);
+ const joined=geometry.measuredPositionSupport(120,0,[10,13,10]);
+ approximately(joined.drawFractionWithAnyObservedWindowHit,.65);
  assert.notEqual(joined.drawFractionWithAnyObservedWindowHit,
   1-(1-a.drawFractionWithAnyObservedWindowHit)*
    (1-b.drawFractionWithAnyObservedWindowHit),
