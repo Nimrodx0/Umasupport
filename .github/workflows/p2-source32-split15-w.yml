@@ -231,6 +231,30 @@ jobs:
           assert.equal(z.summary.sameVenueTokyoTurf.sourceConditionStylePairs,24);
           assert.equal(z.summary.sameVenueTokyoTurf.comparableEventContextCells,2016);
           assert.equal(z.summary.sameVenueTokyoTurf.missingStyleRosterHeadModeContextCells,48);
+          // Source-pinned P2.17b outcome. Original30 reversal does NOT
+          // survive the stricter exact-context-and-orientation split gate.
+          for(const [group,expect] of [
+           [z.summary.allOriginalEligibleCourses,
+            {reversalPairs:0,reversalEvents:0,
+             shiftPairs:46,shiftEvents:385,shiftOriginalPairs:56,
+             shiftOriginalEvents:770}],
+           [z.summary.sameVenueTokyoTurf,
+            {reversalPairs:0,reversalEvents:0,
+             shiftPairs:20,shiftEvents:209,shiftOriginalPairs:23,
+             shiftOriginalEvents:387}]]){
+           assert.equal(group.strictSignReversal.bothHalvesConfirmedSourcePairCount,
+            expect.reversalPairs);
+           assert.equal(group.strictSignReversal.sameContextAndOrientationConfirmedEventCount,
+            expect.reversalEvents);
+           assert.equal(group.fivePointGapShift.original30SourcePairCount,
+            expect.shiftOriginalPairs);
+           assert.equal(group.fivePointGapShift.original30EventContextCount,
+            expect.shiftOriginalEvents);
+           assert.equal(group.fivePointGapShift.bothHalvesConfirmedSourcePairCount,
+            expect.shiftPairs);
+           assert.equal(group.fivePointGapShift.sameContextAndOrientationConfirmedEventCount,
+            expect.shiftEvents);
+          }
           const expected=[
            [z.summary.allOriginalEligibleCourses.strictSignReversal,5,13],
            [z.summary.allOriginalEligibleCourses.fivePointGapShift,56,770],
