@@ -1,0 +1,134 @@
+name: P2.15 direct model pre-skill rank with cited order_rate source predicate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'poc/src/skill_source_rank_tick_bridge.cjs'
+      - 'poc/tests/skill_source_rank_tick_bridge.test.cjs'
+      - 'poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs'
+      - 'poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs'
+      - 'docs/evidence/skills/skill-p2-15-source-rank-plus-distance-20261112.md'
+      - '.github/workflows/p2-source-rank-distance-real-ticks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  independent-triple-model-skill-priority-join:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check original-source rank interpretation and three-engine synthetic parity
+        run: |
+          node --check poc/src/skill_source_rank_tick_bridge.cjs
+          node --check poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs
+          node --test poc/tests/skill_source_rank_tick_bridge.test.cjs
+          node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs
+      - name: Retrieve SHA-pinned original source skill data and checker for offline experiment
+        run: |
+          mkdir -p /tmp/p2-15-rank-study
+          base=https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          curl --fail --silent --show-error --location "$base/data/skill_data.txt" -o /tmp/p2-15-rank-study/skills.txt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt" -o /tmp/p2-15-rank-study/SkillChecker.kt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt" -o /tmp/p2-15-rank-study/SkillData.kt
+          echo "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5  /tmp/p2-15-rank-study/skills.txt" | sha256sum -c -
+      - name: Build exact unmodified GlobalSim v77 model
+        run: |
+          mkdir -p /tmp/p2-15-rank-engine
+          cd /tmp/p2-15-rank-engine
+          git init -q
+          git remote add origin https://github.com/daftuyda/GlobalSim.git
+          git fetch -q --depth 1 origin 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          git checkout -q --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-rank-study/original-engine
+      - name: Build independent position pre-skill probe
+        run: |
+          node poc/tools/globalsim_p2_15_preskill_phase_position.cjs patch \
+            /tmp/p2-15-rank-engine > /tmp/p2-15-rank-study/position-source-patch.json
+          cd /tmp/p2-15-rank-engine
+          git diff --name-only | sort > /tmp/p2-15-rank-study/actual-files.txt
+          printf "src/lib.rs\nsrc/race_field.rs\nsrc/race_field_retail.rs\n" > /tmp/p2-15-rank-study/expected-files.txt
+          cmp /tmp/p2-15-rank-study/actual-files.txt /tmp/p2-15-rank-study/expected-files.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-rank-study/position-probe-engine
+      - name: Restore exact source; build INDEPENDENT original skill priority rank probe
+        run: |
+          cd /tmp/p2-15-rank-engine
+          git reset -q --hard 80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
+          test -z "$(git status --porcelain)"
+          cd "$GITHUB_WORKSPACE"
+          node poc/tools/globalsim_change_order_skill_tick.cjs patch \
+            /tmp/p2-15-rank-engine > /tmp/p2-15-rank-study/rank-source-patch.json
+          cd /tmp/p2-15-rank-engine
+          git diff --name-only | sort > /tmp/p2-15-rank-study/actual-files.txt
+          cmp /tmp/p2-15-rank-study/actual-files.txt /tmp/p2-15-rank-study/expected-files.txt
+          cargo build --release --locked
+          cp target/release/race_engine_rs_v2 /tmp/p2-15-rank-study/rank-probe-engine
+      - name: Compare 8 races across three engines and join source exact AND and rank interpretations
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs replay \
+            /tmp/p2-15-rank-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-rank-study/original-engine \
+            /tmp/p2-15-rank-study/position-probe-engine \
+            /tmp/p2-15-rank-study/rank-probe-engine \
+            /tmp/p2-15-rank-study/skills.txt \
+            /tmp/p2-15-rank-study/SkillChecker.kt \
+            /tmp/p2-15-rank-study/SkillData.kt \
+            /tmp/p2-15-rank-study/joined-source-rank-distance-model.json \
+            > /tmp/p2-15-rank-study/summary.log
+          node - <<'NODE'
+          const a=require('node:assert/strict');
+          const fs=require('node:fs');
+          const t=require('./poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-15-rank-study/joined-source-rank-distance-model.json','utf8'));
+          a.equal(x.status,t.STATUS);
+          a.equal(x.design.modelRaces,8);
+          a.equal(x.provenance.sourceOrderRateImplementedInPinnedUmaSim,false);
+          a.equal(x.comparison.sourceSkillCount,253);
+          a(x.comparison.sourceWithOrderRate>0);
+          a(x.comparison.sourceOrderRatePredicateOccurrences>0);
+          a.equal(x.comparison.originalModelPriorityRunnerTicks,108844);
+          a.equal(x.modelStageValidation.modelPriorityPositionPairsMatched,108844);
+          a.equal(x.modelStageValidation.rankPriorityPairsMatched,108844);
+          a.equal(x.modelStageValidation.positionalProbePhysicalValuesMatched,437532);
+          a.equal(x.modelStageValidation.rankProbePhysicalValuesMatched,437532);
+          a.equal(x.comparison.originalObservedSourceConditionRunnerRaces['observed-at-least-once-true'],734);
+          a.equal(x.comparison.originalObservedSourceConditionRunnerRaces['observed-unknown-without-true'],16579);
+          a.equal(x.comparison.originalObservedSourceConditionRunnerRaces['observed-all-false'],3939);
+          a.equal(x.comparison.recordedRankPredicateFacts>0,true);
+          a.equal(x.comparison.actualGameProcCount,null);
+          a.equal(x.comparison.gameRate,null);
+          a.equal(x.comparison.approvedStyleScore,null);
+          a.equal(x.gates.sameRunnerSameTickSourceDistanceRankJoined,true);
+          a.equal(x.gates.sourceOrderRateGameSemanticsValidated,false);
+          a.equal(x.gates.actualOriginalUmaSimRuntimeRankChecked,false);
+          a.equal(x.gates.realGameSkillProcRateMeasured,false);
+          a.equal(x.gates.P3CardScoringApproved,false);
+          a.equal(x.gates.P4UiChanged,false);
+          console.log('P2_15_DIRECT_RANK_JOIN_CHECK='+JSON.stringify({
+            stage:x.modelStageValidation,comparison:{
+              sourceWithOrderRate:x.comparison.sourceWithOrderRate,
+              conditions:x.comparison.sourceConditionSkillRunnerTickChanges,
+              baseline:x.comparison.originalObservedSourceConditionRunnerRaces,
+              joined:x.comparison.rankJoinedObservedSourceConditionRunnerRaces,
+              changedCells:x.comparison.sourceSkillStyleCellsWithObservableChange
+            },gates:x.gates
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-direct-priority-rank-plus-distance-conditional-model-study-not-game
+          path: |
+            /tmp/p2-15-rank-study/joined-source-rank-distance-model.json
+            /tmp/p2-15-rank-study/summary.log
+            /tmp/p2-15-rank-study/position-source-patch.json
+            /tmp/p2-15-rank-study/rank-source-patch.json
+          retention-days: 14
+          if-no-files-found: error

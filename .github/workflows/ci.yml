@@ -421,6 +421,11 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_equipped_runtime_windows.cjs
           node --test poc/tests/globalsim_p2_15_equipped_runtime_windows.test.cjs
+      - name: Validate independent model priority-rank source interpretation with original complete-skill AND/OR
+        run: |
+          node --check poc/src/skill_source_rank_tick_bridge.cjs
+          node --check poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs
+          node --test poc/tests/skill_source_rank_tick_bridge.test.cjs
       - name: Validate P2.15 source skill runner-race opportunity and unknown denominator contract
         run: |
           node --check poc/src/skill_source_race_opportunity.cjs
