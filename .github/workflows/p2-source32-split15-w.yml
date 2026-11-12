@@ -8,6 +8,9 @@ on:
       - 'poc/tools/skill_source32_split15_w.cjs'
       - 'poc/tools/skill_distance_split15_reliability.cjs'
       - 'poc/src/p2_skill_evidence_contract.cjs'
+      - 'poc/src/p3_research_evidence_intake.cjs'
+      - 'poc/tools/build_p3_1_research_intake.cjs'
+      - 'poc/tests/p3_research_evidence_intake.test.cjs'
       - 'poc/tools/build_p2_18_evidence_contract.cjs'
       - 'poc/tests/p2_skill_evidence_contract.test.cjs'
       - 'poc/tests/skill_distance_split15_reliability.test.cjs'
@@ -40,6 +43,9 @@ jobs:
           node --check poc/src/p2_skill_evidence_contract.cjs
           node --check poc/tools/build_p2_18_evidence_contract.cjs
           node --test poc/tests/p2_skill_evidence_contract.test.cjs
+          node --check poc/src/p3_research_evidence_intake.cjs
+          node --check poc/tools/build_p3_1_research_intake.cjs
+          node --test poc/tests/p3_research_evidence_intake.test.cjs
       - name: Build fixed original GlobalSim engine at exact v77 commit
         run: |
           mkdir -p /tmp/globalsim
@@ -321,6 +327,52 @@ jobs:
            summary:out.researchSummary
           }));
           NODE
+      - name: P3.1 receive P2.18 into non-scoring original-source research quarantine
+        run: |
+          node poc/tools/build_p3_1_research_intake.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json \
+            /tmp/p2-split15/p3-1-quarantined-research-receipt.json
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const p3=require('./poc/src/p3_research_evidence_intake.cjs');
+          const source=JSON.parse(fs.readFileSync(
+           'poc/data/p2_position_condition32_research.v1.json','utf8'));
+          const p2=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p2-18-unqualified-evidence-contract.json','utf8'));
+          const receipt=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p3-1-quarantined-research-receipt.json','utf8'));
+          assert.equal(p3.validateReceipt(receipt,source,p2),true);
+          assert.equal(receipt.status,
+           'P3.1-quarantined-source-partial-research-not-card-suitability');
+          assert.equal(receipt.population.originalSourcePartialConditions,10);
+          assert.equal(receipt.population.observedSourceConditionStylePairs,60);
+          assert.equal(receipt.population.studiedDistanceContextComparisons,5040);
+          assert.equal(receipt.population.verifiedCardSkillAcquisitionRoutes,0);
+          assert.equal(receipt.population.verifiedWholeSkillProcRecords,0);
+          assert.equal(receipt.population.acceptedProductSuitabilityScores,0);
+          assert(receipt.sourceConditionEvidence.every(x=>
+           x.productDecision.eligibleForP3CardScoring===false&&
+           x.productDecision.cardScore===null&&
+           x.productDecision.suitabilityLabel===null&&
+           x.D.value===null&&x.acquiredFromSupportCard.cardId===null));
+          const wanted=source.profiles.find(x=>x.distanceScope==='all').sourceNumericId;
+          const known=p3.readBySourceId(receipt,source,p2,wanted);
+          assert.equal(known.status,'research-only-not-graded');
+          assert.equal(known.evidence.length,1);
+          assert.equal(known.evidence[0].W.stylePairObservations.length,6);
+          const absent=p3.readBySourceId(receipt,source,p2,'99999999999');
+          assert.equal(absent.evidence,null);
+          assert.equal(absent.eligibleForP3CardScoring,false);
+          assert(receipt.sourceConditionEvidence.reduce((n,x)=>n+
+           x.W.stylePairObservations.filter(y=>
+            y.sameVenueTokyoTurf!==null).length,0)===24);
+          console.log('P3_1_FIXED_SOURCE_QUARANTINE='+JSON.stringify({
+           population:receipt.population,
+           exampleSourceId:wanted,
+           outsideCohort:absent.status
+          }));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-source32-15plus15-W-study
@@ -328,5 +380,6 @@ jobs:
             /tmp/p2-split15/source32-15plus15-W.json
             /tmp/p2-split15/p2-17b-distance-split15.json
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
+            /tmp/p2-split15/p3-1-quarantined-research-receipt.json
           retention-days: 14
           if-no-files-found: error
