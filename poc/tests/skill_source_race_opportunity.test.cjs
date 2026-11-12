@@ -40,6 +40,8 @@ test('one original skill runner race is counted once, not once per simulated tic
  assert.equal(x.denominators.observedSkillRunnerRaceTrials,5);
  assert.equal(x.denominators.sourceSkillStyleCells,3);
  assert.equal(x.denominators.groupedRaceStyleInstances,4);
+ assert.equal(x.totals.modelRacesWithStylePresent,2);
+ assert.equal(x.byStyle.find(y=>y.style==='Nige').modelRacesWithStylePresent,2);
  assert.equal(x.totals.verdicts['observed-at-least-once-true'],3);
  assert.equal(x.totals.verdicts['observed-unknown-without-true'],1);
  assert.equal(x.totals.verdicts['observed-all-false'],1);
