@@ -8,6 +8,11 @@ on:
       - 'poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs'
       - 'poc/src/skill_source_whole_tick_monitor.cjs'
       - 'poc/src/skill_source_race_opportunity.cjs'
+      - 'poc/src/skill_source_position_stage_facts.cjs'
+      - 'poc/tools/globalsim_p2_15_source_position_families_ticks.cjs'
+      - 'poc/tests/skill_source_position_stage_facts.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-source-position-family-join-20261113.md'
+      - 'docs/plans/skill-conditions/p2.md'
       - 'poc/tests/skill_source_race_opportunity.test.cjs'
       - 'poc/tools/globalsim_p2_15_preskill_phase_position.cjs'
       - 'docs/evidence/skills/skill-p2-15-source-distance-rate-real-ticks-20261112.md'
@@ -29,6 +34,9 @@ jobs:
         run: |
           node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
           node --check poc/src/skill_source_race_opportunity.cjs
+          node --check poc/src/skill_source_position_stage_facts.cjs
+          node --check poc/tools/globalsim_p2_15_source_position_families_ticks.cjs
+          node --test poc/tests/skill_source_position_stage_facts.test.cjs
           node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs poc/tests/skill_source_race_opportunity.test.cjs
       - name: Fetch fixed original UmaSim skill data and semantic anchors (research runtime only)
         run: |
@@ -37,6 +45,8 @@ jobs:
           curl --fail --silent --show-error --location "$base/data/skill_data.txt" -o /tmp/p2-15-dist-study/source-skills.txt
           curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt" -o /tmp/p2-15-dist-study/checker.kt
           curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt" -o /tmp/p2-15-dist-study/skillData.kt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/RaceState.kt" -o /tmp/p2-15-dist-study/RaceState.kt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/RaceCalculator.kt" -o /tmp/p2-15-dist-study/RaceCalculator.kt
           echo "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5  /tmp/p2-15-dist-study/source-skills.txt" | sha256sum -c -
       - name: Build fixed ORIGINAL GlobalSim retail engine
         run: |
@@ -122,6 +132,54 @@ jobs:
                 verdicts:x.verdicts}))},gates:r.gates
           }));
           NODE
+      - name: Reuse the exact fixed model engines and join five more original source positional families
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_source_position_families_ticks.cjs replay \
+            /tmp/p2-15-dist-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-dist-study/original-engine \
+            /tmp/p2-15-dist-study/observed-engine \
+            /tmp/p2-15-dist-study/source-skills.txt \
+            /tmp/p2-15-dist-study/checker.kt \
+            /tmp/p2-15-dist-study/skillData.kt \
+            /tmp/p2-15-dist-study/RaceState.kt \
+            /tmp/p2-15-dist-study/RaceCalculator.kt \
+            /tmp/p2-15-dist-study/source-position-families-model-join.json \
+            > /tmp/p2-15-dist-study/source-position-family-summary.log
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const t=require('./poc/tools/globalsim_p2_15_source_position_families_ticks.cjs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-15-dist-study/source-position-families-model-join.json','utf8'));
+          a.equal(x.status,t.STATUS);
+          a.equal(x.validation.modelRunnerPriorityTicks,108844);
+          a.equal(x.comparison.sourceSkillCount,253);
+          a.deepEqual(x.design.verifiedSourceFamilies,[
+            'phase','phase_firsthalf','phase_laterhalf','remain_distance','furlong'
+          ]);
+          a(x.comparison.sourceSkillsWithNewPredicateFamilies>0);
+          a(x.comparison.originalSourcePredicateOccurrences>0);
+          a(x.comparison.emittedModelSourcePredicateFacts>0);
+          a.equal(x.comparison.baselineRunnerRaceVerdicts['observed-at-least-once-true'],734);
+          a.equal(x.comparison.baselineRunnerRaceVerdicts['observed-unknown-without-true'],16579);
+          a.equal(x.comparison.baselineRunnerRaceVerdicts['observed-all-false'],3939);
+          a(x.comparison.joinedRunnerRaceVerdicts['observed-at-least-once-true']>=734);
+          a(x.comparison.joinedRunnerRaceVerdicts['observed-unknown-without-true']<=16579);
+          a(x.comparison.joinedRunnerRaceVerdicts['observed-all-false']>=3939);
+          a.equal(x.comparison.sourceWholeConditionSkillRunnerTickChanges.true+
+            x.comparison.sourceWholeConditionSkillRunnerTickChanges.false+
+            x.comparison.sourceWholeConditionSkillRunnerTickChanges.unknown,0);
+          a.equal(x.byStyle.length,4);
+          a.equal(x.gates.actualOriginalUmaSimStartPositionObserved,false);
+          a.equal(x.gates.originalSourceFullANDMeasured,false);
+          a.equal(x.gates.actualGameSkillProcRateMeasured,false);
+          a.equal(x.gates.P3CardScoringApproved,false);
+          a.equal(x.gates.P4UiChanged,false);
+          console.log('P2_15_NEW_SOURCE_POSITION_JOIN='+JSON.stringify({
+            validation:x.validation,comparison:x.comparison,
+            byStyle:x.byStyle.map(r=>({style:r.style,verdicts:r.verdicts})),
+            gates:x.gates
+          }));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-15-source-distance-rate-real-globalSim-position-not-umaSim-game
@@ -129,5 +187,7 @@ jobs:
             /tmp/p2-15-dist-study/source-distance-rate-model-join.json
             /tmp/p2-15-dist-study/source-position-patch.json
             /tmp/p2-15-dist-study/summary.log
+            /tmp/p2-15-dist-study/source-position-families-model-join.json
+            /tmp/p2-15-dist-study/source-position-family-summary.log
           retention-days: 14
           if-no-files-found: error
