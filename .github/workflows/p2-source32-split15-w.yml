@@ -220,7 +220,6 @@ jobs:
             /tmp/p2-split15/noFront-15.json \
             /tmp/p2-prior/individual-course-mode-margin.json \
             /tmp/p2-split15/p2-17b-distance-split15.json
-            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
           node - <<'NODE'
           const assert=require('node:assert/strict'),fs=require('node:fs');
           const z=JSON.parse(fs.readFileSync(
@@ -328,5 +327,6 @@ jobs:
           path: |
             /tmp/p2-split15/source32-15plus15-W.json
             /tmp/p2-split15/p2-17b-distance-split15.json
+            /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
           retention-days: 14
           if-no-files-found: error
