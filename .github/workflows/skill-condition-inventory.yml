@@ -375,6 +375,11 @@ jobs:
           assert.equal(x.denominators.sourceMatchedSkills,818);
           assert.equal(x.denominators.sourceUnavailableSkills,63);
           assert.equal(x.denominators.originalSourceRouteFamilies,970);
+          assert.equal(x.denominators.sameOriginalCurrentANDCandidates,85);
+          assert.equal(x.denominators.distinctSourceSkillsWithSameAND,85);
+          assert.equal(x.denominators.sharedMechanismKernelsWithSameAND,2);
+          assert.equal(x.denominators.rankPanelsEnumerated,170);
+          assert.equal(x.denominators.staticExcludedRoutesInEnumeratedAxisPanel,0);
           assert.equal(x.candidates.length,x.denominators.sameOriginalCurrentANDCandidates);
           assert(x.candidates.every(c=>c.sameCurrentANDRankRateAndRandom===true&&
            c.sourceRandomDrawObserved===false&&
