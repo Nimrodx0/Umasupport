@@ -1,0 +1,183 @@
+'use strict';
+/*
+ * P2.15 cross-run RESEARCH EVIDENCE JOIN.
+ *
+ * A previous pinned JVM Actions run actually equipped registered source skill
+ * 105401211. An independent fixed app-model source audit identified 85
+ * order_rate + phase_random *same original AND* routes. Compare these
+ * datasets by source skill ID AND original Invoke/OR/AND identity, never by
+ * predicate mechanism alone, and never assume same-race/same-tick rank.
+ *
+ * This module replays NO race, imports NO source registry, and makes no
+ * claims that source UmaSim evaluated order_rate or the real game's proc.
+ */
+const source=require('./skill_source_whole_tick_monitor.cjs');
+const rank=require('./skill_p2_15_rank_random_same_and_handoff.cjs');
+const MODEL_REVISION='f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
+const SOURCE_REGISTRY_BLOB='0c6ea6d72b037b24ee40860f73b0e86db47aab1d';
+const STATUS='P2.15-source-registered-JVM-vs-85-app-route-identity-only';
+const EVIDENCE_STATUS='P2.15-original-registered-source-skill-actual-race-phase-only';
+/*
+ * Review snapshot from successful separate pinned source JVM Actions run
+ * https://github.com/Nimrodx0/Umasupport/actions/runs/43459950609
+ * Original trace artifact is retained only for 14 days. This is an immutable
+ * provenance summary; it does NOT recreate or re-observe its race frames.
+ */
+const SNAPSHOT=Object.freeze({
+ status:EVIDENCE_STATUS,
+ pinnedUmaSimRevision:MODEL_REVISION,
+ sourceRegistryBlobSha:SOURCE_REGISTRY_BLOB,
+ observedRegisteredSkillId:'105401211',
+ originalInvokeCount:1,
+ originalInvokeIndex:1,
+ originalORCount:1,
+ originalORIndex:0,
+ originalANDSize:3,
+ originalPreconditionORCount:0,
+ sourceRaceCount:3,
+ originalPhaseRandomCheckerCalls:1893,
+ sourceModelEvents:3,
+ originalOrderRateEvaluatedInSource:0,
+ originalFullANDProven:0,
+ gameProcProbabilityMeasurements:0,
+ approvedSuitabilityRatings:0,
+ sourceEvidenceRunUrl:'https://github.com/Nimrodx0/Umasupport/actions/runs/43459950609'
+});
+const fail=(ok,why)=>{if(!ok)throw Error('P2.15 registered/85 join: '+why)};
+const isObj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const numeric=x=>typeof x==='string'&&/^[0-9]+$/.test(x);
+function validatedReference(e){
+ fail(isObj(e)&&e.status===EVIDENCE_STATUS&&
+  e.pinnedUmaSimRevision===MODEL_REVISION&&
+  e.sourceRegistryBlobSha===SOURCE_REGISTRY_BLOB&&
+  numeric(e.observedRegisteredSkillId)&&
+  Number.isSafeInteger(e.originalInvokeCount)&&e.originalInvokeCount>0&&
+  Number.isSafeInteger(e.originalInvokeIndex)&&e.originalInvokeIndex>=0&&
+  Number.isSafeInteger(e.originalORCount)&&e.originalORCount>0&&
+  Number.isSafeInteger(e.originalORIndex)&&e.originalORIndex>=0&&
+  e.originalORIndex<e.originalORCount&&
+  Number.isSafeInteger(e.originalANDSize)&&e.originalANDSize>=2&&
+  Number.isSafeInteger(e.originalPreconditionORCount)&&e.originalPreconditionORCount>=0&&
+  e.sourceRaceCount===3&&e.originalPhaseRandomCheckerCalls>0&&
+  e.sourceModelEvents>=0&&
+  e.originalOrderRateEvaluatedInSource===0&&
+  e.originalFullANDProven===0&&
+  e.gameProcProbabilityMeasurements===0&&
+  e.approvedSuitabilityRatings===0&&
+  typeof e.sourceEvidenceRunUrl==='string'&&
+  e.sourceEvidenceRunUrl.startsWith('https://github.com/Nimrodx0/Umasupport/actions/runs/'),
+  'verified original JVM snapshot provenance or no-rating boundary mismatch');
+ return e;
+}
+function compareStructure(compiled,e){
+ if(compiled.invokes.length!==e.originalInvokeCount)
+  return 'different-invoke-count';
+ const inv=compiled.invokes.find(x=>x.invokeIndex===e.originalInvokeIndex);
+ if(!inv)return 'missing-original-invoke-index';
+ if(inv.conditions.length!==e.originalORCount)
+  return 'different-conditions-OR-count';
+ if(inv.preConditions.length!==e.originalPreconditionORCount)
+  return 'different-preconditions-OR-count';
+ const row=inv.conditions[e.originalORIndex];
+ if(!Array.isArray(row)||row.length!==e.originalANDSize)
+  return 'different-selected-AND-size';
+ if(!row.some(x=>x.type==='order_rate')||
+    !row.some(x=>x.type==='phase_random'&&x.operator==='=='&&x.value===2))
+  return 'different-selected-AND-predicate-shape';
+ return 'same-source-route-structure';
+}
+function audit(model,prior,reference=SNAPSHOT){
+ const e=validatedReference(reference);
+ fail(isObj(model)&&Array.isArray(model.skills)&&isObj(model.skillById)&&
+  prior?.status===rank.STATUS&&Array.isArray(prior.candidates)&&
+  prior?.denominators?.sourceMatchedSkills>=1,
+  'complete app model and source rank-random cohort required');
+ const start=JSON.stringify(model), before=JSON.stringify(prior);
+ const matches=model.skills.filter(s=>s.activationProfile?.status==='source-structure'&&
+  s.activationProfile.sourceNumericId===e.observedRegisteredSkillId);
+ fail(matches.length<=1,'duplicate registered skill source match in application');
+ const chosen=matches[0]??null;
+ const current=prior.candidates.filter(c=>
+  c.sourceNumericId===e.observedRegisteredSkillId);
+ fail(current.every(c=>c.sameCurrentANDRankRateAndRandom===true)&&
+  prior.candidates.length===prior.denominators.sameOriginalCurrentANDCandidates,
+  'damaged same-AND source cohort');
+ let appStructure=null;
+ if(chosen)appStructure=compareStructure(source.compile(chosen),e);
+ // Even if the original registry skill is the same, a different Invoke or
+ // precondition structure is NOT a matched evidence route.
+ const exactMatches=appStructure==='same-source-route-structure'?
+  current.filter(c=>c.invokeIndex===e.originalInvokeIndex&&
+   c.conditionOrIndex===e.originalORIndex&&
+   c.originalConditionANDSize===e.originalANDSize&&
+   c.originalHistoricalPreconditionANDSize===0&&
+   c.preconditionOrIndex===null):[];
+ const exact=exactMatches.length===1?exactMatches[0]:null;
+ fail(exactMatches.length<=1,'multiple purported original AND matches');
+ const status=!chosen?'registered-source-skill-absent-from-application-cohort':
+  appStructure!=='same-source-route-structure'?
+  'application-matched-ID-has-different-original-structure':
+  !exact?'same-skill-but-no-matching-ranked-random-source-route':
+  'exact-original-source-AND-identity-linked-with-rank-unknown';
+ const appCandidates=[...new Set(prior.candidates.map(c=>c.sourceNumericId))].sort(
+  (a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ const result={
+  schemaVersion:1,status:STATUS,
+  pinnedUmaSimRevision:MODEL_REVISION,
+  pinnedSkillRegistryGitBlob:SOURCE_REGISTRY_BLOB,
+  priorJvmObservationSource:{
+   originalRegisteredSourceSkillId:e.observedRegisteredSkillId,
+   sourceEvidenceRunUrl:e.sourceEvidenceRunUrl,
+   sourceRaceCount:e.sourceRaceCount,
+   sourcePhaseRandomCheckerCalls:e.originalPhaseRandomCheckerCalls,
+   sourceModelSkillEvents:e.sourceModelEvents,
+   notReobservedInThisFixedSourceAudit:true
+  },
+  cohort:{
+   applicationSkills:model.skills.length,
+   sourceMatchedApplicationSkills:prior.denominators.sourceMatchedSkills,
+   originalRankAndRandomRoutes:prior.denominators.sameOriginalCurrentANDCandidates,
+   distinctOriginalRankAndRandomSourceSkillIds:appCandidates.length,
+   rankAndRandomKernelCount:prior.denominators.sharedMechanismKernelsWithSameAND
+  },
+  crossReference:{
+   originalRegistrySkillFoundInAppSourceCohort:chosen!==null,
+   originalRegistrySkillIn85SourceIdSet:appCandidates.includes(e.observedRegisteredSkillId),
+   exactOriginalSourceStructureComparison:appStructure??'app-source-skill-not-present',
+   exactInvokeORAndRouteMatches:exactMatches.length,
+   status,
+   linkedSourceRouteKey:exact?.sourceRouteKey??null,
+   linkedFamilyId:exact?.familyId??null,
+   linkedMechanismKernelId:exact?.mechanismKernelId??null,
+   originalSourceANDPredicateCount:exact?.originalConditionANDSize??null,
+   modelOnlyNineRunnerRankGate:exact?
+    exact.supportedRankPanels.find(p=>p.fieldSize===9):null,
+   modelOnlyTwelveRunnerRankGate:exact?
+    exact.supportedRankPanels.find(p=>p.fieldSize===12):null,
+   sourceRegisteredOriginalPhaseRandomWasActuallyObserved:true,
+   originalSourceOrderRateEvaluatedAtAnyObservedTick:false,
+   sameTickOriginalRankAndPhaseBothObserved:false,
+   unobservedOriginalRankRemainsUnknown:true,
+   originalFullANDActivationProven:false
+  },
+  nextCandidateSourceSkillIdsIfNoExactMatch:exact?
+   []:appCandidates.filter(x=>x!==e.observedRegisteredSkillId).slice(0,12),
+  noScoringBoundary:{
+   sourceOriginalCompleteANDVerified:0,
+   japaneseGameSkillProcProbabilities:0,
+   formalSkillCardSuitabilityRatings:0,
+   sourceRankPredicateMeasurements:0,
+   sourceWindowObservationsCopiedToOtherSkills:0
+  },
+  limitations:[
+   'The JVM source trace is a provenance snapshot from a separate successful run, NOT the same model evaluation as this fixed app cohort audit.',
+   'Only the exact source skill ID and original Invoke/OR/AND structure may be linked. Matching mechanism TYPE alone is not sufficient.',
+   'No original rank predicate was executed in pinned UmaSim; any model-only 9/12 rank truth table is NOT a real source same-tick rank observation.',
+   'This join never copies a random window coordinate from the JVM trace into another skill, or declares an actual game proc or official suitability.'
+  ]
+ };
+ fail(JSON.stringify(model)===start&&JSON.stringify(prior)===before,
+  'original source app model or prior cohort mutated');
+ return result;
+}
+module.exports={STATUS,EVIDENCE_STATUS,SNAPSHOT,compareStructure,validatedReference,audit};
