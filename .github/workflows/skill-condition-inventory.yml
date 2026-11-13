@@ -8,6 +8,8 @@ on:
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_spec_omission.cjs'
       - 'poc/tests/skill_condition_spec_omission.test.cjs'
+      - 'poc/src/skill_p2_32_research_queue.cjs'
+      - 'poc/tests/skill_p2_32_research_queue.test.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
       - 'poc/src/skill_full_condition_path_audit.cjs'
@@ -65,6 +67,8 @@ jobs:
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_condition_spec_omission.cjs
           node --test poc/tests/skill_condition_spec_omission.test.cjs
+          node --check poc/src/skill_p2_32_research_queue.cjs
+          node --test poc/tests/skill_p2_32_research_queue.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -187,6 +191,68 @@ jobs:
             o.type==='motivation')));
           console.log('P2_32_SPEC_AUDIT='+JSON.stringify(x.denominators));
           NODE
+      - name: Validate P2.32 source-route research queue and no-rating boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const q=require('./poc/src/skill_p2_32_research_queue.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-32-source-route-research-queue.json','utf8'));
+          const b=JSON.parse(fs.readFileSync('p2-15-source-blocker-impact.json','utf8'));
+          const s=JSON.parse(fs.readFileSync('p2-32-spec-conditional-omission.json','utf8'));
+          assert.equal(x.status,q.STATUS);
+          assert.equal(x.source.revision,s.source.revision);
+          assert.equal(x.source.skillRegistrySha256,s.source.skillRegistrySha256);
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatchedSkills,818);
+          assert.equal(x.denominators.sourceUnavailableSkills,63);
+          assert.equal(x.denominators.originalRouteFamilies,
+           x.denominators.finiteCompatibleRouteFamilies+
+           x.denominators.finiteExcludedRouteFamilies);
+          assert.equal(x.denominators.sourceMatchedSkills,b.denominators.sourceMatchedSkills);
+          assert.equal(x.denominators.completedSourceRouteEvaluations,0);
+          assert.equal(x.denominators.actualAppliedOmissions,0);
+          assert.equal(x.denominators.officialP3OrP4Ratings,0);
+          assert(x.priorityRouteCandidates.length<=100);
+          assert(x.initialP215Pilots.length>0&&x.initialP215Pilots.length<=7);
+          assert.equal(new Set(x.initialP215Pilots.map(r=>r.sourceNumericId)).size,
+           x.initialP215Pilots.length);
+          assert(x.initialP215Pilots.every(r=>
+           ['rank-source-join-first','event-state-pilot-next'].includes(r.researchGroup)&&
+           r.noSourceRouteProven===true&&r.noFormalSuitability===true));
+          assert(x.priorityRouteCandidates.every(r=>
+           r.noCompleteSourceRouteClaim===true&&
+           r.neverReadyForP3CardScoring===true&&
+           r.finiteCompatibleStyles.length>0&&
+           r.missingTypesOnlyIfFixedStateAssumptionsSatisfied<=
+             r.missingTypesBeforeFixedState));
+          const matched=x.rows.filter(r=>r.sourceNumericId!==null);
+          assert.equal(matched.length,818);
+          assert(x.nextTypeResearch.every(t=>
+           t.countsArePotentialReviewScopeOnly===true));
+          const total=Object.values(x.byResearchGroup)
+           .reduce((n,v)=>n+v.routeFamilies,0);
+          assert.equal(total,x.denominators.finiteCompatibleRouteFamilies);
+          console.log('P2_32_SOURCE_ROUTE_FIXED='+JSON.stringify({
+           denominators:x.denominators,
+           groups:x.byResearchGroup,
+           nextTypes:x.nextTypeResearch.slice(0,14),
+           firstPilots:x.initialP215Pilots,
+           topRoutes:x.priorityRouteCandidates.slice(0,10).map(r=>({
+            id:r.sourceNumericId,invoke:r.invokeIndex,
+            conditionOr:r.conditionOrIndex,
+            preconditionOr:r.preconditionOrIndex,
+            group:r.researchGroup,
+            types:r.unverifiedTypes
+           }))
+          }));
+          NODE
+      - name: Upload P2.32 route-specific research queue (not full skill ratings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-32-source-route-pilot-priority-not-suitability
+          path: p2-32-source-route-research-queue.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload P2.32 source-positioned spec review (never scoring data)
         uses: actions/upload-artifact@v4
         with:
