@@ -333,6 +333,13 @@ jobs:
           assert.equal(x.denominators.sourceRouteFamilies,970);
           assert.equal(x.denominators.exactStructureFamilies,253);
           assert.equal(x.denominators.sharedMechanismKernels,144);
+          assert.equal(x.denominators.familiesWithDifferentStaticAxisMasks,85);
+          assert.equal(x.denominators.skillsWithSomeStyleStaticGateContrast,291);
+          assert.equal(x.denominators.skillsWithSomeDistanceStaticGateContrast,320);
+          assert.equal(x.denominators.skillsWithSomeSurfaceStaticGateContrast,54);
+          assert.equal(x.denominators.skillsWithNoStaticallyPossibleAxisContext,0);
+          assert.equal(x.denominators.skillsWithUnrestrictedPotentialStaticAxisContexts,227);
+          assert.equal(x.denominators.skillsWithEmptyConditionInvokeHeld,0);
           assert.equal(x.panelDefinition.contexts.length,32);
           assert.equal(x.routeRows.length,970);
           assert.equal(x.sourceRows.length,881);
