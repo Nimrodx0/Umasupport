@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.security.MessageDigest
 import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,15 +37,15 @@ class P215RegisteredSourceSkillRaceTest {
         val canonical = buildJsonArray {
             skill.invokes.forEach { invoke ->
                 add(buildJsonArray {
-                    add(invoke.index)
+                    add(JsonPrimitive(invoke.index))
                     add(buildJsonArray {
                         invoke.conditions.forEach { and ->
                             add(buildJsonArray {
                                 and.forEach { predicate ->
                                     add(buildJsonArray {
-                                        add(predicate.type)
-                                        add(predicate.operator)
-                                        add(predicate.value)
+                                        add(JsonPrimitive(predicate.type))
+                                        add(JsonPrimitive(predicate.operator))
+                                        add(JsonPrimitive(predicate.value))
                                     })
                                 }
                             })
@@ -55,9 +56,9 @@ class P215RegisteredSourceSkillRaceTest {
                             add(buildJsonArray {
                                 and.forEach { predicate ->
                                     add(buildJsonArray {
-                                        add(predicate.type)
-                                        add(predicate.operator)
-                                        add(predicate.value)
+                                        add(JsonPrimitive(predicate.type))
+                                        add(JsonPrimitive(predicate.operator))
+                                        add(JsonPrimitive(predicate.value))
                                     })
                                 }
                             })
