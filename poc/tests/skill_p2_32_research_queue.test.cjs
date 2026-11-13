@@ -135,6 +135,7 @@ test('initial P2.15 pilot sample is bounded, source-unique and type-shape divers
   rankWindowSourceJoinMax:4,eventStatePilotMax:3,
   uniqueSourceSkillPerPilot:true,
   diverseUnverifiedTypeSignaturesFirst:true,
+  selectFrequentDistinctSourceTypesFirst:true,
   provenSkillSuitability:false
  });
 });
@@ -144,4 +145,29 @@ test('external random_lot cannot become easy rank-join merely because its AND ha
   .find(x=>x.conditionOrIndex===0&&x.preconditionOrIndex===1);
  assert.equal(branch.researchGroup,'complex-dynamic-route-hold');
  assert.deepEqual(branch.unresolvedComplexDependencyTypes,['random_lot']);
+});
+
+test('selects common event-state mechanisms before unrelated rare one-off types',()=>{
+ const make=(id,type)=>({
+  researchGroup:'event-state-pilot-next',
+  sourceNumericId:id,skillId:'skill:'+id,invokeIndex:0,
+  invokeOffset:0,conditionOrIndex:0,preconditionOrIndex:null,
+  routeKey:'[0,0,null]',unverifiedTypes:[type],
+  eventStudyTypes:[type],finiteCompatibleStyles:['逃げ','先行'],
+  missingTypesOnlyIfFixedStateAssumptionsSatisfied:1,
+  fixedStateAssumptionsRequired:false,nextStep:'pilot'
+ });
+ const r=q.selectInitialP215Pilots([
+  make('10','rare_one_off'),
+  make('20','is_lastspurt'),
+  make('21','is_lastspurt'),
+  make('22','is_lastspurt'),
+  make('30','change_order_onetime'),
+  make('31','change_order_onetime'),
+  make('40','is_overtake'),
+  make('41','is_overtake')
+ ]);
+ assert.deepEqual(r.map(x=>x.unresolvedTypes[0]),
+  ['is_lastspurt','change_order_onetime','is_overtake']);
+ assert.equal(new Set(r.map(x=>x.sourceNumericId)).size,3);
 });
