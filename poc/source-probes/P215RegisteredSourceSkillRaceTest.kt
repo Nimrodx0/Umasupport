@@ -5,6 +5,8 @@ import io.github.mee1080.umasim.race.data2.SkillData
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.security.MessageDigest
+import kotlinx.serialization.json.buildJsonArray
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,6 +28,48 @@ class P215RegisteredSourceSkillRaceTest {
         val extra: Int,
         val preconditionGroups: Int,
     )
+
+    private fun logicHash(skill: SkillData): String {
+        // Identical to JSON.stringify([invokeIndex, [[type,operator,value]], pre...])
+        // on the fixed application source profile. No original condition
+        // text or original literal thresholds are published in the output.
+        val canonical = buildJsonArray {
+            skill.invokes.forEach { invoke ->
+                add(buildJsonArray {
+                    add(invoke.index)
+                    add(buildJsonArray {
+                        invoke.conditions.forEach { and ->
+                            add(buildJsonArray {
+                                and.forEach { predicate ->
+                                    add(buildJsonArray {
+                                        add(predicate.type)
+                                        add(predicate.operator)
+                                        add(predicate.value)
+                                    })
+                                }
+                            })
+                        }
+                    })
+                    add(buildJsonArray {
+                        invoke.preConditions.forEach { and ->
+                            add(buildJsonArray {
+                                and.forEach { predicate ->
+                                    add(buildJsonArray {
+                                        add(predicate.type)
+                                        add(predicate.operator)
+                                        add(predicate.value)
+                                    })
+                                }
+                            })
+                        }
+                    })
+                })
+            }
+        }.toString()
+        return MessageDigest.getInstance("SHA-256")
+            .digest(canonical.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+    }
 
     private fun loadChoices(): List<Choice> {
         val path = System.getenv("P2_PINNED_SKILL_REGISTRY")
@@ -89,6 +133,8 @@ class P215RegisteredSourceSkillRaceTest {
             assertTrue(originalInvoke.conditions[choice.orIndex].any {
                 it.type == "order_rate"
             })
+            val sourceLogicSha256 = logicHash(originalSkill)
+            assertTrue(sourceLogicSha256.matches(Regex("[a-f0-9]{64}")))
             val sourceInvokeCount = originalSkill.invokes.size
             val sourceORCount = originalInvoke.conditions.size
             val sourceANDSize = originalInvoke.conditions[choice.orIndex].size
@@ -184,6 +230,7 @@ class P215RegisteredSourceSkillRaceTest {
                 "sourceOriginalCurrentANDHasPhaseRandom2":true,
                 "originalSkillRecordEquippedUnmodified":true,
                 "originalInvokeConditionsUsedUnmodified":true,
+                "originalSourceConditionLogicSha256":"$sourceLogicSha256",
                 "originalOrderRateWasIgnoredBySource":true,
                 "actualSourceCheckerTickCount":$joined,
                 "phasePredicateTrueCalls":$hits,
