@@ -17,6 +17,9 @@ on:
       - 'poc/tests/skill_p2_15_parameterized_axis_gates.test.cjs'
       - 'poc/src/skill_p2_15_rank_random_same_and_handoff.cjs'
       - 'poc/tests/skill_p2_15_rank_random_same_and_handoff.test.cjs'
+      - 'poc/src/skill_p2_15_registered_cohort_join.cjs'
+      - 'poc/tests/skill_p2_15_registered_cohort_join.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-registered-cohort-join-20261114.md'
       - 'docs/evidence/skills/skill-p2-15-rank-random-same-and-handoff-20261113.md'
       - 'docs/evidence/skills/skill-p2-15-parameterized-axis-gates-20261113.md'
       - 'docs/evidence/skills/skill-p2-32-mechanism-reuse-20261113.md'
@@ -86,6 +89,8 @@ jobs:
           node --test poc/tests/skill_p2_15_parameterized_axis_gates.test.cjs
           node --check poc/src/skill_p2_15_rank_random_same_and_handoff.cjs
           node --test poc/tests/skill_p2_15_rank_random_same_and_handoff.test.cjs
+          node --check poc/src/skill_p2_15_registered_cohort_join.cjs
+          node --test poc/tests/skill_p2_15_registered_cohort_join.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -410,6 +415,46 @@ jobs:
            }))
           }));
           NODE
+      - name: Validate exact registered JVM source identity against app rank-window cohort
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const cross=require('./poc/src/skill_p2_15_registered_cohort_join.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-15-registered-source-cohort-join.json','utf8'));
+          const prior=JSON.parse(fs.readFileSync('p2-15-rank-random-same-and-handoff.json','utf8'));
+          assert.equal(x.status,cross.STATUS);
+          assert.equal(x.source.revision,prior.source.revision);
+          assert.equal(x.source.skillRegistrySha256,prior.source.skillRegistrySha256);
+          assert.equal(x.cohort.applicationSkills,881);
+          assert.equal(x.cohort.sourceMatchedApplicationSkills,818);
+          assert.equal(x.cohort.originalRankAndRandomRoutes,85);
+          assert.equal(x.cohort.distinctOriginalRankAndRandomSourceSkillIds,85);
+          assert.equal(x.cohort.rankAndRandomKernelCount,2);
+          assert.equal(x.priorJvmObservationSource.originalRegisteredSourceSkillId,'105401211');
+          assert.equal(x.priorJvmObservationSource.sourcePhaseRandomCheckerCalls,1893);
+          assert.equal(x.crossReference.originalSourceOrderRateEvaluatedAtAnyObservedTick,false);
+          assert.equal(x.crossReference.sameTickOriginalRankAndPhaseBothObserved,false);
+          assert.equal(x.crossReference.unobservedOriginalRankRemainsUnknown,true);
+          assert.equal(x.crossReference.originalFullANDActivationProven,false);
+          assert.equal(x.noScoringBoundary.sourceOriginalCompleteANDVerified,0);
+          assert.equal(x.noScoringBoundary.sourceRankPredicateMeasurements,0);
+          assert.equal(x.noScoringBoundary.formalSkillCardSuitabilityRatings,0);
+          assert.equal(x.noScoringBoundary.sourceWindowObservationsCopiedToOtherSkills,0);
+          assert.equal(
+           x.crossReference.exactInvokeORAndRouteMatches===1,
+           x.crossReference.fullOriginalConditionLogicFingerprintMatched);
+          console.log('P2_15_REGISTERED_SOURCE_COHORT_FIXED='+JSON.stringify({
+           crossReference:x.crossReference,
+           next:x.nextCandidateSourceSkillIdsIfNoExactMatch
+          }));
+          NODE
+      - name: Upload registered source skill and fixed app-cohort identity join (not same tick)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-registered-jvm-to-app-85-route-identity-only
+          path: p2-15-registered-source-cohort-join.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload same-original-AND rank-random readiness (research-only)
         uses: actions/upload-artifact@v4
         with:

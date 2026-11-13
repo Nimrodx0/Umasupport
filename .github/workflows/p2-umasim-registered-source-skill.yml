@@ -49,6 +49,29 @@ jobs:
             f6e4501ee6c6c2d4ac8698e7796e309d31575bde
           test "$(git -C "$RUNNER_TEMP/umasim" hash-object data/skill_data.txt)" = \
             0c6ea6d72b037b24ee40860f73b0e86db47aab1d
+      - name: Compute the exact 85 pinned app source IDs before choosing JVM registered skill
+        env:
+          UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+        run: |
+          node poc/tools/audit_skill_conditions.cjs
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const cohort=JSON.parse(fs.readFileSync('p2-15-rank-random-same-and-handoff.json','utf8'));
+          const ids=[...new Set(cohort.candidates.map(x=>x.sourceNumericId))].sort(
+           (a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+          assert.equal(cohort.denominators.sourceMatchedSkills,818);
+          assert.equal(cohort.denominators.sameOriginalCurrentANDCandidates,85);
+          assert.equal(cohort.denominators.distinctSourceSkillsWithSameAND,85);
+          assert.equal(cohort.denominators.sharedMechanismKernelsWithSameAND,2);
+          assert.equal(ids.length,85);
+          assert(ids.every(x=>/^[0-9]+$/.test(x)));
+          fs.writeFileSync('p2-15-original-source-85-allowed-ids.json',
+           JSON.stringify(ids)+'\n');
+          console.log('P2_15_ORIGINAL_85_REGISTERED_SELECTION='+JSON.stringify({
+           sourceSkills:ids.length,originalANDRoutes:cohort.candidates.length,
+           distinctKernels:2,sourceRevision:cohort.source.revision
+          }));
+          NODE
       - name: Instrument only temporary checker and add original-registry JVM test
         run: |
           node poc/tools/install_p215_race_hook.cjs "$RUNNER_TEMP/umasim"
@@ -59,6 +82,7 @@ jobs:
           GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx3g
         run: |
           export P2_PINNED_SKILL_REGISTRY="$RUNNER_TEMP/umasim/data/skill_data.txt"
+          export P2_SOURCE_85_IDS_PATH="$GITHUB_WORKSPACE/p2-15-original-source-85-allowed-ids.json"
           export P2_REGISTERED_SOURCE_RACE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-15-original-registered-source-race.json"
           cd "$RUNNER_TEMP/umasim"
           ./gradlew :race:jvmTest \
@@ -86,7 +110,19 @@ jobs:
             throw Error('Original registered skill or UNKNOWN rank gate changed');
           fs.writeFileSync('p2-15-original-registered-source-summary.json',
            JSON.stringify(result,null,2)+'\n');
+          const join=require('./poc/src/skill_p2_15_registered_cohort_join.cjs');
+          const cohort=JSON.parse(fs.readFileSync(
+           'p2-15-rank-random-same-and-handoff.json','utf8'));
+          const same=join.auditSameRun(raw,cohort,fs.readFileSync(
+           process.env.RUNNER_TEMP+'/umasim/data/skill_data.txt','utf8'));
+          if(same.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements!==0||
+             same.noScoringBoundary.approvedP3P4SuitabilityScores!==0||
+             same.linked.sourceNumericId!==raw.sourceSkillId)
+            throw Error('Actual source model candidate not linked to original app 85 cohort');
+          fs.writeFileSync('p2-15-original-registered-to-85-same-run-join.json',
+           JSON.stringify(same,null,2)+'\n');
           console.log('P2_15_REGISTERED_SOURCE_MODEL='+JSON.stringify(result));
+          console.log('P2_15_ORIGINAL_85_SAME_RUN='+JSON.stringify(same));
           NODE
       - name: Upload bounded registered-source evidence (never copy source registry)
         uses: actions/upload-artifact@v4
@@ -95,5 +131,6 @@ jobs:
           path: |
             p2-15-original-registered-source-race.json
             p2-15-original-registered-source-summary.json
+            p2-15-original-registered-to-85-same-run-join.json
           retention-days: 14
           if-no-files-found: error

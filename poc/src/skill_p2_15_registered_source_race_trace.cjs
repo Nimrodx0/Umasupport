@@ -22,6 +22,8 @@ function audit(v){
   v.sourceOriginalCurrentANDHasPhaseRandom2===true&&
   v.originalSkillRecordEquippedUnmodified===true&&
   v.originalInvokeConditionsUsedUnmodified===true&&
+  typeof v.originalSourceConditionLogicSha256==='string'&&
+  /^[a-f0-9]{64}$/.test(v.originalSourceConditionLogicSha256)&&
   v.originalOrderRateWasIgnoredBySource===true&&
   v.realGameSkillProcObserved===false&&
   Array.isArray(v.trials)&&v.trials.length===3,
@@ -84,7 +86,8 @@ function audit(v){
    originalSelectedORIndex:v.sourceOriginalORIndex,
    originalSelectedANDPredicateCount:v.sourceOriginalSelectedANDSize,
    originalPreconditionORCount:v.sourceOriginalPreconditionORCount,
-   exactOriginalSourceSkillAndConditionsPreserved:true
+   exactOriginalSourceSkillAndConditionsPreserved:true,
+   originalSourceConditionLogicSha256:v.originalSourceConditionLogicSha256
   },
   counts:{
    originalRegisteredSkillEquippedInThreeSourceRaces:3,
