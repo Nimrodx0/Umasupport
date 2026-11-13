@@ -63,7 +63,7 @@ test('rejects fabricated rank results, game proc, unanchored source checker and 
  }
  assert.throws(()=>validation.validate(sample(),fakeChecker+'\n"order_rate" ->',fakeRace),
   /started implementing order_rate/);
- assert.throws(()=>validation.validate(sample(),fakeChecker.replace(
+ assert.throws(()=>validation.validate(sample(),fakeChecker.replaceAll(
   'RandomPosition.RANDOM -> Random.nextDouble()','RandomPosition.RANDOM -> Random.nextFloat()'),fakeRace),
   /P2.15 phase source|P2.15 phase draw/);
 });
