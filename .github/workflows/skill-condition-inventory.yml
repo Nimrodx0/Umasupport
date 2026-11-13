@@ -10,6 +10,10 @@ on:
       - 'poc/tests/skill_condition_spec_omission.test.cjs'
       - 'poc/src/skill_p2_32_research_queue.cjs'
       - 'poc/tests/skill_p2_32_research_queue.test.cjs'
+      - 'poc/src/skill_p2_15_mechanism_evidence.cjs'
+      - 'poc/src/skill_p2_32_mechanism_reuse.cjs'
+      - 'poc/tests/skill_p2_32_mechanism_reuse.test.cjs'
+      - 'docs/evidence/skills/skill-p2-32-mechanism-reuse-20261113.md'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
       - 'poc/src/skill_full_condition_path_audit.cjs'
@@ -69,6 +73,9 @@ jobs:
           node --test poc/tests/skill_condition_spec_omission.test.cjs
           node --check poc/src/skill_p2_32_research_queue.cjs
           node --test poc/tests/skill_p2_32_research_queue.test.cjs
+          node --check poc/src/skill_p2_15_mechanism_evidence.cjs
+          node --check poc/src/skill_p2_32_mechanism_reuse.cjs
+          node --test poc/tests/skill_p2_32_mechanism_reuse.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -246,6 +253,72 @@ jobs:
            }))
           }));
           NODE
+      - name: Validate prior P2.15 evidence reuse by original mechanism family
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const m=require('./poc/src/skill_p2_32_mechanism_reuse.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-32-mechanism-reuse-families.json','utf8'));
+          const q=JSON.parse(fs.readFileSync('p2-32-source-route-research-queue.json','utf8'));
+          assert.equal(x.status,m.STATUS);
+          assert.equal(x.source.revision,q.source.revision);
+          assert.equal(x.source.skillRegistrySha256,q.source.skillRegistrySha256);
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatchedSkills,818);
+          assert.equal(x.denominators.sourceUnavailableSkills,63);
+          assert.equal(x.denominators.sourceRouteFamilies,q.denominators.originalRouteFamilies);
+          assert.equal(x.denominators.sourceRouteFamilies,970);
+          assert.equal(x.mechanismFamilies.length,x.denominators.normalizedMechanismFamilies);
+          assert.equal(x.mechanismKernels.length,x.denominators.sharedMechanismKernels);
+          assert.equal(x.mechanismKernels.reduce((n,k)=>n+k.sourceRouteFamilies,0),970);
+          assert(x.denominators.sharedMechanismKernels<=x.denominators.normalizedMechanismFamilies);
+          assert.equal(new Set(x.initialMechanismFamilyPilots.map(p=>p.mechanismKernelId)).size,
+           x.initialMechanismFamilyPilots.length);
+          assert.equal(x.mechanismFamilies.reduce((n,g)=>n+g.sourceRouteFamilies,0),970);
+          assert(x.initialMechanismFamilyPilots.length<=7);
+          assert(x.initialMechanismFamilyPilots.some(x=>
+           x.selectedAs==='reuse-existing-mechanism-evidence'));
+          assert(x.initialMechanismFamilyPilots.every(x=>[
+           'reuse-existing-mechanism-evidence','inspect-unstudied-mechanism'
+          ].includes(x.selectedAs)));
+          assert(x.mechanismFamilies.every(g=>
+            g.onlyMechanismAlgorithmReusable===true&&
+            g.sourceThresholdsAndContextMustBeReevaluated===true&&
+            g.noWholeSourceSkillTriggerInference===true&&
+            g.noApprovedSuitabilityRating===true));
+          assert.equal(x.denominators.sourceRouteWholeActivationProofs,0);
+          assert.equal(x.denominators.actualAppliedOmissions,0);
+          assert.equal(x.denominators.formalSkillCardSuitabilityRatings,0);
+          const rank=x.previouslyStudiedTypeInventory.find(e=>e.type==='order_rate');
+          const random=x.previouslyStudiedTypeInventory.find(e=>e.type==='phase_random');
+          const corner=x.previouslyStudiedTypeInventory.find(e=>e.type==='corner');
+          const cornerRandom=x.previouslyStudiedTypeInventory.find(e=>e.type==='corner_random');
+          assert.equal(rank?.status,'selected-model-tick');
+          assert.equal(random?.status,'geometry-counterfactual');
+          assert.equal(corner?.status,'selected-model-tick');
+          assert.equal(cornerRandom?.status,'no-specific-mechanism-evidence');
+          for(const type of ['running_style','distance_type','ground_type','ground_condition'])
+           assert.equal(x.previouslyStudiedTypeInventory.find(e=>e.type===type)?.status,
+            'source-finite-eligibility');
+          console.log('P2_32_REUSE_FIXED='+JSON.stringify({
+           denominators:x.denominators,
+           pilots:x.initialMechanismFamilyPilots,
+           leadingKernels:x.mechanismKernels.slice(0,8),
+           types:x.previouslyStudiedTypeInventory.map(e=>({type:e.type,status:e.status})),
+           topFamilies:x.mechanismFamilies.slice(0,8).map(g=>({
+            id:g.familyId,types:g.mechanismTypes,skills:g.distinctSourceSkills,
+            numericParameterVariants:g.distinctExactNumericParameterSets,
+            next:g.nextMechanismResearchAction
+           }))
+          }));
+          NODE
+      - name: Upload mechanism family evidence reuse and parameterization map (not source data)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-32-mechanism-family-reuse-not-skill-suitability
+          path: p2-32-mechanism-reuse-families.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload P2.32 route-specific research queue (not full skill ratings)
         uses: actions/upload-artifact@v4
         with:

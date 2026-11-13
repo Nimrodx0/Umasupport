@@ -23,6 +23,7 @@ const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
+const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -142,6 +143,13 @@ function matchedRecord(skill,live,old){
     p232Queue.denominators.actualAppliedOmissions!==0||
     p232Queue.denominators.officialP3OrP4Ratings!==0)
   throw Error('P2.32 route research queue cohort or no-scoring boundary changed');
+ const p232Mechanism=mechanismReuse.audit(model,p232Queue);
+ if(p232Mechanism.denominators.sourceRouteFamilies!==
+    p232Queue.denominators.originalRouteFamilies||
+    p232Mechanism.denominators.formalSkillCardSuitabilityRatings!==0||
+    p232Mechanism.denominators.sourceRouteWholeActivationProofs!==0||
+    p232Mechanism.denominators.actualAppliedOmissions!==0)
+  throw Error('P2.32 evidence mechanism grouping cohort or research-only boundary changed');
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
@@ -329,6 +337,20 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-32-mechanism-reuse-families.json',
+  JSON.stringify({source:{revision:REVISION,
+   skillRegistrySha256:digest(skillText),
+   supportRegistrySha256:digest(supportText)},...p232Mechanism},null,2)+'\n');
+ console.log('P2_32_MECHANISM_REUSE='+JSON.stringify({
+  denominators:p232Mechanism.denominators,
+  selectedFamilies:p232Mechanism.initialMechanismFamilyPilots,
+  mostCommonFamilies:p232Mechanism.mechanismFamilies.slice(0,10).map(g=>({
+   familyId:g.familyId,types:g.mechanismTypes,
+   sourceSkills:g.distinctSourceSkills,variants:g.distinctExactNumericParameterSets,
+   existingEvidence:g.priorP215Evidence.map(e=>[e.type,e.status]),
+   next:g.nextMechanismResearchAction
+  }))
  }));
  fs.writeFileSync('p2-32-source-route-research-queue.json',
   JSON.stringify({source:{revision:REVISION,
