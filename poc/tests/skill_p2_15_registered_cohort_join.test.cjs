@@ -193,3 +193,15 @@ test('same-workflow cross-source gate rejects changed registry data, excluded ap
    /P2.15/);
  }
 });
+
+test('Kotlin omitted preConditions defaults to [] in original JSON, never to UNKNOWN synthetic terms',()=>{
+ const x=sameRunFixture();
+ const original=JSON.parse(x.registry);
+ delete original[0].invokes[0].preConditions;
+ x.registry=JSON.stringify(original)+' '.repeat(100500);
+ x.prior.source.skillRegistrySha256=createHash('sha256')
+  .update(x.registry).digest('hex');
+ const out=join.auditSameRun(x.raw,x.prior,x.registry);
+ assert.equal(out.provenance.fullConditionsOriginalFingerprintMatched,true);
+ assert.equal(out.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
+});
