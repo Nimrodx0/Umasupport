@@ -5,7 +5,7 @@ const validation=require('../src/skill_p2_15_umasim_phase_runtime_trace.cjs');
 const pinned=require('../src/skill_phase_random_source_window_audit.cjs');
 const source=require('../src/skill_phase_random_draw_support.cjs');
 const fakeChecker=[
- ...pinned.CHECKER_ANCHORS,
+ ...pinned.CHECKER_ANCHORS.map(line=>line==='baseSetting.initPhaseRandom(condition.value)'?line+'\n}':line),
  'class RandomEntry(start: Double, end: Double) : ClosedFloatingPointRange<Double> by start..end',
  'RandomPosition.RANDOM -> Random.nextDouble()',
  '// test-only synthetic text, not source verification'
