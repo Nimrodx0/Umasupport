@@ -107,7 +107,10 @@ function validatePaired(plan,control,probe){
 }
 function analyze(plans,control,probe,sourceProfiles,
  {rankEvidence=null,positionSourceEvidence=null,unknownRouteTriage=false,
-  includeAbsoluteOrder=false}={}){
+  includeAbsoluteOrder=false,cornerSourceEvidence=null}={}){
+ const cornerFacts=cornerSourceEvidence?
+  require('../src/skill_source_corner_stage_facts.cjs'):null;
+ if(cornerFacts)cornerFacts.validateEvidence(cornerSourceEvidence,plans);
  check(!includeAbsoluteOrder||rankEvidence,
   'original absolute order model projection requires direct rank evidence');
  const triage=unknownRouteTriage?
@@ -135,6 +138,7 @@ function analyze(plans,control,probe,sourceProfiles,
   ...(rankBridge?{modelOrderRatePredicateFacts:0}:{}),
   ...(includeAbsoluteOrder?{modelAbsoluteOrderPredicateFacts:0}:{}),
   ...(positionFacts?{modelSourcePositionPredicateFacts:0}:{}),
+  ...(cornerFacts?{modelSourceCornerPredicateFacts:0}:{}),
   sourcePreconditionsWithDynamicPredicates:
    x.ast.invokes.filter(v=>v.preConditions.some(row=>row.some(p=>
     !monitor.STATIC_TYPES.has(p.type)))).length
@@ -150,6 +154,9 @@ function analyze(plans,control,probe,sourceProfiles,
    modelSourcePositionPredicateFacts:0,
    modelRunnerPriorityTicksWithSourcePositionFacts:0
   }:{}),
+  ...(cornerFacts?{modelSourceCornerPredicateFacts:0,
+    modelRunnerPriorityTicksWithKnownCorner:0,
+    modelRunnerPriorityTicksHeldCornerBoundary:0}:{}),
   ...(rankBridge?{modelPrePriorityCachedRankRunnerTicks:0,
     modelOrderRatePredicateFacts:0}:{}),
   ...(includeAbsoluteOrder?{modelAbsoluteOrderPredicateFacts:0}:{}),};
@@ -188,6 +195,14 @@ function analyze(plans,control,probe,sourceProfiles,
     const exactModelRank=rankBridge?rankEvidence.rankByRace[r][t][i]:null;
     if(rankBridge&&exactModelRank!==null)totals.modelPrePriorityCachedRankRunnerTicks++;
     let positionFactsForRunner=0;
+    const verifiedCorner=cornerFacts?
+     cornerSourceEvidence.verifiedCourses[String(plan.course.id)]:null;
+    const cornerValue=cornerFacts?
+     cornerFacts.atModelPosition(pos1,verifiedCorner):null;
+    if(cornerFacts){
+     if(cornerValue===null)totals.modelRunnerPriorityTicksHeldCornerBoundary++;
+     else totals.modelRunnerPriorityTicksWithKnownCorner++;
+    }
     for(const trace of traces[i]){
      const id=trace.compiled.sourceNumericId,summary=perSkill[id];
      const facts=observations(trace.compiled,rate);
@@ -203,7 +218,10 @@ function analyze(plans,control,probe,sourceProfiles,
       totals.modelSourcePositionPredicateFacts+=addedFacts.length;
       positionFactsForRunner+=addedFacts.length;
      }
-     const tickFacts=[...facts,...rankFacts,...absoluteOrderFacts,...addedFacts];
+     const sourceCornerFacts=cornerFacts?
+      cornerFacts.observations(trace.compiled,pos1,verifiedCorner):[];
+     const tickFacts=[...facts,...rankFacts,...absoluteOrderFacts,...addedFacts,
+      ...sourceCornerFacts];
      const result=trace.monitor.step({tickIndex:trace.tick++,
       staticContext,observations:tickFacts});
      if(triage)triage.observe(trace.blockerTrace,trace.compiled,
@@ -211,6 +229,10 @@ function analyze(plans,control,probe,sourceProfiles,
      summary.modelRunnerTicks++;
      summary.distanceRateObservations+=facts.length;
      totals.distanceRatePredicateFacts+=facts.length;
+     if(cornerFacts){
+      summary.modelSourceCornerPredicateFacts+=sourceCornerFacts.length;
+      totals.modelSourceCornerPredicateFacts+=sourceCornerFacts.length;
+     }
      if(rankBridge){
       summary.modelOrderRatePredicateFacts+=rankFacts.length;
       totals.modelOrderRatePredicateFacts+=rankFacts.length;
@@ -282,6 +304,7 @@ function analyze(plans,control,probe,sourceProfiles,
     'P2.15-model-pre-priority-rank-plus-distance-original-source-condition-interpretation-not-game':STATUS,
   provenance:{originalUmaSimRevision:PIN,
    ...(positionFacts?{originalPositionFormulaEvidence:positionSourceEvidence}:{}),
+   ...(cornerFacts?{originalCornerFormulaEvidence:cornerSourceEvidence}:{}),
    sourceSkillRegistrySHA256:SOURCE_SHA,
    originalConditionValue:'distance_rate=(simulation.position*100/courseLength).toInt()',
    originalOrderRate:'ignored by fixed UmaSim SkillChecker',
@@ -293,7 +316,8 @@ function analyze(plans,control,probe,sourceProfiles,
    otherDynamicSourcePredicateObservations:[
     ...(positionFacts?['phase/phase_firsthalf/phase_laterhalf/remain_distance/furlong source-formula projections']:[]),
     ...(rankBridge?['direct model rank with externally documented order_rate integer mapping']:[]),
-    ...(includeAbsoluteOrder?['direct model rank interpreted as 1-indexed absolute order']:[])
+    ...(includeAbsoluteOrder?['direct model rank interpreted as 1-indexed absolute order']:[]),
+    ...(cornerFacts?['source cornerNumber formula on source-matched model course geometry']:[])
    ].join(' + ')||'none',
    staticContextFields:['running_style','distance_type','ground_type'],
    modelPositionIsOriginalUmaSimRuntime:false,
@@ -309,6 +333,12 @@ function analyze(plans,control,probe,sourceProfiles,
     sourcePositionPredicateOccurrences:compiled.reduce((n,x)=>n+
      [...x.ast.lookup.values()].filter(ref=>
       positionFacts.TYPES.includes(ref.type)).length,0)
+   }:{}),
+   ...(cornerFacts?{
+    sourceCornerSkillsAmongDistanceRate:compiled.filter(x=>
+     [...x.ast.lookup.values()].some(y=>y.type==='corner')).length,
+    sourceCornerPredicateOccurrences:compiled.reduce((n,x)=>n+
+     [...x.ast.lookup.values()].filter(y=>y.type==='corner').length,0)
    }:{}),
    ...(includeAbsoluteOrder?{
     sourceAbsoluteOrderSkillsAmongDistanceRate:compiled.filter(x=>
@@ -351,6 +381,11 @@ function analyze(plans,control,probe,sourceProfiles,
     unknownOriginalSourceRouteWitnessRecorded:true,
     historicalPreconditionLatchKeptSeparate:true,
     originalSourceSkillProcStillUnobserved:true
+   }:{}),
+   ...(cornerFacts?{
+    pinnedOriginalCornerNumberFormulaVerified:true,
+    originalAndModelCornerGeometryMatchedOnFixedCourses:true,
+    actualOriginalUmaSimCornerRuntimeObserved:false
    }:{}),
    ...(positionFacts?{
     originalUmaSimPositionFormulaSourceVerified:true,
