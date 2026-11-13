@@ -297,9 +297,14 @@ jobs:
           a.equal(h.conservativeHistoryBeforeFirstObservedTick,'unknown');
           a.equal(h.alternateHistoryBeforeFirstObservedTick,'ASSUMED false, NOT observed');
           a.deepEqual(h.conservativeVerdicts,j);
-          a.equal(h.hypotheticalVerdicts['observed-at-least-once-true'],4935);
-          a(h.hypotheticalVerdicts['observed-unknown-without-true']<=8732);
-          a(h.hypotheticalVerdicts['observed-all-false']>=7585);
+          a.deepEqual(h.hypotheticalVerdicts,{
+            'observed-at-least-once-true':4935,
+            'observed-unknown-without-true':8028,
+            'observed-all-false':8289,
+            'no-observed-priority-ticks':0
+          });
+          a.equal(h.casesUnknownOnlyUnderConservativeHistory,704);
+          a.equal(h.changedSkillStyleCells,67);
           a.equal(h.casesUnknownOnlyUnderConservativeHistory,
             8732-h.hypotheticalVerdicts['observed-unknown-without-true']);
           a.equal(Object.values(h.hypotheticalVerdicts).reduce((n,v)=>n+v,0),21252);
