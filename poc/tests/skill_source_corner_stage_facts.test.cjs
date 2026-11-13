@@ -132,7 +132,7 @@ test('unknown historical precondition and unrelated AND remain unknown with corn
  const profile={status:'source-structure',sourceNumericId:'200002',
   invokes:[{index:0,conditions:[[
    pred('distance_rate','>=',1),pred('corner','==',2),
-   pred('is_overtake','==',1)
+   pred('order','<=',3),pred('is_overtake','==',1)
   ]],preConditions:[[pred('corner','==',4)]]}]};
  const f=fixture([profile]);
  const result=joined.analyze(f.plans,f.original,f.positions,f.ranks,
