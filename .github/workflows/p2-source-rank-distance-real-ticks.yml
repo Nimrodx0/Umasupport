@@ -158,9 +158,10 @@ jobs:
           a.equal(x.provenance.originalUmaSimIgnoresOrderAndOrderRate,true);
           a.equal(c.originalSourceSkills,253);
           a.equal(c.sourceWithOrderRate,145);
-          a(c.sourceWithAbsoluteOrder>0);
-          a(c.originalAbsoluteOrderPredicateOccurrences>0);
-          a(c.observedAbsoluteOrderModelPredicateFacts>0);
+          a.equal(c.sourceWithAbsoluteOrder,50);
+          a.equal(c.originalAbsoluteOrderPredicateOccurrences,73);
+          a.equal(c.observedAbsoluteOrderModelPredicateFacts,7945612);
+          a.equal(c.changedOriginalSkillStyleCells,111);
           a.equal(x.modelStageValidation.rankPriorityPairsMatched,108844);
           a.equal(x.modelStageValidation.modelPriorityPositionPairsMatched,108844);
           a.equal(x.modelStageValidation.positionalProbePhysicalValuesMatched,437532);
@@ -169,9 +170,20 @@ jobs:
           a(b['observed-at-least-once-true']>=3085,
            'joint order_rate and positional clauses must not regress prior rank-only research');
           a(b['observed-unknown-without-true']<=12278);
-          a(j['observed-at-least-once-true']>=b['observed-at-least-once-true']);
-          a(j['observed-unknown-without-true']<=b['observed-unknown-without-true']);
-          a(j['observed-all-false']>=b['observed-all-false']);
+          a.deepEqual(b,{
+            'observed-at-least-once-true':3311,
+            'observed-unknown-without-true':11785,
+            'observed-all-false':6156,
+            'no-observed-priority-ticks':0
+          });
+          a.deepEqual(j,{
+            'observed-at-least-once-true':3589,
+            'observed-unknown-without-true':10450,
+            'observed-all-false':7213,
+            'no-observed-priority-ticks':0
+          });
+          a.deepEqual(c.extraAbsoluteOrderModelTickOutcomes,
+            {true:46405,false:799412,unknown:-845817});
           a.equal(Object.values(b).reduce((n,v)=>n+v,0),21252);
           a.equal(Object.values(j).reduce((n,v)=>n+v,0),21252);
           a.equal(c.extraAbsoluteOrderModelTickOutcomes.true+
@@ -188,6 +200,7 @@ jobs:
           a.equal(x.gates.P3CardScoringApproved,false);
           a.equal(x.gates.P4UiChanged,false);
           console.log('P2_15_RANK_POSITION_FULL_JOIN_CI='+JSON.stringify({
+            unknownRouteCounts:x.unknownRouteTriage.counts,
             originalSourceSkills:c.originalSourceSkills,sourceWithOrderRate:c.sourceWithOrderRate,
             sourceWithAbsoluteOrder:c.sourceWithAbsoluteOrder,
             sourceAbsoluteOrderPredicateOccurrences:c.originalAbsoluteOrderPredicateOccurrences,
