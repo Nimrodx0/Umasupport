@@ -167,6 +167,14 @@ function audit(model,prior){
    wholeSourceANDProven:false
   });
  }
+ // Source Invokes with no conditions contain NO recorded condition OR
+ // route in the P2.32 queue, but still belong to the source-matched cohort.
+ // Compile them conservatively; they will receive the explicit hold below.
+ for(const skill of model.skills){
+  const p=skill.activationProfile;
+  if(p?.status==='source-structure'&&!compiled.has(p.sourceNumericId))
+   compiled.set(p.sourceNumericId,ticks.compile(skill));
+ }
  assert(routeCount===prior.denominators.sourceRouteFamilies&&
   compiled.size===prior.denominators.sourceMatchedSkills,
   'source original-route cohort changed');
