@@ -206,6 +206,24 @@ jobs:
             n+r.representativeRunnerRaceTrials,0),16535);
           a.equal(u.byStyle.reduce((n,r)=>n+r.unresolvedRunnerRaceTrials,0),16535);
           a(u.byCandidateGate.length>0);
+          a.equal(u.counts.unresolvedTrialsWithOneGateWitness,7158);
+          a.equal(u.counts.unresolvedTrialsWithTwoOrMoreGateWitness,9377);
+          a.equal(u.counts.witnessesWithPreconditionLatchUnknown,3555);
+          a(u.counts.witnessesWithIgnoredSourceRankGate>0);
+          a(u.counts.witnessesWhoseOnlyGateIsIgnoredSourceRank>0);
+          a.deepEqual(u.definition.pinnedUmaSimCheckerExplicitlyIgnoresRankTypes,
+            ['order','order_rate']);
+          const gate=(name)=>u.byCandidateGate.find(r=>r.gateKind===name);
+          a.equal(gate('order_rate').representativeRunnerRaceTrials,9356);
+          a.equal(gate('order').representativeRunnerRaceTrials,3138);
+          a.equal(gate('corner').representativeRunnerRaceTrials,2908);
+          a.equal(gate('precondition-latch-unknown').representativeRunnerRaceTrials,3555);
+          a.equal(gate('order_rate').originalUmaSimCheckerDisposition,
+            'explicitly-ignored-by-pinned-UmaSim-checker');
+          a.equal(gate('order').originalUmaSimCheckerDisposition,
+            'explicitly-ignored-by-pinned-UmaSim-checker');
+          a.equal(gate('corner').originalUmaSimCheckerDisposition,
+            'unobserved-source-predicate-requires-semantics-and-model-stage-validation');
           a(u.counts.witnessTicksExaminedInUnresolvedTrials>0);
           a.equal(u.gates.historicalPreconditionsHeldSeparate,true);
           a.equal(u.gates.allRemainingUnknownsProvenCausedByWitness,false);
