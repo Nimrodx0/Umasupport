@@ -6,6 +6,8 @@ on:
     paths:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
+      - 'poc/src/skill_condition_spec_omission.cjs'
+      - 'poc/tests/skill_condition_spec_omission.test.cjs'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
       - 'poc/src/skill_coarse_style_review.cjs'
       - 'poc/src/skill_full_condition_path_audit.cjs'
@@ -61,6 +63,8 @@ jobs:
         run: |
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
+          node --check poc/src/skill_condition_spec_omission.cjs
+          node --test poc/tests/skill_condition_spec_omission.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -157,6 +161,39 @@ jobs:
           console.log(JSON.stringify(p.summary,null,2));
           console.log('P2_CHANGE_ORDER_PATH_REPORT_END');
           NODE
+      - name: Validate P2.32 fixed-game-state candidate report (never actual omission or rating)
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-32-spec-conditional-omission.json','utf8'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'p2-32-game-spec-conditional-omission-triage-only');
+          assert.equal(x.source.revision,
+           'f6e4501ee6c6c2d4ac8698e7796e309d31575bde');
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatchedSkills,818);
+          assert.equal(x.denominators.sourceUnavailableSkills,63);
+          assert.equal(x.denominators.actualAppliedOmissions,0);
+          assert.equal(x.denominators.confirmedUnconditionalSkillActivation,0);
+          assert.equal(x.denominators.officialSkillOrCardRatings,0);
+          assert.equal(x.denominators.originalPredicateOccurrences,
+           x.denominators.conditionalOmissionCandidateOccurrences+
+           x.denominators.explicitGateOccurrences+
+           x.denominators.holdForReviewOccurrences);
+          assert.equal(x.rows.length,x.denominators.appSkills);
+          assert(x.rows.every(r=>r.status==='source-unavailable'||
+           r.occurrences.every(o=>
+            o.classification!=='conditional-axis-omission-candidate'||
+            o.type==='motivation')));
+          console.log('P2_32_SPEC_AUDIT='+JSON.stringify(x.denominators));
+          NODE
+      - name: Upload P2.32 source-positioned spec review (never scoring data)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-32-game-spec-conditional-omission-candidates
+          path: p2-32-spec-conditional-omission.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload source-exact rank-change predicate path audit
         uses: actions/upload-artifact@v4
         with:

@@ -21,6 +21,7 @@ const phaseSource=require('../src/skill_phase_random_source_window_audit.cjs');
 const venueAudit=require('../src/skill_track_id_venue_audit.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
+const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -121,6 +122,15 @@ function matchedRecord(skill,live,old){
  const skillBySkill=coarseReview.report(model);
  const halfPhaseStudy=halfFeasibility.cohort(model);
  const p215=fullPaths.audit(model);
+ // P2.32: pinned model specification can justify CONDITIONAL axis comparison
+ // without simulation. Preserve full source branches; never apply omissions.
+ const p232=specOmission.audit(model);
+ if(p232.denominators.appSkills!==p215.denominators.appSkills||
+    p232.denominators.sourceMatchedSkills!==p215.denominators.sourceMatched||
+    p232.denominators.sourceUnavailableSkills!==p215.denominators.unavailable||
+    p232.denominators.actualAppliedOmissions!==0||
+    p232.denominators.officialSkillOrCardRatings!==0)
+  throw Error('P2.32 original-source app cohort or research-only boundary drift');
  const p215Blockers=blockerImpact.audit(model,
   [...new Set(changeOrder.paths.map(x=>x.sourceNumericId))]);
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
@@ -310,6 +320,14 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-32-spec-conditional-omission.json',
+  JSON.stringify({source:{
+   revision:REVISION,skillRegistrySha256:digest(skillText),
+   pinnedSkillRegistrySha256:digest(pinnedText),
+   supportRegistrySha256:digest(supportText)},...p232},null,2)+'\n');
+ console.log('P2_32_SPEC_CONDITIONAL_OMISSION='+JSON.stringify({
+  denominators:p232.denominators,byClassification:p232.byClassification
  }));
  fs.writeFileSync('p2-15-full-condition-paths.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText),
