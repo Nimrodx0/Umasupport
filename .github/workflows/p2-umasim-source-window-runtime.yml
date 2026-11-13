@@ -1,0 +1,99 @@
+name: P2.15 pinned UmaSim actual random window in JVM checker (controlled positions)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/p2-umasim-source-window-runtime.yml'
+      - 'poc/source-probes/P215SourcePhaseWindowRuntimeTest.kt'
+      - 'poc/src/skill_p2_15_umasim_phase_runtime_trace.cjs'
+      - 'poc/tests/skill_p2_15_umasim_phase_runtime_trace.test.cjs'
+      - 'poc/src/skill_phase_random_draw_support.cjs'
+      - 'poc/src/skill_phase_random_source_window_audit.cjs'
+      - 'docs/evidence/skills/skill-p2-15-umasim-phase-runtime-20261113.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/p2-umasim-source-window-runtime.yml'
+      - 'poc/source-probes/P215SourcePhaseWindowRuntimeTest.kt'
+      - 'poc/src/skill_p2_15_umasim_phase_runtime_trace.cjs'
+      - 'poc/tests/skill_p2_15_umasim_phase_runtime_trace.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-source-jvm-window:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify research-only trace validator on counterfactual fixtures
+        run: |
+          node --check poc/src/skill_p2_15_umasim_phase_runtime_trace.cjs
+          node --test poc/tests/skill_p2_15_umasim_phase_runtime_trace.test.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Fetch exactly the pinned third-party UmaSim source (no vendoring)
+        run: |
+          mkdir -p "$RUNNER_TEMP/umasim"
+          git -C "$RUNNER_TEMP/umasim" init -q
+          git -C "$RUNNER_TEMP/umasim" remote add origin https://github.com/mee1080/umasim.git
+          git -C "$RUNNER_TEMP/umasim" fetch --quiet --depth=1 origin f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          git -C "$RUNNER_TEMP/umasim" checkout --quiet --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/umasim" rev-parse HEAD)" = \
+            "f6e4501ee6c6c2d4ac8698e7796e309d31575bde"
+      - name: Verify checked Kotlin source logic and copy test only
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const src=require('./poc/src/skill_phase_random_draw_support.cjs');
+          const p=process.env.RUNNER_TEMP+'/umasim/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/';
+          const v=src.verifyPinnedSources(
+           fs.readFileSync(p+'SkillChecker.kt','utf8'),
+           fs.readFileSync(p+'RaceState.kt','utf8'));
+          if(v.actualDrawObserved!==false||v.originalSourceIntervalClosed!==true)
+           throw Error('Pinned source contracts changed');
+          console.log('P2_15_ORIGINAL_KOTLIN_SOURCE_ANCHORED='+JSON.stringify(v));
+          NODE
+          install -D poc/source-probes/P215SourcePhaseWindowRuntimeTest.kt \
+            "$RUNNER_TEMP/umasim/race/src/jvmTest/kotlin/io/github/mee1080/umasim/race/calc2/P215SourcePhaseWindowRuntimeTest.kt"
+      - name: Execute original unmodified UmaSim checker in JVM source unit test
+        env:
+          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx3g
+        run: |
+          export P2_PHASE_SOURCE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-15-source-random-window-runtime-trace.json"
+          cd "$RUNNER_TEMP/umasim"
+          ./gradlew :race:jvmTest \
+            --tests 'io.github.mee1080.umasim.race.calc2.P215SourcePhaseWindowRuntimeTest' \
+            --no-daemon --console=plain --stacktrace
+          test -s "$P2_PHASE_SOURCE_TRACE_OUTPUT"
+      - name: Independently verify actual source trace and publish bounded summary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const trace=require('./poc/src/skill_p2_15_umasim_phase_runtime_trace.cjs');
+          const p=process.env.RUNNER_TEMP+'/umasim/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/';
+          const original=JSON.parse(fs.readFileSync('p2-15-source-random-window-runtime-trace.json','utf8'));
+          const audit=trace.validate(original,
+           fs.readFileSync(p+'SkillChecker.kt','utf8'),
+           fs.readFileSync(p+'RaceState.kt','utf8'));
+          fs.writeFileSync('p2-15-source-random-window-runtime-summary.json',
+           JSON.stringify(audit,null,2)+'\n');
+          console.log('P2_15_SOURCE_JVM_WINDOW_RUNTIME='+JSON.stringify(audit));
+          NODE
+      - name: Upload original JVM random windows and research-only summary (no source registry)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-pinned-umasim-source-jvm-random-window-not-race-rank
+          path: |
+            p2-15-source-random-window-runtime-trace.json
+            p2-15-source-random-window-runtime-summary.json
+          if-no-files-found: error
+          retention-days: 14
