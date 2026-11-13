@@ -151,7 +151,11 @@ test('same-stage integrated five-source family study preserves original outputs 
  assert.equal(out.validation.modelRunnerPriorityTicks,4);
  assert.equal(out.unknownRouteTriage.counts.observedUnknownWithoutTrueRunnerRaceTrials,2);
  assert.equal(out.unknownRouteTriage.byCandidateGate[0].gateKind,'phase_random');
- assert.equal(out.unknownRouteTriage.bySkillStyle[0].unresolvedRunnerRaceTrials,2);
+ assert.equal(out.unknownRouteTriage.bySkillStyle.length,2);
+ assert.equal(out.unknownRouteTriage.bySkillStyle.reduce((n,x)=>
+  n+x.unresolvedRunnerRaceTrials,0),2);
+ assert(out.unknownRouteTriage.bySkillStyle.every(x=>
+  x.unresolvedRunnerRaceTrials===1));
  assert.equal(out.gates.unresolvedSourceORInvokePathWitnessesRecorded,true);
  assert.equal(out.gates.originalUmaSimFullUnknownCausesIdentified,false);
 });
