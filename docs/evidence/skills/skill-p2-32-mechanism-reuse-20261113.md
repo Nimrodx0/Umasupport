@@ -41,7 +41,7 @@
 
 ## 固定元データによる検証結果（2026-11-13）
 
-[GitHub Actions #43393623637](https://github.com/Nimrodx0/Umasupport/actions/runs/43393623637) ではなく、今回の[実行済みinventoryジョブ #131777051275](https://github.com/Nimrodx0/Umasupport/actions/runs/43392995431/job/131777051275) の固定元監査ログにより、以下の数値を確認した。アプリ本体や正式評価への数値転用はしていない。
+今回の[成功した固定元inventoryジョブ #131777051275](https://github.com/Nimrodx0/Umasupport/actions/runs/43392968066/job/131777051275) の固定元監査ログにより、以下の数値を確認した。アプリ本体や正式評価への数値転用はしていない。
 
 | 確認内容 | 結果 |
 | --- | ---: |
