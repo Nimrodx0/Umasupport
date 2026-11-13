@@ -106,7 +106,10 @@ function validatePaired(plan,control,probe){
  return control.frames.length*plan.fieldSize*4;
 }
 function analyze(plans,control,probe,sourceProfiles,
- {rankEvidence=null,positionSourceEvidence=null,unknownRouteTriage=false}={}){
+ {rankEvidence=null,positionSourceEvidence=null,unknownRouteTriage=false,
+  includeAbsoluteOrder=false}={}){
+ check(!includeAbsoluteOrder||rankEvidence,
+  'original absolute order model projection requires direct rank evidence');
  const triage=unknownRouteTriage?
   require('../src/skill_source_unknown_route_candidates.cjs'):null;
  check(!triage||positionSourceEvidence,
@@ -130,6 +133,7 @@ function analyze(plans,control,probe,sourceProfiles,
   sourceConditionFalse:0,sourceConditionUnknown:0,
   sourceConditionEverTrueRunnerTraces:0,
   ...(rankBridge?{modelOrderRatePredicateFacts:0}:{}),
+  ...(includeAbsoluteOrder?{modelAbsoluteOrderPredicateFacts:0}:{}),
   ...(positionFacts?{modelSourcePositionPredicateFacts:0}:{}),
   sourcePreconditionsWithDynamicPredicates:
    x.ast.invokes.filter(v=>v.preConditions.some(row=>row.some(p=>
@@ -147,7 +151,8 @@ function analyze(plans,control,probe,sourceProfiles,
    modelRunnerPriorityTicksWithSourcePositionFacts:0
   }:{}),
   ...(rankBridge?{modelPrePriorityCachedRankRunnerTicks:0,
-    modelOrderRatePredicateFacts:0}:{}),};
+    modelOrderRatePredicateFacts:0}:{}),
+  ...(includeAbsoluteOrder?{modelAbsoluteOrderPredicateFacts:0}:{}),};
  for(let r=0;r<plans.length;r++){
   const plan=plans[r],a=control[r],b=probe[r];
   totals.unchangedModelPhysicsValues+=validatePaired(plan,a,b);
@@ -188,6 +193,9 @@ function analyze(plans,control,probe,sourceProfiles,
      const facts=observations(trace.compiled,rate);
      const rankFacts=rankBridge?rankBridge.observedOrderRateFacts(
       trace.compiled,exactModelRank,plan.fieldSize):[];
+     const absoluteOrderFacts=includeAbsoluteOrder?
+      rankBridge.observedAbsoluteOrderFacts(trace.compiled,exactModelRank,
+       plan.fieldSize):[];
      const addedFacts=positionFacts?
       positionFacts.observations(trace.compiled,pos1,plan.course.distance):[];
      if(positionFacts){
@@ -195,7 +203,7 @@ function analyze(plans,control,probe,sourceProfiles,
       totals.modelSourcePositionPredicateFacts+=addedFacts.length;
       positionFactsForRunner+=addedFacts.length;
      }
-     const tickFacts=[...facts,...rankFacts,...addedFacts];
+     const tickFacts=[...facts,...rankFacts,...absoluteOrderFacts,...addedFacts];
      const result=trace.monitor.step({tickIndex:trace.tick++,
       staticContext,observations:tickFacts});
      if(triage)triage.observe(trace.blockerTrace,trace.compiled,
@@ -206,6 +214,10 @@ function analyze(plans,control,probe,sourceProfiles,
      if(rankBridge){
       summary.modelOrderRatePredicateFacts+=rankFacts.length;
       totals.modelOrderRatePredicateFacts+=rankFacts.length;
+     }
+     if(includeAbsoluteOrder){
+      summary.modelAbsoluteOrderPredicateFacts+=absoluteOrderFacts.length;
+      totals.modelAbsoluteOrderPredicateFacts+=absoluteOrderFacts.length;
      }
      const outcome=result.overallCondition;
      check(['true','false','unknown'].includes(outcome),'unknown ternary outcome');
@@ -278,8 +290,11 @@ function analyze(plans,control,probe,sourceProfiles,
   experiment:{fixedNoSkillGlobalSimRaces:plans.length,
    modelPosition:'actual pre-skill priority calls from temporary read-only Rust probe',
    sourcePredicate:'distance_rate (exact comparison operator/value in original AST)',
-   otherDynamicSourcePredicateObservations:positionFacts?
-    'only phase/phase_firsthalf/phase_laterhalf/remain_distance/furlong source-formula projections':'none',
+   otherDynamicSourcePredicateObservations:[
+    ...(positionFacts?['phase/phase_firsthalf/phase_laterhalf/remain_distance/furlong source-formula projections']:[]),
+    ...(rankBridge?['direct model rank with externally documented order_rate integer mapping']:[]),
+    ...(includeAbsoluteOrder?['direct model rank interpreted as 1-indexed absolute order']:[])
+   ].join(' + ')||'none',
    staticContextFields:['running_style','distance_type','ground_type'],
    modelPositionIsOriginalUmaSimRuntime:false,
    preconditionHistoryBeforeFirstObservedModelPriorityCall:'unknown',
@@ -295,6 +310,12 @@ function analyze(plans,control,probe,sourceProfiles,
      [...x.ast.lookup.values()].filter(ref=>
       positionFacts.TYPES.includes(ref.type)).length,0)
    }:{}),
+   ...(includeAbsoluteOrder?{
+    sourceAbsoluteOrderSkillsAmongDistanceRate:compiled.filter(x=>
+     [...x.ast.lookup.values()].some(y=>y.type==='order')).length,
+    sourceAbsoluteOrderPredicateOccurrences:compiled.reduce((n,x)=>n+
+     [...x.ast.lookup.values()].filter(y=>y.type==='order').length,0)
+   }:{}),
    ...(rankBridge?{
     sourceOrderRateSkillsAmongDistanceRate:compiled.filter(x=>
      [...x.ast.lookup.values()].some(y=>y.type==='order_rate')).length,
@@ -307,6 +328,10 @@ function analyze(plans,control,probe,sourceProfiles,
   ...(rankBridge?{rankJoinEvidence:{
    source:rankEvidence.source,
    modelStageTotals:rankEvidence.totals,
+   ...(includeAbsoluteOrder?{
+    interpretedAbsoluteOrderCondition:'exact 1-indexed ordinal at same GlobalSim priority rank; hold zero/out-of-field source values',
+    originalUmaSimIgnoredAbsoluteOrder:true
+   }:{}),
    interpretedRankCondition:'order_rate integer projection per verified GameTora explanation for 9/12 runners only',
    warning:'This is not supported by the fixed original UmaSim runtime; it ignores order_rate. No JP game-level semantics claim.'
   }}:{}),
@@ -333,6 +358,12 @@ function analyze(plans,control,probe,sourceProfiles,
     actualOriginalUmaSimRacePositionObserved:false,
     actualOriginalUmaSimFullSkillProcRateMeasured:false
    }:{}),
+   ...(includeAbsoluteOrder?{
+    modelDirectAbsoluteOrderAtSkillPriorityObserved:true,
+    sourceAbsoluteOrderModelInterpretationApplied:true,
+    originalUmaSimAbsoluteOrderConditionImplemented:false,
+    actualGameAbsoluteOrderSemanticsProven:false
+   }:{}),
    ...(rankBridge?{
     modelPriorityCachedRankObserved:true,
     sourceOrderRateModelInterpretationApplied:true,
@@ -342,12 +373,19 @@ function analyze(plans,control,probe,sourceProfiles,
   limitations:[
    'This is a source-formula interpretation of a REAL GlobalSim position at the original GlobalSim skill-priority stage. It is NOT a real UmaSim race-state observation or a live-game activation.',
    'The model is an unskilled fixed comparison race. Skills carrying distance_rate in the original registry were not installed in GlobalSim.',
-   'Only distance_rate receives numeric predicate observations; phase_random, rank and all other dynamic source conditions remain unknown. Static ground condition and track venue are withheld unless separately proven.',
-   'Original Kotlin SkillChecker ignores order_rate, so simulated proc records from that checker cannot certify game rank predicates; this study never substitutes model rank into them.',
+   ...(rankBridge||positionFacts?[
+    'Numeric original predicates receive ONLY explicitly supplied source-anchored observations: distance_rate plus opt-in position families and/or interpreted 9/12 model ranks. Unprovided phase_random draws and all other dynamic predicates remain unknown; static venue is withheld.'
+   ]:[
+    'Only distance_rate receives numeric predicate observations; phase_random, rank and all other dynamic source conditions remain unknown. Static ground condition and track venue are withheld unless separately proven.'
+   ]),
+   'Original Kotlin SkillChecker ignores order_rate and order, so simulated proc records from that checker cannot certify game rank predicates; this study never substitutes model rank into them.',
    'True/false/unknown tallies are correlated model runner-ticks across skills, not independent activation events, measured source skill probabilities, or approved suitability scores.',
    'The new raceOpportunity counts each original skill for each model runner once per modeled race, reporting confirmed-at-least-once, unresolved, observed-all-false, or zero-observed-stage separately. Different runners in one race are not independent race trials.',
    'Observed-stage lower/upper fractions are descriptive bounds for this specific incomplete model priority-stage panel, not full-game race opportunity, statistical intervals, activation rates or recommendation grades.',
    'Near-integer progress fractions are withheld due to potential Kotlin double vs GlobalSim position precision differences.',
+   ...(includeAbsoluteOrder?[
+    'Absolute order is a conditional exact model rank projection of the original operator and 1-indexed value for 9/12-runner panels only. It is ignored in the fixed UmaSim checker; game rule verification remains separate.'
+   ]:[]),
    ...(positionFacts?[
     'The additional five source families are source-formula projections from real GlobalSim model priority positions, NOT observed UmaSim currentPhase/startPosition or actual game state.',
     'Near phase, half-phase, remaining-distance integer and furlong boundaries are withheld. Unmeasured source state, historical preconditions and unrelated AND conditions stay unknown.',

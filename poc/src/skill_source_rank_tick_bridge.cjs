@@ -34,6 +34,25 @@ function observedOrderRateFacts(compiled,rank,fieldSize){
  }
  return out;
 }
+/*
+ * Absolute order is an exact 1-indexed ordinal, unlike order_rate's
+ * documented percent-to-integer conversion. Pinned UmaSim SkillData.kt
+ * ignores BOTH types. This is a conditional MODEL interpretation, never
+ * claimed to be an original UmaSim runtime/real-game observation.
+ * Extreme/unknown 0 and out-of-field values are held, not coerced.
+ */
+function observedAbsoluteOrderFacts(compiled,rank,fieldSize){
+ if(rank===null)return [];
+ fail(bounds.FIELDS.includes(fieldSize)&&Number.isSafeInteger(rank)&&
+  rank>=1&&rank<=fieldSize,'rank outside sourced 9/12 field size');
+ const facts=[];
+ for(const ref of compiled.lookup.values()){
+  if(ref.type!=='order'||!Number.isSafeInteger(ref.value)||
+   ref.value<1||ref.value>fieldSize)continue;
+  facts.push({...ref,satisfied:bounds.compare(rank,ref.operator,ref.value)});
+ }
+ return facts;
+}
 function buildEvidence(plans,originalReplies,positionReplies,rankReplies){
  fail(Array.isArray(plans)&&plans.length>0&&
   plans.length===originalReplies?.length&&
@@ -139,4 +158,4 @@ function validateEvidence(e,plans){
  }
  return true;
 }
-module.exports={MODEL_PIN,STATUS,observedOrderRateFacts,buildEvidence,validateEvidence};
+module.exports={MODEL_PIN,STATUS,observedOrderRateFacts,observedAbsoluteOrderFacts,buildEvidence,validateEvidence};
