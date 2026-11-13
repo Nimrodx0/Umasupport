@@ -204,4 +204,107 @@ function audit(model,prior,reference=SNAPSHOT){
   'original source app model or prior cohort mutated');
  return result;
 }
-module.exports={STATUS,EVIDENCE_STATUS,SNAPSHOT,logicSha256,compareStructure,validatedReference,audit};
+/*
+ * Unlike audit()'s deliberately separate historical 105401211 snapshot,
+ * this variant runs AFTER a current pinned JVM test and a fixed app cohort
+ * audit in the SAME Actions job. Validate the exact original registry bytes
+ * by source sha256 and compare the complete logical fingerprint, not merely
+ * the ID, operator TYPE, or AND size. The original skill record is used
+ * read-only in memory and not returned.
+ */
+function auditSameRun(originalJvmTrace,appCohort,registryText){
+ const jvm=require('./skill_p2_15_registered_source_race_trace.cjs');
+ const verified=jvm.audit(originalJvmTrace);
+ fail(appCohort?.status===rank.STATUS&&
+  appCohort?.source?.revision===MODEL_REVISION&&
+  appCohort?.denominators?.sameOriginalCurrentANDCandidates===85&&
+  appCohort?.denominators?.distinctSourceSkillsWithSameAND===85&&
+  appCohort?.denominators?.sharedMechanismKernelsWithSameAND===2&&
+  typeof registryText==='string'&&registryText.length>100000,
+  'same-job pinned app 85 route cohort and original registry required');
+ const sha=createHash('sha256').update(registryText).digest('hex');
+ fail(sha===appCohort.source.skillRegistrySha256,
+  'app cohort and JVM registry bytes use different original source');
+ const registry=JSON.parse(registryText);
+ fail(Array.isArray(registry),'fixed source registry must be an array');
+ const id=verified.observedRegisteredSkillId;
+ const sourceSkills=registry.filter(x=>x?.id===id);
+ fail(sourceSkills.length===1,'registered JVM skill missing/duplicated in source registry');
+ const record=sourceSkills[0];
+ const compiled=source.compile({
+  status:'source-structure',sourceNumericId:id,invokes:record.invokes
+ });
+ fail(logicSha256(compiled)===
+  verified.preservedStructure.originalSourceConditionLogicSha256,
+  'JVM original registered source conditions diverge from independent JS digest');
+ const sameAnd=appCohort.candidates.filter(c=>c.sourceNumericId===id&&
+  c.invokeIndex===verified.preservedStructure.originalInvokeIndex&&
+  c.conditionOrIndex===verified.preservedStructure.originalSelectedORIndex&&
+  c.originalConditionANDSize===
+    verified.preservedStructure.originalSelectedANDPredicateCount&&
+  c.preconditionOrIndex===null&&
+  c.originalHistoricalPreconditionANDSize===0);
+ fail(sameAnd.length===1,'registered source skill not a unique original app 85 current AND');
+ const candidate=sameAnd[0];
+ const inv=compiled.invokes.find(x=>x.invokeIndex===candidate.invokeIndex);
+ fail(inv&&inv.conditions.length===
+   verified.preservedStructure.originalCurrentConditionORCount&&
+  inv.preConditions.length===
+   verified.preservedStructure.originalPreconditionORCount&&
+  inv.conditions[candidate.conditionOrIndex].some(x=>x.type==='order_rate')&&
+  inv.conditions[candidate.conditionOrIndex].some(x=>
+    x.type==='phase_random'&&x.operator==='=='&&x.value===2),
+  'app cohort matching source AND changed or lost exact phase random value');
+ fail(verified.counts.originalRegisteredSkillEquippedInThreeSourceRaces===3&&
+  verified.counts.originalOrderRatePredicateEvaluatedInSource===0&&
+  verified.counts.fullOriginalRankAndWindowANDProven===0&&
+  verified.counts.officialP3P4Ratings===0,
+  'real model skill rank condition falsely promoted');
+ return {
+  schemaVersion:1,
+  status:'P2.15-JVM-original-registered-skill-exact-app-85-AND-linked-no-rank',
+  provenance:{
+   pinnedUmaSimRevision:MODEL_REVISION,
+   pinnedSourceRegistryGitBlob:SOURCE_REGISTRY_BLOB,
+   sourceRegistrySHA256:sha,
+   sameActionsRunHasTwoIndependentParsers:true,
+   currentPinnedJVMSourceModelRaceObserved:true,
+   fullConditionsOriginalFingerprintMatched:true,
+   originalSourceRegistryRedistributed:false
+  },
+  linked:{
+   sourceNumericId:id,
+   invokeIndex:candidate.invokeIndex,conditionOrIndex:candidate.conditionOrIndex,
+   sourceRouteKey:candidate.sourceRouteKey,
+   exactFamilyId:candidate.familyId,
+   sharedMechanismKernelId:candidate.mechanismKernelId,
+   originalANDCount:candidate.originalConditionANDSize,
+   modelNineRunnerRankGate:candidate.supportedRankPanels.find(x=>x.fieldSize===9),
+   modelTwelveRunnerRankGate:candidate.supportedRankPanels.find(x=>x.fieldSize===12)
+  },
+  observedModel:{
+   originalRegisteredSourceRaces:3,
+   phasePredicateSourceTickChecks:verified.counts.sourceOriginalPhaseRandomCheckerTicks,
+   phasePredicateTrueSourceTickChecks:verified.counts.originalSourcePhasePredicateTrueCalls,
+   phasePredicateFalseSourceTickChecks:verified.counts.originalSourcePhasePredicateFalseCalls,
+   sourceModelSkillEvents:verified.counts.sourceModelSkillEvents
+  },
+  noScoringBoundary:{
+   originalOrderRatePredicateSourceRuntimeObservations:0,
+   sourceOriginalRankAndPhaseSameTickJointMeasurements:0,
+   sourceAllOriginalANDConditionsVerified:0,
+   sourceRankPositionIndependentFieldSizeObservations:0,
+   japaneseGameSkillProcProbabilityMeasurements:0,
+   approvedP3P4SuitabilityScores:0,
+   otherSkillRuntimeDrawsCopied:0
+  },
+  limitations:[
+   'The full original source Invoke logic digest and source ID now match a member of the audited 85 app source condition rows; this does not prove the game activates that skill.',
+   'Original UmaSim ignores order_rate. We measured one skill random window in actual source RaceCalculator frames, NOT a same-tick observed rank and random conjunction.',
+   'The 9/12-place projections are independent model-only rank geometry from a different evidence stream. We do not attach a model rank to any observed race frame.',
+   'Source registered skill event counts are never interpreted as real-game proc rates or P3/P4 suitability.'
+  ]
+ };
+}
+
+module.exports={STATUS,EVIDENCE_STATUS,SNAPSHOT,logicSha256,compareStructure,validatedReference,audit,auditSameRun};
