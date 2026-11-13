@@ -146,13 +146,36 @@ function selectInitialP215Pilots(ordered){
  const chosen=[],usedSkills=new Set();
  for(const {group,limit} of targets){
   const pool=ordered.filter(x=>x.researchGroup===group);
+  // Within the group, prioritize a representative type/signature seen in
+  // more DISTINCT original skills. A rare single-condition event is not
+  // automatically more informative than a common state mechanism.
+  const shapeOf=x=>group==='event-state-pilot-next'
+   ?x.eventStudyTypes.join('|'):x.unverifiedTypes.join('|');
+  const shapeSkills=new Map();
+  for(const row of pool){
+   const shape=shapeOf(row);
+   if(!shapeSkills.has(shape))shapeSkills.set(shape,new Set());
+   shapeSkills.get(shape).add(row.sourceNumericId);
+  }
+  pool.sort((a,b)=>{
+   const count=(shapeSkills.get(shapeOf(b))?.size||0)-
+    (shapeSkills.get(shapeOf(a))?.size||0);
+   if(count)return count;
+   const diff=a.missingTypesOnlyIfFixedStateAssumptionsSatisfied-
+    b.missingTypesOnlyIfFixedStateAssumptionsSatisfied;
+   if(diff)return diff;
+   return compareId(a.sourceNumericId,b.sourceNumericId)||
+    a.invokeOffset-b.invokeOffset||
+    a.conditionOrIndex-b.conditionOrIndex||
+    (a.preconditionOrIndex??-1)-(b.preconditionOrIndex??-1);
+  });
   const typeShapes=new Set();
   let n=0;
   for(const pass of [0,1]){
    if(n>=limit)break;
    for(const row of pool){
     if(n>=limit)break;
-    const shape=row.unverifiedTypes.join('|');
+    const shape=shapeOf(row);
     if(usedSkills.has(row.sourceNumericId)||
        (pass===0&&typeShapes.has(shape)))continue;
     chosen.push({
@@ -299,6 +322,7 @@ function audit(model,{blockerReport,specReport}={}){
    rankWindowSourceJoinMax:4,eventStatePilotMax:3,
    uniqueSourceSkillPerPilot:true,
    diverseUnverifiedTypeSignaturesFirst:true,
+   selectFrequentDistinctSourceTypesFirst:true,
    provenSkillSuitability:false
   },
   rows,
