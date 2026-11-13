@@ -15,6 +15,9 @@ on:
       - 'poc/tests/skill_p2_32_mechanism_reuse.test.cjs'
       - 'poc/src/skill_p2_15_parameterized_axis_gates.cjs'
       - 'poc/tests/skill_p2_15_parameterized_axis_gates.test.cjs'
+      - 'poc/src/skill_p2_15_rank_random_same_and_handoff.cjs'
+      - 'poc/tests/skill_p2_15_rank_random_same_and_handoff.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-rank-random-same-and-handoff-20261113.md'
       - 'docs/evidence/skills/skill-p2-15-parameterized-axis-gates-20261113.md'
       - 'docs/evidence/skills/skill-p2-32-mechanism-reuse-20261113.md'
       - 'poc/src/skill_condition_mixed_cohort.cjs'
@@ -81,6 +84,8 @@ jobs:
           node --test poc/tests/skill_p2_32_mechanism_reuse.test.cjs
           node --check poc/src/skill_p2_15_parameterized_axis_gates.cjs
           node --test poc/tests/skill_p2_15_parameterized_axis_gates.test.cjs
+          node --check poc/src/skill_p2_15_rank_random_same_and_handoff.cjs
+          node --test poc/tests/skill_p2_15_rank_random_same_and_handoff.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -356,6 +361,62 @@ jobs:
            r.actualSkillTriggerObserved===false));
           console.log('P2_15_PARAMETERIZED_AXIS_FIXED='+JSON.stringify(x.denominators));
           NODE
+      - name: Validate same-original-AND rank and random handoff without inventing source draw
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const handoff=require('./poc/src/skill_p2_15_rank_random_same_and_handoff.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-15-rank-random-same-and-handoff.json','utf8'));
+          const a=JSON.parse(fs.readFileSync('p2-15-parameterized-axis-gates.json','utf8'));
+          assert.equal(x.status,handoff.STATUS);
+          assert.equal(x.source.revision,a.source.revision);
+          assert.equal(x.source.skillRegistrySha256,a.source.skillRegistrySha256);
+          assert.equal(x.denominators.appSkills,881);
+          assert.equal(x.denominators.sourceMatchedSkills,818);
+          assert.equal(x.denominators.sourceUnavailableSkills,63);
+          assert.equal(x.denominators.originalSourceRouteFamilies,970);
+          assert.equal(x.denominators.sameOriginalCurrentANDCandidates,85);
+          assert.equal(x.denominators.distinctSourceSkillsWithSameAND,85);
+          assert.equal(x.denominators.sharedMechanismKernelsWithSameAND,2);
+          assert.equal(x.denominators.rankPanelsEnumerated,170);
+          assert.equal(x.denominators.staticExcludedRoutesInEnumeratedAxisPanel,0);
+          assert.equal(x.candidates.length,x.denominators.sameOriginalCurrentANDCandidates);
+          assert(x.candidates.every(c=>c.sameCurrentANDRankRateAndRandom===true&&
+           c.sourceRandomDrawObserved===false&&
+           c.sourceActualSkillTriggerObserved===false&&
+           c.globalSimEquippedSampleTransferAuthorized===false&&
+           c.opportunityOrSuitabilityInferred===false));
+          assert(x.candidates.every(c=>c.supportedRankPanels.length===2&&
+           c.supportedRankPanels.every(p=>{
+            const all=[...p.projectedRankGateTruePositions,
+             ...p.projectedRankGateFalsePositions,
+             ...p.heldUnverifiedBoundaryPositions];
+            return all.length===p.fieldSize&&
+             new Set(all).size===p.fieldSize&&p.actualPhaseRandomDrawsObserved===0;
+           })));
+          assert.equal(x.denominators.modelRuntimeSameTickJoinedRouteObservations,0);
+          assert.equal(x.denominators.observedOriginalSourceRandomDraws,0);
+          assert.equal(x.denominators.provenCompleteOriginalSkillActivation,0);
+          assert.equal(x.denominators.officialP3P4SuitabilityEvaluations,0);
+          console.log('P2_15_RANK_RANDOM_FIXED='+JSON.stringify({
+           denominators:x.denominators,
+           topGroups:x.byExactSourceFamily.slice(0,8),
+           first:x.candidates.slice(0,4).map(c=>({
+            id:c.sourceNumericId,invoke:c.invokeIndex,
+            conditionOr:c.conditionOrIndex,
+            heldHistoricalTypes:c.historicalPreconditionTypesNotJoined,
+            rank9:c.supportedRankPanels[0].projectedRankGateTruePositions.length,
+            held9:c.supportedRankPanels[0].heldUnverifiedBoundaryPositions.length
+           }))
+          }));
+          NODE
+      - name: Upload same-original-AND rank-random readiness (research-only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-rank-random-same-and-no-draw
+          path: p2-15-rank-random-same-and-handoff.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload original parameter-specific static 3-axis eligibility (not W or proc rate)
         uses: actions/upload-artifact@v4
         with:
