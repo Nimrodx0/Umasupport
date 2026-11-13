@@ -152,7 +152,7 @@ function analyze(plans,original,positions,ranks,profiles,positionEvidence,corner
   ]};
 }
 function main(args){
- if(args[0]!=='replay'||args.length!==12)
+ if(args[0]!=='replay'||args.length!==13)
   throw Error('replay <template.jsonl> <original-engine> <position-engine> <rank-engine> <source-skills.txt> <SkillChecker.kt> <SkillData.kt> <RaceState.kt> <RaceCalculator.kt> <rawData.kt> <course_data.json> <output.json>');
  const [_,templatePath,engine0,engineP,engineR,skills,checkerPath,skillData,
   statePath,calculatorPath,rawData,modelCourse,output]=args;
