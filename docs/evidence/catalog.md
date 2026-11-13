@@ -13,6 +13,7 @@
 ## P2：スキル発動条件・脚質適合性の研究
 
 - [2026-11-12：装備済みGlobalSimの条件AND成立と元モデル技能イベントを技能×走者×レースでクロス集計](skills/skill-p2-15-equipped-event-opportunity-concordance-20261112.md)：4区分と同一走者のイベント重複を分ける。固定3技能のモデル研究であり、イベント時刻との同一tick証明・元UmaSim実測・ゲーム発動率・P3採点ではない。
+- [2026-11-13：元スキルの未判定16,535件を実観測モデル時刻のInvoke・AND/OR候補経路で診断](skills/skill-p2-15-observed-unknown-route-witness-20261113.md)：7,158件の代表候補が不足1種類、9,377件が2種類以上。候補で頻出するorder_rate・orderは固定UmaSimが判定を無視する条件なので、別のゲーム仕様根拠が必要。cornerやpreConditions履歴は別保留。発動率・正式脚質適性ではない。
 - [2026-11-13：元UmaSimの位置由来5条件を、既存distance_rateと同一GlobalSim判定時刻の元AND/ORへ追加](skills/skill-p2-15-source-position-family-join-20261113.md)：元253スキル中83スキルに新5条件があり、元式による観測約1,654万述語事実で21,252技能×走者×人工レースの成立確定が734→778、未判定16,579→16,535。元UmaSimの実レース・発動率・正式脚質適性ではない。
 - [2026-11-12：元UmaSim phase_randomの一様抽選値全域と固定GlobalSim判定直前位置の幾何学的交差を解析](skills/skill-p2-15-original-phase-draw-support-20261112.md)：元102スキル／371経路のうち固定32無スキル人工レースで249経路を評価し、15,760経路×走者×レース全単位で抽選値のどの位置でも1回以上の位置交差を確認。元UmaSim実抽選／実発動・公式脚質適性ではない。
 - [2026-11-12：実装済み3技能のGlobalSim実抽選窓と同判定時点の順位・距離ANDを3独立エンジンで照合](skills/skill-p2-15-equipped-phase-rank-conjunction-20261112.md)：固定8モデルレースで1,512窓内tickのうち1,383は元モデルの全明示AND成立、129は追加条件不成立。元モデル技能イベント173は別計上。窓内tick・全AND候補tick・走者レース単位の成立・実モデル技能イベントを別集計する。元UmaSim全スキル実測やゲーム発動率ではない。

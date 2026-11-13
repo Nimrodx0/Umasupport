@@ -9,6 +9,9 @@ on:
       - 'poc/src/skill_source_whole_tick_monitor.cjs'
       - 'poc/src/skill_source_race_opportunity.cjs'
       - 'poc/src/skill_source_position_stage_facts.cjs'
+      - 'poc/src/skill_source_unknown_route_candidates.cjs'
+      - 'poc/tests/skill_source_unknown_route_candidates.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-observed-unknown-route-witness-20261113.md'
       - 'poc/tools/globalsim_p2_15_source_position_families_ticks.cjs'
       - 'poc/tests/skill_source_position_stage_facts.test.cjs'
       - 'docs/evidence/skills/skill-p2-15-source-position-family-join-20261113.md'
@@ -35,6 +38,8 @@ jobs:
           node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
           node --check poc/src/skill_source_race_opportunity.cjs
           node --check poc/src/skill_source_position_stage_facts.cjs
+          node --check poc/src/skill_source_unknown_route_candidates.cjs
+          node --test poc/tests/skill_source_unknown_route_candidates.test.cjs
           node --check poc/tools/globalsim_p2_15_source_position_families_ticks.cjs
           node --test poc/tests/skill_source_position_stage_facts.test.cjs
           node --test poc/tests/globalsim_p2_15_source_distance_rate_ticks.test.cjs poc/tests/skill_source_race_opportunity.test.cjs
@@ -191,6 +196,44 @@ jobs:
           a.equal(x.gates.actualGameSkillProcRateMeasured,false);
           a.equal(x.gates.P3CardScoringApproved,false);
           a.equal(x.gates.P4UiChanged,false);
+          const u=x.unknownRouteTriage;
+          a.equal(u.status,
+            'P2.15-unresolved-original-source-route-witness-candidates-model-only');
+          a.equal(u.counts.sourceSkillRunnerRaceTrials,21252);
+          a.equal(u.counts.observedUnknownWithoutTrueRunnerRaceTrials,16535);
+          a.equal(u.counts.samplesWithFirstMinimumUnknownRoute,16535);
+          a.equal(u.byCandidateCombination.reduce((n,r)=>
+            n+r.representativeRunnerRaceTrials,0),16535);
+          a.equal(u.byStyle.reduce((n,r)=>n+r.unresolvedRunnerRaceTrials,0),16535);
+          a(u.byCandidateGate.length>0);
+          a.equal(u.counts.unresolvedTrialsWithOneGateWitness,7158);
+          a.equal(u.counts.unresolvedTrialsWithTwoOrMoreGateWitness,9377);
+          a.equal(u.counts.witnessesWithPreconditionLatchUnknown,3555);
+          a(u.counts.witnessesWithIgnoredSourceRankGate>0);
+          a(u.counts.witnessesWhoseOnlyGateIsIgnoredSourceRank>0);
+          a.deepEqual(u.definition.pinnedUmaSimCheckerExplicitlyIgnoresRankTypes,
+            ['order','order_rate']);
+          const gate=(name)=>u.byCandidateGate.find(r=>r.gateKind===name);
+          a.equal(gate('order_rate').representativeRunnerRaceTrials,9356);
+          a.equal(gate('order').representativeRunnerRaceTrials,3138);
+          a.equal(gate('corner').representativeRunnerRaceTrials,2908);
+          a.equal(gate('precondition-latch-unknown').representativeRunnerRaceTrials,3555);
+          a.equal(gate('order_rate').originalUmaSimCheckerDisposition,
+            'explicitly-ignored-by-pinned-UmaSim-checker');
+          a.equal(gate('order').originalUmaSimCheckerDisposition,
+            'explicitly-ignored-by-pinned-UmaSim-checker');
+          a.equal(gate('corner').originalUmaSimCheckerDisposition,
+            'unobserved-source-predicate-requires-semantics-and-model-stage-validation');
+          a(u.counts.witnessTicksExaminedInUnresolvedTrials>0);
+          a.equal(u.gates.historicalPreconditionsHeldSeparate,true);
+          a.equal(u.gates.allRemainingUnknownsProvenCausedByWitness,false);
+          a.equal(u.gates.originalSourceRuntimeSkillActivationObserved,false);
+          a.equal(u.gates.P3ScoringApproved,false);
+          console.log('P2_15_UNKNOWN_ROUTE_WITNESSES='+JSON.stringify({
+            counts:u.counts,topGates:u.byCandidateGate.slice(0,15),
+            topCombinations:u.byCandidateCombination.slice(0,15),
+            byStyle:u.byStyle,gates:u.gates
+          }));
           console.log('P2_15_NEW_SOURCE_POSITION_JOIN='+JSON.stringify({
             validation:x.validation,comparison:x.comparison,
             byStyle:x.byStyle.map(r=>({style:r.style,verdicts:r.verdicts})),

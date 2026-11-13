@@ -33,7 +33,8 @@ function validateSource(skillText,checkerText,skillCodeText){
  check(typeof checkerText==='string'&&checkerText.includes(checker),
   'fixed original Kotlin distance_rate arithmetic changed');
  check(typeof skillCodeText==='string'&&
-  skillCodeText.includes('"order_rate" to "順位条件は無視"'),
+  skillCodeText.includes('"order_rate" to "順位条件は無視"')&&
+   skillCodeText.includes('"order" to "順位条件は無視"'),
   'original checker ignored-order_rate guard changed');
  const rows=JSON.parse(skillText.replace(/^\uFEFF/,''));
  check(Array.isArray(rows)&&rows.length===2162,'original skill registry count drift');
@@ -49,7 +50,9 @@ function validateSource(skillText,checkerText,skillCodeText){
  }
  check(eligible.length>0,'original source has no distance_rate cohort');
  return {profiles:eligible,sourceSkillCount:rows.length,
-  verifiedSourceFormula:checker,originalOrderRateIgnoredByPinnedChecker:true};
+  verifiedSourceFormula:checker,originalOrderRateIgnoredByPinnedChecker:true,
+   originalOrderIgnoredByPinnedChecker:true,
+   pinnedSourceCheckerIgnoredRankTypes:['order','order_rate']};
 }
 function context(plan,runner){
  check(plan&&plan.course&&Number.isFinite(plan.course.distance)&&
@@ -103,7 +106,11 @@ function validatePaired(plan,control,probe){
  return control.frames.length*plan.fieldSize*4;
 }
 function analyze(plans,control,probe,sourceProfiles,
- {rankEvidence=null,positionSourceEvidence=null}={}){
+ {rankEvidence=null,positionSourceEvidence=null,unknownRouteTriage=false}={}){
+ const triage=unknownRouteTriage?
+  require('../src/skill_source_unknown_route_candidates.cjs'):null;
+ check(!triage||positionSourceEvidence,
+  'unknown-route witness requires the verified five positional source families');
  const positionFacts=positionSourceEvidence?
   require('../src/skill_source_position_stage_facts.cjs'):null;
  if(positionFacts)positionFacts.verifyEvidence(positionSourceEvidence);
@@ -153,7 +160,8 @@ function analyze(plans,control,probe,sourceProfiles,
    logical.preState=logical.preState.map((state,index)=>
     x.ast.invokes[index].preConditions.length?monitor.UNKNOWN:state);
    return {compiled:x.ast,monitor:logical,seenTrue:false,tick:0,
-    opportunityTrace:raceOpportunity.makeTrace()};
+    opportunityTrace:raceOpportunity.makeTrace(),
+    ...(triage?{blockerTrace:triage.createTrace()}:{})};
   }));
   for(let t=0;t<a.frames.length;t++){
    for(let i=0;i<plan.fieldSize;i++){
@@ -187,8 +195,11 @@ function analyze(plans,control,probe,sourceProfiles,
       totals.modelSourcePositionPredicateFacts+=addedFacts.length;
       positionFactsForRunner+=addedFacts.length;
      }
+     const tickFacts=[...facts,...rankFacts,...addedFacts];
      const result=trace.monitor.step({tickIndex:trace.tick++,
-      staticContext,observations:[...facts,...rankFacts,...addedFacts]});
+      staticContext,observations:tickFacts});
+     if(triage)triage.observe(trace.blockerTrace,trace.compiled,
+      result,staticContext,tickFacts);
      summary.modelRunnerTicks++;
      summary.distanceRateObservations+=facts.length;
      totals.distanceRatePredicateFacts+=facts.length;
@@ -219,7 +230,8 @@ function analyze(plans,control,probe,sourceProfiles,
     courseId:plan.course.id,distanceType:plan.course.distanceType,
     surface:plan.course.surface,fieldSize:plan.fieldSize,
     scenario:plan.scenario,mode:plan.mode,
-    trace:trace.opportunityTrace
+    trace:trace.opportunityTrace,
+    ...(triage?{blockerTrace:trace.blockerTrace}:{})
    });
    if(trace.seenTrue){
     totals.sourceConditionEverTrueRunnerTraces++;
@@ -228,6 +240,7 @@ function analyze(plans,control,probe,sourceProfiles,
   }
  }
  const raceOpportunityReport=raceOpportunity.aggregate(opportunityTrials);
+ const triageReport=triage?triage.aggregate(opportunityTrials,raceOpportunityReport):null;
  const totalSourceTicks=totals.modelRunnerPriorityTicks*compiled.length;
  check(totals.modelRunnerPriorityTicks>0&&
   totals.modelProgressRateKnownRunnerTicks>0&&
@@ -298,6 +311,7 @@ function analyze(plans,control,probe,sourceProfiles,
    warning:'This is not supported by the fixed original UmaSim runtime; it ignores order_rate. No JP game-level semantics claim.'
   }}:{}),
   raceOpportunity:raceOpportunityReport,
+  ...(triage?{unknownRouteTriage:triageReport}:{}),
   rows:Object.values(perSkill).sort((a,b)=>a.sourceNumericId.localeCompare(b.sourceNumericId)),
   gates:{realGlobalSimPreSkillPositionsObserved:true,
    originalUmaSimDistanceRateFormulaAppliedToModelPositions:true,
@@ -308,6 +322,11 @@ function analyze(plans,control,probe,sourceProfiles,
    P3CardScoringApproved:false,P4UiChanged:false,
    observedStageRaceRunnerOpportunityGrouped:true,
    fullRaceSkillOpportunityRateEstablished:false,
+   ...(triage?{
+    unknownOriginalSourceRouteWitnessRecorded:true,
+    historicalPreconditionLatchKeptSeparate:true,
+    originalSourceSkillProcStillUnobserved:true
+   }:{}),
    ...(positionFacts?{
     originalUmaSimPositionFormulaSourceVerified:true,
     fixedModelPositionAppliedToAdditionalSourceConditions:true,
