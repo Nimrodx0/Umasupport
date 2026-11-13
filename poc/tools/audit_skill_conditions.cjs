@@ -26,6 +26,7 @@ const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
 const rankRandomHandoff=require('../src/skill_p2_15_rank_random_same_and_handoff.cjs');
+const registeredCohortJoin=require('../src/skill_p2_15_registered_cohort_join.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -166,6 +167,12 @@ function matchedRecord(skill,live,old){
     p215RankRandom.denominators.provenCompleteOriginalSkillActivation!==0||
     p215RankRandom.denominators.officialP3P4SuitabilityEvaluations!==0)
   throw Error('P2.15 rank-random source-AND handoff research boundary changed');
+ const p215RegisteredJoin=registeredCohortJoin.audit(model,p215RankRandom);
+ if(p215RegisteredJoin.noScoringBoundary.sourceOriginalCompleteANDVerified!==0||
+    p215RegisteredJoin.noScoringBoundary.formalSkillCardSuitabilityRatings!==0||
+    p215RegisteredJoin.cohort.originalRankAndRandomRoutes!==
+     p215RankRandom.denominators.sameOriginalCurrentANDCandidates)
+   throw Error('P2.15 exact registered-JVM cohort join or UNKNOWN rank boundary drift');
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
@@ -353,6 +360,15 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-15-registered-source-cohort-join.json',
+  JSON.stringify({source:{revision:REVISION,
+   skillRegistrySha256:digest(skillText),
+   supportRegistrySha256:digest(supportText)},...p215RegisteredJoin},null,2)+'\n');
+ console.log('P2_15_REGISTERED_COHORT_JOIN='+JSON.stringify({
+  cohort:p215RegisteredJoin.cohort,
+  crossReference:p215RegisteredJoin.crossReference,
+  next:p215RegisteredJoin.nextCandidateSourceSkillIdsIfNoExactMatch.slice(0,8)
  }));
  fs.writeFileSync('p2-15-rank-random-same-and-handoff.json',
   JSON.stringify({source:{
