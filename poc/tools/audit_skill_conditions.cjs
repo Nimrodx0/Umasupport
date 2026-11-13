@@ -25,6 +25,7 @@ const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
+const rankRandomHandoff=require('../src/skill_p2_15_rank_random_same_and_handoff.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -158,6 +159,13 @@ function matchedRecord(skill,live,old){
     p215AxisGates.denominators.officialSkillCardSuitabilityScores!==0||
     p215AxisGates.denominators.actualAppliedOmissions!==0)
   throw Error('P2.15 source parameterized axis-gate cohort or no-scoring boundary drift');
+ const p215RankRandom=rankRandomHandoff.audit(model,p215AxisGates);
+ if(p215RankRandom.denominators.sourceMatchedSkills!==
+    p215AxisGates.denominators.sourceMatchedSkills||
+    p215RankRandom.denominators.observedOriginalSourceRandomDraws!==0||
+    p215RankRandom.denominators.provenCompleteOriginalSkillActivation!==0||
+    p215RankRandom.denominators.officialP3P4SuitabilityEvaluations!==0)
+  throw Error('P2.15 rank-random source-AND handoff research boundary changed');
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
@@ -345,6 +353,20 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-15-rank-random-same-and-handoff.json',
+  JSON.stringify({source:{
+   revision:REVISION,skillRegistrySha256:digest(skillText),
+   supportRegistrySha256:digest(supportText)},...p215RankRandom},null,2)+'\n');
+ console.log('P2_15_RANK_RANDOM_SAME_AND='+JSON.stringify({
+  denominators:p215RankRandom.denominators,
+  firstGroups:p215RankRandom.byExactSourceFamily.slice(0,10),
+  examples:p215RankRandom.candidates.slice(0,8).map(c=>({
+   id:c.sourceNumericId,invoke:c.invokeIndex,OR:c.conditionOrIndex,
+   family:c.familyId,pre:c.originalHistoricalPreconditionANDSize,
+   modelNine:c.supportedRankPanels.find(p=>p.fieldSize===9),
+   otherTypes:c.otherCurrentUnknownOrContextTypes
+  }))
  }));
  fs.writeFileSync('p2-15-parameterized-axis-gates.json',
   JSON.stringify({source:{revision:REVISION,
