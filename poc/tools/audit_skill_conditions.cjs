@@ -338,6 +338,7 @@ function matchedRecord(skill,live,old){
   denominators:p232Queue.denominators,
   byResearchGroup:p232Queue.byResearchGroup,
   leadingTypes:p232Queue.nextTypeResearch.slice(0,18),
+  firstStudySample:p232Queue.initialP215Pilots,
   leadingRoutes:p232Queue.priorityRouteCandidates.slice(0,12).map(r=>({
    id:r.sourceNumericId,invoke:r.invokeIndex,
    conditionOr:r.conditionOrIndex,preconditionOr:r.preconditionOrIndex,
