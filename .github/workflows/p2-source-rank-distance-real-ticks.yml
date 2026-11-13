@@ -5,6 +5,10 @@ on:
   pull_request:
     paths:
       - 'poc/src/skill_source_rank_tick_bridge.cjs'
+      - 'poc/src/skill_source_corner_stage_facts.cjs'
+      - 'poc/tests/skill_source_corner_stage_facts.test.cjs'
+      - 'poc/tools/globalsim_p2_15_source_corner_full_join.cjs'
+      - 'docs/evidence/skills/skill-p2-15-source-corner-full-join-20261113.md'
       - 'poc/src/skill_source_position_stage_facts.cjs'
       - 'poc/src/skill_source_unknown_route_candidates.cjs'
       - 'poc/tools/globalsim_p2_15_source_rank_position_full_join.cjs'
@@ -23,7 +27,7 @@ permissions:
 jobs:
   independent-triple-model-skill-priority-join:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,6 +36,9 @@ jobs:
       - name: Check original-source rank interpretation and three-engine synthetic parity
         run: |
           node --check poc/src/skill_source_rank_tick_bridge.cjs
+          node --check poc/src/skill_source_corner_stage_facts.cjs
+          node --check poc/tools/globalsim_p2_15_source_corner_full_join.cjs
+          node --test poc/tests/skill_source_corner_stage_facts.test.cjs
           node --check poc/tools/globalsim_p2_15_source_rank_position_full_join.cjs
           node --test poc/tests/skill_source_rank_position_full_join.test.cjs
           node --check poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs
@@ -46,6 +53,8 @@ jobs:
           curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt" -o /tmp/p2-15-rank-study/SkillData.kt
           curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/RaceState.kt" -o /tmp/p2-15-rank-study/RaceState.kt
           curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/RaceCalculator.kt" -o /tmp/p2-15-rank-study/RaceCalculator.kt
+          curl --fail --silent --show-error --location "$base/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data/rawData.kt" -o /tmp/p2-15-rank-study/UmaSimRawCourse.kt
+          curl --fail --silent --show-error --location "https://raw.githubusercontent.com/daftuyda/GlobalSim/80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1/data/course_data.json" -o /tmp/p2-15-rank-study/GlobalSimCourseData.json
           echo "4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5  /tmp/p2-15-rank-study/skills.txt" | sha256sum -c -
       - name: Build exact unmodified GlobalSim v77 model
         run: |
@@ -212,6 +221,80 @@ jobs:
             gates:x.gates
           }));
           NODE
+      - name: Join original source cornerNumber with directly observed pre-skill rank AND position, hold endpoints/history
+        run: |
+          node --max-old-space-size=4096 poc/tools/globalsim_p2_15_source_corner_full_join.cjs replay \
+            /tmp/p2-15-rank-engine/examples/v77-race.jsonl \
+            /tmp/p2-15-rank-study/original-engine \
+            /tmp/p2-15-rank-study/position-probe-engine \
+            /tmp/p2-15-rank-study/rank-probe-engine \
+            /tmp/p2-15-rank-study/skills.txt \
+            /tmp/p2-15-rank-study/SkillChecker.kt \
+            /tmp/p2-15-rank-study/SkillData.kt \
+            /tmp/p2-15-rank-study/RaceState.kt \
+            /tmp/p2-15-rank-study/RaceCalculator.kt \
+            /tmp/p2-15-rank-study/UmaSimRawCourse.kt \
+            /tmp/p2-15-rank-study/GlobalSimCourseData.json \
+            /tmp/p2-15-rank-study/joined-source-corner-and-rank-position-model.json \
+            > /tmp/p2-15-rank-study/source-corner-summary.log
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const t=require('./poc/tools/globalsim_p2_15_source_corner_full_join.cjs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-15-rank-study/joined-source-corner-and-rank-position-model.json','utf8'));
+          const c=x.comparison,b=c.beforeSourceCornerRunnerRaceVerdicts,
+            j=c.afterSourceCornerRunnerRaceVerdicts;
+          a.equal(x.status,t.STATUS);
+          a.equal(c.fixedOriginalSourceSkills,253);
+          a.deepEqual(x.design.verifiedCornerSourceCourseIds,['10502','10504']);
+          a.equal(x.provenance.cornerSourceGeometryEvidence.exactCourseCornersMatched,true);
+          a.equal(x.provenance.cornerSourceGeometryEvidence.modelPositionIsActualUmaSimSimulationPosition,false);
+          a(c.sourceWithOriginalCorner>0);
+          a(c.originalCornerPredicateOccurrences>0);
+          a(c.modelCornerPredicateObservations>0);
+          a.equal(c.modelPriorityRunnerTicks,108844);
+          a.equal(c.modelPriorityRunnerTicksWithKnownCornerNumber+
+            c.modelPriorityRunnerTicksHeldAtCornerBoundary,108844);
+          a.equal(x.modelStageValidation.rankPriorityPairsMatched,108844);
+          a.equal(x.modelStageValidation.positionalProbePhysicalValuesMatched,437532);
+          a.equal(x.modelStageValidation.rankProbePhysicalValuesMatched,437532);
+          a.deepEqual(b,{
+            'observed-at-least-once-true':3589,
+            'observed-unknown-without-true':10450,
+            'observed-all-false':7213,
+            'no-observed-priority-ticks':0
+          });
+          a(j['observed-at-least-once-true']>=3589);
+          a(j['observed-unknown-without-true']<=10450);
+          a(j['observed-all-false']>=7213);
+          a.equal(Object.values(j).reduce((n,v)=>n+v,0),21252);
+          a.equal(c.sameTickWholeSourceDelta.true+
+            c.sameTickWholeSourceDelta.false+
+            c.sameTickWholeSourceDelta.unknown,0);
+          a.equal(x.unknownRouteTriage.counts.observedUnknownWithoutTrueRunnerRaceTrials,
+            j['observed-unknown-without-true']);
+          a.equal(x.unknownRouteTriage.byStyle.reduce((n,r)=>n+r.unresolvedRunnerRaceTrials,0),
+            j['observed-unknown-without-true']);
+          a.equal(x.gates.sourcePreconditionTrueLatchPreserved,true);
+          a.equal(x.gates.sourceUnknownHistoricalLatchNotOverwritten,true);
+          a.equal(x.gates.actualOriginalUmaSimRuntimeObserved,false);
+          a.equal(x.gates.actualGameSkillProcRateMeasured,false);
+          a.equal(x.gates.P3CardScoringApproved,false);
+          a.equal(x.gates.P4UiChanged,false);
+          console.log('P2_15_SOURCE_CORNER_FULL_JOIN_CI='+JSON.stringify({
+            sourceWithCorner:c.sourceWithOriginalCorner,
+            originalCornerPredicateOccurrences:c.originalCornerPredicateOccurrences,
+            matchedCornerFacts:c.modelCornerPredicateObservations,
+            knownCornerPositionTicks:c.modelPriorityRunnerTicksWithKnownCornerNumber,
+            heldCornerBoundaryTicks:c.modelPriorityRunnerTicksHeldAtCornerBoundary,
+            before:b,after:j,tickDeltas:c.sameTickWholeSourceDelta,
+            changedSkillStyleCells:c.skillStyleCellsWithNewObservations,
+            unresolvedGateCounts:x.unknownRouteTriage.counts,
+            remainingTopGates:x.unknownRouteTriage.byCandidateGate.slice(0,15),
+            byStyle:x.byStyle.map(r=>({style:r.style,verdicts:r.verdicts})),
+            gates:x.gates
+          }));
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: p2-15-direct-priority-rank-plus-distance-conditional-model-study-not-game
@@ -220,6 +303,8 @@ jobs:
             /tmp/p2-15-rank-study/summary.log
             /tmp/p2-15-rank-study/joined-order-rate-order-position-source-model.json
             /tmp/p2-15-rank-study/rank-position-summary.log
+            /tmp/p2-15-rank-study/joined-source-corner-and-rank-position-model.json
+            /tmp/p2-15-rank-study/source-corner-summary.log
             /tmp/p2-15-rank-study/position-source-patch.json
             /tmp/p2-15-rank-study/rank-source-patch.json
           retention-days: 14
