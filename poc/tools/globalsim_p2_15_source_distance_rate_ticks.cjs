@@ -290,8 +290,11 @@ function analyze(plans,control,probe,sourceProfiles,
   experiment:{fixedNoSkillGlobalSimRaces:plans.length,
    modelPosition:'actual pre-skill priority calls from temporary read-only Rust probe',
    sourcePredicate:'distance_rate (exact comparison operator/value in original AST)',
-   otherDynamicSourcePredicateObservations:positionFacts?
-    'only phase/phase_firsthalf/phase_laterhalf/remain_distance/furlong source-formula projections':'none',
+   otherDynamicSourcePredicateObservations:[
+    ...(positionFacts?['phase/phase_firsthalf/phase_laterhalf/remain_distance/furlong source-formula projections']:[]),
+    ...(rankBridge?['direct model rank with externally documented order_rate integer mapping']:[]),
+    ...(includeAbsoluteOrder?['direct model rank interpreted as 1-indexed absolute order']:[])
+   ].join(' + ')||'none',
    staticContextFields:['running_style','distance_type','ground_type'],
    modelPositionIsOriginalUmaSimRuntime:false,
    preconditionHistoryBeforeFirstObservedModelPriorityCall:'unknown',
@@ -370,7 +373,11 @@ function analyze(plans,control,probe,sourceProfiles,
   limitations:[
    'This is a source-formula interpretation of a REAL GlobalSim position at the original GlobalSim skill-priority stage. It is NOT a real UmaSim race-state observation or a live-game activation.',
    'The model is an unskilled fixed comparison race. Skills carrying distance_rate in the original registry were not installed in GlobalSim.',
-   'Only distance_rate receives numeric predicate observations; phase_random, rank and all other dynamic source conditions remain unknown. Static ground condition and track venue are withheld unless separately proven.',
+   ...(rankBridge||positionFacts?[
+    'Numeric original predicates receive ONLY explicitly supplied source-anchored observations: distance_rate plus opt-in position families and/or interpreted 9/12 model ranks. Unprovided phase_random draws and all other dynamic predicates remain unknown; static venue is withheld.'
+   ]:[
+    'Only distance_rate receives numeric predicate observations; phase_random, rank and all other dynamic source conditions remain unknown. Static ground condition and track venue are withheld unless separately proven.'
+   ]),
    'Original Kotlin SkillChecker ignores order_rate and order, so simulated proc records from that checker cannot certify game rank predicates; this study never substitutes model rank into them.',
    'True/false/unknown tallies are correlated model runner-ticks across skills, not independent activation events, measured source skill probabilities, or approved suitability scores.',
    'The new raceOpportunity counts each original skill for each model runner once per modeled race, reporting confirmed-at-least-once, unresolved, observed-all-false, or zero-observed-stage separately. Different runners in one race are not independent race trials.',
