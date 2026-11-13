@@ -271,6 +271,11 @@ jobs:
           assert.equal(x.mechanismFamilies.length,x.denominators.normalizedMechanismFamilies);
           assert.equal(x.mechanismFamilies.reduce((n,g)=>n+g.sourceRouteFamilies,0),970);
           assert(x.initialMechanismFamilyPilots.length<=7);
+          assert(x.initialMechanismFamilyPilots.some(x=>
+           x.selectedAs==='reuse-existing-mechanism-evidence'));
+          assert(x.initialMechanismFamilyPilots.every(x=>[
+           'reuse-existing-mechanism-evidence','inspect-unstudied-mechanism'
+          ].includes(x.selectedAs)));
           assert(x.mechanismFamilies.every(g=>
             g.onlyMechanismAlgorithmReusable===true&&
             g.sourceThresholdsAndContextMustBeReevaluated===true&&
@@ -287,6 +292,9 @@ jobs:
           assert.equal(random?.status,'geometry-counterfactual');
           assert.equal(corner?.status,'selected-model-tick');
           assert.equal(cornerRandom?.status,'no-specific-mechanism-evidence');
+          for(const type of ['running_style','distance_type','ground_type','ground_condition'])
+           assert.equal(x.previouslyStudiedTypeInventory.find(e=>e.type===type)?.status,
+            'source-finite-eligibility');
           console.log('P2_32_REUSE_FIXED='+JSON.stringify({
            denominators:x.denominators,
            pilots:x.initialMechanismFamilyPilots,
