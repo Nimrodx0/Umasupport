@@ -232,7 +232,15 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
  fail(sourceSkills.length===1,'registered JVM skill missing/duplicated in source registry');
  const record=sourceSkills[0];
  const compiled=source.compile({
-  status:'source-structure',sourceNumericId:id,invokes:record.invokes
+  status:'source-structure',sourceNumericId:id,
+  // Kotlin @Serializable Invoke defaults missing preConditions and
+  // conditions to empty lists. Preserve the source schema defaults before
+  // comparing with the app's normalized full source conditions; never
+  // synthesize or replace any existing original predicate values.
+  invokes:record.invokes.map(inv=>({
+   index:inv.index,conditions:inv.conditions??[],
+   preConditions:inv.preConditions??[]
+  }))
  });
  fail(logicSha256(compiled)===
   verified.preservedStructure.originalSourceConditionLogicSha256,
