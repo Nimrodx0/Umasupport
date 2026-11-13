@@ -12,6 +12,7 @@
  * claims that source UmaSim evaluated order_rate or the real game's proc.
  */
 const source=require('./skill_source_whole_tick_monitor.cjs');
+const {createHash}=require('node:crypto');
 const rank=require('./skill_p2_15_rank_random_same_and_handoff.cjs');
 const MODEL_REVISION='f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
 const SOURCE_REGISTRY_BLOB='0c6ea6d72b037b24ee40860f73b0e86db47aab1d';
@@ -34,6 +35,9 @@ const SNAPSHOT=Object.freeze({
  originalORIndex:0,
  originalANDSize:3,
  originalPreconditionORCount:0,
+ // This is inserted only after the UPDATED pinned original JVM CI
+ // independently records it. Until then, no exact-route proof is possible.
+ originalSourceConditionLogicSha256:null,
  sourceRaceCount:3,
  originalPhaseRandomCheckerCalls:1893,
  sourceModelEvents:3,
@@ -56,6 +60,9 @@ function validatedReference(e){
   Number.isSafeInteger(e.originalORCount)&&e.originalORCount>0&&
   Number.isSafeInteger(e.originalORIndex)&&e.originalORIndex>=0&&
   e.originalORIndex<e.originalORCount&&
+  (e.originalSourceConditionLogicSha256===null||
+   typeof e.originalSourceConditionLogicSha256==='string'&&
+   /^[a-f0-9]{64}$/.test(e.originalSourceConditionLogicSha256))&&
   Number.isSafeInteger(e.originalANDSize)&&e.originalANDSize>=2&&
   Number.isSafeInteger(e.originalPreconditionORCount)&&e.originalPreconditionORCount>=0&&
   e.sourceRaceCount===3&&e.originalPhaseRandomCheckerCalls>0&&
@@ -68,6 +75,14 @@ function validatedReference(e){
   e.sourceEvidenceRunUrl.startsWith('https://github.com/Nimrodx0/Umasupport/actions/runs/'),
   'verified original JVM snapshot provenance or no-rating boundary mismatch');
  return e;
+}
+function logicSha256(compiled){
+ const normalized=compiled.invokes.map(inv=>[
+  inv.invokeIndex,
+  inv.conditions.map(row=>row.map(ref=>[ref.type,ref.operator,ref.value])),
+  inv.preConditions.map(row=>row.map(ref=>[ref.type,ref.operator,ref.value]))
+ ]);
+ return createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
 }
 function compareStructure(compiled,e){
  if(compiled.invokes.length!==e.originalInvokeCount)
@@ -84,7 +99,14 @@ function compareStructure(compiled,e){
  if(!row.some(x=>x.type==='order_rate')||
     !row.some(x=>x.type==='phase_random'&&x.operator==='=='&&x.value===2))
   return 'different-selected-AND-predicate-shape';
- return 'same-source-route-structure';
+ // Counts and two predicate types alone are NOT sufficient to prove the
+ // unobserved third predicate, its numeric threshold, other OR alternatives,
+ // or any preconditions match the JVM model's original source registry.
+ if(!e.originalSourceConditionLogicSha256)
+  return 'original-JVM-logic-fingerprint-not-yet-available';
+ if(logicSha256(compiled)!==e.originalSourceConditionLogicSha256)
+  return 'different-original-source-condition-logic-fingerprint';
+ return 'same-source-route-logic-fingerprint';
 }
 function audit(model,prior,reference=SNAPSHOT){
  const e=validatedReference(reference);
@@ -106,7 +128,7 @@ function audit(model,prior,reference=SNAPSHOT){
  if(chosen)appStructure=compareStructure(source.compile(chosen),e);
  // Even if the original registry skill is the same, a different Invoke or
  // precondition structure is NOT a matched evidence route.
- const exactMatches=appStructure==='same-source-route-structure'?
+ const exactMatches=appStructure==='same-source-route-logic-fingerprint'?
   current.filter(c=>c.invokeIndex===e.originalInvokeIndex&&
    c.conditionOrIndex===e.originalORIndex&&
    c.originalConditionANDSize===e.originalANDSize&&
@@ -115,7 +137,7 @@ function audit(model,prior,reference=SNAPSHOT){
  const exact=exactMatches.length===1?exactMatches[0]:null;
  fail(exactMatches.length<=1,'multiple purported original AND matches');
  const status=!chosen?'registered-source-skill-absent-from-application-cohort':
-  appStructure!=='same-source-route-structure'?
+  appStructure!=='same-source-route-logic-fingerprint'?
   'application-matched-ID-has-different-original-structure':
   !exact?'same-skill-but-no-matching-ranked-random-source-route':
   'exact-original-source-AND-identity-linked-with-rank-unknown';
@@ -131,6 +153,7 @@ function audit(model,prior,reference=SNAPSHOT){
    sourceRaceCount:e.sourceRaceCount,
    sourcePhaseRandomCheckerCalls:e.originalPhaseRandomCheckerCalls,
    sourceModelSkillEvents:e.sourceModelEvents,
+   originalSourceConditionsFingerprintAvailable:!!e.originalSourceConditionLogicSha256,
    notReobservedInThisFixedSourceAudit:true
   },
   cohort:{
@@ -150,6 +173,7 @@ function audit(model,prior,reference=SNAPSHOT){
    linkedFamilyId:exact?.familyId??null,
    linkedMechanismKernelId:exact?.mechanismKernelId??null,
    originalSourceANDPredicateCount:exact?.originalConditionANDSize??null,
+   fullOriginalConditionLogicFingerprintMatched:!!exact,
    modelOnlyNineRunnerRankGate:exact?
     exact.supportedRankPanels.find(p=>p.fieldSize===9):null,
    modelOnlyTwelveRunnerRankGate:exact?
@@ -180,4 +204,4 @@ function audit(model,prior,reference=SNAPSHOT){
   'original source app model or prior cohort mutated');
  return result;
 }
-module.exports={STATUS,EVIDENCE_STATUS,SNAPSHOT,compareStructure,validatedReference,audit};
+module.exports={STATUS,EVIDENCE_STATUS,SNAPSHOT,logicSha256,compareStructure,validatedReference,audit};
