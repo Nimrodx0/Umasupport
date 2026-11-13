@@ -213,6 +213,12 @@ jobs:
           assert.equal(x.denominators.actualAppliedOmissions,0);
           assert.equal(x.denominators.officialP3OrP4Ratings,0);
           assert(x.priorityRouteCandidates.length<=100);
+          assert(x.initialP215Pilots.length>0&&x.initialP215Pilots.length<=7);
+          assert.equal(new Set(x.initialP215Pilots.map(r=>r.sourceNumericId)).size,
+           x.initialP215Pilots.length);
+          assert(x.initialP215Pilots.every(r=>
+           ['rank-source-join-first','event-state-pilot-next'].includes(r.researchGroup)&&
+           r.noSourceRouteProven===true&&r.noFormalSuitability===true));
           assert(x.priorityRouteCandidates.every(r=>
            r.noCompleteSourceRouteClaim===true&&
            r.neverReadyForP3CardScoring===true&&
@@ -230,6 +236,7 @@ jobs:
            denominators:x.denominators,
            groups:x.byResearchGroup,
            nextTypes:x.nextTypeResearch.slice(0,14),
+           firstPilots:x.initialP215Pilots,
            topRoutes:x.priorityRouteCandidates.slice(0,10).map(r=>({
             id:r.sourceNumericId,invoke:r.invokeIndex,
             conditionOr:r.conditionOrIndex,
