@@ -16,6 +16,14 @@ const monitor=require('./skill_source_whole_tick_monitor.cjs');
 const opportunity=require('./skill_source_race_opportunity.cjs');
 const STATUS='P2.15-unresolved-original-source-route-witness-candidates-model-only';
 const PRE='precondition-latch-unknown';
+// Explicitly ignored by pinned UmaSim SkillData.kt ignoreConditions.
+// Runtime source measurement cannot prove their game rank semantics.
+const SOURCE_CHECKER_IGNORED_RANK_TYPES=Object.freeze(['order','order_rate']);
+const ignored=new Set(SOURCE_CHECKER_IGNORED_RANK_TYPES);
+const classification=kind=>kind===PRE?
+ 'unobserved-historical-precondition-latch':
+ ignored.has(kind)?'explicitly-ignored-by-pinned-UmaSim-checker':
+ 'unobserved-source-predicate-requires-semantics-and-model-stage-validation';
 const fail=(ok,why)=>{if(!ok)throw Error('P2.15 unknown route diagnosis: '+why);};
 function missing(ref,staticContext,observed){
  const stat=monitor.staticValue(staticContext,ref);
@@ -119,7 +127,9 @@ function aggregate(trials,raceOpportunityReport){
   unresolvedTrialsWithOneGateWitness:0,
   unresolvedTrialsWithTwoOrMoreGateWitness:0,
   witnessesWithPreconditionLatchUnknown:0,
-  witnessesWithOnlyUnobservedPredicateTypes:0};
+  witnessesWithOnlyUnobservedPredicateTypes:0,
+  witnessesWithIgnoredSourceRankGate:0,
+  witnessesWhoseOnlyGateIsIgnoredSourceRank:0};
  for(const item of trials){
   const verdict=opportunity.conclude(item.trace).verdict;
   if(verdict!=='observed-unknown-without-true')continue;
@@ -142,6 +152,10 @@ function aggregate(trials,raceOpportunityReport){
   else counts.unresolvedTrialsWithTwoOrMoreGateWitness++;
   if(x.unresolvedPreconditionLatch)counts.witnessesWithPreconditionLatchUnknown++;
   else counts.witnessesWithOnlyUnobservedPredicateTypes++;
+  if(x.unresolvedGateKinds.some(k=>ignored.has(k)))
+   counts.witnessesWithIgnoredSourceRankGate++;
+  if(x.unresolvedGateKinds.length===1&&ignored.has(x.unresolvedGateKinds[0]))
+   counts.witnessesWhoseOnlyGateIsIgnoredSourceRank++;
   const st=perStyle.get(item.style);st.unresolvedRunnerRaceTrials++;
   st.sourceSkillsWithUnresolvedModelRaces.add(item.sourceNumericId);
   const signature=x.unresolvedGateKinds.join(' + ');
@@ -158,7 +172,8 @@ function aggregate(trials,raceOpportunityReport){
   for(const kind of x.unresolvedGateKinds){
    cell.candidateGateKinds.add(kind);
    if(!byGate.has(kind))byGate.set(kind,{
-    gateKind:kind,representativeRunnerRaceTrials:0,
+    gateKind:kind,originalUmaSimCheckerDisposition:classification(kind),
+    representativeRunnerRaceTrials:0,
     sourceSkillStyleCells:new Set(),sourceSkills:new Set(),
     byStyle:Object.fromEntries(styles.map(s=>[s,0])),
     witnessExample:null});
@@ -203,7 +218,9 @@ function aggregate(trials,raceOpportunityReport){
    unit:'original source skill × one GlobalSim model runner × one fixed model race',
    state:'observed UNKNOWN with no observed TRUE across sampled model priority ticks',
    pathChoice:'earliest observed UNKNOWN witness having the minimum number of distinct unobserved condition types plus separate unresolved precondition-latch gate',
-   gateMeaning:'an original-source condition that is unknown under supplied model facts, NOT a proven cause of no real game skill activation',
+   gateMeaning:'an original-source condition unknown under supplied model facts, NOT a proven cause of no real game skill activation',
+   pinnedUmaSimCheckerExplicitlyIgnoresRankTypes:[...SOURCE_CHECKER_IGNORED_RANK_TYPES],
+   ignoredRankGateInterpretation:'order and order_rate require external game-semantics evidence because pinned UmaSim checker explicitly ignores them; they are not actionable merely by observing original checker runtime',
    singleGateOptimization:'once a one-gate witness is found, later unknown stages are not diagnosed; other candidate gates may exist',
    splitByStyles:styles,
    acrossGateRowsMayOverlap:true,
@@ -239,7 +256,9 @@ function aggregate(trials,raceOpportunityReport){
    'Current conditions and a historically unknown precondition latch are never conflated. A precondition latch may be UNKNOWN from the unobserved initial state and from other missing precondition facts.',
    'The original source AST Invoke/OR alternatives are kept; only paths that remain potentially viable under the supplied facts are considered. Selecting one shortest path does not mean it is the only source activation path.',
    'One source predicate type may appear many times with different operators; a gate kind counts types, not all exact comparator instances. A supplied future fact may be false, so clearing a gate does not guarantee TRUE.',
+   'Both order and order_rate are explicitly ignored by pinned original UmaSim SkillChecker (SkillData.kt ignoreConditions), unlike directly implemented predicates such as corner. They require separate external game-rules evidence, not merely original checker instrumentation.',
    'Same model runners, model races, conditions and source skills are correlated. Counts are not independent game trials, suitability scores, actual UmaSim proc counts, or gameplay probabilities.'
   ]};
 }
-module.exports={STATUS,PRE,inspect,createTrace,observe,aggregate};
+module.exports={STATUS,PRE,SOURCE_CHECKER_IGNORED_RANK_TYPES,
+ classification,inspect,createTrace,observe,aggregate};
