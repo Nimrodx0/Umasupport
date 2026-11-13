@@ -117,3 +117,31 @@ test('malformed source profile and missing reports fail closed',()=>{
  const noRows=skill('200',[inv([])]);
  assert.equal(q.analyzeSkill(noRows).routeFamilies.length,0);
 });
+
+test('initial P2.15 pilot sample is bounded, source-unique and type-shape diverse',()=>{
+ const r=audit(sourceFixture());
+ assert(r.initialP215Pilots.length>=1);
+ assert(r.initialP215Pilots.length<=7);
+ assert.equal(new Set(r.initialP215Pilots.map(x=>x.sourceNumericId)).size,
+  r.initialP215Pilots.length);
+ assert(r.initialP215Pilots.every(x=>
+  ['rank-source-join-first','event-state-pilot-next'].includes(x.researchGroup)));
+ assert(r.initialP215Pilots.every(x=>
+  x.noSourceRouteProven===true&&x.noFormalSuitability===true));
+ assert(r.initialP215Pilots.some(x=>x.sourceNumericId==='100'));
+ assert(!r.initialP215Pilots.some(x=>x.sourceNumericId==='101'));
+ assert(!r.initialP215Pilots.some(x=>x.sourceNumericId==='102'));
+ assert.deepEqual(r.initialPilotSelectionPolicy,{
+  rankWindowSourceJoinMax:4,eventStatePilotMax:3,
+  uniqueSourceSkillPerPilot:true,
+  diverseUnverifiedTypeSignaturesFirst:true,
+  provenSkillSuitability:false
+ });
+});
+test('external random_lot cannot become easy rank-join merely because its AND has two types',()=>{
+ const m=sourceFixture(),r=audit(m);
+ const branch=r.rows.find(x=>x.sourceNumericId==='104').routeFamilies
+  .find(x=>x.conditionOrIndex===0&&x.preconditionOrIndex===1);
+ assert.equal(branch.researchGroup,'complex-dynamic-route-hold');
+ assert.deepEqual(branch.unresolvedComplexDependencyTypes,['random_lot']);
+});
