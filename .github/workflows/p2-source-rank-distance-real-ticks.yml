@@ -249,9 +249,10 @@ jobs:
           a.deepEqual(x.design.verifiedCornerSourceCourseIds,['10502','10504']);
           a.equal(x.provenance.cornerSourceGeometryEvidence.exactCourseCornersMatched,true);
           a.equal(x.provenance.cornerSourceGeometryEvidence.modelPositionIsActualUmaSimSimulationPosition,false);
-          a(c.sourceWithOriginalCorner>0);
-          a(c.originalCornerPredicateOccurrences>0);
-          a(c.modelCornerPredicateObservations>0);
+          a.equal(c.sourceWithOriginalCorner,54);
+          a.equal(c.originalCornerPredicateOccurrences,87);
+          a.equal(c.modelCornerPredicateObservations,9469428);
+          a.equal(c.skillStyleCellsWithNewObservations,124);
           a.equal(c.modelPriorityRunnerTicks,108844);
           a.equal(c.modelPriorityRunnerTicksWithKnownCornerNumber+
             c.modelPriorityRunnerTicksHeldAtCornerBoundary,108844);
@@ -264,9 +265,16 @@ jobs:
             'observed-all-false':7213,
             'no-observed-priority-ticks':0
           });
-          a(j['observed-at-least-once-true']>=3589);
-          a(j['observed-unknown-without-true']<=10450);
-          a(j['observed-all-false']>=7213);
+          a.deepEqual(j,{
+            'observed-at-least-once-true':4935,
+            'observed-unknown-without-true':8732,
+            'observed-all-false':7585,
+            'no-observed-priority-ticks':0
+          });
+          a.deepEqual(c.sameTickWholeSourceDelta,
+            {true:307307,false:474684,unknown:-781991});
+          a.equal(c.modelPriorityRunnerTicksHeldAtCornerBoundary,0);
+          a.equal(x.unknownRouteTriage.counts.witnessesWithPreconditionLatchUnknown,3076);
           a.equal(Object.values(j).reduce((n,v)=>n+v,0),21252);
           a.equal(c.sameTickWholeSourceDelta.true+
             c.sameTickWholeSourceDelta.false+
