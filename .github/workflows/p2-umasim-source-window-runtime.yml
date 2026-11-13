@@ -86,6 +86,13 @@ jobs:
            fs.readFileSync(p+'RaceState.kt','utf8'));
           fs.writeFileSync('p2-15-source-random-window-runtime-summary.json',
            JSON.stringify(audit,null,2)+'\n');
+          if(audit.tests.sourceJVMTrials!==12||
+             audit.tests.actualSourceDrawnWindowObservations!==12||
+             audit.tests.controlledSourceCheckerCalls!==48||
+             audit.tests.sourceWindowCacheReuseValidations!==12||
+             audit.boundary.observedModelRankAndRandomSameTick!==false||
+             audit.boundary.formalSkillOrCardSuitabilityRating!==false)
+            throw Error('Pinned JVM runtime cohort or no-rating boundary changed');
           console.log('P2_15_SOURCE_JVM_WINDOW_RUNTIME='+JSON.stringify(audit));
           NODE
       - name: Upload original JVM random windows and research-only summary (no source registry)
