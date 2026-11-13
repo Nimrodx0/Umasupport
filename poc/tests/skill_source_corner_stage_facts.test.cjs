@@ -157,3 +157,51 @@ test('corner cannot manufacture other unknown dynamic AND as true or impersonate
  assert.throws(()=>combined.analyze(f.plans,f.original,f.positions,
   f.ranks,f.profiles,f.positionEvidence,forged),/unverified/);
 });
+
+test('counterfactual pre-first-tick FALSE sensitivity resolves UNKNOWN only to FALSE without becoming source evidence',()=>{
+ const p=profile('100203',[[
+  pred('running_style','==',1),pred('distance_rate','>=',1),
+  pred('corner','==',2)]],[[pred('corner','==',4)]]);
+ const f=fixture([p]);
+ const rankEvidence=rank.buildEvidence(f.plans,f.original,f.positions,f.ranks);
+ const opts={rankEvidence,positionSourceEvidence:f.positionEvidence,
+  cornerSourceEvidence:f.cornerEvidence,includeAbsoluteOrder:true,
+  unknownRouteTriage:true};
+ const unknown=distance.analyze(f.plans,f.original,f.positions,f.profiles,opts);
+ const counter=distance.analyze(f.plans,f.original,f.positions,f.profiles,
+  {...opts,initialPreconditionHistory:'assume-false'});
+ assert.equal(unknown.gates.preconditionHistoryAssumedForSensitivityOnly,false);
+ assert.equal(counter.gates.preconditionHistoryAssumedForSensitivityOnly,true);
+ assert.equal(unknown.raceOpportunity.totals.verdicts[
+  'observed-unknown-without-true'],2);
+ assert.equal(counter.raceOpportunity.totals.verdicts[
+  'observed-unknown-without-true'],0);
+ assert.equal(counter.raceOpportunity.totals.verdicts[
+  'observed-at-least-once-true'],0);
+ const comparison=combined.compareHistorySensitivity(unknown,counter);
+ assert.equal(comparison.casesUnknownOnlyUnderConservativeHistory,2);
+ assert.equal(comparison.changedSkillStyleCells,1);
+ assert.equal(comparison.actualUmaSimHistoricalPrechecksObserved,false);
+ assert.equal(comparison.gameRate,null);
+ assert.equal(comparison.conservativeHistoryIsPrimaryEvidence,true);
+});
+test('observed positive preCondition stays TRUE regardless of counterfactual initial history',()=>{
+ const p=profile('100204',[[
+  pred('running_style','==',1),pred('distance_rate','>=',1),
+  pred('corner','==',2)]],[[pred('corner','==',2)]]);
+ const f=fixture([p]);
+ const rankEvidence=rank.buildEvidence(f.plans,f.original,f.positions,f.ranks);
+ const opts={rankEvidence,positionSourceEvidence:f.positionEvidence,
+  cornerSourceEvidence:f.cornerEvidence,includeAbsoluteOrder:true,
+  unknownRouteTriage:true};
+ const u=distance.analyze(f.plans,f.original,f.positions,f.profiles,opts);
+ const k=distance.analyze(f.plans,f.original,f.positions,f.profiles,
+  {...opts,initialPreconditionHistory:'assume-false'});
+ assert.deepEqual(u.raceOpportunity.totals.verdicts,
+  k.raceOpportunity.totals.verdicts);
+ assert.equal(combined.compareHistorySensitivity(u,k).
+  casesUnknownOnlyUnderConservativeHistory,0);
+ assert.throws(()=>distance.analyze(f.plans,f.original,f.positions,
+  f.profiles,{...opts,initialPreconditionHistory:'known-game-history'}),
+  /precondition history policy/);
+});

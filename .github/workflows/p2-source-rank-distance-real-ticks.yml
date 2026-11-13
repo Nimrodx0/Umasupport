@@ -6,6 +6,7 @@ on:
     paths:
       - 'poc/src/skill_source_rank_tick_bridge.cjs'
       - 'poc/src/skill_source_corner_stage_facts.cjs'
+      - 'docs/evidence/skills/skill-p2-15-precondition-history-sensitivity-20261113.md'
       - 'poc/tests/skill_source_corner_stage_facts.test.cjs'
       - 'poc/tools/globalsim_p2_15_source_corner_full_join.cjs'
       - 'docs/evidence/skills/skill-p2-15-source-corner-full-join-20261113.md'
@@ -39,6 +40,7 @@ jobs:
           node --check poc/src/skill_source_corner_stage_facts.cjs
           node --check poc/tools/globalsim_p2_15_source_corner_full_join.cjs
           node --test poc/tests/skill_source_corner_stage_facts.test.cjs
+          node --check poc/tools/globalsim_p2_15_source_distance_rate_ticks.cjs
           node --check poc/tools/globalsim_p2_15_source_rank_position_full_join.cjs
           node --test poc/tests/skill_source_rank_position_full_join.test.cjs
           node --check poc/tools/globalsim_p2_15_source_rank_distance_ticks.cjs
@@ -289,6 +291,29 @@ jobs:
           a.equal(x.gates.actualGameSkillProcRateMeasured,false);
           a.equal(x.gates.P3CardScoringApproved,false);
           a.equal(x.gates.P4UiChanged,false);
+          const h=x.preconditionHistorySensitivity;
+          a.equal(h.status,
+            'P2.15-counterfactual-initial-precondition-false-sensitivity-NOT-source-fact');
+          a.equal(h.conservativeHistoryBeforeFirstObservedTick,'unknown');
+          a.equal(h.alternateHistoryBeforeFirstObservedTick,'ASSUMED false, NOT observed');
+          a.deepEqual(h.conservativeVerdicts,j);
+          a.deepEqual(h.hypotheticalVerdicts,{
+            'observed-at-least-once-true':4935,
+            'observed-unknown-without-true':8028,
+            'observed-all-false':8289,
+            'no-observed-priority-ticks':0
+          });
+          a.equal(h.casesUnknownOnlyUnderConservativeHistory,704);
+          a.equal(h.changedSkillStyleCells,67);
+          a.equal(h.casesUnknownOnlyUnderConservativeHistory,
+            8732-h.hypotheticalVerdicts['observed-unknown-without-true']);
+          a.equal(Object.values(h.hypotheticalVerdicts).reduce((n,v)=>n+v,0),21252);
+          a.equal(h.actualUmaSimHistoricalPrechecksObserved,false);
+          a.equal(h.conservativeHistoryIsPrimaryEvidence,true);
+          a.equal(h.P3CardScoringApproved,false);
+          a.equal(x.gates.counterfactualInitialFalseScenarioSeparated,true);
+          a.equal(x.gates.originalSourcePreconditionBeforeObservedFrameStillUnknown,true);
+          console.log('P2_15_PRECONDITION_INITIAL_HISTORY_SENSITIVITY='+JSON.stringify(h));
           console.log('P2_15_SOURCE_CORNER_FULL_JOIN_CI='+JSON.stringify({
             sourceWithCorner:c.sourceWithOriginalCorner,
             originalCornerPredicateOccurrences:c.originalCornerPredicateOccurrences,
