@@ -1,0 +1,97 @@
+name: P2.15 original registered UmaSim skill same-AND phase runtime
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/p2-umasim-registered-source-skill.yml'
+      - 'poc/source-probes/P215RegisteredSourceSkillRaceTest.kt'
+      - 'poc/src/skill_p2_15_registered_source_race_trace.cjs'
+      - 'poc/tests/skill_p2_15_registered_source_race_trace.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-registered-source-race-20261114.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/p2-umasim-registered-source-skill.yml'
+      - 'poc/source-probes/P215RegisteredSourceSkillRaceTest.kt'
+      - 'poc/src/skill_p2_15_registered_source_race_trace.cjs'
+      - 'poc/tests/skill_p2_15_registered_source_race_trace.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  registered-original-skill:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify negative cases for original Invoke and unknown rank
+        run: |
+          node --check poc/src/skill_p2_15_registered_source_race_trace.cjs
+          node --test poc/tests/skill_p2_15_registered_source_race_trace.test.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Pin the precise original upstream registry and code revision
+        run: |
+          mkdir -p "$RUNNER_TEMP/umasim"
+          git -C "$RUNNER_TEMP/umasim" init -q
+          git -C "$RUNNER_TEMP/umasim" remote add origin https://github.com/mee1080/umasim.git
+          git -C "$RUNNER_TEMP/umasim" fetch --quiet --depth=1 origin f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          git -C "$RUNNER_TEMP/umasim" checkout --quiet --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/umasim" rev-parse HEAD)" = \
+            f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          test "$(git -C "$RUNNER_TEMP/umasim" hash-object data/skill_data.txt)" = \
+            0c6ea6d72b037b24ee40860f73b0e86db47aab1d
+      - name: Instrument only temporary checker and add original-registry JVM test
+        run: |
+          node poc/tools/install_p215_race_hook.cjs "$RUNNER_TEMP/umasim"
+          install -D poc/source-probes/P215RegisteredSourceSkillRaceTest.kt \
+            "$RUNNER_TEMP/umasim/race/src/jvmTest/kotlin/io/github/mee1080/umasim/race/calc2/P215RegisteredSourceSkillRaceTest.kt"
+      - name: Execute original registered SkillData without editing Invoke or AND/OR
+        env:
+          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx3g
+        run: |
+          export P2_PINNED_SKILL_REGISTRY="$RUNNER_TEMP/umasim/data/skill_data.txt"
+          export P2_REGISTERED_SOURCE_RACE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-15-original-registered-source-race.json"
+          cd "$RUNNER_TEMP/umasim"
+          ./gradlew :race:jvmTest \
+            --tests 'io.github.mee1080.umasim.race.calc2.P215RegisteredSourceSkillRaceTest' \
+            --no-daemon --console=plain --stacktrace
+          test -s "$P2_REGISTERED_SOURCE_RACE_TRACE_OUTPUT"
+      - name: Validate original source runtime observations without upgrading ignored rank
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const checker=require('./poc/src/skill_p2_15_registered_source_race_trace.cjs');
+          const text=fs.readFileSync('p2-15-original-registered-source-race.json','utf8');
+          const raw=JSON.parse(text);
+          const originalSkillChecker=fs.readFileSync(
+           process.env.RUNNER_TEMP+'/umasim/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt','utf8');
+          if(!originalSkillChecker.includes('"order_rate" to "順位条件は無視"')||
+             /"order_rate"\s*->/.test(originalSkillChecker))
+            throw Error('Pinned source order_rate is no longer ignored: review required');
+          const result=checker.audit(raw);
+          if(result.counts.sourceOriginalPhaseRandomCheckerTicks<=0||
+             result.counts.fullOriginalRankAndWindowANDProven!==0||
+             result.counts.officialP3P4Ratings!==0)
+            throw Error('Original registered skill or UNKNOWN rank gate changed');
+          fs.writeFileSync('p2-15-original-registered-source-summary.json',
+           JSON.stringify(result,null,2)+'\n');
+          console.log('P2_15_REGISTERED_SOURCE_MODEL='+JSON.stringify(result));
+          NODE
+      - name: Upload bounded registered-source evidence (never copy source registry)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-original-registered-source-skill-runtime-not-game-activation
+          path: |
+            p2-15-original-registered-source-race.json
+            p2-15-original-registered-source-summary.json
+          retention-days: 14
+          if-no-files-found: error
