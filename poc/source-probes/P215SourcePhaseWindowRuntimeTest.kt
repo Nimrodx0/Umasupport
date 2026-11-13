@@ -20,7 +20,7 @@ import kotlin.test.assertTrue
  * synthetic skill to avoid confusing window observation with full source AND.
  */
 class P215SourcePhaseWindowRuntimeTest {
-    private val sourceSkillId = "200592"
+    private val sourceSkillId = "99000215"
     private val phaseNumber = 2
     private val condition = SkillCondition("phase_random", "==", phaseNumber)
     private val rank = SkillCondition("order_rate", ">", 50)
