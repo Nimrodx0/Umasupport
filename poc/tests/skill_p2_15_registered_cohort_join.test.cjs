@@ -2,6 +2,8 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const join=require('../src/skill_p2_15_registered_cohort_join.cjs');
+const {createHash}=require('node:crypto');
+const jvm=require('../src/skill_p2_15_registered_source_race_trace.cjs');
 const whole=require('../src/skill_source_whole_tick_monitor.cjs');
 const rank=require('../src/skill_p2_15_rank_random_same_and_handoff.cjs');
 const p=(type,operator,value)=>({type,operator,value});
@@ -116,4 +118,78 @@ test('invalid pinned source provenance, false rank completion and duplicate sour
  model.skillById.another=duplicate;
  assert.throws(()=>join.audit(model,prior,reference),
   /duplicate registered skill source match/);
+});
+
+
+function sameRunFixture(){
+ const {model,prior}=setup();
+ const original=model.skills[0];
+ const registry=JSON.stringify([{
+  id:original.activationProfile.sourceNumericId,
+  invokes:original.activationProfile.invokes
+ }])+' '.repeat(100500);
+ const digest=join.logicSha256(whole.compile(original));
+ const tickData=Array.from({length:3},(_,trial)=>({
+  trial,raceFrameCount:750,originalCheckerCalls:2,
+  phasePredicateTrueCalls:1,phasePredicateFalseCalls:1,
+  modelSkillEvents:1,originalPhaseRandomWindowWasChecked:true,
+  ticks:[
+   {tick:200,position:150,start:150,end:160,phasePredicateHit:true},
+   {tick:201,position:161,start:150,end:160,phasePredicateHit:false}
+  ]
+ }));
+ const raw={
+  schemaVersion:1,status:jvm.TRACE,
+  sourceSkillId:original.activationProfile.sourceNumericId,
+  sourceOriginalInvokeIndex:1,sourceOriginalORIndex:0,
+  sourceOriginalInvokeCount:1,sourceOriginalConditionsORCount:1,
+  sourceOriginalSelectedANDSize:3,sourceOriginalPreconditionORCount:0,
+  sourceOriginalCurrentANDHasOrderRate:true,
+  sourceOriginalCurrentANDHasPhaseRandom2:true,
+  originalSkillRecordEquippedUnmodified:true,
+  originalInvokeConditionsUsedUnmodified:true,
+  originalSourceConditionLogicSha256:digest,
+  originalOrderRateWasIgnoredBySource:true,
+  actualSourceCheckerTickCount:6,
+  phasePredicateTrueCalls:3,phasePredicateFalseCalls:3,
+  sourceModelSkillEventCount:3,realGameSkillProcObserved:false,
+  trials:tickData
+ };
+ prior.source={revision:join.SNAPSHOT.pinnedUmaSimRevision,
+  skillRegistrySha256:createHash('sha256').update(registry).digest('hex')};
+ // 1 true synthetic route plus 84 independent app candidates, preserving
+ // exactly the original fixed source cohort totals for the join contract.
+ for(let i=0;i<84;i++){
+  const id=String(300000+i);
+  prior.candidates.push({...prior.candidates[0],
+   sourceNumericId:id,sourceRouteKey:id+'|0|0|_'});
+ }
+ prior.denominators.sameOriginalCurrentANDCandidates=85;
+ prior.denominators.distinctSourceSkillsWithSameAND=85;
+ prior.denominators.sharedMechanismKernelsWithSameAND=2;
+ return {raw,prior,registry};
+}
+test('same-workflow original JVM + pinned registry parser + exact app 85 route proof, still zero rank',()=>{
+ const x=sameRunFixture();
+ const out=join.auditSameRun(x.raw,x.prior,x.registry);
+ assert.equal(out.linked.sourceNumericId,join.SNAPSHOT.observedRegisteredSkillId);
+ assert.equal(out.provenance.fullConditionsOriginalFingerprintMatched,true);
+ assert.equal(out.observedModel.phasePredicateSourceTickChecks,6);
+ assert.equal(out.noScoringBoundary.originalOrderRatePredicateSourceRuntimeObservations,0);
+ assert.equal(out.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
+ assert.equal(out.noScoringBoundary.approvedP3P4SuitabilityScores,0);
+});
+test('same-workflow cross-source gate rejects changed registry data, excluded app ID or forged JVM digest',()=>{
+ for(const alter of [
+  x=>x.raw.originalSourceConditionLogicSha256='b'.repeat(64),
+  x=>x.prior.candidates=x.prior.candidates.filter(c=>
+   c.sourceNumericId!==join.SNAPSHOT.observedRegisteredSkillId),
+  x=>x.prior.source.skillRegistrySha256='a'.repeat(64),
+  x=>x.raw.sourceModelSkillEventCount=-1,
+  x=>x.raw.originalOrderRateWasIgnoredBySource=false
+ ]){
+  const x=sameRunFixture();alter(x);
+  assert.throws(()=>join.auditSameRun(x.raw,x.prior,x.registry),
+   /P2.15/);
+ }
 });
