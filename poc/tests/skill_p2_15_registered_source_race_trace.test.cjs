@@ -47,7 +47,7 @@ test('no rank, OR, source-identity or source window substitution is accepted',()
   d=>d.originalInvokeConditionsUsedUnmodified=false,
   d=>d.originalOrderRateWasIgnoredBySource=false,
   d=>d.realGameSkillProcObserved=true,d=>d.trials[0].ticks[2].start++,
-  d=>d.trials[1].ticks[0].phasePredicateHit=false,
+  d=>d.trials[1].ticks[0].phasePredicateHit=!d.trials[1].ticks[0].phasePredicateHit,
   d=>d.trials[1].ticks[1].tick=d.trials[1].ticks[0].tick,
   d=>d.trials[1].modelSkillEvents=-1,
   d=>d.trials.pop(),d=>d.phasePredicateTrueCalls=999
