@@ -22,6 +22,7 @@ const venueAudit=require('../src/skill_track_id_venue_audit.cjs');
 const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
+const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -133,6 +134,14 @@ function matchedRecord(skill,live,old){
   throw Error('P2.32 original-source app cohort or research-only boundary drift');
  const p215Blockers=blockerImpact.audit(model,
   [...new Set(changeOrder.paths.map(x=>x.sourceNumericId))]);
+ const p232Queue=researchQueue.audit(model,{
+  blockerReport:p215Blockers,specReport:p232
+ });
+ if(p232Queue.denominators.sourceMatchedSkills!==
+    p215Blockers.denominators.sourceMatchedSkills||
+    p232Queue.denominators.actualAppliedOmissions!==0||
+    p232Queue.denominators.officialP3OrP4Ratings!==0)
+  throw Error('P2.32 route research queue cohort or no-scoring boundary changed');
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
@@ -320,6 +329,22 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-32-source-route-research-queue.json',
+  JSON.stringify({source:{revision:REVISION,
+   skillRegistrySha256:digest(skillText),
+   supportRegistrySha256:digest(supportText)},...p232Queue},null,2)+'\n');
+ console.log('P2_32_SOURCE_ROUTE_PRIORITY='+JSON.stringify({
+  denominators:p232Queue.denominators,
+  byResearchGroup:p232Queue.byResearchGroup,
+  leadingTypes:p232Queue.nextTypeResearch.slice(0,18),
+  leadingRoutes:p232Queue.priorityRouteCandidates.slice(0,12).map(r=>({
+   id:r.sourceNumericId,invoke:r.invokeIndex,
+   conditionOr:r.conditionOrIndex,preconditionOr:r.preconditionOrIndex,
+   group:r.researchGroup,types:r.unverifiedTypes,
+   styles:r.finiteCompatibleStyles,
+   fixedStateRequired:r.fixedStateAssumptionsRequired
+  }))
  }));
  fs.writeFileSync('p2-32-spec-conditional-omission.json',
   JSON.stringify({source:{
