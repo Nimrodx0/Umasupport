@@ -1,0 +1,29 @@
+# P2.15：元UmaSimの実レース技能判定tickと抽選区間の同時観測（2026-11-13）
+
+## 目的と前提
+
+[前工程](skill-p2-15-umasim-phase-runtime-20261113.md)では、元`SkillChecker`の単体実行でランダム窓12件、人工位置48件、キャッシュ同一性12件を確認した。しかし人工位置は元`RaceCalculator`の走行フレームではなく、**実レースの同じ判定tickで抽選窓と走者位置が一致するか**が未確認だった。
+
+本工程では、固定元`mee1080/umasim@f6e4501ee6c6c2d4ac8698e7796e309d31575bde`の`RaceCalculator.simulate()`を実行し、元の`checkSkillTrigger()`から呼ばれた`checkInRandom`の位置と元`RandomEntry`を**まさにその呼び出し時刻**で記録する。対象は独立した予約ID `99000216` の合成スキル（`phase_random==2`のみ）を各1つ装備した元UmaSim単独走者。**元85件の実登録スキルや日本版ゲームの実際の技能は使わない**。
+
+## 実行方式
+
+- [CIワークフロー](../../../.github/workflows/p2-umasim-race-tick-window.yml)で、上流をピン留めSHAから一時チェックアウトし、元`SkillChecker.kt`の**1つだけ存在する`checkInRandom`の戻り値部分**へ、[最小計測パッチ](../../../poc/tools/install_p215_race_hook.cjs)を適用する。ソースのアンカーが変わったら中断する。返す真偽は元の`areas.any { simulation.position in it }`から一切変更せず、一時的な[計測フック](../../../poc/source-probes/P215RaceWindowHook.kt)へ座標・フレーム番号・区間・真偽を渡す。計測のために元Kotlinコードを**一時変更していることは必ず記録**し、元レポジトリ・公開Umasupportに同梱しない。
+- [元レース実行JVM試験](../../../poc/source-probes/P215OriginalRaceTickWindowTest.kt)は、`RandomPosition.RANDOM`と`RaceCalculator(SystemSetting()).simulate()`を元のレース内部計算で実行する。元のスキル条件を`checkSkillTrigger`が実際に呼んだフレームを記録する。
+- 各記録フレームの走者位置を**元`RaceFrame.startPosition + movement`の値から独立照合**し、同じフレームの`triggeredSkills`に当該合成スキルが出現することと、元`phase_random`真偽が対応することを検証する。元キャッシュ済みの区間はレース中同じ座標を維持していなければ失敗する。
+- [監査器](../../../poc/src/skill_p2_15_umasim_race_tick_trace.cjs)は3つの元モデルレースから出た実tick記録だけを受け付け、真偽と区間一致、単一元技能ID、モデルと実ゲームの区別を検証。偽装した順位・スキルID・frame混在・区間変化は[反例試験](../../../poc/tests/skill_p2_15_umasim_race_tick_trace.test.cjs)で検出する。
+- 毎試験で元のランダム区間は**本当に`RandomPosition.RANDOM`で生成**するが、乱数シードやコースの外挿はしない。実測のカウント・source checker呼び出し回数を確率や適性へ変換しない。成果物は14日保持し、上流コード・元技能辞書は含めない。
+
+## データの意味
+
+成功した場合、**元UmaSimのRaceCalculatorの実走行フレームにおける`phase_random`チェック**が、同じ元ソースの実区間と位置で正しく判定されることを初めて直接確認できる。
+
+一方、固定UmaSimの`SkillChecker`は`order_rate`を未実装である。これを合成スキルへ勝手に追加すると、元コードではその順位条件は除外されるため、**順位率＋ランダム窓の全AND実測とは判定しない**。必要条件として`phase_random`の実測を1段進めるもので、前工程の85経路・2共通機構へ**直接観測結果を転写したものではない**。元ゲームの4脚質・距離・馬場のW/D、実スキル発動率、P3/P4正式適性は未測定。
+
+## 実測結果
+
+**固定CIの元JVMレース実行が成功した場合にのみ、元モデルレース数・技能判定tick数・抽選窓ヒット数・未ヒット数をここへ記録する。** ワークフロー定義や合成JSテストだけで実測済みとは扱わない。実レースにおける`sourceSkillTriggered`は元シミュレータの**合成スキルイベント**であり、日本版ウマ娘の実発動とは別物。
+
+## 次工程
+
+元のレース内で元スキル辞書の**実登録IDと条件を安全に読み込んで装備するための試験基盤**を準備し、抽選区間と技能条件を元スキルの同じInvoke／OR／ANDに対応付ける。順位率が元UmaSim未実装の問題には、元ゲーム仕様に基づく独立の根拠と、同じレースの実順位相当の観測を別途必要とする。実スキルを1個ずつ総当たりせず、共通機構と元の数値・閾値を再利用する。
