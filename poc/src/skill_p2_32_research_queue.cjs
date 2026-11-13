@@ -42,6 +42,9 @@ function assignGroup(route){
   triage.typeDecision(t).group===SOURCE_TYPES.context&&!specCandidates.includes(t));
  const rank=missing.filter(t=>triage.typeDecision(t).group===SOURCE_TYPES.rank);
  const event=missing.filter(t=>triage.typeDecision(t).group===SOURCE_TYPES.event);
+ const hard=missing.filter(t=>[
+  'complex-or-external-hold','no-general-style-inference','unreviewed'
+ ].includes(triage.typeDecision(t).group));
  const comparable=route.finiteCompatibleStyles.length>=2;
  const residual=missing.filter(t=>!specCandidates.includes(t));
  // Removing a fixed-state candidate here means "hypothetical after checking
@@ -52,10 +55,10 @@ function assignGroup(route){
  if(context.length){
   researchGroup='context-or-setup-gate-first';
   nextStep='validate-actual-race-and-horse-context-before-any-axis-comparison';
- }else if(comparable&&rank.length&&count<=2){
+ }else if(comparable&&rank.length&&!hard.length&&count<=2){
   researchGroup='rank-source-join-first';
   nextStep='check-source-exact-rank-window-AND-at-the-same-runner-and-tick';
- }else if(comparable&&event.length&&count<=2){
+ }else if(comparable&&event.length&&!hard.length&&count<=2){
   researchGroup='event-state-pilot-next';
   nextStep='verify-event-state-mechanism-before-same-tick-intersection';
  }else if(comparable&&(rank.length||event.length)){
@@ -74,6 +77,7 @@ function assignGroup(route){
   contextOrSetupTypes:context,
   rankStudyTypes:rank,
   eventStudyTypes:event,
+  unresolvedComplexDependencyTypes:hard,
   missingTypesBeforeFixedState:missing.length,
   missingTypesOnlyIfFixedStateAssumptionsSatisfied:count,
   // These types are not presumed already measured. A rank study is partial
@@ -128,6 +132,49 @@ function analyzeSkill(skill){
  });
  return {skillId:skill.id,sourceNumericId:p.sourceNumericId,
   status:'source-route-research-candidates-only',routeFamilies:routes};
+}
+/*
+ * Take a small, diverse first study rather than making 100 similar source
+ * windows look like 100 independent experiments. This is explicitly a
+ * COVERAGE-ORIENTED sampling rule, not a frequency or information-gain score.
+ */
+function selectInitialP215Pilots(ordered){
+ const targets=[
+  {group:'rank-source-join-first',limit:4},
+  {group:'event-state-pilot-next',limit:3}
+ ];
+ const chosen=[],usedSkills=new Set();
+ for(const {group,limit} of targets){
+  const pool=ordered.filter(x=>x.researchGroup===group);
+  const typeShapes=new Set();
+  let n=0;
+  for(const pass of [0,1]){
+   if(n>=limit)break;
+   for(const row of pool){
+    if(n>=limit)break;
+    const shape=row.unverifiedTypes.join('|');
+    if(usedSkills.has(row.sourceNumericId)||
+       (pass===0&&typeShapes.has(shape)))continue;
+    chosen.push({
+     sourceNumericId:row.sourceNumericId,skillId:row.skillId,
+     invokeIndex:row.invokeIndex,invokeOffset:row.invokeOffset,
+     conditionOrIndex:row.conditionOrIndex,
+     preconditionOrIndex:row.preconditionOrIndex,
+     sourceRouteKey:row.routeKey,
+     unresolvedTypes:row.unverifiedTypes,
+     finiteCompatibleStyles:row.finiteCompatibleStyles,
+     fixedStateAssumptionsRequired:row.fixedStateAssumptionsRequired,
+     researchGroup:group,nextStep:row.nextStep,
+     selectedAs:'type-shape-diverse-source-branch-pilot',
+     noSourceRouteProven:true,noFormalSuitability:true
+    });
+    usedSkills.add(row.sourceNumericId);
+    typeShapes.add(shape);
+    n++;
+   }
+  }
+ }
+ return chosen;
 }
 function audit(model,{blockerReport,specReport}={}){
  if(!isObj(model)||!Array.isArray(model.skills)||!isObj(model.skillById)||
@@ -217,6 +264,7 @@ function audit(model,{blockerReport,specReport}={}){
    typeBuckets.set(type,bucket);
   }
  }
+ const initialP215Pilots=selectInitialP215Pilots(ordered);
  const nextTypeResearch=[...typeBuckets.values()].map(t=>({
   type:t.type,distinctSourceSkills:t.sourceSkillIds.size,
   routeFamilies:t.routeFamilies,
@@ -246,9 +294,16 @@ function audit(model,{blockerReport,specReport}={}){
   // Sorted, referenceable list of exact source routes to resume in P2.15.
   // No original source predicate strings or game data are republished.
   priorityRouteCandidates:ordered.slice(0,100),
+  initialP215Pilots,
+  initialPilotSelectionPolicy:{
+   rankWindowSourceJoinMax:4,eventStatePilotMax:3,
+   uniqueSourceSkillPerPilot:true,
+   diverseUnverifiedTypeSignaturesFirst:true,
+   provenSkillSuitability:false
+  },
   rows,
   limitations:[
-   'Research ordering is a heuristic for choosing a next experiment, not a derived skill ranking or observed trigger probability.',
+   'Research ordering and the 4+3 pilot sample are coverage heuristics, NOT proven information gain, effectiveness, skill ranking or observed probability.',
    'Compatible means not explicitly contradicted by the checked finite domains; track_id and other course/horses constraints may remain unresolved.',
    'A common route across multiple styles is necessary for a comparable P2.15 source-branch contrast, not sufficient evidence of different probabilities.',
    'Known source predicate types including rank/phase remain unmeasured for whole-skill AND/OR/Invoke semantics.',
@@ -258,4 +313,4 @@ function audit(model,{blockerReport,specReport}={}){
   ]
  };
 }
-module.exports={STATUS,RESEARCH_ORDER,assignGroup,analyzeSkill,audit};
+module.exports={STATUS,RESEARCH_ORDER,assignGroup,analyzeSkill,selectInitialP215Pilots,audit};
