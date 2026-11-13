@@ -15,6 +15,30 @@
  *  - no-specific-mechanism-evidence: no automatic inference.
  */
 const DEFINITIONS=Object.freeze({
+ running_style:{
+  status:'source-finite-eligibility',
+  facet:'Source running_style operator evaluated against one of four finite style IDs; necessary eligibility contradiction only',
+  references:['skill-p2-15-full-path-gate-audit-20261111.md'],
+  limitation:'Style eligibility restriction is not a model observation of an entire source route.'
+ },
+ distance_type:{
+  status:'source-finite-eligibility',
+  facet:'Source distance-type operator checked for satisfiability within the four finite distance classes',
+  references:['skill-p2-15-full-path-gate-audit-20261111.md'],
+  limitation:'A finite-domain possibility is not evidence of dynamic condition conjunction at any specific course.'
+ },
+ ground_type:{
+  status:'source-finite-eligibility',
+  facet:'Source turf/dirt condition checked against its finite domain as an explicit gate',
+  references:['skill-p2-15-full-path-gate-audit-20261111.md'],
+  limitation:'Do not infer racecourse-specific running dynamics from turf/dirt eligibility.'
+ },
+ ground_condition:{
+  status:'source-finite-eligibility',
+  facet:'Source ground-state operator finite-domain feasibility check only',
+  references:['skill-p2-15-full-path-gate-audit-20261111.md'],
+  limitation:'The actual track-condition state was not observed in the fixed GlobalSim races.'
+ },
  order_rate:{
   status:'selected-model-tick',
   facet:'GlobalSim pre-skill model rank plus externally documented 9/12-runner order_rate boundary',
