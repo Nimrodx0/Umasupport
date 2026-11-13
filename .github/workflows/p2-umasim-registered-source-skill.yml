@@ -110,7 +110,19 @@ jobs:
             throw Error('Original registered skill or UNKNOWN rank gate changed');
           fs.writeFileSync('p2-15-original-registered-source-summary.json',
            JSON.stringify(result,null,2)+'\n');
+          const join=require('./poc/src/skill_p2_15_registered_cohort_join.cjs');
+          const cohort=JSON.parse(fs.readFileSync(
+           'p2-15-rank-random-same-and-handoff.json','utf8'));
+          const same=join.auditSameRun(raw,cohort,fs.readFileSync(
+           process.env.RUNNER_TEMP+'/umasim/data/skill_data.txt','utf8'));
+          if(same.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements!==0||
+             same.noScoringBoundary.approvedP3P4SuitabilityScores!==0||
+             same.linked.sourceNumericId!==raw.sourceSkillId)
+            throw Error('Actual source model candidate not linked to original app 85 cohort');
+          fs.writeFileSync('p2-15-original-registered-to-85-same-run-join.json',
+           JSON.stringify(same,null,2)+'\n');
           console.log('P2_15_REGISTERED_SOURCE_MODEL='+JSON.stringify(result));
+          console.log('P2_15_ORIGINAL_85_SAME_RUN='+JSON.stringify(same));
           NODE
       - name: Upload bounded registered-source evidence (never copy source registry)
         uses: actions/upload-artifact@v4
@@ -119,5 +131,6 @@ jobs:
           path: |
             p2-15-original-registered-source-race.json
             p2-15-original-registered-source-summary.json
+            p2-15-original-registered-to-85-same-run-join.json
           retention-days: 14
           if-no-files-found: error
