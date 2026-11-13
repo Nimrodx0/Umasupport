@@ -147,7 +147,11 @@ function numberAtModelPosition(pos,course){
 function observations(compiled,position,courseId,evidence){
  fail(compiled?.lookup instanceof Map,
   'original full skill AST and predicate identities required');
- validateEvidence(evidence);
+ // Full provenance and course-shape checks occur once in the caller's
+ // analyze() entry. A quick source identity guard avoids revalidating
+ // large immutable geometries for every one of ~27 million source ticks.
+ fail(evidence?.status===STATUS&&evidence.exactCourseCornersMatched===true,
+  'unverified source corner evidence');
  const c=evidence.courses[String(courseId)];
  fail(c&&c.courseId===courseId,'unverified fixed course id '+courseId);
  const cornerNumber=numberAtModelPosition(position,c);
