@@ -11,6 +11,7 @@ const fs=require('node:fs');
 const distance=require('./globalsim_p2_15_source_distance_rate_ticks.cjs');
 const stage=require('../src/skill_source_position_stage_facts.cjs');
 const rankBridge=require('../src/skill_source_rank_tick_bridge.cjs');
+const cornerBridge=require('../src/skill_source_corner_stage_facts.cjs');
 const legacy=require('./globalsim_change_order_internal_probe.cjs');
 const expanded=require('./globalsim_position_expanded.cjs');
 const STATUS='P2.15-direct-model-rank-and-position-original-condition-interpretations-not-game';
@@ -108,8 +109,61 @@ function compare(before,after,rankEvidence){
   trueGameSkillProcObserved:false,gameRate:null,P3CardScore:null
  };
 }
+function compareCorner(before,after){
+ fail(before.schemaVersion===5&&after.schemaVersion===5&&
+  after.gates.pinnedOriginalCornerNumberFormulaVerified===true&&
+  after.gates.originalAndModelCornerGeometryMatchedOnFixedCourses===true&&
+  after.gates.actualOriginalUmaSimCornerRuntimeObserved===false&&
+  after.denominators.sourceCornerSkillsAmongDistanceRate>0&&
+  after.denominators.sourceCornerPredicateOccurrences>0,
+  'corner experiment has missing original source formula/geometry or unexpected source cohort');
+ for(const key of ['modelRunnerPriorityTicks','unchangedModelPhysicsValues',
+  'distanceRatePredicateFacts','modelOrderRatePredicateFacts',
+  'modelAbsoluteOrderPredicateFacts','modelSourcePositionPredicateFacts']){
+  fail(before.totals[key]===after.totals[key],
+   'adding source corner changed existing model predicate evidence: '+key);
+ }
+ const delta=Object.fromEntries(['True','False','Unknown'].map(x=>[
+  x.toLowerCase(),after.totals['sourceCondition'+x+'SkillRunnerTicks']-
+   before.totals['sourceCondition'+x+'SkillRunnerTicks']]));
+ fail(delta.true>=0&&delta.false>=0&&delta.unknown<=0&&
+  delta.true+delta.false+delta.unknown===0,
+  'source corner fact reversed prior definite three-valued model result');
+ const b=before.raceOpportunity,a=after.raceOpportunity;
+ fail(b.denominators.skillRunnerRaceTrials===
+  a.denominators.skillRunnerRaceTrials&&
+  a.totals.verdicts[VERDICTS[0]]>=b.totals.verdicts[VERDICTS[0]]&&
+  a.totals.verdicts[VERDICTS[1]]<=b.totals.verdicts[VERDICTS[1]]&&
+  a.totals.verdicts[VERDICTS[2]]>=b.totals.verdicts[VERDICTS[2]]&&
+  a.totals.verdicts[VERDICTS[3]]===b.totals.verdicts[VERDICTS[3]],
+  'source corner caused a nonmonotonic model skill-runner-race result');
+ const old=new Map(b.bySkillStyle.map(x=>[x.sourceNumericId+'|'+x.style,x]));
+ let changedSkillStyleCells=0;
+ for(const row of a.bySkillStyle){
+  const prior=old.get(row.sourceNumericId+'|'+row.style);
+  fail(prior&&prior.runnerRaceTrials===row.runnerRaceTrials,
+   'source corner changed source skill/style denominator');
+  if(prior.verdicts[VERDICTS[0]]!==row.verdicts[VERDICTS[0]]||
+   prior.verdicts[VERDICTS[1]]!==row.verdicts[VERDICTS[1]])
+   changedSkillStyleCells++;
+ }
+ fail(after.unknownRouteTriage.counts.observedUnknownWithoutTrueRunnerRaceTrials===
+  a.totals.verdicts[VERDICTS[1]],
+  'corner triage no longer matches full source verdict');
+ return {sourceSkillsWithCorner:after.denominators.sourceCornerSkillsAmongDistanceRate,
+  sourceCornerPredicateOccurrences:after.denominators.sourceCornerPredicateOccurrences,
+  emittedSameModelTickCornerFacts:after.totals.modelSourceCornerPredicateFacts,
+  knownRunnerPriorityTicks:after.totals.modelRunnerPriorityTicksWithKnownCorner,
+  heldRunnerPriorityTicks:after.totals.modelRunnerPriorityTicksHeldCornerBoundary,
+  tickOutcomesChanged:delta,
+  beforeRunnerRaceVerdicts:{...b.totals.verdicts},
+  afterRunnerRaceVerdicts:{...a.totals.verdicts},
+  changedOriginalSkillStyleCells:changedSkillStyleCells,
+  actualSourceSkillProcObserved:false,gameRate:null,approvedP2Grade:null};
+}
 function analyze(plans,originalReplies,positionReplies,rankReplies,
- profiles,positionSourceEvidence){
+ profiles,positionSourceEvidence,cornerEvidence=null){
+ if(cornerEvidence)cornerBridge.validateEvidence(cornerEvidence,plans);
  stage.verifyEvidence(positionSourceEvidence);
  const rankEvidence=rankBridge.buildEvidence(plans,originalReplies,
   positionReplies,rankReplies);
@@ -120,6 +174,13 @@ function analyze(plans,originalReplies,positionReplies,rankReplies,
   {rankEvidence,positionSourceEvidence,includeAbsoluteOrder:true,
    unknownRouteTriage:true});
  const comparison=compare(before,after,rankEvidence);
+ let cornerComparison=null,cornerJoined=null;
+ if(cornerEvidence){
+  cornerJoined=distance.analyze(plans,originalReplies,positionReplies,profiles,
+   {rankEvidence,positionSourceEvidence,includeAbsoluteOrder:true,
+    cornerSourceEvidence:cornerEvidence,unknownRouteTriage:true});
+  cornerComparison=compareCorner(after,cornerJoined);
+ }
  fail(comparison.originalSourceSkills===253||plans.length<8,
   'fixed original 253 skill research denominator drift');
  return {schemaVersion:1,status:STATUS,
@@ -127,27 +188,35 @@ function analyze(plans,originalReplies,positionReplies,rankReplies,
    originalSkillRegistrySHA256:distance.SOURCE_SHA,
    globalSimRevision:rankBridge.MODEL_PIN,
    exactSourcePositionFormulas:positionSourceEvidence,
+   ...(cornerEvidence?{sourceCornerGeometry:cornerEvidence}:{}),
    originalUmaSimIgnoresOrderAndOrderRate:true,
    percentMapping:rankEvidence.source.mapping,
    rawOriginalSkillDictionaryRepublished:false},
   design:{modelRaces:plans.length,
    sourceSkillsNotEquipped:true,
    exactGlobalSimPreSkillRankAndPositionSameRunnerAndTick:true,
-   predicateTypes:['distance_rate',...stage.TYPES,'order_rate','order'],
+   predicateTypes:['distance_rate',...stage.TYPES,'order_rate','order',
+    ...(cornerEvidence?['corner']:[])],
    rankPercentageModelInterpretationOnly:true,
    originalSourceANDORInvokeAndPreconditionPreserved:true,
    unknownOtherSourcePredicatesStillUnknown:true},
   modelStageValidation:rankEvidence.totals,
   comparison,
-  unknownRouteTriage:after.unknownRouteTriage,
-  byStyle:after.raceOpportunity.byStyle,
-  bySkillStyle:after.raceOpportunity.bySkillStyle,
-  byContext:after.raceOpportunity.bySkillStyleContext,
+  ...(cornerComparison?{cornerComparison}:{}),
+  unknownRouteTriage:(cornerJoined||after).unknownRouteTriage,
+  byStyle:(cornerJoined||after).raceOpportunity.byStyle,
+  bySkillStyle:(cornerJoined||after).raceOpportunity.bySkillStyle,
+  byContext:(cornerJoined||after).raceOpportunity.bySkillStyleContext,
   gates:{originalUmaSimSourceDataPinned:true,
    independentThreeEngineModelPhysicsCompared:true,
    sameRunnerSameTickSourcePositionAndRankJoined:true,
    exactAbsoluteOrderAndInterpretedOrderRateDifferent:true,
    historicalPreconditionsStillTernary:true,
+   ...(cornerEvidence?{
+    pinnedUmaSimCornerFormulaVerified:true,
+    sourceAndGlobalSimFixedCourseCornersConcordant:true,
+    originalUmaSimCornerStateDirectlyObserved:false
+   }:{}),
    originalUmaSimOrderAndOrderRateIgnored:true,
    actualOriginalUmaSimSkillProcObserved:false,
    actualGameSkillProcRateMeasured:false,
@@ -163,10 +232,10 @@ function analyze(plans,originalReplies,positionReplies,rankReplies,
   ]};
 }
 function main(args){
- if(args[0]!=='replay'||args.length!==11)
-  throw Error('replay <template.jsonl> <original-engine> <position-engine> <rank-engine> <skill_data.txt> <SkillChecker.kt> <SkillData.kt> <RaceState.kt> <RaceCalculator.kt> <out.json>');
+ if(args[0]!=='replay'||args.length!==13)
+  throw Error('replay <template.jsonl> <original-engine> <position-engine> <rank-engine> <skill_data.txt> <SkillChecker.kt> <SkillData.kt> <RaceState.kt> <RaceCalculator.kt> <rawData.kt> <course_data.json> <out.json>');
  const [_,templatePath,originalEngine,positionEngine,rankEngine,
-  registry,checker,skillData,state,calculator,output]=args;
+  registry,checker,skillData,state,calculator,rawCourse,modelCourse,output]=args;
  const profiles=distance.validateSource(fs.readFileSync(registry,'utf8'),
   fs.readFileSync(checker,'utf8'),fs.readFileSync(skillData,'utf8')).profiles;
  const fixed=stage.verifyPinnedSources(fs.readFileSync(checker,'utf8'),
@@ -176,7 +245,11 @@ function main(args){
  const template=JSON.parse(lines[0]);
  fail(template.experimentalRetailRuntime===true&&
   template.experimentalRetailInitialization===true,'fixed retail model not present');
+ const cornerEvidence=cornerBridge.verifyPinnedSources(
+  fs.readFileSync(state,'utf8'),fs.readFileSync(checker,'utf8'),
+  fs.readFileSync(rawCourse,'utf8'),fs.readFileSync(modelCourse,'utf8'));
  const plans=legacy.plans().filter((_,i)=>i%4===0);
+ cornerBridge.validateEvidence(cornerEvidence,plans);
  fail(plans.length===8&&plans.every(p=>[9,12].includes(p.fieldSize)),
   'fixed eight race 9/12 panel changed');
  const races=plans.map(plan=>expanded.makeRace(template,plan));
@@ -185,10 +258,11 @@ function main(args){
  const orig=legacy.replay(originalEngine,races);
  const position=legacy.replay(positionEngine,races);
  const ranks=legacy.replay(rankEngine,races);
- const result=analyze(plans,orig,position,ranks,profiles,fixed);
+ const result=analyze(plans,orig,position,ranks,profiles,fixed,cornerEvidence);
  fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');
  console.log('P2_15_RANK_POSITION_FULL_JOIN='+JSON.stringify({
   modelStageValidation:result.modelStageValidation,
+  cornerComparison:result.cornerComparison,
   comparison:{...result.comparison,changedSkillStyleCells:
    result.comparison.changedSkillStyleCells.slice(0,15)},
   unknownGateCounts:result.unknownRouteTriage.counts,
@@ -199,4 +273,4 @@ function main(args){
 }
 if(require.main===module)try{main(process.argv.slice(2))}
 catch(e){console.error(e.stack||e);process.exitCode=1;}
-module.exports={STATUS,compare,analyze,main};
+module.exports={STATUS,compare,compareCorner,analyze,main};
