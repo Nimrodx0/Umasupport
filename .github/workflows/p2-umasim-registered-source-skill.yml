@@ -74,7 +74,9 @@ jobs:
           const raw=JSON.parse(text);
           const originalSkillChecker=fs.readFileSync(
            process.env.RUNNER_TEMP+'/umasim/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt','utf8');
-          if(!originalSkillChecker.includes('"order_rate" to "順位条件は無視"')||
+          const originalSkillData=fs.readFileSync(
+           process.env.RUNNER_TEMP+'/umasim/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt','utf8');
+          if(!originalSkillData.includes('"order_rate" to "順位条件は無視"')||
              /"order_rate"\s*->/.test(originalSkillChecker))
             throw Error('Pinned source order_rate is no longer ignored: review required');
           const result=checker.audit(raw);
