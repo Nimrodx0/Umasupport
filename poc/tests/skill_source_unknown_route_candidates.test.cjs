@@ -40,6 +40,14 @@ test('current AND/OR witness excludes definitely false routes and retains exact 
  assert.equal(a.representative.conditionOrIndex,0);
  assert.equal(a.gameRate,null);
  assert.equal(a.actualSourceProcObserved,false);
+ assert.equal(triage.classification('order_rate'),
+  'explicitly-ignored-by-pinned-UmaSim-checker');
+ assert.equal(triage.classification('order'),
+  'explicitly-ignored-by-pinned-UmaSim-checker');
+ assert.equal(triage.classification('corner'),
+  'unobserved-source-predicate-requires-semantics-and-model-stage-validation');
+ assert.equal(triage.classification(triage.PRE),
+  'unobserved-historical-precondition-latch');
 });
 test('initial precondition history stays a distinct gate even when the current precondition is false',()=>{
  const p=profile('100002',[inv([
@@ -111,6 +119,10 @@ test('one representative candidate per unresolved runner-race is aggregated with
  assert.equal(report.byCandidateGate[0].gateKind,'phase_random');
  assert.equal(report.byCandidateGate[0].representativeRunnerRaceTrials,1);
  assert.equal(report.byCandidateGate[0].sourceSkillStyleCells,1);
+ assert.equal(report.byCandidateGate[0].originalUmaSimCheckerDisposition,
+  'unobserved-source-predicate-requires-semantics-and-model-stage-validation');
+ assert.deepEqual(report.definition.pinnedUmaSimCheckerExplicitlyIgnoresRankTypes,
+  ['order','order_rate']);
  assert.equal(report.byCandidateCombination[0].representativeRunnerRaceTrials,1);
  assert.equal(report.byStyle.find(x=>x.style==='Nige').unresolvedRunnerRaceTrials,1);
  assert.equal(report.gates.allRemainingUnknownsProvenCausedByWitness,false);
