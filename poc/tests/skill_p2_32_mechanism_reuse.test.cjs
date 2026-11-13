@@ -52,6 +52,8 @@ test('prior evidence is appropriately scoped and documented, not automatically e
   'no-specific-mechanism-evidence');
  assert.equal(mechanism.forType('motivation').status,'conditional-fixed-state');
  assert.equal(mechanism.forType('track_id').status,'source-static-context');
+ for(const type of ['running_style','distance_type','ground_type','ground_condition'])
+  assert.equal(mechanism.forType(type).status,'source-finite-eligibility');
  for(const row of mechanism.forTypes(Object.keys(mechanism.DEFINITIONS)))
   for(const rel of row.evidencePaths)
    assert(fs.existsSync(path.join(__dirname,'../..',rel)),
@@ -106,6 +108,11 @@ test('read-only grouping covers every original source route and retains no skill
  assert.equal(d.formalSkillCardSuitabilityRatings,0);
  assert(r.initialMechanismFamilyPilots.length<=7);
  assert(r.initialMechanismFamilyPilots.every(x=>x.noSkillBySkillRetestPromise));
+ assert(r.initialMechanismFamilyPilots.some(x=>
+  x.selectedAs==='reuse-existing-mechanism-evidence'));
+ assert(r.initialMechanismFamilyPilots.every(x=>[
+  'reuse-existing-mechanism-evidence','inspect-unstudied-mechanism'
+ ].includes(x.selectedAs)));
  assert.equal(Object.hasOwn(r,'skillSuitabilityScores'),false);
 });
 test('unreviewed corner_random remains a new mechanism, not inherited from corner',()=>{
@@ -124,4 +131,17 @@ test('invalid identity and source route topology fail closed',()=>{
  assert.throws(()=>reuse.audit(m,{...q,status:'fake'}),/route queue required/);
  q.rows[0].routeFamilies[0].conditionOrCount=2;
  assert.throws(()=>reuse.audit(m,q),/source branch topology differs/);
+});
+
+test('explicit finite eligibility is not counted as an unstudied dynamic mechanism',()=>{
+ const r=full(fixture());
+ const group=r.mechanismFamilies.find(x=>x.originalSourceMembers
+  .some(m=>m.sourceNumericId==='104'));
+ assert.deepEqual(group.notYetMechanismStudiedTypes,[]);
+ assert(group.fixedStateConditionalTypes.includes('motivation'));
+ const result=reuse.newResearchGap(['distance_type','phase_random','order_rate']);
+ assert.deepEqual(result.notYetMechanismStudiedTypes,[]);
+ assert.deepEqual(result.explicitFiniteEligibilityTypes,['distance_type']);
+ assert.equal(result.nextMechanismResearchAction,
+  'reuse-previous-geometry-and-tick-studies-then-test-source-draw-and-same-branch-conjunction');
 });
