@@ -269,6 +269,11 @@ jobs:
           assert.equal(x.denominators.sourceRouteFamilies,q.denominators.originalRouteFamilies);
           assert.equal(x.denominators.sourceRouteFamilies,970);
           assert.equal(x.mechanismFamilies.length,x.denominators.normalizedMechanismFamilies);
+          assert.equal(x.mechanismKernels.length,x.denominators.sharedMechanismKernels);
+          assert.equal(x.mechanismKernels.reduce((n,k)=>n+k.sourceRouteFamilies,0),970);
+          assert(x.denominators.sharedMechanismKernels<=x.denominators.normalizedMechanismFamilies);
+          assert.equal(new Set(x.initialMechanismFamilyPilots.map(p=>p.mechanismKernelId)).size,
+           x.initialMechanismFamilyPilots.length);
           assert.equal(x.mechanismFamilies.reduce((n,g)=>n+g.sourceRouteFamilies,0),970);
           assert(x.initialMechanismFamilyPilots.length<=7);
           assert(x.initialMechanismFamilyPilots.some(x=>
@@ -298,6 +303,7 @@ jobs:
           console.log('P2_32_REUSE_FIXED='+JSON.stringify({
            denominators:x.denominators,
            pilots:x.initialMechanismFamilyPilots,
+           leadingKernels:x.mechanismKernels.slice(0,8),
            types:x.previouslyStudiedTypeInventory.map(e=>({type:e.type,status:e.status})),
            topFamilies:x.mechanismFamilies.slice(0,8).map(g=>({
             id:g.familyId,types:g.mechanismTypes,skills:g.distinctSourceSkills,
