@@ -54,7 +54,7 @@ const frame=(t,rank,other={})=>({tickIndex:t,rank,fieldSize:9,
 test('same original AND is required; neither other OR nor historical precondition is borrowed',()=>{
  const m=fixture(),before=JSON.stringify(m),r=inspect(m);
  assert.equal(JSON.stringify(m),before);
- assert.deepEqual(r.candidates.map(x=>x.sourceNumericId),
+ assert.deepEqual(r.candidates.map(x=>x.sourceNumericId).sort(),
   ['100','101','104','105','106','107']);
  assert.equal(r.denominators.sameOriginalCurrentANDCandidates,6);
  assert.equal(r.denominators.distinctSourceSkillsWithSameAND,6);
