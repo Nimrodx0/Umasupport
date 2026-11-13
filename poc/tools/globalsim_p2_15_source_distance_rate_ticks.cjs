@@ -33,7 +33,8 @@ function validateSource(skillText,checkerText,skillCodeText){
  check(typeof checkerText==='string'&&checkerText.includes(checker),
   'fixed original Kotlin distance_rate arithmetic changed');
  check(typeof skillCodeText==='string'&&
-  skillCodeText.includes('"order_rate" to "順位条件は無視"'),
+  skillCodeText.includes('"order_rate" to "順位条件は無視"')&&
+   skillCodeText.includes('"order" to "順位条件は無視"'),
   'original checker ignored-order_rate guard changed');
  const rows=JSON.parse(skillText.replace(/^\uFEFF/,''));
  check(Array.isArray(rows)&&rows.length===2162,'original skill registry count drift');
@@ -49,7 +50,9 @@ function validateSource(skillText,checkerText,skillCodeText){
  }
  check(eligible.length>0,'original source has no distance_rate cohort');
  return {profiles:eligible,sourceSkillCount:rows.length,
-  verifiedSourceFormula:checker,originalOrderRateIgnoredByPinnedChecker:true};
+  verifiedSourceFormula:checker,originalOrderRateIgnoredByPinnedChecker:true,
+   originalOrderIgnoredByPinnedChecker:true,
+   pinnedSourceCheckerIgnoredRankTypes:['order','order_rate']};
 }
 function context(plan,runner){
  check(plan&&plan.course&&Number.isFinite(plan.course.distance)&&
