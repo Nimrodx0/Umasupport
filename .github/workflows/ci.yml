@@ -770,7 +770,8 @@ jobs:
         run: node --check poc/tools/audit_card_coverage.cjs && node --check poc/tools/audit_independent_card_hints.cjs && node --check poc/tools/audit_deckbuilder_cards.cjs && node --check poc/tools/audit_legacy_raw_hints.cjs && node --check poc/tools/probe_gametora_hint_page.cjs && node --check poc/tools/audit_stage_hint_integrity.cjs
 
   browser-smoke:
-    runs-on: ubuntu-latest
+    # Playwright 1.55.1 does not support the current ubuntu26.04 latest image.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
