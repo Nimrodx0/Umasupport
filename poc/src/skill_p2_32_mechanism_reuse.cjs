@@ -96,7 +96,7 @@ function newResearchGap(types){
   next='check-original-source-mechanism-for-unstudied-types-before-new-runtime-simulation';
  else if(counterfactual.length)
   next='reuse-previous-geometry-and-tick-studies-then-test-source-draw-and-same-branch-conjunction';
- else if(staticOnly.length||fixed.length)
+ else if(staticOnly.length||fixed.length||explicitFiniteGates.length)
   next='verify-exact-static-context-and-fixed-state-assumptions-before-dynamic-AND';
  else
   next='reuse-existing-model-tick-instrumentation-and-check-source-exact-operator-values';
