@@ -141,7 +141,7 @@ test('same-stage integrated five-source family study preserves original outputs 
   probe.frames[t].horses[i][5]=control.frames[t-1].horses[i][0];
  }
  const source=[profile('100003',[inv([[fact('distance_rate','>=',10),
-   fact('phase_random','==',1)]])])];
+   fact('phase','==',1),fact('phase_random','==',1)]])])];
  const e=require('../src/skill_source_position_stage_facts.cjs');
  const evidence=e.verifyPinnedSources(
   e.CHECKER_ANCHORS.join('\n')+'x'.repeat(1300),
