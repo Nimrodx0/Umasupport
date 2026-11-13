@@ -10,7 +10,7 @@
 | --- | --- |
 | 公開アプリ | 2026-11-06基準のPages実ブラウザ確認。最近のChromium/CIは**物理端末の再検証ではない** |
 | 公開イベント | 現行mainの[承認済みJSON](../../poc/data/reviewed_events.v1.json)を対象に[件数検査](../../poc/tools/check_project_tracking.cjs)。現行ゲーム全体の網羅率ではない |
-| P2モデル | 固定GlobalSim v77による無スキルの人工条件実験と、P2.15の3技能装備による限定モデル観測。11月12日までの[P2小工程](../plans/skill-conditions/p2.md)・固定証拠を参照 |
+| P2モデル | 固定GlobalSim v77による無スキルの人工条件実験と、P2.15の3技能装備による限定モデル観測。11月13日までの[P2小工程](../plans/skill-conditions/p2.md)・固定証拠を参照 |
 | P3集約研究 | 11月12日統合の[P3.1・P3.2](../plans/skill-conditions/p3.md)を確認。出典固定の部分条件とアプリID照合に限定 |
 | 受入 | [A/B/Cゲート](../quality/verification-plan.md)を分離。Node/Chromium・研究CI成功は実機受入の代わりにならない |
 
