@@ -84,7 +84,7 @@ function analyze(plans,baselineReplies,positionReplies,sourceProfiles,verifiedSo
  stage.verifyEvidence(verifiedSources);
  const baseline=distance.analyze(plans,baselineReplies,positionReplies,sourceProfiles);
  const joined=distance.analyze(plans,baselineReplies,positionReplies,sourceProfiles,
-  {positionSourceEvidence:verifiedSources});
+  {positionSourceEvidence:verifiedSources,unknownRouteTriage:true});
  const comparison=compare(baseline,joined);
  return {schemaVersion:1,status:STATUS,
   provenance:{originalUmaSimRevision:stage.ORIGINAL_REV,
@@ -105,10 +105,13 @@ function analyze(plans,baselineReplies,positionReplies,sourceProfiles,verifiedSo
    joined.totals.unchangedModelPhysicsValues,
    modelRunnerPriorityTicks:joined.totals.modelRunnerPriorityTicks},
   comparison,
+  unknownRouteTriage:joined.unknownRouteTriage,
   byStyle:joined.raceOpportunity.byStyle,
   bySkillStyle:joined.raceOpportunity.bySkillStyle,
   gates:{sourceOriginalFiveFormulasPinned:true,
    threeValuedWholeSourceASTPreserved:true,
+   unresolvedSourceORInvokePathWitnessesRecorded:true,
+   originalUmaSimFullUnknownCausesIdentified:false,
    modelPriorityPositionsDirectlyObserved:true,
    actualOriginalUmaSimStartPositionObserved:false,
    originalSourceFullANDMeasured:false,
@@ -149,6 +152,12 @@ function main(args){
  console.log('P2_15_FIVE_SOURCE_POSITION_FAMILIES='+JSON.stringify({
   provenance:report.provenance,
   stage:report.validation,comparison:report.comparison,
+  unknownRouteWitnessSummary:{
+   counts:report.unknownRouteTriage.counts,
+   topGates:report.unknownRouteTriage.byCandidateGate.slice(0,12),
+   topCombinations:report.unknownRouteTriage.byCandidateCombination.slice(0,12),
+   byStyle:report.unknownRouteTriage.byStyle
+  },
   fourStyle:report.byStyle.map(row=>({style:row.style,
    runnerRaceTrials:row.runnerRaceTrials,verdicts:row.verdicts})),
   gates:report.gates
