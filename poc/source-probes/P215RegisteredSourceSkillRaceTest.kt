@@ -81,7 +81,12 @@ class P215RegisteredSourceSkillRaceTest {
         val registry = Json { allowTrailingComma = true }
             .decodeFromString<List<SkillData>>(source.readText())
         assertTrue(registry.size >= 800, "Source registry unexpectedly small")
+        val cohortPath = System.getenv("P2_SOURCE_85_IDS_PATH")
+        assertTrue(!cohortPath.isNullOrBlank(), "Original source 85 ID cohort required")
+        val allowed = Json.decodeFromString<List<String>>(File(cohortPath).readText()).toSet()
+        assertEquals(85, allowed.size, "Expected 85 original app source routes")
         return registry.flatMap { skill ->
+            if (skill.id !in allowed) return@flatMap emptyList<Choice>()
             if (skill.rarity == "unique") return@flatMap emptyList<Choice>()
             skill.invokes.flatMap { invoke ->
                 invoke.conditions.mapIndexedNotNull { i, and ->
@@ -134,6 +139,9 @@ class P215RegisteredSourceSkillRaceTest {
             assertTrue(originalInvoke.conditions[choice.orIndex].any {
                 it.type == "order_rate"
             })
+            val allowed = Json.decodeFromString<List<String>>(
+                File(System.getenv("P2_SOURCE_85_IDS_PATH")).readText()).toSet()
+            assertTrue(originalSkill.id in allowed, "Selected source skill must belong to pinned app 85 cohort")
             val sourceLogicSha256 = logicHash(originalSkill)
             assertTrue(sourceLogicSha256.matches(Regex("[a-f0-9]{64}")))
             val sourceInvokeCount = originalSkill.invokes.size
