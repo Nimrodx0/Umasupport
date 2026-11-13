@@ -24,6 +24,7 @@ const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
+const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
 const rankCorner=require('../src/skill_rank_corner_source_cohort.cjs');
 const changeOrderSource=require('../src/skill_change_order_source_paths.cjs');
@@ -150,6 +151,13 @@ function matchedRecord(skill,live,old){
     p232Mechanism.denominators.sourceRouteWholeActivationProofs!==0||
     p232Mechanism.denominators.actualAppliedOmissions!==0)
   throw Error('P2.32 evidence mechanism grouping cohort or research-only boundary changed');
+ const p215AxisGates=axisGates.audit(model,p232Mechanism);
+ if(p215AxisGates.denominators.sourceRouteFamilies!==
+    p232Mechanism.denominators.sourceRouteFamilies||
+    p215AxisGates.denominators.completedWholeSkillConditionEvaluations!==0||
+    p215AxisGates.denominators.officialSkillCardSuitabilityScores!==0||
+    p215AxisGates.denominators.actualAppliedOmissions!==0)
+  throw Error('P2.15 source parameterized axis-gate cohort or no-scoring boundary drift');
  const p215Phase=phaseSource.audit(model,p215Blockers,umaSkillCheckerText);
  const sourceVenueCourses=venueAudit.verifyFixedCourses(
   umaCourseText,globalCourseText,umaSkillCheckerText);
@@ -337,6 +345,15 @@ function matchedRecord(skill,live,old){
   oneTypeBlockerSourceSkills:p215Blockers.oneTypeBlockerSourceSkills,
   signedRankCohort:p215Blockers.cohortByMinimumUnknownTypeCount,
   mostPromisingSingleTypes:p215Blockers.impactIfOneTypeCouldBeMeasured.slice(0,20)
+ }));
+ fs.writeFileSync('p2-15-parameterized-axis-gates.json',
+  JSON.stringify({source:{revision:REVISION,
+   skillRegistrySha256:digest(skillText),
+   supportRegistrySha256:digest(supportText)},...p215AxisGates},null,2)+'\n');
+ console.log('P2_15_PARAMETERIZED_AXIS_GATES='+JSON.stringify({
+  denominators:p215AxisGates.denominators,
+  firstDistinctFamilyPatterns:p215AxisGates.familyStaticPatternSummaries
+   .filter(x=>x.distinctAxisGatePatterns>1).slice(0,10)
  }));
  fs.writeFileSync('p2-32-mechanism-reuse-families.json',
   JSON.stringify({source:{revision:REVISION,
