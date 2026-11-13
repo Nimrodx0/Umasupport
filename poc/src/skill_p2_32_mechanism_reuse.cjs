@@ -89,6 +89,8 @@ function newResearchGap(types){
   x.status==='selected-model-tick').map(x=>x.type);
  const staticOnly=known.filter(x=>
   x.status==='source-static-context').map(x=>x.type);
+ const explicitFiniteGates=known.filter(x=>
+  x.status==='source-finite-eligibility').map(x=>x.type);
  let next;
  if(notStudied.length)
   next='check-original-source-mechanism-for-unstudied-types-before-new-runtime-simulation';
@@ -103,6 +105,7 @@ function newResearchGap(types){
   counterfactualWindowTypes:counterfactual,
   selectedModelTickTypes:limitedModel,
   staticContextOnlyTypes:staticOnly,
+  explicitFiniteEligibilityTypes:explicitFiniteGates,
   fixedStateConditionalTypes:fixed,
   nextMechanismResearchAction:next,
   // Even all selected-model-tick terms do NOT prove a new route was jointly
@@ -183,25 +186,44 @@ function audit(model,queueReport){
  }).sort((a,b)=>b.distinctSourceSkills-a.distinctSourceSkills||
    b.sourceRouteFamilies-a.sourceRouteFamilies||
    a.familyId.localeCompare(b.familyId));
- const pilots=report.filter(r=>r.currentlyFirstTierSourceRouteFamilies>0)
-  .sort((a,b)=>{
-   const missing=b.notYetMechanismStudiedTypes.length-
-    a.notYetMechanismStudiedTypes.length;
-   if(missing)return missing;
-   const coverage=b.distinctSourceSkills-a.distinctSourceSkills;
-   if(coverage)return coverage;
-   return a.familyId.localeCompare(b.familyId);
-  }).slice(0,7).map(x=>({
-   familyId:x.familyId,distinctSourceSkills:x.distinctSourceSkills,
-   memberRouteFamilies:x.sourceRouteFamilies,
-   representativeSourceRoute:x.originalSourceMembers.find(m=>[
+ // The first pilot must REUSE work already done, not solely pick the
+ // largest unknown family. Then sample unknown mechanisms separately.
+ const firstTier=report.filter(r=>r.currentlyFirstTierSourceRouteFamilies>0);
+ const byCoverage=(a,b)=>b.distinctSourceSkills-a.distinctSourceSkills||
+  b.sourceRouteFamilies-a.sourceRouteFamilies||
+  a.familyId.localeCompare(b.familyId);
+ const hasMechanismObservation=r=>r.priorP215Evidence.some(e=>[
+  'selected-model-tick','geometry-counterfactual'
+ ].includes(e.status));
+ const reusable=firstTier.filter(r=>
+  !r.notYetMechanismStudiedTypes.length&&hasMechanismObservation(r))
+  .sort(byCoverage).slice(0,3);
+ const novelCandidates=firstTier.filter(r=>
+  r.notYetMechanismStudiedTypes.length>0).sort(byCoverage);
+ const novel=[],seenSignatures=new Set();
+ for(const pass of [0,1]){
+  if(novel.length>=4)break;
+  for(const g of novelCandidates){
+   if(novel.length>=4)break;
+   const signature=g.notYetMechanismStudiedTypes.join('|');
+   if(novel.includes(g)||(pass===0&&seenSignatures.has(signature)))continue;
+   novel.push(g);
+   seenSignatures.add(signature);
+  }
+ }
+ const pilots=[...reusable.map(g=>({g,kind:'reuse-existing-mechanism-evidence'})),
+  ...novel.map(g=>({g,kind:'inspect-unstudied-mechanism'}))].map(({g,kind})=>({
+   familyId:g.familyId,distinctSourceSkills:g.distinctSourceSkills,
+   memberRouteFamilies:g.sourceRouteFamilies,
+   representativeSourceRoute:g.originalSourceMembers.find(m=>[
     'rank-source-join-first','event-state-pilot-next'
    ].includes(m.researchGroup)),
-   mechanismTypes:x.mechanismTypes,
-   previouslyStudiedMechanismTypes:x.priorP215Evidence.filter(e=>
+   mechanismTypes:g.mechanismTypes,
+   previouslyStudiedMechanismTypes:g.priorP215Evidence.filter(e=>
     e.status!=='no-specific-mechanism-evidence').map(e=>e.type),
-   notYetMechanismStudiedTypes:x.notYetMechanismStudiedTypes,
-   nextMechanismResearchAction:x.nextMechanismResearchAction,
+   notYetMechanismStudiedTypes:g.notYetMechanismStudiedTypes,
+   nextMechanismResearchAction:g.nextMechanismResearchAction,
+   selectedAs:kind,
    noSkillBySkillRetestPromise:true
   }));
  const typeReuse=evidence.forTypes(unique(report.flatMap(g=>g.mechanismTypes)));
@@ -228,6 +250,11 @@ function audit(model,queueReport){
   // Family grouping and pilot selection are RESEARCH organization only.
   mechanismFamilies:report,
   initialMechanismFamilyPilots:pilots,
+  pilotSelectionPolicy:{
+   existingEvidenceReuseMax:3,unstudiedMechanismReviewMax:4,
+   unstudiedTypeSignatureDiversityFirst:true,
+   scoringOrProbabilityBased:false
+  },
   constraints:[
    'Comparison operators and AND/precondition separation must match to share a source-mechanism family; numeric thresholds remain parameter-specific.',
    'An example route does not certify other member skills, OR branches, precondition histories, equipment or cooldown effects.',
