@@ -77,6 +77,8 @@ class P215OriginalRaceTickWindowTest {
                     "Original condition's random window moved during race")
                 assertEquals(row.position >= row.windowStart && row.position <= row.windowEnd,
                     row.hit, "Source checkInRandom disagreed with interval geometry")
+                assertEquals(row.hit, frame.triggeredSkills.any { it.invoke.skill.id == id },
+                    "Source frame skill event did not match its original random window check")
                 """{"tick":${row.frame},"position":${row.position},
                 "start":${row.windowStart},"end":${row.windowEnd},
                 "hit":${row.hit}}""".trimIndent().replace("\n", "")
