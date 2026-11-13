@@ -84,6 +84,9 @@ test('operator and conditions/preconditions branches cannot borrow other skills 
  const find=id=>report.mechanismFamilies.find(g=>g.originalSourceMembers
   .some(x=>x.sourceNumericId===id));
  assert.notEqual(find('100').familyId,find('102').familyId);
+ // Different operator variants still share a predicate-interpreter KERNEL,
+ // but never share the source branch condition result.
+ assert.equal(find('100').mechanismKernelId,find('102').mechanismKernelId);
  assert.notEqual(find('100').familyId,find('104').familyId);
  assert.notEqual(find('100').familyId,find('106').familyId);
  assert.notEqual(find('100').familyId,find('103').familyId);
@@ -103,6 +106,11 @@ test('read-only grouping covers every original source route and retains no skill
  assert.equal(d.sourceUnavailableSkills,1);
  assert.equal(d.sourceRouteFamilies,8);
  assert.equal(r.mechanismFamilies.reduce((n,g)=>n+g.sourceRouteFamilies,0),8);
+ assert.equal(r.mechanismKernels.reduce((n,k)=>n+k.sourceRouteFamilies,0),8);
+ assert.equal(r.denominators.sharedMechanismKernels,r.mechanismKernels.length);
+ assert(r.mechanismKernels.length<r.mechanismFamilies.length);
+ assert.equal(new Set(r.initialMechanismFamilyPilots
+  .map(p=>p.mechanismKernelId)).size,r.initialMechanismFamilyPilots.length);
  assert.equal(d.sourceRouteWholeActivationProofs,0);
  assert.equal(d.actualAppliedOmissions,0);
  assert.equal(d.formalSkillCardSuitabilityRatings,0);
