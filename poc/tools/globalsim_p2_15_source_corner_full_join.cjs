@@ -41,7 +41,7 @@ function compare(before,after,rankEvidence,cornerEvidence){
  }
  fail(after.totals.modelRunnerPriorityTicks===
    rankEvidence.totals.rankPriorityPairsMatched&&
-  after.totals.modelRunnerPriorityTicksWithKnownCornerNumber+
+  after.totals.modelPriorityRunnerTicksWithKnownCornerNumber+
   after.totals.modelPriorityRunnerTicksHeldAtCornerBoundary===
    after.totals.modelRunnerPriorityTicks,
   'corner stage count did not match source priority stage');
