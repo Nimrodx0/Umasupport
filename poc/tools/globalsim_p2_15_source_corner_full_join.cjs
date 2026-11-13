@@ -138,7 +138,7 @@ function analyze(plans,original,positions,ranks,profiles,positionEvidence,corner
   gates:{sourceOriginalCornerFormulaAndBothCourseGeometriesMatched:true,
    modelPriorityPositionUsedForOriginalSourceCorner:true,
    sourcePreconditionTrueLatchPreserved:true,
-   sourceUnknownHistoricalLatchNotOverwritten:false,
+   sourceUnknownHistoricalLatchNotOverwritten:true,
    actualOriginalUmaSimRuntimeObserved:false,
    actualGameSkillProcRateMeasured:false,
    P2SuitabilityApproved:false,P3CardScoringApproved:false,
