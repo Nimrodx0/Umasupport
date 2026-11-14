@@ -57,6 +57,19 @@ CIで実際に条件指紋が一致する1スキルを得たため、他84スキ
 
 元UmaSimのモデル上で技能イベントが出ても、無視される`order_rate`を満たしたことにはならない。**元のランダム窓の必要条件の除外効果だけ**を実測付きで評価し、他の84スキルへ窓実測値を流用しない。
 
+## 距離区分の元ランタイム値も同じANDへ接続（2026-11-14）
+
+固定元辞書でスキル`200671`の対象ANDは次の**3述語**と確認した：`distance_type == 1`、`phase_random == 2`、`order_rate > 50`。元[SkillChecker.kt](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt)では、`distance_type`を`baseSetting.trackDetail.distanceType`から判定する一方、`order_rate`は判定実装がない。
+
+前回の元`phase_random`のみの3値評価から、**元RaceSettingに記録された実レースごとの`distanceType`も使用する**小改修を行った。[固定元JVM試験](../../../poc/source-probes/P215RegisteredSourceSkillRaceTest.kt)のレース別トレースに実距離区分を記録し、既存の[同一AND監査](../../../poc/src/skill_p2_15_registered_cohort_join.cjs)が元`distance_type`の演算子と値を変更せず、元3値論理判定器へ渡す。
+
+- **ランダム窓外**なら、その元ANDは必ずFALSE。
+- **距離区分の元条件が不一致**なら、ランダム窓内でもその元ANDはFALSE。
+- **両者がTRUE**なら、未実装の`order_rate`が残り、元ANDはUNKNOWN。
+- **元ANDの完全なTRUE判定は0件**。技能のモデルイベント数から順位を推測しない。
+
+今回の追加は順位モデルの作成や他シミュレータとのフレーム結合を伴わない。**GlobalSimの順位tickはUmaSimのレースtickと対応する証拠がない**ため、他モデルの順位を今回の走者へ割り当てない。固定JVM CIで実測値が確定した場合のみ、この節へ数値を記録する。
+
 ## 次工程
 
 同一性を確認できた場合、実レースの同じ元判定時刻における元`phase_random`を必要条件として保持しながら、`order_rate`の真偽を外部の独立順位推定器から得る方法を検討する。ただし、元UmaSimは1頭の走行を計算しており9／12頭の**実順位は内生的に観測されない**。元レース位置から順位を単純に作らず、同時走行・競争相手の仮定やゲーム仕様に関する不確実性を明示する。今回の同一性確認だけでは実発動確率、脚質・距離・芝ダートの非明示的成立機会W、P3/P4適性を計算しない。
