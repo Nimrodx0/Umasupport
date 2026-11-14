@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "source-refresh-candidate-review-only",
+  "reviewState": "awaiting-human-preflight-and-source-adjudication",
+  "reviewFingerprint": "22b2d99d45f4237a4577cf88e8fdfdc31147d109eb8830dc383a38b8f249c3a6",
+  "observedRun": "https://github.com/Nimrodx0/Umasupport/actions/runs/43586486949",
+  "currentPinned": {
+    "gameToraCommit": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "umaSimCommit": "910dd79f046710245e0cc88a09c5c92b1044897e",
+    "gameToraTree": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "umaSimTree": "910dd79f046710245e0cc88a09c5c92b1044897e"
+  },
+  "proposedSnapshot": {
+    "gameToraCommit": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "umaSimCommit": "3ab736cbda7b35944342dae43aa97016d8839cd8",
+    "gameToraTree": "6e38b54af4fad397ff4491e63007a90705a4fe67",
+    "umaSimTree": "3ab736cbda7b35944342dae43aa97016d8839cd8",
+    "umaSimCardBlob": "a6fec178de309785ce049966122d11dc29506b8a",
+    "umaSimSkillBlob": "cb26a88050cd3c59de8fb91159501c249b1b5fe3"
+  },
+  "eventSourceDiff": {
+    "previousJsonCardFiles": 559,
+    "candidateJsonCardFiles": 559,
+    "addedCardIds": [],
+    "modifiedCardIds": [],
+    "removedCardIds": [],
+    "latestKnownThreeJsonPresent": [],
+    "latestKnownThreeJsonMissing": [
+      "10149",
+      "30322",
+      "30323"
+    ]
+  },
+  "umaSimChangedSourceFiles": [
+    "data/support_card.txt",
+    "data/skill_data.txt"
+  ],
+  "preflight": {
+    "upstreamGitTreeShape": "checked-in-source-watch",
+    "newEventRoutes": "not-adjudicated",
+    "eventInternalBranches": "not-adjudicated",
+    "skillIds": "not-adjudicated",
+    "wholeEventInventory": "not-run-for-candidate",
+    "chromium": "not-run-for-candidate",
+    "physicalDevices": "not-run",
+    "thirdPartyReuseRights": "not-approved",
+    "publicationRelease": "not-approved"
+  },
+  "safeBoundaries": {
+    "sourceJsonContentsStored": false,
+    "originalEventChoiceTextStored": false,
+    "sourceMasterFilesBundled": false,
+    "runtimePinChangesApplied": false,
+    "deploymentOrEventPublicationApproved": false,
+    "automaticallyMergeable": false
+  }
+}
