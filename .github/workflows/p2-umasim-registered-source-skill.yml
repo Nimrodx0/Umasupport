@@ -122,10 +122,13 @@ jobs:
           const same=join.auditSameRun(raw,cohort,fs.readFileSync(
            process.env.RUNNER_TEMP+'/umasim/data/skill_data.txt','utf8'));
           const gate=same.observedModel.selectedOriginalANDPhaseOnly;
-          if(!gate||gate.scope!=='selected-current-condition-AND-only'||
+          if(!gate||gate.scope!=='selected-current-condition-AND-with-original-race-distance-type'||
              gate.observedSourceCheckerTicks!==same.observedModel.phasePredicateSourceTickChecks||
-             gate.falseEvenWithoutRank!==same.observedModel.phasePredicateFalseSourceTickChecks||
-             gate.unknownIncludingUnobservedRank!==same.observedModel.phasePredicateTrueSourceTickChecks||
+             gate.sourceDistanceTypeByRace.length!==3||
+             gate.distanceTypeGateTrueByRace.length!==3||
+             gate.falseEvenWithoutRank<same.observedModel.phasePredicateFalseSourceTickChecks||
+             gate.unknownIncludingUnobservedRank>same.observedModel.phasePredicateTrueSourceTickChecks||
+             gate.falseEvenWithoutRank+gate.unknownIncludingUnobservedRank!==gate.observedSourceCheckerTicks||
              gate.trueWithAllPredicatesObserved!==0||
              same.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements!==0||
              same.noScoringBoundary.approvedP3P4SuitabilityScores!==0||

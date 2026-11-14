@@ -272,20 +272,36 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
   x.operator==='=='&&x.value===2);
  fail(phaseTerms.length===1&&selectedAND.some(x=>x.type==='order_rate'),
   'source pilot needs one unambiguous phase window and ignored rank');
- const andStates={false:0,unknown:0,true:0};
+ // The third original predicate for the pinned representative is
+ // distance_type. Unlike order_rate, pinned SkillChecker.kt implements it
+ // directly from RaceSetting.trackDetail.distanceType. Read that exact
+ // setting from EACH actual source JVM race, not from another simulator.
+ const distanceTerms=selectedAND.filter(x=>x.type==='distance_type');
+ fail(distanceTerms.length===1&&selectedAND.length===3,
+  'registered source representative no longer has exactly one distance_type gate');
+ const andStates={false:0,unknown:0,true:0},distanceTypes=[],staticGateTrue=[];
+ let expectedFalse=0,expectedUnknown=0;
  for(const trial of originalJvmTrace.trials){
+  const raceContext={distance_type:trial.sourceDistanceType};
+  const distanceState=source.staticValue(raceContext,distanceTerms[0]);
+  fail(distanceState!==source.UNKNOWN,
+   'original source race distance type not measured');
+  distanceTypes.push(trial.sourceDistanceType);
+  staticGateTrue.push(distanceState===source.TRUE);
   for(const tick of trial.ticks){
    const facts=source.observationMap(compiled,[
     {...phaseTerms[0],satisfied:tick.phasePredicateHit}
    ]);
-   const state=source.evalMatrix([selectedAND],{},facts).status;
+   const state=source.evalMatrix([selectedAND],raceContext,facts).status;
    andStates[state]++;
+   if(!tick.phasePredicateHit||distanceState===source.FALSE)expectedFalse++;
+   else expectedUnknown++;
   }
  }
- fail(andStates.false===verified.counts.originalSourcePhasePredicateFalseCalls&&
-  andStates.unknown===verified.counts.originalSourcePhasePredicateTrueCalls&&
+ fail(andStates.false===expectedFalse&&
+  andStates.unknown===expectedUnknown&&
   andStates.true===0,
-  'source route phase-only logic prematurely completed unknown rank AND');
+  'original distance/phase gates falsely completed unobserved rank AND');
  fail(verified.counts.originalRegisteredSkillEquippedInThreeSourceRaces===3&&
   verified.counts.originalOrderRatePredicateEvaluatedInSource===0&&
   verified.counts.fullOriginalRankAndWindowANDProven===0&&
@@ -320,8 +336,10 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
    phasePredicateFalseSourceTickChecks:verified.counts.originalSourcePhasePredicateFalseCalls,
    sourceModelSkillEvents:verified.counts.sourceModelSkillEvents,
    selectedOriginalANDPhaseOnly:{
-    scope:'selected-current-condition-AND-only',
+    scope:'selected-current-condition-AND-with-original-race-distance-type',
     observedSourceCheckerTicks:verified.counts.sourceOriginalPhaseRandomCheckerTicks,
+    sourceDistanceTypeByRace:distanceTypes,
+    distanceTypeGateTrueByRace:staticGateTrue,
     falseEvenWithoutRank:andStates.false,
     unknownIncludingUnobservedRank:andStates.unknown,
     trueWithAllPredicatesObserved:andStates.true
