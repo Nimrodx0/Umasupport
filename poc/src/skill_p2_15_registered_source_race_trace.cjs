@@ -33,6 +33,7 @@ function audit(v){
  for(let j=0;j<3;j++){
   const t=v.trials[j];
   fail(t?.trial===j&&Number.isSafeInteger(t.raceFrameCount)&&t.raceFrameCount>1&&
+   Number.isSafeInteger(t.sourceDistanceType)&&t.sourceDistanceType>=1&&t.sourceDistanceType<=4&&
    Number.isSafeInteger(t.originalCheckerCalls)&&t.originalCheckerCalls>=0&&
    Number.isSafeInteger(t.phasePredicateTrueCalls)&&t.phasePredicateTrueCalls>=0&&
    Number.isSafeInteger(t.phasePredicateFalseCalls)&&t.phasePredicateFalseCalls>=0&&
