@@ -210,6 +210,7 @@ class P215RegisteredSourceSkillRaceTest {
                 modelEvents += events
                 trialRows +=
                     """{"trial":$trial,"raceFrameCount":${frames.size},
+                    "sourceDistanceType":${setting.trackDetail.distanceType},
                     "originalCheckerCalls":${samples.size},
                     "phasePredicateTrueCalls":$trueCalls,
                     "phasePredicateFalseCalls":$falseCalls,
