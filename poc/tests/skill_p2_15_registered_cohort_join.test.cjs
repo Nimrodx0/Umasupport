@@ -14,7 +14,7 @@ const make=(id=join.SNAPSHOT.observedRegisteredSkillId)=>({
   invokes:[{index:1,conditions:[[
    p('order_rate','>=',50),
    p('phase_random','==',2),
-   p('running_style','==',2)
+   p('distance_type','==',1)
   ]],preConditions:[]}]
  }
 });
@@ -130,7 +130,7 @@ function sameRunFixture(){
  }])+' '.repeat(100500);
  const digest=join.logicSha256(whole.compile(original));
  const tickData=Array.from({length:3},(_,trial)=>({
-  trial,raceFrameCount:750,originalCheckerCalls:2,
+  trial,raceFrameCount:750,sourceDistanceType:1,originalCheckerCalls:2,
   phasePredicateTrueCalls:1,phasePredicateFalseCalls:1,
   modelSkillEvents:1,originalPhaseRandomWindowWasChecked:true,
   ticks:[
@@ -176,8 +176,10 @@ test('same-workflow original JVM + pinned registry parser + exact app 85 route p
  assert.equal(out.provenance.fullConditionsOriginalFingerprintMatched,true);
  assert.equal(out.observedModel.phasePredicateSourceTickChecks,6);
  assert.deepEqual(out.observedModel.selectedOriginalANDPhaseOnly,{
-  scope:'selected-current-condition-AND-only',
+  scope:'selected-current-condition-AND-with-original-race-distance-type',
   observedSourceCheckerTicks:6,
+  sourceDistanceTypeByRace:[1,1,1],
+  distanceTypeGateTrueByRace:[true,true,true],
   falseEvenWithoutRank:3,
   unknownIncludingUnobservedRank:3,
   trueWithAllPredicatesObserved:0
@@ -214,4 +216,20 @@ test('Kotlin omitted preConditions defaults to [] in original JSON, never to UNK
  const out=join.auditSameRun(x.raw,x.prior,x.registry);
  assert.equal(out.provenance.fullConditionsOriginalFingerprintMatched,true);
  assert.equal(out.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
+});
+
+test('measured source course distance_type excludes even phase-window hits when false',()=>{
+ const x=sameRunFixture();
+ x.raw.trials[0].sourceDistanceType=2;
+ const result=join.auditSameRun(x.raw,x.prior,x.registry);
+ assert.deepEqual(result.observedModel.selectedOriginalANDPhaseOnly,{
+  scope:'selected-current-condition-AND-with-original-race-distance-type',
+  observedSourceCheckerTicks:6,
+  sourceDistanceTypeByRace:[2,1,1],
+  distanceTypeGateTrueByRace:[false,true,true],
+  falseEvenWithoutRank:4,
+  unknownIncludingUnobservedRank:2,
+  trueWithAllPredicatesObserved:0
+ });
+ assert.equal(result.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
 });
