@@ -7,7 +7,10 @@ on:
       - 'poc/source-probes/P215RegisteredSourceSkillRaceTest.kt'
       - 'poc/src/skill_p2_15_registered_source_race_trace.cjs'
       - 'poc/tests/skill_p2_15_registered_source_race_trace.test.cjs'
+      - 'poc/src/skill_p2_15_registered_cohort_join.cjs'
+      - 'poc/tests/skill_p2_15_registered_cohort_join.test.cjs'
       - 'docs/evidence/skills/skill-p2-15-registered-source-race-20261114.md'
+      - 'docs/evidence/skills/skill-p2-15-registered-cohort-join-20261114.md'
   push:
     branches: [main]
     paths:
@@ -15,6 +18,8 @@ on:
       - 'poc/source-probes/P215RegisteredSourceSkillRaceTest.kt'
       - 'poc/src/skill_p2_15_registered_source_race_trace.cjs'
       - 'poc/tests/skill_p2_15_registered_source_race_trace.test.cjs'
+      - 'poc/src/skill_p2_15_registered_cohort_join.cjs'
+      - 'poc/tests/skill_p2_15_registered_cohort_join.test.cjs'
   workflow_dispatch:
 
 permissions:
@@ -33,6 +38,7 @@ jobs:
         run: |
           node --check poc/src/skill_p2_15_registered_source_race_trace.cjs
           node --test poc/tests/skill_p2_15_registered_source_race_trace.test.cjs
+          node --test poc/tests/skill_p2_15_registered_cohort_join.test.cjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -115,7 +121,13 @@ jobs:
            'p2-15-rank-random-same-and-handoff.json','utf8'));
           const same=join.auditSameRun(raw,cohort,fs.readFileSync(
            process.env.RUNNER_TEMP+'/umasim/data/skill_data.txt','utf8'));
-          if(same.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements!==0||
+          const gate=same.observedModel.selectedOriginalANDPhaseOnly;
+          if(!gate||gate.scope!=='selected-current-condition-AND-only'||
+             gate.observedSourceCheckerTicks!==same.observedModel.phasePredicateSourceTickChecks||
+             gate.falseEvenWithoutRank!==same.observedModel.phasePredicateFalseSourceTickChecks||
+             gate.unknownIncludingUnobservedRank!==same.observedModel.phasePredicateTrueSourceTickChecks||
+             gate.trueWithAllPredicatesObserved!==0||
+             same.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements!==0||
              same.noScoringBoundary.approvedP3P4SuitabilityScores!==0||
              same.linked.sourceNumericId!==raw.sourceSkillId)
             throw Error('Actual source model candidate not linked to original app 85 cohort');

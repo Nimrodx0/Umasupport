@@ -263,6 +263,29 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
   inv.conditions[candidate.conditionOrIndex].some(x=>
     x.type==='phase_random'&&x.operator==='=='&&x.value===2),
   'app cohort matching source AND changed or lost exact phase random value');
+ // Reuse the existing three-valued ORIGINAL source-AND evaluator on actual
+ // registered source-checker frames. Only phase_random was measured in the
+ // original JVM. Rank and the other AND predicates remain UNKNOWN. This is
+ // a per-branch necessary-condition bound, not a rank simulation.
+ const selectedAND=inv.conditions[candidate.conditionOrIndex];
+ const phaseTerms=selectedAND.filter(x=>x.type==='phase_random'&&
+  x.operator==='=='&&x.value===2);
+ fail(phaseTerms.length===1&&selectedAND.some(x=>x.type==='order_rate'),
+  'source pilot needs one unambiguous phase window and ignored rank');
+ const andStates={false:0,unknown:0,true:0};
+ for(const trial of originalJvmTrace.trials){
+  for(const tick of trial.ticks){
+   const facts=source.observationMap(compiled,[
+    {...phaseTerms[0],satisfied:tick.phasePredicateHit}
+   ]);
+   const state=source.evalMatrix([selectedAND],{},facts).status;
+   andStates[state]++;
+  }
+ }
+ fail(andStates.false===verified.counts.originalSourcePhasePredicateFalseCalls&&
+  andStates.unknown===verified.counts.originalSourcePhasePredicateTrueCalls&&
+  andStates.true===0,
+  'source route phase-only logic prematurely completed unknown rank AND');
  fail(verified.counts.originalRegisteredSkillEquippedInThreeSourceRaces===3&&
   verified.counts.originalOrderRatePredicateEvaluatedInSource===0&&
   verified.counts.fullOriginalRankAndWindowANDProven===0&&
@@ -295,7 +318,14 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
    phasePredicateSourceTickChecks:verified.counts.sourceOriginalPhaseRandomCheckerTicks,
    phasePredicateTrueSourceTickChecks:verified.counts.originalSourcePhasePredicateTrueCalls,
    phasePredicateFalseSourceTickChecks:verified.counts.originalSourcePhasePredicateFalseCalls,
-   sourceModelSkillEvents:verified.counts.sourceModelSkillEvents
+   sourceModelSkillEvents:verified.counts.sourceModelSkillEvents,
+   selectedOriginalANDPhaseOnly:{
+    scope:'selected-current-condition-AND-only',
+    observedSourceCheckerTicks:verified.counts.sourceOriginalPhaseRandomCheckerTicks,
+    falseEvenWithoutRank:andStates.false,
+    unknownIncludingUnobservedRank:andStates.unknown,
+    trueWithAllPredicatesObserved:andStates.true
+   }
   },
   noScoringBoundary:{
    originalOrderRatePredicateSourceRuntimeObservations:0,
