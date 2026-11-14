@@ -10,7 +10,7 @@ function example(){
    return {tick:200+i,position,start:s,end:e,
     phasePredicateHit:position>=s&&position<=e};
   });
-  return {trial:j,raceFrameCount:750,originalCheckerCalls:5,
+  return {trial:j,raceFrameCount:750,sourceDistanceType:1,originalCheckerCalls:5,
    phasePredicateTrueCalls:ticks.filter(x=>x.phasePredicateHit).length,
    phasePredicateFalseCalls:ticks.filter(x=>!x.phasePredicateHit).length,
    modelSkillEvents:0,originalPhaseRandomWindowWasChecked:true,ticks};
@@ -48,6 +48,8 @@ test('no rank, OR, source-identity or source window substitution is accepted',()
   d=>d.originalInvokeConditionsUsedUnmodified=false,
   d=>d.originalSourceConditionLogicSha256='not-a-hash',
   d=>d.originalOrderRateWasIgnoredBySource=false,
+  d=>d.trials[0].sourceDistanceType=0,
+  d=>d.trials[0].sourceDistanceType=9,
   d=>d.realGameSkillProcObserved=true,d=>d.trials[0].ticks[2].start++,
   d=>d.trials[1].ticks[0].phasePredicateHit=!d.trials[1].ticks[0].phasePredicateHit,
   d=>d.trials[1].ticks[1].tick=d.trials[1].ticks[0].tick,
