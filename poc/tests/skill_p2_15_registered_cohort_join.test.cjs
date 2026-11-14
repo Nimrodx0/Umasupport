@@ -175,6 +175,16 @@ test('same-workflow original JVM + pinned registry parser + exact app 85 route p
  assert.equal(out.linked.sourceNumericId,join.SNAPSHOT.observedRegisteredSkillId);
  assert.equal(out.provenance.fullConditionsOriginalFingerprintMatched,true);
  assert.equal(out.observedModel.phasePredicateSourceTickChecks,6);
+ assert.deepEqual(out.observedModel.selectedOriginalANDPhaseOnly,{
+  scope:'selected-current-condition-AND-only',
+  observedSourceCheckerTicks:6,
+  falseEvenWithoutRank:3,
+  unknownIncludingUnobservedRank:3,
+  trueWithAllPredicatesObserved:0
+ });
+ // The original simulator can report synthetic/model events while source
+ // order_rate is ignored: they must never become complete AND proofs.
+ assert.equal(out.observedModel.sourceModelSkillEvents,3);
  assert.equal(out.noScoringBoundary.originalOrderRatePredicateSourceRuntimeObservations,0);
  assert.equal(out.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
  assert.equal(out.noScoringBoundary.approvedP3P4SuitabilityScores,0);
