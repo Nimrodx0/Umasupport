@@ -302,6 +302,33 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
   andStates.unknown===expectedUnknown&&
   andStates.true===0,
   'original distance/phase gates falsely completed unobserved rank AND');
+ // Project only the still-UNKNOWN original checker ticks onto EXISTING
+ // GameTora-based 9/12 rank panels. No UmaSim rank has been measured:
+ // positions are counterfactual inputs, not actual race observations.
+ const conditionalRankPanels=candidate.supportedRankPanels.map(panel=>{
+  const all=[...panel.projectedRankGateTruePositions,
+   ...panel.projectedRankGateFalsePositions,
+   ...panel.heldUnverifiedBoundaryPositions];
+  fail([9,12].includes(panel.fieldSize)&&
+   panel.actualModelRankTicksObserved===0&&
+   panel.actualPhaseRandomDrawsObserved===0&&
+   all.length===panel.fieldSize&&
+   new Set(all).size===panel.fieldSize&&
+   all.every(n=>Number.isSafeInteger(n)&&n>=1&&n<=panel.fieldSize),
+   'rank panel is not a complete and unobserved 9/12 hypothesis');
+  return {
+   fieldSize:panel.fieldSize,
+   hypotheticalRankPositionsPermittingSelectedAND:
+    panel.projectedRankGateTruePositions,
+   hypotheticalRankPositionsExcludingSelectedAND:
+    panel.projectedRankGateFalsePositions,
+   hypotheticalRankPositionsHeldUnknown:
+    panel.heldUnverifiedBoundaryPositions,
+   sourcePhaseAndDistanceTrueButRankUnknownTicks:andStates.unknown,
+   originalUmaSimRankObservations:0,
+   hypotheticalOnlyNotActualRaceRank:true
+  };
+ });
  fail(verified.counts.originalRegisteredSkillEquippedInThreeSourceRaces===3&&
   verified.counts.originalOrderRatePredicateEvaluatedInSource===0&&
   verified.counts.fullOriginalRankAndWindowANDProven===0&&
@@ -335,6 +362,7 @@ function auditSameRun(originalJvmTrace,appCohort,registryText){
    phasePredicateTrueSourceTickChecks:verified.counts.originalSourcePhasePredicateTrueCalls,
    phasePredicateFalseSourceTickChecks:verified.counts.originalSourcePhasePredicateFalseCalls,
    sourceModelSkillEvents:verified.counts.sourceModelSkillEvents,
+   conditionalRankPanelsForUnresolvedTicks:conditionalRankPanels,
    selectedOriginalANDPhaseOnly:{
     scope:'selected-current-condition-AND-with-original-race-distance-type',
     observedSourceCheckerTicks:verified.counts.sourceOriginalPhaseRandomCheckerTicks,

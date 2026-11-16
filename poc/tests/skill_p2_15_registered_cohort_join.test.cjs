@@ -29,12 +29,14 @@ function setup(skill=make(),included=true){
   familyId:'original-family',mechanismKernelId:'common-kernel',
   sameCurrentANDRankRateAndRandom:true,
   supportedRankPanels:[
-   {fieldSize:9,projectedRankGateTruePositions:[1,2,3],
-    projectedRankGateFalsePositions:[4,5,6,7,8,9],
-    heldUnverifiedBoundaryPositions:[],actualPhaseRandomDrawsObserved:0},
-   {fieldSize:12,projectedRankGateTruePositions:[1,2,3,4],
-    projectedRankGateFalsePositions:[5,6,7,8,9,10,11,12],
-    heldUnverifiedBoundaryPositions:[],actualPhaseRandomDrawsObserved:0}
+   {fieldSize:9,projectedRankGateTruePositions:[5,6,7,8,9],
+    projectedRankGateFalsePositions:[1,2,3,4],
+    heldUnverifiedBoundaryPositions:[],actualModelRankTicksObserved:0,
+    actualPhaseRandomDrawsObserved:0},
+   {fieldSize:12,projectedRankGateTruePositions:[6,7,8,9,10,11,12],
+    projectedRankGateFalsePositions:[1,2,3,4,5],
+    heldUnverifiedBoundaryPositions:[],actualModelRankTicksObserved:0,
+    actualPhaseRandomDrawsObserved:0}
   ]
  }]:[];
  const prior={status:rank.STATUS,denominators:{
@@ -187,6 +189,22 @@ test('same-workflow original JVM + pinned registry parser + exact app 85 route p
  // The original simulator can report synthetic/model events while source
  // order_rate is ignored: they must never become complete AND proofs.
  assert.equal(out.observedModel.sourceModelSkillEvents,3);
+ assert.deepEqual(out.observedModel.conditionalRankPanelsForUnresolvedTicks,[
+  {fieldSize:9,
+   hypotheticalRankPositionsPermittingSelectedAND:[5,6,7,8,9],
+   hypotheticalRankPositionsExcludingSelectedAND:[1,2,3,4],
+   hypotheticalRankPositionsHeldUnknown:[],
+   sourcePhaseAndDistanceTrueButRankUnknownTicks:3,
+   originalUmaSimRankObservations:0,
+   hypotheticalOnlyNotActualRaceRank:true},
+  {fieldSize:12,
+   hypotheticalRankPositionsPermittingSelectedAND:[6,7,8,9,10,11,12],
+   hypotheticalRankPositionsExcludingSelectedAND:[1,2,3,4,5],
+   hypotheticalRankPositionsHeldUnknown:[],
+   sourcePhaseAndDistanceTrueButRankUnknownTicks:3,
+   originalUmaSimRankObservations:0,
+   hypotheticalOnlyNotActualRaceRank:true}
+ ]);
  assert.equal(out.noScoringBoundary.originalOrderRatePredicateSourceRuntimeObservations,0);
  assert.equal(out.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
  assert.equal(out.noScoringBoundary.approvedP3P4SuitabilityScores,0);
@@ -232,4 +250,15 @@ test('measured source course distance_type excludes even phase-window hits when 
   trueWithAllPredicatesObserved:0
  });
  assert.equal(result.noScoringBoundary.sourceOriginalRankAndPhaseSameTickJointMeasurements,0);
+});
+
+test('hypothetical rank panels reject missing and fabricated original source-rank samples',()=>{
+ for(const change of [
+  x=>x.prior.candidates[0].supportedRankPanels[0].actualModelRankTicksObserved=1,
+  x=>x.prior.candidates[0].supportedRankPanels[0].projectedRankGateTruePositions.push(3),
+  x=>x.prior.candidates[0].supportedRankPanels[1].heldUnverifiedBoundaryPositions.push(20)
+ ]){
+  const x=sameRunFixture();change(x);
+  assert.throws(()=>join.auditSameRun(x.raw,x.prior,x.registry),/P2.15 registered\/85 join/);
+ }
 });
