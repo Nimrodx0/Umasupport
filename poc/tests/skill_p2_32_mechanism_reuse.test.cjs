@@ -48,8 +48,19 @@ test('prior evidence is appropriately scoped and documented, not automatically e
  assert.equal(mechanism.forType('corner').status,'selected-model-tick');
  assert.equal(mechanism.forType('corner_random').status,
   'no-specific-mechanism-evidence');
- assert.equal(mechanism.forType('phase_firsthalf_random').status,
-  'no-specific-mechanism-evidence');
+ for(const type of ['phase_firsthalf_random','phase_laterhalf_random']){
+  const evidence=mechanism.forType(type);
+  assert.equal(evidence.status,'source-jvm-controlled-window');
+  assert.equal(evidence.fullSourceANDProven,false);
+  assert.equal(evidence.autoSuitableForP3,false);
+  assert(evidence.limitation.includes('not real registered skill'));
+ }
+ const halfGap=reuse.newResearchGap(['phase_firsthalf_random','phase_laterhalf_random']);
+ assert.deepEqual(halfGap.notYetMechanismStudiedTypes,[]);
+ assert.deepEqual(halfGap.isolatedSourceJVMWindowTypes,
+  ['phase_firsthalf_random','phase_laterhalf_random']);
+ assert.equal(halfGap.nextMechanismResearchAction,
+  'reuse-isolated-source-JVM-window-mechanism-then-test-original-skill-race-tick-and-AND');
  assert.equal(mechanism.forType('motivation').status,'conditional-fixed-state');
  assert.equal(mechanism.forType('track_id').status,'source-static-context');
  for(const type of ['running_style','distance_type','ground_type','ground_condition'])
