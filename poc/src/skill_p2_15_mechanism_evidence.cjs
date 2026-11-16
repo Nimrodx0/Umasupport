@@ -97,6 +97,18 @@ const DEFINITIONS=Object.freeze({
   ],
   limitation:'The equipped sample is GlobalSim, not source UmaSim skills. No original-skill draw and entire AND at same source runtime tick.'
  },
+ phase_firsthalf_random:{
+  status:'source-jvm-controlled-window',
+  facet:'Pinned original UmaSim JVM SkillChecker draws and caches a random closed interval in phase first half via the existing checkInRandom/initPhaseRandom procedure.',
+  references:['skill-p2-32-halfphase-source-window-reuse-20261116.md'],
+  limitation:'Six isolated synthetic source draws and controlled boundary checks, not real registered skill or race-tick activation; source first-half zone cannot be replaced by phase_random full-zone samples.'
+ },
+ phase_laterhalf_random:{
+  status:'source-jvm-controlled-window',
+  facet:'Pinned original UmaSim JVM SkillChecker draws and caches a random closed interval in phase later half via the existing checkInRandom/initPhaseRandom procedure.',
+  references:['skill-p2-32-halfphase-source-window-reuse-20261116.md'],
+  limitation:'Six isolated synthetic source draws and controlled boundary checks, not real registered skill or race-tick activation; source later-half zone cannot be replaced by phase_random full-zone samples.'
+ },
  track_id:{
   status:'source-static-context',
   facet:'Source raceTrackId distinguished from course ID; fixed 12 model courses checked',
