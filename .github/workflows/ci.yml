@@ -16,6 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check P2 to P3 two-axis source-condition evidence contract
+        run: |
+          node --check poc/src/p2_p3_evidence_contract.cjs
+          node --test poc/tests/p2_p3_evidence_contract.test.cjs
       - name: Detect stale empty-public-event assumptions before running expensive tests
         run: |
           node --check poc/tools/check_release_test_assumptions.cjs
