@@ -101,6 +101,8 @@ function newResearchGap(types){
   x.status==='no-specific-mechanism-evidence').map(x=>x.type);
  const counterfactual=known.filter(x=>
   x.status==='geometry-counterfactual').map(x=>x.type);
+ const controlledWindow=known.filter(x=>
+  x.status==='source-jvm-controlled-window').map(x=>x.type);
  const fixed=known.filter(x=>
   x.status==='conditional-fixed-state').map(x=>x.type);
  const limitedModel=known.filter(x=>
@@ -114,6 +116,8 @@ function newResearchGap(types){
   next='check-original-source-mechanism-for-unstudied-types-before-new-runtime-simulation';
  else if(counterfactual.length)
   next='reuse-previous-geometry-and-tick-studies-then-test-source-draw-and-same-branch-conjunction';
+ else if(controlledWindow.length)
+  next='reuse-isolated-source-JVM-window-mechanism-then-test-original-skill-race-tick-and-AND';
  else if(staticOnly.length||fixed.length||explicitFiniteGates.length)
   next='verify-exact-static-context-and-fixed-state-assumptions-before-dynamic-AND';
  else
@@ -121,6 +125,7 @@ function newResearchGap(types){
  return {
   notYetMechanismStudiedTypes:notStudied,
   counterfactualWindowTypes:counterfactual,
+  isolatedSourceJVMWindowTypes:controlledWindow,
   selectedModelTickTypes:limitedModel,
   staticContextOnlyTypes:staticOnly,
   explicitFiniteEligibilityTypes:explicitFiniteGates,
@@ -241,7 +246,7 @@ function audit(model,queueReport){
   b.sourceRouteFamilies-a.sourceRouteFamilies||
   a.familyId.localeCompare(b.familyId);
  const hasMechanismObservation=r=>r.priorP215Evidence.some(e=>[
-  'selected-model-tick','geometry-counterfactual'
+  'selected-model-tick','geometry-counterfactual','source-jvm-controlled-window'
  ].includes(e.status));
  const reusable=[],usedKernels=new Set();
  for(const g of firstTier.filter(r=>
