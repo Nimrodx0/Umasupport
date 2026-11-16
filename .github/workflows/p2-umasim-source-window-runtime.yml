@@ -10,6 +10,7 @@ on:
       - 'poc/src/skill_phase_random_draw_support.cjs'
       - 'poc/src/skill_phase_random_source_window_audit.cjs'
       - 'docs/evidence/skills/skill-p2-15-umasim-phase-runtime-20261113.md'
+      - 'docs/evidence/skills/skill-p2-32-halfphase-source-window-reuse-20261116.md'
   push:
     branches: [main]
     paths:
@@ -60,6 +61,14 @@ jobs:
            fs.readFileSync(p+'RaceState.kt','utf8'));
           if(v.actualDrawObserved!==false||v.originalSourceIntervalClosed!==true)
            throw Error('Pinned source contracts changed');
+          const checker=fs.readFileSync(p+'SkillChecker.kt','utf8');
+          for(const anchor of [
+           '"phase_firsthalf_random" -> checkInRandom',
+           'baseSetting.initPhaseRandom(condition.value, 0.0 to 0.5)',
+           '"phase_laterhalf_random" -> checkInRandom',
+           'baseSetting.initPhaseRandom(condition.value, 0.5 to 1.0)'
+          ])if(!checker.includes(anchor))
+           throw Error('Original pinned half-phase random mechanism changed: '+anchor);
           console.log('P2_15_ORIGINAL_KOTLIN_SOURCE_ANCHORED='+JSON.stringify(v));
           NODE
           install -D poc/source-probes/P215SourcePhaseWindowRuntimeTest.kt \
@@ -69,11 +78,13 @@ jobs:
           GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx3g
         run: |
           export P2_PHASE_SOURCE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-15-source-random-window-runtime-trace.json"
+          export P2_PHASE_HALF_SOURCE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-32-original-halfphase-source-windows.json"
           cd "$RUNNER_TEMP/umasim"
           ./gradlew :race:jvmTest \
             --tests 'io.github.mee1080.umasim.race.calc2.P215SourcePhaseWindowRuntimeTest' \
             --no-daemon --console=plain --stacktrace
           test -s "$P2_PHASE_SOURCE_TRACE_OUTPUT"
+          test -s "$P2_PHASE_HALF_SOURCE_TRACE_OUTPUT"
       - name: Independently verify actual source trace and publish bounded summary
         run: |
           node - <<'NODE'
@@ -95,6 +106,49 @@ jobs:
             throw Error('Pinned JVM runtime cohort or no-rating boundary changed');
           console.log('P2_15_SOURCE_JVM_WINDOW_RUNTIME='+JSON.stringify(audit));
           NODE
+      - name: Validate both original half-phase random sources and cache-only boundary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-32-original-halfphase-source-windows.json','utf8'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,'p2-32-pinned-umasim-halfphase-random-source-checker-only');
+          assert.equal(x.randomPositionMode,'RANDOM');
+          assert.equal(x.syntheticSourceSkillId,'99000217');
+          assert.equal(x.originalRaceCalculatorInvoked,false);
+          assert.equal(x.originalRankObserved,false);
+          assert.equal(x.sourceFullANDProven,false);
+          assert.equal(x.gameSkillProcOrSuitabilityComputed,false);
+          assert.deepEqual(x.cases.map(c=>c.type),
+           ['phase_firsthalf_random','phase_laterhalf_random']);
+          let draws=0,checks=0;
+          const zones=[];
+          for(const c of x.cases){
+           assert.equal(c.phaseId,2);
+           assert.equal(c.sourceDraws,6);
+           assert.equal(c.cacheReuseChecks,6);
+           assert.equal(c.sourceBoundaryChecks,24);
+           assert(Array.isArray(c.windows)&&c.windows.length===6);
+           assert(c.zoneEnd>c.zoneStart+10);
+           for(let j=0;j<c.windows.length;j++){
+            const w=c.windows[j];
+            assert.equal(w.trial,j);
+            assert(Number.isFinite(w.start)&&Number.isFinite(w.end));
+            assert(w.start>=c.zoneStart-1e-7);
+            assert(w.start<=c.zoneEnd-2+1e-7);
+            assert(w.end>=w.start&&w.end<=c.zoneEnd+1e-7);
+            assert(Math.abs(w.end-Math.min(w.start+10,c.zoneEnd))<1e-7);
+           }
+           draws+=c.sourceDraws;checks+=c.sourceBoundaryChecks;
+           zones.push([c.zoneStart,c.zoneEnd]);
+          }
+          assert(Math.abs(zones[0][1]-zones[1][0])<1e-7);
+          console.log('P2_32_HALF_PHASE_SOURCE_JVM='+JSON.stringify({
+           sourceHalfPhaseTypes:2,originalSourceDrawnWindows:draws,
+           cacheReuseChecks:12,originalControlledBoundaryChecks:checks,
+           sourceFullANDProven:0,rankObservations:0,gameProcRates:0
+          }));
+          NODE
       - name: Upload original JVM random windows and research-only summary (no source registry)
         uses: actions/upload-artifact@v4
         with:
@@ -102,5 +156,6 @@ jobs:
           path: |
             p2-15-source-random-window-runtime-trace.json
             p2-15-source-random-window-runtime-summary.json
+            p2-32-original-halfphase-source-windows.json
           if-no-files-found: error
           retention-days: 14

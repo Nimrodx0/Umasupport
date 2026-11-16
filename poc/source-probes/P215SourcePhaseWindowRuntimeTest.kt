@@ -119,4 +119,96 @@ class P215SourcePhaseWindowRuntimeTest {
             "trials":[${trials.joinToString(",")}]}""".trimIndent().replace("\n", "") + "\n"
         )
     }
+
+    /**
+     * P2.32: firsthalf/laterhalf reuse original checkInRandom with different
+     * fractional source zones. Isolated synthetic checker; no source rank,
+     * source race, original registered skill or game-proc inference.
+     */
+    @Test
+    fun originalFirstAndLaterHalfPhaseRandomUseTheSameDrawAndCacheMechanism() {
+        val output = System.getenv("P2_PHASE_HALF_SOURCE_TRACE_OUTPUT")
+        assertTrue(!output.isNullOrBlank(), "Explicit half-phase trace path required")
+        val setting = RaceSetting(randomPosition = RandomPosition.RANDOM)
+        val (phaseStart, phaseEnd) = setting.getPhaseStartEnd(phaseNumber)
+        val phaseLength = phaseEnd - phaseStart
+        val cases = listOf(
+            Triple("phase_firsthalf_random", 0.0, 0.5),
+            Triple("phase_laterhalf_random", 0.5, 1.0),
+        )
+        val resultCases = mutableListOf<String>()
+        for ((type, startRate, endRate) in cases) {
+            val zoneStart = phaseStart + phaseLength * startRate
+            val zoneEnd = phaseStart + phaseLength * endRate
+            assertTrue(zoneEnd - zoneStart > 10.0, "Controlled interval too short")
+            val key = "$type$phaseNumber"
+            val sourceCondition = SkillCondition(type, "==", phaseNumber)
+            val skill = SkillData(
+                id = "99000217",
+                name = "P2.32 isolated source $type mechanism",
+                rarity = "normal",
+                group = 0,
+                type = "speed",
+                invokes = listOf(Invoke(
+                    skillId = "99000217", index = 1,
+                    conditions = listOf(listOf(sourceCondition)),
+                )),
+            )
+            val windows = mutableListOf<String>()
+            repeat(6) { trial ->
+                val cached = CalculatedConditions()
+                val first = checkCondition(skill, skill.invokes.single().conditions, setting, cached)
+                val stored = assertNotNull(cached.calculatedAreas[key])
+                val window = stored.single()
+                val start = window.start
+                val end = window.endInclusive
+                assertTrue(start.isFinite() && end.isFinite(), "$type invalid draw")
+                assertTrue(start >= zoneStart - 1e-8, "$type start before half-zone")
+                assertTrue(start <= zoneEnd - 2.0 + 1e-8, "$type start after zone")
+                assertTrue(end >= start && end <= zoneEnd + 1e-8, "$type end outside half-zone")
+                assertTrue(kotlin.math.abs(end - kotlin.math.min(start + 10.0, zoneEnd)) < 1e-7,
+                    "$type original source window geometry changed")
+                val second = checkCondition(skill, skill.invokes.single().conditions, setting, cached)
+                assertEquals(1, cached.calculatedAreas.size)
+                assertSame(stored, cached.calculatedAreas[key])
+                assertSame(window, cached.calculatedAreas[key]!!.single())
+
+                val simulated = RaceSimulationState()
+                val race = RaceState(
+                    RaceSettingWithPassive(setting, PassiveBonus()),
+                    simulated, SystemSetting(), null,
+                )
+                fun evaluate(tick: Int, position: Double, check: RaceState.() -> Boolean): Boolean {
+                    simulated.frameElapsed = tick
+                    simulated.position = position
+                    simulated.startPosition = position
+                    return check(race)
+                }
+                assertEquals(false, evaluate(0, start - 0.01, first))
+                assertEquals(true, evaluate(1, start, first))
+                assertEquals(true, evaluate(2, end, second))
+                assertEquals(false, evaluate(3, end + 0.01, second))
+                windows.add("""{"trial":$trial,"start":$start,"end":$end}""")
+            }
+            resultCases.add(
+                """{"type":"$type","phaseId":$phaseNumber,
+                "zoneStart":$zoneStart,"zoneEnd":$zoneEnd,
+                "sourceDraws":${windows.size},"cacheReuseChecks":6,
+                "sourceBoundaryChecks":24,
+                "windows":[${windows.joinToString(",")}]}""".trimIndent().replace("\n", "")
+            )
+        }
+        File(output!!).writeText(
+            """{"schemaVersion":1,
+            "status":"p2-32-pinned-umasim-halfphase-random-source-checker-only",
+            "randomPositionMode":"RANDOM",
+            "syntheticSourceSkillId":"99000217",
+            "originalRaceCalculatorInvoked":false,
+            "originalRankObserved":false,
+            "sourceFullANDProven":false,
+            "gameSkillProcOrSuitabilityComputed":false,
+            "cases":[${resultCases.joinToString(",")}]}""".trimIndent().replace("\n", "") + "\n"
+        )
+    }
+
 }
