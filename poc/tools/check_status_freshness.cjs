@@ -27,6 +27,10 @@ function checkGitDiff(base) {
 }
 if (require.main===module) {
   try {
+    if (process.env.GITHUB_EVENT_NAME==='workflow_dispatch' && !process.env.STATUS_DIFF_BASE) {
+      process.stdout.write('Manual workflow: no changed-file base; semantic status review remains required.\n');
+      process.exit(0);
+    }
     const result=checkGitDiff(process.env.STATUS_DIFF_BASE);
     process.stdout.write('Status freshness change gate passed: '+result.material+
       ' material changed paths; status touched='+result.statusChanged+'.\n');
