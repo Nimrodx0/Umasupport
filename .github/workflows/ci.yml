@@ -13,9 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # status freshness gate must diff all PR changes against the base SHA
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Ensure material changes update current status in the same PR
+        env:
+          STATUS_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          node --check poc/tools/check_status_freshness.cjs
+          node --test poc/tests/status_freshness.test.cjs
+          node poc/tools/check_status_freshness.cjs
       - name: Detect stale empty-public-event assumptions before running expensive tests
         run: |
           node --check poc/tools/check_release_test_assumptions.cjs
