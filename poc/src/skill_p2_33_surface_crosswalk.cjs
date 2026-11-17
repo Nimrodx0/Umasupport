@@ -120,6 +120,17 @@ function auditSourceRoutes(appModel,sourceAxisReport,manifest){
   if(!matched)continue;
   pairedShapeRouteCount++;
   const contexts=sameGroundStateStaticCompatibility(r.groundStateEligibilityMasks);
+  const additional=uniq(conditions.filter(x=>
+   x.type!=='order_rate'&&!RANDOM_TYPES.has(x.type)&&
+   !STATIC_TYPES.has(x.type)).map(x=>x.type));
+  const venueHeld=conditions.concat(preconditions)
+   .some(x=>x.type==='track_id');
+  const onlyOneSourceInvoke=skill.activationProfile.invokes.length===1;
+  const onlyOneCurrentOR=inv.conditions.length===1;
+  const noHistoricalPreconditions=inv.preConditions.length===0;
+  const structurallyMinimalForModelPilot=contexts.length>0&&
+   onlyOneSourceInvoke&&onlyOneCurrentOR&&noHistoricalPreconditions&&
+   !additional.length&&!venueHeld;
   routes.push({
    sourceNumericId:r.sourceNumericId,sourceRouteKey:r.routeKey,
    invokeOffset:r.invokeOffset,invokeIndex:r.invokeIndex,
@@ -128,12 +139,13 @@ function auditSourceRoutes(appModel,sourceAxisReport,manifest){
    timing:rankWindow.timing,
    currentANDTerms:conditions.length,
    historicalPreconditionANDTerms:preconditions.length,
-   otherCurrentTypes:uniq(conditions.filter(x=>
-    x.type!=='order_rate'&&!RANDOM_TYPES.has(x.type)&&
-    !STATIC_TYPES.has(x.type)).map(x=>x.type)),
+   otherCurrentTypes:additional,
    historicalPreconditionTypes:uniq(preconditions.map(x=>x.type)),
-   requiresFixedVenueReview:conditions.concat(preconditions)
-    .some(x=>x.type==='track_id'),
+   requiresFixedVenueReview:venueHeld,
+   sourceInvokeAlternatives:skill.activationProfile.invokes.length,
+   currentConditionORAlternatives:inv.conditions.length,
+   historicalPreconditionORAlternatives:inv.preConditions.length,
+   structurallyMinimalForModelPilot,
    commonStaticContexts:contexts,
    staticBothSurfaceCompatibility:contexts.length?
     'not-excluded-by-original-static-necessary-gates':
@@ -146,7 +158,18 @@ function auditSourceRoutes(appModel,sourceAxisReport,manifest){
  assert(JSON.stringify(appModel)===before,
   'original user-facing model mutated during research');
  const eligible=routes.filter(x=>x.commonStaticContexts.length);
+ const minimal=eligible.filter(x=>x.structurallyMinimalForModelPilot);
  const unique=x=>uniq(x.map(r=>r.sourceNumericId)).length;
+ const bySharedMechanism=Object.fromEntries(fixedMatch.paired.map(m=>{
+  const all=routes.filter(x=>x.mechanismKey===m.mechanismKey);
+  const compatible=all.filter(x=>x.commonStaticContexts.length>0);
+  return [m.mechanismKey,{
+   sourceRoutes:all.length,
+   staticallyBothSurfaceCompatibleRoutes:compatible.length,
+   distinctCompatibleOriginalSkillIDs:unique(compatible),
+   minimalModelPilots:compatible.filter(x=>
+    x.structurallyMinimalForModelPilot).length}];
+ }));
  return {schemaVersion:1,status:STATUS,
   source:{modelRevision:fixed.PIN,originalSkillRegistrySha256:fixed.SOURCE_SHA,
    appMatchedSourceSkills:lookup.size,
@@ -168,6 +191,8 @@ function auditSourceRoutes(appModel,sourceAxisReport,manifest){
    routeShapesFoundInPairedProxy:pairedShapeRouteCount,
    routesWithBothSurfacesStaticallyCompatible:eligible.length,
    distinctOriginalSkillsWithCompatibleRoute:unique(eligible),
+   routesWithMinimalCurrentANDForNextModelPilot:minimal.length,
+   distinctOriginalSkillsWithMinimalPilot:unique(minimal),
    routesHeldByOriginalStaticGates:routes.length-eligible.length,
    fullSourceSameSkillSurfaceWMeasurements:0,
    verifiedWholeSourceSkillConditions:0,
@@ -175,6 +200,7 @@ function auditSourceRoutes(appModel,sourceAxisReport,manifest){
   },
   fixedPairedMechanisms:fixedMatch.paired,
   unpairedMechanisms:fixedMatch.held,
+  perSharedMechanism:bySharedMechanism,
   originalSourceRoutes:routes,
   limitations:[
    'Two source IDs with identical rank/time predicate type/operator/value are a shared MECHANISM witness, NOT the same original skill.',
