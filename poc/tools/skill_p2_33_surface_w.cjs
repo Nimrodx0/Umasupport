@@ -119,6 +119,36 @@ function audit(manifest,fullReports,halfReports){
    bothHalvesHypotheticalFivePointContexts:cur.filter(x=>
     x.bothHalvesConfirmHypotheticalFivePointGap).length}];
  }));
+ // The original fixed UmaSim + GlobalSim course registry independent audit
+ // has already verified both IDs at Tokyo raceTrackId=10005, distance 1200.
+ // This narrows venue/distance confounding, NOT course geometry or surface.
+ const tokyoTurf=fixed.COURSES.find(x=>x.id===10501);
+ const tokyoDirt=fixed.COURSES.find(x=>x.id===10508);
+ if(!tokyoTurf||!tokyoDirt||tokyoTurf.surface!=='turf'||
+    tokyoDirt.surface!=='dirt'||tokyoTurf.distance!==1200||
+    tokyoDirt.distance!==1200||tokyoTurf.distanceType!==1||
+    tokyoDirt.distanceType!==1)
+  throw Error('P2.33 verified same-venue/distance reference pair drift');
+ const tokyo1200=rows.filter(x=>x.distanceType===1);
+ if(tokyo1200.length!==240||
+    tokyo1200.some(x=>x.turfW.observedCourses.length!==1||
+     x.turfW.observedCourses[0].courseId!==10501||
+     x.dirtW.observedCourses.length!==1||
+     x.dirtW.observedCourses[0].courseId!==10508))
+  throw Error('P2.33 original Tokyo1200 source courses changed');
+ const tokyoSummary={
+  verification:'pinned-two-source-course-registry-confirmed-in-P2.15',
+  venueId:10005,distanceMetres:1200,
+  turfCourseId:10501,dirtCourseId:10508,
+  matchedOriginalMechanismDistanceCells:tokyo1200.length,
+  strict30:tokyo1200.filter(x=>
+   x.original30.direction!=='held-overlap-or-course-confounding').length,
+  strictConfirmedBothHalves:tokyo1200.filter(x=>
+   x.bothHalvesConfirmOriginalDirection).length,
+  hypotheticalFivePointConfirmedBothHalves:tokyo1200.filter(x=>
+   x.bothHalvesConfirmHypotheticalFivePointGap).length,
+  courseGeometryAndSurfaceStillConfounded:true
+ };
  const total=shapes.paired.length*fixed.STYLES.length*fixed.SCENARIOS.length*
   2*fixed.MODES.length*4;
  if(total!==1024||rows.length!==960||missing.length!==16||
@@ -163,7 +193,8 @@ function audit(manifest,fullReports,halfReports){
     x.bothHalvesConfirmOriginalDirection)),
    mechanismStylePairsWithAnyConfirmedFivePoint:matching(rows.filter(x=>
     x.bothHalvesConfirmHypotheticalFivePointGap)),
-   byDistanceType:byDistance},
+   byDistanceType:byDistance,
+   sameVenueSameDistanceTokyo1200:tokyoSummary},
   sourceMechanismPairs:shapes.paired,
   unpairedSourceMechanisms:shapes.held,
   rows,missingContexts:missing,
@@ -171,6 +202,7 @@ function audit(manifest,fullReports,halfReports){
    'Both surfaces share only the exact rank/time predicate shape. The two fixed sourceNumericIds are DIFFERENT ORIGINAL SKILLS, not matched source skill activation.',
    'Candidate source skills with identical current rank/time terms may have other dynamic AND terms, OR paths or historical preConditions; this experiment does not resolve them.',
    'Surface changes together with course geometry, venue, race dynamics and possibly aptitude; the causal turf/dirt effect is not identified.',
+   'The 10501/10508 Tokyo1200 case fixes raceTrackId and 1200m in original registries, but NOT turf/dirt course geometry or real aptitude.',
    'A fixed 30-seed aggregate and its 15+15 partitions are artificial model observations, not independent real-game samples or confidence intervals.',
    'Do not promote any strict interval separation or hypothetical five-point margin to a product effect threshold.',
    'No official card score, W/D full skill suitability or game proc is evaluated.'
