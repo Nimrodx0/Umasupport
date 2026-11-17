@@ -25,6 +25,7 @@ const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
+const surfaceCrosswalk=require('../src/skill_p2_33_surface_crosswalk.cjs');
 const rankRandomHandoff=require('../src/skill_p2_15_rank_random_same_and_handoff.cjs');
 const registeredCohortJoin=require('../src/skill_p2_15_registered_cohort_join.cjs');
 const mixedResearch=require('../src/skill_condition_mixed_cohort.cjs');
@@ -160,6 +161,14 @@ function matchedRecord(skill,live,old){
     p215AxisGates.denominators.officialSkillCardSuitabilityScores!==0||
     p215AxisGates.denominators.actualAppliedOmissions!==0)
   throw Error('P2.15 source parameterized axis-gate cohort or no-scoring boundary drift');
+ const p233SurfaceRoutes=surfaceCrosswalk.auditSourceRoutes(model,p215AxisGates,
+  JSON.parse(fs.readFileSync('poc/data/p2_position_condition32_research.v1.json','utf8')));
+ if(p233SurfaceRoutes.denominators.sourceMatchedOriginalSkillPopulation!==818||
+    p233SurfaceRoutes.denominators.originalSourceRoutes!==970||
+    p233SurfaceRoutes.denominators.sharedCrossSurfaceRankTimeMechanisms!==4||
+    p233SurfaceRoutes.denominators.fullSourceSameSkillSurfaceWMeasurements!==0||
+    p233SurfaceRoutes.denominators.officialSuitabilityScores!==0)
+  throw Error('P2.33 source-exact cross-surface cohort / research-only gate drift');
  const p215RankRandom=rankRandomHandoff.audit(model,p215AxisGates);
  if(p215RankRandom.denominators.sourceMatchedSkills!==
     p215AxisGates.denominators.sourceMatchedSkills||
@@ -383,6 +392,21 @@ function matchedRecord(skill,live,old){
    modelNine:c.supportedRankPanels.find(p=>p.fieldSize===9),
    otherTypes:c.otherCurrentUnknownOrContextTypes
   }))
+ }));
+ fs.writeFileSync('p2-33-surface-route-crosswalk.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText),
+   supportingRegistrySHA256:digest(supportText)},...p233SurfaceRoutes},null,2)+'\n');
+ console.log('P2_33_ORIGINAL_SOURCE_SURFACE_ROUTES='+JSON.stringify({
+  denominators:p233SurfaceRoutes.denominators,
+  firstCompatibleRoutes:p233SurfaceRoutes.originalSourceRoutes.filter(x=>
+   x.commonStaticContexts.length).slice(0,12).map(x=>({
+    originalSkill:x.sourceNumericId,route:x.sourceRouteKey,
+    sharedMechanism:x.mechanismKey,
+    matchingThreeAxisContexts:x.commonStaticContexts.length,
+    additionalTypes:x.otherCurrentTypes,
+    historicalPreconditions:x.historicalPreconditionTypes,
+    venueHeld:x.requiresFixedVenueReview})),
+  pairedMechanisms:p233SurfaceRoutes.fixedPairedMechanisms
  }));
  fs.writeFileSync('p2-15-parameterized-axis-gates.json',
   JSON.stringify({source:{revision:REVISION,
