@@ -103,6 +103,36 @@ function directCandidates(card,skillId){
  }
  return records;
 }
+// P3.3 handoff: reorganize VERIFIED direct candidate paths by card without
+// collapsing mutually exclusive events, outcome alternatives or hint stages.
+// This is a view of the same rows, never a second skill source or score.
+function byCardCandidates(skillRows){
+ const byCard=new Map();
+ for(const row of skillRows){
+  if(!row.appSkillId)continue;
+  for(const path of row.directCandidates){
+   fail(path.cardId&&path.appSkillId===row.appSkillId,
+    'source-to-card candidate identity mismatch');
+   let card=byCard.get(path.cardId);
+   if(!card){
+    card={cardId:path.cardId,skills:[],
+     eligibleForP3CardScoring:false,cardScore:null,
+     selectionStatus:'possible-source-routes-not-confirmed-acquired'};
+    byCard.set(path.cardId,card);
+   }
+   let skill=card.skills.find(x=>x.appSkillId===row.appSkillId);
+   if(!skill){
+    skill={originalSourceNumericId:row.originalSourceNumericId,
+     appSkillId:row.appSkillId,directCandidates:[]};
+    card.skills.push(skill);
+   }
+   skill.directCandidates.push({...path});
+  }
+ }
+ return [...byCard.values()].sort((a,b)=>sort(a.cardId,b.cardId))
+  .map(c=>({...c,skills:c.skills.sort((a,b)=>
+   sort(a.originalSourceNumericId,b.originalSourceNumericId))}));
+}
 function audit({identity,appModel}){
  const identities=checkIdentity(identity,appModel),rows=[];
  for(const entry of identities){
@@ -122,6 +152,10 @@ function audit({identity,appModel}){
   });
  }
  const count=rows.reduce((n,r)=>n+r.directCandidates.length,0);
+ const cardCandidateGroups=byCardCandidates(rows);
+ fail(cardCandidateGroups.reduce((n,c)=>n+
+  c.skills.reduce((m,sk)=>m+sk.directCandidates.length,0),0)===count,
+  'card grouping lost or duplicated source routes');
  return {
   schemaVersion:1,status:STATUS,
   provenance:{
@@ -138,11 +172,15 @@ function audit({identity,appModel}){
    directCandidateRecords:count,
    hintCandidateRecords:rows.reduce((n,r)=>n+r.directCandidates.filter(x=>x.source==='normal-hint').length,0),
    approvedEventCandidateRecords:rows.reduce((n,r)=>n+r.directCandidates.filter(x=>x.source==='approved-event').length,0),
+   cardsWithVerifiedCohortDirectCandidates:cardCandidateGroups.length,
+   distinctVerifiedCohortCardSkillPairs:cardCandidateGroups.reduce((n,c)=>n+c.skills.length,0),
    productEligibleCardScores:0
   },
   rows,
+  cardCandidateGroups,
   boundaries:[
    'Direct candidate in a fixed approved app model is not confirmed in-game acquisition or event occurrence.',
+   'Card-first grouping covers only the nine P3.2 source-matched skills in this fixed study, NOT all app skills or all card grants.',
    'A stage-specific hint is not silently presumed to occur at other limit breaks.',
    'Event alternatives, outcomes, prerequisites and termination are not combined into guaranteed awards.',
    'No name-only or lower/gold indirect path is inferred; unsupported joins remain unassessed.',
@@ -169,4 +207,4 @@ function selectedDirectCandidates({identity,appModel,cardId,stage=4,choices={},o
    eventId:x.eventId,conditional:x.source==='event'||!!x.conditional,
    selectionStatus:'reachable-candidate-in-specified-app-settings-not-acquired'}));
 }
-module.exports={STATUS,STAGES,checkIdentity,directCandidates,audit,selectedDirectCandidates};
+module.exports={STATUS,STAGES,checkIdentity,directCandidates,byCardCandidates,audit,selectedDirectCandidates};

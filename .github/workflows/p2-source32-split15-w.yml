@@ -637,6 +637,18 @@ jobs:
           assert.equal(receipt.summary.directCandidateRecords,
            receipt.summary.hintCandidateRecords+
             receipt.summary.approvedEventCandidateRecords);
+          assert.equal(receipt.cardCandidateGroups.length,
+           receipt.summary.cardsWithVerifiedCohortDirectCandidates);
+          assert.equal(receipt.summary.distinctVerifiedCohortCardSkillPairs,
+           receipt.cardCandidateGroups.reduce((n,c)=>n+c.skills.length,0));
+          assert.equal(receipt.summary.directCandidateRecords,
+           receipt.cardCandidateGroups.reduce((n,c)=>n+c.skills.reduce(
+            (m,sk)=>m+sk.directCandidates.length,0),0));
+          assert(receipt.cardCandidateGroups.every(c=>
+           c.eligibleForP3CardScoring===false&&c.cardScore===null&&
+           c.skills.every(sk=>sk.directCandidates.every(path=>
+            path.cardId===c.cardId&&path.appSkillId===sk.appSkillId))));
+
           assert(receipt.rows.every(r=>r.cardScore===null&&
            r.suitabilityLabel===null&&r.eligibleForP3CardScoring===false&&
            r.indirectGrantRoutes==='not-assessed'));
