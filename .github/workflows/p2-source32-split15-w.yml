@@ -11,6 +11,9 @@ on:
       - 'poc/src/skill_p2_33_surface_crosswalk.cjs'
       - 'poc/tests/skill_p2_33_surface_crosswalk.test.cjs'
       - 'poc/tools/skill_p2_33_surface_w.cjs'
+      - 'poc/src/skill_p2_33_same_id_projection.cjs'
+      - 'poc/tests/skill_p2_33_same_id_projection.test.cjs'
+      - 'poc/tools/audit_p2_33_same_id_projection.cjs'
       - 'poc/tests/skill_p2_33_surface_w.test.cjs'
       - 'poc/tests/skill_p2_33_distance_w.test.cjs'
       - 'poc/src/p2_skill_evidence_contract.cjs'
@@ -56,6 +59,9 @@ jobs:
           node --test poc/tests/skill_p2_33_distance_w.test.cjs
           node --check poc/tools/skill_p2_33_surface_w.cjs
           node --test poc/tests/skill_p2_33_surface_w.test.cjs
+          node --check poc/src/skill_p2_33_same_id_projection.cjs
+          node --check poc/tools/audit_p2_33_same_id_projection.cjs
+          node --test poc/tests/skill_p2_33_same_id_projection.test.cjs
           node --check poc/src/skill_p2_33_surface_crosswalk.cjs
           node --test poc/tests/skill_p2_33_surface_crosswalk.test.cjs
           node --check poc/src/p2_skill_evidence_contract.cjs
@@ -569,6 +575,43 @@ jobs:
             id:x.originalSourceNumericId,name:x.originalSourceName,
             result:x.result,appSkillId:x.appSkillId}))}));
           NODE
+      - name: P2.33 source-matched SAME original skill ID conditional static AND and turf/dirt partial model W proxy
+        run: |
+          node poc/tools/audit_p2_33_same_id_projection.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p3-2-source/skill_data.txt \
+            /tmp/p3-2-source/support_card.txt \
+            /tmp/p3-2-source/reviewed_event_legacy_skills.txt \
+            poc/data/reviewed_events.v1.json \
+            /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json \
+            /tmp/p2-split15/p2-33-same-id-static-model-projection.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const m=require('./poc/src/skill_p2_33_same_id_projection.cjs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p2-33-same-id-static-model-projection.json','utf8'));
+          assert.equal(x.status,m.STATUS);
+          assert.equal(x.source.originalUmaSimSkillDataSha256,
+           '4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+          assert.equal(x.summary.sourceMatchedSkills,818);
+          assert.equal(x.summary.originalSameIDMinimalSkillCandidates,82);
+          assert.equal(x.summary.originalSkillIDsWithAtLeastOneModelProjection,82);
+          assert(x.summary.conditionalOriginalIDModelProjectionReferences>=
+           x.summary.uniqueReusedFixedPartialModelContexts);
+          assert(x.summary.uniqueReusedFixedPartialModelContexts<=960);
+          assert.equal(x.summary.sameOriginalIDObservedActualSkillActivations,0);
+          assert.equal(x.summary.sourceOriginalJVMWholeSkillConditionMeasurements,0);
+          assert.equal(x.summary.p3OfficialSuitabilityRecords,0);
+          assert(x.records.every(x=>
+           x.eligibleForP3CardScoring===false&&
+           x.originalFullSkillW===null&&
+           x.actualSkillActivationRate===null&&
+           x.productSuitabilityLabel===null&&
+           x.modelProjectionRows.every(y=>
+            y.originalSourceSkillId===x.originalSourceSkillId&&
+            y.originalSkillWholeConditionOnOriginalJVMTickObserved===false)));
+          console.log('P2_33_SAME_ID_PROXY_ONLY='+JSON.stringify(x.summary));
+          NODE
       - name: P3.3 audit verified card ID, hint stage and approved-event branch candidates without P3 scoring
         run: |
           node --check poc/src/p3_card_acquisition_routes.cjs
@@ -610,6 +653,7 @@ jobs:
             /tmp/p2-split15/p2-17b-distance-split15.json
             /tmp/p2-split15/p2-33-same-style-distance-w.json
             /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json
+            /tmp/p2-split15/p2-33-same-id-static-model-projection.json
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
             /tmp/p2-split15/p3-1-quarantined-research-receipt.json
             /tmp/p2-split15/p3-2-source-app-identity-audit.json
