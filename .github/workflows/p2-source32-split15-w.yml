@@ -389,6 +389,13 @@ jobs:
           assert.equal(a.denominators.sourceWholeANDVerified,0);
           assert.equal(a.denominators.gameActivationMeasured,0);
           assert.equal(a.denominators.P3SuitabilityScored,0);
+          const sameVenue=a.summary.sameVenueSameDistanceTokyo1200;
+          assert.equal(sameVenue.venueId,10005);
+          assert.equal(sameVenue.distanceMetres,1200);
+          assert.equal(sameVenue.turfCourseId,10501);
+          assert.equal(sameVenue.dirtCourseId,10508);
+          assert.equal(sameVenue.matchedOriginalMechanismDistanceCells,240);
+          assert.equal(sameVenue.courseGeometryAndSurfaceStillConfounded,true);
           assert(a.sourceMechanismPairs.every(x=>
            x.turfSourceNumericId!==x.dirtSourceNumericId));
           assert(a.rows.every(x=>x.sourceIDIdentical===false&&
