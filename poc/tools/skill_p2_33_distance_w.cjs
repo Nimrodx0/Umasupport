@@ -178,9 +178,9 @@ function audit(manifest,fullReports,halfReports){
  const tokyo=matchedCohort(turf,indexes,distance.validateTokyo());
  const shape=(x,profileCount)=>{
   if(x.summary.originalSourceProfiles!==profileCount||
-   x.summary.matchedSourceStyleRosterHeadModeContexts!==profileCount*28||
+   x.summary.matchedSourceStyleRosterHeadModeContexts!==profileCount*60||
    x.summary.absentStyleContextCells!==profileCount*4||
-   x.summary.distancePairContextCells!==profileCount*28*6||
+   x.summary.distancePairContextCells!==profileCount*60*6||
    x.rows.some(r=>r.distanceScope!=='all'||r.perDistanceW.length!==4)||
    x.missing.some(r=>r.style!=='Nige'||r.scenario!=='noFront'))
    throw Error('P2.33 cohort cardinality / noFront absence drift');
@@ -190,7 +190,7 @@ function audit(manifest,fullReports,halfReports){
   source:{globalSimRevision:model.PIN,umaSimSkillRegistrySha256:model.SOURCE_SHA,
    full30ArtifactSha256:original.PINNED,
    disjointHalves:'P2.13 original30 runner/W reconstruction verified',
-   sourceManifestSha256:manifest.source.previousArtifactSha256},
+   sourceManifestPreviousArtifactSha256:manifest.source.previousArtifactSha256},
   design:{noNewModelRaces:true,noNewRealGameObservations:true,
    eligibleDistanceUnrestrictedSourceProfiles:10,
    excludedDistanceRestrictedSourceProfiles:22,
