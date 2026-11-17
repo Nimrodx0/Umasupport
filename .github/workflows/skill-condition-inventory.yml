@@ -491,6 +491,13 @@ jobs:
           path: p2-15-rank-random-same-and-handoff.json
           retention-days: 14
           if-no-files-found: error
+      - name: Upload source branch candidates for shared surface mechanism (not observed whole-skill W)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-33-original-source-surface-route-crosswalk
+          path: p2-33-surface-route-crosswalk.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload original parameter-specific static 3-axis eligibility (not W or proc rate)
         uses: actions/upload-artifact@v4
         with:
