@@ -379,7 +379,6 @@ jobs:
             /tmp/p2-split15/noFront-0.json \
             /tmp/p2-split15/noFront-15.json \
             /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json
-            /tmp/p2-split15/p2-33-same-id-static-model-projection.json
           node - <<'NODE'
           const assert=require('node:assert/strict'),fs=require('node:fs');
           const tool=require('./poc/tools/skill_p2_33_surface_w.cjs');
@@ -654,6 +653,7 @@ jobs:
             /tmp/p2-split15/p2-17b-distance-split15.json
             /tmp/p2-split15/p2-33-same-style-distance-w.json
             /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json
+            /tmp/p2-split15/p2-33-same-id-static-model-projection.json
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
             /tmp/p2-split15/p3-1-quarantined-research-receipt.json
             /tmp/p2-split15/p3-2-source-app-identity-audit.json
