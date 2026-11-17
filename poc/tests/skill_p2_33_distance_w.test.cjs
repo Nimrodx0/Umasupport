@@ -86,11 +86,11 @@ test('P2.33 preserves source surface and noFront absence, with zero imported rat
  assert.equal(result.status,audit.STATUS);
  assert.equal(result.summary.sameSurfaceAllEligibleCourses.originalSourceProfiles,10);
  assert.equal(result.summary.sameSurfaceAllEligibleCourses.profileStylePairs,40);
- assert.equal(result.summary.sameSurfaceAllEligibleCourses.matchedSourceStyleRosterHeadModeContexts,280);
+ assert.equal(result.summary.sameSurfaceAllEligibleCourses.matchedSourceStyleRosterHeadModeContexts,600);
  assert.equal(result.summary.sameSurfaceAllEligibleCourses.absentStyleContextCells,40);
- assert.equal(result.summary.sameSurfaceAllEligibleCourses.distancePairContextCells,1680);
- assert.equal(result.summary.sameVenueTokyoTurf.matchedSourceStyleRosterHeadModeContexts,112);
- assert.equal(result.summary.sameVenueTokyoTurf.distancePairContextCells,672);
+ assert.equal(result.summary.sameSurfaceAllEligibleCourses.distancePairContextCells,3600);
+ assert.equal(result.summary.sameVenueTokyoTurf.matchedSourceStyleRosterHeadModeContexts,240);
+ assert.equal(result.summary.sameVenueTokyoTurf.distancePairContextCells,1440);
  assert.equal(result.summary.sameSurfaceAllEligibleCourses.strictOriginal30Events,0);
  assert.equal(result.design.sourceIDsPresentOnBothSurfaces,0);
  assert.equal(result.design.surfaceComparison.startsWith('not-identifiable'),true);
