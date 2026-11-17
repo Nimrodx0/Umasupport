@@ -113,6 +113,8 @@ test('contradictory seed halves do not confirm pooled surface direction',()=>{
  editW(reports[0],p,'dirt','Senkou',40);
  editW(halves.balanced[0],p,'turf','Senkou',20);
  editW(halves.balanced[1],p,'turf','Senkou',100);
+ editW(halves.balanced[0],p,'dirt','Senkou',40);
+ editW(halves.balanced[1],p,'dirt','Senkou',40);
  // 20+100 over two equally-populated 15-seed windows == 60 pooled.
  const x=study.audit(manifest,reports,halves);
  const row=x.rows.find(y=>y.mechanismKey===p.mechanismKey&&
