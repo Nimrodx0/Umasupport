@@ -89,6 +89,9 @@ test('original route audit joins a shared mechanism but never infers real same-s
  assert.equal(r.denominators.routeShapesFoundInPairedProxy,1);
  assert.equal(r.denominators.routesWithBothSurfacesStaticallyCompatible,1);
  assert.equal(r.denominators.fullSourceSameSkillSurfaceWMeasurements,0);
+ assert.equal(r.denominators.routesWithMinimalCurrentANDForNextModelPilot,0);
+ assert.equal(r.originalSourceRoutes[0].structurallyMinimalForModelPilot,false);
+ assert.equal(Object.keys(r.perSharedMechanism).length,4);
  assert.equal(r.originalSourceRoutes.length,1);
  assert.deepEqual(r.originalSourceRoutes[0].otherCurrentTypes,['random_unknown']);
  assert.equal(r.originalSourceRoutes[0].sourceWholeANDOrInvokeProven,false);
@@ -98,4 +101,30 @@ test('original route audit joins a shared mechanism but never infers real same-s
  const held=cross.auditSourceRoutes(model,shifted,manifest);
  assert.equal(held.denominators.routesWithBothSurfacesStaticallyCompatible,0);
  assert.equal(held.denominators.routesHeldByOriginalStaticGates,1);
+});
+test('only genuinely single-Invoke, single-OR, no-history source branch qualifies for next pilot',()=>{
+ const {model,gates}=fixture();
+ const skill=model.skills[1],id=skill.activationProfile.sourceNumericId;
+ skill.activationProfile.invokes[0].conditions[0]=[
+  {type:'order_rate',operator:'>=',value:40},
+  {type:'phase_random',operator:'==',value:1}
+ ];
+ assert.equal(gates.routeRows[2].sourceNumericId,id);
+ gates.routeRows[2].groundStateEligibilityMasks[
+  axis.panelIndex(2,2,1)]=1;
+ gates.routeRows[2].groundStateEligibilityMasks[
+  axis.panelIndex(2,2,2)]=1;
+ const z=cross.auditSourceRoutes(model,gates,manifest);
+ assert.equal(z.denominators.routesWithBothSurfacesStaticallyCompatible,2);
+ assert.equal(z.denominators.routesWithMinimalCurrentANDForNextModelPilot,0);
+ // The added skill still has a second current OR alternative.
+ assert.equal(z.originalSourceRoutes.find(x=>x.sourceNumericId===id)
+  .currentConditionORAlternatives,2);
+ skill.activationProfile.invokes[0].conditions.pop();
+ const route0=gates.routeRows.findIndex(x=>x.sourceNumericId===id&&
+  x.conditionOrIndex===1);
+ assert(route0>=0);
+ // Synthetic report is held to its fixed 970-route source denominator;
+ // a non-existent source-OR row may not be silently removed from it.
+ assert.throws(()=>cross.auditSourceRoutes(model,gates,manifest),/source route\/Invoke/);
 });
