@@ -8,6 +8,10 @@ on:
       - 'poc/tools/skill_source32_split15_w.cjs'
       - 'poc/tools/skill_distance_split15_reliability.cjs'
       - 'poc/tools/skill_p2_33_distance_w.cjs'
+      - 'poc/src/skill_p2_33_surface_crosswalk.cjs'
+      - 'poc/tests/skill_p2_33_surface_crosswalk.test.cjs'
+      - 'poc/tools/skill_p2_33_surface_w.cjs'
+      - 'poc/tests/skill_p2_33_surface_w.test.cjs'
       - 'poc/tests/skill_p2_33_distance_w.test.cjs'
       - 'poc/src/p2_skill_evidence_contract.cjs'
       - 'poc/src/p3_research_evidence_intake.cjs'
@@ -50,6 +54,10 @@ jobs:
           node --test poc/tests/skill_distance_split15_reliability.test.cjs
           node --check poc/tools/skill_p2_33_distance_w.cjs
           node --test poc/tests/skill_p2_33_distance_w.test.cjs
+          node --check poc/tools/skill_p2_33_surface_w.cjs
+          node --test poc/tests/skill_p2_33_surface_w.test.cjs
+          node --check poc/src/skill_p2_33_surface_crosswalk.cjs
+          node --test poc/tests/skill_p2_33_surface_crosswalk.test.cjs
           node --check poc/src/p2_skill_evidence_contract.cjs
           node --check poc/tools/build_p2_18_evidence_contract.cjs
           node --test poc/tests/p2_skill_evidence_contract.test.cjs
@@ -348,6 +356,50 @@ jobs:
           assert(!Object.hasOwn(z,'gameProcRate'));
           console.log('P2_33_SAME_STYLE_DISTANCE_W='+JSON.stringify(z.summary));
           NODE
+      - name: P2.33 test shared source rank-time partial-mechanism W across turf and dirt without assuming same original skill
+        run: |
+          node poc/tools/skill_p2_33_surface_w.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-full30/balanced.json \
+            /tmp/p2-full30/frontHeavy.json \
+            /tmp/p2-full30/backHeavy.json \
+            /tmp/p2-full30/noFront.json \
+            /tmp/p2-split15/balanced-0.json \
+            /tmp/p2-split15/balanced-15.json \
+            /tmp/p2-split15/frontHeavy-0.json \
+            /tmp/p2-split15/frontHeavy-15.json \
+            /tmp/p2-split15/backHeavy-0.json \
+            /tmp/p2-split15/backHeavy-15.json \
+            /tmp/p2-split15/noFront-0.json \
+            /tmp/p2-split15/noFront-15.json \
+            /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const tool=require('./poc/tools/skill_p2_33_surface_w.cjs');
+          const a=JSON.parse(fs.readFileSync(
+           '/tmp/p2-split15/p2-33-shared-mechanism-surface-w.json','utf8'));
+          assert.equal(a.status,tool.STATUS);
+          assert.equal(a.denominators.sharedRankTimeMechanisms,4);
+          assert.equal(a.denominators.unpairedRankTimeMechanisms,2);
+          assert.equal(a.denominators.candidateCellsIncludingAbsentStyle,1024);
+          assert.equal(a.denominators.absentStyleScenarioHeadModeCells,16);
+          assert.equal(a.denominators.absentStyleDistanceCells,64);
+          assert.equal(a.denominators.comparableMechanismStyleScenarioHeadModeDistanceCells,960);
+          assert.equal(a.denominators.originalSameSkillCrossSurfaceMeasured,0);
+          assert.equal(a.denominators.sourceWholeANDVerified,0);
+          assert.equal(a.denominators.gameActivationMeasured,0);
+          assert.equal(a.denominators.P3SuitabilityScored,0);
+          assert(a.sourceMechanismPairs.every(x=>
+           x.turfSourceNumericId!==x.dirtSourceNumericId));
+          assert(a.rows.every(x=>x.sourceIDIdentical===false&&
+           x.originalSkillWholeAND===false&&x.onlySharedPartialMechanism===true));
+          assert.equal(a.summary.pooledStrictDirectionalCells+
+           a.rows.filter(x=>
+            x.original30.direction==='held-overlap-or-course-confounding').length,
+           960);
+          console.log('P2_33_PROXY_SURFACE_W='+JSON.stringify({
+           denominators:a.denominators,summary:a.summary}));
+          NODE
       - name: P2.18 export research-only evidence without false source skill and card suitability claims
         run: |
           node poc/tools/build_p2_18_evidence_contract.cjs \
@@ -550,6 +602,7 @@ jobs:
             /tmp/p2-split15/source32-15plus15-W.json
             /tmp/p2-split15/p2-17b-distance-split15.json
             /tmp/p2-split15/p2-33-same-style-distance-w.json
+            /tmp/p2-split15/p2-33-shared-mechanism-surface-w.json
             /tmp/p2-split15/p2-18-unqualified-evidence-contract.json
             /tmp/p2-split15/p3-1-quarantined-research-receipt.json
             /tmp/p2-split15/p3-2-source-app-identity-audit.json
