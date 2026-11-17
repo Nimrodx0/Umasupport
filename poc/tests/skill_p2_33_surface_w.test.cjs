@@ -82,6 +82,14 @@ test('fixed 32-rank profile cohort has 4 source-identical SHAPES but ZERO same s
  assert.equal(x.summary.pooledStrictDirectionalCells,0);
  assert.equal(x.summary.fivePointConfirmedBothHalves,0);
  assert.equal(x.rows.length,960);
+ const tokyo=x.summary.sameVenueSameDistanceTokyo1200;
+ assert.equal(tokyo.venueId,10005);
+ assert.equal(tokyo.distanceMetres,1200);
+ assert.equal(tokyo.turfCourseId,10501);
+ assert.equal(tokyo.dirtCourseId,10508);
+ assert.equal(tokyo.matchedOriginalMechanismDistanceCells,240);
+ assert.equal(tokyo.strict30,0);
+ assert.equal(tokyo.courseGeometryAndSurfaceStillConfounded,true);
  assert(x.rows.every(y=>y.sourceIDIdentical===false&&y.originalSkillWholeAND===false));
  assert(x.sourceMechanismPairs.every(y=>y.turfSourceNumericId!==y.dirtSourceNumericId));
 });
