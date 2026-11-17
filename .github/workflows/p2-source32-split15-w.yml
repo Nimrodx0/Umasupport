@@ -332,12 +332,12 @@ jobs:
           const tokyo=z.summary.sameVenueTokyoTurf;
           assert.equal(general.originalSourceProfiles,10);
           assert.equal(general.profileStylePairs,40);
-          assert.equal(general.matchedSourceStyleRosterHeadModeContexts,280);
+          assert.equal(general.matchedSourceStyleRosterHeadModeContexts,600);
           assert.equal(general.absentStyleContextCells,40);
-          assert.equal(general.distancePairContextCells,1680);
+          assert.equal(general.distancePairContextCells,3600);
           assert.equal(tokyo.originalSourceProfiles,4);
-          assert.equal(tokyo.matchedSourceStyleRosterHeadModeContexts,112);
-          assert.equal(tokyo.distancePairContextCells,672);
+          assert.equal(tokyo.matchedSourceStyleRosterHeadModeContexts,240);
+          assert.equal(tokyo.distancePairContextCells,1440);
           assert.equal(z.design.sourceIDsPresentOnBothSurfaces,0);
           assert(z.rows.every(x=>x.distanceScope==='all'&&x.perDistanceW.length===4&&
            x.contrasts.length===6&&x.contrasts.every(c=>
