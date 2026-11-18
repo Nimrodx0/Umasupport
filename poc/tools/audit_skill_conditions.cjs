@@ -24,6 +24,7 @@ const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const p237Dynamic=require('../src/skill_p2_37_dynamic_state_evidence.cjs');
+const p238Spurt=require('../src/skill_p2_38_original_spurt_phase_same_and.cjs');
 const shortExceptions=require('../src/skill_p2_35_short_window_exception_decisions.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
@@ -174,6 +175,12 @@ function matchedRecord(skill,live,old){
     p237.summary.originalFullSourceANDProven!==0||
     !p237.summary.noSourceApproximationsUsedAsRealStyleEvidence)
   throw Error('P2.37 dynamic state evidence or no-scoring boundary drift');
+ const p238=p238Spurt.audit(model,p232Queue,p237);
+ if(p238.summary.skills!==2||
+    p238.summary.distinctCurrentAndMechanisms!==1||
+    p238.summary.originalSkillRaceFullANDTrueObservations!==0||
+    p238.summary.approvedSkillOrCardSuitabilityScores!==0)
+   throw Error('P2.38 original spurt/firsthalf shared AND fixed source mismatch');
  const p232Mechanism=mechanismReuse.audit(model,p232Queue);
  if(p232Mechanism.denominators.sourceRouteFamilies!==
     p232Queue.denominators.originalRouteFamilies||
@@ -468,6 +475,14 @@ function matchedRecord(skill,live,old){
    distances:x.permittedDistanceTypes||null,
    rank9:x.projectedRanksByFieldSize?.[9]?.sourceConjunctionRankPositions||null,
    rank12:x.projectedRanksByFieldSize?.[12]?.sourceConjunctionRankPositions||null
+  }))
+ }));
+ fs.writeFileSync('p2-38-original-source-spurt-phase-and.json',
+  JSON.stringify({skillSourceSHA256:digest(skillText),...p238},null,2)+'\n');
+ console.log('P2_38_SOURCE_REGISTERED_SPURT_PHASE='+JSON.stringify({
+  summary:p238.summary,rows:p238.rows.map(x=>({
+   id:x.sourceNumericId,name:x.skillName,
+   predicates:x.sourceANDPredicates,window:x.sourceWindow
   }))
  }));
  fs.writeFileSync('p2-37-dynamic-state-source-evidence.json',
