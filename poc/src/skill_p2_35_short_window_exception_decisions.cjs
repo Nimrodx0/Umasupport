@@ -17,7 +17,7 @@ function structuralPair(q,paths){
    f.preconditionOrCount===0&&f.preconditionOrIndex===null&&
    !f.hasOtherInvokes)&&
   paths.every(p=>q.routeFamilies.some(f=>f.conditionOrIndex===p.orIndex&&
-   f.invokeIndex===p.invokeIndex&&f.finiteCompatibleStyles.length===4));
+   f.invokeOffset===p.invokeIndex&&f.finiteCompatibleStyles.length===4));
 }
 function distanceOR(paths,q){
  if(paths.length!==2||!structuralPair(q,paths)||paths.some(p=>
