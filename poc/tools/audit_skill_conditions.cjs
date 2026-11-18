@@ -23,6 +23,7 @@ const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
+const shortExceptions=require('../src/skill_p2_35_short_window_exception_decisions.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
 const surfaceCrosswalk=require('../src/skill_p2_33_surface_crosswalk.cjs');
@@ -147,6 +148,19 @@ function matchedRecord(skill,live,old){
     p232Queue.denominators.actualAppliedOmissions!==0||
     p232Queue.denominators.officialP3OrP4Ratings!==0)
   throw Error('P2.32 route research queue cohort or no-scoring boundary changed');
+ const p235=shortExceptions.audit({
+  source:{sha256:digest(skillText)},...halfPhaseStudy
+ },p232Queue);
+ if(p235.summary.sourceWindowCandidateSkills!==87||
+    p235.summary.alreadyDirectSourceCandidateSkills!==75||
+    p235.summary.sourceExceptionSkills!==12||
+    p235.summary.sourceDistanceExclusiveOR!==10||
+    p235.summary.originalRankIntersection!==2||
+    p235.summary.otherHeld!==0||
+    p235.summary.distinctDistanceORRankTimingMechanisms!==5||
+    p235.summary.distinctRankIntersectionMechanisms!==1||
+    p235.summary.productSuitabilityScores!==0)
+  throw Error('P2.35 fixed 12 source exceptions or no-score boundary drift');
  const p232Mechanism=mechanismReuse.audit(model,p232Queue);
  if(p232Mechanism.denominators.sourceRouteFamilies!==
     p232Queue.denominators.originalRouteFamilies||
@@ -429,6 +443,18 @@ function matchedRecord(skill,live,old){
    sourceSkills:g.distinctSourceSkills,variants:g.distinctExactNumericParameterSets,
    existingEvidence:g.priorP215Evidence.map(e=>[e.type,e.status]),
    next:g.nextMechanismResearchAction
+  }))
+ }));
+ fs.writeFileSync('p2-35-short-window-source-logic-decisions.json',
+  JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},
+   ...p235},null,2)+'\\n');
+ console.log('P2_35_SOURCE_LOGIC_DECISIONS='+JSON.stringify({
+  summary:p235.summary,
+  rows:p235.rows.map(x=>({
+   sourceId:x.sourceNumericId,name:x.skillName,decision:x.decision,
+   distances:x.permittedDistanceTypes||null,
+   rank9:x.projectedRanksByFieldSize?.[9]?.sourceConjunctionRankPositions||null,
+   rank12:x.projectedRanksByFieldSize?.[12]?.sourceConjunctionRankPositions||null
   }))
  }));
  fs.writeFileSync('p2-32-source-route-research-queue.json',
