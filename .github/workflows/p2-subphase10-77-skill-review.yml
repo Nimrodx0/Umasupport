@@ -6,6 +6,8 @@ on:
     paths:
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
       - 'poc/tools/skill_halfphase_two_axis_review.cjs'
+      - 'poc/tools/p2_g3g4_skill_window_decisions.cjs'
+      - 'poc/tests/p2_g3g4_skill_window_decisions.test.cjs'
       - 'poc/tests/skill_halfphase_two_axis_review.test.cjs'
       - 'poc/src/skill_halfphase_feasibility.cjs'
       - 'poc/tools/skill_subphase10_cohort_review.cjs'
@@ -31,6 +33,8 @@ jobs:
           node --test poc/tests/skill_subphase10_cohort_review.test.cjs
           node --check poc/tools/skill_halfphase_two_axis_review.cjs
           node --test poc/tests/skill_halfphase_two_axis_review.test.cjs
+          node --check poc/tools/p2_g3g4_skill_window_decisions.cjs
+          node --test poc/tests/p2_g3g4_skill_window_decisions.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -174,12 +178,45 @@ jobs:
           console.log(JSON.stringify({source:x.source,summary:x.summary},null,2));
           console.log('P2.28_TWO_AXIS_REPORT_SUMMARY_END');
           NODE
+      - name: Connect fixed P2.28 W/D to original 881-skill G3/G4 decisions, without extra simulation
+        run: |
+          node poc/tools/p2_g3g4_skill_window_decisions.cjs \
+            p2-skill-coarse-four-style-review.json \
+            /tmp/p2-subphase/two-axis75.json \
+            /tmp/p2-subphase/p2-g3g4-881-skill-decision-review.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p2-g3g4-881-skill-decision-review.json','utf8'));
+          assert.equal(x.summary.appSkills,881);
+          assert.equal(x.summary.sourceMatched,818);
+          assert.equal(x.summary.shortWindowSourceCandidates,75);
+          assert.equal(x.summary.conditionalModelEvidenceSkills,69);
+          assert.equal(x.summary.heldGroundQualifierSkills,6);
+          assert.equal(x.summary.otherSkillsWithoutNewShortWindowEvidence,806);
+          assert.equal(x.summary.oneOriginalAllowedStyleSkills,30);
+          assert.equal(x.summary.fourOriginalAllowedStylesSkills,39);
+          assert.equal(x.summary.modelComparableWPairs,234);
+          assert.equal(x.summary.stableModelWPairs,185);
+          assert.equal(x.summary.heldModelWPairs,49);
+          assert.equal(x.summary.productSkillSuitabilityScores,0);
+          assert(x.rows.every(r=>r.eligibleForP3CardScoring===false&&
+           r.cardScore===null&&r.wholeSkillSuitability==='not-established'));
+          const known=x.rows.find(r=>r.sourceNumericId==='202072');
+          assert(known&&known.decision==='conditionally-use-short-window-rank-evidence');
+          const dirt=x.rows.find(r=>r.sourceNumericId==='202951');
+          assert(dirt&&dirt.decision==='hold-turf-model-transfer');
+          console.log('P2_G3G4_VERIFIED_ORIGINAL_SKILL_DECISION_SUMMARY='+JSON.stringify(x.summary));
+          NODE
       - name: Keep P2.28 research-only two-axis evidence with original source cohort
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: p2-28-balanced-short-window-two-axis-75-skills
-          path: /tmp/p2-subphase/two-axis75.json
+          path: |
+            /tmp/p2-subphase/two-axis75.json
+            /tmp/p2-subphase/p2-g3g4-881-skill-decision-review.json
           retention-days: 14
           if-no-files-found: error
       - name: Evaluate original 77 skill IDs and keep OR paths separated
