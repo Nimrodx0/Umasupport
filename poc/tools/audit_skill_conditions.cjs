@@ -23,6 +23,7 @@ const halfFeasibility=require('../src/skill_halfphase_feasibility.cjs');
 const researchTriage=require('../src/skill_condition_research_triage.cjs');
 const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
+const p237Dynamic=require('../src/skill_p2_37_dynamic_state_evidence.cjs');
 const shortExceptions=require('../src/skill_p2_35_short_window_exception_decisions.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
@@ -56,14 +57,18 @@ function matchedRecord(skill,live,old){
 }
 (async()=>{
  const [skillText,supportText,pinnedText,umaCourseText,
-  globalCourseText,umaSkillCheckerText]=await Promise.all([
+  globalCourseText,umaSkillCheckerText,umaSkillDataText,umaRaceCalcText]=await Promise.all([
   get(BASE+'skill_data.txt'),get(BASE+'support_card.txt'),get(bridge.PINNED_URL),
   get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
    '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data/rawData.kt'),
   get('https://raw.githubusercontent.com/daftuyda/GlobalSim/'+
    '80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1/data/course_data.json'),
   get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
-   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt')]);
+   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt'),
+  get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
+   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/data2/SkillData.kt'),
+  get('https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+
+   '/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/RaceCalculator.kt')]);
  const raw=JSON.parse(skillText.replace(/^\uFEFF/,''));
  const pinnedRaw=JSON.parse(pinnedText.replace(/^\uFEFF/,''));
  const source=bridge.parseSource(skillText),old=bridge.parseSource(pinnedText);
@@ -161,6 +166,14 @@ function matchedRecord(skill,live,old){
     p235.summary.distinctRankIntersectionMechanisms!==1||
     p235.summary.productSuitabilityScores!==0)
   throw Error('P2.35 fixed 12 source exceptions or no-score boundary drift');
+ const p237=p237Dynamic.audit(model,p232Queue,{
+  revision:REVISION,checker:umaSkillCheckerText,
+  skillData:umaSkillDataText,calculator:umaRaceCalcText
+ });
+ if(p237.summary.productSkillSuitabilityScores!==0||
+    p237.summary.originalFullSourceANDProven!==0||
+    !p237.summary.noSourceApproximationsUsedAsRealStyleEvidence)
+  throw Error('P2.37 dynamic state evidence or no-scoring boundary drift');
  const p232Mechanism=mechanismReuse.audit(model,p232Queue);
  if(p232Mechanism.denominators.sourceRouteFamilies!==
     p232Queue.denominators.originalRouteFamilies||
@@ -457,6 +470,10 @@ function matchedRecord(skill,live,old){
    rank12:x.projectedRanksByFieldSize?.[12]?.sourceConjunctionRankPositions||null
   }))
  }));
+ fs.writeFileSync('p2-37-dynamic-state-source-evidence.json',
+  JSON.stringify({sourceSkillRegistrySHA256:digest(skillText),...p237},null,2)+'\n');
+ console.log('P2_37_PINNED_SOURCE_DYNAMIC_DECISION_SUMMARY='+JSON.stringify(
+  p237.summary.byOriginalPredicate));
  fs.writeFileSync('p2-32-source-route-research-queue.json',
   JSON.stringify({source:{revision:REVISION,
    skillRegistrySha256:digest(skillText),
