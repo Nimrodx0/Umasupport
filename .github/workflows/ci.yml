@@ -465,6 +465,10 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Verify P2 G4 original distance-OR and absolute-rank intersection (synthetic)
+        run: |
+          node --check poc/src/skill_p2_35_short_window_exception_decisions.cjs
+          node --test poc/tests/skill_p2_35_short_window_exception_decisions.test.cjs
       - name: Verify P2 G3/G4 short-window evidence decisions remain source-joined and never scored
         run: |
           node --check poc/tools/p2_g3g4_skill_window_decisions.cjs
