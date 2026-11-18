@@ -25,7 +25,7 @@ const range=(cs,f)=>({min:round(Math.min(...cs.map(x=>x[f]))),
  max:round(Math.max(...cs.map(x=>x[f])))});
 function validateNarrow(extra){
  fail(extra?.status===narrow.STATUS&&extra.schemaVersion===1&&
-  extra.originalModelRaces===720&&extra.sourceModelRevision===expanded.PIN&&
+  extra.originalModelRaces===720&&extra.sourceModelRevision===require('./globalsim_position_pilot.cjs').PIN&&
   JSON.stringify(extra.sourceRankPredicates)===JSON.stringify([
    {type:'order',operator:'>=',value:2},
    {type:'order_rate',operator:'<=',value:50}])&&
