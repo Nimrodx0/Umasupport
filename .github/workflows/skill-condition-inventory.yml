@@ -37,6 +37,8 @@ on:
       - 'poc/tests/skill_full_condition_path_audit.test.cjs'
       - 'docs/plans/skill-conditions/p2.md'
       - 'poc/src/skill_halfphase_feasibility.cjs'
+      - 'poc/src/skill_p2_35_short_window_exception_decisions.cjs'
+      - 'poc/tests/skill_p2_35_short_window_exception_decisions.test.cjs'
       - 'poc/tests/skill_halfphase_feasibility.test.cjs'
       - 'poc/tests/skill_coarse_style_review.test.cjs'
       - 'poc/src/skill_change_order_source_paths.cjs'
@@ -95,6 +97,8 @@ jobs:
           node --test poc/tests/skill_p2_15_rank_random_same_and_handoff.test.cjs
           node --check poc/src/skill_p2_15_registered_cohort_join.cjs
           node --test poc/tests/skill_p2_15_registered_cohort_join.test.cjs
+          node --check poc/src/skill_p2_35_short_window_exception_decisions.cjs
+          node --test poc/tests/skill_p2_35_short_window_exception_decisions.test.cjs
           node --check poc/src/skill_coarse_style_review.cjs
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --check poc/src/skill_source_path_blocker_impact.cjs
@@ -640,6 +644,37 @@ jobs:
               timeTypes:x.paths.filter(p=>p.direct).map(p=>p.timeType)}))},null,2));
           console.log('P2_HALF_PHASE_RESEARCH_FEASIBILITY_END');
           NODE
+      - name: Verify P2.35 original 12 short-window OR and rank intersections
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const tool=require('./poc/src/skill_p2_35_short_window_exception_decisions.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-35-short-window-source-logic-decisions.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,tool.STATUS);
+          assert.equal(x.source.sha256,tool.SOURCE_SHA);
+          assert.equal(x.summary.sourceMatchedSkills,818);
+          assert.equal(x.summary.sourceWindowCandidateSkills,87);
+          assert.equal(x.summary.alreadyDirectSourceCandidateSkills,75);
+          assert.equal(x.summary.sourceExceptionSkills,12);
+          assert.equal(x.summary.sourceDistanceExclusiveOR,10);
+          assert.equal(x.summary.originalRankIntersection,2);
+          assert.equal(x.summary.otherHeld,0);
+          assert.equal(x.summary.distinctDistanceORRankTimingMechanisms,5);
+          assert.equal(x.summary.distinctRankIntersectionMechanisms,1);
+          assert.equal(x.summary.productSuitabilityScores,0);
+          const onlyOR=x.rows.filter(r=>r.decision==='source-logic-adopt-distance-exclusive-OR');
+          assert(onlyOR.every(r=>JSON.stringify(r.permittedDistanceTypes)==='[3,4]'&&
+           r.branches.length===2&&r.modelWAndD==='not-calculated-for-this-source-skill'));
+          const narrow=x.rows.filter(r=>r.decision==='source-logic-adopt-intersection-but-hold-original-W-D');
+          assert.deepEqual(narrow.map(r=>r.sourceNumericId).sort(),['200991','200992']);
+          assert(narrow.every(r=>
+           JSON.stringify(r.projectedRanksByFieldSize[9].sourceConjunctionRankPositions)==='[2,3,4,5]'&&
+           JSON.stringify(r.projectedRanksByFieldSize[12].sourceConjunctionRankPositions)==='[2,3,4,5,6]'));
+          assert(x.rows.every(r=>r.eligibleForP3CardScoring===false&&
+           r.wholeSkillSuitability==='not-established'));
+          console.log('P2_35_FIXED_SOURCE_DECISION_SUMMARY='+JSON.stringify(x.summary));
+          NODE
       - name: Audit AND/precondition-OR blocker types and exact singleton opportunities
         run: |
           node - <<'NODE'
@@ -781,6 +816,13 @@ jobs:
         with:
           name: p2-15-track-id-fixed-source-venue-audit
           path: p2-15-track-venue-context.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload P2.35 exact-original-source short-window exception decisions (not ratings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-35-source-logic-distance-or-rank-intersection
+          path: p2-35-short-window-source-logic-decisions.json
           retention-days: 14
           if-no-files-found: error
       - name: Keep only derived feasibility data for choosing next P2 research
