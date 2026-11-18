@@ -10,6 +10,8 @@ on:
       - 'poc/tests/skill_condition_spec_omission.test.cjs'
       - 'poc/src/skill_p2_32_research_queue.cjs'
       - 'poc/src/skill_p2_37_dynamic_state_evidence.cjs'
+      - 'poc/src/skill_p2_38_original_spurt_phase_same_and.cjs'
+      - 'poc/tests/skill_p2_38_original_spurt_phase_same_and.test.cjs'
       - 'poc/tests/skill_p2_37_dynamic_state_evidence.test.cjs'
       - 'poc/tests/skill_p2_32_research_queue.test.cjs'
       - 'poc/src/skill_p2_15_mechanism_evidence.cjs'
@@ -89,6 +91,8 @@ jobs:
           node --check poc/src/skill_p2_32_research_queue.cjs
           node --check poc/src/skill_p2_37_dynamic_state_evidence.cjs
           node --test poc/tests/skill_p2_37_dynamic_state_evidence.test.cjs
+          node --check poc/src/skill_p2_38_original_spurt_phase_same_and.cjs
+          node --test poc/tests/skill_p2_38_original_spurt_phase_same_and.test.cjs
           node --test poc/tests/skill_p2_32_research_queue.test.cjs
           node --check poc/src/skill_p2_15_mechanism_evidence.cjs
           node --check poc/src/skill_p2_32_mechanism_reuse.cjs
@@ -224,6 +228,32 @@ jobs:
             o.classification!=='conditional-axis-omission-candidate'||
             o.type==='motivation')));
           console.log('P2_32_SPEC_AUDIT='+JSON.stringify(x.denominators));
+          NODE
+      - name: Verify P2.38 two original source spurt and phase random AND routes
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const study=require('./poc/src/skill_p2_38_original_spurt_phase_same_and.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-38-original-source-spurt-phase-and.json','utf8'));
+          assert.equal(x.status,study.STATUS);
+          assert.equal(x.schemaVersion,1);
+          assert.deepEqual(x.rows.map(r=>r.sourceNumericId),['200511','200512']);
+          assert.equal(x.summary.skills,2);
+          assert.equal(x.summary.distinctCurrentAndMechanisms,1);
+          assert.equal(x.summary.originalSkillRaceFullANDTrueObservations,0);
+          assert.equal(x.summary.approvedSkillOrCardSuitabilityScores,0);
+          assert(x.rows.every(r=>r.originalANDStructureVerified&&
+           r.sourceANDPredicates.length===2&&
+           r.sourceANDPredicates.some(v=>v.type==='is_lastspurt'&&
+            v.operator==='=='&&v.value===1)&&
+           r.sourceANDPredicates.some(v=>v.type==='phase_firsthalf_random'&&
+            v.operator==='=='&&v.value===r.sourcePhase)&&
+           r.originalDynamicSpurtIncidenceMeasured===0&&
+           r.productSkillOrCardScore===null));
+          console.log('P2_38_SOURCE_EXACT_AND='+JSON.stringify(x.rows.map(r=>({
+           sourceId:r.sourceNumericId,name:r.skillName,
+           originalAND:r.sourceANDPredicates,sourceWindow:r.sourceWindow
+          }))));
           NODE
       - name: Validate P2.37 real source approximation boundary and computed-spurt cohort
         run: |
@@ -546,6 +576,13 @@ jobs:
         with:
           name: p2-32-mechanism-family-reuse-not-skill-suitability
           path: p2-32-mechanism-reuse-families.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload P2.38 source exact registered spurt/halfphase AND (not skill rate)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-38-original-spurt-halfphase-route-trace-not-rate
+          path: p2-38-original-source-spurt-phase-and.json
           retention-days: 14
           if-no-files-found: error
       - name: Upload P2.37 fixed original source dynamic-condition decisions (no ratings)
