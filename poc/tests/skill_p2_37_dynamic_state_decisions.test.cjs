@@ -59,6 +59,8 @@ test('classifies 3 original dynamic mechanisms without W/D or P3 scoring',()=>{
  assert.equal(x.summary.byType.is_overtake.sameCurrentANDRankFamilies,1);
  assert.equal(x.summary.byType.is_overtake.sameCurrentANDTimeFamilies,1);
  assert.equal(x.summary.byType.change_order_onetime.sameCurrentANDRankFamilies,0);
+ assert.deepEqual(x.nextRepresentativeRoutes.map(x=>x.type),review.TYPES);
+ assert.equal(new Set(x.nextRepresentativeRoutes.map(x=>x.sourceNumericId)).size,3);
  assert.equal(x.summary.productSuitableScores,0);
  assert.equal(x.summary.actualAppliedEventOmissions,0);
  assert(x.rows.every(r=>r.modelPartialRankWAndDUsableAsWholeRoute===false&&
