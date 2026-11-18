@@ -465,6 +465,11 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Verify P2.36 exact same-replay narrow-rank and 12 source-skill model W/D (synthetic)
+        run: |
+          node --check poc/tools/skill_p2_36_narrow_rank_observer.cjs
+          node --check poc/tools/skill_p2_36_remaining_wd.cjs
+          node --test poc/tests/skill_p2_36_narrow_rank_observer.test.cjs poc/tests/skill_p2_36_remaining_wd.test.cjs
       - name: Verify P2 G4 original distance-OR and absolute-rank intersection (synthetic)
         run: |
           node --check poc/src/skill_p2_35_short_window_exception_decisions.cjs

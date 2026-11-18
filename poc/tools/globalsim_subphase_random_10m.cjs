@@ -14,6 +14,7 @@ const expanded=require('./globalsim_position_expanded.cjs');
 const pilot=require('./globalsim_position_pilot.cjs');
 const bands=require('./globalsim_rank_band_dominance.cjs').BANDS;
 const bounds=require('../src/skill_order_rate_bounds.cjs');
+const narrow=require('./skill_p2_36_narrow_rank_observer.cjs');
 const STYLES=expanded.STYLES;
 const round=n=>Number(n.toFixed(6));
 const exactWindow=(type,phase)=>{
@@ -73,7 +74,7 @@ function collect(){
  };
  return {groups,append};
 }
-function inspectRace(plan,frames,aggregation){
+function inspectRace(plan,frames,aggregation,{narrowObserver=null}={}){
  pilot.checkFrames(frames,plan.fieldSize);
  for(let runner=0;runner<plan.fieldSize;runner++)
   for(const window of WINDOWS){
@@ -105,6 +106,8 @@ function inspectRace(plan,frames,aggregation){
        band:band.id,original:direct,new:measure.pointOccupancy}));
     aggregation.append(plan,window,band,plan.strategies[runner],measure);
    }
+   if(narrowObserver)narrowObserver(plan,window,fragments.segments,
+    independent,plan.strategies[runner]);
   }
 }
 function report(aggregation,seedsPerCell=30){
@@ -192,7 +195,7 @@ function splitReport(aggregation,seedsPerCell=30){
    'Same original four source short windows, frozen model seed identities and 11 rank bands.',
    'No source skill activation, scenario weights, production UI, effect utility or suitability grade.']};
 }
-async function execute(template,engine,{seedsPerCell=30}={}){
+async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}={}){
  if(!Number.isSafeInteger(seedsPerCell)||seedsPerCell<2||
   seedsPerCell>30||seedsPerCell%2)
   throw Error('Even seeds 2..30 required');
@@ -200,6 +203,7 @@ async function execute(template,engine,{seedsPerCell=30}={}){
   .filter(p=>p.scenario==='balanced');
  if(plans.length!==24*seedsPerCell)throw Error('Missing fixed race plan');
  const sub=collect(),full=old.collect();
+ const extra=narrowMeasurement?narrow.collect():null;
  const child=spawn(engine,[],{stdio:['pipe','pipe','pipe']});
  let stderr='';
  child.stderr.setEncoding('utf8');
@@ -223,7 +227,7 @@ async function execute(template,engine,{seedsPerCell=30}={}){
    if(reply.error||reply.seed!==undefined&&reply.seed!==p.seed)
     throw Error('Mismatched GlobalSim reply at '+count);
    old.inspectRace(p,reply.frames,full);
-   inspectRace(p,reply.frames,sub);
+   inspectRace(p,reply.frames,sub,{narrowObserver:extra?.observe});
    count++;
   }
   await write;
@@ -235,19 +239,24 @@ async function execute(template,engine,{seedsPerCell=30}={}){
    exit,expected:plans.length,count,stderr}));
  return {full:old.report(full,{seedsPerCell}),
   short:report(sub,seedsPerCell),
-  split:seedsPerCell===30?splitReport(sub,seedsPerCell):null};
+  split:seedsPerCell===30?splitReport(sub,seedsPerCell):null,
+  narrow:extra?extra.report():null};
 }
-async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput]){
+async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput,narrowOutput]){
  if(!templatePath||!engine||!fullOutput||!shortOutput)
   throw Error('Usage: globalsim_subphase_random_10m.cjs original.jsonl engine full-phase.json short-windows.json [seeds]');
  const text=fs.readFileSync(templatePath,'utf8').trim().split(/\r?\n/);
  if(text.length!==1)throw Error('Requires exactly one frozen GlobalSim template');
- const {full,short,split}=await execute(JSON.parse(text[0]),engine,
-  {seedsPerCell:Number(seeds||30)});
+ const {full,short,split,narrow:extra}=await execute(JSON.parse(text[0]),engine,
+  {seedsPerCell:Number(seeds||30),narrowMeasurement:Boolean(narrowOutput)});
  fs.writeFileSync(fullOutput,JSON.stringify(full,null,2)+'\n');
  fs.writeFileSync(shortOutput,JSON.stringify(short,null,2)+'\n');
  if(splitOutput){if(!split)throw Error('Fixed 30 source seeds required for split');
   fs.writeFileSync(splitOutput,JSON.stringify(split,null,2)+'\n')}
+ if(narrowOutput){
+  if(!extra)throw Error('P2.36 narrow observer missing');
+  fs.writeFileSync(narrowOutput,JSON.stringify(extra,null,2)+'\n');
+ }
  console.log(JSON.stringify({races:short.simulations,windows:short.windows,
   windowBands:short.windowBands,perContextRows:short.perContextRows,
   sample:short.byWindowBand.filter(x=>
