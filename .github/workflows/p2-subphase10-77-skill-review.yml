@@ -127,7 +127,6 @@ jobs:
           node poc/tools/skill_halfphase_two_axis_review.cjs \
             /tmp/p2-subphase/short-phase.json \
             /tmp/p2-subphase/split15.json \
-            /tmp/p2-subphase/narrow-order-rank.json \
             p2-halfphase-feasibility.json \
             /tmp/p2-subphase/two-axis75.json \
             > /tmp/p2-subphase/two-axis75.log
