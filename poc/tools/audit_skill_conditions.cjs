@@ -447,7 +447,7 @@ function matchedRecord(skill,live,old){
  }));
  fs.writeFileSync('p2-35-short-window-source-logic-decisions.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},
-   ...p235},null,2)+'\\n');
+   ...p235},null,2)+'\n');
  console.log('P2_35_SOURCE_LOGIC_DECISIONS='+JSON.stringify({
   summary:p235.summary,
   rows:p235.rows.map(x=>({
