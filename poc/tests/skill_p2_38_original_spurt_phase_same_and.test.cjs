@@ -17,7 +17,7 @@ function input(){
   }
   const conditions=k<2?[
    {type:'is_lastspurt',operator:'==',value:1},
-   {type:'phase_firsthalf_random',operator:'==',value:2}]:[];
+   {type:'phase_firsthalf_random',operator:'==',value:3}]:[];
   skills.push({id:skillId,name:k===1?'末脚':'source '+k,
    activationProfile:{status:'source-structure',sourceNumericId:id,
     invokes:[{index:1,conditions:[conditions],preConditions:[]}]}});
@@ -47,7 +47,7 @@ test('two exact source routes share same original AND, output source-defined win
  assert.equal(out.summary.skills,2);
  assert.equal(out.summary.distinctCurrentAndMechanisms,1);
  assert.equal(out.summary.originalSkillRaceFullANDTrueObservations,0);
- assert.equal(out.rows[0].sourcePhase,2);
+ assert.equal(out.rows[0].sourcePhase,3);
  assert.equal(out.rows[1].sourceNumericId,'200512');
  assert.equal(out.rows[1].skillName,'末脚');
  assert(out.rows.every(z=>z.sourceANDPredicates.length===2&&
@@ -58,7 +58,7 @@ test('two exact source routes share same original AND, output source-defined win
 });
 test('different original phase values, extra AND, OR or precondition are not silently reusable',()=>{
  const a=input();
- a.model.skills[1].activationProfile.invokes[0].conditions[0][1].value=3;
+ a.model.skills[1].activationProfile.invokes[0].conditions[0][1].value=2;
  assert.throws(()=>run(a),/do not share the same exact source AND/);
  const x=input();x.model.skills[0].activationProfile.invokes[0]
   .conditions[0].push({type:'order_rate',operator:'<=',value:50});
