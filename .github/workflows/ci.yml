@@ -470,6 +470,10 @@ jobs:
           node --check poc/tools/skill_p2_36_narrow_rank_observer.cjs
           node --check poc/tools/skill_p2_36_remaining_wd.cjs
           node --test poc/tests/skill_p2_36_narrow_rank_observer.test.cjs poc/tests/skill_p2_36_remaining_wd.test.cjs
+      - name: Verify P2.37 original dynamic conditions and conservative no-score decisions (synthetic)
+        run: |
+          node --check poc/src/skill_p2_37_dynamic_state_decisions.cjs
+          node --test poc/tests/skill_p2_37_dynamic_state_decisions.test.cjs
       - name: Verify P2 G4 original distance-OR and absolute-rank intersection (synthetic)
         run: |
           node --check poc/src/skill_p2_35_short_window_exception_decisions.cjs
