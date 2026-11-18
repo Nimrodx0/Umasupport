@@ -44,7 +44,7 @@ class P238OriginalRegisteredSpurtPhaseAndTest {
             assertEquals("==", spurt.operator)
             assertEquals(1, spurt.value)
             assertEquals("==", window.operator)
-            assertTrue(window.value in 0..3)
+            assertEquals(3, window.value, "Pinned source original halfphase changed")
             Triple(skill, window.value, and.map { Triple(it.type, it.operator, it.value) })
         }
         assertEquals(cohort[0].third.sortedBy { it.first },
