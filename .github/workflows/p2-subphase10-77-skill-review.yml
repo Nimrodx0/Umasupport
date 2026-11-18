@@ -238,6 +238,9 @@ jobs:
           assert.equal(x.summary.originalDistanceScopedBranches,22);
           assert.equal(x.summary.distinctOriginalModeledProfiles,11);
           assert.equal(x.summary.modelComparableStylePairs,132);
+          assert.equal(x.summary.modelStableWPairs,102);
+          assert.equal(x.summary.heldWPairs,30);
+          assert.equal(x.summary.modelStableDPairs,102);
           assert.equal(x.summary.modelStableWPairs+x.summary.heldWPairs,132);
           assert.equal(x.summary.eligibleForP3CardScores,0);
           assert(x.rows.every(r=>r.productSkillScore===null&&
