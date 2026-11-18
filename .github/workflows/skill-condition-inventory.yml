@@ -240,6 +240,7 @@ jobs:
           assert.deepEqual(x.rows.map(r=>r.sourceNumericId),['200511','200512']);
           assert.equal(x.summary.skills,2);
           assert.equal(x.summary.distinctCurrentAndMechanisms,1);
+          assert(x.rows.every(r=>r.sourcePhase===3));
           assert.equal(x.summary.originalSkillRaceFullANDTrueObservations,0);
           assert.equal(x.summary.approvedSkillOrCardSuitabilityScores,0);
           assert(x.rows.every(r=>r.originalANDStructureVerified&&
