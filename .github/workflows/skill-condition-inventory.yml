@@ -9,6 +9,8 @@ on:
       - 'poc/src/skill_condition_spec_omission.cjs'
       - 'poc/tests/skill_condition_spec_omission.test.cjs'
       - 'poc/src/skill_p2_32_research_queue.cjs'
+      - 'poc/src/skill_p2_37_dynamic_state_evidence.cjs'
+      - 'poc/tests/skill_p2_37_dynamic_state_evidence.test.cjs'
       - 'poc/tests/skill_p2_32_research_queue.test.cjs'
       - 'poc/src/skill_p2_15_mechanism_evidence.cjs'
       - 'poc/src/skill_p2_32_mechanism_reuse.cjs'
@@ -85,6 +87,8 @@ jobs:
           node --check poc/src/skill_condition_spec_omission.cjs
           node --test poc/tests/skill_condition_spec_omission.test.cjs
           node --check poc/src/skill_p2_32_research_queue.cjs
+          node --check poc/src/skill_p2_37_dynamic_state_evidence.cjs
+          node --test poc/tests/skill_p2_37_dynamic_state_evidence.test.cjs
           node --test poc/tests/skill_p2_32_research_queue.test.cjs
           node --check poc/src/skill_p2_15_mechanism_evidence.cjs
           node --check poc/src/skill_p2_32_mechanism_reuse.cjs
@@ -220,6 +224,34 @@ jobs:
             o.classification!=='conditional-axis-omission-candidate'||
             o.type==='motivation')));
           console.log('P2_32_SPEC_AUDIT='+JSON.stringify(x.denominators));
+          NODE
+      - name: Validate P2.37 real source approximation boundary and computed-spurt cohort
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const e=require('./poc/src/skill_p2_37_dynamic_state_evidence.cjs');
+          const x=JSON.parse(fs.readFileSync('p2-37-dynamic-state-source-evidence.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,e.STATUS);
+          assert.equal(x.source.revision,e.PIN);
+          assert.equal(x.source.mechanismSourceVerified,true);
+          const C=x.summary.byOriginalPredicate;
+          for(const [t,n,m] of [
+           ['change_order_onetime',30,30],
+           ['is_overtake',21,27],
+           ['is_lastspurt',55,61]
+          ]){
+           assert.equal(C[t].sourceSkills,n);
+           assert.equal(C[t].originalRouteFamilies,m);
+           assert.equal(x.rows[t].length,m);
+          }
+          assert.equal(x.summary.productSkillSuitabilityScores,0);
+          assert.equal(x.summary.originalFullSourceANDProven,0);
+          assert.equal(x.summary.selectedNewRealGameMeasurements,0);
+          assert(x.rows.change_order_onetime.every(p=>p.probabilityOrScore===null));
+          assert(x.rows.is_overtake.every(p=>p.probabilityOrScore===null));
+          assert(x.rows.is_lastspurt.every(p=>p.wholeSkillSuitability==='not-established'));
+          console.log('P2_37_FIXED_SOURCE_DYNAMIC_MECHANISMS='+JSON.stringify(C));
           NODE
       - name: Validate P2.32 source-route research queue and no-rating boundary
         run: |
@@ -514,6 +546,13 @@ jobs:
         with:
           name: p2-32-mechanism-family-reuse-not-skill-suitability
           path: p2-32-mechanism-reuse-families.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Upload P2.37 fixed original source dynamic-condition decisions (no ratings)
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-37-source-approx-vs-spurt-conditional-decisions
+          path: p2-37-dynamic-state-source-evidence.json
           retention-days: 14
           if-no-files-found: error
       - name: Upload P2.32 route-specific research queue (not full skill ratings)
