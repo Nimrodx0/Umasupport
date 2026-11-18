@@ -144,18 +144,31 @@ function audit(model,queue,checker,skillData){
    ...verdict[t]
   }];
  }));
- const sampled=rows.filter(x=>x.finiteCompatibleStyles.length>=2)
-  .sort((a,b)=>Number(b.rankPredicateInSameCurrentAND&&
-    b.timePredicateInSameCurrentAND)-
-   Number(a.rankPredicateInSameCurrentAND&&a.timePredicateInSameCurrentAND)||
-   Number(b.rankPredicateInSameCurrentAND)-
-   Number(a.rankPredicateInSameCurrentAND)||
-   a.sourceNumericId.localeCompare(b.sourceNumericId,undefined,{numeric:true}))
-  .slice(0,6).map(x=>({sourceNumericId:x.sourceNumericId,
+ const usedRepresentativeSkills=new Set();
+ const sampled=TYPES.map(type=>{
+  const c=rows.filter(x=>x.predicateTypes.includes(type)&&
+   x.finiteCompatibleStyles.length>=2&&
+   !usedRepresentativeSkills.has(x.sourceNumericId))
+   .sort((a,b)=>
+    Number(b.rankPredicateInSameCurrentAND&&b.timePredicateInSameCurrentAND)-
+     Number(a.rankPredicateInSameCurrentAND&&a.timePredicateInSameCurrentAND)||
+    Number(b.rankPredicateInSameCurrentAND)-
+     Number(a.rankPredicateInSameCurrentAND)||
+    Number(b.timePredicateInSameCurrentAND)-
+     Number(a.timePredicateInSameCurrentAND)||
+    Number(a.otherInvokeOrORAlternatives)-
+     Number(b.otherInvokeOrORAlternatives)||
+    b.finiteCompatibleStyles.length-a.finiteCompatibleStyles.length||
+    a.sourceNumericId.localeCompare(b.sourceNumericId,undefined,{numeric:true}));
+  const x=c[0];
+  if(!x)return null;
+  usedRepresentativeSkills.add(x.sourceNumericId);
+  return {type,sourceNumericId:x.sourceNumericId,
    ...x.sourceRoute,predicateTypes:x.predicateTypes,
    rankSameAND:x.rankPredicateInSameCurrentAND,
    timeSameAND:x.timePredicateInSameCurrentAND,
-   otherAlternatives:x.otherInvokeOrORAlternatives}));
+   otherAlternatives:x.otherInvokeOrORAlternatives};
+ }).filter(Boolean);
  if(JSON.stringify(model)!==before)
   throw Error('P2.37 mutated source model');
  return {
