@@ -128,5 +128,5 @@ test('missing pinned or split observations fail closed, no false zero',()=>{
  const x=fixture();x.short.contextRows.pop();
  assert.throws(()=>run(x),/Not the pinned balanced 720-race model report/);
  const y=fixture();y.extra.contextRows[0].first15.O+=3;
- assert.throws(()=>run(y),/split mismatch/);
+ assert.throws(()=>run(y),/invalid narrow rank W\/O\/D or seed split/);
 });
