@@ -236,6 +236,21 @@ jobs:
           assert.equal(x.summary.appSkills,881);
           assert.equal(x.summary.sourceMatchedSkills,818);
           assert.equal(x.summary.totalOriginalRouteFamilies,970);
+          assert.equal(x.summary.targetedSourceRouteFamilies,115);
+          assert.equal(x.summary.distinctTargetedSkills,103);
+          for(const [type,expected] of Object.entries({
+           is_overtake:[21,27,13,8],
+           change_order_onetime:[30,30,18,0],
+           is_lastspurt:[55,61,42,6]
+          })){
+           const v=x.summary.byType[type];
+           assert.deepEqual([
+            v.originalSourceSkills,v.originalRouteFamilies,
+            v.multistyleRouteFamilies,v.sameCurrentANDRankFamilies
+           ],expected);
+          }
+          assert.deepEqual(x.nextRepresentativeRoutes.map(r=>r.type),evidence.TYPES);
+          assert.equal(new Set(x.nextRepresentativeRoutes.map(r=>r.sourceNumericId)).size,3);
           assert.equal(x.summary.productSuitableScores,0);
           assert.equal(x.summary.actualAppliedEventOmissions,0);
           assert(x.rows.every(r=>r.modelPartialRankWAndDUsableAsWholeRoute===false&&
