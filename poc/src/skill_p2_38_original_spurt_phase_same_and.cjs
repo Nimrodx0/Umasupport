@@ -57,7 +57,7 @@ function audit(model,queue,p237Evidence){
    time=cond.filter(c=>c.type==='phase_firsthalf_random');
   fail(sp.length===1&&time.length===1&&sp[0].operator==='=='&&
    sp[0].value===1&&time[0].operator==='=='&&
-   Number.isSafeInteger(time[0].value),
+   time[0].value===3,
    'original AND source predicate meaning mismatch: '+id);
   const window=timing.timing(time[0]);
   fail(window?.status==='source-defined'&&
