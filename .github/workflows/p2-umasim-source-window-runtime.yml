@@ -166,7 +166,7 @@ jobs:
           assert.deepEqual(x.sourceSkillIds,['200511','200512']);
           assert.equal(x.originalSkillCount,2);
           assert.equal(x.originalANDConditionCountPerSkill,2);
-          assert(Number.isInteger(x.originalSourcePhase)&&x.originalSourcePhase>=0&&x.originalSourcePhase<=3);
+          assert.equal(x.originalSourcePhase,3);
           assert.equal(x.originalSourceCheckerTruthTableTrials,12);
           assert.equal(x.originalSourceCheckerCalls,60);
           assert.equal(x.originalRaceCalculatorUsed,false);
