@@ -6,6 +6,10 @@ on:
     paths:
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
       - 'poc/tools/skill_halfphase_two_axis_review.cjs'
+      - 'poc/tools/skill_p2_36_narrow_rank_observer.cjs'
+      - 'poc/tools/skill_p2_36_remaining_wd.cjs'
+      - 'poc/tests/skill_p2_36_narrow_rank_observer.test.cjs'
+      - 'poc/tests/skill_p2_36_remaining_wd.test.cjs'
       - 'poc/tools/p2_g3g4_skill_window_decisions.cjs'
       - 'poc/tests/p2_g3g4_skill_window_decisions.test.cjs'
       - 'poc/tests/skill_halfphase_two_axis_review.test.cjs'
@@ -33,6 +37,10 @@ jobs:
           node --test poc/tests/skill_subphase10_cohort_review.test.cjs
           node --check poc/tools/skill_halfphase_two_axis_review.cjs
           node --test poc/tests/skill_halfphase_two_axis_review.test.cjs
+          node --check poc/tools/skill_p2_36_narrow_rank_observer.cjs
+          node --test poc/tests/skill_p2_36_narrow_rank_observer.test.cjs
+          node --check poc/tools/skill_p2_36_remaining_wd.cjs
+          node --test poc/tests/skill_p2_36_remaining_wd.test.cjs
           node --check poc/tools/p2_g3g4_skill_window_decisions.cjs
           node --test poc/tests/p2_g3g4_skill_window_decisions.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
@@ -85,6 +93,7 @@ jobs:
             /tmp/p2-subphase/full-phase-reference.json \
             /tmp/p2-subphase/short-phase.json 30 \
             /tmp/p2-subphase/split15.json \
+            /tmp/p2-subphase/narrow-order-rank.json \
             > /tmp/p2-subphase/replay.log
       - name: Verify previous published FULL phase 720 race report unchanged by paired replay
         run: |
@@ -118,6 +127,7 @@ jobs:
           node poc/tools/skill_halfphase_two_axis_review.cjs \
             /tmp/p2-subphase/short-phase.json \
             /tmp/p2-subphase/split15.json \
+            /tmp/p2-subphase/narrow-order-rank.json \
             p2-halfphase-feasibility.json \
             /tmp/p2-subphase/two-axis75.json \
             > /tmp/p2-subphase/two-axis75.log
@@ -209,6 +219,54 @@ jobs:
           assert(dirt&&dirt.decision==='hold-turf-model-transfer');
           console.log('P2_G3G4_VERIFIED_ORIGINAL_SKILL_DECISION_SUMMARY='+JSON.stringify(x.summary));
           NODE
+      - name: P2.36 evaluate 10 exact distance OR and 2 narrow original-rank source skills from SAME fixed model
+        run: |
+          node poc/tools/skill_p2_36_remaining_wd.cjs \
+            /tmp/p2-subphase/short-phase.json \
+            /tmp/p2-subphase/split15.json \
+            p2-halfphase-feasibility.json \
+            p2-35-short-window-source-logic-decisions.json \
+            /tmp/p2-subphase/narrow-order-rank.json \
+            /tmp/p2-subphase/remaining12-wd.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/p2-subphase/remaining12-wd.json'));
+          assert.equal(x.schemaVersion,1);
+          assert.equal(x.status,require('./poc/tools/skill_p2_36_remaining_wd.cjs').STATUS);
+          assert.equal(x.summary.originalExceptionSkills,12);
+          assert.equal(x.summary.distanceORSpecialists,10);
+          assert.equal(x.summary.narrowedRankSkills,2);
+          assert.equal(x.summary.originalDistanceScopedBranches,22);
+          assert.equal(x.summary.distinctOriginalModeledProfiles,11);
+          assert.equal(x.summary.modelComparableStylePairs,132);
+          assert.equal(x.summary.modelStableWPairs+x.summary.heldWPairs,132);
+          assert.equal(x.summary.eligibleForP3CardScores,0);
+          assert(x.rows.every(r=>r.productSkillScore===null&&
+           r.wholeSkillSuitability==='not-established'));
+          assert(x.rows.filter(r=>r.branchAnalyses.length===2).length===10);
+          assert(x.rows.filter(r=>r.branchAnalyses.length===1).length===2);
+          assert(x.rows.flatMap(r=>r.branchAnalyses).every(b=>
+           b.productSkillScore===null&&b.modelOnly===true));
+          console.log('P2_36_FIXED_SOURCE_TWO_AXIS_SUMMARY='+JSON.stringify(x.summary));
+          console.log('P2_36_EXAMPLE_PROFILES='+JSON.stringify(x.rows.filter((r,i)=>
+           [0,10].includes(i)).map(r=>({name:r.skillName,branches:r.branchAnalyses.map(b=>({
+            distance:b.distanceType,window:b.windowKey,band:b.bandId,
+            courses:b.modelCourses,
+            W:Object.fromEntries(Object.entries(b.styles).map(([k,v])=>[k,v.WPercent])),
+            stablePairs:b.pairs.filter(p=>
+             p.modelWDirection.direction!==null).map(p=>[p.first,p.second,p.modelWDirection.direction])
+           }))}))));
+          NODE
+      - name: Keep P2.36 original source skill-specific W/D and restricted band, research only
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-36-source-12-exception-model-w-d-not-skill-proc
+          path: |
+            /tmp/p2-subphase/remaining12-wd.json
+            /tmp/p2-subphase/narrow-order-rank.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Keep P2.28 research-only two-axis evidence with original source cohort
         if: success()
         uses: actions/upload-artifact@v4
