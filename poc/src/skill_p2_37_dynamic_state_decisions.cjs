@@ -8,7 +8,7 @@ const reuse=require('./skill_p2_32_mechanism_reuse.cjs');
 const queueModule=require('./skill_p2_32_research_queue.cjs');
 const STATUS='P2.37-original-dynamic-state-mechanism-adoption-and-holds-not-skill-rates';
 const TYPES=['is_overtake','change_order_onetime','is_lastspurt'];
-const rankTypes=new Set(['order','order_rate','change_order_onetime']);
+const rankTypes=new Set(['order','order_rate']);
 const timeTypes=new Set(['phase','phase_firsthalf','phase_laterhalf',
  'phase_random','phase_firsthalf_random','phase_laterhalf_random',
  'distance_rate','remain_distance','accumulatetime','furlong']);
