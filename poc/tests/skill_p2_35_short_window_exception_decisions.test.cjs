@@ -24,7 +24,7 @@ function fixture(){
    c('order','>=',2),c('order_rate','<=',50)]
  };
  const family=(p,num)=>({
-  invokeIndex:p.invokeIndex,invokeOffset:0,conditionOrIndex:p.orIndex,
+  invokeIndex:1,invokeOffset:p.invokeIndex,conditionOrIndex:p.orIndex,
   preconditionOrIndex:null,conditionOrCount:num,preconditionOrCount:0,
   hasOtherInvokes:false,finiteCompatibleStyles:style
  });
