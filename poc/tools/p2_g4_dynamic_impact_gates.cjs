@@ -260,7 +260,7 @@ function audit(ledger,queue,dynamic){
   ]};
 }
 if(require.main===module)try{
- fail(process.argv.length===5,
+ fail(process.argv.length===6,
   'usage: p2_g4_dynamic_impact_gates.cjs p241.json p232.json p237.json output.json');
  const [a,b,c,d]=process.argv.slice(2);
  const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
