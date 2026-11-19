@@ -12,6 +12,8 @@ on:
       - 'poc/tests/skill_p2_36_remaining_wd.test.cjs'
       - 'poc/tools/p2_g3g4_skill_window_decisions.cjs'
       - 'poc/tools/p2_g3g4_combined_short_window_881.cjs'
+      - 'poc/tools/p2_g4_dynamic_impact_gates.cjs'
+      - 'poc/tests/p2_g4_dynamic_impact_gates.test.cjs'
       - 'poc/tests/p2_g3g4_combined_short_window_881.test.cjs'
       - 'poc/tests/p2_g3g4_skill_window_decisions.test.cjs'
       - 'poc/tests/skill_halfphase_two_axis_review.test.cjs'
@@ -47,6 +49,8 @@ jobs:
           node --test poc/tests/p2_g3g4_skill_window_decisions.test.cjs
           node --check poc/tools/p2_g3g4_combined_short_window_881.cjs
           node --test poc/tests/p2_g3g4_combined_short_window_881.test.cjs
+          node --check poc/tools/p2_g4_dynamic_impact_gates.cjs
+          node --test poc/tests/p2_g4_dynamic_impact_gates.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -307,6 +311,64 @@ jobs:
           assert(dirt&&dirt.decision==='hold-turf-model-transfer');
           console.log('P2_41_VERIFIED_COMBINED_SKILL_COHORT='+JSON.stringify(s));
           NODE
+      - name: P2.42 screen source-exact G4 dynamic-state predicates and preserve holds
+        run: |
+          node poc/tools/p2_g4_dynamic_impact_gates.cjs \
+            /tmp/p2-subphase/p2-41-combined-881-partial-evidence.json \
+            p2-32-source-route-research-queue.json \
+            p2-37-dynamic-state-source-evidence.json \
+            /tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json','utf8'));
+          const s=x.denominators;
+          assert.equal(x.status,
+           require('./poc/tools/p2_g4_dynamic_impact_gates.cjs').STATUS);
+          assert.equal(s.appSkills,881);
+          assert.equal(s.sourceMatchedSkills,818);
+          assert.equal(s.sourceUnavailableSkills,63);
+          assert.equal(s.allOriginalRouteFamilies,970);
+          assert.equal(s.sourceSkillsWithConditionalP241PartialWD,81);
+          for(const [type,skills,routes] of [
+           ['change_order_onetime',30,30],
+           ['is_overtake',21,27],
+           ['is_lastspurt',55,61]
+          ]){
+           assert.equal(x.perType[type].sourceSkills,skills);
+           assert.equal(x.perType[type].sourceRouteFamilies,routes);
+          }
+          assert.equal(s.dynamicPredicateRouteRows,118);
+          assert.equal(Object.values(x.byDisposition).reduce((a,b)=>a+b,0),118);
+          assert(x.selectedLimitedStudyRoutes.length<=3);
+          assert(x.selectedLimitedStudyRoutes.every(r=>
+           r.type==='is_lastspurt'&&r.candidateForBoundedSameTickStudy&&
+           r.measuredGameOrModelSkillRate===null));
+          assert(x.routeDecisions.every(r=>
+           r.eligibleForP3CardScoring===false&&r.cardScore===null&&
+           r.verifiedFourStyleDirection===null&&!r.fullOriginalSourceANDObserved&&
+           r.measuredGameOrModelSkillRate===null));
+          assert.equal(s.originalFullANDProvenHere,0);
+          assert.equal(s.realGameProcMeasurements,0);
+          assert.equal(s.promotedP3OrP4Ratings,0);
+          console.log('P2_42_VERIFIED_DYNAMICS_G4='+JSON.stringify({
+           denominators:s,byType:x.perType,decisions:x.byDisposition,
+           next:x.selectedLimitedStudyRoutes.map(r=>({
+            id:r.sourceNumericId,type:r.type,
+            originalRoute:[r.invokeIndex,r.conditionOrIndex,r.preconditionOrIndex],
+            additionalUnverifiedTypes:r.originalCurrentANDAdditionalUnknownTypes,
+            compatibleStyles:r.sourceCompatibleStyleNames
+           }))
+          }));
+          NODE
+      - name: Keep P2.42 source-dynamic G4 decisions, not skill/card probability
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-42-original-dynamic-AND-study-gates-no-rating
+          path: /tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Preserve P2.41 combined research-only 881 skill decisions for inspection
         if: success()
         uses: actions/upload-artifact@v4
