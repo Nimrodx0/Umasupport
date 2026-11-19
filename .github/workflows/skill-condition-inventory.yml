@@ -7,6 +7,8 @@ on:
       - 'poc/src/skill_condition_inventory.cjs'
       - 'poc/src/skill_condition_research_triage.cjs'
       - 'poc/src/skill_condition_spec_omission.cjs'
+      - 'poc/src/skill_p2_g1_source_gap_ledger.cjs'
+      - 'poc/tests/skill_p2_g1_source_gap_ledger.test.cjs'
       - 'poc/tests/skill_condition_spec_omission.test.cjs'
       - 'poc/src/skill_p2_32_research_queue.cjs'
       - 'poc/src/skill_p2_37_dynamic_state_evidence.cjs'
@@ -87,6 +89,8 @@ jobs:
           node --check poc/src/skill_condition_inventory.cjs
           node --check poc/src/skill_condition_research_triage.cjs
           node --check poc/src/skill_condition_spec_omission.cjs
+          node --check poc/src/skill_p2_g1_source_gap_ledger.cjs
+          node --test poc/tests/skill_p2_g1_source_gap_ledger.test.cjs
           node --test poc/tests/skill_condition_spec_omission.test.cjs
           node --check poc/src/skill_p2_32_research_queue.cjs
           node --check poc/src/skill_p2_37_dynamic_state_evidence.cjs
@@ -139,6 +143,23 @@ jobs:
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
         run: node poc/tools/audit_skill_conditions.cjs
+      - name: Verify P2 G1 source identity exclusions remain unscored
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const x=JSON.parse(fs.readFileSync('p2-g1-source-gap-ledger.json','utf8'));
+          assert.equal(x.status,'P2-G1-app-source-identity-and-gap-reasons-only');
+          assert.deepEqual(x.denominators,{appSkills:881,
+           sourceStructureMatched:818,matchedWithoutActivationRecord:0,
+           sourceUnavailable:63});
+          assert.equal(x.rows.length,881);
+          assert.equal(Object.values(x.byReason).reduce((a,b)=>a+b,0),881);
+          assert.equal(x.rows.filter(r=>!r.sourceStructureAvailable).length,63);
+          assert(x.rows.every(r=>r.eligibleForP3CardScoring===false&&
+           r.cardScore===null&&!r.originalFullSkillANDProven));
+          assert.equal(x.boundary.publicSuitabilityScores,0);
+          console.log('P2 G1 fixed gap reasons',x.byReason);
+          NODE
       - name: Check fixed-cohort research triage completeness without promoting suitability
         run: |
           node - <<'NODE'
@@ -936,6 +957,13 @@ jobs:
           path: p2-condition-research-triage.json
           retention-days: 14
           if-no-files-found: ignore
+      - name: Upload P2 G1 ID-only source gap reasons for manual review
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-g1-source-gap-ledger-no-rating
+          path: p2-g1-source-gap-ledger.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Upload inventory report without source skill data
         if: always()
         uses: actions/upload-artifact@v4
