@@ -4,6 +4,8 @@ const assert=require('node:assert/strict');
 const study=require('../tools/p2_g3g4_combined_short_window_881.cjs');
 const before=require('../tools/p2_g3g4_skill_window_decisions.cjs');
 const p236=require('../tools/skill_p2_36_remaining_wd.cjs');
+const PILOT_PIN=require('../tools/globalsim_position_pilot.cjs').PIN;
+const SHORT_SHA=require('../tools/skill_halfphase_two_axis_review.cjs').SHORT_SHA;
 const SHA='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5';
 const S=['Nige','Senkou','Sasi','Oikomi'];
 const directions=(held=false)=>held?
@@ -17,7 +19,7 @@ const models=(distanceType,held=false)=>{
   sourceConditionInterpretation:narrow?
    'original-absolute-and-relative-rank-intersection':
    'original-mutually-exclusive-distance-OR-branch',
-  modelCourses:narrow?[10501]:distanceType===3?[10504,10508]:[10509],
+  modelCourses:narrow?[10501]:distanceType===3?[10504,10604]:[10506],
   modelOnly:true,productSkillScore:null,
   styles:Object.fromEntries(S.map(s=>[s,{contexts:2,
    WPercent:{min:10,max:40},OPercent:{min:4,max:35},
@@ -55,8 +57,8 @@ function fixture(){
  });
  const remaining={schemaVersion:1,status:p236.STATUS,
   source:{fixedOriginalSkillSHA256:SHA,
-   original720RaceModelRevision:'pinned-global-model',
-   originalShortReportSHA256:'verified-720-window-sha'},
+   original720RaceModelRevision:PILOT_PIN,
+   originalShortReportSHA256:SHORT_SHA},
   summary:{originalExceptionSkills:2,distanceORSpecialists:1,
    narrowedRankSkills:1,originalDistanceScopedBranches:3,
    modelComparableStylePairs:18,modelStableWPairs:17,heldWPairs:1,
@@ -120,6 +122,9 @@ test('distance OR, original narrow rank and unknown evidence are fail-closed',()
  assert.throws(()=>study.join(a.prior,a.remaining),/OR branches/);
  const b=fixture();b.remaining.rows[1].branchAnalyses[0].distanceType=3;
  assert.throws(()=>study.join(b.prior,b.remaining),/narrow rank or distance-OR/);
+ const invalidCourse=fixture();
+ invalidCourse.remaining.rows[0].branchAnalyses[0].modelCourses=[10506];
+ assert.throws(()=>study.join(invalidCourse.prior,invalidCourse.remaining),/distance scope/);
  const c=fixture();c.remaining.rows[0].branchAnalyses[0].pairs[0].modelWDirection=
   {status:'held-tie-or-context-reversal',direction:'+'};
  assert.throws(()=>study.join(c.prior,c.remaining),/held direction must be null/);
