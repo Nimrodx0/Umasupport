@@ -10,6 +10,11 @@
 const fs=require('node:fs');
 const original=require('./p2_g3g4_skill_window_decisions.cjs');
 const exception=require('./skill_p2_36_remaining_wd.cjs');
+const p228=require('./skill_halfphase_two_axis_review.cjs');
+const expanded=require('./globalsim_position_expanded.cjs');
+const modelPin=require('./globalsim_position_pilot.cjs').PIN;
+const DISTANCE_OF_GROUP={sprint:1,mile:2,'mile-alternate-track':2,
+ middle:3,'middle-alternate-track':3,long:4};
 const STATUS='P2.41-G3G4-source-ID-joined-881-skill-partial-W-D-evidence-not-suitability';
 const STYLES=original.STYLES;
 const SOURCE_SHA='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5';
@@ -31,6 +36,11 @@ function branchView(branch){
   branch.modelCourses.every(Number.isSafeInteger)&&
   branch.modelOnly===true&&branch.productSkillScore===null,
   'source branch eligibility or model-only boundary');
+ const expectedCourses=expanded.COURSES.filter(c=>
+  DISTANCE_OF_GROUP[c.group]===branch.distanceType).map(c=>c.id);
+ fail(expectedCourses.length>0&&
+  JSON.stringify(branch.modelCourses)===JSON.stringify(expectedCourses),
+  'original distance scope or fixed model courses changed');
  fail([
   'original-absolute-and-relative-rank-intersection',
   'original-mutually-exclusive-distance-OR-branch'
@@ -93,8 +103,8 @@ function join(earlier,remaining){
   'P2.34 fixed source and decision cohort not verified');
  fail(remaining?.schemaVersion===1&&remaining.status===exception.STATUS&&
   remaining.source?.fixedOriginalSkillSHA256===SOURCE_SHA&&
-  remaining.source?.original720RaceModelRevision&&
-  remaining.source?.originalShortReportSHA256&&
+  remaining.source?.original720RaceModelRevision===modelPin&&
+  remaining.source?.originalShortReportSHA256===p228.SHORT_SHA&&
   remaining.summary?.originalExceptionSkills===remaining.rows?.length&&
   remaining.summary?.distanceORSpecialists+
    remaining.summary?.narrowedRankSkills===remaining.rows.length&&
