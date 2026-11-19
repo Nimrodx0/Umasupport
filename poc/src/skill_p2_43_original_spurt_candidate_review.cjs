@@ -15,6 +15,13 @@ const TARGETS=Object.freeze([
  {sourceNumericId:'210081',otherType:'phase_random'}
 ]);
 const STATUS='P2.43-exact-three-original-spurt-AND-source-mechanism-inspection-not-proc';
+const EXPECTED_ORIGINAL_AND=Object.freeze({
+ '203431':['distance_type|==|3','is_lastspurt|==|1',
+  'phase_firsthalf_random|==|3'],
+ '204661':['ground_type|==|2','infront_near_lane_time|>=|1',
+  'is_lastspurt|==|1'],
+ '210081':['is_lastspurt|==|1','phase_random|==|3']
+});
 const PIN=p237.PIN;
 const fail=(ok,why)=>{if(!ok)throw Error('P2.43 exact spurt AND: '+why)};
 const same=(x,y)=>JSON.stringify(x)===JSON.stringify(y);
@@ -128,6 +135,8 @@ function audit(model,queue,dynamic,previous,source){
    'original source lastspurt + other condition pair shifted: '+id);
   const currentTerms=conditions.map(c=>({type:c.type,operator:c.operator,
    value:c.value}));
+  fail(sig(currentTerms)===EXPECTED_ORIGINAL_AND[id].slice().sort().join('&&'),
+   'pinned source exact original AND operator, value or extra gate drift: '+id);
   const extraConditions=conditions.filter(c=>
    c.type!=='is_lastspurt'&&c.type!==otherType);
   const otherTypes=[...new Set(extraConditions.map(c=>c.type))].sort();
@@ -146,11 +155,17 @@ function audit(model,queue,dynamic,previous,source){
     phase.kind==='random-within-phase'),
    'original phase window type/operator/source value unsupported: '+id);
   const refMatch=sig(currentTerms)===sig(originalRef[0]);
+  const sourceRefSubAND=originalRef[0].every(p=>
+   currentTerms.some(c=>c.type===p.type&&c.operator===p.operator&&c.value===p.value));
+  const explicitStaticGates=currentTerms.filter(c=>
+   ['distance_type','ground_type','running_style','track_id'].includes(c.type));
   const disposition=dynamicNearLane?
    'hold-source-approximate-near-lane-state-not-independent-position-observation':
    refMatch?
     'reuse-identical-original-source-AND-mechanism-only-not-style-W':
-    'reuse-source-checker-predicate-mechanisms-but-hold-skill-AND-W';
+    sourceRefSubAND?
+     'reuse-P2.38-spurt-window-predicates-but-hold-middle-distance-full-AND-W':
+     'hold-distinct-full-phase-random-window-no-P2.38-source-AND-transfer';
   res.push({sourceNumericId:id,skillId:skill.id,
    originalSkillName:skill.name,
    route:{invokeOffset:0,invokeIndex:inv.index,conditionOrIndex:0,
@@ -164,6 +179,10 @@ function audit(model,queue,dynamic,previous,source){
    originalCompanionPredicate:{...companion[0]},
    companionTiming:phase,
    identicalFullCurrentANDToP238Reference:refMatch,
+   originalP238SpurtAndWindowPredicatesAllPresent:sourceRefSubAND,
+   explicitOriginalRaceGates:explicitStaticGates,
+   originalP238SpurtAndWindowPredicatesAllPresent:sourceRefSubAND,
+   explicitOriginalRaceGates:explicitStaticGates,
    originalFiniteCompatibleStyles:[...f.finiteCompatibleStyles],
    disposition,
    companionMechanism:dynamicNearLane?
