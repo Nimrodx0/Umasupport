@@ -32,9 +32,9 @@
 
 [合成・反例テスト](../../../poc/tests/p2_g6_research_handoff_881.test.cjs)で、元スキルIDの入替、マスク値域外（0～15）、OR経路の取り違え、失敗した発動率・採点の流入、ダート保留の削除、P2.43元ANDのすり替え、研究用P3受領後の改竄、元数値ID以外での検索を拒否する。
 
-[固定720レースCI](../../../.github/workflows/p2-subphase10-77-skill-review.yml)が、元P2.15の静的ゲートとP2.41～43の研究JSONを再生成した後、[構築CLI](../../../poc/tools/build_p2_g6_research_handoff.cjs)で次を照合する予定。
+[固定720レースCI #44481953247](https://github.com/Nimrodx0/Umasupport/actions/runs/44481953247)が、元P2.15の静的ゲートとP2.41～43の研究JSONを再生成した後、[構築CLI](../../../poc/tools/build_p2_g6_research_handoff.cjs)で**以下の全件を成功検証**した。
 
-| 期待する固定全アプリ母集団 | 値 |
+| 固定全アプリ母集団の実測 | CI確認値 |
 | --- | ---: |
 | アプリスキル数／元条件照合／元条件未照合 | **881／818／63** |
 | 元ソース経路参照 | **970** |
@@ -43,7 +43,7 @@
 | 元スパートAND数値付きレビュー | **3** |
 | 元全条件発動率・実ゲーム発動率・正式サポカ評価点 | **すべて0件** |
 
-生成物は**研究用2ファイル**（P2.44 G6ソース全881行とP3の隔離受領書）としてActions内の短期artifactへ保存。元UmaSim辞書全文を公開レポジトリに含めない。CIの成否と実際の数値は[PRのActions](https://github.com/Nimrodx0/Umasupport/actions)で確認した後に確定する。
+生成物は**研究用2ファイル**（P2.44 G6ソース全881行とP3の隔離受領書）としてActions内の短期artifactへ保存。元UmaSim辞書全文を公開レポジトリに含めない。**固定CI全体・P2 G6出力・P3受領の再計算・合成反例テスト・研究用artifactアップロードはすべて成功**。[CI #44481953247](https://github.com/Nimrodx0/Umasupport/actions/runs/44481953247)から[研究JSON2点の成果物](https://github.com/Nimrodx0/Umasupport/actions/runs/44481953247/artifacts/14509365634)を確認できる（Actionsの保存期間14日）。P3の受領件数は**881／818元照合／63未照合**で、元値が未知の適用可能性は`null`のまま保持。**実ゲーム発動率、カード獲得経路、スキル・サポカ採点に昇格した件数は0**。
 
 ## G6およびP2の終了判定
 
