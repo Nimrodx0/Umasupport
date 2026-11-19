@@ -13,6 +13,9 @@ on:
       - 'poc/tools/p2_g3g4_skill_window_decisions.cjs'
       - 'poc/tools/p2_g3g4_combined_short_window_881.cjs'
       - 'poc/tools/p2_g4_dynamic_impact_gates.cjs'
+      - 'poc/src/skill_p2_43_original_spurt_candidate_review.cjs'
+      - 'poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs'
+      - 'poc/tools/audit_skill_conditions.cjs'
       - 'poc/tests/p2_g4_dynamic_impact_gates.test.cjs'
       - 'poc/tests/p2_g3g4_combined_short_window_881.test.cjs'
       - 'poc/tests/p2_g3g4_skill_window_decisions.test.cjs'
@@ -51,6 +54,8 @@ jobs:
           node --test poc/tests/p2_g3g4_combined_short_window_881.test.cjs
           node --check poc/tools/p2_g4_dynamic_impact_gates.cjs
           node --test poc/tests/p2_g4_dynamic_impact_gates.test.cjs
+          node --check poc/src/skill_p2_43_original_spurt_candidate_review.cjs
+          node --test poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -361,6 +366,65 @@ jobs:
            }))
           }));
           NODE
+      - name: P2.43 crosscheck exact original source 3 candidate ANDs with P2.42 selected identities
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const p243=require('./poc/src/skill_p2_43_original_spurt_candidate_review.cjs');
+          const p242=JSON.parse(fs.readFileSync('/tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json'));
+          const exact=JSON.parse(fs.readFileSync('p2-43-exact-selected-spurt-AND-review.json'));
+          assert.equal(exact.status,p243.STATUS);
+          assert.equal(exact.source.revision,p243.PIN);
+          assert.equal(exact.sourceSkillRegistrySHA256,p242.source.registrySHA256);
+          assert.deepEqual(exact.rows.map(x=>x.sourceNumericId),
+           p243.TARGETS.map(x=>x.sourceNumericId));
+          assert.deepEqual(p242.selectedLimitedStudyRoutes.map(x=>x.sourceNumericId),
+           p243.TARGETS.map(x=>x.sourceNumericId));
+          for(const row of exact.rows){
+           const sel=p242.selectedLimitedStudyRoutes.find(x=>
+            x.sourceNumericId===row.sourceNumericId);
+           assert(sel&&sel.type==='is_lastspurt'&&
+            sel.invokeIndex===row.route.invokeIndex&&
+            sel.invokeOffset===row.route.invokeOffset&&
+            sel.conditionOrIndex===row.route.conditionOrIndex&&
+            sel.preconditionOrIndex===row.route.preconditionOrIndex&&
+            sel.originalCurrentANDAdditionalUnknownTypes.includes(
+             row.originalCompanionPredicate.type));
+           assert.equal(row.sameSourceTickSkillANDObservedHere,false);
+           assert.equal(row.measuredOriginalModelSkillActivationRate,null);
+           assert.equal(row.officialGameSkillProcRate,null);
+           assert.equal(row.validatedFourStyleWOrD,null);
+           assert.equal(row.eligibleForP3CardScoring,false);
+           assert.equal(row.cardScore,null);
+          }
+          const byId=new Map(exact.rows.map(x=>[x.sourceNumericId,x]));
+          assert.equal(byId.get('204661').disposition,
+           'hold-source-approximate-near-lane-state-not-independent-position-observation');
+          assert.equal(byId.get('204661').companionTiming,null);
+          for(const id of ['203431','210081']){
+           assert.equal(byId.get(id).companionTiming.status,'source-defined');
+          }
+          assert.equal(exact.summary.nearLaneSourceApproximationHeld,1);
+          assert.equal(exact.summary.otherTwoOriginalRandomWindowMechanisms,2);
+          assert.equal(exact.summary.additionalRaceOrSameTickTrials,0);
+          assert.equal(exact.summary.approvedP3OrP4Ratings,0);
+          console.log('P2_43_VERIFIED_EXACT_ORIGINAL_AND='+JSON.stringify({
+           summary:exact.summary,
+           rows:exact.rows.map(r=>({
+            id:r.sourceNumericId,sourceAND:r.exactOriginalCurrentAND,
+            exactP238Reference:r.identicalFullCurrentANDToP238Reference,
+            disposition:r.disposition
+           }))
+          }));
+          NODE
+      - name: Keep P2.43 source-exact 3 AND mechanism review, not skill rating
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-43-exact-original-spurt-three-source-AND-no-rating
+          path: p2-43-exact-selected-spurt-AND-review.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Keep P2.42 source-dynamic G4 decisions, not skill/card probability
         if: success()
         uses: actions/upload-artifact@v4
