@@ -14,6 +14,10 @@ on:
       - 'poc/tools/p2_g3g4_combined_short_window_881.cjs'
       - 'poc/tools/p2_g4_dynamic_impact_gates.cjs'
       - 'poc/src/skill_p2_43_original_spurt_candidate_review.cjs'
+      - 'poc/src/p2_g6_research_handoff_881.cjs'
+      - 'poc/src/p3_g6_research_intake.cjs'
+      - 'poc/tools/build_p2_g6_research_handoff.cjs'
+      - 'poc/tests/p2_g6_research_handoff_881.test.cjs'
       - 'poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs'
       - 'poc/tools/audit_skill_conditions.cjs'
       - 'poc/tests/p2_g4_dynamic_impact_gates.test.cjs'
@@ -56,6 +60,10 @@ jobs:
           node --test poc/tests/p2_g4_dynamic_impact_gates.test.cjs
           node --check poc/src/skill_p2_43_original_spurt_candidate_review.cjs
           node --test poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs
+          node --check poc/src/p2_g6_research_handoff_881.cjs
+          node --check poc/src/p3_g6_research_intake.cjs
+          node --check poc/tools/build_p2_g6_research_handoff.cjs
+          node --test poc/tests/p2_g6_research_handoff_881.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -417,6 +425,86 @@ jobs:
            }))
           }));
           NODE
+      - name: P2.44 G6 build P3-quarantined full-app source three-axis, partial W/D and held dynamic receipt
+        run: |
+          node poc/tools/build_p2_g6_research_handoff.cjs \
+            p2-15-parameterized-axis-gates.json \
+            /tmp/p2-subphase/p2-41-combined-881-partial-evidence.json \
+            /tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json \
+            p2-43-exact-selected-spurt-AND-review.json \
+            /tmp/p2-subphase/p2-44-g6-881-original-source-research-only.json \
+            /tmp/p2-subphase/p3-g6-881-quarantined-research-receipt.json
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const handoff=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p2-44-g6-881-original-source-research-only.json'));
+          const receipt=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p3-g6-881-quarantined-research-receipt.json'));
+          const g6=require('./poc/src/p2_g6_research_handoff_881.cjs');
+          const p3=require('./poc/src/p3_g6_research_intake.cjs');
+          a.equal(handoff.status,g6.STATUS);
+          a.equal(receipt.status,p3.STATUS);
+          const x=handoff.denominators;
+          a.equal(x.appSkills,881);
+          a.equal(x.sourceMatchedSkills,818);
+          a.equal(x.sourceUnavailableSkills,63);
+          a.equal(x.originalSourceRouteRefs,970);
+          a.equal(x.conditionallyModeledPartialWDSkills,81);
+          a.equal(x.directPartialWDSkills,69);
+          a.equal(x.sourceExceptionPartialWDSkills,12);
+          a.equal(x.explicitGroundModelHeldSkills,6);
+          a.equal(x.noNewShortWindowEvidenceSkills,794);
+          a.equal(x.originalDynamicTypeRouteRows,118);
+          a.equal(x.originalDynamicDistinctRouteIdentities,115);
+          a.equal(x.selectedSourceANDReviews,3);
+          a.equal(x.verifiedFullOriginalSourceANDRates,0);
+          a.equal(x.observedRealGameActivationRates,0);
+          a.equal(x.approvedSkillCardSuitabilityScores,0);
+          a.equal(handoff.g6Decision.G6ParentPass,false);
+          a.equal(receipt.population.appSkills,881);
+          a.equal(receipt.population.sourceMatchedSkills,818);
+          a.equal(receipt.population.sourceUnavailableSkills,63);
+          a.equal(receipt.population.formalSkillSuitabilityScores,0);
+          a.equal(receipt.population.verifiedCardAcquisitionPaths,0);
+          a.equal(receipt.provenance.independentlyVerifiedAgainstFourP2Inputs,true);
+          a.equal(new Set(handoff.rows.map(r=>r.appSkillId)).size,881);
+          for(const row of handoff.rows){
+           a.equal(row.evaluationOutcome.eligibleForP3CardScoring,false);
+           a.equal(row.evaluationOutcome.cardScore,null);
+           a.equal(row.evaluationOutcome.originalGameActivationRate,null);
+           a.equal(row.evaluationOutcome.wholeOriginalANDOrInvoke,'unknown');
+           if(row.originalNumericSourceId===null){
+            a.equal(row.explicitThreeAxisNecessaryOnly.status,'source-unavailable');
+            a.equal(row.explicitThreeAxisNecessaryOnly.potentialGroundStateMasks,null);
+           }else{
+            a.equal(row.explicitThreeAxisNecessaryOnly.potentialGroundStateMasks.length,32);
+           }
+          }
+          const byId=new Map(handoff.rows.map(r=>
+           [r.originalNumericSourceId,r]));
+          a.equal(byId.get('203431').selectedOriginalANDReview
+           .referenceP238PartialANDReused,true);
+          a.equal(byId.get('203431').selectedOriginalANDReview
+           .referenceP238WholeANDIdentical,false);
+          a.equal(byId.get('204661').selectedOriginalANDReview.disposition,
+           'hold-source-approximate-near-lane-state-not-independent-position-observation');
+          a.equal(byId.get('210081').selectedOriginalANDReview
+           .referenceP238PartialANDReused,false);
+          console.log('P2_44_VERIFIED_G6_RESEARCH_INTAKE='+JSON.stringify({
+           denominators:x,p3Population:receipt.population,
+           parentG6Passed:handoff.g6Decision.G6ParentPass
+          }));
+          NODE
+      - name: Store P2.44 G6 and P3 receipt without skill/card rating
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-44-881-three-axis-partial-wd-quarantined-p3-receipt
+          path: |
+            /tmp/p2-subphase/p2-44-g6-881-original-source-research-only.json
+            /tmp/p2-subphase/p3-g6-881-quarantined-research-receipt.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Keep P2.43 source-exact 3 AND mechanism review, not skill rating
         if: success()
         uses: actions/upload-artifact@v4
