@@ -15,9 +15,11 @@ internal object P215RaceWindowHook {
         val hit: Boolean,
     )
     var enabled: Boolean = false
+    var activeKey: String = "phase_random2"
     val samples = mutableListOf<Tick>()
     fun reset() {
         enabled = false
+        activeKey = "phase_random2"
         samples.clear()
     }
     fun record(
@@ -27,8 +29,8 @@ internal object P215RaceWindowHook {
         areas: List<RandomEntry>,
         hit: Boolean,
     ) {
-        if (!enabled || key != "phase_random2") return
-        check(areas.size == 1) { "P2.15 expects one phase_random2 original interval" }
+        if (!enabled || key != activeKey) return
+        check(areas.size == 1) { "P2.15/P2.39 expects one original random interval" }
         val window = areas.single()
         samples.add(
             Tick(
