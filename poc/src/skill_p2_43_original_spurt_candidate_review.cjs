@@ -181,8 +181,6 @@ function audit(model,queue,dynamic,previous,source){
    identicalFullCurrentANDToP238Reference:refMatch,
    originalP238SpurtAndWindowPredicatesAllPresent:sourceRefSubAND,
    explicitOriginalRaceGates:explicitStaticGates,
-   originalP238SpurtAndWindowPredicatesAllPresent:sourceRefSubAND,
-   explicitOriginalRaceGates:explicitStaticGates,
    originalFiniteCompatibleStyles:[...f.finiteCompatibleStyles],
    disposition,
    companionMechanism:dynamicNearLane?
