@@ -121,6 +121,9 @@ test('single-style, precondition, OR and multiple unknown AND do not auto-enter 
  assert.equal(go(f).selectedLimitedStudyRoutes.length,0);
  assert.equal(go(f).routeDecisions.find(x=>x.sourceNumericId==='200600').disposition,
   'hold-no-multi-style-finite-source-route');
+ const ground=fixture();ground.joined.rows[1].decision='hold-turf-model-transfer';
+ assert.equal(go(ground).routeDecisions.find(x=>x.sourceNumericId==='200600').disposition,
+  'hold-original-ground-qualifier-no-model-transfer');
  const g=fixture();g.queue.rows[1].routeFamilies[0].conditionOrCount=2;
  assert.equal(go(g).routeDecisions.find(x=>x.sourceNumericId==='200600').disposition,
   'hold-complex-precondition-OR-or-invoke-not-one-AND');
