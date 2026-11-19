@@ -111,6 +111,10 @@ function decision(type,source,app,route){
   return {disposition:STUDIED_SOURCE[source],
    nextEvidence:'retain-P2.38-P2.39-mechanism-reference-only-no-style-rate-transfer',
    candidateForBoundedSameTickStudy:false};
+ if(app.decision==='hold-turf-model-transfer')
+  return {disposition:'hold-original-ground-qualifier-no-model-transfer',
+   nextEvidence:'verify-original-ground-eligibility-with-matching-ground-model-before-any-style-W-D',
+   candidateForBoundedSameTickStudy:false};
  if(app.decision==='conditionally-use-short-window-rank-evidence'||
     app.decision==='conditionally-use-source-exception-branch-W-D')
   return {disposition:'hold-avoid-overwriting-existing-P2.41-partial-W-D',
