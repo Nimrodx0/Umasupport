@@ -59,7 +59,7 @@ test('two exact source routes share same original AND, output source-defined win
 test('different original phase values, extra AND, OR or precondition are not silently reusable',()=>{
  const a=input();
  a.model.skills[1].activationProfile.invokes[0].conditions[0][1].value=2;
- assert.throws(()=>run(a),/do not share the same exact source AND/);
+ assert.throws(()=>run(a),/original AND source predicate meaning mismatch/);
  const x=input();x.model.skills[0].activationProfile.invokes[0]
   .conditions[0].push({type:'order_rate',operator:'<=',value:50});
  assert.throws(()=>run(x),/two-condition original AND\/OR required/);
