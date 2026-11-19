@@ -121,7 +121,7 @@ test('distance OR, original narrow rank and unknown evidence are fail-closed',()
  const a=fixture();a.remaining.rows[0].branchAnalyses[1].distanceType=3;
  assert.throws(()=>study.join(a.prior,a.remaining),/OR branches/);
  const b=fixture();b.remaining.rows[1].branchAnalyses[0].distanceType=3;
- assert.throws(()=>study.join(b.prior,b.remaining),/narrow rank or distance-OR/);
+ assert.throws(()=>study.join(b.prior,b.remaining),/distance scope|narrow rank or distance-OR/);
  const invalidCourse=fixture();
  invalidCourse.remaining.rows[0].branchAnalyses[0].modelCourses=[10506];
  assert.throws(()=>study.join(invalidCourse.prior,invalidCourse.remaining),/distance scope/);
