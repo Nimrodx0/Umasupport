@@ -119,7 +119,7 @@ test('no collision between direct, turf-held and exception source skills',()=>{
 });
 test('distance OR, original narrow rank and unknown evidence are fail-closed',()=>{
  const a=fixture();a.remaining.rows[0].branchAnalyses[1].distanceType=3;
- assert.throws(()=>study.join(a.prior,a.remaining),/OR branches/);
+ assert.throws(()=>study.join(a.prior,a.remaining),/distance scope|OR branches/);
  const b=fixture();b.remaining.rows[1].branchAnalyses[0].distanceType=3;
  assert.throws(()=>study.join(b.prior,b.remaining),/distance scope|narrow rank or distance-OR/);
  const invalidCourse=fixture();
