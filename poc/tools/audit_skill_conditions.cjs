@@ -9,6 +9,7 @@ const loader=require('../src/live_loader.js');
 const publicEvents=require('../src/public_event_catalog.js');
 const {inventory}=require('../src/skill_condition_inventory.cjs');
 const profiles=require('../src/skill_condition_profiles.js');
+const sourceGapLedger=require('../src/skill_p2_g1_source_gap_ledger.cjs');
 const combinations=require('../src/skill_condition_combinations.cjs');
 const rankTime=require('../src/skill_rank_timing_audit.cjs');
 const styleTendency=require('../src/skill_style_tendency.js');
@@ -107,6 +108,14 @@ function matchedRecord(skill,live,old){
     applied.unavailable!==unknown.length||applied.noActivationRecord!==0)
    throw Error('P1 profile coverage mismatch with independent P0 cohort: '+
     JSON.stringify(applied));
+ const g1SourceGaps=sourceGapLedger.audit(model,source,old);
+ if(g1SourceGaps.denominators.appSkills!==881||
+    g1SourceGaps.denominators.sourceStructureMatched!==818||
+    g1SourceGaps.denominators.matchedWithoutActivationRecord!==0||
+    g1SourceGaps.denominators.sourceUnavailable!==63||
+    !g1SourceGaps.boundary.sourceIdentityIsNotSkillActivation||
+    g1SourceGaps.boundary.publicSuitabilityScores!==0)
+  throw Error('P2 G1 fixed source identity coverage or no-rating boundary drift');
  const profileTags=model.skills.filter(s=>s.activationProfile?.angleTags?.length).length;
  if(profileTags!==relevant.shape.withTags)
    throw Error('P1 bracket-label mismatch against P0 inventory: '+
@@ -337,6 +346,10 @@ function matchedRecord(skill,live,old){
  if(whole.shape.invalid||relevant.shape.invalid)
   throw Error('Unexpected malformed source skill predicates: '+whole.shape.invalid+'/'+relevant.shape.invalid);
  fs.writeFileSync('skill-condition-inventory-audit.json',JSON.stringify(report,null,2)+'\n');
+ fs.writeFileSync('p2-g1-source-gap-ledger.json',
+  JSON.stringify({source:report.source,...g1SourceGaps},null,2)+'\n');
+ console.log('P2_G1_SOURCE_GAPS='+JSON.stringify({
+  denominators:g1SourceGaps.denominators,byReason:g1SourceGaps.byReason}));
  fs.writeFileSync('p2-change-order-source-paths.json',
   JSON.stringify({source:{revision:REVISION,sha256:digest(skillText)},...changeOrder},null,2)+'\n');
  console.log('P2_CHANGE_ORDER_SOURCE_PATHS_START');
