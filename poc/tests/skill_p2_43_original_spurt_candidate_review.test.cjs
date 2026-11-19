@@ -27,11 +27,17 @@ function sourceCode(){
 function fixture(){
  const orig=x.TARGETS.map((target,i)=>({
   id:target.sourceNumericId,other:target.otherType,
-  value:i===0?3:i===2?2:1
+  value:i===0?3:i===2?3:1
  }));
  const skills=orig.map(t=>{
-  const conditions=[[{type:'is_lastspurt',operator:'==',value:1},
-   {type:t.other,operator:'==',value:t.value}]];
+  const sp={type:'is_lastspurt',operator:'==',value:1};
+  const conditions=[t.id==='203431'?[
+   {type:'distance_type',operator:'==',value:3},
+   sp,{type:t.other,operator:'==',value:t.value}
+  ]:t.id==='204661'?[
+   {type:'ground_type',operator:'==',value:2},
+   {type:t.other,operator:'>=',value:1},sp
+  ]:[sp,{type:t.other,operator:'==',value:t.value}]];
   const profile={status:'source-structure',sourceNumericId:t.id,
    invokes:[{index:1,conditions,preConditions:[]}]};
   return {id:'skill:'+t.id,name:'synthetic '+t.id,activationProfile:profile};
@@ -63,7 +69,8 @@ function fixture(){
   conditionOrIndex:0,preconditionOrIndex:null,
   hasOtherInvokes:false,probabilityOrScore:null,
   wholeSkillSuitability:'not-established',
-  sourcePredicates:[{side:'conditions',andOffset:0,operator:'==',value:1}],
+  sourcePredicates:[{side:'conditions',andOffset:
+   t.id==='203431'?1:t.id==='204661'?2:0,operator:'==',value:1}],
   finiteCompatibleStyles:STYLES,otherUnverifiedTypes:[t.other]
  }));
  while(observed.length<61)observed.push({sourceNumericId:'other-'+observed.length});
@@ -86,20 +93,30 @@ test('fixed 3 source AND routes: 203431 reuse; 204661 near-lane approximation; 2
  assert.deepEqual(r.summary,{
   originalSourceSkillCandidates:3,exactOriginalCurrentANDReviewed:3,
   nearLaneSourceApproximationHeld:1,otherTwoOriginalRandomWindowMechanisms:2,
-  exactCurrentANDReusedFromP238:1,
+  exactCurrentANDReusedFromP238:0,
   additionalRaceOrSameTickTrials:0,originalFullSkillActivationRatesMeasured:0,
   officialGameSkillProcRatesMeasured:0,approvedP3OrP4Ratings:0
  });
  assert.deepEqual(r.rows.map(v=>v.sourceNumericId),['203431','204661','210081']);
- assert.equal(r.rows[0].identicalFullCurrentANDToP238Reference,true);
+ assert.equal(r.rows[0].identicalFullCurrentANDToP238Reference,false);
+ assert.equal(r.rows[0].originalP238SpurtAndWindowPredicatesAllPresent,true);
+ assert.deepEqual(r.rows[0].explicitOriginalRaceGates,[
+  {type:'distance_type',operator:'==',value:3}]);
  assert.equal(r.rows[0].disposition,
-  'reuse-identical-original-source-AND-mechanism-only-not-style-W');
+  'reuse-P2.38-spurt-window-predicates-but-hold-middle-distance-full-AND-W');
  assert.equal(r.rows[0].companionTiming.windows[0].phase,3);
  assert.equal(r.rows[1].disposition,
   'hold-source-approximate-near-lane-state-not-independent-position-observation');
  assert.equal(r.rows[1].companionTiming,null);
+ assert.deepEqual(r.rows[1].explicitOriginalRaceGates,[
+  {type:'ground_type',operator:'==',value:2}]);
+ assert.deepEqual(r.rows[1].originalCompanionPredicate,
+  {type:'infront_near_lane_time',operator:'>=',value:1});
  assert.equal(r.rows[2].companionTiming.kind,'random-within-phase');
  assert.equal(r.rows[2].identicalFullCurrentANDToP238Reference,false);
+ assert.equal(r.rows[2].originalP238SpurtAndWindowPredicatesAllPresent,false);
+ assert.equal(r.rows[2].disposition,
+  'hold-distinct-full-phase-random-window-no-P2.38-source-AND-transfer');
  assert(r.rows.every(y=>y.cardScore===null&&
   y.measuredOriginalModelSkillActivationRate===null&&
   y.eligibleForP3CardScoring===false&&
@@ -120,10 +137,10 @@ test('source Kotlin checker and randomized special state path must be present ex
 test('original source AND value, extra term, OR and source identity regressions fail closed',()=>{
  const f=fixture();f.model.skills[0].activationProfile.invokes[0]
   .conditions[0][0].value=0;
- assert.throws(()=>audit(f),/source lastspurt \+ other condition pair shifted/);
+ assert.throws(()=>audit(f),/pinned source exact original AND/);
  const g=fixture();g.model.skills[0].activationProfile.invokes[0]
-  .conditions[0][1].value=5;
- assert.throws(()=>audit(g),/original phase window type\/operator/);
+  .conditions[0][2].value=5;
+ assert.throws(()=>audit(g),/pinned source exact original AND/);
  const h=fixture();h.model.skills[1].activationProfile.invokes[0]
   .preConditions=[[{type:'motivation',operator:'==',value:5}]];
  assert.throws(()=>audit(h),/source original current AND no longer isolated|source Invoke\/OR/);
@@ -132,13 +149,21 @@ test('original source AND value, extra term, OR and source identity regressions 
  const k=fixture();k.dynamic.rows.is_lastspurt[2].sourceNumericId='203431';
  assert.throws(()=>audit(k),/one spurt route missing/);
 });
-test('additional original source conditions remain visible; do not falsely mark a full skill rate',()=>{
- const f=fixture();f.model.skills[2].activationProfile.invokes[0]
-  .conditions[0].push({type:'distance_type',operator:'==',value:3});
- const r=audit(f),z=r.rows[2];
- assert.equal(z.identicalFullCurrentANDToP238Reference,false);
- assert.deepEqual(z.otherSourceANDTerms,[{
-  type:'distance_type',operator:'==',value:3
- }]);
- assert.equal(z.measuredOriginalModelSkillActivationRate,null);
+test('pinned explicit source distance/dirt conditions cannot be erased or added',()=>{
+ const f=fixture(),rows=audit(f).rows;
+ assert.deepEqual(rows.map(z=>z.explicitOriginalRaceGates),[
+  [{type:'distance_type',operator:'==',value:3}],
+  [{type:'ground_type',operator:'==',value:2}],[]
+ ]);
+ const missing=fixture();
+ missing.model.skills[0].activationProfile.invokes[0].conditions[0].shift();
+ missing.dynamic.rows.is_lastspurt[0].sourcePredicates[0].andOffset=0;
+ assert.throws(()=>audit(missing),/pinned source exact original AND/);
+ const added=fixture();
+ added.model.skills[2].activationProfile.invokes[0].conditions[0].push(
+  {type:'distance_type',operator:'==',value:3});
+ assert.throws(()=>audit(added),/pinned source exact original AND/);
+ const changed=fixture();
+ changed.model.skills[1].activationProfile.invokes[0].conditions[0][1].operator='==';
+ assert.throws(()=>audit(changed),/pinned source exact original AND/);
 });
