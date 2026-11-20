@@ -19,6 +19,9 @@ on:
       - 'poc/src/p3_4_uncertainty_semantics.cjs'
       - 'poc/tests/p3_4_uncertainty_semantics.test.cjs'
       - 'poc/tools/build_p3_4_uncertainty_preview.cjs'
+      - 'poc/src/p3_4c_relative_bias_decision_probe.cjs'
+      - 'poc/tests/p3_4c_relative_bias_decision_probe.test.cjs'
+      - 'poc/tools/build_p3_4c_relative_bias_probe.cjs'
       - 'poc/tools/build_p2_g6_research_handoff.cjs'
       - 'poc/tests/p2_g6_research_handoff_881.test.cjs'
       - 'poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs'
@@ -70,6 +73,9 @@ jobs:
           node --check poc/src/p3_4_uncertainty_semantics.cjs
           node --check poc/tools/build_p3_4_uncertainty_preview.cjs
           node --test poc/tests/p3_4_uncertainty_semantics.test.cjs
+          node --check poc/src/p3_4c_relative_bias_decision_probe.cjs
+          node --check poc/tools/build_p3_4c_relative_bias_probe.cjs
+          node --test poc/tests/p3_4c_relative_bias_decision_probe.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -556,6 +562,42 @@ jobs:
            officialPolicyApproved:r.provenance.officialPolicyApproved
           }));
           NODE
+      - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
+        run: |
+          node poc/tools/build_p3_4c_relative_bias_probe.cjs \
+            /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json \
+            /tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const probe=require('./poc/src/p3_4c_relative_bias_decision_probe.cjs');
+          const report=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json','utf8'));
+          assert.equal(report.status,probe.STATUS);
+          assert.equal(report.summary.appSkills,881);
+          assert.equal(report.summary.originalMatched,818);
+          assert.equal(report.summary.sourceUnmatched,63);
+          assert.equal(report.summary.modelPartialWDSourceSkills,81);
+          assert.equal(report.summary.modelGroundHeld,6);
+          assert.equal(report.summary.noAdditionalShortWindow,794);
+          assert.equal(report.summary.generalSkillLabelsApproved,0);
+          assert.equal(report.summary.targetedSkillLabelsApproved,0);
+          assert.equal(report.summary.actualSkillBiasLabelsApproved,0);
+          assert.equal(report.summary.cardSuitabilityScoresApproved,0);
+          assert.equal(report.rows.length,881);
+          assert(report.rows.every(x=>x.officialStyleSuitability===null&&
+           x.internalStylePreview===null&&x.eligibleForCardScoring===false));
+          assert.equal(report.provenance.modelComparisonToUserLabelConversionApproved,false);
+          console.log('P3_4C_REAL_SOURCE_LABEL_BLOCKERS_VERIFIED='+JSON.stringify(report.summary));
+          NODE
+      - name: Preserve P3.4c research-only gap and blocker ledger, NEVER display labels
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-4c-881-skill-relative-label-unknowns-no-product-scores
+          path: /tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Preserve P3.4a research-only uncertainty interpretation for inspection
         if: success()
         uses: actions/upload-artifact@v4
