@@ -102,6 +102,9 @@ const run=x=>tested.audit(x.short,x.halves,x.half,x.exceptions,x.extra);
 test('10 exact distance OR skills and 2 exact narrow rank skills get model W/D, not full skill scores',()=>{
  const x=fixture(),out=run(x);
  assert.equal(out.status,tested.STATUS);
+ assert.equal(out.source.original720RaceModelRevision,PIN);
+ assert.equal(out.source.originalShortReportSHA256,
+  require('../tools/skill_halfphase_two_axis_review.cjs').SHORT_SHA);
  assert.equal(out.summary.originalExceptionSkills,12);
  assert.equal(out.summary.originalDistanceScopedBranches,22);
  assert.equal(out.summary.distinctOriginalModeledProfiles,11);
