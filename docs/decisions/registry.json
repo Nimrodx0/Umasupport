@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-16",
+  "asOf": "2026-11-24",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-047",
+      "date": "2026-11-24",
+      "heading": "2026-11-24：既存研究成果の統合とP2完了条件の再評価を優先する",
+      "status": "current",
+      "relation": [],
+      "note": "既存PRをCI・依存関係・重複確認の上で統合し、P2 G1～G6を再評価してからP3判定方式・取得経路集約・P4表示へ進む。未判定の全解消や正式閾値・採点・公開を承認するものではない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-047",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-047",
+      "reviewedAt": "2026-11-24"
+    },
     {
       "id": "D-046",
       "date": "2026-11-16",
