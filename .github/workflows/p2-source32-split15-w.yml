@@ -180,7 +180,7 @@ jobs:
       - name: Stage independent full30 and reconstruct fixed P2.31 report
         run: |
           mkdir -p /tmp/p2-full30 /tmp/p2-prior
-          cp /tmp/pinned-research/roster32/*.json /tmp/p2-full30/
+          cp /tmp/pinned-research/roster32/{balanced,frontHeavy,backHeavy,noFront,roster32-comparison}.json /tmp/p2-full30/
           bash poc/tools/restore_pinned_research.sh p231 /tmp/p2-prior /tmp/p2-full30
       - name: Reconstruct original full30 and compare 192 conditions in both 15-seed halves
         run: |

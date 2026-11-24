@@ -61,7 +61,7 @@ jobs:
       - name: Stage verified source data separately from new reports
         run: |
           mkdir -p /tmp/p2-specified
-          cp /tmp/pinned-research/roster32/*.json /tmp/p2-specified/
+          cp /tmp/pinned-research/roster32/{balanced,frontHeavy,backHeavy,noFront,roster32-comparison}.json /tmp/p2-specified/
       - name: Derive source-scope 32×2 point-rank specificity, 384 pairwise W comparisons
         run: |
           node poc/tools/skill_specificity32_research.cjs \

@@ -38,7 +38,7 @@ jobs:
       - name: Stage verified original observations
         run: |
           mkdir -p /tmp/global-course-source
-          cp /tmp/pinned-research/expanded/*.json /tmp/global-course-source/
+          cp /tmp/pinned-research/expanded/{summary,window-profile}.json /tmp/global-course-source/
       - name: Require the recorded original simulator-derived files
         run: |
           echo 'd853e79525f0e0fdcacdb0e0e5e96d9af2aa53766a2e8e774cb7d019763954c9  /tmp/global-course-source/summary.json' | sha256sum -c -

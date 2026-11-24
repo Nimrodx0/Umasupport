@@ -46,7 +46,7 @@ PRレビューでは、新トラックの計画本文だけでなく、`project`
 
 [D-048](../decisions/log.md#decision-d-048)に従い、Actions Artifactは同一run内の受渡し・一時確認用とし、期限付きrunを唯一の長期依存にしない。固定実行コード・元入力版・シード・期待SHA-256・再生成手順をGitに保持し、キャッシュが消えても復旧できるようにする。実データの永続公開は公開条件を確認した派生データに限定する。未承認DB・元ソース本文・生フレームは永続公開しない。
 
-固定GlobalSim研究の復旧は `bash poc/tools/restore_pinned_research.sh roster32 /tmp/pinned-research/roster32` または `bash poc/tools/restore_pinned_research.sh expanded /tmp/pinned-research/expanded` をリポジトリ内で実行する。Node 22、Git、Rust/Cargo、固定GitHub出典へのネットワークアクセスが必要。既存ファイルは全件SHA-256を検証し、不足・不一致なら固定元レシピから再生成し、従来の期待値を変更せず再照合する。P2.31は検証済みfull30を入力に固定旧実装から再導出する。キャッシュは高速化用で永久保存ではない。環境や元出典の変更で不一致になった場合は新しい版として別途検証する。
+固定GlobalSim研究の復旧は `bash poc/tools/restore_pinned_research.sh roster32 /tmp/pinned-research/roster32` または `bash poc/tools/restore_pinned_research.sh expanded /tmp/pinned-research/expanded` をリポジトリ内で実行する。Node 22、Git、Rust/Cargo、固定GitHub出典へのネットワークアクセスが必要。既存ファイルは全件SHA-256を検証し、不足・不一致なら固定元レシピから再生成し、従来の期待値を変更せず再照合する。P2.31は検証済みfull30を入力に固定旧実装から再導出する。元レシピの3つの歴史コミットは `archive/pinned-research/roster32-v1`、`archive/pinned-research/expanded-v1`、`archive/pinned-research/p231-v1` の保全用ブランチで参照可能な状態を維持する。これらは固定研究用の参照であり、移動・削除しない。実行時も期待コミットとの一致を検査する。キャッシュは高速化用で永久保存ではない。環境や元出典の変更で不一致になった場合は新しい版として別途検証する。
 
 ## 更新後に実行する検査
 

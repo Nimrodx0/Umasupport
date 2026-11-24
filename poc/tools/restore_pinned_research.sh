@@ -16,8 +16,8 @@ fi
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 historical_checkout() {
-  local revision="$1"
-  git -C "$root" fetch --no-tags --depth 1 origin "$revision"
+  local revision="$1" archive_ref="$2"
+  git -C "$root" fetch --no-tags --depth 1 origin "refs/heads/archive/pinned-research/$archive_ref"
   test "$(git -C "$root" rev-parse FETCH_HEAD)" = "$revision"
   mkdir -p "$work/source"
   git -C "$root" archive "$revision" | tar -x -C "$work/source"
@@ -27,7 +27,7 @@ if [[ "$mode" == p231 ]]; then
   # Recompute the prior independent P2.31 algorithm, rather than trust an
   # expiring ZIP or substitute a newly changed implementation as the baseline.
   verify roster32 "$source_dir"
-  historical_checkout ff13aa4427e90bd213c4b9c12a140bd02a3fc1a7
+  historical_checkout ff13aa4427e90bd213c4b9c12a140bd02a3fc1a7 p231-v1
   cd "$work/source"
   manifest=poc/data/p2_position_condition32_research.v1.json
   inputs=("$source_dir/balanced.json" "$source_dir/frontHeavy.json" "$source_dir/backHeavy.json" "$source_dir/noFront.json")
@@ -48,8 +48,8 @@ NODE
   exit 0
 fi
 case "$mode" in
-  roster32) historical_checkout 9118b99062350ce607243985c32d04c33cb000e7 ;;
-  expanded) historical_checkout 02d5928b1897175c200503baaa9bdd345ae73dfe ;;
+  roster32) historical_checkout 9118b99062350ce607243985c32d04c33cb000e7 roster32-v1 ;;
+  expanded) historical_checkout 02d5928b1897175c200503baaa9bdd345ae73dfe expanded-v1 ;;
 esac
 engine_revision=80b54cacf174b54ff6f7ca27ee7f88b5856c0bd1
 git init -q "$work/globalsim"
