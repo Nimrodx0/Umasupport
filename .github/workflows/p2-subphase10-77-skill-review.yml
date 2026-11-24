@@ -16,6 +16,15 @@ on:
       - 'poc/src/skill_p2_43_original_spurt_candidate_review.cjs'
       - 'poc/src/p2_g6_research_handoff_881.cjs'
       - 'poc/src/p3_g6_research_intake.cjs'
+      - 'poc/src/p3_4_uncertainty_semantics.cjs'
+      - 'poc/tests/p3_4_uncertainty_semantics.test.cjs'
+      - 'poc/tools/build_p3_4_uncertainty_preview.cjs'
+      - 'poc/src/p3_4c_relative_bias_decision_probe.cjs'
+      - 'poc/tests/p3_4c_relative_bias_decision_probe.test.cjs'
+      - 'poc/tools/build_p3_4c_relative_bias_probe.cjs'
+      - 'poc/src/p3_4d_selected_source_skill_review.cjs'
+      - 'poc/tests/p3_4d_selected_source_skill_review.test.cjs'
+      - 'poc/tools/build_p3_4d_selected_source_skill_review.cjs'
       - 'poc/tools/build_p2_g6_research_handoff.cjs'
       - 'poc/tests/p2_g6_research_handoff_881.test.cjs'
       - 'poc/tests/skill_p2_43_original_spurt_candidate_review.test.cjs'
@@ -64,6 +73,15 @@ jobs:
           node --check poc/src/p3_g6_research_intake.cjs
           node --check poc/tools/build_p2_g6_research_handoff.cjs
           node --test poc/tests/p2_g6_research_handoff_881.test.cjs
+          node --check poc/src/p3_4_uncertainty_semantics.cjs
+          node --check poc/tools/build_p3_4_uncertainty_preview.cjs
+          node --test poc/tests/p3_4_uncertainty_semantics.test.cjs
+          node --check poc/src/p3_4c_relative_bias_decision_probe.cjs
+          node --check poc/tools/build_p3_4c_relative_bias_probe.cjs
+          node --test poc/tests/p3_4c_relative_bias_decision_probe.test.cjs
+          node --check poc/src/p3_4d_selected_source_skill_review.cjs
+          node --check poc/tools/build_p3_4d_selected_source_skill_review.cjs
+          node --test poc/tests/p3_4d_selected_source_skill_review.test.cjs
           node --test poc/tests/globalsim_phase_random_10m.test.cjs
           node --test poc/tests/skill_phase10_cohort_review.test.cjs
       - name: Regenerate the exact historical 53 and new 24 source candidate cohort
@@ -495,6 +513,140 @@ jobs:
            parentG6Passed:handoff.g6Decision.G6ParentPass
           }));
           NODE
+      - name: P3.4a interpret fixed P2/P3 research only as separate explicit eligibility, W/D evidence and held uncertainty
+        run: |
+          node poc/tools/build_p3_4_uncertainty_preview.cjs \
+            /tmp/p2-subphase/p2-44-g6-881-original-source-research-only.json \
+            /tmp/p2-subphase/p3-g6-881-quarantined-research-receipt.json \
+            p2-15-parameterized-axis-gates.json \
+            /tmp/p2-subphase/p2-41-combined-881-partial-evidence.json \
+            /tmp/p2-subphase/p2-42-dynamic-impact-source-routes.json \
+            p2-43-exact-selected-spurt-AND-review.json \
+            /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json','utf8'));
+          const p34=require('./poc/src/p3_4_uncertainty_semantics.cjs');
+          a.equal(r.status,p34.STATUS);
+          a.equal(r.provenance.officialPolicyApproved,false);
+          const x=r.denominators;
+          a.equal(x.appSkills,881);
+          a.equal(x.sourceMatchedSkills,818);
+          a.equal(x.sourceUnavailableSkills,63);
+          a.equal(x.perPartialEvidenceState['partial-source-window-research-only'],81);
+          a.equal(x.perPartialEvidenceState['held-source-ground-not-covered-by-model'],6);
+          a.equal(x.perPartialEvidenceState['no-additional-short-window-study'],794);
+          const p=x.modelPairSlotsNotIndependentTrials;
+          a.equal(p.pairSlots,546);
+          a.equal(p.notComparable,180);
+          a.equal(p.comparable,366);
+          a.equal(p.WStrictModelOnly,287);
+          a.equal(p.WHeld,79);
+          a.equal(p.DStrictModelOnly+p.DHeld,p.comparable);
+          a.equal(x.actualGameRates,0);
+          a.equal(x.fullyVerifiedSourceSkillAND,0);
+          a.equal(x.officialSkillOrCardScores,0);
+          a.equal(r.rows.length,881);
+          a(r.rows.every(row=>
+           row.officialGameProcRate===null&&row.wholeSkillSuitability===null&&
+           row.suitabilityLabel===null&&row.cardScore===null&&
+           row.eligibleForP3CardScoring===false));
+          const ids=new Map(r.rows.map(y=>[y.sourceNumericId,y]));
+          a.equal(ids.get('204661').selectedSourceANDDisposition,
+           'hold-source-approximate-near-lane-state-not-independent-position-observation');
+          a.equal(ids.get('203431').selectedSourceANDDisposition,
+           'reuse-P2.38-spurt-window-predicates-but-hold-middle-distance-full-AND-W');
+          a.equal(ids.get('210081').selectedSourceANDDisposition,
+           'hold-distinct-full-phase-random-window-no-P2.38-source-AND-transfer');
+          a.equal(r.proposalScope.tieAndReversal.includes('do not separate ties'),true);
+          console.log('P3_4A_FIXED_MODEL_CLASSIFICATIONS='+JSON.stringify({
+           population:x,
+           source203431:ids.get('203431').selectedSourceANDDisposition,
+           source204661:ids.get('204661').selectedSourceANDDisposition,
+           source210081:ids.get('210081').selectedSourceANDDisposition,
+           officialPolicyApproved:r.provenance.officialPolicyApproved
+          }));
+          NODE
+      - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
+        run: |
+          node poc/tools/build_p3_4c_relative_bias_probe.cjs \
+            /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json \
+            /tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs');
+          const probe=require('./poc/src/p3_4c_relative_bias_decision_probe.cjs');
+          const report=JSON.parse(fs.readFileSync(
+           '/tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json','utf8'));
+          assert.equal(report.status,probe.STATUS);
+          assert.equal(report.summary.appSkills,881);
+          assert.equal(report.summary.originalMatched,818);
+          assert.equal(report.summary.sourceUnmatched,63);
+          assert.equal(report.summary.modelPartialWDSourceSkills,81);
+          assert.equal(report.summary.modelGroundHeld,6);
+          assert.equal(report.summary.noAdditionalShortWindow,794);
+          assert.equal(report.summary.generalSkillLabelsApproved,0);
+          assert.equal(report.summary.targetedSkillLabelsApproved,0);
+          assert.equal(report.summary.actualSkillBiasLabelsApproved,0);
+          assert.equal(report.summary.cardSuitabilityScoresApproved,0);
+          assert.equal(report.rows.length,881);
+          assert(report.rows.every(x=>x.officialStyleSuitability===null&&
+           x.internalStylePreview===null&&x.eligibleForCardScoring===false));
+          assert.equal(report.provenance.modelComparisonToUserLabelConversionApproved,false);
+          console.log('P3_4C_REAL_SOURCE_LABEL_BLOCKERS_VERIFIED='+JSON.stringify(report.summary));
+          NODE
+      - name: P3.4d independently inspect four actual original source skills, Kotlin handlers and P3.4a identity
+        run: |
+          node poc/tools/build_p3_4d_selected_source_skill_review.cjs \
+            /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json \
+            /tmp/p2-subphase/p3-4d-four-named-original-skill-source-reviews-no-product-labels.json
+          node - <<'NODE'
+          const a=require('node:assert/strict'),fs=require('node:fs');
+          const review=require('./poc/src/p3_4d_selected_source_skill_review.cjs');
+          const x=JSON.parse(fs.readFileSync(
+            '/tmp/p2-subphase/p3-4d-four-named-original-skill-source-reviews-no-product-labels.json','utf8'));
+          a.equal(x.status,review.STATUS);
+          a.equal(x.provenance.formalProductPolicyApproved,false);
+          a.equal(x.summary.reviewedOriginalAppSkills,4);
+          a.equal(x.summary.sourceConditionOnlyStyleNeutralCandidates,1);
+          a.equal(x.summary.explicitStyleEligibilityRestricted,1);
+          a.equal(x.summary.dynamicSpecialStateHeld,1);
+          a.equal(x.summary.complexDistanceAndSpurtHeld,1);
+          a.equal(x.summary.officiallyApprovedStyleLabels,0);
+          a.equal(x.summary.gameSkillProcRates,0);
+          a.equal(x.summary.officialSupportCardScores,0);
+          a.deepEqual(x.rows.map(r=>r.sourceNumericId),['200432','201312','201591','203431']);
+          a(x.rows.every(r=>r.productStyleLabel===null&&r.productLabelApproved===false&&
+            r.wholeOriginalSkillProcRate===null&&r.cardScore===null));
+          console.log('P3_4D_PINNED_REAL_SKILL_SOURCE_REVIEW_VERIFIED='+JSON.stringify({
+            summary:x.summary,skills:x.rows.map(r=>({name:r.originalName,kind:r.evidenceClass}))
+          }));
+          NODE
+      - name: Preserve P3.4d four actual original skill condition reviews without ratings
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-4d-four-named-actual-original-source-skill-review-no-product-labels
+          path: /tmp/p2-subphase/p3-4d-four-named-original-skill-source-reviews-no-product-labels.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve P3.4c research-only gap and blocker ledger, NEVER display labels
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-4c-881-skill-relative-label-unknowns-no-product-scores
+          path: /tmp/p2-subphase/p3-4c-881-source-relative-label-blockers-not-scores.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve P3.4a research-only uncertainty interpretation for inspection
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-4a-881-uncertainty-distinct-tie-held-not-suitability
+          path: /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Store P2.44 G6 and P3 receipt without skill/card rating
         if: success()
         uses: actions/upload-artifact@v4
