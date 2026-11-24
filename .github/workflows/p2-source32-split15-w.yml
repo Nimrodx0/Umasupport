@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'poc/tools/restore_pinned_research.sh'
+      - 'poc/tools/verify_pinned_research.cjs'
+      - 'poc/tests/verify_pinned_research.test.cjs'
       - 'poc/tools/globalsim_roster32.cjs'
       - 'poc/tools/skill_source32_split15_w.cjs'
       - 'poc/tools/skill_distance_split15_reliability.cjs'
@@ -150,7 +153,7 @@ jobs:
   audit-seed-stability:
     needs: replay-disjoint-seeds
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -165,15 +168,20 @@ jobs:
           pattern: p2-split15-*
           merge-multiple: true
           path: /tmp/p2-split15
-      - name: Fetch independent SHA-pinned full30 source and previous P2.31 report
+      - name: Restore optional SHA-pinned research cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/pinned-research/roster32
+          key: pinned-research-roster32-v1-${{ runner.os }}-${{ hashFiles('poc/tools/restore_pinned_research.sh', 'poc/tools/verify_pinned_research.cjs', 'poc/tools/skill_specificity32_research.cjs') }}
+      - name: Verify or regenerate fixed research inputs (no cross-run dependency)
+        run: |
+          node --test poc/tests/verify_pinned_research.test.cjs
+          bash poc/tools/restore_pinned_research.sh roster32 /tmp/pinned-research/roster32
+      - name: Stage independent full30 and reconstruct fixed P2.31 report
         run: |
           mkdir -p /tmp/p2-full30 /tmp/p2-prior
-          for scenario in balanced frontHeavy backHeavy noFront; do
-            gh run download 42413671565 -n "p2-roster32-$scenario" -D /tmp/p2-full30
-            test -s "/tmp/p2-full30/$scenario.json"
-          done
-          gh run download 43007305092 -n p2-two-axis-32-rank-specificity-research -D /tmp/p2-prior
-          test -s /tmp/p2-prior/individual-course-mode-margin.json
+          cp /tmp/pinned-research/roster32/*.json /tmp/p2-full30/
+          bash poc/tools/restore_pinned_research.sh p231 /tmp/p2-prior /tmp/p2-full30
       - name: Reconstruct original full30 and compare 192 conditions in both 15-seed halves
         run: |
           node poc/tools/skill_source32_split15_w.cjs \

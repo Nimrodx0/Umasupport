@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-048",
+      "date": "2026-11-24",
+      "heading": "2026-11-24：固定研究成果の再現性を一時Artifactの寿命から分離する",
+      "status": "current",
+      "relation": [],
+      "note": "固定コード・入力・シード・期待ハッシュをGitに保持し、期限付き成果物を唯一の依存先にしない。取得不能時は固定版から再生成し、既存ハッシュを維持する。永続公開する派生データは公開条件を別途確認",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-048",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-048",
+      "reviewedAt": "2026-11-24"
+    },
+    {
       "id": "D-047",
       "date": "2026-11-24",
       "heading": "2026-11-24：既存研究成果の統合とP2完了条件の再評価を優先する",
