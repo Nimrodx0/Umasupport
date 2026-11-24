@@ -1,14 +1,11 @@
 name: GlobalSim six-course rank generalization audit
 on:
   workflow_dispatch:
-    inputs:
-      expanded_run_id:
-        description: "Pinned six-course GlobalSim window experiment Actions run"
-        type: string
-        required: true
-        default: '41966480256'
   pull_request:
     paths:
+      - 'poc/tools/restore_pinned_research.sh'
+      - 'poc/tools/verify_pinned_research.cjs'
+      - 'poc/tests/verify_pinned_research.test.cjs'
       - 'poc/tools/globalsim_course_generalization.cjs'
       - 'poc/tests/globalsim_course_generalization.test.cjs'
       - '.github/workflows/globalsim-course-generalization.yml'
@@ -19,7 +16,7 @@ permissions:
 jobs:
   rank-course-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,13 +26,19 @@ jobs:
         run: |
           node --check poc/tools/globalsim_course_generalization.cjs
           node --test poc/tests/globalsim_course_generalization.test.cjs
-      - name: Fetch already simulated six-course research observations
-        uses: actions/download-artifact@v4
+      - name: Restore optional SHA-pinned research cache
+        uses: actions/cache@v4
         with:
-          name: globalsim-observed-prior-position-sensitivity
-          run-id: ${{ inputs.expanded_run_id || '41966480256' }}
-          github-token: ${{ github.token }}
-          path: /tmp/global-course-source
+          path: /tmp/pinned-research/expanded
+          key: pinned-research-expanded-v1-${{ runner.os }}-${{ hashFiles('poc/tools/restore_pinned_research.sh', 'poc/tools/verify_pinned_research.cjs', 'poc/tools/skill_specificity32_research.cjs') }}
+      - name: Verify or regenerate fixed research inputs (no cross-run dependency)
+        run: |
+          node --test poc/tests/verify_pinned_research.test.cjs
+          bash poc/tools/restore_pinned_research.sh expanded /tmp/pinned-research/expanded
+      - name: Stage verified original observations
+        run: |
+          mkdir -p /tmp/global-course-source
+          cp /tmp/pinned-research/expanded/{summary,window-profile}.json /tmp/global-course-source/
       - name: Require the recorded original simulator-derived files
         run: |
           echo 'd853e79525f0e0fdcacdb0e0e5e96d9af2aa53766a2e8e774cb7d019763954c9  /tmp/global-course-source/summary.json' | sha256sum -c -
