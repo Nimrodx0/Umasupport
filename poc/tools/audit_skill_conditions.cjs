@@ -26,6 +26,7 @@ const specOmission=require('../src/skill_condition_spec_omission.cjs');
 const researchQueue=require('../src/skill_p2_32_research_queue.cjs');
 const p237Dynamic=require('../src/skill_p2_37_dynamic_state_evidence.cjs');
 const p238Spurt=require('../src/skill_p2_38_original_spurt_phase_same_and.cjs');
+const p243Spurt=require('../src/skill_p2_43_original_spurt_candidate_review.cjs');
 const shortExceptions=require('../src/skill_p2_35_short_window_exception_decisions.cjs');
 const mechanismReuse=require('../src/skill_p2_32_mechanism_reuse.cjs');
 const axisGates=require('../src/skill_p2_15_parameterized_axis_gates.cjs');
@@ -190,6 +191,16 @@ function matchedRecord(skill,live,old){
     p238.summary.originalSkillRaceFullANDTrueObservations!==0||
     p238.summary.approvedSkillOrCardSuitabilityScores!==0)
    throw Error('P2.38 original spurt/firsthalf shared AND fixed source mismatch');
+ const p243=p243Spurt.audit(model,p232Queue,p237,p238,{
+  revision:REVISION,checker:umaSkillCheckerText,skillData:umaSkillDataText
+ });
+ if(p243.summary.originalSourceSkillCandidates!==3||
+    p243.summary.exactOriginalCurrentANDReviewed!==3||
+    p243.summary.nearLaneSourceApproximationHeld!==1||
+    p243.summary.otherTwoOriginalRandomWindowMechanisms!==2||
+    p243.summary.additionalRaceOrSameTickTrials!==0||
+    p243.summary.approvedP3OrP4Ratings!==0)
+   throw Error('P2.43 selected spurt AND source semantics or no-score drift');
  const p232Mechanism=mechanismReuse.audit(model,p232Queue);
  if(p232Mechanism.denominators.sourceRouteFamilies!==
     p232Queue.denominators.originalRouteFamilies||
@@ -488,6 +499,16 @@ function matchedRecord(skill,live,old){
    distances:x.permittedDistanceTypes||null,
    rank9:x.projectedRanksByFieldSize?.[9]?.sourceConjunctionRankPositions||null,
    rank12:x.projectedRanksByFieldSize?.[12]?.sourceConjunctionRankPositions||null
+  }))
+ }));
+ fs.writeFileSync('p2-43-exact-selected-spurt-AND-review.json',
+  JSON.stringify({sourceSkillRegistrySHA256:digest(skillText),...p243},null,2)+'\n');
+ console.log('P2_43_EXACT_SOURCE_SPURT_AND='+JSON.stringify({
+  summary:p243.summary,rows:p243.rows.map(r=>({
+   id:r.sourceNumericId,name:r.originalSkillName,
+   sourceAND:r.exactOriginalCurrentAND,
+   referenceAND:r.identicalFullCurrentANDToP238Reference,
+   companion:r.companionMechanism,decision:r.disposition
   }))
  }));
  fs.writeFileSync('p2-38-original-source-spurt-phase-and.json',

@@ -203,7 +203,7 @@ function audit(short,split,half,exceptions,extra){
  ].join('|'))).size;
  return {schemaVersion:1,status:STATUS,
   source:{fixedOriginalSkillSHA256:p235.SOURCE_SHA,
-   original720RaceModelRevision:expanded.PIN,
+   original720RaceModelRevision:require('./globalsim_position_pilot.cjs').PIN,
    originalShortReportSHA256:p228.SHORT_SHA,
    p235SourceDecisionsStatus:exceptions.status,
    narrowSourceObservationStatus:extra.status},
