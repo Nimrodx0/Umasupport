@@ -38,3 +38,18 @@ test('stale source identity and no-record cards are not assigned positive labels
  a.equal(view.matchesCard(empty,{stage:4},data,labels,{context:ctx,mode:'possible'}),true);
  a.equal(view.matchesCard(empty,{stage:4},data,labels,{context:ctx,mode:'confirmed'}),false);
 });
+
+test('picker counts each direct ID once, distinguish explicit-only and other-targeted, retain unknown',()=>{
+ const {c,data,labels}=fixture();const p=(type,value)=>({type,operator:'==',value});
+ for(const s of data.skills)s.activationProfile.invokes=[{conditions:[[p('always',1)]],preConditions:[]}];
+ data.skillById.h.activationProfile.invokes=[{conditions:[[p('running_style',2)]],preConditions:[]}];
+ const context={running_style:2,distance_type:2,ground_type:1};
+ const x=view.browseCard(c,{stage:4,choices:{ev:'a'}},data,labels,context);
+ a.deepEqual(x.potential.counts,{total:4,explicitOnly:1,general:1,targeted:1,otherTargeted:0,undetermined:1,outside:0,scopeUnknown:0});
+ a.equal(x.potential.matching,3);a.equal(x.current.counts.total,3);a.equal(x.cardScore,null);
+ const y=view.browseCard(c,{stage:4,choices:{}},data,labels,{...context,running_style:1});
+ a.equal(y.potential.counts.otherTargeted,1);a.equal(y.potential.counts.outside,1);a.equal(y.potential.matching,1);
+ const z=view.browseCard(c,{stage:4,choices:{}},data,new Map(),context);a.equal(z.potential.matching,1);a.equal(z.potential.counts.undetermined,3);
+ delete data.skillById.missing.activationProfile;
+ a.equal(view.browseCard(c,{stage:4},data,labels,context).potential.counts.scopeUnknown,1);
+});

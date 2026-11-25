@@ -4,6 +4,7 @@
 const core=typeof module!=='undefined'&&module.exports?require('./core.js'):g.UmaCore;
 const fit=typeof module!=='undefined'&&module.exports?require('./skill_suitability.js'):g.UmaSkillSuitability;
 const search=typeof module!=='undefined'&&module.exports?require('./card_search.js'):g.UmaCardSearch;
+const catalog=typeof module!=='undefined'&&module.exports?require('./skill_catalog.js'):g.UmaSkillCatalog;
 const uniq=xs=>[...new Set(xs)];
 const index=rows=>{const m=new Map();for(const r of rows){if(m.has(r.appSkillId))throw Error('Duplicate skill ID');m.set(r.appSkillId,r);}return m;};
 function trustedRow(id,data,labels){
@@ -45,7 +46,36 @@ function matchesCard(card,config,data,labels,options={}){
  if(!v.potential.rows.length)return ['possible','undetermined'].includes(options.mode);
  return v.potential.rows.some(r=>fit.matches(trustedRow(r.appSkillId,data,labels),options));
 }
-const api={index,trustedRow,summarize,cardView,deckView,matchesCard};
+// Browse suitability without requiring a hypothetical opponent roster.
+// Counts are mutually exclusive direct skill IDs, never scores. The source
+// mask is independent of label admission, so single-style restrictions work
+// even with no local bundle. Other targeted styles are not positive matches.
+function browseSummary(ids,data,labels,context){
+ const style=context?.running_style;
+ if(![1,2,3,4].includes(style))throw Error('Select a running style');
+ const counts={total:0,explicitOnly:0,general:0,targeted:0,otherTargeted:0,undetermined:0,outside:0,scopeUnknown:0};
+ const rows=[];
+ for(const id of uniq(ids)){
+  const sk=data.skillById[id];if(!sk)continue;
+  const r={explicitNecessaryMasks:catalog.masks(sk.activationProfile),label:trustedRow(id,data,labels)?.label??null};
+  const app=fit.applicability(r,context);
+  const e=catalog.evidence(r,context);
+  const permitted=[1,2,3,4].filter(s=>fit.applicability(r,{...context,running_style:s})==='possible');
+  const category=app==='outside'?'outside':app==='unknown'?'scopeUnknown':permitted.length===1?'explicitOnly':e.state==='general'?'general':e.state==='targeted'?(e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
+  counts[category]++;counts.total++;
+  rows.push({appSkillId:id,category,applicability:app,evidence:e,permittedStyles:permitted});
+ }
+ return {counts,rows,matching:counts.explicitOnly+counts.general+counts.targeted};
+}
+function browseCard(card,config,data,labels,context){
+ const stage=config?.stage??4;
+ if(![0,1,2,3,4].includes(stage))throw Error('Invalid limit break');
+ const hints=card.sourceStatus?.startsWith('verified_hints')?(card.hintsByStage?.[String(stage)]??card.hints??[]):[];
+ const events=search.approvedEventSkillIds(card,data);
+ const current=core.directRoutes(card,{...config,stage}).filter(r=>r.source==='hint'?hints.includes(r.skillId):events.has(r.skillId));
+ return {cardId:card.id,stage,potential:browseSummary([...hints,...events],data,labels,context),current:browseSummary(current.map(r=>r.skillId),data,labels,context),eventCatalog:search.eventCatalogState(card,data),cardScore:null};
+}
+const api={index,trustedRow,summarize,cardView,deckView,matchesCard,browseSummary,browseCard};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSuitabilityView=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
