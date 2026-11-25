@@ -1,11 +1,6 @@
 name: P3 practical suitability review
 on:
   workflow_dispatch:
-    inputs:
-      approved_run_id:
-        description: Successful D-052/D-056 fixed generation run with unexpired artifacts
-        required: true
-        default: '45574359164'
   pull_request:
     paths:
       - '.github/workflows/p3-practical-suitability-review.yml'
@@ -22,11 +17,20 @@ on:
       - 'poc/tests/p3_d056_approved_natural_spurt.test.cjs'
       - 'poc/tools/audit_p3_practical_label_candidates.cjs'
       - 'poc/tests/p3_practical_label_candidates.test.cjs'
+      - 'poc/tools/audit_p3_full_phase_wd.cjs'
+      - 'poc/tests/p3_full_phase_wd.test.cjs'
+      - 'poc/tools/globalsim_phase_random_10m.cjs'
+      - 'poc/tools/globalsim_subphase_random_10m.cjs'
 permissions:
   contents: read
   actions: read
 jobs:
+  static-window:
+    uses: ./.github/workflows/p2-subphase10-77-skill-review.yml
+  dynamic:
+    uses: ./.github/workflows/p2-joint-dynamic-model.yml
   review:
+    needs: [static-window, dynamic]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -35,16 +39,17 @@ jobs:
           node-version: '22'
       - uses: actions/download-artifact@v4
         with:
-          name: p3-d052-approved-scoped-labels-not-public
-          run-id: ${{ inputs.approved_run_id || '45574359164' }}
-          github-token: ${{ github.token }}
-          path: /tmp/review-labels
+          name: p3-d052-fixed-static-window-inputs
+          path: /tmp/review-static
       - uses: actions/download-artifact@v4
         with:
-          name: p3-d052-fixed-static-window-inputs
-          run-id: ${{ inputs.approved_run_id || '45574359164' }}
-          github-token: ${{ github.token }}
-          path: /tmp/review-static
+          name: p2-59-joint-dynamic-projection
+          path: /tmp/review-dynamic
+      - name: Regenerate approved baseline from same-run fixed evidence
+        run: |
+          mkdir -p /tmp/review-labels
+          node poc/src/p3_approved_scope_labels.cjs /tmp/review-static/p3-g6-d052-receipt.json /tmp/review-static/p3-4g-source-logic-label-preview.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json poc/data/p3_approved_suitability_policy_d052.v1.json /tmp/review-labels/p3-d052-approved-labels.json
+          node poc/tools/export_d052_catalog_labels.cjs /tmp/review-labels/p3-d052-approved-labels.json /tmp/umasupport-d052-labels.json
       - name: Download exact fixed source and audit old admission
         run: |
           curl --fail --silent --show-error --location 'https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt' -o /tmp/skill_data.txt
@@ -55,12 +60,6 @@ jobs:
           node --test poc/tests/p3_axis_suitability_review.test.cjs
           node poc/tools/audit_p3_axis_suitability_review.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: p2-59-joint-dynamic-projection
-          run-id: ${{ inputs.approved_run_id || '45574359164' }}
-          github-token: ${{ github.token }}
-          path: /tmp/review-dynamic
       - name: Triage remaining held styles against existing model evidence
         run: |
           node --test poc/tests/p3_style_held_evidence.test.cjs
@@ -79,10 +78,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: p2-28-balanced-short-window-two-axis-75-skills
-          run-id: ${{ inputs.approved_run_id || '45574359164' }}
-          github-token: ${{ github.token }}
           path: /tmp/review-two-axis
       - name: Verify batch of remaining practical candidates
         run: |
           node --test poc/tests/p3_practical_label_candidates.test.cjs
           node poc/tools/audit_p3_practical_label_candidates.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json /tmp/review-two-axis/two-axis75.json /tmp/practical-candidates.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: p3-full-phase-fixed-wd-inputs
+          path: /tmp/review-full
+      - name: Apply existing W/D selection rule to 29 full-phase candidates
+        run: |
+          node --test poc/tests/p3_full_phase_wd.test.cjs
+          node poc/tools/audit_p3_full_phase_wd.cjs /tmp/skill_data.txt /tmp/review-full/full-phase-reference.json /tmp/review-full/full-phase-split15.json /tmp/practical-candidates.json /tmp/full-phase-wd-candidates.json
