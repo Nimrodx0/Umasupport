@@ -11,12 +11,26 @@
   ],
   "entries": [
     {
+      "id": "D-059",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：脚質適性の実用差幅を暫定10ptとする",
+      "status": "current",
+      "relation": [],
+      "note": "D-058の個別優位・集団優位に10ptを暫定採用。実用上の問題が見つかれば再検討。元条件、同一文脈、未知境界、D方向支持は維持し、既存根拠に対して再評価する。公開・カード採点は別",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-059",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-059",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-058",
       "date": "2026-11-25",
       "heading": "2026-11-25：個別優位と集団優位を併用して脚質適性を判定する",
-      "status": "current",
-      "relation": [],
-      "note": "各適用脚質の他脚質平均に対する優位と、対象群全員の非対象群全員に対する優位を併用。対象群内の同等性を要求しない。両基準で確認された脚質の和集合を採用する方針。差幅は未確定。既存研究で感度比較し、元条件・不確かさ・比較文脈を保持",
+      "status": "qualified",
+      "relation": [
+        "D-059"
+      ],
+      "note": "各適用脚質の他脚質平均に対する優位と、対象群全員の非対象群全員に対する優位を併用。対象群内の同等性を要求しない。両基準で確認された脚質の和集合を採用する方針。差幅は未確定。既存研究で感度比較し、元条件・不確かさ・比較文脈を保持。差幅はD-059で暫定10pt",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-058",
       "assessmentBasis": "docs/decisions/log.md#decision-d-058",
