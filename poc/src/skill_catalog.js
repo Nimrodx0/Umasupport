@@ -89,7 +89,59 @@ async function loadLabels(bytes,data,{fetcher=g.fetch}={}){
  }
  return {labels:out,skipped,decisionId:approved.decisionId};
 }
-const api={AXES,masks,scopeSummary,evidence,index,filter,loadLabels,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
+// D060: compact, derived labels only. No source condition or source name is
+// distributed. Resolve numeric identities uniquely and compare the live
+// profile to the pinned upstream dictionary before admitting any label.
+const PUBLIC_URL='./data/skill-suitability-d059.v1.txt';
+const PUBLIC_SHA='61d5e202efbc401e188e3c54df5d0630b6971a516afb52fb9faa82a4d39bb34d';
+const stylesFor=m=>[1,2,3,4].filter(s=>m&(1<<(s-1)));
+function publicLabels(text){
+ const out=new Map(),counts={general:0,targeted:0};
+ const invalid=()=>{throw Error('公開適性データの形式が一致しません。');};
+ for(const line of text.trim().split('\n')){
+  const p=line.split(' '),kind=p[0],ids=p.at(-1).split(',');let label;
+  if(kind==='g'&&p.length===3&&/^[0-9a-f]{32}$/.test(p[1])){
+   const mask=[...p[1]].map(x=>parseInt(x,16)),contexts=[];
+   for(let d=1;d<=4;d++)for(let g=1;g<=2;g++)for(let c=1;c<=4;c++){
+    const running_styles=[1,2,3,4].filter(s=>mask[(s-1)*8+(d-1)*2+g-1]&(1<<(c-1)));
+    if(running_styles.length)contexts.push({distance_type:d,ground_type:g,ground_condition:c,running_styles});
+   }
+   if(!contexts.length)invalid();
+   label={state:'general',styles:[],scope:{kind:'source-logic',contexts}};
+  }else if(['r','d'].includes(kind)&&p.length===4&&/^(?:[1-9]|1[0-4])$/.test(p[1])){
+   const styles=stylesFor(Number(p[1]));let scope;
+   if(kind==='r'){
+    const courseIds=p[2].split(',').map(Number);if(courseIds.some(id=>!COURSE_DISTANCE[id])||new Set(courseIds).size!==courseIds.length)invalid();
+    scope={kind:'rank-window-fixed-model',branches:[{distanceType:null,courseIds}],ground_type:1,ground_condition:1,fieldSizes:[9,12],scenarios:['balanced'],modelAbilityModes:['equal','jitter10']};
+   }else{
+    const contexts=p[2].split(',').map(x=>{const [courseId,fieldSize,scenario,...rest]=x.split(':');if(rest.length||!COURSE_DISTANCE[Number(courseId)]||![9,12].includes(Number(fieldSize))||!['balanced','backHeavy'].includes(scenario))invalid();return {courseId:Number(courseId),fieldSize:Number(fieldSize),scenario};});
+    if(new Set(contexts.map(x=>JSON.stringify(x))).size!==contexts.length)invalid();
+    scope={kind:'dynamic-fixed-model',contexts,ground_type:1,ground_condition:1,modelAbilityModes:['equal']};
+   }
+   label={state:'targeted',styles,scope};
+  }else invalid();
+  for(const id of ids){if(!/^\d+$/.test(id)||out.has(id))invalid();out.set(id,label);counts[label.state]++;}
+ }
+ if(counts.general!==304||counts.targeted!==100||out.size!==404)invalid();
+ return out;
+}
+async function loadPublicLabels(data,{fetcher=g.fetch}={}){
+ const get=async(url,digest)=>{const res=await fetcher(url);if(!res.ok)throw Error('適性データまたは固定辞書の取得に失敗しました。');const b=await res.arrayBuffer();if(await sha(b)!==digest)throw Error('適性データまたは固定辞書の検証に失敗しました。');return new TextDecoder().decode(b);};
+ const [derived,raw]=await Promise.all([get(PUBLIC_URL,PUBLIC_SHA),get(FIXED_SOURCE,SOURCE_HASH)]);
+ const approved=publicLabels(derived),records=new Map(JSON.parse(raw.replace(/^\uFEFF/,'')).map(r=>[r.id,r])),bySource=new Map();
+ for(const skill of data.skills){const id=skill.activationProfile?.sourceNumericId;if(!id)continue;if(!bySource.has(id))bySource.set(id,[]);bySource.get(id).push(skill);}
+ const labels=new Map();let skipped=0;
+ for(const [id,label] of approved){
+  const matches=bySource.get(id)||[],skill=matches[0],source=records.get(id),p=skill?.activationProfile;
+  if(matches.length!==1||!source||p?.status!=='source-structure'||signature(p)!==signature(profiles.project(source,'fixed'))){skipped++;continue;}
+  const m=masks(p);
+  if(!m){skipped++;continue;}
+  if(label.state==='general'&&label.scope.contexts.some(c=>c.running_styles.some(s=>!(m[(s-1)*8+(c.distance_type-1)*2+c.ground_type-1]&(1<<(c.ground_condition-1)))))){skipped++;continue;}
+  labels.set(skill.id,{appSkillId:skill.id,sourceNumericId:id,explicitNecessaryMasks:m,label});
+ }
+ return {labels,skipped,decisionId:'D-059'};
+}
+const api={AXES,masks,scopeSummary,evidence,index,filter,loadLabels,loadPublicLabels,publicLabels,PUBLIC_URL,PUBLIC_SHA,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillCatalog=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
