@@ -41,7 +41,7 @@ function contexts(label){
 function evidence(row,ctx={}){
  const label=row?.label;
  if(!label||label.state==='undetermined')return {state:'undetermined',styles:[],text:'未判定'};
- const applicable=contexts(label).some(c=>['distance_type','ground_type','ground_condition'].every(k=>ctx[k]==null||ctx[k]===c[k]));
+ const applicable=contexts(label).some(c=>['distance_type','ground_type','ground_condition'].every(k=>ctx[k]==null||ctx[k]===c[k])&&(ctx.running_style==null||c.running_styles==null||c.running_styles.includes(ctx.running_style)));
  if(!applicable)return {state:'undetermined',styles:[],text:'未判定'};
  // Browse known evidence without pretending the user's actual race matches a model roster.
  if(label.state==='general')return {state:'general',styles:[],text:'汎用'};
