@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-053",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：デッキと独立した全スキル一覧を追加する",
+      "status": "current",
+      "relation": [],
+      "note": "編成外を含む全収録スキルの明示適用範囲・適性を別絞込、詳細・提供カード逆引き。既存デッキ比較は維持。ラベル公開は別",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-053",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-053",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-052",
       "date": "2026-11-25",
       "heading": "2026-11-25：残条件研究を終了し初期脚質適性判定方式を採用する",
