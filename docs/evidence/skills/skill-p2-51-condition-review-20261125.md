@@ -119,3 +119,6 @@
 3. 利用者が研究方針を確認し、必要な限定研究と再判定を終えるまでG4再Passにしない。G6研究受領の更新後にP3正式採用に進む。
 
 [機械可読レビュー案](../../../poc/data/p2_condition_review_proposal.v1.json)・[全出現の共起監査](../../../poc/src/p2_condition_review_audit.cjs)。
+
+
+**2026-11-25固定CI確認**：[実データ #45528705885](https://github.com/Nimrodx0/Umasupport/actions/runs/45528705885)で全90型・2,421出現・共起・反例検証成功。[P2.52](skill-p2-52-omission-review-20261125.md)で34省略候補を精査する。残る定性・追加研究・保留判断は別。
