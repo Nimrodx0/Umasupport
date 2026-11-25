@@ -11,6 +11,7 @@ on:
       - 'poc/src/skill_catalog.js'
       - 'poc/tests/skill_catalog.test.cjs'
       - 'poc/tests/browser_fixed_skill_catalog.cjs'
+      - 'poc/tests/browser_public_label_drift.cjs'
       - 'poc/live.html'
       - 'poc/src/live_app.js'
       - 'poc/src/style.css'
@@ -82,3 +83,28 @@ jobs:
             /tmp/p3-card-suitability-view-summary.json
           retention-days: 14
           if-no-files-found: error
+
+  live-label-drift:
+    needs: approved
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: expected-pages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: d052-local-catalog-labels-not-for-publication
+          path: /tmp/d052-local
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Verify moving dictionary and actual local label import on Pages
+        env:
+          EXPECTED: ${{ github.event.pull_request.base.sha || github.sha }}
+        run: node poc/tests/browser_public_label_drift.cjs expected-pages "$EXPECTED" /tmp/d052-local/umasupport-d052-labels.json
