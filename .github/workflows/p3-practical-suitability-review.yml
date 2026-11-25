@@ -10,6 +10,8 @@ on:
       - 'poc/tools/audit_p3_axis_suitability_review.cjs'
       - 'poc/tools/audit_p3_style_held_evidence.cjs'
       - 'poc/tests/p3_style_held_evidence.test.cjs'
+      - 'poc/tools/audit_p3_style_rank_paths.cjs'
+      - 'poc/tests/p3_style_rank_paths.test.cjs'
 permissions:
   contents: read
   actions: read
@@ -53,3 +55,8 @@ jobs:
         run: |
           node --test poc/tests/p3_style_held_evidence.test.cjs
           node poc/tools/audit_p3_style_held_evidence.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json
+
+      - name: Examine exact rank pathways and conditional evidence
+        run: |
+          node --test poc/tests/p3_style_rank_paths.test.cjs
+          node poc/tools/audit_p3_style_rank_paths.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json
