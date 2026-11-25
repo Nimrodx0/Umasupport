@@ -7,4 +7,4 @@
 - 期待母数：881、818／63、33同名なし／30IDなし、970元経路、26,176既知必要条件セル／2,016元不明セル、部分W/D 81／芝転用保留6／その他794。これらは**固定CIで照合すべき期待値**であり新実測を主張しない。
 - 未解釈型を対象ID別に保持する。元AND条件の実成立率、ゲーム発動率、正式な適性ラベル・サポカ採点は承認しない。G3/G4の採否判定及び親G6 Passは別。
 
-実装：[横断監査](../../../poc/src/p2_gate_cohort_cross_audit.cjs)、[合成反例](../../../poc/tests/p2_gate_cohort_cross_audit.test.cjs)。固定CI未確認の時点での記録。
+実装：[横断監査](../../../poc/src/p2_gate_cohort_cross_audit.cjs)、[合成反例](../../../poc/tests/p2_gate_cohort_cross_audit.test.cjs)。**2026-11-25受入**：[固定CI #45360124488](https://github.com/Nimrodx0/Umasupport/actions/runs/45360124488)全ステップ成功。期待881/818/63、33/30、970、26,176/2,016、81/6/794を実測。空Invoke保留0。#476 main統合 a726a58。固定対象G1/G2 Pass、G3/G4/G6親Passは別。
