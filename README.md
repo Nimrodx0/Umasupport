@@ -24,7 +24,7 @@
 
 通常アプリのヘッダーから「全スキル一覧」を開くと、編成に関係なく収録スキルを検索できます。明示適用範囲と脚質適性は別の絞り込みです。適性データなしでも明示条件で検索できます。
 
-適性ラベルを試用する場合は、[D-052検証ワークフロー](.github/workflows/p3-d052-initial-labels.yml)の成功実行から `d052-local-catalog-labels-not-for-publication` 成果物を取得し、ZIP内の `umasupport-d052-labels.json` を展開して、一覧の「適性データの読み込み（D-052）」で選択します。期限切れの場合は同じ固定ワークフローを再実行します。ファイルはサーバーへ送信されず、再読込時は再選択が必要です。元条件・版が一致しないラベルは未判定として扱います。限定ラベルは研究条件内の参考であり、実ゲームの発動率ではありません。永続配布は未承認です。
+最新版D-059をローカル試用する場合は、[固定検証 #45598249844](https://github.com/Nimrodx0/Umasupport/actions/runs/45598249844/artifacts/15013399217) のZIP内の `umasupport-d059-labels.json` を展開して、全スキル一覧の「適性データの読み込み」で選択します（D-059対応コードの反映後）。期限切れの場合は [P3 practical suitability review](.github/workflows/p3-practical-suitability-review.yml) を再実行して `d059-local-catalog-labels-not-for-publication` を取得します。旧D-052/D-056版も引き続き読み込めます。ファイルはサーバーへ送信されず、再読込時は再選択が必要です。元条件・版が一致しないラベルは未判定として扱います。限定ラベルは研究条件内の参考であり、実ゲームの発動率ではありません。永続配布は未承認です。
 
 ## 文書の入口
 
