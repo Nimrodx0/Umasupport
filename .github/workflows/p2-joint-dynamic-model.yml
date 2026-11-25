@@ -10,6 +10,8 @@ on:
       - 'poc/tests/p2_joint_dynamic_model.test.cjs'
       - 'poc/src/p3_dynamic_margin_screen.cjs'
       - 'poc/tests/p3_dynamic_margin_screen.test.cjs'
+      - 'poc/src/p3_dynamic_scope_screen.cjs'
+      - 'poc/tests/p3_dynamic_scope_screen.test.cjs'
 permissions:
   contents: read
 jobs:
@@ -66,6 +68,10 @@ jobs:
         run: |
           node --test poc/tests/p3_dynamic_margin_screen.test.cjs
           node poc/src/p3_dynamic_margin_screen.cjs /tmp/p2-59-report/report.json /tmp/p2-59-report/p3-4f-margin-screen.json
+      - name: P3.4i compare only explicitly applicable fixed contexts, retaining partial masks as held
+        run: |
+          node --test poc/tests/p3_dynamic_scope_screen.test.cjs
+          node poc/src/p3_dynamic_scope_screen.cjs /tmp/p2-59-report/report.json /tmp/p2-59-report/p3-4i-scope-screen.json
       - uses: actions/upload-artifact@v4
         with:
           name: p2-59-joint-dynamic-projection
@@ -73,5 +79,6 @@ jobs:
             /tmp/p2-59-report/report.json
             /tmp/p2-59-report/summary.json
             /tmp/p2-59-report/p3-4f-margin-screen.json
+            /tmp/p2-59-report/p3-4i-scope-screen.json
           retention-days: 14
           if-no-files-found: error
