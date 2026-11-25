@@ -8,6 +8,8 @@ on:
       - 'poc/src/p2_clock_rank_joint_model.cjs'
       - 'poc/src/p2_joint_dynamic_model.cjs'
       - 'poc/tests/p2_joint_dynamic_model.test.cjs'
+      - 'poc/src/p3_dynamic_margin_screen.cjs'
+      - 'poc/tests/p3_dynamic_margin_screen.test.cjs'
 permissions:
   contents: read
 jobs:
@@ -60,11 +62,16 @@ jobs:
             /tmp/p2-59-uma/data/skill_data.txt p2-32-source-route-research-queue.json \
             "$base/SkillChecker.kt" "$base/RaceState.kt" "$base/RaceCalculator.kt" \
             /tmp/p2-59-report/report.json /tmp/p2-59-report/summary.json
+      - name: P3.4f compare fixed context direction and margin sensitivity without official labels
+        run: |
+          node --test poc/tests/p3_dynamic_margin_screen.test.cjs
+          node poc/src/p3_dynamic_margin_screen.cjs /tmp/p2-59-report/report.json /tmp/p2-59-report/p3-4f-margin-screen.json
       - uses: actions/upload-artifact@v4
         with:
           name: p2-59-joint-dynamic-projection
           path: |
             /tmp/p2-59-report/report.json
             /tmp/p2-59-report/summary.json
+            /tmp/p2-59-report/p3-4f-margin-screen.json
           retention-days: 14
           if-no-files-found: error
