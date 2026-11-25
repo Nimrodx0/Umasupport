@@ -12,6 +12,9 @@ on:
       - 'poc/tests/p3_style_held_evidence.test.cjs'
       - 'poc/tools/audit_p3_style_rank_paths.cjs'
       - 'poc/tests/p3_style_rank_paths.test.cjs'
+      - 'poc/data/p3_approved_suitability_policy_d056.v1.json'
+      - 'poc/src/p3_d056_approved_natural_spurt.cjs'
+      - 'poc/tests/p3_d056_approved_natural_spurt.test.cjs'
 permissions:
   contents: read
   actions: read
@@ -60,3 +63,8 @@ jobs:
         run: |
           node --test poc/tests/p3_style_rank_paths.test.cjs
           node poc/tools/audit_p3_style_rank_paths.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json
+
+      - name: Verify approved D056 label derivation on fixed baseline
+        run: |
+          node --test poc/tests/p3_d056_approved_natural_spurt.test.cjs
+          node poc/src/p3_d056_approved_natural_spurt.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/p3-d056-approved.json /tmp/umasupport-d056-labels.json
