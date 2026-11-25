@@ -105,11 +105,13 @@ function catalogResults(){const o=ui.catalog;if(!catalogRows)catalogRows=catalog
 function refreshCatalog(){const e=document.getElementById('catalog-results');if(e)e.innerHTML=catalogResults();}
 function catalogDetail(skill){if(!catalogRows)catalogRows=catalog.index(data,catalogLabels);const r=catalogRows.find(x=>x.skill.id===skill.id);if(!r)return '';const e=catalog.evidence(r,ui.catalogOpen?ui.catalog.context:{});const scope=window.UmaSkillSuitability.explicitScope(r);const combinations=scope.correlated?`<details class="skill-effect-detail"><summary>適用可能な組合せ（明示必要条件）</summary><p class="tiny-note">各行の脚質・距離と馬場条件の組合せが対象候補です。発動を保証するものではありません。</p><ul>${scope.groups.map(g=>`<li>${esc(g.pairs.join(' / '))}：${esc(g.surfaces.join(' / '))}</li>`).join('')}</ul></details>`:'';return `<div class="info-item"><strong>明示的な適用範囲</strong><div>${esc(r.scopeSummary)}</div>${combinations}${ui.catalog.showLabels?`<strong>脚質適性</strong><div>${esc(e.text)}${e.note?` <small>${esc(e.note)}</small>`:''}</div>`:''}</div>`;}
 function refreshLabelViews(){
+ if(!catalog||settingsLoadError||!ui.catalogOpen&&!ui.modal)return;
  const status=document.getElementById('catalog-label-status');if(status)status.textContent=catalogMessage;
  refreshCatalog();if(['pick','edit','skill'].includes(ui.modal?.kind))renderModal(true);
 }
 function acceptLabels(result){catalogLabels=result.labels;catalogRows=null;catalogMessage='検証済み '+result.labels.size+'件 / 変更・未照合 '+result.skipped+'件';}
 async function autoCatalogLabels(){
+ if(typeof catalog?.loadPublicLabels!=='function'){catalogMessage='適性データ未読込';return;}
  const request=++labelRequest;
  try{const result=await catalog.loadPublicLabels(data);if(request!==labelRequest)return;acceptLabels(result);}
  catch(e){if(request!==labelRequest)return;catalogMessage='適性データ未読込（自動取得失敗）';console.warn('公開適性データを読み込めません',e);}
