@@ -51,7 +51,7 @@ function resolve(row,ctx){
  if(label.state==='undetermined')return label;
  if(label.state==='general'){
   if(!ctx)return label;
-  return label.scope.contexts.some(x=>['distance_type','ground_type','ground_condition'].every(k=>ctx[k]==null||x[k]===ctx[k]))?label:unknown('outside-evidence-context');
+  return label.scope.contexts.some(x=>['distance_type','ground_type','ground_condition'].every(k=>ctx[k]==null||x[k]===ctx[k])&&(ctx.running_style==null||x.running_styles==null||x.running_styles.includes(ctx.running_style)))?label:unknown('outside-evidence-context');
  }
  if(label.state!=='targeted')return unknown('unsupported-label-state');
  if(!ctx)return unknown('scoped-evidence-context-required');
