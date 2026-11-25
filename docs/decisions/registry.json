@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-056",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：十分なスタミナを前提とする自然ラストスパート条件を脚質中立とする",
+      "status": "current",
+      "relation": [],
+      "note": "標準育成の十分なスタミナを前提に自然ラストスパート条件を脚質中立として扱う。元条件・適用範囲・AND/OR/履歴を保持し、他の脚質依存条件を独立に評価。まず照合済み24件を汎用に追加。最大速度状態・実発動率・公開は別",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-056",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-056",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-055",
       "date": "2026-11-25",
       "heading": "2026-11-25：現行の適性再評価を脚質のみに限定する",
