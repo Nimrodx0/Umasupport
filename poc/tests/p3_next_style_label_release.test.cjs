@@ -19,3 +19,11 @@ test('restricted equivalent OR paths retain exact eligible styles',()=>{
  a.equal(probe(rec([[p('running_style',2),p('phase_random',1)],[p('running_style',3),p('phase_random',2)]])),null);
  a.equal(probe(rec([[p('running_style',2),p('phase_random',1)]])),null);
 });
+
+test('restricted general label resolves only inside the explicit style scope, with no extra UI note',()=>{
+ const r=rec([[p('running_style',2),p('phase_random',1)],[p('running_style',3),p('phase_random',1)]]);
+ const row={label:probe(r).label};const fit=require('../src/skill_suitability.js'),cat=require('../src/skill_catalog.js');
+ for(const running_style of [2,3]){a.equal(fit.resolve(row,{running_style}).state,'general');a.deepEqual(cat.evidence(row,{running_style}),{state:'general',styles:[],text:'汎用'});}
+ for(const running_style of [1,4]){a.equal(fit.resolve(row,{running_style}).state,'undetermined');a.equal(cat.evidence(row,{running_style}).state,'undetermined');}
+ a.equal(cat.evidence(row,{}).text,'汎用');
+});
