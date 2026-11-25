@@ -12,8 +12,9 @@
 
 ## P3：研究結果の取り込み・不確実性の解釈
 
-- [2026-11-25：P3.4h 81短窓技能の実用差感度](skills/skill-p3-4h-rank-window-margin-screen-20261125.md)：同一文脈のW/D差と元距離分岐を保った向け候補研究。固定CI待ち。
-- [2026-11-25：P3.4f／4g 実データの適性判定案](skills/skill-p3-4fg-label-policy-preview-20261125.md)：98動的技能の文脈別実用差感度、257元論理候補の汎用プレビューと全カード結合。4g固定CI成功、4f未確認。
+- [2026-11-25：P3.4i 適用範囲内の比較と評価方式案](skills/skill-p3-4i-scope-local-and-policy-review-20261125.md)：取得済み固定成果物の局所再解析、動的4件の候補と統合判断案。専用CI待ち。
+- [2026-11-25：P3.4h 81短窓技能の実用差感度](skills/skill-p3-4h-rank-window-margin-screen-20261125.md)：同一文脈のW/D差と元距離分岐を保った向け候補研究。固定CI成功（7/27/39/45件）。
+- [2026-11-25：P3.4f／4g 実データの適性判定案](skills/skill-p3-4fg-label-policy-preview-20261125.md)：98動的技能の文脈別実用差感度、257元論理候補の汎用プレビューと全カード結合。4g・4f固定CI成功。
 
 - [2026-11-25：P3.3b 全566カードの直接取得候補集約](skills/skill-p3-3b-all-card-direct-research-routes-20261125.md)：固定881技能と凸別ヒント・承認済みイベントを元ID／研究候補で接続。固定CI成功（5,434組）。
 
