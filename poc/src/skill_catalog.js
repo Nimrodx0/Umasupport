@@ -11,7 +11,8 @@ const BUNDLE_HASH='874e7cf802bcf1ed0cf314c60438ca0b2fcc27bfa76d20b583be48c78c881
 const POLICY_HASH='eec33230ee629d91b1f6f41109d6691e16237b69e1f7e6ffcd0b7cf23e1061f7';
 const APPROVED_BUNDLES=Object.freeze({
  [BUNDLE_HASH]:Object.freeze({decisionId:'D-052',policySHA256:POLICY_HASH,count:300}),
- 'fc8ad2b54561e4107bf0bc7c3d8744b7230de03d1035eeae082b2478d1102bcc':Object.freeze({decisionId:'D-056',policySHA256:'eeab2d93df380d96d1eecf6fb3f2a3c11e971bfa4791795d463a60a7fa640c35',count:324})
+ 'fc8ad2b54561e4107bf0bc7c3d8744b7230de03d1035eeae082b2478d1102bcc':Object.freeze({decisionId:'D-056',policySHA256:'eeab2d93df380d96d1eecf6fb3f2a3c11e971bfa4791795d463a60a7fa640c35',count:324}),
+ '2f7efccbf6ced322e4902b8014ba580332dd84f613c996bc4e7daca7c9b6505a':Object.freeze({decisionId:'D-059',policySHA256:'f0c4d078973bd4cc2b16775b11fdd2da3dd72e4cd4e3a1010fd636ab5facb702',count:404})
 });
 const FIXED_SOURCE='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
 const norm=x=>String(x??'').normalize('NFKC').toLocaleLowerCase().trim();

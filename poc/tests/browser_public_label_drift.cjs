@@ -51,7 +51,7 @@ async function main(){
  const approved=cat.APPROVED_BUNDLES[sha(bytes)];a(approved,'approved bundle digest');a.equal(bundle.decisionId,approved.decisionId);a.equal(bundle.rows.length,approved.count);a.equal(bundle.policySHA256,approved.policySHA256);const n=approved.count;
  const response=await fetch(FIXED);a(response.ok);const fixed=Buffer.from(await response.arrayBuffer());a.equal(sha(fixed),bundle.sourceRegistrySHA256);
  const records=new Map(JSON.parse(fixed.toString('utf8').replace(/^\uFEFF/,'')).map(r=>[r.id,r]));
- const assets=['poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css'];
+ const assets=['poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/card_suitability_view.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css'];
  for(const asset of assets){
   const r=await fetch(BASE+asset+'?verify='+EXPECTED,{cache:'no-store'});a(r.ok,asset+' HTTP '+r.status);
   a.equal(sha(Buffer.from(await r.arrayBuffer())),sha(await fs.readFile(path.join(ROOT,asset))),'deployed asset mismatch: '+asset);
@@ -79,7 +79,7 @@ async function main(){
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(n-accepted)+'件';
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined'])a.deepEqual(await collect(page,state,total),groups[state].sort(),'complete ID partition '+state);
-   if(bundle.decisionId==='D-056'){
+   if(bundle.decisionId!=='D-052'){
     await page.locator('#catalog-suitability').selectOption('general');
     await page.locator('#catalog-query').fill('全身全霊');
     const names=await page.locator('.catalog-table tbody tr').allTextContents();

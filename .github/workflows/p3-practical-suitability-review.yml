@@ -31,6 +31,9 @@ on:
       - 'poc/tools/export_d059_catalog_labels.cjs'
       - 'poc/tools/audit_p3_final_card_browse.cjs'
       - 'poc/src/card_suitability_view.js'
+      - 'poc/src/skill_catalog.js'
+      - 'poc/src/live_app.js'
+      - 'poc/tests/browser_fixed_skill_catalog.cjs'
       - 'poc/tools/globalsim_phase_random_10m.cjs'
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
 permissions:
@@ -129,9 +132,39 @@ jobs:
           node poc/tools/export_d059_catalog_labels.cjs /tmp/skill_data.txt /tmp/p3-final-held.json /tmp/umasupport-d059-labels.json
           node --test poc/tests/card_suitability_view.test.cjs
           node poc/tools/audit_p3_final_card_browse.cjs /tmp/p3-final-held.json /tmp/review-static/p3-3b-all-card-research-routes.json
+      - name: Check admitted final digest and test actual fixed UI
+        run: |
+          echo '2f7efccbf6ced322e4902b8014ba580332dd84f613c996bc4e7daca7c9b6505a  /tmp/umasupport-d059-labels.json' | sha256sum -c -
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+          node poc/tests/browser_fixed_skill_catalog.cjs /tmp/umasupport-d059-labels.json
       - uses: actions/upload-artifact@v4
         with:
-          name: d059-local-catalog-labels-awaiting-digest-admission
+          name: d059-local-catalog-labels-not-for-publication
           path: /tmp/umasupport-d059-labels.json
           retention-days: 14
           if-no-files-found: error
+
+  # One-time independent early acceptance for this admission PR only.
+  # The normal review job above regenerates and verifies the file in every run.
+  early-d059-admission:
+    if: github.event_name == 'pull_request' && github.event.pull_request.number == 518
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: d059-local-catalog-labels-awaiting-digest-admission
+          run-id: 45598249844
+          github-token: ${{ github.token }}
+          path: /tmp/d059-early
+      - name: Check verified artifact and exercise current UI
+        run: |
+          echo '2f7efccbf6ced322e4902b8014ba580332dd84f613c996bc4e7daca7c9b6505a  /tmp/d059-early/umasupport-d059-labels.json' | sha256sum -c -
+          node --test poc/tests/skill_catalog.test.cjs poc/tests/card_suitability_view.test.cjs
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+          node poc/tests/browser_fixed_skill_catalog.cjs /tmp/d059-early/umasupport-d059-labels.json
