@@ -35,4 +35,4 @@ for(const row of labels.rows){
 a.equal(matched,818);a.equal(examples.length,10);
 for(const e of examples)for(const k of AXES)a.equal(e.axes[k],'full-neutral-candidate');
 for(const s of Object.values(stats)){a.equal(Object.values(s.states).reduce((a,b)=>a+b,0),881);a.equal(Object.values(s.oldUnknown).reduce((a,b)=>a+b,0),581);}
-console.log('D054_AXIS_REVIEW='+JSON.stringify({fixedSkills:881,matched,stats,examples,newStyleExamples,formalLabelsChanged:0}));
+console.log('D055_STYLE_REVIEW='+JSON.stringify({fixedSkills:881,matched,stats,examples,newStyleExamples,formalLabelsChanged:0}));
