@@ -11,12 +11,26 @@
   ],
   "entries": [
     {
+      "id": "D-055",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：現行の適性再評価を脚質のみに限定する",
+      "status": "current",
+      "relation": [],
+      "note": "現行の脚質適性のみを再評価。距離・馬場の非明示的適性は対象外。明示範囲と脚質比較の文脈は保持。効果量・有用性除外はD-054を維持",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-055",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-055",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-054",
       "date": "2026-11-25",
       "heading": "2026-11-25：発動条件の成立傾向を評価軸別に判定し効果量を除外する",
-      "status": "current",
-      "relation": [],
-      "note": "脚質・距離・馬場の判定を独立させ、発動後の効果量・有用性を除外。条件が他軸だけに関係することを当該軸の未判定理由にしない。明示制限・複合条件・根拠不足を保持し、全件の再判定を優先。個別判定の新規閾値・永続配布は別",
+      "status": "qualified",
+      "relation": [
+        "D-055"
+      ],
+      "note": "脚質・距離・馬場の判定を独立させ、発動後の効果量・有用性を除外。条件が他軸だけに関係することを当該軸の未判定理由にしない。明示制限・複合条件・根拠不足を保持し、全件の再判定を優先。個別判定の新規閾値・永続配布は別。現工程はD-055で脚質のみへ限定",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-054",
       "assessmentBasis": "docs/decisions/log.md#decision-d-054",

@@ -5,6 +5,9 @@ on:
     paths:
       - '.github/workflows/p3-practical-suitability-review.yml'
       - 'poc/tools/audit_practical_suitability_review.cjs'
+      - 'poc/src/p3_axis_suitability_review.cjs'
+      - 'poc/tests/p3_axis_suitability_review.test.cjs'
+      - 'poc/tools/audit_p3_axis_suitability_review.cjs'
 permissions:
   contents: read
   actions: read
@@ -32,3 +35,8 @@ jobs:
         run: |
           curl --fail --silent --show-error --location 'https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt' -o /tmp/skill_data.txt
           node poc/tools/audit_practical_suitability_review.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4g-source-logic-label-preview.json
+
+      - name: Test axis-specific review and audit all fixed skills
+        run: |
+          node --test poc/tests/p3_axis_suitability_review.test.cjs
+          node poc/tools/audit_p3_axis_suitability_review.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json
