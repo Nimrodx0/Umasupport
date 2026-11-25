@@ -54,7 +54,7 @@ function browseSummary(ids,data,labels,context){
  const style=context?.running_style;
  if(![1,2,3,4].includes(style))throw Error('Select a running style');
  const counts={total:0,explicitOnly:0,general:0,targeted:0,otherTargeted:0,undetermined:0,outside:0,scopeUnknown:0};
- const rows=[];
+ const rows=[],matchingByTier={gold:0,white:0,other:0};
  for(const id of uniq(ids)){
   const sk=data.skillById[id];if(!sk)continue;
   const r={explicitNecessaryMasks:catalog.masks(sk.activationProfile),label:trustedRow(id,data,labels)?.label??null};
@@ -63,9 +63,10 @@ function browseSummary(ids,data,labels,context){
   const permitted=[1,2,3,4].filter(s=>fit.applicability(r,{...context,running_style:s})==='possible');
   const category=app==='outside'?'outside':app==='unknown'?'scopeUnknown':permitted.length===1?'explicitOnly':e.state==='general'?'general':e.state==='targeted'?(e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
   counts[category]++;counts.total++;
+  if(['explicitOnly','general','targeted'].includes(category))matchingByTier[['gold','white'].includes(sk.tier)?sk.tier:'other']++;
   rows.push({appSkillId:id,category,applicability:app,evidence:e,permittedStyles:permitted});
  }
- return {counts,rows,matching:counts.explicitOnly+counts.general+counts.targeted};
+ return {counts,rows,matchingByTier,matching:counts.explicitOnly+counts.general+counts.targeted};
 }
 function browseCard(card,config,data,labels,context){
  const stage=config?.stage??4;
