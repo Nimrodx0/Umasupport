@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-057",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：標準育成で達成する能力1200の条件を脚質中立とする",
+      "status": "current",
+      "relation": [],
+      "note": "標準育成で1200程度の能力閾値は脚質による実用的な偏りなしと判断。あふれる活力・気丈夫・遊び心の3件を汎用に追加。元条件・能力分岐・適用範囲を維持し、別閾値や複合条件へ自動拡張しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-057",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-057",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-056",
       "date": "2026-11-25",
       "heading": "2026-11-25：十分なスタミナを前提とする自然ラストスパート条件を脚質中立とする",
