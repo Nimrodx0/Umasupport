@@ -4,6 +4,16 @@ const a=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node
 const STATUS='P3.4j-D052-initial-scoped-skill-labels';
 const digest=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const STYLES=['Nige','Senkou','Sasi','Oikomi'];
+const PANEL=require('./skill_p2_15_parameterized_axis_gates.cjs').PANEL;
+const COURSES={10501:1,10502:2,10304:2,10504:3,10604:3,10506:4};
+function commonStaticScope(row,ctx){
+ if(!Array.isArray(row.explicitNecessaryMasks)||row.explicitNecessaryMasks.length!==PANEL.length)return false;
+ if(![1,2,3,4].includes(ctx.ground_condition))return false;
+ return [1,2,3,4].every(style=>{
+  const i=PANEL.findIndex(p=>p.running_style===style&&p.distance_type===ctx.distance_type&&p.ground_type===ctx.ground_type);
+  return i>=0&&!!(row.explicitNecessaryMasks[i]&(1<<(ctx.ground_condition-1)));
+ });
+}
 function unique(rows,key){const m=new Map();for(const r of rows){a(!m.has(r[key]));m.set(r[key],r);}return m;}
 function approvedStyles(xs){a(Array.isArray(xs)&&xs.length>=1&&xs.length<4&&new Set(xs).size===xs.length&&xs.every(x=>[1,2,3,4].includes(x)));return [...xs].sort((x,y)=>x-y);}
 function resolve(row,ctx){
@@ -16,6 +26,7 @@ function resolve(row,ctx){
  if(!ctx)return {state:'undetermined',styles:[],reason:'scoped-evidence-context-required'};
  const scope=label.scope;
  if(ctx.ground_type!==1||ctx.ground_condition!==1)return {state:'undetermined',styles:[],reason:'outside-measured-ground-context'};
+ if(COURSES[ctx.courseId]!==ctx.distance_type||!commonStaticScope(row,ctx))return {state:'undetermined',styles:[],reason:'inconsistent-course-or-static-scope'};
  const ok=scope.kind==='rank-window-fixed-model'?scope.branches.some(b=>b.courseIds.includes(ctx.courseId)&&(b.distanceType===null||b.distanceType===ctx.distance_type))&&[9,12].includes(ctx.fieldSize)&&ctx.scenario==='balanced':
   scope.contexts.some(x=>['courseId','fieldSize','scenario'].every(k=>x[k]===ctx[k]));
  return ok?label:{state:'undetermined',styles:[],reason:'outside-or-unspecified-evidence-context'};
@@ -58,7 +69,7 @@ function audit(receipt,preview,window,dynamic,policy){
  const skills=unique(rows,'appSkillId');a.equal(preview.cards.length,566);
  const cardSummary={cards:0,pairs:0,general:0,targeted:0,undetermined:0,cardsWithAnyTargeted:0};
  const cards=preview.cards.map(c=>{
-  const skillsForCard=c.skills.map(s=>{const q=skills.get(s.appSkillId);a(q);cardSummary.pairs++;cardSummary[q.label.state]++;return {appSkillId:s.appSkillId,label:q.label,directCandidates:s.directCandidates};});
+  const skillsForCard=c.skills.map(s=>{const q=skills.get(s.appSkillId);a(q);cardSummary.pairs++;cardSummary[q.label.state]++;return {appSkillId:s.appSkillId,label:q.label,explicitNecessaryMasks:q.explicitNecessaryMasks,directCandidates:s.directCandidates};});
   cardSummary.cards++;if(skillsForCard.some(s=>s.label.state==='targeted'))cardSummary.cardsWithAnyTargeted++;
   return {cardId:c.cardId,skills:skillsForCard,cardScore:null};
  });
