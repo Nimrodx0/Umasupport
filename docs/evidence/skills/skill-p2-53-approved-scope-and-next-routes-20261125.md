@@ -9,3 +9,6 @@
 固定UmaSim Checkerで accumulatetime は currentTime の整数化、hp_per は現在SP/最大SP、is_lastspurt はスパート状態、lastspurt は最大スパート速度との一致も要求する。両スパート型は同一扱い不可。compete_fight_count のモデル判定は真偽値、run_at_full_speed_random は抽選位置の到達を判定する。これらは固定モデルの処理でありゲーム仕様の証明ではない。順位帯継続2型は元定義の確認が先。追い抜き・順位変動・横ブロック等の特殊状態近似を定量根拠にしない。定性判断・追加実験・分布保留は別途検討し、G4再Passは未認定。
 
 [実装](../../../poc/src/p2_remaining_route_review.cjs)・[反例](../../../poc/tests/p2_remaining_route_review.test.cjs)。固定CI待ち。
+
+
+**固定CI確認**：[ #45530753855](https://github.com/Nimrodx0/Umasupport/actions/runs/45530753855)成功。D-051 863出現と残42型の比較可能性を照合。詳細内訳と後続の判断案は[P2.54](skill-p2-54-remaining-condition-decisions-20261125.md)。
