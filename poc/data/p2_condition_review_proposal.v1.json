@@ -1,0 +1,1088 @@
+{
+  "schemaVersion": 1,
+  "status": "P2.51-type-review-proposal-not-formal-adoption",
+  "sourceRun": 45520766789,
+  "sourceRevision": "f6e4501ee6c6c2d4ac8698e7796e309d31575bde",
+  "rows": [
+    {
+      "type": "distance_type",
+      "skills": 324,
+      "occurrences": 412,
+      "previous": [
+        "adopt-static-necessary-gate-only"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・静的適用範囲",
+      "reason": "距離区分の明示制限。非明示的な距離補正はG5で除外。",
+      "ownerApproved": true
+    },
+    {
+      "type": "running_style",
+      "skills": 291,
+      "occurrences": 328,
+      "previous": [
+        "adopt-static-necessary-gate-only"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・静的適用範囲",
+      "reason": "脚質の明示制限。許容脚質と好適性を区別。",
+      "ownerApproved": true
+    },
+    {
+      "type": "order_rate",
+      "skills": 238,
+      "occurrences": 271,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "既存根拠を採用・不足経路を確認",
+      "reason": "順位割合と時期のW/D、整数順位射影を使用。未対応のAND・窓は確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase_random",
+      "skills": 200,
+      "occurrences": 231,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面内の抽選区間は単独で脚質を指定しない。順位・状態とのANDは窓を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase_firsthalf_random",
+      "skills": 98,
+      "occurrences": 114,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面前半の窓。単独の脚質差ではなく、同時条件の比較範囲。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase",
+      "skills": 69,
+      "occurrences": 98,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "局面そのものは全走者の位置区分。順位等との同時成立には既存モデルを使う。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase_laterhalf_random",
+      "skills": 61,
+      "occurrences": 61,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面後半の窓。前半と混ぜず、同時条件の比較範囲。",
+      "ownerApproved": false
+    },
+    {
+      "type": "ground_type",
+      "skills": 56,
+      "occurrences": 63,
+      "previous": [
+        "adopt-static-necessary-gate-only"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・静的適用範囲",
+      "reason": "芝・ダートの明示制限。間接補正はG5で除外。",
+      "ownerApproved": true
+    },
+    {
+      "type": "is_lastspurt",
+      "skills": 55,
+      "occurrences": 61,
+      "previous": [
+        "hold-spurt-full-conjunction"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "限定追加研究候補",
+      "reason": "55技能。内部スパート状態は観測可能な限定例あり。元ANDと脚質比較に寄与する経路のみ。",
+      "ownerApproved": false
+    },
+    {
+      "type": "accumulatetime",
+      "skills": 39,
+      "occurrences": 49,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "限定追加研究候補",
+      "reason": "経過秒数は走者位置・速度・レース局面と連動し得る。39技能の時間単独／動的ANDを分け、既存時刻観測から評価が変わる例を抽出。",
+      "ownerApproved": false
+    },
+    {
+      "type": "track_id",
+      "skills": 37,
+      "occurrences": 37,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：特定競馬場のための全コース検証は費用対効果が低い。",
+      "ownerApproved": true
+    },
+    {
+      "type": "all_corner_random",
+      "skills": 35,
+      "occurrences": 35,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "コーナーから抽選。単独の中立候補と順位等とのANDを分離。",
+      "ownerApproved": false
+    },
+    {
+      "type": "order",
+      "skills": 34,
+      "occurrences": 35,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "既存根拠を採用・不足経路を確認",
+      "reason": "絶対順位の既存1,440レース・分割確認を使用。順位割合に置換しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "corner",
+      "skills": 33,
+      "occurrences": 35,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "コーナー番号。対象区間の存在を条件に、単独の脚質別頻度研究を不要とする案。",
+      "ownerApproved": false
+    },
+    {
+      "type": "straight_random",
+      "skills": 31,
+      "occurrences": 31,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "直線の抽選窓。旧監査31件で同一AND順位0。ただし他動的条件・履歴は要確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "change_order_onetime",
+      "skills": 30,
+      "occurrences": 30,
+      "previous": [
+        "reject-approximation-as-game-style-evidence"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "符号付き順位変動の近似は不採用済み。上昇／下降別、局面別に実運動の方向仮説を検討。",
+      "ownerApproved": false
+    },
+    {
+      "type": "distance_rate",
+      "skills": 24,
+      "occurrences": 30,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "距離進行率。単独の位置到達と動的ANDを分離。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_overtake",
+      "skills": 21,
+      "occurrences": 25,
+      "previous": [
+        "reject-approximation-as-game-style-evidence"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "追い抜きモードと実際の順位上昇は異なる。脚質別乱数を証拠にせず定性仮説を検討。",
+      "ownerApproved": false
+    },
+    {
+      "type": "blocked_side_continuetime",
+      "skills": 20,
+      "occurrences": 20,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "横ブロックの継続。20技能。レーン・密度に依存、脚質による方向仮説と観測可能性を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_last_straight",
+      "skills": 20,
+      "occurrences": 28,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "最終直線。到達できるコース条件と発動タイミングを保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "distance_rate_after_random",
+      "skills": 18,
+      "occurrences": 22,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "距離進行率以後の抽選範囲。抽選仕様を保持、他条件との交差のみ検証候補。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_finalcorner",
+      "skills": 15,
+      "occurrences": 23,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "最終コーナー以後の元判定を保持。終盤と同一視しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase_firstquarter_random",
+      "skills": 14,
+      "occurrences": 14,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面最初の四分の一の窓。区間の存在と他条件との交差を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "corner_random",
+      "skills": 13,
+      "occurrences": 20,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "指定コーナーの窓。13技能すべて同じANDに順位条件がある旧監査のため、順位との交差の根拠は別途必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "distance_diff_top",
+      "skills": 13,
+      "occurrences": 13,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "先頭との距離差。順位そのものではなく隊列の長さにも依存、方向仮説は元閾値別。",
+      "ownerApproved": false
+    },
+    {
+      "type": "season",
+      "skills": 12,
+      "occurrences": 15,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "費用対効果による省略候補",
+      "reason": "開催季節の指定。編成時に固定評価軸を増やす利益が小さい。",
+      "ownerApproved": false
+    },
+    {
+      "type": "infront_near_lane_time",
+      "skills": 10,
+      "occurrences": 10,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "前方近傍レーンの時間。元乱数近似を不採用、同時刻観測の可否を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_finalcorner_random",
+      "skills": 10,
+      "occurrences": 10,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "最終コーナー抽選窓。区間存在と動的ANDを保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "lastspurt",
+      "skills": 10,
+      "occurrences": 10,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "限定追加研究候補",
+      "reason": "is_lastspurtと同じとは仮定しない。元Checkerの値・状態定義の差を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "always",
+      "skills": 9,
+      "occurrences": 9,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "==1の常時真だけを論理上の中立根拠にできる。異なる値は別判定。",
+      "ownerApproved": false
+    },
+    {
+      "type": "ground_condition",
+      "skills": 9,
+      "occurrences": 18,
+      "previous": [
+        "adopt-static-necessary-gate-only"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・静的適用範囲",
+      "reason": "良～不良の元制限。状態別の力学差を無影響と認定しない。",
+      "ownerApproved": true
+    },
+    {
+      "type": "remain_distance",
+      "skills": 9,
+      "occurrences": 18,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "残距離。単独の位置到達と動的ANDを分離。",
+      "ownerApproved": false
+    },
+    {
+      "type": "base_speed",
+      "skills": 8,
+      "occurrences": 16,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：育成後スピードの固定入力なし。",
+      "ownerApproved": true
+    },
+    {
+      "type": "phase_corner_random",
+      "skills": 8,
+      "occurrences": 8,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面内コーナーの窓。存在しないコースを無条件許容しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "up_slope_random",
+      "skills": 8,
+      "occurrences": 8,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "上り坂の抽選範囲。坂がない場合と脚質差を区別。",
+      "ownerApproved": false
+    },
+    {
+      "type": "weather",
+      "skills": 8,
+      "occurrences": 8,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "コメントアウト",
+      "category": "既承認・研究省略",
+      "reason": "D-049：天候入力・補正なし。固定Checkerの処理はコメントアウト。",
+      "ownerApproved": true
+    },
+    {
+      "type": "base_power",
+      "skills": 7,
+      "occurrences": 16,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：育成後パワーの固定入力なし。",
+      "ownerApproved": true
+    },
+    {
+      "type": "bashin_diff_behind",
+      "skills": 7,
+      "occurrences": 7,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "後方馬との馬身差。後方馬がいない場合も含めて元定義確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "down_slope_random",
+      "skills": 7,
+      "occurrences": 7,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "仕様による省略候補",
+      "reason": "下り坂の抽選範囲。坂がない場合と脚質差を区別。",
+      "ownerApproved": false
+    },
+    {
+      "type": "base_wiz",
+      "skills": 6,
+      "occurrences": 12,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：育成後賢さの固定入力なし。",
+      "ownerApproved": true
+    },
+    {
+      "type": "is_activate_other_skill_detail",
+      "skills": 6,
+      "occurrences": 6,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "保留候補・前提分布不足",
+      "reason": "他スキルの詳細発動条件。取得経路・元発動時刻との依存を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "overtake_target_time",
+      "skills": 6,
+      "occurrences": 6,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "追い抜き対象状態の持続。実順位変化を代理にしない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "post_number",
+      "skills": 6,
+      "occurrences": 6,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "費用対効果による省略候補",
+      "reason": "枠・馬番に関わる状態。配置が展開へ影響し得るが編成時固定入力の利益が小さい。",
+      "ownerApproved": false
+    },
+    {
+      "type": "rotation",
+      "skills": 6,
+      "occurrences": 6,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "回り方向の指定。コース形状との相互作用は否定しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "compete_fight_count",
+      "skills": 5,
+      "occurrences": 5,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "限定追加研究候補",
+      "reason": "モデル内競り合い状態とゲーム機構の一致を先に確認。5技能のみ。",
+      "ownerApproved": false
+    },
+    {
+      "type": "hp_per",
+      "skills": 5,
+      "occurrences": 5,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "限定追加研究候補",
+      "reason": "体力割合は脚質・消費・回復で変化し得る。5技能の元ANDと観測可能なSPを限定確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "behind_near_lane_time",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "後方近傍レーンの時間。前方条件と方向を混同しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "blocked_front_continuetime",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "前方ブロックの継続。横ブロックと区別して観測方法を検討。",
+      "ownerApproved": false
+    },
+    {
+      "type": "distance_diff_rate",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "相対距離の割合条件。元分母を確認して脚質仮説を検討。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_basis_distance",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "根幹距離の元制限。距離区分への誤変換禁止。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_move_lane",
+      "skills": 4,
+      "occurrences": 8,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "レーン移動は追い抜き等と関係し得る。元乱数近似のため動作観測が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "phase_straight_random",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "抽選窓",
+      "category": "仕様による省略候補",
+      "reason": "局面内直線の窓。コースごとの存在と抽選範囲を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "popularity",
+      "skills": 4,
+      "occurrences": 6,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "保留候補・前提分布不足",
+      "reason": "人気は相手・能力等に依存。脚質との相関を編成時に仮定しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "slope",
+      "skills": 4,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "坂の位置条件。コース限定、速度等の他条件との交差は別。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_badstart",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "出遅れ判定はスタート遅延。脚質別分布を根拠なしに同一視しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_behind_in",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "後方・内側関係の元定義を確認。語名だけで脚質を決めない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_dirtgrade",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "ダートの特殊グレード条件。対象レースの制限を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "order_rate_out40_continue",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "限定追加研究候補",
+      "reason": "順位帯の継続条件。瞬間順位Wと異なる。既存軌跡で継続判定できるか確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "run_at_full_speed_random",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "限定追加研究候補",
+      "reason": "最高速度状態と抽選の定義を確認。3技能の評価が変わる場合だけ追加。",
+      "ownerApproved": false
+    },
+    {
+      "type": "running_style_count_same_rate",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "同脚質人数割合。対戦相手の分布が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "same_skill_horse_count",
+      "skills": 3,
+      "occurrences": 3,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "同スキル所持馬の人数。対戦相手の装備分布が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_all",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "全発動回数。装備と発動条件の相互依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_heal",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "回復スキル発動回数。装備と体力の相互依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_middle",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "中盤発動回数。局面別の装備・発動条件に依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_start",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "序盤発動回数。局面別の装備・発動条件に依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "base_stamina",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：育成後スタミナの固定入力なし。",
+      "ownerApproved": true
+    },
+    {
+      "type": "corner_count",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "コーナー数のコース属性。動的条件の窓との交差は維持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "course_distance",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "距離の数値制限。元値を保持し距離区分へ安易に丸めない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "distance_diff_top_float",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "先頭との差の別型。整数版との単位・丸めの差を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "furlong",
+      "skills": 2,
+      "occurrences": 4,
+      "previous": [
+        "conditional-mechanism-reference-only"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "仕様による省略候補",
+      "reason": "200m区間の指定。元丸め・区間境界を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_activate_any_skill",
+      "skills": 2,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "保留候補・前提分布不足",
+      "reason": "他スキル発動の有無。装備スキル集合の仮定が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_other_character_activate_advantage_skill",
+      "skills": 2,
+      "occurrences": 8,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "他キャラの該当スキル発動。対戦相手の装備・発動分布が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_surrounded",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "囲まれ状態。レーン・近傍密度の観測が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "is_tight_track",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "小回り等のコース属性。少数でコース別網羅研究の利益が小さい。",
+      "ownerApproved": false
+    },
+    {
+      "type": "lane_type",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "レーン区分。元定義と位置モデルの対応を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "motivation",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "conditional-fixed-state-shortcut-candidate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：編成時にランダムなやる気を固定しない。",
+      "ownerApproved": true
+    },
+    {
+      "type": "near_count",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "近傍馬数。脚質と編成依存の可能性。",
+      "ownerApproved": false
+    },
+    {
+      "type": "near_infront_count",
+      "skills": 2,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "特殊状態近似",
+      "category": "定性仮説・観測方法の確認",
+      "reason": "前方近傍馬数。near_countと区別し先頭時の扱い確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "order_rate_out50_continue",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "限定追加研究候補",
+      "reason": "順位帯の継続条件。40と50を混同せず元継続定義を確認。",
+      "ownerApproved": false
+    },
+    {
+      "type": "random_lot",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "費用対効果による省略候補",
+      "reason": "元抽選条件。独立な抽選なら脚質差を生まない仮説。元確率・他AND依存は保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "random_lot_shared",
+      "skills": 2,
+      "occurrences": 4,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "個別実装",
+      "category": "費用対効果による省略候補",
+      "reason": "共有抽選。個別抽選と区別し、相関の可能性を保持。",
+      "ownerApproved": false
+    },
+    {
+      "type": "running_style_count_same",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "同脚質人数。割合型とは異なり頭数に依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "running_style_equal_popularity_one",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "一番人気と脚質一致する条件。相手分布と人気の仮定が必要。",
+      "ownerApproved": false
+    },
+    {
+      "type": "temptation_count",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "掛かり状態は能力等に依存し得る。元モデルの有無と回数の違いに注意。",
+      "ownerApproved": false
+    },
+    {
+      "type": "time",
+      "skills": 2,
+      "occurrences": 2,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "費用対効果による省略候補",
+      "reason": "開催時間の条件。時間別の入力・補正を増やす利益が小さい。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_end_after",
+      "skills": 1,
+      "occurrences": 1,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "終盤以後発動回数。局面境界と装備に依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "activate_count_later_half",
+      "skills": 1,
+      "occurrences": 1,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "レース状態判定",
+      "category": "保留候補・前提分布不足",
+      "reason": "後半発動回数。終盤と混同せず装備に依存。",
+      "ownerApproved": false
+    },
+    {
+      "type": "base_guts",
+      "skills": 1,
+      "occurrences": 4,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "既承認・研究省略",
+      "reason": "D-049：育成後根性の固定入力なし。",
+      "ownerApproved": true
+    },
+    {
+      "type": "is_exist_skill_id",
+      "skills": 1,
+      "occurrences": 1,
+      "previous": [
+        "hold-unverified-impact"
+      ],
+      "sourceHandler": "明示単独ハンドラ未確認",
+      "category": "保留候補・前提分布不足",
+      "reason": "特定スキル所持条件。デッキ取得候補と実装備を混同しない。",
+      "ownerApproved": false
+    },
+    {
+      "type": "succession_skill_count",
+      "skills": 1,
+      "occurrences": 1,
+      "previous": [
+        "retain-original-context-gate"
+      ],
+      "sourceHandler": "事前判定",
+      "category": "費用対効果による省略候補",
+      "reason": "継承スキル数の条件。編成時の固定値が不確かで専用評価軸の利益が小さい。",
+      "ownerApproved": false
+    }
+  ]
+}

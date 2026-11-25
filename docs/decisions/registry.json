@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-050",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：G4の研究要否を全条件型で再レビューする",
+      "status": "current",
+      "relation": [],
+      "note": "未判定管理と研究不要の妥当性を分離し、90型の仕様・脚質依存性・対象数・組合せ・費用対効果・採否を再確認。G4を再開し、個別省略・定性評価・追加研究・保留案は利用者確認後に確定",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-050",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-050",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-049",
       "date": "2026-11-25",
       "heading": "2026-11-25：やる気・競馬場・天候・能力の詳細研究を標準適性評価から除外",
