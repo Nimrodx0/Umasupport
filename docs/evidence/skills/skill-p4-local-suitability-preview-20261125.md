@@ -7,3 +7,5 @@
 固定データで本番コードと同じlive画面をChromium 1280/390pxで操作し、ローカル読込、表示切替前後の行数と適用範囲の一致、絞込、壊れたファイル拒否、通常版への復帰を確認する。実際のWindows／Android物理端末、Pages、本番公開、公開データの配布方式は別。CI待ち。
 
 [試用バリデータ](../../../poc/src/local_suitability_preview.js)・[ビルド](../../../poc/tools/build_local_suitability_preview.cjs)・[ブラウザ試験](../../../poc/tests/browser_local_suitability_preview.cjs)。
+
+一覧の適用範囲は明示4軸の許容候補を簡潔に表示する。軸ごとの集合を単純に掛け合わせると誤る場合は「組合せ制限あり」と表示し、詳細で元32マスクに対応する組合せを示す。必要条件であり発動保証ではない。複数脚質ラベルは「逃げ・先行向け」のようにまとめる。

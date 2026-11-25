@@ -38,3 +38,13 @@ test('stale source identity and no-record cards are not assigned positive labels
  a.equal(view.matchesCard(empty,{stage:4},data,labels,{context:ctx,mode:'possible'}),true);
  a.equal(view.matchesCard(empty,{stage:4},data,labels,{context:ctx,mode:'confirmed'}),false);
 });
+
+test('explicit masks retain correlated style-distance-surface combinations',()=>{
+ const m=Array(32).fill(0);m[0]=1;m[11]=2;
+ const v=fit.explicitScope({explicitNecessaryMasks:m});
+ a.equal(v.correlated,true);a.match(v.text,/組合せ制限あり/);
+ a.deepEqual(v.groups,[{pairs:['逃げ・短距離'],surfaces:['芝（良）']},{pairs:['先行・マイル'],surfaces:['ダート（稍重）']}]);
+ a.equal(fit.explicitScope({explicitNecessaryMasks:Array(32).fill(15)}).text,'明示4軸制限なし');
+ a.equal(fit.explicitScope(null).text,'適用範囲未確認');
+ a.equal(fit.labelText({state:'targeted',styles:[1,2]}),'逃げ・先行向け');
+});

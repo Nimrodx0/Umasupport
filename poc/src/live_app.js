@@ -47,11 +47,13 @@ function fitPanel(){
   '<p class="tiny-note">芝・良の固定研究文脈。指定しない場合、限定的な向けは未判定として表示します。距離・馬場の適用条件とは別です。</p></details>':'')+
   '</section>';
 }
-function fitSkillHtml(id){
+function fitSkillHtml(id,detail=false){
  if(!fitLabels)return '';
- const p=window.UmaSkillSuitability.present(fitRow(id),fitContext(),fitShow);
- return '<span class="fit-skill-meta"><span class="fit-scope">'+esc(p.scopeText)+'</span>'+
-  (p.labelText===null?'':' <span class="fit-label">'+esc(p.labelText)+'</span>')+'</span>';
+ const fit=window.UmaSkillSuitability,r=fitRow(id),p=fit.present(r,fitContext(),fitShow),scope=fit.explicitScope(r);
+ const selected=Object.keys(fitContext()).length>0;
+ return '<span class="fit-skill-meta"><span class="fit-scope">適用範囲：'+esc(scope.text)+(selected?' · '+esc(p.scopeText):'')+'</span>'+
+  (p.labelText===null?'':' <span class="fit-label">'+esc(p.labelText)+'</span>')+'</span>'+
+  (detail&&scope.correlated?'<details class="skill-effect-detail"><summary>適用可能な組合せ（明示必要条件）</summary><div>'+scope.groups.map(x=>esc(x.pairs.join(' / '))+'：'+esc(x.surfaces.join(' / '))).join('<br>')+'</div></details>':'');
 }
 function fitCardSummary(card,slot){
  if(!fitLabels)return '';
@@ -426,7 +428,7 @@ function skillDetailModal(){
  const effectBlock=skill.effectDescription
   ?`<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="skill-effect-description">${esc(skill.effectDescription)}</div>${effectDetailLines.length?`<details class="skill-effect-detail"><summary>発動条件・効果量の詳細${effectDetailLines.length>1?'（'+effectDetailLines.length+'件）':''}</summary>${effectDetailsHtml}</details>`:''}<div class="tiny-note">出典：<a href="${esc(effectSourceUrl)}" target="_blank" rel="noopener noreferrer">${effectSourceLabel}</a></div></section>`
   :'<section class="info-item skill-effect-panel"><strong>スキル効果</strong><div class="sub">効果説明は未収録です。</div></section>';
- const body=`${effectBlock}${fitSkillHtml(id)}<p class="help">現在の編成で選択済みの直接提供枚数と、全サポカの提供経路を区別します。逆引きの通常ヒントは0～4凸いずれかのデータであり、現在の編成の解放段階やイベント到達・実獲得を保証しません。</p>${scopes}<h3 style="margin:15px 0 9px">全カードから逆引き</h3>${filterHtml}<div class="info-list">${reverseHtml}</div>${upper.length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${upper.map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name||skill.lowerId)}</div>`:''}`;
+ const body=`${effectBlock}${fitSkillHtml(id,true)}<p class="help">現在の編成で選択済みの直接提供枚数と、全サポカの提供経路を区別します。逆引きの通常ヒントは0～4凸いずれかのデータであり、現在の編成の解放段階やイベント到達・実獲得を保証しません。</p>${scopes}<h3 style="margin:15px 0 9px">全カードから逆引き</h3>${filterHtml}<div class="info-list">${reverseHtml}</div>${upper.length?`<div class="info-item" style="margin-top:11px"><strong>上位スキル経由</strong><div class="sub">${upper.map(s=>esc(s.name)).join(' / ')} からの間接カバーは、直接提供枚数には加算しません。</div></div>`:''}${skill.lowerId?`<div class="info-item" style="margin-top:11px">下位スキル：${esc(data.skillById[skill.lowerId]?.name||skill.lowerId)}</div>`:''}`;
  titleModal(skill.name,skill.tier==='gold'?'金スキル':'スキル詳細',body);
 }
 function assignModal(){const c=data.cardById[ui.modal.cardId];const body=`<p class="help">${esc(c.name)}をどの枠へ配置しますか？選んだ枠に登録済みのカードは置き換わります。</p><div class="picker-list">${['main','inherit'].flatMap(k=>activeDeck(k).slots.map((sl,i)=>`<button class="picker-card" data-action="assign-slot" data-deck="${k}" data-index="${i}"><span class="grow"><b>${scopeLabel[k]} · ${i+1}番枠</b><br><small class="muted">${sl.cardId?esc(data.cardById[sl.cardId].name):'空スロット'}</small></span><span>→</span></button>`)).join('')}</div>`;titleModal('配置先を選択',c.name,body);}

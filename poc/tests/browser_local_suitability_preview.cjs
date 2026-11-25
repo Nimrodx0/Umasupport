@@ -32,7 +32,7 @@ async function main(){
    await page.locator('.picker-card[data-id="'+target.card+'"]').click();
    const row=page.locator('tr[data-skill="'+target.skill+'"]');await row.waitFor();
    a.equal(await row.locator('.fit-label').count(),0);
-   const scope=await row.locator('.fit-scope').innerText(),n=await page.locator('tr[data-skill]').count();
+   const scope=await row.locator('.fit-scope').innerText(),n=await page.locator('tr[data-skill]').count();a.match(scope,/適用範囲：/);
    await page.locator('#fit-show').check();
    a.equal(await row.locator('.fit-label').innerText(),'汎用');
    a.equal(await row.locator('.fit-scope').innerText(),scope);a.equal(await page.locator('tr[data-skill]').count(),n);
