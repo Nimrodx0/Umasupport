@@ -20,7 +20,7 @@ const neutral={
 const contexts=KEYS.reduce((xs,k)=>xs.flatMap(x=>DOMAINS[k].map(v=>({...x,[k]:v}))),[{}]);
 const validMatrix=m=>Array.isArray(m)&&m.every(r=>Array.isArray(r)&&r.every(p=>p&&typeof p.type==='string'&&['==','!=','<','<=','>','>='].includes(p.operator)&&Number.isSafeInteger(p.value)));
 function sourceValid(record){return !!(record&&Array.isArray(record.invokes)&&record.invokes.length&&record.invokes.every(i=>i&&validMatrix(i.conditions)&&i.conditions.length&&i.conditions.every(r=>r.length)&&validMatrix(i.preConditions??[])&&(i.preConditions??[]).every(r=>r.length)));}
-function surviving(record,ctx,axis){
+function surviving(record,ctx,axis,allowNaturalSpurt){
  const sig=[],holds=new Set();
  const matrix=(m)=>m.map((terms,index)=>{
   const residual=[];let eligible=true;
@@ -34,12 +34,12 @@ function surviving(record,ctx,axis){
  for(const [index,i] of record.invokes.entries()){
   const conditions=matrix(i.conditions),pre=matrix(i.preConditions?.length?i.preConditions:[[]]);
   if(!conditions.length||!pre.length)continue;
-  for(const row of [...conditions,...pre])for(const [t] of row.residual)if(!neutral[axis].has(t))holds.add(t);
+  for(const row of [...conditions,...pre])for(const [t,op,v] of row.residual)if(!neutral[axis].has(t)&&!(allowNaturalSpurt&&t==='is_lastspurt'&&op==='=='&&v===1))holds.add(t);
   sig.push({index,conditions,pre});
  }
  return {sig,holds:[...holds].sort()};
 }
-function evaluate(record,axis){
+function evaluate(record,axis,{allowNaturalSpurt=false}={}){
  if(!AXES.includes(axis))throw Error('unsupported axis');
  if(!sourceValid(record))return {state:'source-unavailable',cells:[],counts:{},holdTypes:[]};
  const fixedKeys=KEYS.filter(k=>k!==axis);
@@ -47,7 +47,7 @@ function evaluate(record,axis){
  const counts={},cells=[],holdTypes=new Set();
  for(const base of bases){
   const context=Object.fromEntries(fixedKeys.map(k=>[k,base[k]]));
-  const alternatives=DOMAINS[axis].map(value=>({value,...surviving(record,{...context,[axis]:value},axis)})).filter(r=>r.sig.length);
+  const alternatives=DOMAINS[axis].map(value=>({value,...surviving(record,{...context,[axis]:value},axis,allowNaturalSpurt)})).filter(r=>r.sig.length);
   const eligible=alternatives.map(r=>r.value);
   const blockers=[...new Set(alternatives.flatMap(x=>x.holds))].sort();
   let state;
