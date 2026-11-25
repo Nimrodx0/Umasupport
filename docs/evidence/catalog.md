@@ -19,6 +19,7 @@
 
 ## P2：スキル発動条件・脚質適合性の研究
 
+- [2026-11-25：P2.57 近傍・ブロック・追い抜きの独立モデル研究](skills/skill-p2-57-native-neighbour-model-20261125.md)：11型元getterの直接観測と元論理の差。CI待ち。
 - [2026-11-25：P2.56 時間と順位変動の同一tick研究](skills/skill-p2-56-clock-rank-joint-model-20261125.md)：既存固定32多走者レースで元条件論理の3段階比較。CI待ち。
 - [2026-11-25：P2.55 自然スパート・窓の限定研究](skills/skill-p2-55-natural-spurt-sensitivity-20261125.md)：4脚質×2コース×30単走の自然状態観測、元窓の積分。専用CI成功。
 - [2026-11-25：P2.54 残42型の研究採否案](skills/skill-p2-54-remaining-condition-decisions-20261125.md)：元経路比較可能性に基づく7/11/3/6/15型の判断案と計算状態6型の元AND精査。固定CI成功・main統合。
