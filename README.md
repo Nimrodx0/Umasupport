@@ -20,6 +20,12 @@
 - [選択肢別の数値候補プレビュー](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=facts)：一部の結果・連続分岐は未確認。通常データとは分離。
 - [SSRエフフォーリアの限定試用](https://nimrodx0.github.io/Umasupport/poc/live.html?eventPreview=30311)：独立した監査用サンプルで、正式収録ではありません。
 
+## 全スキル一覧の使い方（D-053）
+
+通常アプリのヘッダーから「全スキル一覧」を開くと、編成に関係なく収録スキルを検索できます。明示適用範囲と脚質適性は別の絞り込みです。適性データなしでも明示条件で検索できます。
+
+適性ラベルを試用する場合は、[D-052検証ワークフロー](.github/workflows/p3-d052-initial-labels.yml)の成功実行から `d052-local-catalog-labels-not-for-publication` 成果物を取得し、ZIP内の `umasupport-d052-labels.json` を展開して、一覧の「適性データの読み込み（D-052）」で選択します。期限切れの場合は同じ固定ワークフローを再実行します。ファイルはサーバーへ送信されず、再読込時は再選択が必要です。元条件・版が一致しないラベルは未判定として扱います。限定ラベルは研究条件内の参考であり、実ゲームの発動率ではありません。永続配布は未承認です。
+
 ## 文書の入口
 
 **[文書索引](docs/index.md)** から、[工程別の詳細計画](docs/plans/index.md)と[分野別の研究・監査記録](docs/evidence/README.md)を辿れます。要件・決定・設計・進捗の正本もこちらから確認できます。開発を再開するときは [AGENTS.md](AGENTS.md)、[ロードマップ](docs/project/roadmap.md)、[開発状況](docs/project/status.md)、対象の[研究・監査記録](docs/evidence/catalog.md)を確認してください。詳細なルールは [文書運用規約](docs/governance/documentation-policy.md) にあります。

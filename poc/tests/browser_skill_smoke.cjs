@@ -40,7 +40,7 @@ function skillFixture(){
  ];
  for(let i=0;i<SKILL_NORMALS;i++){
   skills.push({id:String(800000+i),name:'無関係な架空スキル'+i,
-   rarity:'normal',group:Math.floor((800000+i)/10)});
+   rarity:'normal',group:Math.floor((800000+i)/10),...(i===119?{invokes:[{index:0,preConditions:[],conditions:[[{type:'running_style',operator:'==',value:1},{type:'distance_type',operator:'==',value:1}],[{type:'running_style',operator:'==',value:3},{type:'distance_type',operator:'==',value:3}]],effects:[{type:'targetSpeed',value:1000}]}]}:{})});
  }
  return JSON.stringify(skills);
 }
@@ -103,6 +103,11 @@ async function main(){
   assert.equal(await page.locator('[data-catalog-skill]').count(),1);
   await page.locator('[data-catalog-skill] button').click();
   assert.match(await page.locator('.modal-head h2').innerText(),/無関係な架空スキル119/);
+  const combos=page.locator('details').filter({has:page.getByText('適用可能な組合せ（明示必要条件）',{exact:true})});
+  await combos.locator('summary').click();
+  assert.match(await combos.innerText(),/逃げ・短距離/);
+  assert.match(await combos.innerText(),/差し・中距離/);
+  assert.doesNotMatch(await combos.innerText(),/逃げ・中距離|差し・短距離/);
   await page.locator('.modal-head [data-action="close"]').click();
   await page.locator('#catalog-query').fill('右回り○');
   await page.locator('[data-catalog-axis="running_style"]').selectOption('2');
