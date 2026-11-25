@@ -10,7 +10,7 @@ async function get(url){const r=await fetch(url);assert(r.ok,url);return Buffer.
 async function main(){
  const file=process.argv[2];assert(file,'same-run compact label bundle required');
  const bundle=JSON.parse(await fs.readFile(file,'utf8'));const n=bundle.rows.length,general=bundle.rows.filter(r=>r.label.state==='general').length,targeted=n-general;
- assert.deepEqual([n,general,targeted],bundle.decisionId==='D-056'?[324,281,43]:[300,257,43]);
+ assert.deepEqual([n,general,targeted],({'D-052':[300,257,43],'D-056':[324,281,43],'D-059':[404,304,100]})[bundle.decisionId]);
  const [supports,skills,historical]=await Promise.all([get(BASE+'support_card.txt'),get(BASE+'skill_data.txt'),get(bridge.PINNED_URL)]);
  const server=http.createServer(async(req,res)=>{try{
   const f=path.resolve(ROOT,'.'+new URL(req.url,'http://localhost').pathname);
@@ -45,26 +45,37 @@ async function main(){
    assert.equal(await page.locator('.catalog-table tbody tr').count(),5);
    await page.locator('#catalog-query').fill('アオハル燃焼');
    assert.equal(await count.innerText(),'5 / 881 件');
-   if(bundle.decisionId==='D-056'){
+   if(bundle.decisionId!=='D-052'){
     await page.locator('#catalog-query').fill('全身全霊');
     assert.equal(await count.innerText(),'1 / 881 件');
     assert.match(await page.locator('.catalog-table tbody').innerText(),/汎用/);
     assert.equal(await page.locator('.catalog-table tbody tr td').last().innerText(),'汎用');
     assert.equal(await page.locator('.catalog-table tbody .catalog-evidence-note').count(),0);
    }
+   if(bundle.decisionId==='D-059'){
+    for(const name of ['あふれる活力','気丈夫','遊び心','阿吽の呼吸','聖女の挑戦','一張一弛','想い焦がれて']){
+     await page.locator('#catalog-query').fill(name);assert.equal(await count.innerText(),'1 / 881 件');assert.match(await page.locator('.catalog-table tbody').innerText(),/汎用/);
+    }
+    await filter.selectOption('targeted');
+    for(const name of ['豪脚','上昇気流','前途洋々','スタミナイーター']){
+     await page.locator('#catalog-query').fill(name);assert.equal(await count.innerText(),'1 / 881 件');
+     assert.match(await page.locator('.catalog-table tbody').innerText(),name==='前途洋々'?/逃げ向け/:/差し向け・追込向け/);
+    }
+    await filter.selectOption('general');
+   }
    await page.locator('#catalog-query').fill('');
    await page.locator('#catalog-show-labels').uncheck();
    assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),general+' / 881 件');
    await page.locator('#catalog-show-labels').check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
-   await filter.selectOption('targeted');assert.match(await count.innerText(),/^43 \/ 881 件$/);
+   await filter.selectOption('targeted');assert.equal(await count.innerText(),targeted+' / 881 件');
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
    assert.match(await count.innerText(),/^0 \/ 881 件$/);
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('');
-   assert.match(await count.innerText(),/^43 \/ 881 件$/);
+   assert.equal(await count.innerText(),targeted+' / 881 件');
    await page.locator('#catalog-label-file').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{}')});
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('前回の検証済みラベルを維持'));
-   assert.match(await count.innerText(),/^43 \/ 881 件$/);
+   assert.equal(await count.innerText(),targeted+' / 881 件');
    await page.locator('[data-catalog-skill] button').first().click();
    await page.locator('.modal-head h2').waitFor();
    await page.locator('.modal-head [data-action="close"]').click();
@@ -88,6 +99,8 @@ async function main(){
     if(only)assert(v.matching>0);
    }};
    await verifyShown(false);
+   await page.locator('#picker-sort').selectOption('fit-count-desc');
+   const sorted=await readShown();for(let i=1;i<sorted.length;i++)assert(expected[sorted[i-1].id].matching>=expected[sorted[i].id].matching);
    await page.locator('#picker-fit-only').check();await verifyShown(true);
    assert.match(await page.locator('#picker-cards > p').first().innerText(),new RegExp('候補 '+Object.values(expected).filter(v=>v.matching>0).length+' 件'));
    await page.locator('.modal-head [data-action="close"]').click();
@@ -99,6 +112,25 @@ async function main(){
    assert.equal(await page.locator('#catalog-label-status').innerText(),'適性データ未読込');
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
    assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);
+   // Exercise detail separately after the no-mutation assertions.
+   await page.locator('#catalog-label-file').setInputFiles(file);
+   await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent.includes(s),'検証済み '+n+'件');
+   await page.locator('[data-action="pick"]').first().click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
+   const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');await first.click();
+   await page.locator('[data-action="edit-card"]').first().click();
+   const detail=page.locator('#card-fit-detail');await detail.waitFor();
+   const verifyDetail=async stage=>{
+    const v=await page.evaluate(({id,stage,rows})=>UmaCardSuitabilityView.browseCard(UmaDemoData.cardById[id],{stage},UmaDemoData,new Map(rows.map(r=>[r.appSkillId,r])),{running_style:2,ground_condition:1}),{id,stage,rows:bundle.rows});
+    for(const k of Object.keys(v.current.counts).filter(x=>x!=='total')){
+     const cells=detail.locator('[data-fit-category="'+k+'"] td');
+     assert.equal(await cells.nth(1).innerText(),String(v.current.counts[k]));assert.equal(await cells.nth(2).innerText(),String(v.potential.counts[k]));
+    }
+   };
+   await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);
+   const prior=await snapshot();await detail.locator('summary').click();assert.equal(await snapshot(),prior);
+   assert.deepEqual(errors,[]);
    await page.close();
   }
   console.log('PASS: fixed catalogue 881 skills, '+n+' local labels '+bundle.decisionId+', Aoharu and natural-spurt checks, scope, visibility, invalid import, deck/settings isolation and reload at 1280/390px');
