@@ -4,6 +4,10 @@
 
 D-052の257汎用・43限定向けは[成功run #45546818090](https://github.com/Nimrodx0/Umasupport/actions/runs/45546818090)から派生した300ラベルのみのJSONをローカル読込できるようにした。生辞書・取得候補全データは含めない。バンドルSHA256 874e7cf802bcf1ed0cf314c60438ca0b2fcc27bfa76d20b583be48c78c8814e7 を照合し、固定元辞書を直接取得してSHAを照合、現行skill ID・元ID・元条件構造・必要マスクが一致する行のみ採用する。変わった行は未判定。ローカルファイルはサーバーへ送らず、保存設定には書かない。永続公開は未承認のためバンドルはGitに同梱しない。CIで再生成可能。限定向けは研究済み範囲の探索表示であり実際のレースの適性確定ではない。距離・芝ダート・馬場状態で根拠外を未判定に戻し、研究条件の注記を付ける。能力・編成等の新規入力なし。明示範囲検索はラベル未読込でも可能。
 
-[実装](../../../poc/src/skill_catalog.js)、[単体反例](../../../poc/tests/skill_catalog.test.cjs)、[Chromium操作](../../../poc/tests/browser_skill_smoke.cjs)、[再生成](../../../poc/tools/export_d052_catalog_labels.cjs)。既存のP3.5固定CIは成功（2,830凸、16,180選択例、5,434組）。今回の新規CIと実機確認は未確認。
+[実装](../../../poc/src/skill_catalog.js)、[単体反例](../../../poc/tests/skill_catalog.test.cjs)、[Chromium操作](../../../poc/tests/browser_skill_smoke.cjs)、[再生成](../../../poc/tools/export_d052_catalog_labels.cjs)。既存のP3.5固定CIは成功（2,830凸、16,180選択例、5,434組）。PR #500の全10 CI成功・main統合。固定 [#45551096844](https://github.com/Nimrodx0/Umasupport/actions/runs/45551096844) と通常 [#45551096972](https://github.com/Nimrodx0/Umasupport/actions/runs/45551096972) を確認。実機確認は未実施。
 
 固定CIに、全881件のブラウザ静的必要マスクとP2結果の一致、300ラベルの実際のローカル照合、257/43/581のフィルタ件数、元ID変更1件の未判定化を追加。初期の軸未指定では対象外を含め全収録スキルを表示し、軸指定後の既定絞込のみ明示対象外を除く。ローカルラベルはセッション内で保持し、ページ再読込時は再選択する。
+
+後続P5では[固定ブラウザ試験](../../../poc/tests/browser_fixed_skill_catalog.cjs)を同一runの派生ラベル生成後に追加。固定実データで1280/390pxの実画面読込・フィルタ件数・範囲外・表示切替・不正ファイルの前回ラベル保持・既存比較と保存設定の非破壊・再読込時の非永続化を検査。追加試験はCI待ち。
+
+#502の全4 CI成功・main統合により、複合適用範囲の正確な組合せ詳細を追加。公開Pagesでは#500版の主要6資産のSHA-256一致と1280/390pxの操作成功（[run #45556555286](https://github.com/Nimrodx0/Umasupport/actions/runs/45556555286)、2026-11-25 14:53 JST、Chromium 140.0.7339.186、568カード・885技能、実行時辞書online・イベントreviewed）。#502版の再検証・物理端末は未実施。公開ラベルの配布なし。
