@@ -19,7 +19,8 @@
 
 ## P2：スキル発動条件・脚質適合性の研究
 
-- [2026-11-25：P2.55 自然スパート・窓の限定研究](skills/skill-p2-55-natural-spurt-sensitivity-20261125.md)：4脚質×2コース×30単走の自然状態観測、元窓の積分。CI待ち。
+- [2026-11-25：P2.56 時間と順位変動の同一tick研究](skills/skill-p2-56-clock-rank-joint-model-20261125.md)：既存固定32多走者レースで元条件論理の3段階比較。CI待ち。
+- [2026-11-25：P2.55 自然スパート・窓の限定研究](skills/skill-p2-55-natural-spurt-sensitivity-20261125.md)：4脚質×2コース×30単走の自然状態観測、元窓の積分。専用CI成功。
 - [2026-11-25：P2.54 残42型の研究採否案](skills/skill-p2-54-remaining-condition-decisions-20261125.md)：元経路比較可能性に基づく7/11/3/6/15型の判断案と計算状態6型の元AND精査。固定CI成功・main統合。
 - [2026-11-25：P2.53 D-051承認範囲と残存研究の優先経路](skills/skill-p2-53-approved-scope-and-next-routes-20261125.md)：承認範囲の固定照合・残42型の元経路優先度。固定CI成功。
 - [2026-11-25：P2.52 34研究省略候補の精査](skills/skill-p2-52-omission-review-20261125.md)：34型の固定共起実測と元全式監査を追加。固定CI成功、34型の専用研究省略はD-051承認済み。
