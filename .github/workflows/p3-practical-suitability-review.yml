@@ -24,6 +24,9 @@ on:
       - 'poc/src/p3_combined_style_superiority.cjs'
       - 'poc/tools/audit_p3_combined_style_superiority.cjs'
       - 'poc/tests/p3_combined_style_superiority.test.cjs'
+      - 'poc/tools/audit_p3_final_held.cjs'
+      - 'poc/tools/skill_p3_remaining_absolute_rank_observer.cjs'
+      - 'poc/tests/p3_final_held.test.cjs'
       - 'poc/tools/globalsim_phase_random_10m.cjs'
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
 permissions:
@@ -111,3 +114,8 @@ jobs:
         run: |
           node --test poc/tests/p3_combined_style_superiority.test.cjs
           node poc/tools/audit_p3_combined_style_superiority.cjs /tmp/next-style-release-preview.json /tmp/full-phase-wd-candidates.json /tmp/review-full/full-phase-reference.json /tmp/review-full/full-phase-split15.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-two-axis/two-axis75.json /tmp/review-exception/remaining12-wd.json /tmp/review-dynamic/report.json /tmp/d059-combined.json
+
+      - name: Complete practical review of remaining 491 skills
+        run: |
+          node --test poc/tests/p3_final_held.test.cjs
+          node poc/tools/audit_p3_final_held.cjs /tmp/skill_data.txt /tmp/d059-combined.json /tmp/review-full/absolute-rank-review.json /tmp/review-dynamic/report.json /tmp/p3-final-held.json

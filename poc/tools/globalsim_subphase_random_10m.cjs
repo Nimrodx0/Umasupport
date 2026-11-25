@@ -15,6 +15,7 @@ const pilot=require('./globalsim_position_pilot.cjs');
 const bands=require('./globalsim_rank_band_dominance.cjs').BANDS;
 const bounds=require('../src/skill_order_rate_bounds.cjs');
 const narrow=require('./skill_p2_36_narrow_rank_observer.cjs');
+const absolute=require('./skill_p3_remaining_absolute_rank_observer.cjs');
 const STYLES=expanded.STYLES;
 const round=n=>Number(n.toFixed(6));
 const exactWindow=(type,phase)=>{
@@ -195,7 +196,7 @@ function splitReport(aggregation,seedsPerCell=30){
    'Same original four source short windows, frozen model seed identities and 11 rank bands.',
    'No source skill activation, scenario weights, production UI, effect utility or suitability grade.']};
 }
-async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}={}){
+async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false,absoluteMeasurement=false}={}){
  if(!Number.isSafeInteger(seedsPerCell)||seedsPerCell<2||
   seedsPerCell>30||seedsPerCell%2)
   throw Error('Even seeds 2..30 required');
@@ -204,6 +205,7 @@ async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}
  if(plans.length!==24*seedsPerCell)throw Error('Missing fixed race plan');
  const sub=collect(),full=old.collect();
  const extra=narrowMeasurement?narrow.collect():null;
+ const abs=absoluteMeasurement?absolute.collect():null;
  const child=spawn(engine,[],{stdio:['pipe','pipe','pipe']});
  let stderr='';
  child.stderr.setEncoding('utf8');
@@ -226,7 +228,7 @@ async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}
    const p=plans[count],reply=JSON.parse(line);
    if(reply.error||reply.seed!==undefined&&reply.seed!==p.seed)
     throw Error('Mismatched GlobalSim reply at '+count);
-   old.inspectRace(p,reply.frames,full);
+   old.inspectRace(p,reply.frames,full,{absoluteObserver:abs?.observe});
    inspectRace(p,reply.frames,sub,{narrowObserver:extra?.observe});
    count++;
   }
@@ -241,20 +243,21 @@ async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}
   short:report(sub,seedsPerCell),
   split:seedsPerCell===30?splitReport(sub,seedsPerCell):null,
   fullSplit:seedsPerCell===30?old.splitReport(full,{seedsPerCell}):null,
-  narrow:extra?extra.report():null};
+  narrow:extra?extra.report():null,absolute:abs?abs.report():null};
 }
-async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput,narrowOutput,fullSplitOutput]){
+async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput,narrowOutput,fullSplitOutput,absoluteOutput]){
  if(!templatePath||!engine||!fullOutput||!shortOutput)
   throw Error('Usage: globalsim_subphase_random_10m.cjs original.jsonl engine full-phase.json short-windows.json [seeds]');
  const text=fs.readFileSync(templatePath,'utf8').trim().split(/\r?\n/);
  if(text.length!==1)throw Error('Requires exactly one frozen GlobalSim template');
- const {full,short,split,fullSplit,narrow:extra}=await execute(JSON.parse(text[0]),engine,
-  {seedsPerCell:Number(seeds||30),narrowMeasurement:Boolean(narrowOutput)});
+ const {full,short,split,fullSplit,narrow:extra,absolute:abs}=await execute(JSON.parse(text[0]),engine,
+  {seedsPerCell:Number(seeds||30),narrowMeasurement:Boolean(narrowOutput),absoluteMeasurement:Boolean(absoluteOutput)});
  fs.writeFileSync(fullOutput,JSON.stringify(full,null,2)+'\n');
  fs.writeFileSync(shortOutput,JSON.stringify(short,null,2)+'\n');
  if(splitOutput){if(!split)throw Error('Fixed 30 source seeds required for split');
   fs.writeFileSync(splitOutput,JSON.stringify(split,null,2)+'\n')}
  if(fullSplitOutput){if(!fullSplit)throw Error('Expected full fixed split');fs.writeFileSync(fullSplitOutput,JSON.stringify(fullSplit,null,2)+'\n');}
+ if(absoluteOutput){if(!abs)throw Error('Missing absolute rank observer');fs.writeFileSync(absoluteOutput,JSON.stringify(abs,null,2)+'\n');}
  if(narrowOutput){
   if(!extra)throw Error('P2.36 narrow observer missing');
   fs.writeFileSync(narrowOutput,JSON.stringify(extra,null,2)+'\n');

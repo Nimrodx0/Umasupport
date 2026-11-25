@@ -148,7 +148,7 @@ function collect(){
  }
  return {groups,contexts,append};
 }
-function inspectRace(plan,frames,agg){
+function inspectRace(plan,frames,agg,{absoluteObserver=null}={}){
  const n=plan.fieldSize;
  pilot.checkFrames(frames,n);
  for(let runner=0;runner<n;runner++){
@@ -160,6 +160,7 @@ function inspectRace(plan,frames,agg){
    if(trace.status!=='estimate')
     throw Error('Unresolved rank geometry '+JSON.stringify({
      seed:plan.seed,style,phase:phase.phase,status:trace.status}));
+   if(absoluteObserver)absoluteObserver(plan,phase.phase,trace.segments,style,start,end);
    // Independent algorithm sanity check: original pinned rank occupancy.
    const old=dist.histogram(frames,runner,plan.course.distance,
     phase.startRate,phase.endRate,true);
