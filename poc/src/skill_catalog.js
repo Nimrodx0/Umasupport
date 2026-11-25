@@ -44,7 +44,7 @@ function evidence(row,ctx={}){
  const applicable=contexts(label).some(c=>['distance_type','ground_type','ground_condition'].every(k=>ctx[k]==null||ctx[k]===c[k]));
  if(!applicable)return {state:'undetermined',styles:[],text:'未判定'};
  // Browse known evidence without pretending the user's actual race matches a model roster.
- if(label.state==='general')return {state:'general',styles:[],text:'汎用',...(label.scope.assumption==='adequate-stamina-standard-build'?{note:'十分なスタミナを前提'}:{})};
+ if(label.state==='general')return {state:'general',styles:[],text:'汎用'};
  const distances=[...new Set(contexts(label).map(c=>AXES.distance_type[c.distance_type-1]))].join('・');
  return {state:'targeted',styles:label.styles,text:fit.labelText(label)+'（限定）',note:distances+' / 芝・良 / 固定モデル条件内'};
 }

@@ -49,7 +49,8 @@ async function main(){
     await page.locator('#catalog-query').fill('全身全霊');
     assert.equal(await count.innerText(),'1 / 881 件');
     assert.match(await page.locator('.catalog-table tbody').innerText(),/汎用/);
-    assert.match(await page.locator('.catalog-table tbody').innerText(),/十分なスタミナを前提/);
+    assert.equal(await page.locator('.catalog-table tbody tr td').last().innerText(),'汎用');
+    assert.equal(await page.locator('.catalog-table tbody .catalog-evidence-note').count(),0);
    }
    await page.locator('#catalog-query').fill('');
    await page.locator('#catalog-show-labels').uncheck();

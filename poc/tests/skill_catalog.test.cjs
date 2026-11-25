@@ -41,9 +41,9 @@ test('exact scope groups reconstruct every eligible cell without Cartesian expan
  a.equal(fit.explicitScope({explicitNecessaryMasks:Array(32).fill(15)}).correlated,false);
 });
 
-test('approved bundle allowlist is version bound and natural-spurt assumption is visible',()=>{
+test('approved bundle allowlist is version bound and natural-spurt assumption stays internal',()=>{
  a.deepEqual(Object.values(cat.APPROVED_BUNDLES).map(x=>[x.decisionId,x.count]),[['D-052',300],['D-056',324]]);
  const row={label:{state:'general',styles:[],scope:{kind:'source-logic',contexts:[{distance_type:3,ground_type:1,ground_condition:1}],assumption:'adequate-stamina-standard-build'}}};
- a.equal(cat.evidence(row,{distance_type:3}).note,'十分なスタミナを前提');
+ a.deepEqual(cat.evidence(row,{distance_type:3}),{state:'general',styles:[],text:'汎用'});
  a.equal(cat.evidence(row,{distance_type:4}).state,'undetermined');
 });
