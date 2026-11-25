@@ -141,6 +141,8 @@
 - 固定技術変換2,512件のうち **25件** は公開保留（GameWith補正が入ったGT由来1件、別出典から編集追加した24件）。保留は公開データから分離したままで、ゲーム中に存在しない意味ではありません。根拠は [公開承認の監査](../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) と [出典例外分類](../evidence/events/phase2-source-lineage-exception-map-20261102.md)。
 - 公開JSONは、未承認の試用モードや非公開候補とは別。通常の起動時にロードできることは [PR #312・#313](https://github.com/Nimrodx0/Umasupport/pull/313) とPages実ブラウザで確認。元のイベント本文・画像を無断再配布しない。
 
+**P5.3（公開Pages実配信の自動受入試験、追加実装・CI待ち）**：公開版の主要6資産を指定コミットのSHA-256と照合し、実際のPages URLをChromium 1280/390pxの新規プロファイルで操作する。外部データの実取得・一覧件数・未読込ラベル・検索・詳細・表示切替・保存設定非干渉を確認する。固定試験の代替ではなく、物理Windows／Androidの受入でもない。派生ラベルを公開・配信しない。公開配信が指定版と異なる場合は失敗とする。
+
 ## 実装と検証の境界
 
 - **A 機構**：Nodeのユニットテスト、実Chromiumのデスクトップ／スマホ幅で主要操作を検証。継続実行は [PoC Core Tests](../../.github/workflows/ci.yml) を参照。
