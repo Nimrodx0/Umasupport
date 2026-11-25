@@ -2,6 +2,7 @@ name: P2 balanced 77 skill half-phase random 10m audit
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
@@ -795,6 +796,24 @@ jobs:
             /tmp/p2-subphase/remaining12-wd.json \
             /tmp/p2-subphase/p2-41-combined-881-partial-evidence.json \
             /tmp/p2-subphase/p3-4h-rank-window-margin-screen.json
+      - name: P2.61 independently receive owner-approved D-052 research decisions
+        run: |
+          node poc/src/p2_d052_approved_receipt.cjs \
+            /tmp/p2-subphase/p2-58-d051-supplement.json \
+            /tmp/p2-subphase/p3-g6-d051-interim-receipt.json \
+            poc/data/p3_approved_suitability_policy_d052.v1.json \
+            poc/data/p2_remaining_condition_decisions_proposal.v1.json \
+            /tmp/p2-subphase/p2-61-d052-supplement.json \
+            /tmp/p2-subphase/p3-g6-d052-receipt.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p3-d052-fixed-static-window-inputs
+          path: |
+            /tmp/p2-subphase/p3-g6-d052-receipt.json
+            /tmp/p2-subphase/p3-4g-source-logic-label-preview.json
+            /tmp/p2-subphase/p3-4h-rank-window-margin-screen.json
+          retention-days: 14
+          if-no-files-found: error
       - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
         run: |
           node poc/tools/build_p3_4c_relative_bias_probe.cjs \

@@ -1,6 +1,7 @@
 name: P2.59 joint clock rank and neighbour model logic
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     paths:
       - '.github/workflows/p2-joint-dynamic-model.yml'
