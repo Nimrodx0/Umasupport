@@ -28,3 +28,15 @@ test('invalid imported data fails closed without a fetch',async()=>{
  const bytes=new TextEncoder().encode('{}').buffer;
  await a.rejects(cat.loadLabels(bytes,{skillById:{}},{fetcher:()=>{throw Error('must not fetch')}}),/一致しません/);
 });
+
+test('exact scope groups reconstruct every eligible cell without Cartesian expansion',()=>{
+ const fit=require('../src/skill_suitability.js');
+ const m=Array(32).fill(0);m[0]=1;m[11]=2;m[20]=5;
+ const v=fit.explicitScope({explicitNecessaryMasks:m});
+ a.match(v.text,/組合せ条件あり/);a.equal(v.correlated,true);
+ a.deepEqual(v.groups,[{pairs:['逃げ・短距離'],surfaces:['芝（良）']},{pairs:['先行・マイル'],surfaces:['ダート（稍重）']},{pairs:['差し・中距離'],surfaces:['芝（良・重）']}]);
+ a.equal(cat.scopeSummary(m),v.text);
+ a.equal(fit.explicitScope(null).text,'適用範囲未確認');
+ a.equal(fit.explicitScope({explicitNecessaryMasks:Array(32).fill(0)}).text,'明示条件の対象外');
+ a.equal(fit.explicitScope({explicitNecessaryMasks:Array(32).fill(15)}).correlated,false);
+});
