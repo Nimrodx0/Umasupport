@@ -17,6 +17,8 @@ on:
       - 'poc/data/p2_condition_review_proposal.v1.json'
       - 'poc/data/p2_approved_research_scope_d051.v1.json'
       - 'poc/data/p2_remaining_condition_decisions_proposal.v1.json'
+      - 'poc/src/p3_rank_window_margin_screen.cjs'
+      - 'poc/tests/p3_rank_window_margin_screen.test.cjs'
       - 'poc/src/p3_source_logic_label_preview.cjs'
       - 'poc/tests/p3_source_logic_label_preview.test.cjs'
       - 'poc/src/p3_all_card_direct_research_routes.cjs'
@@ -785,6 +787,14 @@ jobs:
             /tmp/p2-subphase/p3-3b-all-card-research-routes.json \
             /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json \
             /tmp/p2-subphase/p3-4g-source-logic-label-preview.json
+      - name: P3.4h screen the existing 81 short-window skills using paired full and split observations
+        run: |
+          node --test poc/tests/p3_rank_window_margin_screen.test.cjs
+          node poc/src/p3_rank_window_margin_screen.cjs \
+            /tmp/p2-subphase/two-axis75.json \
+            /tmp/p2-subphase/remaining12-wd.json \
+            /tmp/p2-subphase/p2-41-combined-881-partial-evidence.json \
+            /tmp/p2-subphase/p3-4h-rank-window-margin-screen.json
       - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
         run: |
           node poc/tools/build_p3_4c_relative_bias_probe.cjs \
@@ -886,6 +896,7 @@ jobs:
             /tmp/p2-subphase/p3-4e-context-source-logic.json
             /tmp/p2-subphase/p3-3b-all-card-research-routes.json
             /tmp/p2-subphase/p3-4g-source-logic-label-preview.json
+            /tmp/p2-subphase/p3-4h-rank-window-margin-screen.json
           retention-days: 14
           if-no-files-found: error
       - name: Keep P2.43 source-exact 3 AND mechanism review, not skill rating
