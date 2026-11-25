@@ -1,22 +1,19 @@
 'use strict';
 // D-054 review candidate only. No published or approved label changes.
-// Compare each axis with the other explicit axes fixed; retain OR/Invoke identity
+// Compare running styles with the other explicit axes fixed; retain OR/Invoke identity
 // and precondition history. Effect objects are deliberately not read.
 const a=require('node:assert/strict');
 const {DOMAINS,check}=require('./skill_full_condition_path_audit.cjs');
 const scope=require('../data/p2_approved_research_scope_d051.v1.json');
-const AXES=['running_style','distance_type','ground_type'];
+const AXES=['running_style']; // D-055: distance/surface are context, not assessment axes.
 const KEYS=Object.keys(DOMAINS);
 // Reviewable conditional neutrality, not game probability equality.
 // Position/phase conditions standalone: style-neutral under D051; geometry
 // beyond race-relative phase needs review across distance and surfaces.
-const PHASE=['phase','phase_random','phase_firsthalf_random','phase_laterhalf_random','phase_firstquarter_random','distance_rate','distance_rate_after_random'];
 const FIXED_CONTEXT=['motivation','weather','season','rotation','track_id','random_lot','random_lot_shared'];
 const ABILITY=['base_speed','base_stamina','base_power','base_guts','base_wiz'];
 const neutral={
- running_style:new Set([...scope.geometry.filter(t=>t!=='always'),...FIXED_CONTEXT,...ABILITY,'course_distance','is_basis_distance','is_dirtgrade','is_tight_track','corner_count','time']),
- distance_type:new Set([...PHASE,...FIXED_CONTEXT.filter(t=>t!=='track_id')]),
- ground_type:new Set([...PHASE,...FIXED_CONTEXT.filter(t=>t!=='track_id'),...ABILITY])
+ running_style:new Set([...scope.geometry.filter(t=>t!=='always'),...FIXED_CONTEXT,...ABILITY,'course_distance','is_basis_distance','is_dirtgrade','is_tight_track','corner_count','time'])
 };
 // Distribution-dependent conditions (post number, skill count etc.) are not
 // automatically neutral solely because detailed research was excluded.
