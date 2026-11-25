@@ -15,6 +15,16 @@ const SOURCE_SHA='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333b
 const FULL_SHA='f512e24b2987ccd642f17f21f92865e965a43b90985ef37d622f1ae2f2ec9e58';
 const LOGIC=new Set(['weather','phase_random','phase_firsthalf_random','phase_laterhalf_random']);
 const ABILITY=new Set(['base_speed','base_stamina','base_power','base_guts','base_wiz']);
+const ABILITY_RULES=Object.freeze({
+ 'あふれる活力':['base_stamina:>=:1200'],
+ '気丈夫':['base_stamina:>=:1200'],
+ '遊び心':['base_speed:>=:1200','base_speed:>=:1200','base_wiz:<:1200','base_wiz:>=:1200']
+});
+function abilityApproved(record){
+ if(!record||!Object.hasOwn(ABILITY_RULES,record.name))return false;
+ const actual=conditions(record).filter(p=>ABILITY.has(p.type)).map(p=>[p.type,p.operator,p.value].join(':')).sort();
+ return JSON.stringify(actual)===JSON.stringify(ABILITY_RULES[record.name]);
+}
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const conditions=r=>r.invokes.flatMap(i=>[...i.conditions,...(i.preConditions??[])].flat());
 const types=r=>[...new Set(conditions(r).map(p=>p.type))].sort();
@@ -26,11 +36,12 @@ function supportedPredicate(p){
 }
 function sourceLogic(record,r){
  if(!record||!['full-neutral-candidate','held'].includes(r.state))return null;
- if(!conditions(record).every(supportedPredicate))return null;
+ const approvedAbility=abilityApproved(record);
+ if(!conditions(record).every(p=>supportedPredicate(p)||(approvedAbility&&ABILITY.has(p.type))))return null;
  if(r.state==='full-neutral-candidate'){
   const contexts=r.cells.filter(c=>c.eligible.length);
   if(!contexts.length||!contexts.every(c=>c.eligible.length===4&&c.state==='full-neutral-candidate'))return null;
-  return {kind:'full-source-logic',label:{state:'general',styles:[],reason:'same-source-logic-under-D045-D049-D051-D054-D055',scope:{kind:'source-logic',contexts:contexts.map(c=>c.context)}}};
+  return {kind:approvedAbility?'approved-standard-build-ability':'full-source-logic',label:{state:'general',styles:[],reason:approvedAbility?'D-057-standard-build-ability-1200':'same-source-logic-under-D045-D049-D051-D054-D055',scope:{kind:'source-logic',contexts:contexts.map(c=>c.context)}}};
  }
  const q=restrictedEquivalent(record,r);
  if(!q)return null;
@@ -64,16 +75,16 @@ function derivePreview(raw,base,wd){
   let proposal=null;
   if(row.label.state==='undetermined'){
    const record=bySource.get(row.sourceNumericId),r=evaluate(record,'running_style'),w=byApp.get(row.appSkillId);
-   if(record&&r.state==='full-neutral-candidate'&&types(record).some(t=>ABILITY.has(t)))abilityHeld.push({name:record.name,predicates:conditions(record).filter(p=>ABILITY.has(p.type))});
+   if(record&&r.state==='full-neutral-candidate'&&types(record).some(t=>ABILITY.has(t))&&!abilityApproved(record))abilityHeld.push({name:record.name,predicates:conditions(record).filter(p=>ABILITY.has(p.type))});
    proposal=sourceLogic(record,r);
    if(w){a.equal(w.sourceNumericId,row.sourceNumericId);a(!proposal);seenWD.add(row.appSkillId);proposal=targeted(record,r,w);if(!proposal)rejectedWD.push({name:record.name,state:w.state});}
    if(proposal){verifyMask(row,proposal.label);added.push({appSkillId:row.appSkillId,sourceNumericId:row.sourceNumericId,name:record.name,...proposal});}
   }
   const out=proposal?{...row,label:proposal.label}:row;counts[out.label.state]++;return out;
  });
- a.equal(seenWD.size,29);a.equal(abilityHeld.length,3);a.equal(added.filter(x=>x.kind==='full-source-logic').length,10);a.equal(added.filter(x=>x.kind==='restricted-source-logic').length,4);
+ a.equal(seenWD.size,29);a.equal(abilityHeld.length,0);a.equal(added.filter(x=>x.kind==='approved-standard-build-ability').length,3);a.equal(added.filter(x=>x.kind==='full-source-logic').length,10);a.equal(added.filter(x=>x.kind==='restricted-source-logic').length,4);
  const t=added.filter(x=>x.kind==='full-phase-WD').length;
- a.equal(t+rejectedWD.length,29);a.deepEqual(counts,{general:295,targeted:43+t,undetermined:543-t});
+ a.equal(t+rejectedWD.length,29);a.equal(t,24);a.deepEqual(counts,{general:298,targeted:67,undetermined:516});
  const changed=new Set(added.map(x=>x.appSkillId));for(let i=0;i<rows.length;i++)if(!changed.has(rows[i].appSkillId))a.deepEqual(rows[i],prior.rows[i]);
  const index=new Map(rows.map(r=>[r.appSkillId,r])),cardSummary={cards:0,pairs:0,general:0,targeted:0,undetermined:0,cardsWithAnyTargeted:0};
  const cards=prior.cards.map(c=>{cardSummary.cards++;const skills=c.skills.map(s=>{const label=index.get(s.appSkillId).label;cardSummary.pairs++;cardSummary[label.state]++;return {...s,label};});if(skills.some(s=>s.label.state==='targeted'))cardSummary.cardsWithAnyTargeted++;return {...c,skills};});
@@ -81,4 +92,4 @@ function derivePreview(raw,base,wd){
  return {status:'next-style-label-release-preview-not-approved',baseDecisionId:'D-056',counts,cardSummary,rows,cards,added,abilityHeld,rejectedWD,formalLabelsChanged:0,publicDeployment:false};
 }
 if(require.main===module){const [raw,b,w,out]=process.argv.slice(2),read=p=>JSON.parse(fs.readFileSync(p,'utf8'));const r=derivePreview(fs.readFileSync(raw),read(b),read(w));fs.writeFileSync(out,JSON.stringify(r,null,2)+'\n');console.log('NEXT_STYLE_RELEASE='+JSON.stringify({counts:r.counts,cardSummary:r.cardSummary,added:r.added.map(({name,kind,label})=>({name,kind,styles:label.styles})),abilityHeld:r.abilityHeld,rejectedWD:r.rejectedWD,formalLabelsChanged:0}));}
-module.exports={sourceLogic,targeted,derivePreview,supportedPredicate};
+module.exports={sourceLogic,targeted,derivePreview,supportedPredicate,abilityApproved};
