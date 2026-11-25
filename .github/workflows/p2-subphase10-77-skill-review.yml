@@ -168,6 +168,7 @@ jobs:
             /tmp/p2-subphase/split15.json \
             /tmp/p2-subphase/narrow-order-rank.json \
             /tmp/p2-subphase/full-phase-split15.json \
+            /tmp/p2-subphase/absolute-rank-review.json \
             > /tmp/p2-subphase/replay.log
       - name: Verify previous published FULL phase 720 race report unchanged by paired replay
         run: |
@@ -202,6 +203,7 @@ jobs:
           path: |
             /tmp/p2-subphase/full-phase-reference.json
             /tmp/p2-subphase/full-phase-split15.json
+            /tmp/p2-subphase/absolute-rank-review.json
           retention-days: 14
           if-no-files-found: error
       - name: Reuse fixed 720 race short-window evidence for 75 source skills W and D
