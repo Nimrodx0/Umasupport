@@ -69,6 +69,29 @@ async function main(){
    await page.locator('.modal-head h2').waitFor();
    await page.locator('.modal-head [data-action="close"]').click();
    assert.equal(await page.locator('#table-region').innerText(),comparison);assert.equal(await snapshot(),saved);
+   // Browse the same verified labels on actual support-card candidates,
+   // independently of deck selection or the catalogue's filter state.
+   await page.locator('[data-action="pick"]').first().click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await page.locator('[data-picker-fit-axis="distance_type"]').selectOption('3');
+   await page.locator('[data-picker-fit-axis="ground_type"]').selectOption('1');
+   const expected=await page.evaluate(rows=>{
+    const d=UmaDemoData,labels=new Map(rows.map(r=>[r.appSkillId,r])),ctx={running_style:2,distance_type:3,ground_type:1};
+    return Object.fromEntries(d.cards.map(c=>[c.id,UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,ctx).potential]));
+   },bundle.rows);
+   const summary=page.locator('[data-picker-fit-summary]');
+   assert(await summary.count()>0);
+   const readShown=()=>page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,text:r.querySelector('[data-picker-fit-summary]')?.textContent})));
+   const verifyShown=async only=>{for(const x of await readShown()){
+    const v=expected[x.id],c=v.counts;assert(v);
+    assert.equal(x.text,'脚質限定 '+c.explicitOnly+' · 向け '+c.targeted+' · 汎用 '+c.general+' · 他脚質向け '+c.otherTargeted+' · 未判定 '+(c.undetermined+c.scopeUnknown)+' · 対象外 '+c.outside);
+    if(only)assert(v.matching>0);
+   }};
+   await verifyShown(false);
+   await page.locator('#picker-fit-only').check();await verifyShown(true);
+   assert.match(await page.locator('#picker-cards > p').first().innerText(),new RegExp('候補 '+Object.values(expected).filter(v=>v.matching>0).length+' 件'));
+   await page.locator('.modal-head [data-action="close"]').click();
+   assert.equal(await snapshot(),saved);assert.equal(await page.locator('#table-region').innerText(),comparison);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});
    await page.locator('header [data-action="catalog-toggle"]').click();
    // Reload collapses the disclosure; open it before asserting visible status.
