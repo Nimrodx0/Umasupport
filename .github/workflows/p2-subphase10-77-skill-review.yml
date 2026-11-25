@@ -678,6 +678,21 @@ jobs:
             /tmp/p2-subphase/p2-47-occurrence-dispositions.json \
             poc/data/p2_condition_review_proposal.v1.json \
             /tmp/p2-subphase/p2-51-condition-review-audit.json
+          node - <<'NODE'
+          const a=require('node:assert/strict'),{audit}=require('./poc/src/p2_condition_review_audit.cjs');
+          const l=require('/tmp/p2-subphase/p2-47-occurrence-dispositions.json');
+          const p=require('./poc/data/p2_condition_review_proposal.v1.json');
+          const r=require('/tmp/p2-subphase/p2-51-condition-review-audit.json');
+          a.deepEqual(audit(l,p),r);
+          for(const mutate of [q=>q.rows.pop(),q=>q.rows.push(q.rows[0]),q=>q.rows[0].occurrences++,q=>q.rows.find(x=>!x.ownerApproved).ownerApproved=true]){
+           const copy=structuredClone(p);mutate(copy);a.throws(()=>audit(l,copy));
+          }
+          a.equal(r.rows.length,90);a.equal(r.actualOmissions,0);a.equal(r.formalLabels,0);
+          for(const row of r.rows){
+           a(row.sameAndOtherDynamicSkills<=row.skillsWithOtherDynamicAnywhere);
+           a(row.preconditionSkills<=row.skillsWithAnyPrecondition);
+          }
+          NODE
       - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
         run: |
           node poc/tools/build_p3_4c_relative_bias_probe.cjs \

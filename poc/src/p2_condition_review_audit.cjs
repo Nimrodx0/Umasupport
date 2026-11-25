@@ -6,6 +6,9 @@ const g6=require('./p2_g6_research_handoff_881.cjs');
 const staticTypes=new Set(['running_style','distance_type','ground_type','ground_condition']);
 const rank=new Set(triage.BUCKETS['rank-opportunity-study']);
 const timing=new Set(triage.BUCKETS['timing-or-geometry-only']);
+// Elapsed time can correlate with runner position and speed; do not count it as geometry-only.
+timing.delete('accumulatetime');
+function isOtherDynamic(type){return !staticTypes.has(type)&&!rank.has(type)&&!timing.has(type)&&triage.typeDecision(type).group!=='explicit-eligibility';}
 function audit(ledger,proposal){
  a.equal(ledger.status,g4.STATUS);a.equal(ledger.source.registrySHA256,g6.SOURCE_SHA);
  a.equal(proposal.status,'P2.51-type-review-proposal-not-formal-adoption');
@@ -16,7 +19,7 @@ function audit(ledger,proposal){
   a.equal(p.ownerApproved,staticTypes.has(p.type)||g4.EXCLUDED_CONTEXT_RESEARCH.includes(p.type));
   a.equal(p.category==='既承認・研究省略',g4.EXCLUDED_CONTEXT_RESEARCH.includes(p.type));
   a.equal(p.category==='既承認・静的適用範囲',staticTypes.has(p.type));
-  map.set(p.type,{...p,n:0,skillsSet:new Set(),sameAndRank:new Set(),sameAndOtherDynamic:new Set(),precondition:new Set(),sourcePaths:new Set(),seenDispositions:new Set()});
+  map.set(p.type,{...p,n:0,skillsSet:new Set(),sameAndRank:new Set(),sameAndOtherDynamic:new Set(),precondition:new Set(),anyHistory:new Set(),otherDynamicElsewhere:new Set(),sourcePaths:new Set(),seenDispositions:new Set()});
  }
  let total=0;
  for(const row of ledger.rows){
@@ -32,8 +35,10 @@ function audit(ledger,proposal){
    total++;p.n++;p.skillsSet.add(row.appSkillId);p.seenDispositions.add(o.disposition);
    p.sourcePaths.add(JSON.stringify([row.appSkillId,o.invokeOffset,o.sourceSide,o.orIndex]));
    if(o.sourceSide==='preConditions')p.precondition.add(row.appSkillId);
+   if(row.occurrences.some(q=>q.sourceSide==='preConditions'))p.anyHistory.add(row.appSkillId);
+   if(row.occurrences.some(q=>q.type!==o.type&&isOtherDynamic(q.type)))p.otherDynamicElsewhere.add(row.appSkillId);
    if(group.some(q=>q.type!==o.type&&rank.has(q.type)))p.sameAndRank.add(row.appSkillId);
-   if(group.some(q=>q.type!==o.type&&!staticTypes.has(q.type)&&!rank.has(q.type)&&!timing.has(q.type)&&triage.typeDecision(q.type).group!=='explicit-eligibility'))p.sameAndOtherDynamic.add(row.appSkillId);
+   if(group.some(q=>q.type!==o.type&&isOtherDynamic(q.type)))p.sameAndOtherDynamic.add(row.appSkillId);
   }
  }
  const result=[...map.values()].map(p=>{
@@ -41,7 +46,7 @@ function audit(ledger,proposal){
   a.deepEqual([...p.seenDispositions].sort(),[...p.previous].sort());
   return {type:p.type,category:p.category,ownerApproved:p.ownerApproved,skills:p.skills,occurrences:p.occurrences,
    originalAndGroups:p.sourcePaths.size,sameAndRankSkills:p.sameAndRank.size,sameAndOtherDynamicSkills:p.sameAndOtherDynamic.size,
-   preconditionSkills:p.precondition.size,sourcePredicateRemoved:false,formalLabel:null};
+   preconditionSkills:p.precondition.size,skillsWithAnyPrecondition:p.anyHistory.size,skillsWithOtherDynamicAnywhere:p.otherDynamicElsewhere.size,sourcePredicateRemoved:false,formalLabel:null};
  });
  a.equal(result.length,90);a.equal(total,2421);a.equal(ledger.denominators.occurrenceCount,total);
  return {status:'P2.51-proposal-audited-not-accepted',rows:result,formalLabels:0,actualOmissions:0};
