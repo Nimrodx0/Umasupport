@@ -14,6 +14,10 @@ on:
       - 'poc/tools/p2_g3g4_combined_short_window_881.cjs'
       - 'poc/tools/p2_g4_dynamic_impact_gates.cjs'
       - 'poc/src/skill_p2_43_original_spurt_candidate_review.cjs'
+      - 'poc/src/p2_scope_handoff_supplement.cjs'
+      - 'poc/tests/p2_scope_handoff_supplement.test.cjs'
+      - 'poc/src/p2_context_logic_review.cjs'
+      - 'poc/tests/p2_context_logic_review.test.cjs'
       - 'poc/src/p2_g4_occurrence_disposition.cjs'
       - 'poc/tests/p2_g4_occurrence_disposition.test.cjs'
       - 'poc/src/p2_gate_cohort_cross_audit.cjs'
@@ -79,6 +83,8 @@ jobs:
           node --test poc/tests/p2_g6_research_handoff_881.test.cjs
           node --test poc/tests/p2_gate_cohort_cross_audit.test.cjs
           node --test poc/tests/p2_g4_occurrence_disposition.test.cjs
+          node --test poc/tests/p2_context_logic_review.test.cjs
+          node --test poc/tests/p2_scope_handoff_supplement.test.cjs
           node --check poc/src/p3_4_uncertainty_semantics.cjs
           node --check poc/tools/build_p3_4_uncertainty_preview.cjs
           node --test poc/tests/p3_4_uncertainty_semantics.test.cjs
@@ -558,6 +564,36 @@ jobs:
           a.equal(x.denominators.actualAppliedOmissions,0);
           a.equal(x.denominators.formalScores,0);
           NODE
+      - name: P2.48 verify exact context handlers and all-source logic-only candidates
+        run: |
+          node poc/src/p2_context_logic_review.cjs \
+            /tmp/p2-fixed-skill-source.txt \
+            /tmp/p2-subphase/p2-47-occurrence-dispositions.json \
+            /tmp/p2-subphase/p2-48-context-logic-review.json
+          node - <<'NODE'
+          const a=require('node:assert/strict'),x=require('/tmp/p2-subphase/p2-48-context-logic-review.json');
+          a.equal(x.denominators.matched,818);
+          a.equal(x.denominators.unavailable,63);
+          a.equal(x.denominators.occurrences,2421);
+          a.equal(x.targetSummary.motivation.distinctSkills,2);
+          a.equal(x.targetSummary.track_id.distinctSkills,37);
+          a.equal(x.targetSummary.weather.distinctSkills,8);
+          a.equal(x.targetSummary.weather.sourceHandler,'unsupported-in-pinned-checker');
+          a.equal(x.denominators.distinctAbilityConditionSkills,16);
+          a.deepEqual(x.counts,{'style-independent-conditional-context-candidate':58,'hold-other-source-logic':757,'style-independent-always-only-candidate':3});
+          a.equal(Object.keys(x.targetSummary).length,8);
+          for(const t of Object.values(x.targetSummary)){
+           a.equal(t.researchScope.decisionId,'D-049');
+           a.equal(t.researchScope.requiredForP2Completion,false);
+           a.equal(t.researchScope.sourcePredicateRetained,true);
+           a.equal(t.researchScope.assumeTrue,false);
+           a.equal(t.researchScope.zeroImpactProven,false);
+           a.equal(t.actualOmissionApproved,false);
+          }
+          a.equal(x.denominators.formalLabels,0);
+          a.equal(x.denominators.actualOmissions,0);
+          a.equal(x.rows.find(r=>r.sourceNumericId==='200432').disposition,'style-independent-always-only-candidate');
+          NODE
       - name: P3.4a interpret fixed P2/P3 research only as separate explicit eligibility, W/D evidence and held uncertainty
         run: |
           node poc/tools/build_p3_4_uncertainty_preview.cjs \
@@ -612,6 +648,27 @@ jobs:
            source210081:ids.get('210081').selectedSourceANDDisposition,
            officialPolicyApproved:r.provenance.officialPolicyApproved
           }));
+          NODE
+      - name: P2.49 and P3 independently receive scope decisions and remaining condition evidence
+        run: |
+          node poc/src/p2_scope_handoff_supplement.cjs \
+            /tmp/p2-subphase/p2-47-occurrence-dispositions.json \
+            /tmp/p2-subphase/p2-48-context-logic-review.json \
+            /tmp/p2-subphase/p3-4a-uncertainty-881-reviewed-only.json \
+            /tmp/p2-subphase/p2-44-g6-881-original-source-research-only.json \
+            /tmp/p2-subphase/p2-49-scope-supplement.json \
+            /tmp/p2-subphase/p3-g6-scope-supplement-receipt.json
+          node - <<'NODE'
+          const a=require('node:assert/strict');
+          const x=require('/tmp/p2-subphase/p2-49-scope-supplement.json');
+          const r=require('/tmp/p2-subphase/p3-g6-scope-supplement-receipt.json');
+          a.equal(x.rows.length,881);a.equal(r.sourceIndex.length,881);
+          a.equal(x.totals.sourceMatched,818);a.equal(x.totals.sourceUnavailable,63);
+          a.equal(x.totals.excludedResearchOccurrences,97);
+          a.equal(x.totals.logicAlwaysOnly,3);a.equal(x.totals.logicFixedContextOnly,58);
+          a.equal(x.totals.logicOtherHeld,757);
+          a.equal(r.formalLabels,0);a.equal(x.boundary.actualOmissions,0);
+          a(r.sourceIndex.every(v=>v.eligibilityForCardScoring===false&&v.cardScore===null&&v.suitabilityLabel===null));
           NODE
       - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
         run: |
@@ -702,6 +759,9 @@ jobs:
             /tmp/p2-subphase/p3-g6-881-quarantined-research-receipt.json
             /tmp/p2-subphase/p2-gate-cohort-cross-audit.json
             /tmp/p2-subphase/p2-47-occurrence-dispositions.json
+            /tmp/p2-subphase/p2-48-context-logic-review.json
+            /tmp/p2-subphase/p2-49-scope-supplement.json
+            /tmp/p2-subphase/p3-g6-scope-supplement-receipt.json
           retention-days: 14
           if-no-files-found: error
       - name: Keep P2.43 source-exact 3 AND mechanism review, not skill rating

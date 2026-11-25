@@ -19,9 +19,13 @@
 
 ## P2：スキル発動条件・脚質適合性の研究
 
-- [2026-11-13：事前条件ラッチ初回履歴の感度](skills/skill-p2-15-precondition-history-sensitivity-20261113.md)：元UNKNOWN正本を保ち、仮初期FALSEで704試行・67技能×脚質セルが変化した旧固定CI。現行再検証待ち。
+- [2026-11-13：事前条件ラッチ初回履歴の感度](skills/skill-p2-15-precondition-history-sensitivity-20261113.md)：現行固定CIで704試行・67技能×脚質セルの仮FALSE感度を再現。元UNKNOWN正本は保持。
 
-- [2026-11-25：P2.47 G4元述語全出現の採否判断](skills/skill-p2-47-occurrence-dispositions-20261125.md)：元経路・各出現位置・根拠と再検討条件を保持。省略や採点は行わない。固定CI待ち。
+- [2026-11-25：P2.49 G6研究範囲補足](skills/skill-p2-49-scope-handoff-20261125.md)：D-049研究省略、元条件保持、その他の未判定、限定W/Dを分離しP3で再計算受領。固定CI待ち。
+
+- [2026-11-25：P2.48 固定文脈と論理的中立候補](skills/skill-p2-48-context-logic-review-20261125.md)：やる気・競馬場・天候・基礎能力の元実装差と全元Invokeの限定論理候補を照合。旧HEAD固定CI成功、D-049で4文脈の詳細研究を除外、方針追記後の主要固定CI成功。
+
+- [2026-11-25：P2.47 G4元述語全出現の採否判断](skills/skill-p2-47-occurrence-dispositions-20261125.md)：元経路・各出現位置・根拠と再検討条件を保持。2,421箇所・90型の固定CI成功、main統合。省略や採点は0。
 
 - [2026-11-24：P2.46 旧32条件の二軸独立整合性検証](skills/skill-p2-46-source32-independent-integrity-20261124.md)：旧#378/#379の数値・順位射影・派生報告SHA検査を現行復旧経路に移植。固定CI成功・main統合。
 
