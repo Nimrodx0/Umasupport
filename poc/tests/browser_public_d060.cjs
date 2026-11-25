@@ -74,6 +74,10 @@ async function main(){
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(404-accepted)+'件';
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
+   const openHealth=async()=>{await page.locator('header [data-action="source-health"]').click();};
+   const closeModal=async()=>{await page.locator('.modal-head [data-action="close"]').click();};
+   const healthStatus=page.locator('#source-status-suitability .source-health-state');
+   await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined'])a.deepEqual(await collect(page,state,total),groups[state].sort());
    await page.locator('[data-action="pick"]').first().click();await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
@@ -82,8 +86,26 @@ async function main(){
    for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'一致候補：金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);}
    await page.locator('#picker-sort').selectOption('fit-count-desc');const ids=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>r.dataset.id));for(let i=1;i<ids.length;i++)a(expected[ids[i-1]].matching>=expected[ids[i]].matching);
    await page.locator('.modal-head [data-action="close"]').click();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
-   await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});a.equal(await snapshot(),saved);
-   await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.length);a.equal(await page.locator('.catalog-count').innerText(),now+' / '+now+' 件');a.equal(await snapshot(),saved);a.deepEqual(errors,[]);
+   // Exercise a real nonempty deck, not just the untouched default settings.
+   await page.locator('[data-action="pick"][data-deck="main"][data-index="0"]').click();
+   const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');a(id);await first.click();
+   const slot=page.locator('[data-action="edit-card"][data-deck="main"][data-index="0"]');
+   await slot.click();
+   const verifyDetail=async stage=>{
+    const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
+    const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
+    a.equal(await page.locator('[data-fit-tiers]').innerText(),'一致候補の内訳：現在 '+tier(v.current.matchingByTier)+' ／ 全分岐 '+tier(v.potential.matchingByTier));
+   };
+   await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();
+   const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
+   await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
+   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
+   const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
+   await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();
+   await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.length);a.equal(await page.locator('.catalog-count').innerText(),now+' / '+now+' 件');
+   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);
+   await page.unroute(blocked);await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
+   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);a.deepEqual(errors,[]);
    console.log('PAGES_D060_PUBLIC='+JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(live),liveSupportSHA256:sha(support),publicSHA256:sha(pub),accepted,skipped:404-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));
    await page.close();
   }

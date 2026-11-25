@@ -107,7 +107,7 @@ function catalogDetail(skill){if(!catalogRows)catalogRows=catalog.index(data,cat
 function refreshLabelViews(){
  if(!catalog||settingsLoadError||!ui.catalogOpen&&!ui.modal)return;
  const status=document.getElementById('catalog-label-status');if(status)status.textContent=catalogMessage;
- refreshCatalog();if(['pick','edit','skill'].includes(ui.modal?.kind))renderModal(true);
+ refreshCatalog();if(['pick','edit','skill','source-health'].includes(ui.modal?.kind))renderModal(true);
 }
 function acceptLabels(result){catalogLabels=result.labels;catalogRows=null;catalogMessage='検証済み '+result.labels.size+'件 / 変更・未照合 '+result.skipped+'件';}
 async function autoCatalogLabels(){
@@ -444,7 +444,8 @@ function sourceHealthModal(){
  section('source-status-cards','サポカ・通常ヒント',c.label,[['採用公開元カード',c.count+'枚'],['0～4凸ヒント5段階',c.stageComplete+' / '+c.count+'枚'],['段階別ヒント性能',c.hintPerformanceComplete+' / '+c.count+'枚'],['4凸の通常ヒント記録',c.hints4===null?'不明':c.hints4+'件'],['受信日時',c.fetchedAt||'記録なし'],['確認日時',c.checkedAt||'記録なし'],['公開元',c.sourceUrl||'不明']])+
  section('source-status-skills','数値スキル辞書',sk.label,[['アプリ内スキル候補',sk.count+'件（通常ヒント由来も含む）'],['金白関係の構造候補',sk.hierarchyPairs===null?'未適用':sk.hierarchyPairs+' / '+sk.hierarchyTotal+'組'],['受信日時',sk.fetchedAt||'記録なし'],['公開元',sk.sourceUrl||'不明']])+
  section('source-status-events','公開承認済みイベントJSON',ev.label,[['検証済みイベント',ev.records===null?'検証不能・件数未確定':ev.records+'件'],['収録済みカード',ev.cards===null?'検証不能・件数未確定':ev.cards+'枚'],['モデルに反映したイベント',ev.attachedRecords+'件'],['公開元',ev.sourceUrl||'不明']])+
- '<p class="help">この画面は現在のブラウザが利用するデータの状態です。更新ボタンではありません。通信障害時には検証済みキャッシュを再利用します。</p>';
+ section('source-status-suitability','脚質適性データ',catalogMessage,[['利用中の判定',catalogLabels.size+'件'],['取得方式','起動時に照合・取得。手動読み込みは全スキル一覧から']])+ 
+ '<p class="help">この画面は現在のブラウザが利用するデータの状態です。更新ボタンではありません。通常ヒントとスキル辞書は通信障害時に検証済みキャッシュを再利用します。脚質適性データの取得に失敗した場合は未判定として扱います。</p>';
  titleModal('データの収録・取得状況','現在のブラウザの利用データ',body);
 }
 function matchingGoalSkills(){

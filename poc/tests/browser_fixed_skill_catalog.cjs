@@ -38,6 +38,9 @@ async function main(){
    if(auto){
     assert.equal(bundle.decisionId,'D-059');
     await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent==='検証済み 404件 / 変更・未照合 0件',{timeout:40000});
+    await page.locator('header [data-action="source-health"]').click();
+    assert.equal(await page.locator('#source-status-suitability .source-health-state').innerText(),'検証済み 404件 / 変更・未照合 0件');
+    await page.locator('.modal-head [data-action="close"]').click();
     const expected=await page.evaluate(async()=>{
      const r=await UmaSkillCatalog.loadPublicLabels(UmaDemoData);
      return [...r.labels].map(([id,row])=>[id,row.label.state,row.label.styles]).sort();
@@ -54,6 +57,9 @@ async function main(){
     await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.fulfill({status:200,body:'tampered'}));
     await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});await page.locator('header [data-action="catalog-toggle"]').click();
     await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});
+    await page.locator('header [data-action="source-health"]').click();
+    assert.match(await page.locator('#source-status-suitability .source-health-state').innerText(),/自動取得失敗/);
+    await page.locator('.modal-head [data-action="close"]').click();
     await filter.selectOption('undetermined');assert.equal(await count.innerText(),'881 / 881 件');
     assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);await page.close();continue;
    }
