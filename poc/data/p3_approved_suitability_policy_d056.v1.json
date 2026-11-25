@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "D-056",
+  "baseDecisionId": "D-052",
+  "assessmentAxis": "running_style",
+  "naturalSpurt": {
+    "type": "is_lastspurt",
+    "operator": "==",
+    "value": 1,
+    "assumption": "adequate-stamina-standard-build",
+    "windows": [
+      {
+        "type": "phase_random",
+        "operator": "==",
+        "value": 3
+      },
+      {
+        "type": "phase_firsthalf_random",
+        "operator": "==",
+        "value": 3
+      }
+    ],
+    "requireIdenticalSurvivingPaths": true,
+    "requireNoOtherStyleDependentCondition": true,
+    "expectedAddedGeneral": 24
+  },
+  "preserveExistingLabels": true,
+  "marginPoints": 10,
+  "gameRates": false,
+  "cardScores": false,
+  "publicDeployment": false
+}
