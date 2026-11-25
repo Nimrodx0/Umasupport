@@ -11,6 +11,9 @@ test('AND/OR and preconditions retain correlated scope; unknown is not outside',
  a.deepEqual(cat.filter(rows,{context:{running_style:2}}).map(x=>x.skill.id),['b']);
  a.equal(cat.filter(rows,{context:{running_style:2},scope:'confirmed'}).length,0);
  a.deepEqual(cat.filter(rows,{scope:'all'}).map(x=>x.skill.id),['a','b']);
+ const impossible={skill:{id:'c',name:'C'},explicitNecessaryMasks:Array(32).fill(0)};
+ a.equal(cat.filter([impossible]).length,1,'no axes selected: all catalogue skills');
+ a.equal(cat.filter([impossible],{context:{running_style:1}}).length,0);
 });
 test('catalogue labels respect evidence scope without requiring speculative roster input',()=>{
  const r={skill:{id:'x',name:'X'},explicitNecessaryMasks:Array(32).fill(15),label:{state:'targeted',styles:[3,4],scope:{kind:'rank-window-fixed-model',branches:[{courseIds:[10502]}]}}};

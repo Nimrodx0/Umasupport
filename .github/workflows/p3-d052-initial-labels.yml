@@ -52,15 +52,12 @@ jobs:
             /tmp/p3-d052-approved-labels.json
       - name: Verify card aggregation and browser view adapter on fixed inputs
         run: |
-          node --test poc/tests/card_suitability_view.test.cjs
+          node --test poc/tests/card_suitability_view.test.cjs poc/tests/skill_catalog.test.cjs
+          node poc/tools/export_d052_catalog_labels.cjs /tmp/p3-d052-approved-labels.json /tmp/umasupport-d052-labels.json
           node poc/tools/audit_p3_card_suitability_view.cjs \
             /tmp/p3-d052-approved-labels.json \
             /tmp/p3-static/p3-3b-all-card-research-routes.json \
-            /tmp/p3-card-suitability-view-summary.json
-      - name: Verify and export the compact local label bundle
-        run: |
-          node --test poc/tests/skill_catalog.test.cjs
-          node poc/tools/export_d052_catalog_labels.cjs /tmp/p3-d052-approved-labels.json /tmp/umasupport-d052-labels.json
+            /tmp/p3-card-suitability-view-summary.json /tmp/umasupport-d052-labels.json
       - uses: actions/upload-artifact@v4
         with:
           name: d052-local-catalog-labels-not-for-publication

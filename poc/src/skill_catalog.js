@@ -68,7 +68,7 @@ function filter(rows,o={}){
   if(q&&!norm(r.skill.name).includes(q)&&!norm(r.skill.id).includes(q))return false;
   if(tier!=='all'&&tier!==(['gold','white','negative'].includes(r.skill.tier)?r.skill.tier:'unknown'))return false;
   const app=fit.applicability(r,ctx);
-  if(scope==='possible'&&app==='outside'||scope==='confirmed'&&app!=='possible'||scope==='unknown'&&app!=='unknown'||scope==='outside'&&app!=='outside')return false;
+  if(scope==='possible'&&Object.keys(AXES).some(k=>ctx[k]!=null)&&app==='outside'||scope==='confirmed'&&app!=='possible'||scope==='unknown'&&app!=='unknown'||scope==='outside'&&app!=='outside')return false;
   const e=evidence(r,ctx);
   if(suit==='general'&&e.state!=='general'||suit==='targeted'&&(e.state!=='targeted'||ctx.running_style!=null&&!e.styles.includes(ctx.running_style))||suit==='undetermined'&&e.state!=='undetermined'||suit==='supported'&&!(e.state==='general'||e.state==='targeted'&&(ctx.running_style==null||e.styles.includes(ctx.running_style))))return false;
   return true;
