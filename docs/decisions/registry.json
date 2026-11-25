@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-052",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：残条件研究を終了し初期脚質適性判定方式を採用する",
+      "status": "current",
+      "relation": [],
+      "note": "残42型の13限定モデル・7経路比較省略・22保留を承認。元論理257件の汎用、10pt暫定差幅の限定向け、未判定保持。G6再受領の検証後P2完了。カード採点・公開は別",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-052",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-052",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-051",
       "date": "2026-11-25",
       "heading": "2026-11-25：34条件型の専用研究を省略し複合条件を維持する",

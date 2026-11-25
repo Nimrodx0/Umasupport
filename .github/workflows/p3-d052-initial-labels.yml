@@ -1,0 +1,51 @@
+name: P3 D-052 initial approved scoped suitability
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/p3-d052-initial-labels.yml'
+      - 'poc/data/p3_approved_suitability_policy_d052.v1.json'
+      - 'poc/src/p2_d052_approved_receipt.cjs'
+      - 'poc/src/p3_approved_scope_labels.cjs'
+      - 'poc/tests/p3_approved_scope_labels.test.cjs'
+      - '.github/workflows/p2-subphase10-77-skill-review.yml'
+      - '.github/workflows/p2-joint-dynamic-model.yml'
+permissions:
+  contents: read
+jobs:
+  static-window:
+    uses: ./.github/workflows/p2-subphase10-77-skill-review.yml
+  dynamic:
+    uses: ./.github/workflows/p2-joint-dynamic-model.yml
+  approved:
+    needs: [static-window, dynamic]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test poc/tests/p3_approved_scope_labels.test.cjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: p3-d052-fixed-static-window-inputs
+          path: /tmp/p3-static
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-59-joint-dynamic-projection
+          path: /tmp/p3-dynamic
+      - name: Join same-run accepted research and initial suitability labels
+        run: |
+          node poc/src/p3_approved_scope_labels.cjs \
+            /tmp/p3-static/p3-g6-d052-receipt.json \
+            /tmp/p3-static/p3-4g-source-logic-label-preview.json \
+            /tmp/p3-static/p3-4h-rank-window-margin-screen.json \
+            /tmp/p3-dynamic/p3-4i-scope-screen.json \
+            poc/data/p3_approved_suitability_policy_d052.v1.json \
+            /tmp/p3-d052-approved-labels.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p3-d052-approved-scoped-labels-not-public
+          path: /tmp/p3-d052-approved-labels.json
+          retention-days: 14
+          if-no-files-found: error

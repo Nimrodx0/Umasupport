@@ -1,0 +1,350 @@
+{
+  "decisionId": "D-052",
+  "approvedAt": "2026-11-25T13:15:10+09:00",
+  "marginPoints": 10,
+  "generalCount": 257,
+  "windowTargetedCount": 39,
+  "dynamicTargetedCount": 4,
+  "unknownNotZero": true,
+  "absoluteOpportunityFloor": null,
+  "cardScoringApproved": false,
+  "publicationApproved": false,
+  "remainingTypes": [
+    {
+      "type": "is_lastspurt",
+      "skills": 55,
+      "occurrences": 61,
+      "withComparableRoute": 36,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "P2.55の240単走で終盤後半の窓成立機会が全脚質1。P2.43で限定元ANDも確認。十分なスタミナの固定条件に限る。能力別研究はD-049で対象外。対戦・全元ANDの未知を保持。"
+    },
+    {
+      "type": "accumulatetime",
+      "skills": 39,
+      "occurrences": 49,
+      "withComparableRoute": 27,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "change_order_onetime",
+      "skills": 30,
+      "occurrences": 30,
+      "withComparableRoute": 18,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "is_overtake",
+      "skills": 21,
+      "occurrences": 25,
+      "withComparableRoute": 11,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "blocked_side_continuetime",
+      "skills": 20,
+      "occurrences": 20,
+      "withComparableRoute": 14,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "distance_diff_top",
+      "skills": 13,
+      "occurrences": 13,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "13技能すべて同一経路で比較可能な脚質対なし。距離差の閾値自体から脚質の優劣を推定しない。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "infront_near_lane_time",
+      "skills": 10,
+      "occurrences": 10,
+      "withComparableRoute": 8,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "lastspurt",
+      "skills": 10,
+      "occurrences": 10,
+      "withComparableRoute": 2,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "P2.55で全走行最大スパートに到達したが、元Checkerの同一判定時刻の最大速度条件とは別。比較可能2技能の元ANDが他状態依存。現証拠では汎用認定せず保留。"
+    },
+    {
+      "type": "bashin_diff_behind",
+      "skills": 7,
+      "occurrences": 7,
+      "withComparableRoute": 5,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "比較可能5技能。GlobalSimの後続不在・2.5m換算は確認済みだがゲーム元閾値と同一と認定しない。位置差getterは将来の限定検証候補、現時点で脚質方向保留。"
+    },
+    {
+      "type": "is_activate_other_skill_detail",
+      "skills": 6,
+      "occurrences": 6,
+      "withComparableRoute": 6,
+      "disposition": "hold-population-assumptions",
+      "reason": "元Checkerは同skill IDのcoolDownMapを読む。実発動依存を元条件通り保持。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "overtake_target_time",
+      "skills": 6,
+      "occurrences": 6,
+      "withComparableRoute": 4,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "compete_fight_count",
+      "skills": 5,
+      "occurrences": 5,
+      "withComparableRoute": 1,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "比較可能1技能。UmaSim真偽値とGlobalSim回数の意味差あり。元イベントのゲーム観測がないため保留。"
+    },
+    {
+      "type": "hp_per",
+      "skills": 5,
+      "occurrences": 5,
+      "withComparableRoute": 5,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "5技能の比較可能経路あり。残HPは能力・回復・レース展開に強く依存。固定無技能条件での測定だけで編成時の一般傾向を認めない。D-049の能力別網羅は行わない。具体的にラベル変更する限定経路が見つかれば再検討。"
+    },
+    {
+      "type": "behind_near_lane_time",
+      "skills": 4,
+      "occurrences": 4,
+      "withComparableRoute": 4,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "blocked_front_continuetime",
+      "skills": 4,
+      "occurrences": 4,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "distance_diff_rate",
+      "skills": 4,
+      "occurrences": 4,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "4技能とも比較可能対なし。分母の意味と履歴を保持。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "is_move_lane",
+      "skills": 4,
+      "occurrences": 8,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "popularity",
+      "skills": 4,
+      "occurrences": 6,
+      "withComparableRoute": 4,
+      "disposition": "hold-population-assumptions",
+      "reason": "人気は相手・能力・参加者による。固定モデルで人気無視設定も存在し、一般的な脚質差を推定しない。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "is_badstart",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "3技能とも比較可能対なし。出遅れの脚質分布を仮定しない。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "is_behind_in",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "3技能とも比較可能対なし。内外・後方関係の元制限は保持。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "order_rate_out40_continue",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 1,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "比較可能1技能。GlobalSimは5秒からの履歴処理を持つが元ゲーム継続時間・境界との対応未確定。瞬間順位を代用せず保留。"
+    },
+    {
+      "type": "run_at_full_speed_random",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 3,
+      "disposition": "hold-limited-evidence-or-definition",
+      "reason": "比較可能3技能。元抽選位置と速度状態の意味差をP2.57で確認。共通の元抽選仕様と同時観測がないので保留。"
+    },
+    {
+      "type": "running_style_count_same_rate",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 3,
+      "disposition": "hold-population-assumptions",
+      "reason": "同脚質人数割合は仮定した編成で計算可能な候補だが、元分母・自己含有・演算子の確認が必要。均衡構成を実戦分布にしない。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "same_skill_horse_count",
+      "skills": 3,
+      "occurrences": 3,
+      "withComparableRoute": 3,
+      "disposition": "hold-population-assumptions",
+      "reason": "同技能所持の相手数。相手の取得・装備分布が必要。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "activate_count_all",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "実装備の全発動回数に依存。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "activate_count_heal",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "回復技能の装備・発動と体力に依存。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "activate_count_middle",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "中盤の装備技能と発動に依存。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "activate_count_start",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "序盤の装備技能と発動に依存。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "distance_diff_top_float",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "2技能とも比較可能対なし。整数型と丸めを同一視しない。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "is_activate_any_skill",
+      "skills": 2,
+      "occurrences": 4,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "装備済み他技能の発動に依存。編成候補から実装備・発動を仮定しない。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "is_other_character_activate_advantage_skill",
+      "skills": 2,
+      "occurrences": 8,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "相手の技能発動状態。元特殊状態キーを読むが、相手分布・発動の実証はない。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "is_surrounded",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "lane_type",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "near_count",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "near_infront_count",
+      "skills": 2,
+      "occurrences": 4,
+      "withComparableRoute": 2,
+      "disposition": "limited-model-evidence",
+      "reason": "P2.56/57/59の元位置・時間・符号付き順位差またはnative getterを同一tickで観測。98技能の結合研究に含む。ゲーム発動率ではなくP3の文脈付き候補根拠として使用。"
+    },
+    {
+      "type": "order_rate_out50_continue",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "2技能とも比較可能対なし。持続条件・履歴を保持。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "running_style_count_same",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "同脚質人数は編成依存。元定義と比較基準編成で論理評価できるか別確認。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "running_style_equal_popularity_one",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 2,
+      "disposition": "hold-population-assumptions",
+      "reason": "一番人気との脚質一致。人気と編成の同時分布が必要。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "temptation_count",
+      "skills": 2,
+      "occurrences": 2,
+      "withComparableRoute": 0,
+      "disposition": "route-local-comparison-excluded",
+      "reason": "2技能とも比較可能対なし。掛かりの履歴は保持。 別OR・全スキル評価は維持。"
+    },
+    {
+      "type": "activate_count_end_after",
+      "skills": 1,
+      "occurrences": 1,
+      "withComparableRoute": 1,
+      "disposition": "hold-population-assumptions",
+      "reason": "終盤以後の装備技能と発動に依存。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "activate_count_later_half",
+      "skills": 1,
+      "occurrences": 1,
+      "withComparableRoute": 1,
+      "disposition": "hold-population-assumptions",
+      "reason": "後半の装備技能と発動に依存。終盤と区別。 相手・装備の現実的な分布がないまま標準補正しない。"
+    },
+    {
+      "type": "is_exist_skill_id",
+      "skills": 1,
+      "occurrences": 1,
+      "withComparableRoute": 1,
+      "disposition": "hold-population-assumptions",
+      "reason": "所持条件。取得候補と実装備を区別、将来の条件付き依存評価候補。 相手・装備の現実的な分布がないまま標準補正しない。"
+    }
+  ]
+}
