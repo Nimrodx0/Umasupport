@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-054",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：発動条件の成立傾向を評価軸別に判定し効果量を除外する",
+      "status": "current",
+      "relation": [],
+      "note": "脚質・距離・馬場の判定を独立させ、発動後の効果量・有用性を除外。条件が他軸だけに関係することを当該軸の未判定理由にしない。明示制限・複合条件・根拠不足を保持し、全件の再判定を優先。個別判定の新規閾値・永続配布は別",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-054",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-054",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-053",
       "date": "2026-11-25",
       "heading": "2026-11-25：デッキと独立した全スキル一覧を追加する",
@@ -26,9 +38,11 @@
       "id": "D-052",
       "date": "2026-11-25",
       "heading": "2026-11-25：残条件研究を終了し初期脚質適性判定方式を採用する",
-      "status": "current",
-      "relation": [],
-      "note": "残42型の13限定モデル・7経路比較省略・22保留を承認。元論理257件の汎用、10pt暫定差幅の限定向け、未判定保持。G6再受領の検証後P2完了。カード採点・公開は別",
+      "status": "qualified",
+      "relation": [
+        "D-054"
+      ],
+      "note": "残42型の13限定モデル・7経路比較省略・22保留を承認。元論理257件の汎用、10pt暫定差幅の限定向け、未判定保持。G6再受領の検証後P2完了。カード採点・公開は別。初期判定を比較基準として保持し、D-054で軸別再評価へ移行",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-052",
       "assessmentBasis": "docs/decisions/log.md#decision-d-052",
