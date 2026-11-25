@@ -42,7 +42,7 @@ test('exact scope groups reconstruct every eligible cell without Cartesian expan
 });
 
 test('approved bundle allowlist is version bound and natural-spurt assumption stays internal',()=>{
- a.deepEqual(Object.values(cat.APPROVED_BUNDLES).map(x=>[x.decisionId,x.count]),[['D-052',300],['D-056',324]]);
+ a.deepEqual(Object.values(cat.APPROVED_BUNDLES).map(x=>[x.decisionId,x.count]),[['D-052',300],['D-056',324],['D-059',404]]);
  const row={label:{state:'general',styles:[],scope:{kind:'source-logic',contexts:[{distance_type:3,ground_type:1,ground_condition:1}],assumption:'adequate-stamina-standard-build'}}};
  a.deepEqual(cat.evidence(row,{distance_type:3}),{state:'general',styles:[],text:'汎用'});
  a.equal(cat.evidence(row,{distance_type:4}).state,'undetermined');
