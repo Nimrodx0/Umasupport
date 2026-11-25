@@ -1,6 +1,6 @@
 # P2.48：固定文脈と論理的脚質中立候補（2026-11-25）
 
-利用者からやる気・競馬場・天候・能力をどう評価に使うかの説明依頼。新たな評価軸にする決定ではない。既存[D-045](../../decisions/log.md#decision-d-045)および[表示契約](../../plans/skill-conditions/p3-4b-label-presentation-policy.md)の範囲で、次を**設計案**とする。
+利用者からやる気・競馬場・天候・能力をどう評価に使うかの説明依頼。新たな評価軸にする決定ではない。既存[D-045](../../decisions/log.md#decision-d-045)および[表示契約](../../plans/skill-conditions/p3-4b-label-presentation-policy.md)の範囲で、次を当初の設計案として記録する。**後続の利用者確定 [D-049](../../decisions/log.md#decision-d-049)** により4文脈の専用追加研究・標準補正・ユーザー入力は省略する。以下は元条件を保持するための技術的な境界であり、追加調査の義務ではない。
 
 | 文脈 | 扱い・境界 |
 | --- | --- |
@@ -11,4 +11,4 @@
 
 [固定元Checker](https://github.com/mee1080/umasim/blob/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/race/src/commonMain/kotlin/io/github/mee1080/umasim/race/calc2/SkillChecker.kt) のGit blob `07252133a79fd0528a8cc299933239735372a720`、元registryの固定SHA、P2.47の全出現位置を再照合する。やる気・競馬場・基礎能力はpreChecked、weatherは未実装。元全Invokeが正しいalwaysのみ、または認識済み固定文脈条件のみ（事前条件なし・空ORなし）のときだけ、論理的脚質中立の研究候補とする。ORの一部だけから判断せず、未実装weatherや明示脚質制限、動的述語は保留。候補は条件を満たす同一文脈での元発動条件の論理的中立性に限り、実ゲーム発動率・正式汎用ラベル・スキル効果の有用性・サポカ点数は認定しない。
 
-[実装](../../../poc/src/p2_context_logic_review.cjs)・[反例](../../../poc/tests/p2_context_logic_review.test.cjs)。固定CI待ち。
+[実装](../../../poc/src/p2_context_logic_review.cjs)・[反例](../../../poc/tests/p2_context_logic_review.test.cjs)。[旧HEAD固定CI #45518700716](https://github.com/Nimrodx0/Umasupport/actions/runs/45518700716)成功：818照合、63未照合、2,421述語出現、常時条件のみ3件、固定文脈のみ58件、その他保留757件。基礎能力条件の重複除外16技能。正式ラベル・実際の省略0。方針追記後の回帰は別途確認する。
