@@ -105,7 +105,74 @@ function compare(before,after,rankEvidence,cornerEvidence){
   actualOriginalUmaSimProcCount:null,gameProcRate:null,P3CardScore:null
  };
 }
-function analyze(plans,original,positions,ranks,profiles,positionEvidence,cornerEvidence){
+/*
+ * Research sensitivity, NOT a correction to the authoritative UNKNOWN
+ * history. This compares the very same observed rank+position+corner facts.
+ * The only changed input is the explicitly hypothetical pre-first-tick
+ * precondition latch FALSE rather than UNKNOWN.
+ */
+function compareHistorySensitivity(conservative,hypothetical){
+ fail(conservative.schemaVersion===5&&hypothetical.schemaVersion===5&&
+  conservative.gates.preconditionHistoryAssumedForSensitivityOnly===false&&
+  hypothetical.gates.preconditionHistoryAssumedForSensitivityOnly===true&&
+  hypothetical.experiment.preconditionHistoryBeforeFirstObservedModelPriorityCall===
+   'ASSUMED false, not observed',
+  'history sensitivity comparison mixed observed and hypothetical history modes');
+ const columns=['modelRunnerPriorityTicks','unchangedModelPhysicsValues',
+  'distanceRatePredicateFacts','modelOrderRatePredicateFacts',
+  'modelAbsoluteOrderPredicateFacts','modelSourcePositionPredicateFacts',
+  'modelSourceCornerPredicateFacts'];
+ for(const c of columns)
+  fail(conservative.totals[c]===hypothetical.totals[c],
+   'different source position/rank/corner observations in history sensitivity: '+c);
+ fail(conservative.denominators.sourceDistanceRateSkills===
+  hypothetical.denominators.sourceDistanceRateSkills&&
+  conservative.raceOpportunity.denominators.skillRunnerRaceTrials===
+  hypothetical.raceOpportunity.denominators.skillRunnerRaceTrials,
+  'history comparison changed fixed source cohort');
+ const before=conservative.raceOpportunity,after=hypothetical.raceOpportunity;
+ const a=before.totals.verdicts,b=after.totals.verdicts;
+ fail(a[KEYS[0]]===b[KEYS[0]]&&
+  b[KEYS[1]]<=a[KEYS[1]]&&
+  b[KEYS[2]]>=a[KEYS[2]]&&
+  a[KEYS[3]]===b[KEYS[3]]&&
+  a[KEYS[1]]-b[KEYS[1]]===b[KEYS[2]]-a[KEYS[2]],
+  'hypothetical initial false produced nonmonotonic model trial verdict');
+ const beforeCells=new Map(before.bySkillStyle.map(x=>[
+  x.sourceNumericId+'|'+x.style,x]));
+ const affected=[];
+ for(const row of after.bySkillStyle){
+  const prev=beforeCells.get(row.sourceNumericId+'|'+row.style);
+  fail(prev?.runnerRaceTrials===row.runnerRaceTrials&&
+   prev.verdicts[KEYS[0]]===row.verdicts[KEYS[0]]&&
+   row.verdicts[KEYS[1]]<=prev.verdicts[KEYS[1]],
+   'hypothetical initial history changed original source trial or true');
+  const n=prev.verdicts[KEYS[1]]-row.verdicts[KEYS[1]];
+  if(n)affected.push({sourceNumericId:row.sourceNumericId,style:row.style,
+   runnerRaceTrials:row.runnerRaceTrials,
+   casesResolvedOnlyUnderAssumedFalseHistory:n,
+   trueGamePreconditionHistoryObserved:false});
+ }
+ const beforeUnknown=conservative.unknownRouteTriage.counts
+  .observedUnknownWithoutTrueRunnerRaceTrials;
+ const afterUnknown=hypothetical.unknownRouteTriage.counts
+  .observedUnknownWithoutTrueRunnerRaceTrials;
+ fail(beforeUnknown===a[KEYS[1]]&&afterUnknown===b[KEYS[1]],
+  'history sensitivity UNKNOWN triage does not match source condition cohort');
+ return {status:'P2.15-counterfactual-initial-precondition-false-sensitivity-NOT-source-fact',
+  unit:'original skill × model runner × model race',
+  conservativeHistoryBeforeFirstObservedTick:'unknown',
+  alternateHistoryBeforeFirstObservedTick:'ASSUMED false, NOT observed',
+  conservativeVerdicts:{...a},hypotheticalVerdicts:{...b},
+  casesUnknownOnlyUnderConservativeHistory:a[KEYS[1]]-b[KEYS[1]],
+  changedSkillStyleCells:affected.length,
+  affectedSkillStyleCells:affected,
+  conservativeHistoryIsPrimaryEvidence:true,
+  actualUmaSimHistoricalPrechecksObserved:false,
+  gameRate:null,approvedP2Suitability:null,P3CardScoringApproved:false};
+}
+function analyze(plans,original,positions,ranks,profiles,positionEvidence,cornerEvidence,
+ {includeHistorySensitivity=false}={}){
  position.verifyEvidence(positionEvidence);
  corner.validateEvidence(cornerEvidence);
  const rankEvidence=rank.buildEvidence(plans,original,positions,ranks);
@@ -116,6 +183,13 @@ function analyze(plans,original,positions,ranks,profiles,positionEvidence,corner
  const joined=distance.analyze(plans,original,positions,profiles,{
   ...opts,cornerSourceEvidence:cornerEvidence});
  const comparison=compare(baseline,joined,rankEvidence,cornerEvidence);
+ const alternate=includeHistorySensitivity?
+  distance.analyze(plans,original,positions,profiles,{
+   ...opts,cornerSourceEvidence:cornerEvidence,
+   initialPreconditionHistory:'assume-false',unknownRouteTriage:true
+  }):null;
+ const preconditionHistorySensitivity=alternate?
+  compareHistorySensitivity(joined,alternate):null;
  return {schemaVersion:1,status:STATUS,
   provenance:{originalUmaSimRevision:corner.REV,
    globalSimRevision:corner.MODEL_REV,
@@ -132,6 +206,7 @@ function analyze(plans,original,positions,ranks,profiles,positionEvidence,corner
    sourceModelsAreNotSameAsJapaneseGame:true},
   modelStageValidation:rankEvidence.totals,
   comparison,
+  ...(preconditionHistorySensitivity?{preconditionHistorySensitivity}:{}),
   unknownRouteTriage:joined.unknownRouteTriage,
   byStyle:joined.raceOpportunity.byStyle,
   bySkillStyle:joined.raceOpportunity.bySkillStyle,
@@ -139,6 +214,10 @@ function analyze(plans,original,positions,ranks,profiles,positionEvidence,corner
    modelPriorityPositionUsedForOriginalSourceCorner:true,
    sourcePreconditionTrueLatchPreserved:true,
    sourceUnknownHistoricalLatchNotOverwritten:true,
+   ...(includeHistorySensitivity?{
+    counterfactualInitialFalseScenarioSeparated:true,
+    originalSourcePreconditionBeforeObservedFrameStillUnknown:true
+   }:{}),
    actualOriginalUmaSimRuntimeObserved:false,
    actualGameSkillProcRateMeasured:false,
    P2SuitabilityApproved:false,P3CardScoringApproved:false,
@@ -176,9 +255,11 @@ function main(args){
  fail(races.every(x=>x.horses.every(h=>h.skills?.length===0)),
   'source skill unexpectedly equipped in no-skill model experiment');
  const out=analyze(plans,legacy.replay(engine0,races),legacy.replay(engineP,races),
-  legacy.replay(engineR,races),sourceSkills,positionEvidence,cornerEvidence);
+  legacy.replay(engineR,races),sourceSkills,positionEvidence,cornerEvidence,
+  {includeHistorySensitivity:true});
  fs.writeFileSync(output,JSON.stringify(out,null,2)+'\n');
  console.log('P2_15_SOURCE_CORNER_FULL_JOIN='+JSON.stringify({
+  preconditionHistorySensitivity:out.preconditionHistorySensitivity,
   comparison:{...out.comparison,
    changedSkillStyleCells:out.comparison.changedSkillStyleCells.slice(0,20)},
   unknownRouteCounts:out.unknownRouteTriage.counts,
@@ -189,4 +270,4 @@ function main(args){
 }
 if(require.main===module)try{main(process.argv.slice(2))}
 catch(e){console.error(e.stack||e);process.exitCode=1;}
-module.exports={STATUS,compare,analyze,main};
+module.exports={STATUS,compare,compareHistorySensitivity,analyze,main};

@@ -107,7 +107,10 @@ function validatePaired(plan,control,probe){
 }
 function analyze(plans,control,probe,sourceProfiles,
  {rankEvidence=null,positionSourceEvidence=null,unknownRouteTriage=false,
-  includeAbsoluteOrder=false,cornerSourceEvidence=null}={}){
+  includeAbsoluteOrder=false,cornerSourceEvidence=null,
+  initialPreconditionHistory='unknown'}={}){
+ check(['unknown','assume-false'].includes(initialPreconditionHistory),
+  'precondition history policy must be unknown or explicitly assume-false');
  const cornerFacts=cornerSourceEvidence?
   require('../src/skill_source_corner_stage_facts.cjs'):null;
  if(cornerFacts)cornerFacts.validateEvidence(cornerSourceEvidence);
@@ -170,7 +173,8 @@ function analyze(plans,control,probe,sourceProfiles,
    // observation. Earlier precondition latch history is therefore UNKNOWN,
    // never assumed false. A later positive fact can still establish true.
    logical.preState=logical.preState.map((state,index)=>
-    x.ast.invokes[index].preConditions.length?monitor.UNKNOWN:state);
+    x.ast.invokes[index].preConditions.length?
+     (initialPreconditionHistory==='unknown'?monitor.UNKNOWN:monitor.FALSE):state);
    return {compiled:x.ast,monitor:logical,seenTrue:false,tick:0,
     opportunityTrace:raceOpportunity.makeTrace(),
     ...(triage?{blockerTrace:triage.createTrace()}:{})};
@@ -320,7 +324,8 @@ function analyze(plans,control,probe,sourceProfiles,
    ].join(' + ')||'none',
    staticContextFields:['running_style','distance_type','ground_type'],
    modelPositionIsOriginalUmaSimRuntime:false,
-   preconditionHistoryBeforeFirstObservedModelPriorityCall:'unknown',
+   preconditionHistoryBeforeFirstObservedModelPriorityCall:
+    initialPreconditionHistory==='unknown'?'unknown':'ASSUMED false, not observed',
    boundaryToleranceFractionOfRaceProgress:UNRESOLVED_BOUNDARY,
    sourceExpressionCompiler:'previous P2.15 three-valued full-source AND/OR/preCondition/invoke monitor'},
   denominators:{sourceDistanceRateSkills:compiled.length,
@@ -376,6 +381,8 @@ function analyze(plans,control,probe,sourceProfiles,
    P3CardScoringApproved:false,P4UiChanged:false,
    observedStageRaceRunnerOpportunityGrouped:true,
    fullRaceSkillOpportunityRateEstablished:false,
+   preconditionHistoryAssumedForSensitivityOnly:
+    initialPreconditionHistory==='assume-false',
    ...(cornerFacts?{
     originalUmaSimCornerNumberFormulaPinned:true,
     fixedOriginalAndModelCourseCornerIntervalsMatched:true,
@@ -409,6 +416,9 @@ function analyze(plans,control,probe,sourceProfiles,
   limitations:[
    'This is a source-formula interpretation of a REAL GlobalSim position at the original GlobalSim skill-priority stage. It is NOT a real UmaSim race-state observation or a live-game activation.',
    'The model is an unskilled fixed comparison race. Skills carrying distance_rate in the original registry were not installed in GlobalSim.',
+   ...(initialPreconditionHistory==='assume-false'?[
+    'Counterfactual sensitivity ONLY: every precondition latch is ASSUMED false before the first observed model priority tick; earlier actual source-skill checks and game state were NOT observed. Do not promote this case to original-source evidence.'
+   ]:[]),
    ...(rankBridge||positionFacts?[
     'Numeric original predicates receive ONLY explicitly supplied source-anchored observations: distance_rate plus opt-in position families and/or interpreted 9/12 model ranks. Unprovided phase_random draws and all other dynamic predicates remain unknown; static venue is withheld.'
    ]:[
