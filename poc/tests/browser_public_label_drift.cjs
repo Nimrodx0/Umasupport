@@ -5,6 +5,7 @@
 const a=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require('playwright');
 const [ROOT,EXPECTED,FILE]=process.argv.slice(2);
+const cat=require('../src/skill_catalog.js');
 const BASE='https://nimrodx0.github.io/Umasupport/';
 const FIXED='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
 const LIVE='https://raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt';
@@ -47,7 +48,7 @@ async function collect(page,state,total){
 async function main(){
  a(ROOT&&/^[a-f0-9]{40}$/.test(EXPECTED||'')&&FILE,'checkout, commit and local bundle required');
  const bytes=await fs.readFile(FILE),bundle=JSON.parse(bytes);
- a.equal(sha(bytes),'874e7cf802bcf1ed0cf314c60438ca0b2fcc27bfa76d20b583be48c78c8814e7');a.equal(bundle.rows.length,300);
+ const approved=cat.APPROVED_BUNDLES[sha(bytes)];a(approved,'approved bundle digest');a.equal(bundle.decisionId,approved.decisionId);a.equal(bundle.rows.length,approved.count);a.equal(bundle.policySHA256,approved.policySHA256);const n=approved.count;
  const response=await fetch(FIXED);a(response.ok);const fixed=Buffer.from(await response.arrayBuffer());a.equal(sha(fixed),bundle.sourceRegistrySHA256);
  const records=new Map(JSON.parse(fixed.toString('utf8').replace(/^\uFEFF/,'')).map(r=>[r.id,r]));
  const assets=['poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css'];
@@ -68,16 +69,23 @@ async function main(){
    const model=await page.evaluate(()=>({skills:UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})),cards:UmaDemoData.cards.length,sources:UmaDemoData.meta.runtimeSources}));
    a.equal(model.sources.skills.mode,'online');a.equal(model.sources.cards.mode,'online');a.equal(model.sources.events.mode,'reviewed');
    const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(bundle,records,model.skills);
-   a.equal(accepted+Object.values(reasons).reduce((a,b)=>a+b,0),300);
+   a.equal(accepted+Object.values(reasons).reduce((a,b)=>a+b,0),n);
    a(accepted>0,'no compatible labels: investigate rather than declare usable');
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
    await page.locator('header [data-action="catalog-toggle"]').click();
    await page.locator('.catalog-data summary').click();
    await page.locator('#catalog-label-file').setInputFiles(FILE);
-   const status='検証済み '+accepted+'件 / 変更・未照合 '+(300-accepted)+'件';
+   const status='検証済み '+accepted+'件 / 変更・未照合 '+(n-accepted)+'件';
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined'])a.deepEqual(await collect(page,state,total),groups[state].sort(),'complete ID partition '+state);
+   if(bundle.decisionId==='D-056'){
+    await page.locator('#catalog-suitability').selectOption('general');
+    await page.locator('#catalog-query').fill('全身全霊');
+    const names=await page.locator('.catalog-table tbody tr').allTextContents();
+    for(const name of names){a.match(name,/汎用/);a(!name.includes('十分なスタミナを前提'));}
+    await page.locator('#catalog-query').fill('');
+   }
    await page.locator('#catalog-suitability').selectOption('targeted');
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
    a.equal(await page.locator('.catalog-count').innerText(),'0 / '+total+' 件');
@@ -93,7 +101,7 @@ async function main(){
    await page.locator('#catalog-suitability').selectOption('undetermined');
    a.equal(await page.locator('.catalog-count').innerText(),reloaded+' / '+reloaded+' 件');
    a.equal(await snapshot(),saved);a.deepEqual(errors,[]);
-   console.log('PAGES_D052_LIVE',JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(liveBytes),liveSupportSHA256:sha(supportBytes),accepted,skipped:300-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));
+   console.log('PAGES_'+bundle.decisionId.replace('-','')+'_LIVE',JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(liveBytes),liveSupportSHA256:sha(supportBytes),accepted,skipped:n-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));
    await page.close();
   }
  }finally{await browser.close();}
