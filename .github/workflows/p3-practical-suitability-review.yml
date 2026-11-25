@@ -8,6 +8,8 @@ on:
       - 'poc/src/p3_axis_suitability_review.cjs'
       - 'poc/tests/p3_axis_suitability_review.test.cjs'
       - 'poc/tools/audit_p3_axis_suitability_review.cjs'
+      - 'poc/tools/audit_p3_style_held_evidence.cjs'
+      - 'poc/tests/p3_style_held_evidence.test.cjs'
 permissions:
   contents: read
   actions: read
@@ -40,3 +42,14 @@ jobs:
         run: |
           node --test poc/tests/p3_axis_suitability_review.test.cjs
           node poc/tools/audit_p3_axis_suitability_review.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-59-joint-dynamic-projection
+          run-id: 45558706989
+          github-token: ${{ github.token }}
+          path: /tmp/review-dynamic
+      - name: Triage remaining held styles against existing model evidence
+        run: |
+          node --test poc/tests/p3_style_held_evidence.test.cjs
+          node poc/tools/audit_p3_style_held_evidence.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-dynamic/p3-4i-scope-screen.json
