@@ -26,19 +26,7 @@ function masks(profile){
  });
 }
 function signature(p){return JSON.stringify({sourceNumericId:p.sourceNumericId,invokes:p.invokes});}
-function scopeSummary(m){
- if(!m)return '適用範囲未確認';
- const parts=[];for(const [axis,values] of Object.entries(AXES)){
-  const allowed=values.filter((_,i)=>PANEL.some((p,j)=>axis==='ground_condition'?!!(m[j]&(1<<i)):p[axis]===i+1&&m[j]!==0));
-  if(!allowed.length)return '明示条件の対象外';
-  if(allowed.length<values.length)parts.push(allowed.join('・'));
- }
- // Marginal sets alone can conceal cross-axis OR constraints.
- let total=0;for(const n of m)for(let i=0;i<4;i++)if(n&(1<<i))total++;
- const product=Object.entries(AXES).reduce((v,[axis,values])=>v*values.filter((_,i)=>PANEL.some((p,j)=>axis==='ground_condition'?!!(m[j]&(1<<i)):p[axis]===i+1&&m[j]!==0)).length,1);
- if(total<product)parts.push('組合せ条件あり');
- return parts.join(' / ')||'脚質・距離・馬場の明示制限なし';
-}
+function scopeSummary(m){return fit.explicitScope({explicitNecessaryMasks:m}).text;}
 function contexts(label){
  if(label.state==='general')return label.scope.contexts;
  if(label.state!=='targeted')return [];

@@ -15,6 +15,32 @@ function applicability(row,ctx={}){
  const bits=ctx.ground_condition==null?15:1<<(ctx.ground_condition-1);
  return selected.some(({i})=>m[i]&bits)?'possible':'outside';
 }
+const DIMENSIONS={running_style:STYLES,distance_type:['短距離','マイル','中距離','長距離'],ground_type:['芝','ダート'],ground_condition:['良','稍重','重','不良']};
+function explicitScope(row){
+ const m=row?.explicitNecessaryMasks;
+ if(!Array.isArray(m)||m.length!==32||!m.every(x=>Number.isInteger(x)&&x>=0&&x<=15))return {text:'適用範囲未確認',correlated:false,groups:[]};
+ const axes=Object.keys(DIMENSIONS),valid=Object.fromEntries(axes.map(k=>[k,new Set()])),cells=[];
+ for(let i=0;i<PANEL.length;i++)for(let c=1;c<=4;c++)if(m[i]&(1<<(c-1))){
+  const x={...PANEL[i],ground_condition:c};cells.push(x);for(const k of axes)valid[k].add(x[k]);
+ }
+ if(!cells.length)return {text:'明示条件の対象外',correlated:false,groups:[]};
+ const correlated=axes.reduce((n,k)=>n*valid[k].size,1)!==cells.length;
+ const names=axes.flatMap(k=>valid[k].size===DIMENSIONS[k].length?[]:[[...valid[k]].sort((a,b)=>a-b).map(i=>DIMENSIONS[k][i-1]).join('・')]);
+ const groups=[];
+ if(correlated){
+  // Exact 32-axis-mask representation: merge style/distance pairs only
+  // when their two surface masks are identical. No Cartesian expansion.
+  const grouped=new Map();
+  for(let i=0;i<PANEL.length;i+=2){
+   const x=PANEL[i],key=[m[i],m[i+1]].join('|');
+   if(m[i]===0&&m[i+1]===0)continue;
+   if(!grouped.has(key))grouped.set(key,{pairs:[],surfaces:[m[i],m[i+1]].flatMap((v,j)=>v?[DIMENSIONS.ground_type[j]+'（'+DIMENSIONS.ground_condition.filter((_,k)=>v&(1<<k)).join('・')+'）']:[])});
+   grouped.get(key).pairs.push(DIMENSIONS.running_style[x.running_style-1]+'・'+DIMENSIONS.distance_type[x.distance_type-1]);
+  }
+  groups.push(...grouped.values());
+ }
+ return {text:names.length?names.join(' / ')+(correlated?'（組合せ条件あり）':''):correlated?'組合せ条件あり':'脚質・距離・馬場の明示制限なし',correlated,groups};
+}
 function commonStaticScope(row,ctx){
  if(![1,2,3,4].includes(ctx.ground_condition))return false;
  return [1,2,3,4].every(running_style=>applicability(row,{...ctx,running_style})==='possible');
@@ -58,7 +84,7 @@ function matches(row,{context,mode='all'}={}){
  if(mode==='targeted')return p.applicability==='possible'&&p.labelState==='targeted'&&(style==null||p.styles.includes(style));
  throw Error('Unknown suitability filter: '+mode);
 }
-const api={applicability,resolve,labelText,present,matches};
+const api={applicability,explicitScope,resolve,labelText,present,matches};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillSuitability=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
