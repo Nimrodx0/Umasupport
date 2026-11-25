@@ -576,6 +576,17 @@ jobs:
           a.equal(x.targetSummary.track_id.distinctSkills,37);
           a.equal(x.targetSummary.weather.distinctSkills,8);
           a.equal(x.targetSummary.weather.sourceHandler,'unsupported-in-pinned-checker');
+          a.equal(x.denominators.distinctAbilityConditionSkills,16);
+          a.deepEqual(x.counts,{'style-independent-conditional-context-candidate':58,'hold-other-source-logic':757,'style-independent-always-only-candidate':3});
+          a.equal(Object.keys(x.targetSummary).length,8);
+          for(const t of Object.values(x.targetSummary)){
+           a.equal(t.researchScope.decisionId,'D-049');
+           a.equal(t.researchScope.requiredForP2Completion,false);
+           a.equal(t.researchScope.sourcePredicateRetained,true);
+           a.equal(t.researchScope.assumeTrue,false);
+           a.equal(t.researchScope.zeroImpactProven,false);
+           a.equal(t.actualOmissionApproved,false);
+          }
           a.equal(x.denominators.formalLabels,0);
           a.equal(x.denominators.actualOmissions,0);
           a.equal(x.rows.find(r=>r.sourceNumericId==='200432').disposition,'style-independent-always-only-candidate');

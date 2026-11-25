@@ -19,7 +19,7 @@ const CONTEXT=Object.freeze({
  base_guts:'baseSetting.umaStatus.guts',
  base_wiz:'baseSetting.umaStatus.wisdom'
 });
-const TARGETS=['motivation','track_id','weather','base_speed','base_stamina','base_power','base_guts','base_wiz'];
+const TARGETS=g4.EXCLUDED_CONTEXT_RESEARCH;
 const hash=(v)=>crypto.createHash('sha256').update(v).digest('hex');
 function verifyChecker(bytes){
  const b=Buffer.isBuffer(bytes)?bytes:Buffer.from(bytes);
@@ -89,6 +89,8 @@ function audit(raw,checker,ledger){
   for(const p of terms){
    if(!Object.hasOwn(targets,p.type))continue;
    const t=targets[p.type];t.occurrences++;t.skillIds.add(l.sourceNumericId);
+   const original=l.occurrences.find(o=>key(o)===key(p));
+   assert.deepEqual(original.researchScope,g4.researchScope(p.type),'D-049 scope mismatch');
    if(p.type.startsWith('base_'))allAbility.add(l.sourceNumericId);
   }
   const logic=sourceLogic(record.invokes);
@@ -101,7 +103,7 @@ function audit(raw,checker,ledger){
   distinctSkills:t.skillIds.size,occurrences:t.occurrences,
   sourceHandler:type==='weather'?'unsupported-in-pinned-checker':'source-prechecked-fixed-context',
   evaluation:type==='weather'?'retain-original-gate-and-hold-runtime-interpretation':'retain-original-gate-and-compare-only-in-same-context',
-  actualOmissionApproved:false
+  actualOmissionApproved:false,researchScope:g4.researchScope(type)
  }]));
  return {schemaVersion:1,status:STATUS,source:{revision:PIN,checkerBlob:CHECKER_BLOB,registrySHA256:g6.SOURCE_SHA},
   denominators:{matched,unavailable,occurrences,distinctAbilityConditionSkills:allAbility.size,formalLabels:0,actualOmissions:0},
