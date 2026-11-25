@@ -9,6 +9,10 @@ const COURSE_DISTANCE={10501:1,10502:2,10304:2,10504:3,10604:3,10506:4};
 const SOURCE_HASH='4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5';
 const BUNDLE_HASH='874e7cf802bcf1ed0cf314c60438ca0b2fcc27bfa76d20b583be48c78c8814e7';
 const POLICY_HASH='eec33230ee629d91b1f6f41109d6691e16237b69e1f7e6ffcd0b7cf23e1061f7';
+const APPROVED_BUNDLES=Object.freeze({
+ [BUNDLE_HASH]:Object.freeze({decisionId:'D-052',policySHA256:POLICY_HASH,count:300}),
+ 'fc8ad2b54561e4107bf0bc7c3d8744b7230de03d1035eeae082b2478d1102bcc':Object.freeze({decisionId:'D-056',policySHA256:'eeab2d93df380d96d1eecf6fb3f2a3c11e971bfa4791795d463a60a7fa640c35',count:324})
+});
 const FIXED_SOURCE='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
 const norm=x=>String(x??'').normalize('NFKC').toLocaleLowerCase().trim();
 const valid=(v,op,n)=>{switch(op){case '==':return v===n;case '!=':return v!==n;case '<':return v<n;case '<=':return v<=n;case '>':return v>n;case '>=':return v>=n;default:throw Error('Unknown predicate');}};
@@ -66,9 +70,10 @@ async function sha(bytes){
  return Array.from(new Uint8Array(await g.crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 }
 async function loadLabels(bytes,data,{fetcher=g.fetch}={}){
- if(!(bytes instanceof ArrayBuffer)||bytes.byteLength>1000000||await sha(bytes)!==BUNDLE_HASH)throw Error('D-052の検証済みラベルファイルと一致しません。');
+ if(!(bytes instanceof ArrayBuffer)||bytes.byteLength>1000000)throw Error('検証済みラベルファイルと一致しません。');
+ const approved=APPROVED_BUNDLES[await sha(bytes)];if(!approved)throw Error('検証済みラベルファイルと一致しません。');
  const obj=JSON.parse(new TextDecoder().decode(bytes));
- if(obj.schemaVersion!==1||obj.decisionId!=='D-052'||obj.sourceRegistrySHA256!==SOURCE_HASH||obj.policySHA256!==POLICY_HASH||obj.rows.length!==300)throw Error('ラベルの版が一致しません。');
+ if(obj.schemaVersion!==1||obj.decisionId!==approved.decisionId||obj.sourceRegistrySHA256!==SOURCE_HASH||obj.policySHA256!==approved.policySHA256||!Array.isArray(obj.rows)||obj.rows.length!==approved.count)throw Error('ラベルの版が一致しません。');
  const res=await fetcher(FIXED_SOURCE);if(!res.ok)throw Error('固定辞書の取得に失敗しました。');
  const raw=await res.arrayBuffer();if(await sha(raw)!==SOURCE_HASH)throw Error('固定辞書の検証に失敗しました。');
  const records=new Map(JSON.parse(new TextDecoder().decode(raw).replace(/^\uFEFF/,'')).map(r=>[r.id,r]));
@@ -81,9 +86,9 @@ async function loadLabels(bytes,data,{fetcher=g.fetch}={}){
   if(out.has(r.appSkillId))throw Error('ラベルのID重複');
   out.set(r.appSkillId,r);
  }
- return {labels:out,skipped};
+ return {labels:out,skipped,decisionId:approved.decisionId};
 }
-const api={AXES,masks,scopeSummary,evidence,index,filter,loadLabels,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH};
+const api={AXES,masks,scopeSummary,evidence,index,filter,loadLabels,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillCatalog=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

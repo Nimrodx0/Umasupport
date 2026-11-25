@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/workflows/p3-d052-initial-labels.yml'
       - 'poc/data/p3_approved_suitability_policy_d052.v1.json'
+      - 'poc/data/p3_approved_suitability_policy_d056.v1.json'
+      - 'poc/src/p3_d056_approved_natural_spurt.cjs'
+      - 'poc/src/p3_axis_suitability_review.cjs'
+      - 'poc/tools/audit_p3_style_held_evidence.cjs'
+      - 'poc/tests/p3_d056_approved_natural_spurt.test.cjs'
       - 'poc/src/p2_d052_approved_receipt.cjs'
       - 'poc/src/p3_approved_scope_labels.cjs'
       - 'poc/src/skill_suitability.js'
@@ -63,12 +68,26 @@ jobs:
             /tmp/p3-d052-approved-labels.json \
             /tmp/p3-static/p3-3b-all-card-research-routes.json \
             /tmp/p3-card-suitability-view-summary.json /tmp/umasupport-d052-labels.json
+      - name: Derive D056 from same-run D052 and pinned original data
+        run: |
+          curl --fail --silent --show-error --location 'https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt' -o /tmp/d056-fixed-skill-data.txt
+          node --test poc/tests/p3_d056_approved_natural_spurt.test.cjs
+          node poc/src/p3_d056_approved_natural_spurt.cjs /tmp/d056-fixed-skill-data.txt /tmp/p3-d052-approved-labels.json /tmp/p3-d056-approved.json /tmp/umasupport-d056-labels.json
+          echo 'fc8ad2b54561e4107bf0bc7c3d8744b7230de03d1035eeae082b2478d1102bcc  /tmp/umasupport-d056-labels.json' | sha256sum -c -
       - name: Install Chromium for fixed catalogue acceptance
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
       - name: Exercise actual catalogue UI with same-run verified labels
-        run: node poc/tests/browser_fixed_skill_catalog.cjs /tmp/umasupport-d052-labels.json
+        run: |
+          node poc/tests/browser_fixed_skill_catalog.cjs /tmp/umasupport-d052-labels.json
+          node poc/tests/browser_fixed_skill_catalog.cjs /tmp/umasupport-d056-labels.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: d056-local-catalog-labels-not-for-publication
+          path: /tmp/umasupport-d056-labels.json
+          retention-days: 14
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: d052-local-catalog-labels-not-for-publication

@@ -9,6 +9,8 @@ const BASE='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8
 async function get(url){const r=await fetch(url);assert(r.ok,url);return Buffer.from(await r.arrayBuffer());}
 async function main(){
  const file=process.argv[2];assert(file,'same-run compact label bundle required');
+ const bundle=JSON.parse(await fs.readFile(file,'utf8'));const n=bundle.rows.length,general=bundle.rows.filter(r=>r.label.state==='general').length,targeted=n-general;
+ assert.deepEqual([n,general,targeted],bundle.decisionId==='D-056'?[324,281,43]:[300,257,43]);
  const [supports,skills,historical]=await Promise.all([get(BASE+'support_card.txt'),get(BASE+'skill_data.txt'),get(bridge.PINNED_URL)]);
  const server=http.createServer(async(req,res)=>{try{
   const f=path.resolve(ROOT,'.'+new URL(req.url,'http://localhost').pathname);
@@ -35,11 +37,24 @@ async function main(){
    await filter.selectOption('undetermined');assert.match(await count.innerText(),/^881 \/ 881 件$/);
    await page.locator('.catalog-data summary').click();
    await page.locator('#catalog-label-file').setInputFiles(file);
-   await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('検証済み 300件 / 変更・未照合 0件'),{},{timeout:40000});
-   assert.match(await count.innerText(),/^581 \/ 881 件$/);
-   await filter.selectOption('general');assert.match(await count.innerText(),/^257 \/ 881 件$/);
+   await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent.includes(s),'検証済み '+n+'件 / 変更・未照合 0件',{timeout:40000});
+   assert.equal(await count.innerText(),(881-n)+' / 881 件');
+   await filter.selectOption('general');assert.equal(await count.innerText(),general+' / 881 件');
+   await page.locator('#catalog-query').fill('アオハル点火');
+   assert.equal(await count.innerText(),'5 / 881 件');
+   assert.equal(await page.locator('.catalog-table tbody tr').count(),5);
+   await page.locator('#catalog-query').fill('アオハル燃焼');
+   assert.equal(await count.innerText(),'5 / 881 件');
+   if(bundle.decisionId==='D-056'){
+    await page.locator('#catalog-query').fill('全身全霊');
+    assert.equal(await count.innerText(),'1 / 881 件');
+    assert.match(await page.locator('.catalog-table tbody').innerText(),/汎用/);
+    assert.equal(await page.locator('.catalog-table tbody tr td').last().innerText(),'汎用');
+    assert.equal(await page.locator('.catalog-table tbody .catalog-evidence-note').count(),0);
+   }
+   await page.locator('#catalog-query').fill('');
    await page.locator('#catalog-show-labels').uncheck();
-   assert.equal(await page.locator('.catalog-table th').count(),2);assert.match(await count.innerText(),/^257 \/ 881 件$/);
+   assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),general+' / 881 件');
    await page.locator('#catalog-show-labels').check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
    await filter.selectOption('targeted');assert.match(await count.innerText(),/^43 \/ 881 件$/);
@@ -63,7 +78,7 @@ async function main(){
    assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);
    await page.close();
   }
-  console.log('PASS: fixed catalogue 881 skills, 300 local labels, filter scope, visibility, invalid import, deck/settings isolation and reload at 1280/390px');
+  console.log('PASS: fixed catalogue 881 skills, '+n+' local labels '+bundle.decisionId+', Aoharu and natural-spurt checks, scope, visibility, invalid import, deck/settings isolation and reload at 1280/390px');
  }finally{await browser?.close();await new Promise(ok=>server.close(ok));}
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
