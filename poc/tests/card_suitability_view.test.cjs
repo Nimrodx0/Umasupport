@@ -53,3 +53,11 @@ test('picker counts each direct ID once, distinguish explicit-only and other-tar
  delete data.skillById.missing.activationProfile;
  a.equal(view.browseCard(c,{stage:4},data,labels,context).potential.counts.scopeUnknown,1);
 });
+
+test('matching tier counts are unweighted and sum to the unique candidate count',()=>{
+ const {c,data,labels}=fixture(),p=(type,value)=>({type,operator:'==',value});
+ for(const sk of data.skills)sk.activationProfile.invokes=[{conditions:[[p('always',1)]],preConditions:[]}];
+ data.skillById.h.tier='gold';data.skillById.e.tier='white';data.skillById.other.tier='white';
+ const x=view.browseSummary(['h','h','e','other','missing'],data,labels,{running_style:2,distance_type:2,ground_type:1});
+ a.deepEqual(x.matchingByTier,{gold:1,white:2,other:0});a.equal(x.matching,3);
+});
