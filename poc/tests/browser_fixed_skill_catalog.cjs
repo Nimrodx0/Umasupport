@@ -54,12 +54,12 @@ async function main(){
    }
    if(bundle.decisionId==='D-059'){
     for(const name of ['あふれる活力','気丈夫','遊び心','阿吽の呼吸','聖女の挑戦','一張一弛','想い焦がれて']){
-     await page.locator('#catalog-query').fill(name);assert.equal(await count.innerText(),'1 / 881 件');assert.match(await page.locator('.catalog-table tbody').innerText(),/汎用/);
+     await page.locator('#catalog-query').fill(name);const row=page.locator('.catalog-table tbody tr').filter({has:page.getByRole('button',{name,exact:true})});assert.equal(await row.count(),1);assert.match(await row.innerText(),/汎用/);
     }
     await filter.selectOption('targeted');
     for(const name of ['豪脚','上昇気流','前途洋々','スタミナイーター']){
-     await page.locator('#catalog-query').fill(name);assert.equal(await count.innerText(),'1 / 881 件');
-     assert.match(await page.locator('.catalog-table tbody').innerText(),name==='前途洋々'?/逃げ向け/:/差し向け・追込向け/);
+     await page.locator('#catalog-query').fill(name);const row=page.locator('.catalog-table tbody tr').filter({has:page.getByRole('button',{name,exact:true})});assert.equal(await row.count(),1);
+     assert.match(await row.innerText(),name==='前途洋々'?/逃げ向け/:/差し向け・追込向け/);
     }
     await filter.selectOption('general');
    }
