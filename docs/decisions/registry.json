@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-051",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：34条件型の専用研究を省略し複合条件を維持する",
+      "status": "current",
+      "relation": [],
+      "note": "P2.52の22位置・時期型の単独詳細研究と12費用対効果型の専用研究・入力・標準補正を省略。元条件と複合条件・明示制限・履歴は維持。正式ラベルや実ゲーム無影響を認定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-051",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-051",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-050",
       "date": "2026-11-25",
       "heading": "2026-11-25：G4の研究要否を全条件型で再レビューする",
