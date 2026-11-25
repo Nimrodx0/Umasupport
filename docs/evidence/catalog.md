@@ -19,6 +19,8 @@
 
 ## P2：スキル発動条件・脚質適合性の研究
 
+- [2026-11-25：P2.51 全90型研究要否レビュー案](skills/skill-p2-51-condition-review-20261125.md)：D-050でG4再開。型別の判断案・元件数・Checker確認、同一AND共起監査。利用者確認と固定CI待ち。
+
 - [2026-11-25：P2.50 固定881技能のG1～G6研究完了判定](skills/skill-p2-50-gate-acceptance-20261125.md)：既存証拠と追加研究終了理由を明示して研究範囲でPass、P3主工程へ。正式ラベル・採点・実ゲーム発動率は未認定。
 
 - [2026-11-13：事前条件ラッチ初回履歴の感度](skills/skill-p2-15-precondition-history-sensitivity-20261113.md)：現行固定CIで704試行・67技能×脚質セルの仮FALSE感度を再現。元UNKNOWN正本は保持。
