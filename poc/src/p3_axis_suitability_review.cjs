@@ -14,7 +14,7 @@ const PHASE=['phase','phase_random','phase_firsthalf_random','phase_laterhalf_ra
 const FIXED_CONTEXT=['motivation','weather','season','rotation','track_id','random_lot','random_lot_shared'];
 const ABILITY=['base_speed','base_stamina','base_power','base_guts','base_wiz'];
 const neutral={
- running_style:new Set([...scope.geometry,...FIXED_CONTEXT,...ABILITY,'course_distance','is_basis_distance','is_dirtgrade','is_tight_track','corner_count','time']),
+ running_style:new Set([...scope.geometry.filter(t=>t!=='always'),...FIXED_CONTEXT,...ABILITY,'course_distance','is_basis_distance','is_dirtgrade','is_tight_track','corner_count','time']),
  distance_type:new Set([...PHASE,...FIXED_CONTEXT.filter(t=>t!=='track_id')]),
  ground_type:new Set([...PHASE,...FIXED_CONTEXT.filter(t=>t!=='track_id'),...ABILITY])
 };
@@ -22,7 +22,7 @@ const neutral={
 // automatically neutral solely because detailed research was excluded.
 const contexts=KEYS.reduce((xs,k)=>xs.flatMap(x=>DOMAINS[k].map(v=>({...x,[k]:v}))),[{}]);
 const validMatrix=m=>Array.isArray(m)&&m.every(r=>Array.isArray(r)&&r.every(p=>p&&typeof p.type==='string'&&['==','!=','<','<=','>','>='].includes(p.operator)&&Number.isSafeInteger(p.value)));
-function sourceValid(record){return !!(record&&Array.isArray(record.invokes)&&record.invokes.length&&record.invokes.every(i=>i&&validMatrix(i.conditions)&&i.conditions.length&&validMatrix(i.preConditions??[])));}
+function sourceValid(record){return !!(record&&Array.isArray(record.invokes)&&record.invokes.length&&record.invokes.every(i=>i&&validMatrix(i.conditions)&&i.conditions.length&&i.conditions.every(r=>r.length)&&validMatrix(i.preConditions??[])&&(i.preConditions??[]).every(r=>r.length)));}
 function surviving(record,ctx,axis){
  const sig=[],holds=new Set();
  const matrix=(m)=>m.map((terms,index)=>{
