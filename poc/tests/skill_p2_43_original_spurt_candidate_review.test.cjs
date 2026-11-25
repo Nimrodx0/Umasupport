@@ -1,0 +1,169 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const x=require('../src/skill_p2_43_original_spurt_candidate_review.cjs');
+const p237=require('../src/skill_p2_37_dynamic_state_evidence.cjs');
+const p238=require('../src/skill_p2_38_original_spurt_phase_same_and.cjs');
+const p232=require('../src/skill_p2_32_research_queue.cjs');
+const STYLES=['逃げ','先行','差し','追込'];
+function sourceCode(){
+ return {revision:x.PIN,checker:[
+  '"is_lastspurt" -> condition.checkInRaceBool { isInSpurt() }',
+  '"phase_firsthalf_random" -> checkInRandom(',
+  'baseSetting.initPhaseRandom(condition.value, 0.0 to 0.5)',
+  '"phase_random" -> checkInRandom(',
+  'baseSetting.initPhaseRandom(condition.value)',
+  '"infront_near_lane_time" -> condition.checkSpecialState(-1)',
+  'val key = approximateTypeToState[type]',
+  'simulation.specialState[key] ?: 0'
+ ].join('\n'),skillData:[
+  '"infront_near_lane_time" to "infront_near_lane"',
+  '"infront_near_lane" to ApproximateMultiCondition(',
+  'class ApproximateStartContinue(',
+  'Random.nextDouble() < start',
+  'Random.nextDouble() < continuation'
+ ].join('\n')};
+}
+function fixture(){
+ const orig=x.TARGETS.map((target,i)=>({
+  id:target.sourceNumericId,other:target.otherType,
+  value:i===0?3:i===2?3:1
+ }));
+ const skills=orig.map(t=>{
+  const sp={type:'is_lastspurt',operator:'==',value:1};
+  const conditions=[t.id==='203431'?[
+   {type:'distance_type',operator:'==',value:3},
+   sp,{type:t.other,operator:'==',value:t.value}
+  ]:t.id==='204661'?[
+   {type:'ground_type',operator:'==',value:2},
+   {type:t.other,operator:'>=',value:1},sp
+  ]:[sp,{type:t.other,operator:'==',value:t.value}]];
+  const profile={status:'source-structure',sourceNumericId:t.id,
+   invokes:[{index:1,conditions,preConditions:[]}]};
+  return {id:'skill:'+t.id,name:'synthetic '+t.id,activationProfile:profile};
+ });
+ const expected=818;
+ for(let i=0;i<expected-orig.length;i++)
+  skills.push({id:'skill:'+String(800000+i),name:'filler',
+   activationProfile:{status:'source-structure',
+    sourceNumericId:String(800000+i),invokes:[]}});
+ while(skills.length<881){
+  const n=skills.length;
+  skills.push({id:'hint:unavailable-'+n,name:'none',
+   activationProfile:{status:'unavailable',invokes:[]}});
+ }
+ const model={skills,skillById:Object.fromEntries(skills.map(s=>[s.id,s]))};
+ const qrows=skills.map(s=>{
+  const matched=s.activationProfile.status==='source-structure';
+  const target=orig.find(t=>t.id===s.activationProfile.sourceNumericId);
+  return {skillId:s.id,sourceNumericId:matched?s.activationProfile.sourceNumericId:null,
+   routeFamilies:target?[{invokeOffset:0,invokeIndex:1,
+    conditionOrIndex:0,preconditionOrIndex:null,conditionOrCount:1,
+    preconditionOrCount:0,hasOtherInvokes:false,
+    finiteCompatibleStyles:STYLES,unverifiedTypes:['is_lastspurt',target.other]}]:[]};
+ });
+ const queue={status:p232.STATUS,denominators:{
+  appSkills:881,sourceMatchedSkills:818,originalRouteFamilies:970},rows:qrows};
+ const observed=orig.map(t=>({
+  sourceNumericId:t.id,skillId:'skill:'+t.id,invokeOffset:0,invokeIndex:1,
+  conditionOrIndex:0,preconditionOrIndex:null,
+  hasOtherInvokes:false,probabilityOrScore:null,
+  wholeSkillSuitability:'not-established',
+  sourcePredicates:[{side:'conditions',andOffset:
+   t.id==='203431'?1:t.id==='204661'?2:0,operator:'==',value:1}],
+  finiteCompatibleStyles:STYLES,otherUnverifiedTypes:[t.other]
+ }));
+ while(observed.length<61)observed.push({sourceNumericId:'other-'+observed.length});
+ const dynamic={status:p237.STATUS,source:{revision:x.PIN,
+  mechanismSourceVerified:true},summary:{originalFullSourceANDProven:0},
+  rows:{is_lastspurt:observed}};
+ const precedent={status:p238.STATUS,source:{originalUmaSimRevision:x.PIN},
+  summary:{skills:2,sourceOriginalANDMatched:2},
+  rows:['200511','200512'].map(id=>({sourceNumericId:id,
+   sourceANDPredicates:[{type:'is_lastspurt',operator:'==',value:1},
+    {type:'phase_firsthalf_random',operator:'==',value:3}]}))};
+ return {model,queue,dynamic,precedent,source:sourceCode()};
+}
+const audit=f=>x.audit(f.model,f.queue,f.dynamic,f.precedent,f.source);
+test('fixed 3 source AND routes: 203431 reuse; 204661 near-lane approximation; 210081 different phase window',()=>{
+ const f=fixture(),old=JSON.stringify(f);
+ const r=audit(f);
+ assert.equal(JSON.stringify(f),old,'research must never mutate original source');
+ assert.equal(r.status,x.STATUS);
+ assert.deepEqual(r.summary,{
+  originalSourceSkillCandidates:3,exactOriginalCurrentANDReviewed:3,
+  nearLaneSourceApproximationHeld:1,otherTwoOriginalRandomWindowMechanisms:2,
+  exactCurrentANDReusedFromP238:0,
+  additionalRaceOrSameTickTrials:0,originalFullSkillActivationRatesMeasured:0,
+  officialGameSkillProcRatesMeasured:0,approvedP3OrP4Ratings:0
+ });
+ assert.deepEqual(r.rows.map(v=>v.sourceNumericId),['203431','204661','210081']);
+ assert.equal(r.rows[0].identicalFullCurrentANDToP238Reference,false);
+ assert.equal(r.rows[0].originalP238SpurtAndWindowPredicatesAllPresent,true);
+ assert.deepEqual(r.rows[0].explicitOriginalRaceGates,[
+  {type:'distance_type',operator:'==',value:3}]);
+ assert.equal(r.rows[0].disposition,
+  'reuse-P2.38-spurt-window-predicates-but-hold-middle-distance-full-AND-W');
+ assert.equal(r.rows[0].companionTiming.windows[0].phase,3);
+ assert.equal(r.rows[1].disposition,
+  'hold-source-approximate-near-lane-state-not-independent-position-observation');
+ assert.equal(r.rows[1].companionTiming,null);
+ assert.deepEqual(r.rows[1].explicitOriginalRaceGates,[
+  {type:'ground_type',operator:'==',value:2}]);
+ assert.deepEqual(r.rows[1].originalCompanionPredicate,
+  {type:'infront_near_lane_time',operator:'>=',value:1});
+ assert.equal(r.rows[2].companionTiming.kind,'random-within-phase');
+ assert.equal(r.rows[2].identicalFullCurrentANDToP238Reference,false);
+ assert.equal(r.rows[2].originalP238SpurtAndWindowPredicatesAllPresent,false);
+ assert.equal(r.rows[2].disposition,
+  'hold-distinct-full-phase-random-window-no-P2.38-source-AND-transfer');
+ assert(r.rows.every(y=>y.cardScore===null&&
+  y.measuredOriginalModelSkillActivationRate===null&&
+  y.eligibleForP3CardScoring===false&&
+  y.sameSourceTickSkillANDObservedHere===false));
+});
+test('source Kotlin checker and randomized special state path must be present exactly',()=>{
+ const f=fixture();
+ f.source.checker=f.source.checker.replace(
+  '"infront_near_lane_time" -> condition.checkSpecialState(-1)',
+  '"infront_near_lane_time" -> condition.checkInRaceBool');
+ assert.throws(()=>audit(f),/original checker or approximate model drift/);
+ const g=fixture();
+ g.source.skillData=g.source.skillData.replace(
+  '"infront_near_lane" to ApproximateMultiCondition(',
+  '"infront_near_lane" to SourcePhysicalLaneObserved(');
+ assert.throws(()=>audit(g),/original checker or approximate model drift/);
+});
+test('original source AND value, extra term, OR and source identity regressions fail closed',()=>{
+ const f=fixture();f.model.skills[0].activationProfile.invokes[0]
+  .conditions[0][0].value=0;
+ assert.throws(()=>audit(f),/pinned source exact original AND/);
+ const g=fixture();g.model.skills[0].activationProfile.invokes[0]
+  .conditions[0][2].value=5;
+ assert.throws(()=>audit(g),/pinned source exact original AND/);
+ const h=fixture();h.model.skills[1].activationProfile.invokes[0]
+  .preConditions=[[{type:'motivation',operator:'==',value:5}]];
+ assert.throws(()=>audit(h),/source original current AND no longer isolated|source Invoke\/OR/);
+ const j=fixture();j.queue.rows[0].routeFamilies[0].conditionOrCount=2;
+ assert.throws(()=>audit(j),/source Invoke\/OR/);
+ const k=fixture();k.dynamic.rows.is_lastspurt[2].sourceNumericId='203431';
+ assert.throws(()=>audit(k),/one spurt route missing/);
+});
+test('pinned explicit source distance/dirt conditions cannot be erased or added',()=>{
+ const f=fixture(),rows=audit(f).rows;
+ assert.deepEqual(rows.map(z=>z.explicitOriginalRaceGates),[
+  [{type:'distance_type',operator:'==',value:3}],
+  [{type:'ground_type',operator:'==',value:2}],[]
+ ]);
+ const missing=fixture();
+ missing.model.skills[0].activationProfile.invokes[0].conditions[0].shift();
+ missing.dynamic.rows.is_lastspurt[0].sourcePredicates[0].andOffset=0;
+ assert.throws(()=>audit(missing),/pinned source exact original AND/);
+ const added=fixture();
+ added.model.skills[2].activationProfile.invokes[0].conditions[0].push(
+  {type:'distance_type',operator:'==',value:3});
+ assert.throws(()=>audit(added),/pinned source exact original AND/);
+ const changed=fixture();
+ changed.model.skills[1].activationProfile.invokes[0].conditions[0][1].operator='==';
+ assert.throws(()=>audit(changed),/pinned source exact original AND/);
+});

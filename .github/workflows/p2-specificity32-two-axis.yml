@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'poc/src/p2_p3_evidence_contract.cjs'
+      - 'poc/tests/p2_p3_evidence_contract.test.cjs'
+      - 'poc/tools/verify_p2_p3_real_report.cjs'
+      - 'poc/tools/restore_pinned_research.sh'
+      - 'poc/tools/verify_pinned_research.cjs'
+      - 'poc/tests/verify_pinned_research.test.cjs'
       - 'poc/tools/skill_specificity32_research.cjs'
       - 'poc/tools/skill_reference_scenario_gate.cjs'
       - 'poc/tools/skill_context_margin_sensitivity.cjs'
@@ -24,7 +30,7 @@ permissions:
 jobs:
   balanced-four-style-two-axis:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
@@ -37,6 +43,7 @@ jobs:
         run: |
           node --check poc/tools/skill_specificity32_research.cjs
           node --test poc/tests/skill_specificity32_research.test.cjs
+          node --test poc/tests/p2_p3_evidence_contract.test.cjs
           node --check poc/tools/skill_reference_scenario_gate.cjs
           node --test poc/tests/skill_reference_scenario_gate.test.cjs
           node --check poc/tools/skill_context_margin_sensitivity.cjs
@@ -46,19 +53,19 @@ jobs:
           node --check poc/tools/skill_distance_style_interaction.cjs
           node --test poc/tests/skill_distance_style_interaction.test.cjs
           node --test poc/tests/skill_roster32_research.test.cjs
-      - name: Fetch immutable source-validated 5760-race research artifacts
+      - name: Restore optional SHA-pinned research cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/pinned-research/roster32
+          key: pinned-research-roster32-v1-${{ runner.os }}-${{ hashFiles('poc/tools/restore_pinned_research.sh', 'poc/tools/verify_pinned_research.cjs', 'poc/tools/skill_specificity32_research.cjs') }}
+      - name: Verify or regenerate fixed research inputs (no cross-run dependency)
+        run: |
+          node --test poc/tests/verify_pinned_research.test.cjs
+          bash poc/tools/restore_pinned_research.sh roster32 /tmp/pinned-research/roster32
+      - name: Stage verified source data separately from new reports
         run: |
           mkdir -p /tmp/p2-specified
-          gh run download 42413671565 -n p2-roster32-balanced -D /tmp/p2-specified
-          gh run download 42413671565 -n p2-roster32-frontHeavy -D /tmp/p2-specified
-          gh run download 42413671565 -n p2-roster32-backHeavy -D /tmp/p2-specified
-          gh run download 42413671565 -n p2-roster32-noFront -D /tmp/p2-specified
-          gh run download 42413671565 -n p2-32-source-roster-sensitivity-aggregated -D /tmp/p2-specified
-          test -s /tmp/p2-specified/balanced.json
-          test -s /tmp/p2-specified/frontHeavy.json
-          test -s /tmp/p2-specified/backHeavy.json
-          test -s /tmp/p2-specified/noFront.json
-          test -s /tmp/p2-specified/roster32-comparison.json
+          cp /tmp/pinned-research/roster32/{balanced,frontHeavy,backHeavy,noFront,roster32-comparison}.json /tmp/p2-specified/
       - name: Derive source-scope 32×2 point-rank specificity, 384 pairwise W comparisons
         run: |
           node poc/tools/skill_specificity32_research.cjs \
@@ -97,6 +104,12 @@ jobs:
           assert(x.model.seedSplitConfirmation.startsWith('NOT TESTED'));
           console.log(JSON.stringify(x.summary,null,2));
           NODE
+      - name: Independently audit source rank projections, W O U D identities and exact original derived SHA
+        run: |
+          node poc/tools/verify_p2_p3_real_report.cjs \
+            poc/data/p2_position_condition32_research.v1.json \
+            /tmp/p2-specified/two-axis-32.json \
+            /tmp/p2-specified/legacy-source32-evidence-proof.json
       - name: Audit whether balanced reference is robust, not whether it represents live games
         run: |
           node poc/tools/skill_reference_scenario_gate.cjs \
@@ -318,6 +331,7 @@ jobs:
           name: p2-two-axis-32-rank-specificity-research
           path: |
             /tmp/p2-specified/two-axis-32.json
+            /tmp/p2-specified/legacy-source32-evidence-proof.json
             /tmp/p2-specified/reference-scenario-validity.json
             /tmp/p2-specified/context-margin-sensitivity.json
             /tmp/p2-specified/individual-course-mode-margin.json

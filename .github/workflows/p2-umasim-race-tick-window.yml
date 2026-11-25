@@ -1,0 +1,97 @@
+name: P2.15 pinned UmaSim source RaceCalculator phase window at actual skill-check frame
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/p2-umasim-race-tick-window.yml'
+      - 'poc/source-probes/P215RaceWindowHook.kt'
+      - 'poc/source-probes/P215OriginalRaceTickWindowTest.kt'
+      - 'poc/tools/install_p215_race_hook.cjs'
+      - 'poc/src/skill_p2_15_umasim_race_tick_trace.cjs'
+      - 'poc/tests/skill_p2_15_umasim_race_tick_trace.test.cjs'
+      - 'docs/evidence/skills/skill-p2-15-original-race-tick-window-20261113.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/p2-umasim-race-tick-window.yml'
+      - 'poc/source-probes/P215RaceWindowHook.kt'
+      - 'poc/source-probes/P215OriginalRaceTickWindowTest.kt'
+      - 'poc/tools/install_p215_race_hook.cjs'
+      - 'poc/src/skill_p2_15_umasim_race_tick_trace.cjs'
+      - 'poc/tests/skill_p2_15_umasim_race_tick_trace.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-source-race-tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit independent trace validator and synthetic negative cases
+        run: |
+          node --check poc/tools/install_p215_race_hook.cjs
+          node --check poc/src/skill_p2_15_umasim_race_tick_trace.cjs
+          node --test poc/tests/skill_p2_15_umasim_race_tick_trace.test.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Obtain exact pinned original source without permanent upstream vendoring
+        run: |
+          mkdir -p "$RUNNER_TEMP/umasim"
+          git -C "$RUNNER_TEMP/umasim" init -q
+          git -C "$RUNNER_TEMP/umasim" remote add origin https://github.com/mee1080/umasim.git
+          git -C "$RUNNER_TEMP/umasim" fetch --quiet --depth=1 origin f6e4501ee6c6c2d4ac8698e7796e309d31575bde
+          git -C "$RUNNER_TEMP/umasim" checkout --quiet --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/umasim" rev-parse HEAD)" = \
+            "f6e4501ee6c6c2d4ac8698e7796e309d31575bde"
+      - name: Add pinned, boolean-preserving observation in isolated test checkout
+        run: |
+          node poc/tools/install_p215_race_hook.cjs "$RUNNER_TEMP/umasim"
+          install -D poc/source-probes/P215OriginalRaceTickWindowTest.kt \
+            "$RUNNER_TEMP/umasim/race/src/jvmTest/kotlin/io/github/mee1080/umasim/race/calc2/P215OriginalRaceTickWindowTest.kt"
+      - name: Execute actual source RaceCalculator with original skill checker instrumented
+        env:
+          GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx3g
+        run: |
+          export P2_PHASE_RACE_TRACE_OUTPUT="$GITHUB_WORKSPACE/p2-15-pinned-source-race-tick-windows.json"
+          cd "$RUNNER_TEMP/umasim"
+          ./gradlew :race:jvmTest \
+            --tests 'io.github.mee1080.umasim.race.calc2.P215OriginalRaceTickWindowTest' \
+            --no-daemon --console=plain --stacktrace
+          test -s "$P2_PHASE_RACE_TRACE_OUTPUT"
+      - name: Verify real source skill-check tick and bound claims
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const audit=require('./poc/src/skill_p2_15_umasim_race_tick_trace.cjs');
+          const payload=JSON.parse(fs.readFileSync(
+           'p2-15-pinned-source-race-tick-windows.json','utf8'));
+          const result=audit.validate(payload);
+          if(result.denominators.actualSourceRaceCalculatorRaces!==3||
+             result.denominators.actualRandomWindowsLinkedToSourceRace!==3||
+             result.denominators.sameSourceRunnerAndSkillCheckTickObservations<=0||
+             result.denominators.actualRegisteredSourceSkillTrials!==0||
+             result.denominators.implementedOriginalOrderRateRuntimeObservations!==0||
+             result.denominators.formallyEvaluatedSuitabilities!==0)
+           throw Error('Original source race tick cohort or rating boundary changed');
+          fs.writeFileSync('p2-15-pinned-source-race-tick-summary.json',
+           JSON.stringify(result,null,2)+'\n');
+          console.log('P2_15_SOURCE_RACE_TICK='+JSON.stringify(result));
+          NODE
+      - name: Upload original source race tick observations, not game probabilities
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-15-source-race-actual-phase-windows-and-ticks-no-rank
+          path: |
+            p2-15-pinned-source-race-tick-windows.json
+            p2-15-pinned-source-race-tick-summary.json
+          retention-days: 14
+          if-no-files-found: error

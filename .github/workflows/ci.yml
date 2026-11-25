@@ -13,9 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # status freshness gate must diff all PR changes against the base SHA
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Ensure material changes update current status in the same PR
+        env:
+          STATUS_DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          node --check poc/tools/check_status_freshness.cjs
+          node --test poc/tests/status_freshness.test.cjs
+          node poc/tools/check_status_freshness.cjs
       - name: Detect stale empty-public-event assumptions before running expensive tests
         run: |
           node --check poc/tools/check_release_test_assumptions.cjs
@@ -456,6 +465,31 @@ jobs:
         run: |
           node --check poc/src/skill_full_condition_path_audit.cjs
           node --test poc/tests/skill_full_condition_path_audit.test.cjs
+      - name: Verify P2.36 exact same-replay narrow-rank and 12 source-skill model W/D (synthetic)
+        run: |
+          node --check poc/tools/skill_p2_36_narrow_rank_observer.cjs
+          node --check poc/tools/skill_p2_36_remaining_wd.cjs
+          node --test poc/tests/skill_p2_36_narrow_rank_observer.test.cjs poc/tests/skill_p2_36_remaining_wd.test.cjs
+      - name: Verify P2.39 actual source race spurt/window same-tick evidence safety (synthetic)
+        run: |
+          node --check poc/src/skill_p2_39_race_spurt_same_tick.cjs
+          node --test poc/tests/skill_p2_39_race_spurt_same_tick.test.cjs
+      - name: Verify P2.38 registered source spurt AND routes (synthetic)
+        run: |
+          node --check poc/src/skill_p2_38_original_spurt_phase_same_and.cjs
+          node --test poc/tests/skill_p2_38_original_spurt_phase_same_and.test.cjs
+      - name: Verify P2.37 source dynamic approximations never become style/card score
+        run: |
+          node --check poc/src/skill_p2_37_dynamic_state_evidence.cjs
+          node --test poc/tests/skill_p2_37_dynamic_state_evidence.test.cjs
+      - name: Verify P2 G4 original distance-OR and absolute-rank intersection (synthetic)
+        run: |
+          node --check poc/src/skill_p2_35_short_window_exception_decisions.cjs
+          node --test poc/tests/skill_p2_35_short_window_exception_decisions.test.cjs
+      - name: Verify P2 G3/G4 short-window evidence decisions remain source-joined and never scored
+        run: |
+          node --check poc/tools/p2_g3g4_skill_window_decisions.cjs
+          node --test poc/tests/p2_g3g4_skill_window_decisions.test.cjs
       - name: Validate P2.13 source-exact disjoint seed windows (synthetic)
         run: |
           node --check poc/tools/globalsim_roster32.cjs
@@ -770,7 +804,8 @@ jobs:
         run: node --check poc/tools/audit_card_coverage.cjs && node --check poc/tools/audit_independent_card_hints.cjs && node --check poc/tools/audit_deckbuilder_cards.cjs && node --check poc/tools/audit_legacy_raw_hints.cjs && node --check poc/tools/probe_gametora_hint_page.cjs && node --check poc/tools/audit_stage_hint_integrity.cjs
 
   browser-smoke:
-    runs-on: ubuntu-latest
+    # Playwright 1.55.1 does not support the current ubuntu26.04 latest image.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

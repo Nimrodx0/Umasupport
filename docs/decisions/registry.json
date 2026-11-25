@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-12",
+  "asOf": "2026-11-24",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,42 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-048",
+      "date": "2026-11-24",
+      "heading": "2026-11-24：固定研究成果の再現性を一時Artifactの寿命から分離する",
+      "status": "current",
+      "relation": [],
+      "note": "固定コード・入力・シード・期待ハッシュをGitに保持し、期限付き成果物を唯一の依存先にしない。取得不能時は固定版から再生成し、既存ハッシュを維持する。永続公開する派生データは公開条件を別途確認",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-048",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-048",
+      "reviewedAt": "2026-11-24"
+    },
+    {
+      "id": "D-047",
+      "date": "2026-11-24",
+      "heading": "2026-11-24：既存研究成果の統合とP2完了条件の再評価を優先する",
+      "status": "current",
+      "relation": [],
+      "note": "既存PRをCI・依存関係・重複確認の上で統合し、P2 G1～G6を再評価してからP3判定方式・取得経路集約・P4表示へ進む。未判定の全解消や正式閾値・採点・公開を承認するものではない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-047",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-047",
+      "reviewedAt": "2026-11-24"
+    },
+    {
+      "id": "D-046",
+      "date": "2026-11-16",
+      "heading": "2026-11-16：P2の研究完了ゲートG1～G6と現行statusの同一PR更新を必須化",
+      "status": "current",
+      "relation": [],
+      "note": "P2は固定全件分類、3軸明示制限、4脚質W/D、重要未知条件、距離・馬場簡易検証、検証可能なP3引き渡しの6ゲートで研究完了を判定。全スキル発動率・カード採点・P4公開は別。進捗が変わるPRではstatusを同期しCIで更新漏れを検知する",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-046",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-046",
+      "reviewedAt": "2026-11-16"
+    },
     {
       "id": "D-045",
       "date": "2026-11-11",

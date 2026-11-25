@@ -60,6 +60,18 @@ test('enumerate stage-specific exact-ID hints and disjoint approved event paths 
  assert.equal(report.summary.approvedEventCandidateRecords,4);
  assert.equal(report.summary.directCandidateRecords,6);
  assert.equal(report.summary.skillsWithDirectCandidate,5);
+ assert.equal(report.summary.cardsWithVerifiedCohortDirectCandidates,1);
+ assert.equal(report.summary.distinctVerifiedCohortCardSkillPairs,5);
+ assert.equal(report.cardCandidateGroups.length,1);
+ assert.equal(report.cardCandidateGroups[0].cardId,'verified-card-1');
+ assert.equal(report.cardCandidateGroups[0].cardScore,null);
+ assert.equal(report.cardCandidateGroups[0].eligibleForP3CardScoring,false);
+ assert.equal(report.cardCandidateGroups[0].skills.length,5);
+ assert.deepEqual(
+  report.cardCandidateGroups[0].skills.find(x=>x.appSkillId==='skill:100')
+   .directCandidates.filter(x=>x.source==='normal-hint')[0].stages,[0,1]);
+ assert.equal(report.cardCandidateGroups[0].skills.reduce((n,x)=>
+  n+x.directCandidates.length,0),report.summary.directCandidateRecords);
  assert.deepEqual(report.rows[0].directCandidates[0].stages,[0,1]);
  assert.deepEqual(report.rows[1].directCandidates[0].stages,[3,4]);
  assert.equal(report.rows[3].directCandidates.length,0,'negative effect excluded');
@@ -114,4 +126,42 @@ test('P3.2 ambiguous, spoofed or source-unverified identities must not become ro
  delete missing.cards[0].hintsByStage['3'];
  assert.throws(()=>routes.audit({identity,appModel:missing}),
   /missing pinned hint-stage/);
+});
+
+test('card-first grouping preserves two cards, alternative results and source IDs without inventing a score',()=>{
+ const {identity,model}=fixture();
+ const second={
+  id:'verified-card-2',name:'Another',sourceStatus:'verified_hints',
+  hintsByStage:{'0':[],'1':[],'2':[],'3':[],'4':['skill:100']},
+  events:[{id:'second-event',type:'choice',choices:[
+   {id:'a',outcomes:[{id:'good',rewards:[
+    {kind:'hint',skillId:'skill:102'}]},
+    {id:'bad',rewards:[{kind:'hint',skillId:'skill:102'}]}]},
+   {id:'b',rewards:[{kind:'negative',skillId:'skill:103'}]}]}]
+ };
+ model.cards.push(second);
+ model.cardById[second.id]=second;
+ const original=JSON.stringify({identity,model});
+ const report=routes.audit({identity,appModel:model});
+ assert.equal(JSON.stringify({identity,model}),original,'audit is read-only');
+ assert.equal(report.summary.cardsWithVerifiedCohortDirectCandidates,2);
+ assert.equal(report.summary.distinctVerifiedCohortCardSkillPairs,7);
+ assert.equal(report.summary.directCandidateRecords,9);
+ assert.deepEqual(report.cardCandidateGroups.map(x=>x.cardId),
+  ['verified-card-1','verified-card-2']);
+ const secondGroup=report.cardCandidateGroups[1];
+ assert.equal(secondGroup.cardScore,null);
+ assert.equal(secondGroup.eligibleForP3CardScoring,false);
+ assert.equal(secondGroup.skills.length,2);
+ assert.deepEqual(secondGroup.skills.map(x=>x.appSkillId),
+  ['skill:100','skill:102']);
+ const paths=secondGroup.skills.find(x=>x.appSkillId==='skill:102').directCandidates;
+ assert.equal(paths.length,2,'different outcome branches remain separate');
+ assert.deepEqual(paths.map(x=>x.outcomeId),['good','bad']);
+ assert(paths.every(x=>x.choiceId==='a'&&x.eventId==='second-event'));
+ assert.equal(secondGroup.skills.find(x=>x.appSkillId==='skill:100')
+  .directCandidates[0].stages[0],4,'hint limit-break stage not broadened');
+ assert.equal(report.cardCandidateGroups.reduce((n,c)=>n+c.skills.reduce(
+  (sum,sk)=>sum+sk.directCandidates.length,0),0),
+  report.summary.directCandidateRecords);
 });
