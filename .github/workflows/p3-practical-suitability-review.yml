@@ -21,6 +21,9 @@ on:
       - 'poc/tests/p3_full_phase_wd.test.cjs'
       - 'poc/src/p3_next_style_label_release.cjs'
       - 'poc/tests/p3_next_style_label_release.test.cjs'
+      - 'poc/src/p3_combined_style_superiority.cjs'
+      - 'poc/tools/audit_p3_combined_style_superiority.cjs'
+      - 'poc/tests/p3_combined_style_superiority.test.cjs'
       - 'poc/tools/globalsim_phase_random_10m.cjs'
       - 'poc/tools/globalsim_subphase_random_10m.cjs'
 permissions:
@@ -99,3 +102,12 @@ jobs:
         run: |
           node --test poc/tests/p3_next_style_label_release.test.cjs
           node poc/src/p3_next_style_label_release.cjs /tmp/skill_data.txt /tmp/review-labels/p3-d052-approved-labels.json /tmp/full-phase-wd-candidates.json /tmp/next-style-release-preview.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-36-source-12-exception-model-w-d-not-skill-proc
+          path: /tmp/review-exception
+      - name: Verify combined style superiority and 10pt approved provisional margin
+        run: |
+          node --test poc/tests/p3_combined_style_superiority.test.cjs
+          node poc/tools/audit_p3_combined_style_superiority.cjs /tmp/next-style-release-preview.json /tmp/full-phase-wd-candidates.json /tmp/review-full/full-phase-reference.json /tmp/review-full/full-phase-split15.json /tmp/review-static/p3-4h-rank-window-margin-screen.json /tmp/review-two-axis/two-axis75.json /tmp/review-exception/remaining12-wd.json /tmp/review-dynamic/report.json /tmp/d059-combined.json
