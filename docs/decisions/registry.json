@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-24",
+  "asOf": "2026-11-25",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-049",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：やる気・競馬場・天候・能力の詳細研究を標準適性評価から除外",
+      "status": "current",
+      "relation": [],
+      "note": "サポカ編成検討という目的に照らし4項目の専用研究・文脈別補正・利用者入力を標準工程から除外。元発動条件と未知の影響を保持し、無影響・無条件発動・正式ラベルを認定しない",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-049",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-049",
+      "reviewedAt": "2026-11-25"
+    },
     {
       "id": "D-048",
       "date": "2026-11-24",
@@ -50,13 +62,15 @@
       "id": "D-045",
       "date": "2026-11-11",
       "heading": "2026-11-11：適用範囲条件と脚質傾向への相互作用を分けて評価する",
-      "status": "current",
-      "relation": [],
-      "note": "距離・競馬場・芝ダートなどの静的条件は対象レースを限定するが、順位や追い抜き等とのANDによる脚質差の変化は否定しない。未検証を無影響と断定せず、P2.17で同一元条件を比較。P3適性未採用",
+      "status": "qualified",
+      "relation": [
+        "D-049"
+      ],
+      "note": "距離・競馬場・芝ダートなどの静的条件は対象レースを限定するが、順位や追い抜き等とのANDによる脚質差の変化は否定しない。未検証を無影響と断定せず、P2.17で同一元条件を比較。P3適性未採用。4文脈の詳細研究はD-049で除外、元条件と相互作用の可能性は維持",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-045",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-045",
-      "reviewedAt": "2026-11-12"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-049",
+      "reviewedAt": "2026-11-25"
     },
     {
       "id": "D-044",
@@ -74,13 +88,15 @@
       "id": "D-043",
       "date": "2026-11-11",
       "heading": "2026-11-11：単一の代表条件に限定せず、条件を横断した脚質傾向を研究する",
-      "status": "current",
-      "relation": [],
-      "note": "均衡編成は人工比較対照として保持し、9/12頭・編成・コース・能力条件で一貫する方向と逆転・欠測を研究。P3の単一標準方式は再検討、正式UI未採用",
+      "status": "qualified",
+      "relation": [
+        "D-049"
+      ],
+      "note": "均衡編成は人工比較対照として保持し、9/12頭・編成・コース・能力条件で一貫する方向と逆転・欠測を研究。P3の単一標準方式は再検討、正式UI未採用。既存能力対照は維持、新規能力別の詳細研究はD-049で除外",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-043",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-043",
-      "reviewedAt": "2026-11-11"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-049",
+      "reviewedAt": "2026-11-25"
     },
     {
       "id": "D-042",

@@ -17,3 +17,14 @@ test('known mechanism never promotes full skill, approximate event state stays r
  a.equal(x.decision('unseen_type').disposition,'hold-unverified-impact');
  a.throws(()=>x.decision('unknown',[{}]));
 });
+
+test('D-049 excludes only the eight named source types from dedicated research without changing the source condition',()=>{
+ for(const type of ['motivation','track_id','weather','base_speed','base_stamina','base_power','base_guts','base_wiz']){
+  const d=x.decision(type),s=d.researchScope;
+  a.equal(s.decisionId,'D-049');a.equal(s.requiredForP2Completion,false);
+  a.equal(s.userInputRequired,false);a.equal(s.standardContextCorrection,false);
+  a.equal(s.sourcePredicateRetained,true);a.equal(s.assumeTrue,false);
+  a.equal(s.zeroImpactProven,false);a.equal(d.actualOmissionApplied,false);
+ }
+ for(const type of ['running_style','distance_type','ground_type','ground_condition','hp_per','order_rate','near_count'])a.equal(x.decision(type).researchScope,null);
+});

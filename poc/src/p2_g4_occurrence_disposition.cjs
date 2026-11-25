@@ -13,12 +13,21 @@ const STATUS='P2-G4-all-original-occurrence-dispositions-no-automatic-omissions'
 const digest=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const four=new Set(['running_style','distance_type','ground_type','ground_condition']);
 const count=(o,k)=>{o[k]=(o[k]||0)+1;};
+const EXCLUDED_CONTEXT_RESEARCH=Object.freeze(['motivation','track_id','weather','base_speed','base_stamina','base_power','base_guts','base_wiz']);
+function researchScope(type){
+ if(!EXCLUDED_CONTEXT_RESEARCH.includes(type))return null;
+ return {decisionId:'D-049',dedicatedResearch:'excluded-from-standard-scope',
+  requiredForP2Completion:false,standardContextCorrection:false,userInputRequired:false,
+  sourcePredicateRetained:true,assumeTrue:false,zeroImpactProven:false,
+  reopen:'Only propose a scope change to the user for a concrete material counterexample.'};
+}
 function decision(type,exactDynamic=[]){
  const s=spec.classify(type), m=mechanism.forType(type), t=triage.typeDecision(type);
  const common={type,axisScope:['style','distance','surface'],mechanismStatus:m.status,
   evidencePaths:m.evidencePaths,mechanismLimit:m.limitation,
   researchGroup:t.group,absoluteOpportunityImpact:'unknown-unless-evaluated-in-exact-context',
-  actualOmissionApplied:false,wholeANDVerified:false};
+  actualOmissionApplied:false,wholeANDVerified:false,
+  researchScope:researchScope(type)};
  if(four.has(type))return {...common,disposition:'adopt-static-necessary-gate-only',
   reason:'Original finite predicate; retain in every applicable route.',
   absoluteOpportunityImpact:'explicit-necessary-restriction-not-a-rate',
@@ -123,4 +132,4 @@ if(require.main===module)try{
  fs.writeFileSync(a[3],JSON.stringify(x,null,2)+'\n');
  console.log('P2_G4_OCCURRENCE_DECISIONS='+JSON.stringify({denominators:x.denominators,totals:x.totals,typeSummary:x.typeSummary}));
 }catch(e){console.error(e.stack||e);process.exitCode=1;}
-module.exports={STATUS,decision,audit};
+module.exports={STATUS,decision,audit,researchScope,EXCLUDED_CONTEXT_RESEARCH};
