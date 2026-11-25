@@ -56,6 +56,8 @@ async function main(){
    assert.equal(await page.locator('#table-region').innerText(),comparison);assert.equal(await snapshot(),saved);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});
    await page.locator('header [data-action="catalog-toggle"]').click();
+   // Reload collapses the disclosure; open it before asserting visible status.
+   await page.locator('.catalog-data summary').click();
    assert.equal(await page.locator('#catalog-label-status').innerText(),'適性データ未読込');
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
    assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);
