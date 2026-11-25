@@ -123,7 +123,13 @@ jobs:
       - run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: d056-local-catalog-labels-not-for-publication
+          path: /tmp/d056-local
       - name: Verify moving dictionary and actual local label import on Pages
         env:
           EXPECTED: ${{ github.event.pull_request.base.sha || github.sha }}
-        run: node poc/tests/browser_public_label_drift.cjs expected-pages "$EXPECTED" /tmp/d052-local/umasupport-d052-labels.json
+        run: |
+          node poc/tests/browser_public_label_drift.cjs expected-pages "$EXPECTED" /tmp/d052-local/umasupport-d052-labels.json
+          node poc/tests/browser_public_label_drift.cjs expected-pages "$EXPECTED" /tmp/d056-local/umasupport-d056-labels.json
