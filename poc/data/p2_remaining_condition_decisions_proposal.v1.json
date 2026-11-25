@@ -1,0 +1,426 @@
+{
+  "status": "P2.54-remaining-type-decision-proposal",
+  "sourceRun": 45530753855,
+  "rows": [
+    {
+      "type": "is_lastspurt",
+      "occurrences": 61,
+      "skills": 55,
+      "withComparableRoute": 36,
+      "withoutComparableRoute": 19,
+      "historySkills": 0,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補36技能。P2.38/39/43の機構根拠を再利用し、未検証の複合経路を絞る。"
+    },
+    {
+      "type": "accumulatetime",
+      "occurrences": 49,
+      "skills": 39,
+      "withComparableRoute": 27,
+      "withoutComparableRoute": 12,
+      "historySkills": 0,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補27技能。currentTimeの整数化を確認。時間下限のみか、位置窓・順位との交差かを元式から識別。"
+    },
+    {
+      "type": "change_order_onetime",
+      "occurrences": 30,
+      "skills": 30,
+      "withComparableRoute": 18,
+      "withoutComparableRoute": 12,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "順位が上がる／下がること自体は定義から区別できるが、前方脚質・後方脚質で優劣は局面、追い上げ、相手に依存。観測された順位遷移と元イベント定義が必要。"
+    },
+    {
+      "type": "is_overtake",
+      "occurrences": 25,
+      "skills": 21,
+      "withComparableRoute": 11,
+      "withoutComparableRoute": 10,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "追い抜きモードと順位上昇を同一視できず、脚質別の近似乱数は証拠にしない。"
+    },
+    {
+      "type": "blocked_side_continuetime",
+      "occurrences": 20,
+      "skills": 20,
+      "withComparableRoute": 14,
+      "withoutComparableRoute": 6,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "横ブロックは横のレーン・密度依存。順位分布だけでは脚質方向を決められない。"
+    },
+    {
+      "type": "distance_diff_top",
+      "occurrences": 13,
+      "skills": 13,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 13,
+      "historySkills": 2,
+      "group": "同一経路の比較不要候補",
+      "reason": "13技能すべて同一経路で比較可能な脚質対なし。距離差の閾値自体から脚質の優劣を推定しない。"
+    },
+    {
+      "type": "infront_near_lane_time",
+      "occurrences": 10,
+      "skills": 10,
+      "withComparableRoute": 8,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "先頭馬なら前方馬はいないという必要条件は成り立つが、非先頭の近傍時間は順位だけで決まらない。P2.43の独立観測待ち。"
+    },
+    {
+      "type": "lastspurt",
+      "occurrences": 10,
+      "skills": 10,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 8,
+      "historySkills": 0,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補2技能。元Checkerは最大スパート速度との一致を要求、is_lastspurtと別。"
+    },
+    {
+      "type": "bashin_diff_behind",
+      "occurrences": 7,
+      "skills": 7,
+      "withComparableRoute": 5,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "元定義の不足・限定確認",
+      "reason": "比較候補5技能。後続馬が存在しない場合・単位・符号を確認しないと、順位から馬身差を推定できない。"
+    },
+    {
+      "type": "is_activate_other_skill_detail",
+      "occurrences": 6,
+      "skills": 6,
+      "withComparableRoute": 6,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "元Checkerは同skill IDのcoolDownMapを読む。実発動依存を元条件通り保持。"
+    },
+    {
+      "type": "overtake_target_time",
+      "occurrences": 6,
+      "skills": 6,
+      "withComparableRoute": 4,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "対象馬の保持時間。順位上昇回数からは復元不可。"
+    },
+    {
+      "type": "compete_fight_count",
+      "occurrences": 5,
+      "skills": 5,
+      "withComparableRoute": 1,
+      "withoutComparableRoute": 4,
+      "historySkills": 4,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補1技能。元Checkerは真偽値を読む。回数として実測できるとは断定しない。"
+    },
+    {
+      "type": "hp_per",
+      "occurrences": 5,
+      "skills": 5,
+      "withComparableRoute": 5,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補5技能。元SP/最大SPの整数割合。能力・回復スキルの前提を明示し、追加実験の価値を絞る。"
+    },
+    {
+      "type": "behind_near_lane_time",
+      "occurrences": 4,
+      "skills": 4,
+      "withComparableRoute": 4,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "最後尾なら後方馬はいないという必要条件は成り立つが、近傍距離・持続時間を順位で代用しない。"
+    },
+    {
+      "type": "blocked_front_continuetime",
+      "occurrences": 4,
+      "skills": 4,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "先頭の前方馬不在と、非先頭で実際にブロックされることは別。レーン・連続時間の観測が必要。"
+    },
+    {
+      "type": "distance_diff_rate",
+      "occurrences": 4,
+      "skills": 4,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 4,
+      "historySkills": 2,
+      "group": "同一経路の比較不要候補",
+      "reason": "4技能とも比較可能対なし。分母の意味と履歴を保持。"
+    },
+    {
+      "type": "is_move_lane",
+      "occurrences": 8,
+      "skills": 4,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "レーン移動は追い抜き以外にも生じ得る。位置遷移と元イベント仕様が必要。"
+    },
+    {
+      "type": "popularity",
+      "occurrences": 6,
+      "skills": 4,
+      "withComparableRoute": 4,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "人気は相手・能力・参加者による。固定モデルで人気無視設定も存在し、一般的な脚質差を推定しない。"
+    },
+    {
+      "type": "is_badstart",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 3,
+      "historySkills": 0,
+      "group": "同一経路の比較不要候補",
+      "reason": "3技能とも比較可能対なし。出遅れの脚質分布を仮定しない。"
+    },
+    {
+      "type": "is_behind_in",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 3,
+      "historySkills": 0,
+      "group": "同一経路の比較不要候補",
+      "reason": "3技能とも比較可能対なし。内外・後方関係の元制限は保持。"
+    },
+    {
+      "type": "order_rate_out40_continue",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 1,
+      "withoutComparableRoute": 2,
+      "historySkills": 1,
+      "group": "元定義の不足・限定確認",
+      "reason": "比較候補1技能。連続時間・順位境界の元定義が先。単純な瞬間順位を採用しない。"
+    },
+    {
+      "type": "run_at_full_speed_random",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 3,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "計算状態・限定実験候補",
+      "reason": "比較候補3技能。元抽選位置への到達条件。スパート速度状態と同一視しない。"
+    },
+    {
+      "type": "running_style_count_same_rate",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 3,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "同脚質人数割合は仮定した編成で計算可能な候補だが、元分母・自己含有・演算子の確認が必要。均衡構成を実戦分布にしない。"
+    },
+    {
+      "type": "same_skill_horse_count",
+      "occurrences": 3,
+      "skills": 3,
+      "withComparableRoute": 3,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "同技能所持の相手数。相手の取得・装備分布が必要。"
+    },
+    {
+      "type": "activate_count_all",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "実装備の全発動回数に依存。"
+    },
+    {
+      "type": "activate_count_heal",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "回復技能の装備・発動と体力に依存。"
+    },
+    {
+      "type": "activate_count_middle",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "中盤の装備技能と発動に依存。"
+    },
+    {
+      "type": "activate_count_start",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "序盤の装備技能と発動に依存。"
+    },
+    {
+      "type": "distance_diff_top_float",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 2,
+      "historySkills": 0,
+      "group": "同一経路の比較不要候補",
+      "reason": "2技能とも比較可能対なし。整数型と丸めを同一視しない。"
+    },
+    {
+      "type": "is_activate_any_skill",
+      "occurrences": 4,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "装備済み他技能の発動に依存。編成候補から実装備・発動を仮定しない。"
+    },
+    {
+      "type": "is_other_character_activate_advantage_skill",
+      "occurrences": 8,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "相手の技能発動状態。元特殊状態キーを読むが、相手分布・発動の実証はない。"
+    },
+    {
+      "type": "is_surrounded",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "囲まれ状態は配置・レーン依存。順位のみから判定しない。"
+    },
+    {
+      "type": "lane_type",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "元定義の不足・限定確認",
+      "reason": "比較候補2技能。レーン区分の元定義がないため内外の脚質傾向を断定しない。"
+    },
+    {
+      "type": "near_count",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "近傍距離と人数の元定義、同時刻の他走者位置が必要。"
+    },
+    {
+      "type": "near_infront_count",
+      "occurrences": 4,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "既存近似不採用・独立観測待ち",
+      "reason": "先頭の前方人数0は構造上の制約だが、非先頭の近傍人数の頻度は未測定。"
+    },
+    {
+      "type": "order_rate_out50_continue",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 2,
+      "historySkills": 2,
+      "group": "同一経路の比較不要候補",
+      "reason": "2技能とも比較可能対なし。持続条件・履歴を保持。"
+    },
+    {
+      "type": "running_style_count_same",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "同脚質人数は編成依存。元定義と比較基準編成で論理評価できるか別確認。"
+    },
+    {
+      "type": "running_style_equal_popularity_one",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 2,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "一番人気との脚質一致。人気と編成の同時分布が必要。"
+    },
+    {
+      "type": "temptation_count",
+      "occurrences": 2,
+      "skills": 2,
+      "withComparableRoute": 0,
+      "withoutComparableRoute": 2,
+      "historySkills": 2,
+      "group": "同一経路の比較不要候補",
+      "reason": "2技能とも比較可能対なし。掛かりの履歴は保持。"
+    },
+    {
+      "type": "activate_count_end_after",
+      "occurrences": 1,
+      "skills": 1,
+      "withComparableRoute": 1,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "終盤以後の装備技能と発動に依存。"
+    },
+    {
+      "type": "activate_count_later_half",
+      "occurrences": 1,
+      "skills": 1,
+      "withComparableRoute": 1,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "後半の装備技能と発動に依存。終盤と区別。"
+    },
+    {
+      "type": "is_exist_skill_id",
+      "occurrences": 1,
+      "skills": 1,
+      "withComparableRoute": 1,
+      "withoutComparableRoute": 0,
+      "historySkills": 0,
+      "group": "前提分布不足・保留候補",
+      "reason": "所持条件。取得候補と実装備を区別、将来の条件付き依存評価候補。"
+    }
+  ]
+}
