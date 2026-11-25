@@ -62,3 +62,6 @@ P2.53の[固定CI #45530753855](https://github.com/Nimrodx0/Umasupport/actions/r
 新規コードは計算状態6型の全比較可能元経路から、時間下限単独、履歴依存、他動的条件依存、状態と位置窓の限定観測候補を抽出する。元演算子・値は実行時にのみ読み、原データを配布しない。時間下限候補も閾値までの到達を保証しない。D-049の条件が含まれる場合も未知のまま残る。現時点で新規シミュレーションは開始していない。固定CI待ち。
 
 [実装](../../../poc/src/p2_limited_study_screen.cjs)・[反例テスト](../../../poc/tests/p2_limited_study_screen.test.cjs)。
+
+
+**固定CI確認**：[ #45531302405](https://github.com/Nimrodx0/Umasupport/actions/runs/45531302405)成功。86型別経路中34限定候補・52他状態必要。経過時間33経路すべて他状態必要。#485 main統合済み。次の限定実験は[P2.55](skill-p2-55-natural-spurt-sensitivity-20261125.md)。
