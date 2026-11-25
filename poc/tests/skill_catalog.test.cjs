@@ -47,3 +47,20 @@ test('approved bundle allowlist is version bound and natural-spurt assumption st
  a.deepEqual(cat.evidence(row,{distance_type:3}),{state:'general',styles:[],text:'汎用'});
  a.equal(cat.evidence(row,{distance_type:4}).state,'undetermined');
 });
+
+test('hierarchical browse classification separates scope, explicit restriction, preference and unknown',()=>{
+ const r=(mask,label)=>({skill:{id:'x',name:'X'},explicitNecessaryMasks:mask,label});
+ const full=Array(32).fill(15),single=Array(32).fill(0);single.fill(15,8,16);
+ const targeted={state:'targeted',styles:[3],scope:{kind:'rank-window-fixed-model',branches:[{courseIds:[10502]}]}};
+ const ctx={running_style:2,distance_type:2,ground_type:1,ground_condition:1};
+ a.equal(cat.assessment(r(single),ctx).category,'explicitOnly');
+ a.equal(cat.assessment(r(single),{...ctx,running_style:1}).category,'outside');
+ a.equal(cat.assessment(r(null),ctx).category,'scopeUnknown');
+ a.equal(cat.assessment(r(full,targeted),ctx).category,'otherTargeted');
+ a.equal(cat.assessment(r(full,targeted),{...ctx,running_style:3}).category,'targeted');
+ a.equal(cat.assessment(r(full,targeted),{...ctx,ground_type:2}).category,'undetermined');
+ a.equal(cat.filter([r(single)],{context:ctx,suitability:'supported'}).length,1);
+ a.equal(cat.filter([r(null)],{context:ctx,suitability:'undetermined'}).length,0);
+ a.equal(cat.filter([r(full,targeted)],{context:ctx,suitability:'otherTargeted'}).length,1);
+ a.equal(cat.filter([r(null)],{suitability:'undetermined'}).length,1);
+});

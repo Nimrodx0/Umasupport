@@ -49,6 +49,16 @@ function evidence(row,ctx={}){
  const distances=[...new Set(contexts(label).map(c=>AXES.distance_type[c.distance_type-1]))].join('・');
  return {state:'targeted',styles:label.styles,text:fit.labelText(label)+'（限定）',note:distances+' / 芝・良 / 固定モデル条件内'};
 }
+// A browse assessment is a hierarchy, not a new suitability score.
+function assessment(row,ctx={}){
+ const applicability=fit.applicability(row,ctx),e=evidence(row,ctx);
+ const permittedStyles=[1,2,3,4].filter(s=>fit.applicability(row,{...ctx,running_style:s})==='possible');
+ const style=ctx.running_style;
+ const category=applicability==='outside'?'outside':applicability==='unknown'?'scopeUnknown':
+  style!=null&&permittedStyles.length===1?'explicitOnly':
+  e.state==='general'?'general':e.state==='targeted'?(style==null||e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
+ return {applicability,evidence:e,permittedStyles,category};
+}
 function index(data,labels=new Map()){
  return data.skills.map(skill=>{
   const m=masks(skill.activationProfile);
@@ -63,6 +73,16 @@ function filter(rows,o={}){
   const app=fit.applicability(r,ctx);
   if(scope==='possible'&&Object.keys(AXES).some(k=>ctx[k]!=null)&&app==='outside'||scope==='confirmed'&&app!=='possible'||scope==='unknown'&&app!=='unknown'||scope==='outside'&&app!=='outside')return false;
   const e=evidence(r,ctx);
+  // With a selected context, aptitude is subordinate to known eligibility.
+  // Without any context retain the historical catalogue-wide label inventory.
+  const hasContext=Object.keys(AXES).some(k=>ctx[k]!=null);
+  if(suit!=='all'&&hasContext){
+   const x=assessment(r,ctx).category;
+   if(x==='outside'||x==='scopeUnknown')return false;
+   if(suit==='supported')return ['explicitOnly','general','targeted'].includes(x);
+   return x===suit;
+  }
+  if(suit==='explicitOnly'||suit==='otherTargeted')return false;
   if(suit==='general'&&e.state!=='general'||suit==='targeted'&&(e.state!=='targeted'||ctx.running_style!=null&&!e.styles.includes(ctx.running_style))||suit==='undetermined'&&e.state!=='undetermined'||suit==='supported'&&!(e.state==='general'||e.state==='targeted'&&(ctx.running_style==null||e.styles.includes(ctx.running_style))))return false;
   return true;
  }).sort((a,b)=>a.skill.name.localeCompare(b.skill.name,'ja')||a.skill.id.localeCompare(b.skill.id));
@@ -141,7 +161,7 @@ async function loadPublicLabels(data,{fetcher=g.fetch}={}){
  }
  return {labels,skipped,decisionId:'D-059'};
 }
-const api={AXES,masks,scopeSummary,evidence,index,filter,loadLabels,loadPublicLabels,publicLabels,PUBLIC_URL,PUBLIC_SHA,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
+const api={AXES,masks,scopeSummary,evidence,assessment,index,filter,loadLabels,loadPublicLabels,publicLabels,PUBLIC_URL,PUBLIC_SHA,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillCatalog=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

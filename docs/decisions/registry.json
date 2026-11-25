@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-25",
+  "asOf": "2026-11-26",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-061",
+      "date": "2026-11-26",
+      "heading": "2026-11-26：明示的な適用範囲を第一階層とする適性UI",
+      "status": "current",
+      "relation": [],
+      "note": "適用範囲内・外・未確認を先に分け、範囲内で脚質適性を示す。明示脚質限定は比較判定と区別し、未判定と範囲未確認を合算しない。評価基準・金白等価集計は変更しない。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-061",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-061",
+      "reviewedAt": "2026-11-26"
+    },
     {
       "id": "D-060",
       "date": "2026-11-25",

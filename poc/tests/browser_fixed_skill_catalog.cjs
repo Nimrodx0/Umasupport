@@ -99,6 +99,7 @@ async function main(){
    assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),general+' / 881 件');
    await page.locator('#catalog-show-labels').check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
+   await filter.selectOption('all');await page.locator('[data-catalog-axis="running_style"]').selectOption('2');await page.locator('#catalog-scope').selectOption('outside');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('possible');await filter.selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await page.locator('[data-catalog-axis="running_style"]').selectOption('');
    await filter.selectOption('targeted');assert.equal(await count.innerText(),targeted+' / 881 件');
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
    assert.match(await count.innerText(),/^0 \/ 881 件$/);
@@ -123,10 +124,10 @@ async function main(){
    },bundle.rows);
    const summary=page.locator('[data-picker-fit-summary]');
    assert(await summary.count()>0);
-   const readShown=()=>page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,text:r.querySelector('[data-picker-fit-summary]')?.textContent})));
+   const readShown=()=>page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,counts:Object.fromEntries([...r.querySelectorAll('[data-fit-count]')].map(n=>[n.dataset.fitCount,n.innerText]))})));
    const verifyShown=async only=>{for(const x of await readShown()){
     const v=expected[x.id],c=v.counts;assert(v);
-    assert.equal(x.text,'脚質限定 '+c.explicitOnly+' · 向け '+c.targeted+' · 汎用 '+c.general+' · 他脚質向け '+c.otherTargeted+' · 未判定 '+(c.undetermined+c.scopeUnknown)+' · 対象外 '+c.outside);
+    assert.match(x.counts.inside,new RegExp((c.total-c.outside-c.scopeUnknown)+' / '+c.total+'件'));assert.match(x.counts.matching,new RegExp(v.matching+'件'));assert.equal(x.counts.otherTargeted,'他脚質向け '+c.otherTargeted+'件');assert.equal(x.counts.undetermined,'適性未判定 '+c.undetermined+'件');assert.equal(x.counts.outside,'範囲外 '+c.outside+'件');assert.equal(x.counts.scopeUnknown,'範囲未確認 '+c.scopeUnknown+'件');
     if(only)assert(v.matching>0);
    }};
    await verifyShown(false);
@@ -154,6 +155,7 @@ async function main(){
    const detail=page.locator('#card-fit-detail');await detail.waitFor();
    const verifyDetail=async stage=>{
     const v=await page.evaluate(({id,stage,rows})=>UmaCardSuitabilityView.browseCard(UmaDemoData.cardById[id],{stage},UmaDemoData,new Map(rows.map(r=>[r.appSkillId,r])),{running_style:2,ground_condition:1}),{id,stage,rows:bundle.rows});
+    for(const [k,cur,pot] of [['total',v.current.counts.total,v.potential.counts.total],['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown],['matching',v.current.matching,v.potential.matching]]){const cells=detail.locator('[data-fit-group="'+k+'"] td');assert.equal(await cells.nth(1).innerText(),String(cur));assert.equal(await cells.nth(2).innerText(),String(pot));}
     for(const k of Object.keys(v.current.counts).filter(x=>x!=='total')){
      const cells=detail.locator('[data-fit-category="'+k+'"] td');
      assert.equal(await cells.nth(1).innerText(),String(v.current.counts[k]));assert.equal(await cells.nth(2).innerText(),String(v.potential.counts[k]));

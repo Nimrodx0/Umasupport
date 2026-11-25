@@ -94,6 +94,7 @@ async function main(){
    const verifyDetail=async stage=>{
     const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
     const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
+    for(const [k,cur,pot] of [['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown],['matching',v.current.matching,v.potential.matching]]){const cells=page.locator('[data-fit-group="'+k+'"] td');a.equal(await cells.nth(1).innerText(),String(cur));a.equal(await cells.nth(2).innerText(),String(pot));}
     a.equal(await page.locator('[data-fit-tiers]').innerText(),'一致候補の内訳：現在 '+tier(v.current.matchingByTier)+' ／ 全分岐 '+tier(v.potential.matchingByTier));
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();
