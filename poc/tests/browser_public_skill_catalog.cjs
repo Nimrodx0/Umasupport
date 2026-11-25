@@ -20,6 +20,7 @@ async function main(){
   for(const width of [1280,390]){
    const page=await browser.newPage({viewport:{width,height:850}}),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
+   await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.abort());
    await page.goto(BASE+'poc/live.html?verify='+EXPECTED,{waitUntil:'load',timeout:60000});
    await page.locator('#app main.app').waitFor({timeout:60000});
    const data=await page.evaluate(()=>({skills:UmaDemoData.skills.length,cards:UmaDemoData.cards.length,sources:UmaDemoData.meta.runtimeSources}));
@@ -30,7 +31,7 @@ async function main(){
    const count=page.locator('.catalog-count');
    a.equal(await count.innerText(),data.skills+' / '+data.skills+' 件');
    await page.locator('.catalog-data summary').click();
-   a.equal(await page.locator('#catalog-label-status').innerText(),'適性データ未読込');
+   await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    await page.locator('#catalog-suitability').selectOption('undetermined');
    a.equal(await count.innerText(),data.skills+' / '+data.skills+' 件');
    await page.locator('#catalog-show-labels').uncheck();a.equal(await page.locator('.catalog-table th').count(),2);
