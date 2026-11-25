@@ -21,3 +21,7 @@ P2.54ではUmaSimの特殊状態乱数近似を実ゲームの根拠として不
 同ソースでは後方馬身差の後続不在時全比較false、2.5m換算、順位帯継続の5秒からの履歴、最高速ランダムの局面3区間指定も確認した。ゲーム仕様の独立証明ではなく、UmaSimとの意味差を無断統一しない。実行結果は未確認、正式適性や新規省略は承認しない。
 
 [計測・解析](../../../poc/src/p2_native_neighbour_model.cjs)・[単体テスト](../../../poc/tests/p2_native_neighbour_model.test.cjs)・[CI](../../../.github/workflows/p2-native-neighbour-model.yml)。
+
+## 実測結果
+
+[専用CI #45536343959](https://github.com/Nimrodx0/Umasupport/actions/runs/45536343959)成功。専用CI #45536343959成功。73技能、24,528技能×走者×レース、成立94→3,054、不成立14,638→16,672、未知9,796→4,802。固定モデル・元論理投影のみ。 435,558判定走者tick、物理値1,751,724一致。未知解消4,994。P2.56とは技能・条件が重なり件数を加算しない。次は[P2.59](skill-p2-59-joint-dynamic-model-20261125.md)で同一tickの観測を結合する。
