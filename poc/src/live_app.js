@@ -188,7 +188,11 @@ function pickerMatches(){
   return window.UmaCardSearch.sortByGoalCandidates(filtered,data,pickerGoals(),ui.modal.deckKey);
  return window.UmaCardSearch.sortCards(filtered,ui.pickerSort,state.ownedCards);
 }
-function pickerFit(card){return window.UmaCardSuitabilityView.browseCard(card,{stage:4,choices:{},outcomes:{}},data,catalogLabels,ui.pickerFitContext).potential;}
+let pickerFitCache=new Map();
+function pickerFit(card){
+ if(!pickerFitCache.has(card.id))pickerFitCache.set(card.id,window.UmaCardSuitabilityView.browseCard(card,{stage:4,choices:{},outcomes:{}},data,catalogLabels,ui.pickerFitContext).potential);
+ return pickerFitCache.get(card.id);
+}
 function pickerFitControls(detail=false){
  const ctx=ui.pickerFitContext;
  const fields=['running_style','distance_type','ground_type','ground_condition'];
@@ -201,6 +205,7 @@ function pickerFiltersHtml(){
  return `<div class="picker-filters"><input class="field search" id="picker-search" placeholder="カード名・キャラクター…" aria-label="カードを検索" value="${esc(ui.pickerSearch)}"><input class="field search" id="picker-skill-search" placeholder="提供スキル名・ID…" aria-label="編成候補の提供スキル検索" value="${esc(ui.pickerSkillQuery)}"><select id="picker-route" class="field" aria-label="編成候補の獲得経路">${routeOptions}</select><select id="picker-rarity" class="field" aria-label="編成候補のレアリティ">${opts(['all',...rarities],ui.pickerRarity)}</select><select id="picker-type" class="field" aria-label="編成候補のタイプ">${opts(['all',...types],ui.pickerType)}</select><label class="filterlabel"><input type="checkbox" id="picker-only-owned" ${ui.pickerOnlyOwned?'checked':''}>所持サポカのみ表示</label><label class="card-sort-label">並び順 <select id="picker-sort" class="field" aria-label="編成候補の並べ替え">${sortOptions(ui.pickerSort,true)}</select></label><button class="btn tiny" data-action="picker-filters-reset">条件をクリア</button></div>${pickerFitControls()}`;
 }
 function pickerCardsHtml(){
+ pickerFitCache=new Map();
  const matched=pickerMatches(),perPage=120,pages=Math.max(1,Math.ceil(matched.length/perPage));
  ui.pickerPage=Math.max(0,Math.min(ui.pickerPage,pages-1));
  const shown=matched.slice(ui.pickerPage*perPage,(ui.pickerPage+1)*perPage);
