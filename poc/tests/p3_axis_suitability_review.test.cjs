@@ -5,16 +5,18 @@ const rec=(conditions,preConditions=[],effects=[])=>({invokes:[{conditions,preCo
 const state=(r,k)=>evaluate(r,k).state;
 test('phase-only Aoharu-shaped conditions ignore effect magnitude and effect metadata',()=>{
  const x=rec([[p('phase_random',1)]]),y=rec([[p('phase_random',1)]],[],[{type:'speed',value:100,condition:'base_stamina'}]);
- for(const k of ['running_style','distance_type','ground_type'])a.equal(state(x,k),'full-neutral-candidate');
+ a.equal(state(x,'running_style'),'full-neutral-candidate');
+ a.deepEqual(Object.keys(review(x)),['running_style']);
+ a.throws(()=>evaluate(x,'distance_type'));a.throws(()=>evaluate(x,'ground_type'));
  a.deepEqual(review(x),review(y));
 });
-test('actual ability predicate affects distance review, not automatically style or surface',()=>{
+test('actual ability predicate can be conditionally neutral for style; distance and surface not evaluated',()=>{
  const x=rec([[p('base_stamina',1000,'>='),p('phase_random')]]);
- a.equal(state(x,'running_style'),'full-neutral-candidate');a.equal(state(x,'ground_type'),'full-neutral-candidate');a.equal(state(x,'distance_type'),'held');
+ a.equal(state(x,'running_style'),'full-neutral-candidate');
 });
 test('explicit restriction is scope, not targeted; compare only common applicable context',()=>{
  const x=rec([[p('running_style',2),p('phase_random')]]);
- a.equal(state(x,'running_style'),'scope-only');a.equal(state(x,'distance_type'),'full-neutral-candidate');
+ a.equal(state(x,'running_style'),'scope-only');
  const y=rec([[p('running_style',2,'<='),p('phase_random')]]);
  a.equal(state(y,'running_style'),'restricted-neutral-candidate');
 });
