@@ -63,6 +63,7 @@ async function main(){
    page.on('pageerror',e=>errors.push(e.message));
    const dictionary=page.waitForResponse(r=>r.url()===LIVE&&r.ok(),{timeout:60000});
    const supports=page.waitForResponse(r=>r.url()===SUPPORT&&r.ok(),{timeout:60000});
+   await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.abort());
    await page.goto(BASE+'poc/live.html?verify='+EXPECTED,{waitUntil:'load',timeout:60000});
    await page.locator('#app main.app').waitFor({timeout:60000});
    const [liveBytes,supportBytes]=await Promise.all([dictionary.then(r=>r.body()),supports.then(r=>r.body())]);
@@ -96,7 +97,7 @@ async function main(){
    a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});
    await page.locator('header [data-action="catalog-toggle"]').click();await page.locator('.catalog-data summary').click();
-   a.equal(await page.locator('#catalog-label-status').innerText(),'適性データ未読込');
+   await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    const reloaded=await page.evaluate(()=>UmaDemoData.skills.length);
    await page.locator('#catalog-suitability').selectOption('undetermined');
    a.equal(await page.locator('.catalog-count').innerText(),reloaded+' / '+reloaded+' 件');

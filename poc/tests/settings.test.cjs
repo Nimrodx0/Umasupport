@@ -36,7 +36,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const core=require('../src/core.js');
 const appSource=fs.readFileSync(path.join(__dirname,'../src/live_app.js'),'utf8');
-function mountApp(raw) {
+function mountApp(raw,catalog) {
   const key='uma-support-lab-runtime-umasim-v1';
   const values=new Map(raw===null?[]:[[key,raw]]);
   const alerts=[];
@@ -45,7 +45,7 @@ function mountApp(raw) {
   const handlers={};
   const data={cards:[],skills:[],cardById:{},skillById:{},meta:{totalHints:0}};
   const context={
-    window:{UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js'),UmaDeckEvents:require('../src/deck_events.js')},
+    window:{UmaSkillCatalog:catalog,UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js'),UmaDeckEvents:require('../src/deck_events.js')},
     localStorage:{
       getItem:k=>values.get(k)??null,
       setItem:(k,v)=>{if(denyWrites)throw Error('QuotaExceededError');writes++;values.set(k,v)}
@@ -347,4 +347,16 @@ test('goal-set lifecycle uses bounded collision-free IDs, preserves goals, and g
  for(let i=1;i<MAX_GOAL_SETS;i++)full.goalSets.push({id:'g'+(i+1),name:'g'+i,goals:[]});
  assert.throws(()=>addGoalSet(full,true),/100件/);
  assert.throws(()=>parse({...sample(),goalSets:[...full.goalSets,{id:'overflow',name:'test',goals:[]}]},data),/バージョン/);
+});
+
+test('optional automatic label loader rejection does not disturb saved settings or trigger absent catalogue rendering',async()=>{
+ let loads=0;
+ const app=mountApp(null,{async loadPublicLabels(){loads++;throw Error('offline');},index(){throw Error('closed catalogue must not render');}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(loads,1);assert.equal(app.writes,0);assert.equal(app.alerts.length,0);assert.match(app.nodes.app.innerHTML,/サポカ編成/);
+});
+test('automatic label completion does not replace invalid saved settings recovery',async()=>{
+ const app=mountApp('{broken',{async loadPublicLabels(){return {labels:new Map(),skipped:404};},index(){throw Error('recovery must not render catalogue');}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(app.writes,0);assert.equal(app.values.get('uma-support-lab-runtime-umasim-v1'),'{broken');assert.match(app.nodes.app.innerHTML,/保存設定を読み込めませんでした/);
 });

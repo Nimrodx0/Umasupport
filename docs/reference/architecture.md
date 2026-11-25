@@ -130,3 +130,7 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 - `skill_condition_profiles.js` は現在辞書と固定辞書を**スキル数値ID＋名称**（`hint:` は一意名照合）で結び、各 `Invoke` の `preConditions` と `conditions` を「外側OR／内側AND」の入れ子構造のまま投影する。脚質 `running_style`、距離 `distance_type`、馬場 `ground_type`、馬場状態 `ground_condition` の `type/operator/value` は演算子を保持したまま日本語の値ラベルを添える。その他の条件も**条件式のまま保持**し、未知を無制限扱いしない。
 - `live.html` の起動直前に `UmaSkillConditionProfiles.attach(model,{skillText,pinnedSkillText})` を追加。ステージングして全件検証後に `skill.activationProfile` を付加し、`model.meta.skillConditionProfiles` に出典付きの集計を保持。**スキル一覧・イベント報酬・元ゲーム辞書・目標／提供枚数計算・保存設定は変更しない。**
 - **P1は構造分類まで**：順位・局面からの「逃げ／先行向き」という推定、全発動確率、カード傾向のUI・フィルターはまだ実装しない。追加条件を一律に基礎効果の制限とみなさず、複数Invoke・AND/ORの意味の裁定は次工程で行う。未収録63スキルは `status:'unavailable'` で残す。
+
+## D-060：公開承認・等価集計（現行方針）
+
+D-060（2026-11-25 22:20 JST、利用者確認）：独自生成した適性データのGitHub公開と起動時自動読込は承認済み。第三者の元辞書・元条件・原文・画像の再配布は対象外。金白は別件数、各ID1件で、重み付け・カード総合点なし。 公開ラベルの取得・ハッシュ・元ID・構造照合は設定保存やイベント到達計算から独立し、不一致は未判定とする。金白内訳は候補ID集合に対する等価集計。

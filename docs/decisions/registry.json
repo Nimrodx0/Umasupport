@@ -11,12 +11,26 @@
   ],
   "entries": [
     {
+      "id": "D-060",
+      "date": "2026-11-25",
+      "heading": "2026-11-25：独自適性データの公開・自動読込と金白の等価集計",
+      "status": "current",
+      "relation": [],
+      "note": "独自算出した適性判定データはGitHub公開・起動時自動読込を承認済み。第三者の元辞書は直接取得し再配布しない。金白は重み付け・総合得点なし、別件数で表示。元ID・条件整合と障害時の既存機能保持を維持。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-060",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-060",
+      "reviewedAt": "2026-11-25"
+    },
+    {
       "id": "D-059",
       "date": "2026-11-25",
       "heading": "2026-11-25：脚質適性の実用差幅を暫定10ptとする",
       "status": "current",
-      "relation": [],
-      "note": "D-058の個別優位・集団優位に10ptを暫定採用。実用上の問題が見つかれば再検討。元条件、同一文脈、未知境界、D方向支持は維持し、既存根拠に対して再評価する。公開・カード採点は別",
+      "relation": [
+        "D-060"
+      ],
+      "note": "D-058の個別優位・集団優位に10ptを暫定採用。実用上の問題が見つかれば再検討。元条件、同一文脈、未知境界、D方向支持は維持し、既存根拠に対して再評価する。公開と金白集計はD-060で確定",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-059",
       "assessmentBasis": "docs/decisions/log.md#decision-d-059",
