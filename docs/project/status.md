@@ -141,6 +141,8 @@
 - 固定技術変換2,512件のうち **25件** は公開保留（GameWith補正が入ったGT由来1件、別出典から編集追加した24件）。保留は公開データから分離したままで、ゲーム中に存在しない意味ではありません。根拠は [公開承認の監査](../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) と [出典例外分類](../evidence/events/phase2-source-lineage-exception-map-20261102.md)。
 - 公開JSONは、未承認の試用モードや非公開候補とは別。通常の起動時にロードできることは [PR #312・#313](https://github.com/Nimrodx0/Umasupport/pull/313) とPages実ブラウザで確認。元のイベント本文・画像を無断再配布しない。
 
+**P4の複合適用範囲詳細表示（追加実装・CI待ち）**：#499の固定Chromium試用が成功した [run #45553996449](https://github.com/Nimrodx0/Umasupport/actions/runs/45553996449) を確認。D-053の全スキル一覧に適用可能な脚質・距離・馬場の正確な組合せ表示だけを移植し、同一の明示必要マスクを使用。別系統のデッキ適性UI・全881件ラベル形式は採用しない。単体・人工Chromiumの追加検証待ち。READMEに既存300ラベルの試用手順を追加。公開承認は変更しない。
+
 ## 実装と検証の境界
 
 - **A 機構**：Nodeのユニットテスト、実Chromiumのデスクトップ／スマホ幅で主要操作を検証。継続実行は [PoC Core Tests](../../.github/workflows/ci.yml) を参照。
