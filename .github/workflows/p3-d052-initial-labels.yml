@@ -11,6 +11,11 @@ on:
       - 'poc/src/card_suitability_view.js'
       - 'poc/tests/card_suitability_view.test.cjs'
       - 'poc/tools/audit_p3_card_suitability_view.cjs'
+      - 'poc/src/local_suitability_preview.js'
+      - 'poc/tools/build_local_suitability_preview.cjs'
+      - 'poc/tests/browser_local_suitability_preview.cjs'
+      - 'poc/live.html'
+      - 'poc/src/live_app.js'
       - 'poc/tests/p3_approved_scope_labels.test.cjs'
       - '.github/workflows/p2-subphase10-77-skill-review.yml'
       - '.github/workflows/p2-joint-dynamic-model.yml'
@@ -23,7 +28,7 @@ jobs:
     uses: ./.github/workflows/p2-joint-dynamic-model.yml
   approved:
     needs: [static-window, dynamic]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,6 +59,16 @@ jobs:
             /tmp/p3-d052-approved-labels.json \
             /tmp/p3-static/p3-3b-all-card-research-routes.json \
             /tmp/p3-card-suitability-view-summary.json
+            /tmp/p3-local-label-preview.json
+      - name: Build minimal local-only label preview
+        run: |
+          node poc/tools/build_local_suitability_preview.cjs /tmp/p3-d052-approved-labels.json /tmp/p3-static/p3-3b-all-card-research-routes.json /tmp/p3-local-label-preview.json
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Exercise actual live app with fixed sources and local-only labels
+        run: node poc/tests/browser_local_suitability_preview.cjs /tmp/p3-local-label-preview.json
       - uses: actions/upload-artifact@v4
         with:
           name: p3-d052-approved-scoped-labels-not-public

@@ -1,0 +1,12 @@
+'use strict';
+const a=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
+const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+const [reportFile,routesFile,out]=process.argv.slice(2);
+const r=JSON.parse(fs.readFileSync(reportFile,'utf8')),p=JSON.parse(fs.readFileSync(routesFile,'utf8')).provenance;
+a.equal(r.status,'P3.4j-D052-initial-scoped-skill-labels');a.deepEqual(r.counts,{general:257,targeted:43,undetermined:581});
+a.equal(p.skillRegistrySHA256,'4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
+a.equal(p.historicalRegistrySHA256,'b7ba1d6c5dd2af9ed1f4e649f16ec1d319198e2f1ac9db07c54e14d29f0b25ec');
+const rows=r.rows.map(({appSkillId,sourceNumericId,explicitNecessaryMasks,label})=>({appSkillId,sourceNumericId,explicitNecessaryMasks:explicitNecessaryMasks??null,label}));
+a.equal(rows.length,881);a.equal(new Set(rows.map(x=>x.appSkillId)).size,881);
+const bundle={schemaVersion:1,decisionId:'D-052',status:'local-only-derived-suitability-preview',sourceSHA256:p.skillRegistrySHA256,historicalSHA256:p.historicalRegistrySHA256,rowsSHA256:hash(JSON.stringify(rows)),rows};
+fs.writeFileSync(out,JSON.stringify(bundle));

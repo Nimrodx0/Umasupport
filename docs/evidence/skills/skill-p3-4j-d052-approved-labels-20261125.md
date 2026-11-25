@@ -7,3 +7,7 @@
 [ラベル実装](../../../poc/src/p3_approved_scope_labels.cjs)・[反例](../../../poc/tests/p3_approved_scope_labels.test.cjs)・[CI](../../../.github/workflows/p3-d052-initial-labels.yml)。
 
 判定の利用時は、コースIDと距離区分の整合、および元静的必要マスクで4脚質が当該馬場状態を共に許容することも確認する。カード側の参照にもマスクを保持する。文脈が矛盾する場合は未判定。
+
+## 固定CI結果
+
+[固定CI #45546116675](https://github.com/Nimrodx0/Umasupport/actions/runs/45546116675)成功。固定CI #45546116675成功：257汎用・43限定向け・581未判定、566カード5,434組（汎用1,622、向け254、未判定3,558）、向け候補保有175カード。 公開・得点なし。
