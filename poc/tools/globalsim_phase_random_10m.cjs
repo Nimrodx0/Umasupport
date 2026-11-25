@@ -131,7 +131,8 @@ function collect(){
   if(!groups.has(key)){
    const g={courseId:plan.course.id,fieldSize:plan.fieldSize,
     mode:plan.mode,phase,bandId:band.id,style,
-    n:0,pointSum:0,windowSum:0,minDelta:Infinity,maxDelta:-Infinity};
+    n:0,pointSum:0,windowSum:0,minDelta:Infinity,maxDelta:-Infinity,
+    split:[{n:0,pointSum:0,windowSum:0},{n:0,pointSum:0,windowSum:0}]};
    groups.set(key,g);
   }
   const g=groups.get(key);
@@ -140,6 +141,10 @@ function collect(){
   g.windowSum+=measure.tenMetreWindowOpportunity;
   g.minDelta=Math.min(g.minDelta,measure.difference);
   g.maxDelta=Math.max(g.maxDelta,measure.difference);
+  if(Number.isSafeInteger(plan.rep)){
+   if(plan.rep<0||plan.rep>=30)throw Error('Invalid fixed replicate');
+   const h=g.split[plan.rep<15?0:1];h.n++;h.pointSum+=measure.pointOccupancy;h.windowSum+=measure.tenMetreWindowOpportunity;
+  }
  }
  return {groups,contexts,append};
 }
@@ -224,6 +229,15 @@ function report(agg,{seedsPerCell=30}={}){
    'No high/low threshold or card evaluation is inferred from the reported differences.'
   ]};
 }
+function splitReport(agg,{seedsPerCell=30}={}){
+ if(seedsPerCell!==30)throw Error('Expected fixed 15+15');
+ const rows=[...agg.groups.values()].flatMap(g=>g.split.map((h,i)=>{
+  if(!h.n||h.n<15||h.n>90)throw Error('Missing full-phase half cohort');
+  return {courseId:g.courseId,fieldSize:g.fieldSize,mode:g.mode,phase:g.phase,bandId:g.bandId,style:g.style,half:i===0?'first15':'last15',runners:h.n,pointPercent:round(100*h.pointSum/h.n),random10mOpportunityPercent:round(100*h.windowSum/h.n)};
+ })).sort((a,b)=>a.phase-b.phase||a.bandId.localeCompare(b.bandId)||a.style.localeCompare(b.style)||a.courseId-b.courseId||a.fieldSize-b.fieldSize||a.mode.localeCompare(b.mode)||a.half.localeCompare(b.half));
+ if(rows.length!==8448)throw Error('Incomplete full-phase split');
+ return {schemaVersion:1,status:'p2-fixed-15-plus-15-full-phase-bands-not-game-activation',sourceRevision:PIN,scenario:'balanced',baseRaces:720,seedsPerHalf:15,contextRows:rows,perContextRows:rows.length};
+}
 async function run(template,enginePath,{seedsPerCell=30}={}){
  if(!Number.isSafeInteger(seedsPerCell)||seedsPerCell<2||
   seedsPerCell>30||seedsPerCell%2!==0)
@@ -282,4 +296,4 @@ async function main(args){
 if(require.main===module)main(process.argv.slice(2)).catch(e=>{
  console.error(e.stack||e);process.exitCode=1});
 module.exports={PIN,WINDOW_METRES,TAIL_CLAMP_METRES,rankSegments,
- measureWindows,collect,inspectRace,report,run,main};
+ measureWindows,collect,inspectRace,report,splitReport,run,main};
