@@ -8,6 +8,7 @@ const ROOT=path.resolve(__dirname,'../..');
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/';
 async function get(url){const r=await fetch(url);assert(r.ok,url);return Buffer.from(await r.arrayBuffer());}
 async function main(){
+ const auto=process.argv.includes('--auto');
  const file=process.argv[2];assert(file,'same-run compact label bundle required');
  const bundle=JSON.parse(await fs.readFile(file,'utf8'));const n=bundle.rows.length,general=bundle.rows.filter(r=>r.label.state==='general').length,targeted=n-general;
  assert.deepEqual([n,general,targeted],({'D-052':[300,257,43],'D-056':[324,281,43],'D-059':[404,304,100]})[bundle.decisionId]);
@@ -28,11 +29,35 @@ async function main(){
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/data/support_card.txt',r=>r.fulfill({status:200,body:supports}));
    await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,body:r.request().url()===bridge.PINNED_URL?historical:skills}));
+   if(!auto)await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.abort());
    await page.goto(url);await page.locator('#app main.app').waitFor({timeout:40000});
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
    await page.locator('header [data-action="catalog-toggle"]').click();
    const count=page.locator('.catalog-count'),filter=page.locator('#catalog-suitability');
+   if(auto){
+    assert.equal(bundle.decisionId,'D-059');
+    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent==='検証済み 404件 / 変更・未照合 0件',{timeout:40000});
+    const expected=await page.evaluate(async()=>{
+     const r=await UmaSkillCatalog.loadPublicLabels(UmaDemoData);
+     return [...r.labels].map(([id,row])=>[id,row.label.state,row.label.styles]).sort();
+    });
+    assert.deepEqual(expected,bundle.rows.map(r=>[r.appSkillId,r.label.state,r.label.styles]).sort());
+    for(const [state,n] of [['general',304],['targeted',100],['undetermined',477]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
+    await page.locator('[data-action="pick"]').first().click();
+    await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+    const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/一致候補：金 \d+ · 白 \d+ · その他 \d+/);
+    await page.locator('.modal-head [data-action="close"]').click();
+    assert.equal(await snapshot(),saved);assert.equal(await page.locator('#table-region').innerText(),comparison);
+    await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});await page.locator('header [data-action="catalog-toggle"]').click();
+    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent==='検証済み 404件 / 変更・未照合 0件',{timeout:40000});
+    await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.fulfill({status:200,body:'tampered'}));
+    await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});await page.locator('header [data-action="catalog-toggle"]').click();
+    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});
+    await filter.selectOption('undetermined');assert.equal(await count.innerText(),'881 / 881 件');
+    assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);await page.close();continue;
+   }
+   await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
    await filter.selectOption('undetermined');assert.match(await count.innerText(),/^881 \/ 881 件$/);
    await page.locator('.catalog-data summary').click();
@@ -109,7 +134,7 @@ async function main(){
    await page.locator('header [data-action="catalog-toggle"]').click();
    // Reload collapses the disclosure; open it before asserting visible status.
    await page.locator('.catalog-data summary').click();
-   assert.equal(await page.locator('#catalog-label-status').innerText(),'適性データ未読込');
+   await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
    assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);
    // Exercise detail separately after the no-mutation assertions.
@@ -133,7 +158,7 @@ async function main(){
    assert.deepEqual(errors,[]);
    await page.close();
   }
-  console.log('PASS: fixed catalogue 881 skills, '+n+' local labels '+bundle.decisionId+', Aoharu and natural-spurt checks, scope, visibility, invalid import, deck/settings isolation and reload at 1280/390px');
+  console.log((auto?'PASS: automatic D059 load, reload, tier counts and corrupt public data fallback; ':'PASS: manual compatibility; ')+'fixed catalogue 881 skills, '+n+' local labels '+bundle.decisionId+', Aoharu and natural-spurt checks, scope, visibility, invalid import, deck/settings isolation and reload at 1280/390px');
  }finally{await browser?.close();await new Promise(ok=>server.close(ok));}
 }
 main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
