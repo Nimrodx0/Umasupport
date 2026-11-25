@@ -17,6 +17,8 @@ on:
       - 'poc/data/p2_condition_review_proposal.v1.json'
       - 'poc/data/p2_approved_research_scope_d051.v1.json'
       - 'poc/data/p2_remaining_condition_decisions_proposal.v1.json'
+      - 'poc/src/p3_context_source_logic_comparison.cjs'
+      - 'poc/tests/p3_context_source_logic_comparison.test.cjs'
       - 'poc/src/p2_d051_interim_receipt.cjs'
       - 'poc/tests/p2_d051_interim_receipt.test.cjs'
       - 'poc/src/p2_limited_study_screen.cjs'
@@ -751,6 +753,15 @@ jobs:
             /tmp/p2-subphase/p2-54-limited-study-screen.json \
             /tmp/p2-subphase/p2-58-d051-supplement.json \
             /tmp/p2-subphase/p3-g6-d051-interim-receipt.json
+      - name: P3.4e compare surviving original source paths in each fixed context
+        run: |
+          node --test poc/tests/p3_context_source_logic_comparison.test.cjs
+          node poc/src/p3_context_source_logic_comparison.cjs \
+            /tmp/p2-fixed-skill-source.txt \
+            /tmp/p2-subphase/p2-58-d051-supplement.json \
+            /tmp/p2-subphase/p3-g6-d051-interim-receipt.json \
+            poc/data/p2_approved_research_scope_d051.v1.json \
+            /tmp/p2-subphase/p3-4e-context-source-logic.json
       - name: P3.4c audit all 881 real-source skills as unapproved relative-label research; synthetic-only margin tests
         run: |
           node poc/tools/build_p3_4c_relative_bias_probe.cjs \
@@ -849,6 +860,7 @@ jobs:
             /tmp/p2-subphase/p2-54-limited-study-screen.json
             /tmp/p2-subphase/p2-58-d051-supplement.json
             /tmp/p2-subphase/p3-g6-d051-interim-receipt.json
+            /tmp/p2-subphase/p3-4e-context-source-logic.json
           retention-days: 14
           if-no-files-found: error
       - name: Keep P2.43 source-exact 3 AND mechanism review, not skill rating

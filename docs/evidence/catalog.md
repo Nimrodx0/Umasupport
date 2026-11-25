@@ -12,6 +12,8 @@
 
 ## P3：研究結果の取り込み・不確実性の解釈
 
+- [2026-11-25：P3.4e 324元論理候補の文脈別残存経路比較](skills/skill-p3-4e-context-source-logic-20261125.md)：同じ静的文脈で元Invoke/ORと残存条件の一致を確認する研究用候補分類。固定CI待ち。
+
 - [2026-11-24：P3.4d 固定元スキル4件の元AND・Kotlin条件チェッカーとの独立照合](skills/skill-p3-4d-selected-original-source-skill-label-review-20261124.md)：元条件の脚質中立性候補、明示脚質限定、特殊状態近似、距離とスパートの元AND保留を実スキル別に区別。正式ラベルは付けない。
 - [2026-11-20：P3.4c 相対差による「～向け／汎用／未判定」3状態の人工判定プローブ](skills/skill-p3-4c-relative-bias-three-state-decision-probe-20261120.md)：汎用に絶対的成立機会の下限を置かない。欠測と差を否定する証拠を区別。元881スキルは製品ラベル未認定のまま。
 
