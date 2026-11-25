@@ -7,6 +7,10 @@ on:
       - 'poc/data/p3_approved_suitability_policy_d052.v1.json'
       - 'poc/src/p2_d052_approved_receipt.cjs'
       - 'poc/src/p3_approved_scope_labels.cjs'
+      - 'poc/src/skill_suitability.js'
+      - 'poc/src/card_suitability_view.js'
+      - 'poc/tests/card_suitability_view.test.cjs'
+      - 'poc/tools/audit_p3_card_suitability_view.cjs'
       - 'poc/tests/p3_approved_scope_labels.test.cjs'
       - '.github/workflows/p2-subphase10-77-skill-review.yml'
       - '.github/workflows/p2-joint-dynamic-model.yml'
@@ -43,9 +47,18 @@ jobs:
             /tmp/p3-dynamic/p3-4i-scope-screen.json \
             poc/data/p3_approved_suitability_policy_d052.v1.json \
             /tmp/p3-d052-approved-labels.json
+      - name: Verify card aggregation and browser view adapter on fixed inputs
+        run: |
+          node --test poc/tests/card_suitability_view.test.cjs
+          node poc/tools/audit_p3_card_suitability_view.cjs \
+            /tmp/p3-d052-approved-labels.json \
+            /tmp/p3-static/p3-3b-all-card-research-routes.json \
+            /tmp/p3-card-suitability-view-summary.json
       - uses: actions/upload-artifact@v4
         with:
           name: p3-d052-approved-scoped-labels-not-public
-          path: /tmp/p3-d052-approved-labels.json
+          path: |
+            /tmp/p3-d052-approved-labels.json
+            /tmp/p3-card-suitability-view-summary.json
           retention-days: 14
           if-no-files-found: error
