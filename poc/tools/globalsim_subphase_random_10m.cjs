@@ -240,19 +240,21 @@ async function execute(template,engine,{seedsPerCell=30,narrowMeasurement=false}
  return {full:old.report(full,{seedsPerCell}),
   short:report(sub,seedsPerCell),
   split:seedsPerCell===30?splitReport(sub,seedsPerCell):null,
+  fullSplit:seedsPerCell===30?old.splitReport(full,{seedsPerCell}):null,
   narrow:extra?extra.report():null};
 }
-async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput,narrowOutput]){
+async function main([templatePath,engine,fullOutput,shortOutput,seeds,splitOutput,narrowOutput,fullSplitOutput]){
  if(!templatePath||!engine||!fullOutput||!shortOutput)
   throw Error('Usage: globalsim_subphase_random_10m.cjs original.jsonl engine full-phase.json short-windows.json [seeds]');
  const text=fs.readFileSync(templatePath,'utf8').trim().split(/\r?\n/);
  if(text.length!==1)throw Error('Requires exactly one frozen GlobalSim template');
- const {full,short,split,narrow:extra}=await execute(JSON.parse(text[0]),engine,
+ const {full,short,split,fullSplit,narrow:extra}=await execute(JSON.parse(text[0]),engine,
   {seedsPerCell:Number(seeds||30),narrowMeasurement:Boolean(narrowOutput)});
  fs.writeFileSync(fullOutput,JSON.stringify(full,null,2)+'\n');
  fs.writeFileSync(shortOutput,JSON.stringify(short,null,2)+'\n');
  if(splitOutput){if(!split)throw Error('Fixed 30 source seeds required for split');
   fs.writeFileSync(splitOutput,JSON.stringify(split,null,2)+'\n')}
+ if(fullSplitOutput){if(!fullSplit)throw Error('Expected full fixed split');fs.writeFileSync(fullSplitOutput,JSON.stringify(fullSplit,null,2)+'\n');}
  if(narrowOutput){
   if(!extra)throw Error('P2.36 narrow observer missing');
   fs.writeFileSync(narrowOutput,JSON.stringify(extra,null,2)+'\n');
