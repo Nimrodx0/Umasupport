@@ -34,6 +34,7 @@ GitHub Pages: index.html → poc/live.html
   ├─ poc/src/event_sequence.js：承認済みイベントの親子依存・打ち切りから連続表示を判定
   ├─ poc/src/public_event_catalog.js：レビュー済みイベントJSONの検証と安全な結合
   ├─ poc/src/core.js：デッキ／イベント状態から集計する純粋ロジック
+  ├─ poc/src/skill_catalog.js：全収録スキルの明示条件必要マスク・独立フィルタ・D-052ローカル照合
   ├─ poc/src/live_app.js：操作UI・表示
   └─ poc/src/settings.js：現行設定の入力検証・保存
 

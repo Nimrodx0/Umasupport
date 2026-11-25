@@ -91,6 +91,25 @@ async function main(){
   assert.equal(await page.locator('#bootstrap-status').isHidden(),true);
   assert.equal(await page.locator('.notice').count(),0,
    'Data provenance must not be a permanent dashboard banner');
+  // All-skill catalogue is separate from deck comparison; unprovided skills are searchable.
+  await page.locator('button[data-action="catalog-toggle"]').click();
+  assert.match(await page.locator('.catalog-count').innerText(),/\d+ \/ \d+ 件/);
+  const count=await page.locator('.catalog-count').innerText();
+  await page.locator('#catalog-show-labels').uncheck();
+  assert.equal(await page.locator('.catalog-count').innerText(),count);
+  assert.equal(await page.locator('.catalog-table th').count(),2);
+  await page.locator('#catalog-show-labels').check();
+  await page.locator('#catalog-query').fill('無関係な架空スキル119');
+  assert.equal(await page.locator('[data-catalog-skill]').count(),1);
+  await page.locator('[data-catalog-skill] button').click();
+  assert.match(await page.locator('.modal-head h2').innerText(),/無関係な架空スキル119/);
+  await page.locator('.modal-head [data-action="close"]').click();
+  await page.locator('#catalog-query').fill('右回り○');
+  await page.locator('[data-catalog-axis="running_style"]').selectOption('2');
+  assert.equal(await page.locator('[data-catalog-skill]').count(),0);
+  await page.locator('#catalog-scope').selectOption('outside');
+  assert.equal(await page.locator('[data-catalog-skill]').count(),1);
+  await page.locator('#all-skill-catalog [data-action="catalog-toggle"]').click();
   const initialScreen=await page.locator('main.app').innerText();
   for(const internal of ['本育成と継承育成のスキル獲得候補を比較します。',
    'イベント経路は承認済みデータのみ反映します。','LIVE SOURCE PROTOTYPE',
