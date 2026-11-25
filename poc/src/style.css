@@ -152,3 +152,5 @@ summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 .catalog-table th,.catalog-table td{padding:9px 7px}
 .catalog-table td:first-child{min-width:0}
 @media(max-width:600px){.fit-filter-fields label{flex:1 1 42%}.fit-filter-fields .field{width:100%;min-width:0}.fit-filter-group{padding:9px}.catalog-table th:first-child{width:34%}.catalog-table td,.catalog-table th{padding:7px 4px;font-size:11px}.catalog-table .fit-scope-description,.catalog-evidence-note{font-size:10px}.card-fit-table{font-size:12px}.card-fit-table .fit-depth-2 td:first-child{padding-left:18px}.fit-card-scope strong,.fit-card-match strong{white-space:nowrap}}
+
+.fit-name-tree{margin-top:10px;font-size:12px;line-height:1.65}.fit-name-children{border-left:2px solid var(--line);padding-left:12px;margin:5px 0 8px 4px}.fit-name-group{margin:6px 0}.fit-name-group ul{padding-left:18px;margin:3px 0 7px}.fit-name-group li{padding:1px 0}

@@ -99,7 +99,7 @@ async function main(){
    assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),general+' / 881 件');
    await page.locator('#catalog-show-labels').check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
-   await filter.selectOption('all');await page.locator('[data-catalog-axis="running_style"]').selectOption('2');await page.locator('#catalog-scope').selectOption('outside');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('possible');await filter.selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await page.locator('[data-catalog-axis="running_style"]').selectOption('');
+   await filter.selectOption('all');await page.locator('[data-catalog-axis="running_style"]').selectOption('2');await page.locator('#catalog-scope').selectOption('outside');assert(await filter.isDisabled());assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('possible');assert(await filter.isEnabled());await filter.selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await page.locator('[data-catalog-axis="running_style"]').selectOption('');
    await filter.selectOption('targeted');assert.equal(await count.innerText(),targeted+' / 881 件');
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
    assert.match(await count.innerText(),/^0 \/ 881 件$/);
@@ -162,7 +162,7 @@ async function main(){
     }
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);
-   const prior=await snapshot();await detail.locator('summary').click();assert.equal(await snapshot(),prior);
+   const prior=await snapshot();await detail.locator('summary').click();assert(await detail.locator('.fit-name-tree').isVisible());assert.equal(await snapshot(),prior);
    assert.deepEqual(errors,[]);
    await page.close();
   }
