@@ -52,7 +52,7 @@ async function collect(page,state,total){
  a.equal(ids.length,Number(match[1]));a.equal(new Set(ids).size,ids.length);return ids.sort();
 }
 async function deployedAssets(){
- const assets=['poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/card_suitability_view.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css',DATA];
+ const assets=['index.html','poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/card_suitability_view.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css',DATA];
  const hashes=await Promise.all(assets.map(async f=>sha(await fs.readFile(path.join(ROOT,f)))));
  // GitHub Pages is built separately from main. Wait for the exact snapshot,
  // not simply HTTP 200. Bounded attempts, no fabricated deployment success.
@@ -71,12 +71,28 @@ async function main(){
  const response=await fetch(FIXED);a(response.ok);const raw=Buffer.from(await response.arrayBuffer());a.equal(sha(raw),'4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
  const records=new Map(JSON.parse(raw.toString('utf8').replace(/^\uFEFF/,'')).map(r=>[r.id,r]));
  await deployedAssets();
+ const html=await fs.readFile(path.join(ROOT,'poc/live.html'),'utf8'),root=await fs.readFile(path.join(ROOT,'index.html'),'utf8');
+ const version=/data-release="([^"]+)"/.exec(html)?.[1];a(version&&/^[a-zA-Z0-9-]+$/.test(version));
+ a(root.includes('url=./poc/live.html?v='+version));
+ const runtimeAssets=[...html.matchAll(/(?:src|href)="\.\/(src\/[^"?]+)\?v=([^"]+)"/g)].map(m=>{a.equal(m[2],version);return 'poc/'+m[1];});
+ const dynamic=/script\.src='\.\/(src\/[^'?]+)\?v=([^']+)'/.exec(html);a(dynamic);a.equal(dynamic[2],version);runtimeAssets.push('poc/'+dynamic[1]);
+ a.equal(new Set(runtimeAssets).size,runtimeAssets.length);
+ a(runtimeAssets.includes('poc/src/live_app.js')&&runtimeAssets.includes('poc/src/style.css'));
+ const expectedAssets=new Map(await Promise.all(runtimeAssets.map(async f=>[BASE+f+'?v='+version,sha(await fs.readFile(path.join(ROOT,f)))])));
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   for(const width of [1280,390]){
    const page=await browser.newPage({viewport:{width,height:850}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
    const getLive=page.waitForResponse(r=>r.url()===LIVE&&r.ok(),{timeout:60000}),getSupport=page.waitForResponse(r=>r.url()===SUPPORT&&r.ok(),{timeout:60000}),getPublic=page.waitForResponse(r=>r.url().split('?')[0]===BASE+DATA&&r.ok(),{timeout:60000});
-   await page.goto(BASE+'poc/live.html?verify='+EXPECTED,{waitUntil:'load',timeout:60000});await page.locator('#app main.app').waitFor({timeout:60000});
+   // Enter through exactly the ordinary public link, no verify query.
+   const actualAssets=new Map();
+   page.on('response',r=>{if(expectedAssets.has(r.url()))actualAssets.set(r.url(),r.body().then(b=>sha(b)));});
+   await page.goto(BASE,{waitUntil:'load',timeout:60000});await page.waitForURL(BASE+'poc/live.html?v='+version,{timeout:60000});
+   await page.locator('#app main.app').waitFor({timeout:60000});
+   a.equal(await page.locator('#app-release').getAttribute('data-release'),version);
+   a.equal(actualAssets.size,expectedAssets.size,'ordinary entry loaded every versioned asset');
+   for(const [url,hash] of expectedAssets)a.equal(await actualAssets.get(url),hash,'actual runtime response '+url);
+   console.log('PAGES_NORMAL_ENTRY='+JSON.stringify({version,viewport:width,url:page.url(),assets:actualAssets.size}));
    const [live,support,pub]=await Promise.all([getLive.then(r=>r.body()),getSupport.then(r=>r.body()),getPublic.then(r=>r.body())]);a.equal(sha(pub),sha(text));
    const model=await page.evaluate(()=>({skills:UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})),cards:UmaDemoData.cards.length,sources:UmaDemoData.meta.runtimeSources}));a.equal(model.sources.skills.mode,'online');a.equal(model.sources.cards.mode,'online');a.equal(model.sources.events.mode,'reviewed');
    const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(labels,records,model.skills);a(accepted>0);a.equal(accepted+reasons.missingOrAmbiguous+reasons.changedStructure,404);
