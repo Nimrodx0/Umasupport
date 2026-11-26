@@ -272,6 +272,7 @@ async function main(){
   const speedColors={background:'rgb(41, 172, 235)',foreground:'rgb(17, 36, 54)'};
   assert.deepEqual(await palette(page.locator('.picker-card .card-icon').first()),speedColors,
    'Picker support card must use blue Speed hue and legible dark text');
+  await page.locator('#picker-sort').selectOption('source');
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
   assert.deepEqual(await palette(page.locator('.slot .card-icon').first()),speedColors,
    'Selected deck card must use the same palette as the picker');
