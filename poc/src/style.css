@@ -154,3 +154,20 @@ summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 @media(max-width:600px){.fit-filter-fields label{flex:1 1 42%}.fit-filter-fields .field{width:100%;min-width:0}.fit-filter-group{padding:9px}.catalog-table th:first-child{width:34%}.catalog-table td,.catalog-table th{padding:7px 4px;font-size:11px}.catalog-table .fit-scope-description,.catalog-evidence-note{font-size:10px}.card-fit-table{font-size:12px}.card-fit-table .fit-depth-2 td:first-child{padding-left:18px}.fit-card-scope strong,.fit-card-match strong{white-space:nowrap}}
 
 .fit-name-tree{margin-top:10px;font-size:12px;line-height:1.65}.fit-name-children{border-left:2px solid var(--line);padding-left:12px;margin:5px 0 8px 4px}.fit-name-group{margin:6px 0}.fit-name-group ul{padding-left:18px;margin:3px 0 7px}.fit-name-group li{padding:1px 0}
+
+/* D062: card library and readable per-skill rows. */
+.fit-positive,.card-skill-current{color:var(--teal);font-weight:650}
+.card-fit-table .fit-depth-3 td:first-child{padding-left:36px;color:var(--muted)}
+.card-skill-section{margin:12px 0}
+.card-skill-section h3{font-size:15px}
+.card-skill-section h3 span{font-weight:400;font-size:12px;margin-left:5px}
+.card-skill-group h4{margin:12px 0 0;font-size:13px;padding:7px 8px;background:var(--panel2);border-radius:7px}
+.card-skill-group h4 span{font-size:11px;color:var(--muted);font-weight:400}
+.card-skill-group ul{padding:0;margin:0;list-style:none}
+.card-skill-row{padding:10px 6px;border-bottom:1px solid var(--line);display:grid;gap:4px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+.card-skill-row:last-child{border-bottom:0}
+.card-skill-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.card-skill-route{display:flex;flex-wrap:wrap;gap:4px 10px;color:var(--muted);font-size:11px;grid-column:1;grid-row:2}
+.card-skill-condition{grid-column:2;grid-row:1/span 2;font-size:12px;display:grid;gap:3px;overflow-wrap:anywhere}
+.card-skill-top .catalog-skill-link{overflow-wrap:anywhere}
+@media(max-width:600px){.card-fit-table .fit-depth-3 td:first-child{padding-left:24px}.card-skill-row{grid-template-columns:minmax(0,1fr);gap:4px}.card-skill-route,.card-skill-condition{grid-column:1;grid-row:auto}.card-skill-condition{padding-left:8px;border-left:2px solid var(--line)}}

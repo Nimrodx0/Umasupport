@@ -4,6 +4,15 @@ const a=require('node:assert/strict'),fs=require('node:fs/promises'),path=requir
 const {chromium}=require('playwright');
 const ROOT=process.argv[2],EXPECTED=process.argv[3];
 const BASE='https://nimrodx0.github.io/Umasupport/';
+const cat=require('../src/skill_catalog.js');
+function productGroup(skill,states){
+ const m=cat.masks(skill.activationProfile);if(!m)return 'scopeUnknown';
+ const styles=[0,1,2,3].filter(i=>m.slice(i*8,i*8+8).some(Boolean));
+ if(!styles.length)return 'outside';
+ if(styles.length===1)return 'explicitOnly';
+ return states.get(skill.id)||'undetermined';
+}
+
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
 async function main(){
  a(ROOT&&/^[a-f0-9]{40}$/.test(EXPECTED||''),'expected checkout and commit required');
@@ -33,7 +42,7 @@ async function main(){
    await page.locator('.catalog-data summary').click();
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    await page.locator('#catalog-suitability').selectOption('undetermined');
-   a.equal(await count.innerText(),data.skills+' / '+data.skills+' 件');
+   const model=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await count.innerText(),model.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+data.skills+' 件');
    await page.locator('#catalog-show-labels').uncheck();a.equal(await page.locator('.catalog-table th').count(),2);
    await page.locator('#catalog-show-labels').check();a.equal(await page.locator('.catalog-table th').count(),3);
    const first=page.locator('[data-catalog-skill]').first(),id=await first.getAttribute('data-catalog-skill');a(id);

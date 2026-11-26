@@ -62,5 +62,10 @@ test('hierarchical browse classification separates scope, explicit restriction, 
  a.equal(cat.filter([r(single)],{context:ctx,suitability:'supported'}).length,1);
  a.equal(cat.filter([r(null)],{context:ctx,suitability:'undetermined'}).length,0);
  a.equal(cat.filter([r(full,targeted)],{context:ctx,suitability:'otherTargeted'}).length,1);
- a.equal(cat.filter([r(null)],{suitability:'undetermined'}).length,1);
+ a.equal(cat.filter([r(null)],{suitability:'undetermined'}).length,0);
+ a.equal(cat.assessment(r(single),{}).category,'explicitOnly');
+ a.equal(cat.filter([r(single)],{suitability:'apt-positive'}).length,1);
+ a.equal(cat.filter([r(single)],{suitability:'undetermined'}).length,0);
+ a.equal(cat.filter([r(single),r(full,targeted)],{suitability:'apt-positive'}).length,2);
+ a.equal(cat.filter([r(single)],{context:{running_style:1},scope:'all',suitability:'apt-positive'}).length,0);
 });

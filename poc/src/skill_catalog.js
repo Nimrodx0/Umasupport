@@ -55,7 +55,7 @@ function assessment(row,ctx={}){
  const permittedStyles=[1,2,3,4].filter(s=>fit.applicability(row,{...ctx,running_style:s})==='possible');
  const style=ctx.running_style;
  const category=applicability==='outside'?'outside':applicability==='unknown'?'scopeUnknown':
-  style!=null&&permittedStyles.length===1?'explicitOnly':
+  permittedStyles.length===1?'explicitOnly':
   e.state==='general'?'general':e.state==='targeted'?(style==null||e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
  return {applicability,evidence:e,permittedStyles,category};
 }
@@ -72,18 +72,12 @@ function filter(rows,o={}){
   if(tier!=='all'&&tier!==(['gold','white','negative'].includes(r.skill.tier)?r.skill.tier:'unknown'))return false;
   const app=fit.applicability(r,ctx);
   if(scope==='possible'&&Object.keys(AXES).some(k=>ctx[k]!=null)&&app==='outside'||scope==='confirmed'&&app!=='possible'||scope==='unknown'&&app!=='unknown'||scope==='outside'&&app!=='outside')return false;
-  const e=evidence(r,ctx);
-  // With a selected context, aptitude is subordinate to known eligibility.
-  // Without any context retain the historical catalogue-wide label inventory.
-  const hasContext=Object.keys(AXES).some(k=>ctx[k]!=null);
-  if(suit!=='all'&&hasContext){
+  if(suit!=='all'){
    const x=assessment(r,ctx).category;
-   if(x==='outside'||x==='scopeUnknown')return false;
    if(suit==='supported')return ['explicitOnly','general','targeted'].includes(x);
+   if(suit==='apt-positive')return ['explicitOnly','targeted'].includes(x);
    return x===suit;
   }
-  if(suit==='explicitOnly'||suit==='otherTargeted')return false;
-  if(suit==='general'&&e.state!=='general'||suit==='targeted'&&(e.state!=='targeted'||ctx.running_style!=null&&!e.styles.includes(ctx.running_style))||suit==='undetermined'&&e.state!=='undetermined'||suit==='supported'&&!(e.state==='general'||e.state==='targeted'&&(ctx.running_style==null||e.styles.includes(ctx.running_style))))return false;
   return true;
  }).sort((a,b)=>a.skill.name.localeCompare(b.skill.name,'ja')||a.skill.id.localeCompare(b.skill.id));
 }
