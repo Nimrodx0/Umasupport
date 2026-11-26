@@ -45,7 +45,7 @@ test('picker counts each direct ID once, distinguish explicit-only and other-tar
  data.skillById.h.activationProfile.invokes=[{conditions:[[p('running_style',2)]],preConditions:[]}];
  const context={running_style:2,distance_type:2,ground_type:1};
  const x=view.browseCard(c,{stage:4,choices:{ev:'a'}},data,labels,context);
- a.deepEqual(x.potential.counts,{total:4,explicitOnly:1,general:1,targeted:1,otherTargeted:0,undetermined:1,outside:0,scopeUnknown:0});
+ a.deepEqual(x.potential.counts,{total:4,explicitOnly:1,general:1,targeted:1,otherTargeted:0,undetermined:1,outside:0,scopeUnknown:0,scopePending:0});
  a.equal(x.potential.matching,3);a.equal(x.current.counts.total,3);a.equal(x.cardScore,null);
  const y=view.browseCard(c,{stage:4,choices:{}},data,labels,{...context,running_style:1});
  a.equal(y.potential.counts.otherTargeted,1);a.equal(y.potential.counts.outside,1);a.equal(y.potential.matching,1);
@@ -73,4 +73,18 @@ test('read-only candidate list uses stage-specific verified hints and reviewed e
  a.equal(rows[1].current.length,1);a.equal(rows[2].current.length,0);
  a.equal(view.candidateList(c,{stage:4},data,labels,{}).length,4);
  a.equal(JSON.stringify({c,data}),original);
+});
+
+test('scope-pending skills do not count as matches, even with positive evidence or an explicit style',()=>{
+ const {c,data,labels}=fixture(),p=(type,value)=>({type,operator:'==',value});
+ for(const s of data.skills)s.activationProfile.invokes=[{conditions:[[p('always',1)]],preConditions:[]}];
+ data.skillById.h.activationProfile.invokes=[{conditions:[[p('running_style',2),p('distance_type',2)]],preConditions:[]}];
+ data.skillById.e.activationProfile.invokes=[{conditions:[[p('ground_type',1)]],preConditions:[]}];
+ data.skillById.other.activationProfile.invokes=[{conditions:[[p('ground_condition',1)]],preConditions:[]}];
+ data.skillById.h.tier='gold';data.skillById.e.tier='white';data.skillById.other.tier='white';
+ const x=view.browseCard(c,{stage:0},data,labels,{running_style:2}).potential;
+ a.equal(x.counts.scopePending,3);a.equal(x.matching,0);a.deepEqual(x.matchingByTier,{gold:0,white:0,other:0});
+ const y=view.browseCard(c,{stage:0},data,labels,{running_style:2,distance_type:2,ground_type:1,ground_condition:1}).potential;
+ a.equal(y.counts.scopePending,0);a.equal(y.matching,3);a.deepEqual(y.matchingByTier,{gold:1,white:2,other:0});
+ const rows=view.candidateList(c,{stage:0},data,labels,{running_style:2});a(rows.every(r=>r.scopePending&&!r.matching));
 });

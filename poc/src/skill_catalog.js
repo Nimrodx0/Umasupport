@@ -49,6 +49,20 @@ function evidence(row,ctx={}){
  const distances=[...new Set(contexts(label).map(c=>AXES.distance_type[c.distance_type-1]))].join('・');
  return {state:'targeted',styles:label.styles,text:fit.labelText(label)+'（限定）',note:distances+' / 芝・良 / 固定モデル条件内'};
 }
+// A positive match needs every completion of the unspecified non-style
+// axes to satisfy the explicit mask for the selected style. This handles
+// correlated OR branches without treating a merely possible cell as a match.
+// Evidence scope and explicit eligibility remain distinct.
+function incompleteScope(row,ctx={}){
+ if(ctx.running_style==null||fit.applicability(row,ctx)!=='possible')return false;
+ const m=row.explicitNecessaryMasks;
+ for(let i=0;i<PANEL.length;i++){
+  const p=PANEL[i];if(['running_style','distance_type','ground_type'].some(k=>ctx[k]!=null&&ctx[k]!==p[k]))continue;
+  const required=ctx.ground_condition==null?15:1<<(ctx.ground_condition-1);
+  if((m[i]&required)!==required)return true;
+ }
+ return false;
+}
 // A browse assessment is a hierarchy, not a new suitability score.
 function assessment(row,ctx={}){
  const applicability=fit.applicability(row,ctx),e=evidence(row,ctx);
@@ -57,7 +71,8 @@ function assessment(row,ctx={}){
  const category=applicability==='outside'?'outside':applicability==='unknown'?'scopeUnknown':
   permittedStyles.length===1?'explicitOnly':
   e.state==='general'?'general':e.state==='targeted'?(style==null||e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
- return {applicability,evidence:e,permittedStyles,category};
+ const scopePending=incompleteScope(row,ctx);
+ return {applicability,evidence:e,permittedStyles,category,scopePending,matching:!scopePending&&['explicitOnly','general','targeted'].includes(category)};
 }
 function index(data,labels=new Map()){
  return data.skills.map(skill=>{
@@ -73,8 +88,9 @@ function filter(rows,o={}){
   const app=fit.applicability(r,ctx);
   if(scope==='possible'&&Object.keys(AXES).some(k=>ctx[k]!=null)&&app==='outside'||scope==='confirmed'&&app!=='possible'||scope==='unknown'&&app!=='unknown'||scope==='outside'&&app!=='outside')return false;
   if(suit!=='all'){
-   const x=assessment(r,ctx).category;
-   if(suit==='supported')return ['explicitOnly','general','targeted'].includes(x);
+   const result=assessment(r,ctx),x=result.category;
+   if(suit==='supported')return result.matching;
+   if(suit==='scopePending')return result.scopePending;
    if(suit==='apt-positive')return ['explicitOnly','targeted'].includes(x);
    return x===suit;
   }
@@ -155,7 +171,7 @@ async function loadPublicLabels(data,{fetcher=g.fetch}={}){
  }
  return {labels,skipped,decisionId:'D-059'};
 }
-const api={AXES,masks,scopeSummary,evidence,assessment,index,filter,loadLabels,loadPublicLabels,publicLabels,PUBLIC_URL,PUBLIC_SHA,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
+const api={AXES,masks,scopeSummary,evidence,assessment,incompleteScope,index,filter,loadLabels,loadPublicLabels,publicLabels,PUBLIC_URL,PUBLIC_SHA,BUNDLE_HASH,SOURCE_HASH,POLICY_HASH,APPROVED_BUNDLES};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSkillCatalog=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

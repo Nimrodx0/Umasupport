@@ -72,7 +72,7 @@ async function main(){
     for(const [state,n] of [['general',loaded.general||0],['targeted',loaded.targeted||0],['explicitOnly',loaded.explicitOnly||0],['apt-positive',(loaded.explicitOnly||0)+(loaded.targeted||0)],['undetermined',loaded.undetermined||0]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
     await page.locator('[data-action="pick"]').first().click();
     await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
-    const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/一致候補：金 \d+ · 白 \d+ · その他 \d+/);
+    const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/^金 \d+ · 白 \d+ · その他 \d+$/);
     await page.locator('.modal-head [data-action="close"]').click();
     assert.equal(await snapshot(),saved);assert.equal(await page.locator('#table-region').innerText(),comparison);
     await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});await page.locator('header [data-action="catalog-toggle"]').click();
@@ -150,7 +150,7 @@ async function main(){
    const readShown=()=>page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,counts:Object.fromEntries([...r.querySelectorAll('[data-fit-count]')].map(n=>[n.dataset.fitCount,n.innerText]))})));
    const verifyShown=async only=>{for(const x of await readShown()){
     const v=expected[x.id],c=v.counts;assert(v);
-    assert.match(x.counts.inside,new RegExp((c.total-c.outside-c.scopeUnknown)+' / '+c.total+'件'));assert.match(x.counts.matching,new RegExp(v.matching+'件'));assert.equal(x.counts.otherTargeted,'他脚質向け '+c.otherTargeted+'件');assert.equal(x.counts.undetermined,'適性未判定 '+c.undetermined+'件');assert.equal(x.counts.outside,'範囲外 '+c.outside+'件');assert.equal(x.counts.scopeUnknown,'範囲未確認 '+c.scopeUnknown+'件');
+    assert.match(x.counts.inside,new RegExp((c.total-c.outside-c.scopeUnknown-c.scopePending)+' / '+c.total+'件'));assert.match(x.counts.matching,new RegExp(v.matching+'件'));assert.equal(x.counts.otherTargeted,'他脚質向け '+c.otherTargeted+'件');assert.equal(x.counts.undetermined,'適性未判定 '+c.undetermined+'件');assert.equal(x.counts.scopePending,'条件未指定 '+c.scopePending+'件');assert.equal(x.counts.outside,'範囲外 '+c.outside+'件');assert.equal(x.counts.scopeUnknown,'範囲未確認 '+c.scopeUnknown+'件');
     if(only)assert(v.matching>0);
    }};
    await verifyShown(false);
@@ -178,7 +178,7 @@ async function main(){
    const detail=page.locator('#card-fit-detail');await detail.waitFor();
    const verifyDetail=async stage=>{
     const v=await page.evaluate(({id,stage,rows})=>UmaCardSuitabilityView.browseCard(UmaDemoData.cardById[id],{stage},UmaDemoData,new Map(rows.map(r=>[r.appSkillId,r])),{running_style:2,ground_condition:1}),{id,stage,rows:bundle.rows});
-    for(const [k,cur,pot] of [['total',v.current.counts.total,v.potential.counts.total],['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown],['matching',v.current.matching,v.potential.matching]]){const cells=detail.locator('[data-fit-group="'+k+'"] td');assert.equal(await cells.nth(1).innerText(),String(cur));assert.equal(await cells.nth(2).innerText(),String(pot));}
+    for(const [k,cur,pot] of [['total',v.current.counts.total,v.potential.counts.total],['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown-v.current.counts.scopePending,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown-v.potential.counts.scopePending],['matching',v.current.matching,v.potential.matching]]){const cells=detail.locator('[data-fit-group="'+k+'"] td');assert.equal(await cells.nth(1).innerText(),String(cur));assert.equal(await cells.nth(2).innerText(),String(pot));}
     for(const k of Object.keys(v.current.counts).filter(x=>x!=='total')){
      const cells=detail.locator('[data-fit-category="'+k+'"] td');
      assert.equal(await cells.nth(1).innerText(),String(v.current.counts[k]));assert.equal(await cells.nth(2).innerText(),String(v.potential.counts[k]));

@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ウマサルタント | サポカ編成・スキル比較</title><link rel="stylesheet" href="./src/style.css?v=20261126-d062-r1"></head>
+<title>ウマサルタント | サポカ編成・スキル比較</title><link rel="stylesheet" href="./src/style.css?v=20261126-d063-r1"></head>
 <body><div id="bootstrap-status" role="status" style="max-width:1100px;margin:30px auto;padding:16px;background:#eee;color:#222;border-radius:10px">サポートカードを読み込み中…</div>
 <div id="app"></div>
 <footer role="note" style="max-width:1100px;margin:16px auto 32px;padding:0 16px;color:#666;font-size:12px;line-height:1.6">
   ウマサルタントは非公式・非営利の育成計画支援ツールです。Cygames、GameToraなどの権利者・提供元とは提携していません。イベント情報は出典の固定版に基づく参考値であり、現行ゲームでの発生・報酬を保証しません。
-  <div id="app-release" data-release="20261126-d062-r1">アプリ版：20261126-d062-r1</div>
+  <div id="app-release" data-release="20261126-d063-r1">アプリ版：20261126-d063-r1</div>
 </footer>
-<script src="./src/core.js?v=20261126-d062-r1"></script><script src="./src/deck_events.js?v=20261126-d062-r1"></script><script src="./src/event_sequence.js?v=20261126-d062-r1"></script><script src="./src/skill_table.js?v=20261126-d062-r1"></script><script src="./src/card_search.js?v=20261126-d062-r1"></script><script src="./src/live_loader.js?v=20261126-d062-r1"></script><script src="./src/skill_hierarchy.js?v=20261126-d062-r1"></script><script src="./src/skill_bridge.js?v=20261126-d062-r1"></script><script src="./src/skill_effects.js?v=20261126-d062-r1"></script><script src="./src/skill_condition_tags.js?v=20261126-d062-r1"></script><script src="./src/skill_condition_profiles.js?v=20261126-d062-r1"></script><script src="./src/skill_rank_timing.js?v=20261126-d062-r1"></script><script src="./src/skill_style_tendency.js?v=20261126-d062-r1"></script><script src="./src/skill_suitability.js?v=20261126-d062-r1"></script><script src="./src/skill_catalog.js?v=20261126-d062-r1"></script><script src="./src/card_suitability_view.js?v=20261126-d062-r1"></script><script src="./src/settings.js?v=20261126-d062-r1"></script><script src="./src/source_health.js?v=20261126-d062-r1"></script>
-<script src="./src/event_schema.js?v=20261126-d062-r1"></script><script src="./src/public_event_catalog.js?v=20261126-d062-r1"></script>
-<script src="./src/community_candidate_preview.js?v=20261126-d062-r1"></script><script src="./src/checker_choice_fact_preview.js?v=20261126-d062-r1"></script><script src="./src/checker_result_preview.js?v=20261126-d062-r1"></script><script src="./src/event_preview_loader.js?v=20261126-d062-r1"></script><script src="./src/private_local_event_preview.js?v=20261126-d062-r1"></script>
+<script src="./src/core.js?v=20261126-d063-r1"></script><script src="./src/deck_events.js?v=20261126-d063-r1"></script><script src="./src/event_sequence.js?v=20261126-d063-r1"></script><script src="./src/skill_table.js?v=20261126-d063-r1"></script><script src="./src/card_search.js?v=20261126-d063-r1"></script><script src="./src/live_loader.js?v=20261126-d063-r1"></script><script src="./src/skill_hierarchy.js?v=20261126-d063-r1"></script><script src="./src/skill_bridge.js?v=20261126-d063-r1"></script><script src="./src/skill_effects.js?v=20261126-d063-r1"></script><script src="./src/skill_condition_tags.js?v=20261126-d063-r1"></script><script src="./src/skill_condition_profiles.js?v=20261126-d063-r1"></script><script src="./src/skill_rank_timing.js?v=20261126-d063-r1"></script><script src="./src/skill_style_tendency.js?v=20261126-d063-r1"></script><script src="./src/skill_suitability.js?v=20261126-d063-r1"></script><script src="./src/skill_catalog.js?v=20261126-d063-r1"></script><script src="./src/card_suitability_view.js?v=20261126-d063-r1"></script><script src="./src/settings.js?v=20261126-d063-r1"></script><script src="./src/source_health.js?v=20261126-d063-r1"></script>
+<script src="./src/event_schema.js?v=20261126-d063-r1"></script><script src="./src/public_event_catalog.js?v=20261126-d063-r1"></script>
+<script src="./src/community_candidate_preview.js?v=20261126-d063-r1"></script><script src="./src/checker_choice_fact_preview.js?v=20261126-d063-r1"></script><script src="./src/checker_result_preview.js?v=20261126-d063-r1"></script><script src="./src/event_preview_loader.js?v=20261126-d063-r1"></script><script src="./src/private_local_event_preview.js?v=20261126-d063-r1"></script>
 <script>
 (async function(){
  const status=document.getElementById('bootstrap-status');
@@ -109,7 +109,7 @@
          scope:'unavailable',error:String(tendencyError)
        };
      }
-     const script=document.createElement('script');script.src='./src/live_app.js?v=20261126-d062-r1';
+     const script=document.createElement('script');script.src='./src/live_app.js?v=20261126-d063-r1';
      script.onerror=()=>{status.textContent='画面の起動に失敗しました。';};
      document.body.appendChild(script);
    };
