@@ -58,10 +58,7 @@ function browseSummary(ids,data,labels,context){
  for(const id of uniq(ids)){
   const sk=data.skillById[id];if(!sk)continue;
   const r={explicitNecessaryMasks:catalog.masks(sk.activationProfile),label:trustedRow(id,data,labels)?.label??null};
-  const app=fit.applicability(r,context);
-  const e=catalog.evidence(r,context);
-  const permitted=[1,2,3,4].filter(s=>fit.applicability(r,{...context,running_style:s})==='possible');
-  const category=app==='outside'?'outside':app==='unknown'?'scopeUnknown':permitted.length===1?'explicitOnly':e.state==='general'?'general':e.state==='targeted'?(e.styles.includes(style)?'targeted':'otherTargeted'):'undetermined';
+  const {applicability:app,evidence:e,permittedStyles:permitted,category}=catalog.assessment(r,context);
   counts[category]++;counts.total++;
   if(['explicitOnly','general','targeted'].includes(category))matchingByTier[['gold','white'].includes(sk.tier)?sk.tier:'other']++;
   rows.push({appSkillId:id,category,applicability:app,evidence:e,permittedStyles:permitted});

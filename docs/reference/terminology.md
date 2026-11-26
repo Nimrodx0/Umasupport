@@ -14,5 +14,6 @@
 | スキル発動条件、AND／OR、`Invoke`、`preConditions` | [スキル条件の研究設計](../explanation/skill-activation-tendencies-design.md) | スキル条件の構造・解釈 |
 | サポートカードの獲得候補、通常ヒント、イベント | [現行要件](requirements.md)・[イベントスキーマ](event-schema.md) | 製品の機能・データ構造 |
 | 出典、収録、公開承認 | [データソース契約](data-sources.md)・[公開ゲート](../how-to/checker-public-catalog.md) | データの取得・公開 |
+| 適用範囲内／外／未確認、一致候補、適性未判定 | [D-061の現行要件](requirements.md) | 明示的な適用範囲を第一階層とする。明示脚質限定は比較判定と区別 |
 
 まだ登録されていない用語は、対象分野の現行仕様・研究設計から定義を確認してください。既存の横断的な用語の棚卸しは[D.3](../plans/documentation-maintenance.md#d3用語の定義先と表記管理)で継続しています。
