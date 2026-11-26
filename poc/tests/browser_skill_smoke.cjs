@@ -108,13 +108,15 @@ async function main(){
   assert.match(await combos.innerText(),/逃げ・短距離/);
   assert.match(await combos.innerText(),/差し・中距離/);
   assert.doesNotMatch(await combos.innerText(),/逃げ・中距離|差し・短距離/);
-  await page.locator('.modal-head [data-action="close"]').click();
+  await page.getByRole('button',{name:'スキル一覧へ戻る'}).click();
+  assert.equal(await page.locator('#catalog-query').inputValue(),'無関係な架空スキル119');
+  assert.equal(await page.locator('main.app #all-skill-catalog').count(),0);
   await page.locator('#catalog-query').fill('右回り○');
   await page.locator('[data-catalog-axis="running_style"]').selectOption('2');
   assert.equal(await page.locator('[data-catalog-skill]').count(),0);
   await page.locator('#catalog-scope').selectOption('outside');
   assert.equal(await page.locator('[data-catalog-skill]').count(),1);
-  await page.locator('#all-skill-catalog [data-action="catalog-toggle"]').click();
+  await page.locator('.modal-head [data-action="close"]').click();
   const initialScreen=await page.locator('main.app').innerText();
   for(const internal of ['本育成と継承育成のスキル獲得候補を比較します。',
    'イベント経路は承認済みデータのみ反映します。','LIVE SOURCE PROTOTYPE',
@@ -130,15 +132,21 @@ async function main(){
    await mockSources(pickerPage);
    await boot(pickerPage,base);
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-   assert.equal(await pickerPage.locator('.picker-card .card-character').first().innerText(),'サポカ0');
-   assert.equal(await pickerPage.locator('.picker-card .card-variant').first().innerText(),'架空30001');
-   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'source');
+   assert.equal(await pickerPage.locator('.picker-card .card-character').first().innerText(),'サポカ562');
+   assert.equal(await pickerPage.locator('.picker-card .card-variant').first().innerText(),'架空30563');
+   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'id-desc');
    assert.equal(await pickerPage.locator('#picker-sort option[value="release-desc"]').count(),0,
     'Release dates absent from current runtime source must not offer fake chronological sorting');
    await pickerPage.locator('#picker-sort').selectOption('id-desc');
    assert.equal(await pickerPage.locator('.picker-card').first().getAttribute('data-id'),'30563');
    await pickerPage.locator('#picker-sort').selectOption('id-asc');
    assert.equal(await pickerPage.locator('.picker-card').first().getAttribute('data-id'),'30001');
+   await pickerPage.locator('#picker-sort').selectOption('new-skills-desc');
+   const scores=await pickerPage.locator('.picker-acquisition-count').evaluateAll(es=>es.map(e=>Number(e.dataset.newSkills)));
+   assert(scores.length>0&&scores.every((n,i)=>i===0||scores[i-1]>=n));
+   await pickerPage.locator('#picker-sort').selectOption('total-skills-desc');
+   const totals=await pickerPage.locator('.picker-acquisition-count').evaluateAll(es=>es.map(e=>Number(e.dataset.totalSkills)));
+   assert(totals.every((n,i)=>i===0||totals[i-1]>=n));
    await pickerPage.locator('#picker-sort').selectOption('source');
    await pickerPage.locator('#picker-search').fill('サポカ0');
    await pickerPage.locator('#picker-skill-search').fill('右回り○');
@@ -148,6 +156,10 @@ async function main(){
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
    await pickerPage.locator('button[data-action="set-card"][data-id="30001"]').click();
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   await pickerPage.locator('#picker-sort').selectOption('new-skills-desc');
+   assert.equal(await pickerPage.locator('.picker-acquisition-count').getAttribute('data-new-skills'),'0');
+   await pickerPage.locator('#picker-sort').selectOption('source');
+   await pickerPage.locator('#picker-search').focus();await pickerPage.locator('#picker-search').selectText();
    assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ0');
    const retainedSelection=await pickerPage.locator('#picker-search').evaluate(input=>({
     focused:document.activeElement===input,
@@ -304,7 +316,7 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.skillById['skill:700004'].lowerId),'skill:700002');
   // Phase 3: ownership registry uses all 563 cards, not the first 120 picker entries.
   await page.locator('button[data-action="owned-manage"]').click();
-  assert.equal(await page.locator('#owned-sort').inputValue(),'source');
+  assert.equal(await page.locator('#owned-sort').inputValue(),'id-desc');
   await page.locator('#owned-sort').selectOption('id-desc');
   assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30563');
   await page.locator('#owned-sort').selectOption('source');
@@ -402,11 +414,11 @@ async function main(){
   await page.locator('#picker-route').selectOption('all');
   assert.equal(await page.locator('button[data-action="set-card"]').count(),120);
   await page.locator('button[data-action="picker-next"]').click();
-  assert.equal(await page.locator('button[data-action="set-card"]').first().getAttribute('data-id'),'30121');
+  assert.equal(await page.locator('button[data-action="set-card"]').first().getAttribute('data-id'),'30443');
   await page.locator('button[data-action="picker-next"]').click();
   await page.locator('button[data-action="picker-next"]').click();
   await page.locator('button[data-action="picker-next"]').click();
-  assert.equal(await page.locator('button[data-action="set-card"]').last().getAttribute('data-id'),'30563');
+  assert.equal(await page.locator('button[data-action="set-card"]').last().getAttribute('data-id'),'30001');
   await page.locator('#picker-search').fill('サポカ562');
   assert.equal(await page.locator('button[data-action="set-card"]').count(),1);
   assert.equal(await page.locator('button[data-action="set-card"]').first().getAttribute('data-id'),'30563');
@@ -613,6 +625,7 @@ async function main(){
   await boot(eventPage,base);
   for(const [kind,index,id] of [['main',0,'30001'],['main',1,'30002'],['main',2,'30003'],['inherit',0,'30001']]){
    await eventPage.locator('button[data-action="pick"][data-deck="'+kind+'"][data-index="'+index+'"]').click();
+   await eventPage.locator('#picker-sort').selectOption('source');
    await eventPage.locator('button[data-action="set-card"][data-id="'+id+'"]').click();
   }
   await eventPage.evaluate(()=>{

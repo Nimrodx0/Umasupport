@@ -61,16 +61,16 @@ async function main(){
    if(auto){
     assert.equal(bundle.decisionId,'D-059');
     await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent==='検証済み 404件 / 変更・未照合 0件',{timeout:40000});
-    await page.locator('header [data-action="source-health"]').click();
+    await page.locator('.modal-head [data-action="close"]').click();await page.locator('header [data-action="source-health"]').click();
     assert.equal(await page.locator('#source-status-suitability .source-health-state').innerText(),'検証済み 404件 / 変更・未照合 0件');
-    await page.locator('.modal-head [data-action="close"]').click();
+    await page.locator('.modal-head [data-action="close"]').click();await page.locator('header [data-action="catalog-toggle"]').click();
     const expected=await page.evaluate(async()=>{
      const r=await UmaSkillCatalog.loadPublicLabels(UmaDemoData);
      return [...r.labels].map(([id,row])=>[id,row.label.state,row.label.styles]).sort();
     });
     assert.deepEqual(expected,bundle.rows.map(r=>[r.appSkillId,r.label.state,r.label.styles]).sort());
     for(const [state,n] of [['general',loaded.general||0],['targeted',loaded.targeted||0],['explicitOnly',loaded.explicitOnly||0],['apt-positive',(loaded.explicitOnly||0)+(loaded.targeted||0)],['undetermined',loaded.undetermined||0]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
-    await page.locator('[data-action="pick"]').first().click();
+    await page.locator('.modal-head [data-action="close"]').click();await page.locator('[data-action="pick"]').first().click();
     await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
     const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/^金 \d+ · 白 \d+ · その他 \d+$/);
     await page.locator('.modal-head [data-action="close"]').click();
@@ -80,9 +80,9 @@ async function main(){
     await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.fulfill({status:200,body:'tampered'}));
     await page.reload();await page.locator('#app main.app').waitFor({timeout:40000});await page.locator('header [data-action="catalog-toggle"]').click();
     await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});
-    await page.locator('header [data-action="source-health"]').click();
+    await page.locator('.modal-head [data-action="close"]').click();await page.locator('header [data-action="source-health"]').click();
     assert.match(await page.locator('#source-status-suitability .source-health-state').innerText(),/自動取得失敗/);
-    await page.locator('.modal-head [data-action="close"]').click();
+    await page.locator('.modal-head [data-action="close"]').click();await page.locator('header [data-action="catalog-toggle"]').click();
     await filter.selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
     assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);await page.close();continue;
    }
@@ -133,6 +133,7 @@ async function main(){
    assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
    await page.locator('[data-catalog-skill] button').first().click();
    await page.locator('.modal-head h2').waitFor();
+   await page.getByRole('button',{name:'スキル一覧へ戻る'}).click();assert.equal(await filter.inputValue(),'targeted');
    await page.locator('.modal-head [data-action="close"]').click();
    assert.equal(await page.locator('#table-region').innerText(),comparison);assert.equal(await snapshot(),saved);
    // Browse the same verified labels on actual support-card candidates,
@@ -170,7 +171,7 @@ async function main(){
    // Exercise detail separately after the no-mutation assertions.
    await page.locator('#catalog-label-file').setInputFiles(file);
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent.includes(s),'検証済み '+n+'件');
-   await page.locator('[data-action="pick"]').first().click();
+   await page.locator('.modal-head [data-action="close"]').click();await page.locator('[data-action="pick"]').first().click();
    await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');await first.click();

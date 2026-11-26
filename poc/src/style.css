@@ -171,3 +171,6 @@ summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 .card-skill-condition{grid-column:2;grid-row:1/span 2;font-size:12px;display:grid;gap:3px;overflow-wrap:anywhere}
 .card-skill-top .catalog-skill-link{overflow-wrap:anywhere}
 @media(max-width:600px){.card-fit-table .fit-depth-3 td:first-child{padding-left:24px}.card-skill-row{grid-template-columns:minmax(0,1fr);gap:4px}.card-skill-route,.card-skill-condition{grid-column:1;grid-row:auto}.card-skill-condition{padding-left:8px;border-left:2px solid var(--line)}}
+
+/* Shared modal presentation for the all-skill catalogue. */
+.modal-body .catalog-panel{margin:0;scroll-margin-top:0}.picker-acquisition-count{font-size:12px;font-weight:650;color:var(--teal);font-variant-numeric:tabular-nums}

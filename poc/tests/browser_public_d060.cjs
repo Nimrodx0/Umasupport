@@ -106,11 +106,19 @@ async function main(){
    await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined','explicitOnly'])a.deepEqual(await collect(page,state,total),groups[state].sort());
    a.deepEqual(await collect(page,'apt-positive',total),[...groups.explicitOnly,...groups.targeted].sort());
-   await page.locator('header [data-action="card-library"]').click();const card=page.locator('.picker-card[data-action="card-detail"]').first(),cardId=await card.getAttribute('data-id');await card.click();await page.locator('#card-skill-list').waitFor();
+   a.equal(await page.locator('.modal #all-skill-catalog').count(),1);a.equal(await page.locator('main.app #all-skill-catalog').count(),0);
+   const priorFilter=await page.locator('#catalog-suitability').inputValue();await page.locator('[data-catalog-skill] button').first().click();await page.getByRole('button',{name:'スキル一覧へ戻る'}).click();a.equal(await page.locator('#catalog-suitability').inputValue(),priorFilter);await closeModal();
+   await page.locator('header [data-action="card-library"]').click();a.equal(await page.locator('#picker-sort').inputValue(),'id-desc');
+   const card=page.locator('.picker-card[data-action="card-detail"]').first(),cardId=await card.getAttribute('data-id');
+   a.equal(cardId,await page.evaluate(()=>UmaDemoData.cards.map(c=>c.id).sort((a,b)=>Number(b)-Number(a))[0]));await card.click();await page.locator('#card-skill-list').waitFor();
    await page.locator('#library-stage').selectOption('0');
    const expectedIds=await page.evaluate(id=>{const c=UmaDemoData.cardById[id];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['0']??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},cardId);
    a.deepEqual(await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort()),expectedIds);await page.getByRole('button',{name:'戻る',exact:true}).click();await closeModal();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
-   await page.locator('[data-action="pick"]').first().click();await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await page.locator('[data-action="pick"]').first().click();await page.locator('#picker-sort').selectOption('new-skills-desc');
+   const expectedCounts=await page.evaluate(()=>Object.fromEntries(UmaDemoData.cards.map(c=>{const hints=c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['4']??c.hints??[]):[];const ids=new Set([...hints,...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)].filter(id=>UmaDemoData.skillById[id]&&UmaDemoData.skillById[id].tier!=='negative'));return [c.id,ids.size]})));
+   const sortedCounts=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,n:Number(r.querySelector('[data-new-skills]').dataset.newSkills)})));
+   for(let i=0;i<sortedCounts.length;i++){const x=sortedCounts[i];a.equal(x.n,expectedCounts[x.id]);if(i)a(sortedCounts[i-1].n>=x.n);}
+   await page.locator('#picker-sort').selectOption('id-desc');await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    const expected=await page.evaluate(async()=>{const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return Object.fromEntries(d.cards.map(c=>[c.id,UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,{running_style:2}).potential]));});
    const shown=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,tier:r.querySelector('[data-picker-fit-tier]')?.textContent})));a(shown.length);
    for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);a.equal(v.rows.filter(x=>x.scopePending&&x.matching).length,0);}
