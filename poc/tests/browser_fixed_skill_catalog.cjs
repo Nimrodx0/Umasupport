@@ -52,7 +52,7 @@ async function main(){
     const expected=await page.evaluate(({cardId,stage})=>{const c=UmaDemoData.cardById[cardId];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.[String(stage)]??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},{cardId,stage});
     const actual=await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort());assert.deepEqual(actual,expected);
    };
-   await verifyList(4);await page.locator('#library-stage').selectOption('0');await verifyList(0);
+   await verifyList(4);await page.locator('#library-stage').selectOption('0');await verifyList(0);assert.equal(await page.locator('[data-event-choice],[data-event-outcome]').count(),0);
    const link=page.locator('#card-skill-list [data-action="skill"]').first();if(await link.count()){await link.click();await page.getByRole('button',{name:'カード詳細へ戻る'}).click();assert.equal(await page.locator('#library-stage').inputValue(),'0');}
    await page.getByRole('button',{name:'戻る',exact:true}).click();assert(await page.locator('.picker-card[data-action="card-detail"]').count()>0);
    await page.locator('.modal-head [data-action="close"]').click();assert.equal(await snapshot(),saved);assert.equal(await page.locator('#table-region').innerText(),comparison);

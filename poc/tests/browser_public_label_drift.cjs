@@ -25,7 +25,7 @@ function structure(invokes,raw){
   predicateMatrix(v.preConditions),predicateMatrix(v.conditions),
   raw?[...new Set((v.effects||[]).map(e=>e.type))]:v.effectTypes]));
 }
-function expectedGroups(bundle,records,skills){
+function expectedGroups(bundle,records,skills,modern){
  const groups={general:[],targeted:[],undetermined:[],explicitOnly:[],scopeUnknown:[],outside:[]},reasons={missingApp:0,missingProfile:0,changedSourceId:0,changedStructure:0};
  const live=new Map(skills.map(s=>[s.id,s.activationProfile])),accepted=new Map();
  for(const row of bundle.rows){
@@ -37,7 +37,7 @@ function expectedGroups(bundle,records,skills){
   else if(structure(source.invokes,true)!==structure(p.invokes,false))reasons.changedStructure++;
   else accepted.set(row.appSkillId,row.label.state);
  }
- for(const s of skills)groups[productGroup(s,accepted)].push(s.id);
+ for(const s of skills)groups[modern?productGroup(s,accepted):accepted.get(s.id)||'undetermined'].push(s.id);
  return {groups,reasons,accepted:accepted.size};
 }
 async function collect(page,state,total){
@@ -55,6 +55,7 @@ async function collect(page,state,total){
 }
 async function main(){
  a(ROOT&&/^[a-f0-9]{40}$/.test(EXPECTED||'')&&FILE,'checkout, commit and local bundle required');
+ const modern=(await fs.readFile(path.join(ROOT,'poc/src/live_app.js'),'utf8')).includes("'apt-positive'");
  const bytes=await fs.readFile(FILE),bundle=JSON.parse(bytes);
  const approved=cat.APPROVED_BUNDLES[sha(bytes)];a(approved,'approved bundle digest');a.equal(bundle.decisionId,approved.decisionId);a.equal(bundle.rows.length,approved.count);a.equal(bundle.policySHA256,approved.policySHA256);const n=approved.count;
  const response=await fetch(FIXED);a(response.ok);const fixed=Buffer.from(await response.arrayBuffer());a.equal(sha(fixed),bundle.sourceRegistrySHA256);
@@ -77,7 +78,7 @@ async function main(){
    const [liveBytes,supportBytes]=await Promise.all([dictionary.then(r=>r.body()),supports.then(r=>r.body())]);
    const model=await page.evaluate(()=>({skills:UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})),cards:UmaDemoData.cards.length,sources:UmaDemoData.meta.runtimeSources}));
    a.equal(model.sources.skills.mode,'online');a.equal(model.sources.cards.mode,'online');a.equal(model.sources.events.mode,'reviewed');
-   const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(bundle,records,model.skills);
+   const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(bundle,records,model.skills,modern);
    a.equal(accepted+Object.values(reasons).reduce((a,b)=>a+b,0),n);
    a(accepted>0,'no compatible labels: investigate rather than declare usable');
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
@@ -87,7 +88,7 @@ async function main(){
    await page.locator('#catalog-label-file').setInputFiles(FILE);
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(n-accepted)+'件';
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
-   for(const state of ['general','targeted','undetermined','explicitOnly'])a.deepEqual(await collect(page,state,total),groups[state].sort(),'complete ID partition '+state);
+   for(const state of (modern?['general','targeted','undetermined','explicitOnly']:['general','targeted','undetermined']))a.deepEqual(await collect(page,state,total),groups[state].sort(),'complete ID partition '+state);
    if(bundle.decisionId!=='D-052'){
     await page.locator('#catalog-suitability').selectOption('general');
     await page.locator('#catalog-query').fill('全身全霊');
@@ -108,7 +109,7 @@ async function main(){
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    const reloaded=await page.evaluate(()=>UmaDemoData.skills.length);
    await page.locator('#catalog-suitability').selectOption('undetermined');
-   const unlabelled=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),unlabelled.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+reloaded+' 件');
+   const unlabelled=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),(modern?unlabelled.filter(s=>productGroup(s,new Map())==='undetermined').length:reloaded)+' / '+reloaded+' 件');
    a.equal(await snapshot(),saved);a.deepEqual(errors,[]);
    console.log('PAGES_'+bundle.decisionId.replace('-','')+'_LIVE',JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(liveBytes),liveSupportSHA256:sha(supportBytes),accepted,skipped:n-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));
    await page.close();
