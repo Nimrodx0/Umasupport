@@ -85,7 +85,7 @@ const rankType={'スピード':0,'スタミナ':1,'パワー':2,'根性':3,'賢�
 const nameCollator=new Intl.Collator('ja',{numeric:true,sensitivity:'base'});
 const cardName=c=>String(c?.character||c?.name||'');
 // Card IDs are sortable identifiers, not verified implementation dates.
-function sortCards(cards,mode='source',owned={}){
+function sortCards(cards,mode='id-desc',owned={}){
  if(!Array.isArray(cards))throw new Error('Card list must be an array');
  const copy=cards.slice();
  if(mode==='source')return copy;
@@ -124,6 +124,24 @@ function eventCatalogState(card,model){
 // Candidate ranking is NOT a guaranteed skill-coverage calculation. The
 // hypothetical new card enters a deck at stage 4. Event outcomes may be
 // conditional or exclusive; only explicitly reviewed/opt-in event IDs count.
+function potentialSkillIds(card,model,stage=4){
+ if(!card||![0,1,2,3,4].includes(stage))return new Set();
+ const raw=card.hintsByStage&&Object.hasOwn(card.hintsByStage,String(stage))?card.hintsByStage[String(stage)]:card.hints;
+ const hints=card.sourceStatus?.startsWith('verified_hints')?ids(raw):[];
+ return new Set([...hints,...approvedEventSkillIds(card,model)].filter(id=>Object.hasOwn(model?.skillById||{},id)&&model.skillById[id].tier!=='negative'));
+}
+function deckPotentialIds(deck,excludedIndex,model){
+ const result=new Set();
+ for(const [i,slot] of (deck?.slots||[]).entries()){
+  if(i===excludedIndex)continue;
+  for(const id of potentialSkillIds(model?.cardById?.[slot?.cardId],model,slot?.stage??4))result.add(id);
+ }
+ return result;
+}
+function acquisitionCounts(card,model,existing=new Set()){
+ const all=potentialSkillIds(card,model,4);
+ return {total:all.size,newCount:[...all].filter(id=>!existing.has(id)).length};
+}
 function goalCandidateIds(card,model,goals=[],deckKey='main'){
  if(!card||!['main','inherit'].includes(deckKey)||!Array.isArray(goals))return [];
  const eligible=[...new Set(goals.filter(g=>g&&
@@ -146,7 +164,7 @@ function sortByGoalCandidates(cards,model,goals=[],deckKey='main'){
  return cards.slice().sort((a,b)=>(score.get(b.id)||0)-(score.get(a.id)||0));
 }
 const api={normalHintIds,approvedEventSkillIds,routeOf,matches,filterCards,sortCards,
- eventCatalogState,goalCandidateIds,sortByGoalCandidates};
+ eventCatalogState,goalCandidateIds,sortByGoalCandidates,potentialSkillIds,deckPotentialIds,acquisitionCounts};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSearch=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

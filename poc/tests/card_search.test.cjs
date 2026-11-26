@@ -135,3 +135,18 @@ test('negative event skill effects never appear as recommended skill candidates'
   [{skillId:'skill:展開',scope:'both'}],'main'),[]);
  assert.deepEqual(filterCards(m.cards,m,{skillQuery:'展開',route:'event'}).map(c=>c.id),['3']);
 });
+
+test('new skill candidates exclude the other slots, retain stage-specific and all-branch IDs, ignore adverse and unverified data',()=>{
+ const m=fixture(),s=require('../src/card_search.js');m.cardById=Object.fromEntries(m.cards.map(c=>[c.id,c]));
+ m.cards[2].events[0].outcomes.push({rewards:[{skillId:'skill:夢',kind:'negative'}]});
+ m.cards[2].hints.push('missing','skill:金');
+ const d={slots:[{cardId:'1',stage:0},{cardId:'3',stage:4},{cardId:'4',stage:4}]};
+ const before=JSON.stringify({m,d}),existing=s.deckPotentialIds(d,1,m);
+ assert.deepEqual([...existing].sort(),['hint:右回り○','skill:金'].sort());
+ assert.deepEqual(s.acquisitionCounts(m.cards[2],m,existing),{total:2,newCount:1});
+ assert.deepEqual(s.acquisitionCounts(m.cards[1],m,existing),{total:1,newCount:1});
+ assert.deepEqual(s.acquisitionCounts(m.cards[3],m,existing),{total:0,newCount:0});
+ assert.deepEqual(s.acquisitionCounts(m.cards[0],m,existing),{total:1,newCount:0});
+ assert.deepEqual(s.sortCards(m.cards).map(c=>c.id),['4','3','2','1']);
+ assert.equal(JSON.stringify({m,d}),before);
+});

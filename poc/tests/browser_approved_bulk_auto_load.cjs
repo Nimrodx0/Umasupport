@@ -95,6 +95,7 @@ async function main(){
   assert.equal(ev.choices[0].label,'選択肢1（仮）');
   assert.equal(ev.choices[1].label,'選択肢2（仮）');
   await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+  await page.locator('#picker-search').fill(cardId);
   await page.locator('button[data-action="set-card"][data-id="'+cardId+'"]').click();
   await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
   await page.locator('input[data-event-choice][data-event="'+eventId+'"][value="option1"]').click();
