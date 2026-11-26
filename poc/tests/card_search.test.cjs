@@ -150,3 +150,11 @@ test('new skill candidates exclude the other slots, retain stage-specific and al
  assert.deepEqual(s.sortCards(m.cards).map(c=>c.id),['4','3','2','1']);
  assert.equal(JSON.stringify({m,d}),before);
 });
+
+test('new candidate counts intersect the matching IDs before excluding other deck slots; total is unchanged',()=>{
+ const m=fixture(),s=require('../src/card_search.js'),card=m.cards[2],existing=new Set(['skill:金']);
+ assert.deepEqual(s.acquisitionCounts(card,m,existing,null),{total:2,newCount:1});
+ assert.deepEqual(s.acquisitionCounts(card,m,existing,new Set(['skill:金'])),{total:2,newCount:0});
+ assert.deepEqual(s.acquisitionCounts(card,m,existing,new Set(['skill:展開','skill:夢'])),{total:2,newCount:1});
+ assert.deepEqual(s.acquisitionCounts(card,m,existing,new Set()),{total:2,newCount:0});
+});

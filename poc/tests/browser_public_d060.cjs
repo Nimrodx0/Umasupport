@@ -136,6 +136,29 @@ async function main(){
     a.equal(await page.locator('[data-fit-tiers]').innerText(),'一致候補の内訳：現在 '+tier(v.current.matchingByTier)+' ／ 全分岐 '+tier(v.potential.matchingByTier));
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();
+   // Verify the displayed matching/new intersection against real data, including a populated deck.
+   const beforeRanking=await snapshot();
+   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   await page.locator('#picker-sort').selectOption('new-skills-desc');
+   const verifyNew=async ctx=>{
+    const expected=await page.evaluate(async({id,ctx})=>{
+     const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;
+     const potential=(card,stage)=>new Set([...(card.sourceStatus?.startsWith('verified_hints')?(card.hintsByStage?.[String(stage)]??card.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(card,d)].filter(id=>d.skillById[id]&&d.skillById[id].tier!=='negative'));
+     const existing=potential(d.cardById[id],0);
+     return Object.fromEntries(d.cards.map(c=>{
+      const all=potential(c,4),matches=ctx.running_style?new Set(UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,ctx).potential.rows.filter(r=>r.matching).map(r=>r.appSkillId)):all;
+      return [c.id,{total:all.size,newCount:[...all].filter(id=>matches.has(id)&&!existing.has(id)).length}];
+     }));
+    },{id,ctx});
+    const actual=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,n:Number(r.querySelector('[data-new-skills]').dataset.newSkills),total:Number(r.querySelector('[data-total-skills]').dataset.totalSkills)})));
+    a(actual.length);for(let i=0;i<actual.length;i++){const x=actual[i];a.equal(x.n,expected[x.id].newCount);a.equal(x.total,expected[x.id].total);if(i)a(actual[i-1].n>=x.n);}
+    a.deepEqual(actual.map(x=>x.id),Object.keys(expected).sort((a,b)=>expected[b].newCount-expected[a].newCount||Number(b)-Number(a)).slice(0,120));
+   };
+   await verifyNew({running_style:2});
+   await page.locator('[data-picker-fit-axis="distance_type"]').selectOption('3');await verifyNew({running_style:2,distance_type:3});
+   await page.locator('[data-picker-fit-axis="ground_type"]').selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('');await verifyNew({});
+   await closeModal();a.equal(await snapshot(),beforeRanking);
    const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);

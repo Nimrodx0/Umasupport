@@ -11,16 +11,30 @@
   ],
   "entries": [
     {
+      "id": "D-065",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：新規獲得候補数を一致候補内で集計",
+      "status": "current",
+      "relation": [],
+      "note": "脚質指定時、新規獲得候補数はD-063の一致候補IDと4凸全分岐候補IDの共通部分から対象枠以外の既存候補IDを除いた数。一致候補ありのみのチェックに依存せず、条件変更・ラベル読込で再集計と再ソート。脚質未指定時は従来の全候補新規数。カード単体総数・既存重複基準・研究判定・保存不変。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-065",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-065",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-064",
       "date": "2026-11-26",
       "heading": "2026-11-26：サポカの既定ID降順・獲得候補数順・スキル一覧モーダル",
-      "status": "current",
-      "relation": [],
-      "note": "カード一覧・編成候補・所持管理・逆引きは既定ID降順。編成候補は対象枠以外の同デッキの現在凸・全分岐の直接候補を除いた新規ID数とカード単体4凸・全分岐の総数で別ソート。金白等価・同一ID重複排除・負スキル除外。全スキル一覧はモーダル、詳細から戻って検索条件とページを維持。研究ラベル・保存形式不変。",
+      "status": "qualified",
+      "relation": [
+        "D-065"
+      ],
+      "note": "カード一覧・編成候補・所持管理・逆引きは既定ID降順。編成候補は対象枠以外の同デッキの現在凸・全分岐の直接候補を除いた新規ID数とカード単体4凸・全分岐の総数で別ソート。金白等価・同一ID重複排除・負スキル除外。全スキル一覧はモーダル、詳細から戻って検索条件とページを維持。研究ラベル・保存形式不変。 新規数の適性非依存はD-065で変更。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-064",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-064",
-      "reviewedAt": "2026-11-26"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-065",
+      "reviewedAt": "2026-11-27"
     },
     {
       "id": "D-063",

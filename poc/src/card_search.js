@@ -138,9 +138,10 @@ function deckPotentialIds(deck,excludedIndex,model){
  }
  return result;
 }
-function acquisitionCounts(card,model,existing=new Set()){
+// matchingIds is the existing product's D063 match set, not a separate aptitude policy.
+function acquisitionCounts(card,model,existing=new Set(),matchingIds=null){
  const all=potentialSkillIds(card,model,4);
- return {total:all.size,newCount:[...all].filter(id=>!existing.has(id)).length};
+ return {total:all.size,newCount:[...all].filter(id=>!existing.has(id)&&(matchingIds===null||matchingIds.has(id))).length};
 }
 function goalCandidateIds(card,model,goals=[],deckKey='main'){
  if(!card||!['main','inherit'].includes(deckKey)||!Array.isArray(goals))return [];
