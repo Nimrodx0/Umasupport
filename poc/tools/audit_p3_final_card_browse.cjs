@@ -18,6 +18,11 @@ function compatible(m,ctx,style){
 function expected(row,ctx){
  const m=row.explicitNecessaryMasks,s=ctx.running_style,ap=compatible(m,ctx,s);
  if(ap===null)return 'scopeUnknown';if(!ap)return 'outside';
+ // Independent cell enumeration: a single disallowed completion is pending.
+ for(let d=1;d<=4;d++)for(let g=1;g<=2;g++)for(let c=1;c<=4;c++){
+  if(ctx.distance_type&&ctx.distance_type!==d||ctx.ground_type&&ctx.ground_type!==g||ctx.ground_condition&&ctx.ground_condition!==c)continue;
+  if(!(m[(s-1)*8+(d-1)*2+g-1]&(1<<(c-1))))return 'scopePending';
+ }
  if([1,2,3,4].filter(v=>compatible(m,ctx,v)).length===1)return 'explicitOnly';
  const l=row.label;if(l.state==='undetermined')return 'undetermined';
  if(l.state==='general')return l.scope.contexts.some(c=>['distance_type','ground_type','ground_condition'].every(k=>!ctx[k]||c[k]===ctx[k])&&(!c.running_styles||c.running_styles.includes(s)))?'general':'undetermined';

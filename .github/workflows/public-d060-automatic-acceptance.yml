@@ -7,6 +7,7 @@ on:
       - 'poc/src/skill_catalog.js'
       - 'poc/src/live_app.js'
       - 'poc/src/card_suitability_view.js'
+      - 'index.html'
       - 'poc/live.html'
       - 'poc/tests/browser_public_d060.cjs'
       - '.github/workflows/public-d060-automatic-acceptance.yml'

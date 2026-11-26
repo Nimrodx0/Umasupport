@@ -69,3 +69,25 @@ test('hierarchical browse classification separates scope, explicit restriction, 
  a.equal(cat.filter([r(single),r(full,targeted)],{suitability:'apt-positive'}).length,2);
  a.equal(cat.filter([r(single)],{context:{running_style:1},scope:'all',suitability:'apt-positive'}).length,0);
 });
+
+test('strict matching requires all still-unspecified explicit non-style conditions, including correlated branches',()=>{
+ const mk=conds=>({skill:{id:'x',name:'X'},explicitNecessaryMasks:cat.masks(profile(conds))});
+ const style={running_style:2};
+ const single=mk([[p('running_style',2)]]),dist=mk([[p('running_style',2),p('distance_type',3)]]),ground=mk([[p('running_style',2),p('ground_type',1),p('ground_condition',1)]]);
+ a.equal(cat.assessment(single,style).matching,true);
+ a.equal(cat.assessment(dist,style).category,'explicitOnly');
+ a.equal(cat.assessment(dist,style).scopePending,true);
+ a.equal(cat.assessment(dist,style).matching,false);
+ a.equal(cat.assessment(dist,{...style,distance_type:3}).matching,true);
+ a.equal(cat.assessment(dist,{...style,distance_type:4}).category,'outside');
+ a.equal(cat.assessment(ground,{...style,ground_type:1}).matching,false);
+ a.equal(cat.assessment(ground,{...style,ground_type:1,ground_condition:1}).matching,true);
+ const or=mk([[p('running_style',2),p('distance_type',3)],[p('running_style',2),p('ground_type',1)]]);
+ a.equal(cat.assessment(or,style).scopePending,true);
+ a.equal(cat.assessment(or,{...style,distance_type:3}).matching,true,'one OR branch already guarantees explicit scope');
+ a.equal(cat.assessment(or,{...style,ground_type:1}).matching,true);
+ a.equal(cat.assessment(or,{...style,distance_type:2,ground_type:2}).category,'outside');
+ a.equal(cat.filter([single,dist,ground],{context:style,suitability:'supported'}).length,1);
+ a.equal(cat.filter([single,dist,ground],{context:style,suitability:'scopePending'}).length,2);
+ a.equal(cat.filter([single,dist,ground],{context:style,suitability:'apt-positive'}).length,3,'aptitude retained separately');
+});

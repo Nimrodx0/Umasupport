@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-063",
+      "date": "2026-11-26",
+      "heading": "2026-11-26：未指定の明示適用条件を一致候補から除外",
+      "status": "current",
+      "relation": [],
+      "note": "脚質指定時、未指定の距離・馬場・馬場状態を含む全補完条件が明示範囲内の場合だけ一致候補に集計。部分的に両立するものは適用条件未指定として分離。適性根拠・研究範囲・金白等価・保存は維持。一致候補の金白内訳は題目を繰り返さない。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-063",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-063",
+      "reviewedAt": "2026-11-26"
+    },
+    {
       "id": "D-062",
       "date": "2026-11-26",
       "heading": "2026-11-26：明示脚質限定の適性採用と独立サポカ一覧",

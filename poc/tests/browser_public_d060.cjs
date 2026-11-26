@@ -52,7 +52,7 @@ async function collect(page,state,total){
  a.equal(ids.length,Number(match[1]));a.equal(new Set(ids).size,ids.length);return ids.sort();
 }
 async function deployedAssets(){
- const assets=['poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/card_suitability_view.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css',DATA];
+ const assets=['index.html','poc/live.html','poc/src/core.js','poc/src/live_app.js','poc/src/skill_catalog.js','poc/src/skill_suitability.js','poc/src/card_suitability_view.js','poc/src/skill_condition_profiles.js','poc/src/skill_bridge.js','poc/src/style.css',DATA];
  const hashes=await Promise.all(assets.map(async f=>sha(await fs.readFile(path.join(ROOT,f)))));
  // GitHub Pages is built separately from main. Wait for the exact snapshot,
  // not simply HTTP 200. Bounded attempts, no fabricated deployment success.
@@ -71,12 +71,28 @@ async function main(){
  const response=await fetch(FIXED);a(response.ok);const raw=Buffer.from(await response.arrayBuffer());a.equal(sha(raw),'4c036527bbe6b5aad34d7f12110a06094c9071514e37fdfc68ae195403333be5');
  const records=new Map(JSON.parse(raw.toString('utf8').replace(/^\uFEFF/,'')).map(r=>[r.id,r]));
  await deployedAssets();
+ const html=await fs.readFile(path.join(ROOT,'poc/live.html'),'utf8'),root=await fs.readFile(path.join(ROOT,'index.html'),'utf8');
+ const version=/data-release="([^"]+)"/.exec(html)?.[1];a(version&&/^[a-zA-Z0-9-]+$/.test(version));
+ a(root.includes('url=./poc/live.html?v='+version));
+ const runtimeAssets=[...html.matchAll(/(?:src|href)="\.\/(src\/[^"?]+)\?v=([^"]+)"/g)].map(m=>{a.equal(m[2],version);return 'poc/'+m[1];});
+ const dynamic=/script\.src='\.\/(src\/[^'?]+)\?v=([^']+)'/.exec(html);a(dynamic);a.equal(dynamic[2],version);runtimeAssets.push('poc/'+dynamic[1]);
+ a.equal(new Set(runtimeAssets).size,runtimeAssets.length);
+ a(runtimeAssets.includes('poc/src/live_app.js')&&runtimeAssets.includes('poc/src/style.css'));
+ const expectedAssets=new Map(await Promise.all(runtimeAssets.map(async f=>[BASE+f+'?v='+version,sha(await fs.readFile(path.join(ROOT,f)))])));
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   for(const width of [1280,390]){
    const page=await browser.newPage({viewport:{width,height:850}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
    const getLive=page.waitForResponse(r=>r.url()===LIVE&&r.ok(),{timeout:60000}),getSupport=page.waitForResponse(r=>r.url()===SUPPORT&&r.ok(),{timeout:60000}),getPublic=page.waitForResponse(r=>r.url().split('?')[0]===BASE+DATA&&r.ok(),{timeout:60000});
-   await page.goto(BASE+'poc/live.html?verify='+EXPECTED,{waitUntil:'load',timeout:60000});await page.locator('#app main.app').waitFor({timeout:60000});
+   // Enter through exactly the ordinary public link, no verify query.
+   const actualAssets=new Map();
+   page.on('response',r=>{if(expectedAssets.has(r.url()))actualAssets.set(r.url(),r.body().then(b=>sha(b)));});
+   await page.goto(BASE,{waitUntil:'load',timeout:60000});await page.waitForURL(BASE+'poc/live.html?v='+version,{timeout:60000});
+   await page.locator('#app main.app').waitFor({timeout:60000});
+   a.equal(await page.locator('#app-release').getAttribute('data-release'),version);
+   a.equal(actualAssets.size,expectedAssets.size,'ordinary entry loaded every versioned asset');
+   for(const [url,hash] of expectedAssets)a.equal(await actualAssets.get(url),hash,'actual runtime response '+url);
+   console.log('PAGES_NORMAL_ENTRY='+JSON.stringify({version,viewport:width,url:page.url(),assets:actualAssets.size}));
    const [live,support,pub]=await Promise.all([getLive.then(r=>r.body()),getSupport.then(r=>r.body()),getPublic.then(r=>r.body())]);a.equal(sha(pub),sha(text));
    const model=await page.evaluate(()=>({skills:UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})),cards:UmaDemoData.cards.length,sources:UmaDemoData.meta.runtimeSources}));a.equal(model.sources.skills.mode,'online');a.equal(model.sources.cards.mode,'online');a.equal(model.sources.events.mode,'reviewed');
    const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(labels,records,model.skills);a(accepted>0);a.equal(accepted+reasons.missingOrAmbiguous+reasons.changedStructure,404);
@@ -97,7 +113,7 @@ async function main(){
    await page.locator('[data-action="pick"]').first().click();await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    const expected=await page.evaluate(async()=>{const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return Object.fromEntries(d.cards.map(c=>[c.id,UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,{running_style:2}).potential]));});
    const shown=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,tier:r.querySelector('[data-picker-fit-tier]')?.textContent})));a(shown.length);
-   for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'一致候補：金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);}
+   for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);a.equal(v.rows.filter(x=>x.scopePending&&x.matching).length,0);}
    await page.locator('#picker-sort').selectOption('fit-count-desc');const ids=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>r.dataset.id));for(let i=1;i<ids.length;i++)a(expected[ids[i-1]].matching>=expected[ids[i]].matching);
    await page.locator('.modal-head [data-action="close"]').click();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
    // Exercise a real nonempty deck, not just the untouched default settings.
@@ -108,7 +124,7 @@ async function main(){
    const verifyDetail=async stage=>{
     const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
     const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
-    for(const [k,cur,pot] of [['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown],['matching',v.current.matching,v.potential.matching]]){const cells=page.locator('[data-fit-group="'+k+'"] td');a.equal(await cells.nth(1).innerText(),String(cur));a.equal(await cells.nth(2).innerText(),String(pot));}
+    for(const [k,cur,pot] of [['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown-v.current.counts.scopePending,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown-v.potential.counts.scopePending],['matching',v.current.matching,v.potential.matching]]){const cells=page.locator('[data-fit-group="'+k+'"] td');a.equal(await cells.nth(1).innerText(),String(cur));a.equal(await cells.nth(2).innerText(),String(pot));}
     a.equal(await page.locator('[data-fit-tiers]').innerText(),'一致候補の内訳：現在 '+tier(v.current.matchingByTier)+' ／ 全分岐 '+tier(v.potential.matchingByTier));
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();

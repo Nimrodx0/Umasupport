@@ -53,15 +53,16 @@ function matchesCard(card,config,data,labels,options={}){
 function browseSummary(ids,data,labels,context){
  const style=context?.running_style;
  if(![1,2,3,4].includes(style))throw Error('Select a running style');
- const counts={total:0,explicitOnly:0,general:0,targeted:0,otherTargeted:0,undetermined:0,outside:0,scopeUnknown:0};
+ const counts={total:0,explicitOnly:0,general:0,targeted:0,otherTargeted:0,undetermined:0,outside:0,scopeUnknown:0,scopePending:0};
  const rows=[],matchingByTier={gold:0,white:0,other:0};
  for(const id of uniq(ids)){
   const sk=data.skillById[id];if(!sk)continue;
   const r={explicitNecessaryMasks:catalog.masks(sk.activationProfile),label:trustedRow(id,data,labels)?.label??null};
-  const {applicability:app,evidence:e,permittedStyles:permitted,category}=catalog.assessment(r,context);
+  const {applicability:app,evidence:e,permittedStyles:permitted,category:aptitudeCategory,scopePending,matching}=catalog.assessment(r,context);
+  const category=scopePending?'scopePending':aptitudeCategory;
   counts[category]++;counts.total++;
-  if(['explicitOnly','general','targeted'].includes(category))matchingByTier[['gold','white'].includes(sk.tier)?sk.tier:'other']++;
-  rows.push({appSkillId:id,category,applicability:app,evidence:e,permittedStyles:permitted});
+  if(matching)matchingByTier[['gold','white'].includes(sk.tier)?sk.tier:'other']++;
+  rows.push({appSkillId:id,category,aptitudeCategory,scopePending,matching,applicability:app,evidence:e,permittedStyles:permitted});
  }
  return {counts,rows,matchingByTier,matching:counts.explicitOnly+counts.general+counts.targeted};
 }
