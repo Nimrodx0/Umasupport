@@ -4,6 +4,15 @@
 // Independently classify by source ID and raw fixed/live profile structure.
 const a=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require('playwright');
+const cat=require('../src/skill_catalog.js');
+function productGroup(skill,states){
+ const m=cat.masks(skill.activationProfile);if(!m)return 'scopeUnknown';
+ const styles=[0,1,2,3].filter(i=>m.slice(i*8,i*8+8).some(Boolean));
+ if(!styles.length)return 'outside';
+ if(styles.length===1)return 'explicitOnly';
+ return states.get(skill.id)||'undetermined';
+}
+
 const [ROOT,EXPECTED]=process.argv.slice(2);
 const BASE='https://nimrodx0.github.io/Umasupport/';
 const FIXED='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/skill_data.txt';
@@ -32,8 +41,8 @@ function expectedGroups(labels,records,skills){
   if(p.status!=='source-structure'||structure(p.invokes,false)!==structure(source.invokes,true)){reasons.changedStructure++;continue;}
   accepted.set(s.id,state);
  }
- const groups={general:[],targeted:[],undetermined:[]};
- for(const s of skills)groups[accepted.get(s.id)||'undetermined'].push(s.id);
+ const groups={general:[],targeted:[],undetermined:[],explicitOnly:[],scopeUnknown:[],outside:[]};
+ for(const s of skills)groups[productGroup(s,accepted)].push(s.id);
  return {groups,reasons,accepted:accepted.size};
 }
 async function collect(page,state,total){
@@ -79,7 +88,12 @@ async function main(){
    const healthStatus=page.locator('#source-status-suitability .source-health-state');
    await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
-   for(const state of ['general','targeted','undetermined'])a.deepEqual(await collect(page,state,total),groups[state].sort());
+   for(const state of ['general','targeted','undetermined','explicitOnly'])a.deepEqual(await collect(page,state,total),groups[state].sort());
+   a.deepEqual(await collect(page,'apt-positive',total),[...groups.explicitOnly,...groups.targeted].sort());
+   await page.locator('header [data-action="card-library"]').click();const card=page.locator('.picker-card[data-action="card-detail"]').first(),cardId=await card.getAttribute('data-id');await card.click();await page.locator('#card-skill-list').waitFor();
+   await page.locator('#library-stage').selectOption('0');
+   const expectedIds=await page.evaluate(id=>{const c=UmaDemoData.cardById[id];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['0']??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},cardId);
+   a.deepEqual(await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort()),expectedIds);await page.getByRole('button',{name:'戻る',exact:true}).click();await closeModal();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
    await page.locator('[data-action="pick"]').first().click();await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    const expected=await page.evaluate(async()=>{const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return Object.fromEntries(d.cards.map(c=>[c.id,UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,{running_style:2}).potential]));});
    const shown=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,tier:r.querySelector('[data-picker-fit-tier]')?.textContent})));a(shown.length);
@@ -103,11 +117,11 @@ async function main(){
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
    const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
    await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();
-   await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.length);a.equal(await page.locator('.catalog-count').innerText(),now+' / '+now+' 件');
+   await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),now.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+now.length+' 件');
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);
    await page.unroute(blocked);await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);a.deepEqual(errors,[]);
-   console.log('PAGES_D060_PUBLIC='+JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(live),liveSupportSHA256:sha(support),publicSHA256:sha(pub),accepted,skipped:404-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));
+   console.log('PAGES_D060_PUBLIC='+JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(live),liveSupportSHA256:sha(support),publicSHA256:sha(pub),accepted,skipped:404-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length,explicitOnly:groups.explicitOnly.length,scopeUnknown:groups.scopeUnknown.length,outside:groups.outside.length}));
    await page.close();
   }
  }finally{await browser.close();}

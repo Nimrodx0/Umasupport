@@ -65,6 +65,17 @@ function browseSummary(ids,data,labels,context){
  }
  return {counts,rows,matchingByTier,matching:counts.explicitOnly+counts.general+counts.targeted};
 }
+function candidateList(card,config,data,labels,context={}){
+ const stage=config?.stage??4;
+ if(![0,1,2,3,4].includes(stage))throw Error('Invalid limit break');
+ const hints=new Set(card.sourceStatus?.startsWith('verified_hints')?(card.hintsByStage?.[String(stage)]??card.hints??[]):[]);
+ const events=search.approvedEventSkillIds(card,data);
+ const current=core.directRoutes(card,{...config,stage}).filter(r=>r.source==='hint'?hints.has(r.skillId):events.has(r.skillId));
+ return uniq([...hints,...events]).filter(id=>data.skillById[id]).map(id=>{
+  const skill=data.skillById[id],row={skill,explicitNecessaryMasks:catalog.masks(skill.activationProfile),label:trustedRow(id,data,labels)?.label??null};
+  return {...row,scopeSummary:catalog.scopeSummary(row.explicitNecessaryMasks),...catalog.assessment(row,context),hint:hints.has(id),event:events.has(id),current:current.filter(r=>r.skillId===id)};
+ });
+}
 function browseCard(card,config,data,labels,context){
  const stage=config?.stage??4;
  if(![0,1,2,3,4].includes(stage))throw Error('Invalid limit break');
@@ -73,7 +84,7 @@ function browseCard(card,config,data,labels,context){
  const current=core.directRoutes(card,{...config,stage}).filter(r=>r.source==='hint'?hints.includes(r.skillId):events.has(r.skillId));
  return {cardId:card.id,stage,potential:browseSummary([...hints,...events],data,labels,context),current:browseSummary(current.map(r=>r.skillId),data,labels,context),eventCatalog:search.eventCatalogState(card,data),cardScore:null};
 }
-const api={index,trustedRow,summarize,cardView,deckView,matchesCard,browseSummary,browseCard};
+const api={index,trustedRow,summarize,cardView,deckView,matchesCard,browseSummary,browseCard,candidateList};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaCardSuitabilityView=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -61,3 +61,16 @@ test('matching tier counts are unweighted and sum to the unique candidate count'
  const x=view.browseSummary(['h','h','e','other','missing'],data,labels,{running_style:2,distance_type:2,ground_type:1});
  a.deepEqual(x.matchingByTier,{gold:1,white:2,other:0});a.equal(x.matching,3);
 });
+
+test('read-only candidate list uses stage-specific verified hints and reviewed event IDs once',()=>{
+ const {c,data,labels}=fixture();
+ for(const s of data.skills)s.activationProfile.invokes=[{conditions:[[{type:'always',operator:'==',value:1}]],preConditions:[]}];
+ data.skillById.h.activationProfile.invokes=[{conditions:[[{type:'running_style',operator:'==',value:2}]],preConditions:[]}];
+ const original=JSON.stringify({c,data});
+ const rows=view.candidateList(c,{stage:0,choices:{ev:'a'}},data,labels,{});
+ a.deepEqual(rows.map(r=>r.skill.id),['h','e','other']);
+ a.equal(rows[0].category,'explicitOnly');a.equal(rows[0].hint,true);a.equal(rows[1].event,true);
+ a.equal(rows[1].current.length,1);a.equal(rows[2].current.length,0);
+ a.equal(view.candidateList(c,{stage:4},data,labels,{}).length,4);
+ a.equal(JSON.stringify({c,data}),original);
+});

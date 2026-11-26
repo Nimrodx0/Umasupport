@@ -4,6 +4,15 @@
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),http=require('node:http'),path=require('node:path');
 const {chromium}=require('playwright');
 const bridge=require('../src/skill_bridge.js');
+const cat=require('../src/skill_catalog.js');
+function productGroup(skill,states){
+ const m=cat.masks(skill.activationProfile);if(!m)return 'scopeUnknown';
+ const styles=[0,1,2,3].filter(i=>m.slice(i*8,i*8+8).some(Boolean));
+ if(!styles.length)return 'outside';
+ if(styles.length===1)return 'explicitOnly';
+ return states.get(skill.id)||'undetermined';
+}
+
 const ROOT=path.resolve(__dirname,'../..');
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/';
 async function get(url){const r=await fetch(url);assert(r.ok,url);return Buffer.from(await r.arrayBuffer());}
@@ -33,6 +42,20 @@ async function main(){
    await page.goto(url);await page.locator('#app main.app').waitFor({timeout:40000});
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
+   const modelSkills=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));
+   const countsFor=rows=>{const states=new Map(rows.map(r=>[r.appSkillId,r.label.state])),counts={};for(const s of modelSkills){const k=productGroup(s,states);counts[k]=(counts[k]||0)+1;}return counts;};
+   const loaded=countsFor(bundle.rows),empty=countsFor([]);
+   await page.locator('header [data-action="card-library"]').click();
+   const card=page.locator('.picker-card[data-action="card-detail"]').first(),cardId=await card.getAttribute('data-id');
+   await card.click();await page.locator('#card-skill-list').waitFor();
+   const verifyList=async stage=>{
+    const expected=await page.evaluate(({cardId,stage})=>{const c=UmaDemoData.cardById[cardId];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.[String(stage)]??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},{cardId,stage});
+    const actual=await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort());assert.deepEqual(actual,expected);
+   };
+   await verifyList(4);await page.locator('#library-stage').selectOption('0');await verifyList(0);assert.equal(await page.locator('[data-event-choice],[data-event-outcome]').count(),0);
+   const link=page.locator('#card-skill-list [data-action="skill"]').first();if(await link.count()){await link.click();await page.getByRole('button',{name:'カード詳細へ戻る'}).click();assert.equal(await page.locator('#library-stage').inputValue(),'0');}
+   await page.getByRole('button',{name:'戻る',exact:true}).click();assert(await page.locator('.picker-card[data-action="card-detail"]').count()>0);
+   await page.locator('.modal-head [data-action="close"]').click();assert.equal(await snapshot(),saved);assert.equal(await page.locator('#table-region').innerText(),comparison);
    await page.locator('header [data-action="catalog-toggle"]').click();
    const count=page.locator('.catalog-count'),filter=page.locator('#catalog-suitability');
    if(auto){
@@ -46,7 +69,7 @@ async function main(){
      return [...r.labels].map(([id,row])=>[id,row.label.state,row.label.styles]).sort();
     });
     assert.deepEqual(expected,bundle.rows.map(r=>[r.appSkillId,r.label.state,r.label.styles]).sort());
-    for(const [state,n] of [['general',304],['targeted',100],['undetermined',477]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
+    for(const [state,n] of [['general',loaded.general||0],['targeted',loaded.targeted||0],['explicitOnly',loaded.explicitOnly||0],['apt-positive',(loaded.explicitOnly||0)+(loaded.targeted||0)],['undetermined',loaded.undetermined||0]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
     await page.locator('[data-action="pick"]').first().click();
     await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
     const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/一致候補：金 \d+ · 白 \d+ · その他 \d+/);
@@ -60,17 +83,17 @@ async function main(){
     await page.locator('header [data-action="source-health"]').click();
     assert.match(await page.locator('#source-status-suitability .source-health-state').innerText(),/自動取得失敗/);
     await page.locator('.modal-head [data-action="close"]').click();
-    await filter.selectOption('undetermined');assert.equal(await count.innerText(),'881 / 881 件');
+    await filter.selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
     assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);await page.close();continue;
    }
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
-   await filter.selectOption('undetermined');assert.match(await count.innerText(),/^881 \/ 881 件$/);
+   await filter.selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
    await page.locator('.catalog-data summary').click();
    await page.locator('#catalog-label-file').setInputFiles(file);
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent.includes(s),'検証済み '+n+'件 / 変更・未照合 0件',{timeout:40000});
-   assert.equal(await count.innerText(),(881-n)+' / 881 件');
-   await filter.selectOption('general');assert.equal(await count.innerText(),general+' / 881 件');
+   assert.equal(await count.innerText(),(loaded.undetermined||0)+' / 881 件');
+   await filter.selectOption('general');assert.equal(await count.innerText(),(loaded.general||0)+' / 881 件');
    await page.locator('#catalog-query').fill('アオハル点火');
    assert.equal(await count.innerText(),'5 / 881 件');
    assert.equal(await page.locator('.catalog-table tbody tr').count(),5);
@@ -96,18 +119,18 @@ async function main(){
    }
    await page.locator('#catalog-query').fill('');
    await page.locator('#catalog-show-labels').uncheck();
-   assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),general+' / 881 件');
+   assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),(loaded.general||0)+' / 881 件');
    await page.locator('#catalog-show-labels').check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
    await filter.selectOption('all');await page.locator('[data-catalog-axis="running_style"]').selectOption('2');await page.locator('#catalog-scope').selectOption('outside');assert(await filter.isDisabled());assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await page.locator('#catalog-scope').selectOption('possible');assert(await filter.isEnabled());await filter.selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await page.locator('[data-catalog-axis="running_style"]').selectOption('');
-   await filter.selectOption('targeted');assert.equal(await count.innerText(),targeted+' / 881 件');
+   await filter.selectOption('targeted');assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
    assert.match(await count.innerText(),/^0 \/ 881 件$/);
    await page.locator('[data-catalog-axis="ground_type"]').selectOption('');
-   assert.equal(await count.innerText(),targeted+' / 881 件');
+   assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
    await page.locator('#catalog-label-file').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{}')});
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('前回の検証済みラベルを維持'));
-   assert.equal(await count.innerText(),targeted+' / 881 件');
+   assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
    await page.locator('[data-catalog-skill] button').first().click();
    await page.locator('.modal-head h2').waitFor();
    await page.locator('.modal-head [data-action="close"]').click();
@@ -162,7 +185,7 @@ async function main(){
     }
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);
-   const prior=await snapshot();await detail.locator('summary').click();assert(await detail.locator('.fit-name-tree').isVisible());assert.equal(await snapshot(),prior);
+   const prior=await snapshot();await detail.locator('summary').click();assert(await detail.locator('.fit-name-tree').isVisible());assert(await page.locator('#card-skill-list').isVisible());assert.equal(await snapshot(),prior);
    assert.deepEqual(errors,[]);
    await page.close();
   }

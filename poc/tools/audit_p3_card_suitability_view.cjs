@@ -25,7 +25,13 @@ async function main(args){
   const imported=await browserCatalog.loadLabels(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),data,{fetcher:async()=>({ok:true,arrayBuffer:async()=>raw})});
   a.equal(imported.labels.size,300);a.equal(imported.skipped,0);
   const rows=browserCatalog.index(data,imported.labels);a.equal(browserCatalog.filter(rows).length,881);
-  a.equal(browserCatalog.filter(rows,{suitability:'general'}).length,257);a.equal(browserCatalog.filter(rows,{suitability:'targeted'}).length,43);a.equal(browserCatalog.filter(rows,{suitability:'undetermined'}).length,581);
+  // Research label counts remain independent of the product's explicit-eligibility classification.
+  a.equal(rows.filter(r=>r.label?.state==='general').length,257);a.equal(rows.filter(r=>r.label?.state==='targeted').length,43);a.equal(rows.filter(r=>!r.label||r.label.state==='undetermined').length,581);
+  const partition={general:0,targeted:0,undetermined:0,explicitOnly:0,scopeUnknown:0,outside:0};
+  for(const r of rows){const m=r.explicitNecessaryMasks,styles=m?[0,1,2,3].filter(i=>m.slice(i*8,i*8+8).some(Boolean)):[];const k=!m?'scopeUnknown':!styles.length?'outside':styles.length===1?'explicitOnly':r.label?.state||'undetermined';partition[k]++;}
+  for(const k of ['general','targeted','undetermined','explicitOnly'])a.equal(browserCatalog.filter(rows,{suitability:k}).length,partition[k]);
+  a.equal(browserCatalog.filter(rows,{suitability:'apt-positive'}).length,partition.explicitOnly+partition.targeted);
+  console.log('D062_PRODUCT_PARTITION='+JSON.stringify(partition));
   const changed=data.skillById[imported.labels.keys().next().value];const old=changed.activationProfile;changed.activationProfile={...old,sourceNumericId:'changed'};
   const guarded=await browserCatalog.loadLabels(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),data,{fetcher:async()=>({ok:true,arrayBuffer:async()=>raw})});
   changed.activationProfile=old;a.equal(guarded.labels.size,299);a.equal(guarded.skipped,1);

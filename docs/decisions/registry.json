@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-062",
+      "date": "2026-11-26",
+      "heading": "2026-11-26：明示脚質限定の適性採用と独立サポカ一覧",
+      "status": "current",
+      "relation": [],
+      "note": "単一脚質の明示限定を脚質適性ありに分類し、比較根拠と区別して一致候補へ含める。全スキル一覧の適性未判定から除外。独立サポカ一覧から閲覧専用詳細・凸別の獲得候補リストを開く。金白等価・既存研究ラベル・設定保存は不変。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-062",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-062",
+      "reviewedAt": "2026-11-26"
+    },
+    {
       "id": "D-061",
       "date": "2026-11-26",
       "heading": "2026-11-26：明示的な適用範囲を第一階層とする適性UI",
