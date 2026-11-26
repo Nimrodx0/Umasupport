@@ -231,7 +231,10 @@ function pickerMatches(){
 }
 let pickerFitCache=new Map(),pickerSkillCountCache=new Map(),pickerExistingSkills=new Set();
 function pickerSkillCount(card){
- if(!pickerSkillCountCache.has(card.id))pickerSkillCountCache.set(card.id,window.UmaCardSearch.acquisitionCounts(card,data,pickerExistingSkills));
+ if(!pickerSkillCountCache.has(card.id)){
+  const matchingIds=ui.pickerFitContext.running_style?new Set(pickerFit(card).rows.filter(r=>r.matching).map(r=>r.appSkillId)):null;
+  pickerSkillCountCache.set(card.id,window.UmaCardSearch.acquisitionCounts(card,data,pickerExistingSkills,matchingIds));
+ }
  return pickerSkillCountCache.get(card.id);
 }
 function pickerFit(card){
@@ -255,7 +258,7 @@ function pickerCardsHtml(){
  ui.pickerPage=Math.max(0,Math.min(ui.pickerPage,pages-1));
  const shown=matched.slice(ui.pickerPage*perPage,(ui.pickerPage+1)*perPage);
  const footnote=['new-skills-desc','total-skills-desc'].includes(ui.pickerSort)?
-  '<p class="tiny-note">新規＝選択中の枠以外の編成カード（現在の凸数・全分岐）にない候補。総数＝このカードの候補全体。新カードは4凸・全分岐、金白は別IDで重複排除。発動・同時獲得の保証ではありません。</p>':ui.pickerSort==='goals-desc'?
+  '<p class="tiny-note">新規＝選択中の枠以外の編成カード（現在の凸数・全分岐）にない候補。脚質指定時は一致候補内の新規のみ集計（「一致候補ありのみ」のチェック状態に関係なく適用）。総数＝適性によらないこのカードの候補全体。新カードは4凸・全分岐、金白は別IDで重複排除。発動・同時獲得の保証ではありません。</p>':ui.pickerSort==='goals-desc'?
   '<p class="tiny-note">目標候補順は現在の目標セットと対象デッキのスキルIDに一致するカードを優先。通常ヒントは4凸時、イベントは結果未確定の候補も含みます。獲得保証やイベントの収録完全性を意味しません。</p>':'';
  return `<p class="tiny-note">候補 ${matched.length} 件 / ${ui.pickerPage+1} / ${pages} ページ（1ページ最大120枚）</p>${footnote}<div class="picker-list">${shown.map(pickerCard).join('')||'<p class="help">該当なし</p>'}</div><div class="owned-pages"><button class="btn tiny" data-action="picker-prev" ${ui.pickerPage===0?'disabled':''}>前へ</button><span class="tiny-note">${ui.pickerPage+1} / ${pages}</span><button class="btn tiny" data-action="picker-next" ${ui.pickerPage===pages-1?'disabled':''}>次へ</button></div>`;
 }
@@ -277,7 +280,7 @@ function pickerCard(c){
  const candidateFit=ui.pickerFitContext.running_style?pickerFit(c):null;
  const fitText=candidateFit?fitPickerSummary(candidateFit,ui.pickerFitContext):'';
  const counts=!library&&['new-skills-desc','total-skills-desc'].includes(ui.pickerSort)?pickerSkillCount(c):null;
- const countText=counts?'<span class="picker-acquisition-count" data-new-skills="'+counts.newCount+'" data-total-skills="'+counts.total+'">新規 '+counts.newCount+'件 · 総数 '+counts.total+'件</span>':'';
+ const countText=counts?'<span class="picker-acquisition-count" data-new-skills="'+counts.newCount+'" data-total-skills="'+counts.total+'">'+(ui.pickerFitContext.running_style?'一致内新規':'新規')+' '+counts.newCount+'件 · 総数 '+counts.total+'件</span>':'';
  const goalLabel=goals.length?' · 目標候補'+window.UmaCardSearch.goalCandidateIds(
   c,data,goals,ui.modal.deckKey).length+'件':'';
  return `<button class="picker-card" data-action="${library?'card-detail':'set-card'}" data-id="${esc(c.id)}">${cardIcon(c)}<span class="picker-card-detail">${cardIdentityHTML(c)}<small class="muted">${esc(c.type)} · ${esc(c.rarity)} · ${c.sourceStatus?.startsWith('verified_hints')?'通常ヒント'+c.hints.length+'件':'通常ヒント未収録'} · ${eventLabel}${goalLabel} · ${ownedLabel(c)}${used?' · 編成中':''}</small>${countText}${fitText}</span></button>`;
