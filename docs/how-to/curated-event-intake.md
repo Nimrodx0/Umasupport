@@ -14,7 +14,7 @@
 2. 固定UmaSim名簿の差分で新規IDを抽出し、最新名簿と独立スキル辞書のコミット・blobを固定します。GameToraの一覧から個別URLを解決し、限定ブラウザ検証でイベント見出しと本文を照合します。未掲載・構造不明は保留台帳へ持ち越します。[直接取得検証](../../.github/workflows/direct-new-card-intake.yml)。
 3. 現行の変換・増分取込コード（[現行抽出器](../../poc/src/official_gametora_route_dom_extractor.cjs)・[未承認スキーマ投影](../../poc/src/official_gametora_private_schema_projection.cjs)・[new card increment](../../poc/src/new_card_event_incremental.cjs)）を確認し、分岐、結果ごとのスキルID・ヒントLv、継続・打ち切りが保持されるか検査します。
 4. 不一致、重複、未知の条件、公開前の候補を**未確認のまま保持**します。未掲載を確定0件として数えず、結果の異なる選択肢を無条件の報酬へ変換しません。
-5. [正式公開ゲート](checker-public-catalog.md)で採否と承認台帳の内容ハッシュを検証します。追加対象以外の既存DB・保存済み設定・キャッシュの回帰検査も行います。
+5. D-068の条件付き包括承認に従い、事実・取得条件・公開根拠を実際に確認した候補に限り、カード毎の利用者再承認なしで正式公開へ進めます。[正式公開ゲート](checker-public-catalog.md)で採否と承認台帳の内容ハッシュを検証します。追加対象以外の既存DB・保存済み設定・キャッシュの回帰検査も行います。
 
 ## D-067のローカルレビュー候補出力
 
