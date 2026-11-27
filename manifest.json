@@ -1,0 +1,15 @@
+{
+  "dataKind": "umasupport-event-data-manifest",
+  "schemaVersion": 1,
+  "catalogSchemaVersion": 1,
+  "revision": 1,
+  "snapshotCommit": "12618f01a2e317311f28e768d5fca7a0b757386f",
+  "codeCommit": "30e89133522828b65a3dabdd2844ea850213e27f",
+  "previousManifestCommit": null,
+  "cardCount": 564,
+  "eventCount": 2521,
+  "catalogSha256": "91058eac70775c38aa46802c5f65d9917249ab4242c45ac1ed48a609639eaefa",
+  "approvalSha256": "3dc52d668fe079b41b6850dc5c4e73c2de27b37c03faa2ff9a940f1feeeed631",
+  "catalogContentSha256": "8399cbf87b7a651d413ef59439fd71fa9e97fbf0e2326dc44dd5e2bd411d2866",
+  "approvalContentSha256": "203c8b9c2f0420faa7886483790c5ad21dfda7c41444c21c19245aee1de5629a"
+}
