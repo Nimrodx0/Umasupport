@@ -50,9 +50,9 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## D-072 承認対象の準備と公開提案の生成
 
-[独立審査準備ワークフロー](../../.github/workflows/d072-independent-review-preparation.yml) をmainから手動実行し、独立確認済み事実の `evidence` 配列を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・独立審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。各イベントの6項目の審査と公開根拠を別途確認して `newApprovals` を作成する。準備は承認を生成せず、元サイトへの追加取得も行わない。
+[独立審査準備ワークフロー](../../.github/workflows/d072-independent-review-preparation.yml) をmainから手動実行し、独立確認済み事実の `evidence` 配列を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・独立審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。6項目と公開根拠を実審査する。準備は承認・追加取得をしない。
 
-[公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合の配列1〜2枚）と `newApprovals`（個別承認v1）だけのJSON。事実審査と公開可否を実際に確認した入力のみ、正式名称・独自数値構造・根拠URLを含める。公開Actionsの入力・ログに秘密や元JSON・原文・未承認候補を渡さない。既定 `plan` は検証・件数・提案SHAのみで書込なし。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一コミットにまとめて専用 `automation/d072-release-<SHA>` refを新規作成する。mainへの書込・強制更新・自動merge・自動公開は行わない。既存refは同一treeと親コミットの場合のみ再利用。mainが移動した場合は最新のmainから再実行する。
+[公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合1〜2枚）と `newApprovals`（個別承認v1）または `attestations`（[カード一括証跡](../../poc/src/d072_card_review_attestation.cjs)）のJSON。後者は全イベントSHA・証拠SHA・共通6確認と公開根拠の実審査を要求し、個別台帳に展開する。事実審査と公開可否を実際に確認した入力のみ、正式名称・独自数値構造・根拠URLを含める。公開Actionsに秘密・元JSON・原文・未承認候補を渡さない。既定 `plan` は検証・件数・提案SHAのみで書込なし。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一コミットにまとめて専用 `automation/d072-release-<SHA>` refを新規作成する。mainへの書込・強制更新・自動merge・自動公開は行わない。既存refは同一treeと親コミットの場合のみ再利用。main移動時は最新版で再実行。
 
 明示 `pr` は `branch` の検証後に同一repoのmain向けPRを作成。同一head/base・表題・本文のopen PRのみ再利用し、競合・権限拒否・ref変更時は停止。PR作成・CI起動はGitHub設定に依存するため、拒否時はbranchから手動PR、必要なら管理者がCI実行承認。[CI引渡し](../../.github/workflows/d072-release-ci-handoff.yml) をmainでPR番号指定し、固定6ファイル・証跡・最新必須CIを読取専用検証する。成功時のみ通常権限で統合し、[Pages受入](../../.github/workflows/pages-real-browser-acceptance.yml) の全資産・イベントID照合を確認。標準トークンの自動merge、権限設定変更、自動事実承認はしない。
 
