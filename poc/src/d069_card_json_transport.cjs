@@ -44,11 +44,12 @@ function listingLinks(html,knownIds){
  if(seen.size<100||seen.size<Math.floor(known.size*0.8))fail('listing incomplete or client-rendered');
  return links;
 }
-function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=false,automaticAuthorized=false}={}){
+function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=false,automaticAuthorized=false,observeHtml=null}={}){
  if((manualAuthorized!==true&&automaticAuthorized!==true)||typeof fetchImpl!=='function'||typeof sleep!=='function')fail('manual or automatic scope required');
  return async ids=>{
   if(!Array.isArray(ids)||ids.length>2||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!ID.test(id)))fail('target scope');
   if(!ids.length)return [];
+  if(observeHtml!==null&&(typeof observeHtml!=='function'||ids.length!==1))fail('display observation requires one card');
   let robots=null,requests=0;
   async function read(url,type,cap){
    const u=new URL(url);
@@ -72,11 +73,13 @@ function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=fa
   const result=[];
   for(const p of pages){
    if(p.status!=='listed'){result.push({cardId:p.cardId,status:'not-listed'});continue;}
-   if(buildId===null)buildId=extractBuildId({html:await read(p.url,'text/html',512000),cardId:p.cardId,sourceUrl:p.url});
+   let html=null;
+   if(buildId===null){html=await read(p.url,'text/html',512000);buildId=extractBuildId({html,cardId:p.cardId,sourceUrl:p.url});}
    const body=await read(cardJsonUrl({cardId:p.cardId,sourceUrl:p.url,buildId}),'application/json',512000);
    // Validate immediately before even considering the next card.
    inspectCardJson({body,cardId:p.cardId,sourceUrl:p.url,buildId});
-   result.push({cardId:p.cardId,status:'json',sourceUrl:p.url,buildId,body});
+   const domObservation=observeHtml?await observeHtml({html,cardId:p.cardId}):null;
+   result.push({cardId:p.cardId,status:'json',sourceUrl:p.url,buildId,body,...(observeHtml?{domObservation}:{})});
   }
   return result;
  };
