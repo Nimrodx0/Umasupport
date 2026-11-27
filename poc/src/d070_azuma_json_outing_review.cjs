@@ -36,11 +36,11 @@ function reviewAzuma({observation:o,registry,titles=null}={}){
    const r=y.routes[0];
    if(r.ordinal!==1||!same(r.hints,g.hints)||r.directGrants.length||r.dynamicEffects.length||
       r.effects.some(z=>!Number.isSafeInteger(z.delta)||z.alternatives!==undefined)||
-      !same(r.markers.map(z=>z.kind),g.unlock?['outing-unlock-candidate']:[])||
+      !same(r.markers,g.unlock?[{kind:'outing-unlock-candidate',sourceOrdinal:g.unlockOrdinal}]:[])||
       !same(r.statusCandidates.map(z=>z.sourceOrdinal),g.conditionOrdinals)||
-      !same(r.unresolved,r.statusCandidates.map(z=>({code:'se',sourceOrdinal:z.sourceOrdinal,reason:'condition-application-semantics-unverified'})).concat(g.unmodeledScenarioOrdinals.map(n=>({code:'shun_act_low',sourceOrdinal:n,reason:'unsupported-effect-code'}))).sort((a,b)=>a.sourceOrdinal-b.sourceOrdinal)))
+      !same(r.unresolved,r.statusCandidates.map(z=>({code:'se',sourceOrdinal:z.sourceOrdinal,reason:'condition-application-semantics-unverified'})).concat(g.unmodeledScenarioOrdinals.map(n=>({code:'shun_act_low',sourceOrdinal:n,reason:'unsupported-effect-code'})),g.unlock?[{code:'ds',sourceOrdinal:g.unlockOrdinal,reason:'outing-unlock-semantics-unverified'}]:[]).sort((a,b)=>a.sourceOrdinal-b.sourceOrdinal)))
     fail('reward/flow drift '+e.sourceEventId+':'+(j+1));
-   if(r.effects.length||r.unresolved.length)omissions.push({sourceEventId:e.sourceEventId,choiceOrdinal:j+1,baseScalarCount:r.effects.length,unmodeledCodes:r.unresolved.map(z=>z.code)});
+   if(r.effects.length||r.unresolved.length)omissions.push({sourceEventId:e.sourceEventId,choiceOrdinal:j+1,baseScalarCount:r.effects.length,unmodeledCodes:r.unresolved.filter(z=>z.code!=='ds').map(z=>z.code)});
    const rewards=r.hints.map(h=>{
     const s=registry.byId.get(h.skillId.slice(6));
     if(!s||!['normal','rare'].includes(s.rarity)||registry.byName.get(s.name)?.length!==1)fail('unverified skill ID');

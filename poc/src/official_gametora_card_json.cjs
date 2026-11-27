@@ -79,7 +79,7 @@ function parseGroup(g,index){
    if(r.markers.some(m=>m.kind==='outing-unlock-candidate'))fail('duplicate outing unlock marker');
    // A source token is not automatically proof of an edge. D070 separately
    // verifies this token against the displayed result on both named cards.
-   r.markers.push({kind:'outing-unlock-candidate',sourceOrdinal:at});continue;
+   r.markers.push({kind:'outing-unlock-candidate',sourceOrdinal:at});unresolved('outing-unlock-semantics-unverified');continue;
   }
   if(x.t==='ee'){
    if(!only(x,['t'])){unresolved('invalid-stop-marker');continue;}

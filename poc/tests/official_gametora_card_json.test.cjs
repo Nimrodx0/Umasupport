@@ -33,7 +33,7 @@ test('unsupported effects and uncertain direct grant never silently become confi
  const x=inspect({special:[event(8002,'架空',[group('',[token('sg',null,990003),token('ds'),{t:'se',v:null,d:9,r:true},token('en','+10',{secret:'原文'}),token('sk','+0',990001)])],{type:'tf',meaningless_choices:true})]});
  const r=x.events[0].groups[0].routes[0];
  a.equal(r.hints.length,0);a.equal(r.effects.length,0);a.equal(r.directGrants.length,1);
- a.deepEqual(r.unresolved.map(x=>x.reason),['direct-grant-kind-unverified','unsupported-effect-code','condition-application-semantics-unverified','unexpected-scalar-fields','invalid-hint']);
+ a.deepEqual(r.unresolved.map(x=>x.reason),['direct-grant-kind-unverified','outing-unlock-semantics-unverified','condition-application-semantics-unverified','unexpected-scalar-fields','invalid-hint']);
  a.doesNotMatch(JSON.stringify(x),/原文|架空/);
  a.ok(x.events[0].blockers.includes('meaningless-choices-unverified'));
 });
