@@ -6,6 +6,9 @@ on:
       - '.github/workflows/pages-real-browser-acceptance.yml'
       - 'poc/tests/pages_live_browser.cjs'
       - 'poc/data/reviewed_events.v1.json'
+      - 'poc/live.html'
+      - 'index.html'
+      - 'poc/src/public_event_catalog.js'
   workflow_dispatch:
 
 permissions:
@@ -26,21 +29,25 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
-      - name: Wait for this exact catalog on Pages (bounded)
+      - name: Wait for exact app and fixed recovery catalog on Pages (bounded)
         run: |
           node - <<'NODE'
           const fs=require('node:fs'),crypto=require('node:crypto');
           const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
-          const target=sha(fs.readFileSync('poc/data/reviewed_events.v1.json'));
+          const paths=['index.html','poc/live.html','poc/src/public_event_catalog.js','poc/data/reviewed_events.v1.json'];
+          const targets=paths.map(p=>[p,sha(fs.readFileSync(p))]);
           (async()=>{
             for(let n=0;n<18;n++){
               try{
-                const r=await fetch('https://nimrodx0.github.io/Umasupport/poc/data/reviewed_events.v1.json?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
-                if(r.ok&&sha(Buffer.from(await r.arrayBuffer()))===target){console.log('Exact deployed catalog verified');return;}
+                const verified=await Promise.all(targets.map(async([p,hash])=>{
+                  const r=await fetch('https://nimrodx0.github.io/Umasupport/'+p+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
+                  return r.ok&&sha(Buffer.from(await r.arrayBuffer()))===hash;
+                }));
+                if(verified.every(Boolean)){console.log('Exact deployed app and recovery catalog verified');return;}
               }catch(e){console.log('Pages check attempt '+(n+1)+' unavailable');}
               await new Promise(r=>setTimeout(r,10000));
             }
-            throw Error('Pages has not deployed the exact checkout catalog');
+            throw Error('Pages has not deployed the exact checkout app and recovery catalog');
           })().catch(e=>{console.error(e);process.exitCode=1;});
           NODE
       - name: Test live GitHub Pages in Chromium with live sources
