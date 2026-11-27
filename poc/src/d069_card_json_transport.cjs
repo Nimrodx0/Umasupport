@@ -4,6 +4,12 @@
 const {LISTING,canonicalSupportUrl,resolveListedPages}=require('./official_gametora_new_card_locator.cjs');
 const {extractBuildId,cardJsonUrl,inspectCardJson}=require('./official_gametora_card_json.cjs');
 const fail=s=>{throw Error('D069 JSON transport: '+s);};
+class TransportFailure extends Error{
+ constructor(code){super('D069 JSON transport: '+code);this.code=code;}
+}
+function failureCode(e){
+ return e instanceof TransportFailure&&['network-transient','source-refused'].includes(e.code)?e.code:'unclassified';
+}
 const ORIGIN='https://gametora.com',ROBOTS=ORIGIN+'/robots.txt';
 const ID=/^[1-9]\d{4}$/;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -48,7 +54,10 @@ function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=fa
    const u=new URL(url);
    if(u.origin!==ORIGIN||u.search||u.hash||u.username||u.password||++requests>5)fail('request scope');
    if(url!==ROBOTS){checkRobots(robots,u.pathname);await sleep(6000);}
-   const r=await fetchImpl(url,{method:'GET',redirect:'manual',credentials:'omit',signal:AbortSignal.timeout(20000),headers:{'User-Agent':'Umasupport-readonly-card-json-probe/0.1'}});
+   let r;
+   try{r=await fetchImpl(url,{method:'GET',redirect:'manual',credentials:'omit',signal:AbortSignal.timeout(20000),headers:{'User-Agent':'Umasupport-readonly-card-json-probe/0.1'}});}
+   catch(e){if(e instanceof TypeError||e?.name==='TimeoutError')throw new TransportFailure('network-transient');throw e;}
+   if([401,403,429,451].includes(r.status))throw new TransportFailure('source-refused');
    if(r.status!==200||r.url!==url||!String(r.headers.get('content-type')).toLowerCase().includes(type))fail('HTTP or content failure');
    if(!r.body?.getReader)fail('response body');
    const rd=r.body.getReader(),chunks=[];let n=0;
@@ -72,4 +81,4 @@ function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=fa
   return result;
  };
 }
-module.exports={checkRobots,listingLinks,createObserver};
+module.exports={checkRobots,listingLinks,createObserver,failureCode};

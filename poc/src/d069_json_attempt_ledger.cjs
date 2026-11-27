@@ -18,7 +18,8 @@ function verify(x){
     Object.keys(x).sort().join(',')!=='dataKind,revision,rows,schemaVersion')fail('ledger shape');
  const seen=new Set();
  for(const r of x.rows){
-  if(!r||!['cardId,packetSha256,sourcePin,status','cardId,packetSha256,retry,sourcePin,status'].includes(Object.keys(r).sort().join(','))||
+  if(!r||!['cardId,packetSha256,sourcePin,status','cardId,packetSha256,retry,sourcePin,status','cardId,failureCode,packetSha256,sourcePin,status','cardId,failureCode,packetSha256,retry,sourcePin,status'].includes(Object.keys(r).sort().join(','))||
+     Object.hasOwn(r,'failureCode')&&(r.status!=='uncertain'||!['network-transient','source-refused','unclassified'].includes(r.failureCode))||
      r.retry!==undefined&&(!r.retry||Object.keys(r.retry).sort().join(',')!=='approvalSha256,priorRowSha256,priorStatus'||!SHA.test(r.retry.approvalSha256||'')||!SHA.test(r.retry.priorRowSha256||'')||!['not-listed','uncertain'].includes(r.retry.priorStatus))||
      !ID.test(r.cardId||'')||seen.has(r.cardId)||!states.has(r.status)||
      Object.keys(r.sourcePin||{}).sort().join(',')!=='cardBlob,commit,skillBlob'||
@@ -83,15 +84,16 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
    reviewPackets.push(packet);
    return {cardId:r.cardId,status:packet.status==='held'?'held':'awaiting-fact-review',packetSha256:digest(packet)};
   });
- }catch{
+ }catch(error){
   // Failure after any partial access means the whole reserved batch is
   // uncertain. No source strings or exception messages are persisted.
-  results=ids.map(cardId=>({cardId,status:'uncertain',packetSha256:null}));
+  const failureCode=require('./d069_card_json_transport.cjs').failureCode(error);
+  results=ids.map(cardId=>({cardId,status:'uncertain',packetSha256:null,failureCode}));
   stopReason='observation-failed';reviewPackets=[];
  }
  const finished={...reservation,revision:reservation.revision+1,rows:reservation.rows.map(r=>{
   const x=results.find(z=>z.cardId===r.cardId);
-  return x?{...r,status:x.status,packetSha256:x.packetSha256}:r;
+  return x?{...r,status:x.status,packetSha256:x.packetSha256,...(x.failureCode?{failureCode:x.failureCode}:{})}:r;
  })};
  verify(finished);
  if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished))!==true)fail('completion conflict; reservation remains non-retryable');
@@ -110,6 +112,6 @@ function excludeAttempted(plan,ledger){
  return {...plan,eligibleIds,batches:partitionBatches(eligibleIds,2),nextBatchIds:eligibleIds.slice(0,2),
   remainingIds:eligibleIds.slice(2),heldIds:[...new Set([...plan.heldIds,...attemptedIds])].sort(),
   status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
-  attemptedIds,attemptStates:attempts.map(r=>({cardId:r.cardId,status:r.status,packetSha256:r.packetSha256}))};
+  attemptedIds,attemptStates:attempts.map(r=>({cardId:r.cardId,status:r.status,packetSha256:r.packetSha256,...(r.failureCode?{failureCode:r.failureCode}:{})}))};
 }
 module.exports={empty,verify,planBatch,runBatch,excludeAttempted};

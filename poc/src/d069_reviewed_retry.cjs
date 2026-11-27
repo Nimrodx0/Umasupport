@@ -23,7 +23,7 @@ function reserveRetry({ledger,approval,sourcePin,existingCatalog,now}={}){
     existingCatalog.cards.some(c=>c.cardId===approval.cardId))fail('approval scope, timing or source pin');
  const row=ledger.rows.find(r=>r.cardId===approval.cardId);
  if(!row||row.retry!==undefined||!['not-listed','uncertain'].includes(row.status)||
-    digest(row)!==approval.priorRowSha256||
+    digest(row)!==approval.priorRowSha256||row.status==='uncertain'&&row.failureCode!=='network-transient'||
     (row.status==='not-listed'?approval.reason!=='listing-now-available':approval.reason!=='confirmed-transient-failure-resolved'))fail('prior state, reason or retry already consumed');
  return verify({...ledger,revision:ledger.revision+1,rows:ledger.rows.map(r=>r===row?{
   cardId:r.cardId,status:'reserved',sourcePin:structuredClone(sourcePin),packetSha256:null,

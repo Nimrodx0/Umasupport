@@ -91,3 +91,16 @@ test('reviewed retry consumes exactly one approval and retains previous-state di
  await a.rejects(runBatch(args),/already consumed/);
  a.equal(f.observations(),2);
 });
+
+test('unclassified and refused failures cannot use a transient retry approval',async()=>{
+ const {digest}=require('../src/event_release_gate.cjs'),{reserveRetry}=require('../src/d069_reviewed_retry.cjs');
+ const f=fixture();await runBatch({...f.input,targetIds:['39998'],observeBatch:async()=>{throw Error('unknown')}});
+ const old=f.ledger(),row=old.rows[0];a.equal(row.failureCode,'unclassified');
+ for(const code of ['unclassified','source-refused',undefined,'network-transient']){
+  const prior={...row};if(code===undefined)delete prior.failureCode;else prior.failureCode=code;
+  const ledger={...old,rows:[prior]},approval={schemaVersion:1,cardId:row.cardId,decision:'explicit-single-retry',priorRowSha256:digest(prior),reason:'confirmed-transient-failure-resolved',reviewedAt:'2026-11-27T11:00:00Z',notBefore:'2026-11-27T12:00:00Z',sourcePin,reviewEvidence:['https://github.com/Nimrodx0/Umasupport/issues/549']};
+  const args={ledger,approval,sourcePin,existingCatalog:f.input.existingCatalog,now:'2026-11-27T12:01:00Z'};
+  if(code==='network-transient')a.equal(reserveRetry(args).rows[0].status,'reserved');
+  else a.throws(()=>reserveRetry(args),/prior state/);
+ }
+});
