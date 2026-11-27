@@ -42,5 +42,5 @@ D-072の事前問い合わせ不要の判断を維持するが、第三者の包
 
 - 固定対象はGameTora robots.txt・Privacy Policy・CLAと、umamusume.jp robots.txt・二次創作ガイドライン。新規取得の直前、または既取得の正常公開候補の処理直前だけ確認し、同一日次run内では一回の確認結果を共有。対象0件なら条件文書も取得しない。初回基準採取は別workflowで明示的に行う。
 - [条件監視](../../poc/src/d075_conditions_monitor.cjs) は固定URLへの逐次GETのみ、6秒間隔、robots確認、リダイレクト拒否、認証なし、サイズ・時間上限。生バイトSHA-256のみ保持。文書変更は内容の法的判断ではない。HTMLの装飾や版識別子の変化でも保守的に保留し得る。未監視の新規規約ページや意味変更を完全検知する保証はない。
-- [基準採取workflow](../../.github/workflows/d075-condition-baseline.yml) は指紋と状態だけを出力し、採取成功も承認ではない。実文書の確認後に [基準設定](../../poc/config/d075-condition-baseline.v1.json) を方針SHAと固定文書指紋に結び付ける。取得不能・拒否・不一致・未登録時は新規取得・公開を保留。既存DBと既存表示は不変。
+- [基準採取workflow](../../.github/workflows/d075-condition-baseline.yml) は指紋と状態だけを出力し、採取成功も承認ではない。初回 [run 46051690350](https://github.com/Nimrodx0/Umasupport/actions/runs/46051690350) は5文書全件を取得・指紋化できた。閲覧した公開文書のキャッシュと生バイト版の同一性は未確認のため基準への登録は保留。実文書の確認後に [基準設定](../../poc/config/d075-condition-baseline.v1.json) を方針SHAと固定文書指紋に結び付ける。取得不能・拒否・不一致・未登録時は新規取得・公開を保留。既存DBと既存表示は不変。
 - 外部条件の保留Issueは一つに集約し、開いている間は再取得・公開を止める。再審査後の基準更新とIssueの明示closeによって再開する。未説明の変更や拒否を理由なくcloseしない。既存取得拒否台帳も維持する。自動での基準差替え・Issue close・期限延長は行わない。
