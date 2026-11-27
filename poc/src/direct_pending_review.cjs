@@ -28,7 +28,7 @@ function describePending(ledger,review){
 // This stage is intentionally network-free. Access conditions have not
 // yet been established; a queue entry is not authority to visit a site.
 function partitionBatches(ids,limit=2){
- assert(Array.isArray(ids)&&ids.length<=1000&&ids.every(id=>typeof id==='string'&&/^[1-9]\\d{4}$/.test(id))&&new Set(ids).size===ids.length,'Invalid batch IDs');
+ assert(Array.isArray(ids)&&ids.length<=1000&&ids.every(id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id))&&new Set(ids).size===ids.length,'Invalid batch IDs');
  assert(Number.isSafeInteger(limit)&&limit>=1&&limit<=2,'Invalid batch limit');
  const batches=[];
  for(let i=0;i<ids.length;i+=limit)batches.push(ids.slice(i,i+limit));
