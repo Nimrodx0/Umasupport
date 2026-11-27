@@ -61,3 +61,39 @@ test('partition covers all IDs exactly once, not two per day',()=>{
  a.throws(()=>partitionBatches(['39991','39991']));
  a.throws(()=>partitionBatches(ids,3));
 });
+
+const observation=(ids,statuses=[])=>({selectedCardIds:ids,publicationApproved:false,existingDatabaseUnchanged:true,sourceSiteTextCopied:false,
+ results:ids.map((cardId,i)=>({cardId,status:statuses[i]||'private-schema-only',publicationApproved:false}))});
+test('sequential observer processes all five, tolerates absent listings, and never overlaps batches',async()=>{
+ const {runSequentialBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'],calls=[];
+ let active=0;
+ const r=await runSequentialBatches({ids,observeBatch:async batch=>{
+  a.equal(active++,0);calls.push(batch);await Promise.resolve();active--;
+  return observation(batch,calls.length===1?['not-listed-yet']:[]);
+ }});
+ a.deepEqual(calls,[ids.slice(0,2),ids.slice(2,4),ids.slice(4)]);
+ a.deepEqual(r.observedIds,ids.slice(1));
+ a.deepEqual(r.held,[{cardId:ids[0],status:'not-listed-yet'}]);
+ a.deepEqual(r.unattemptedIds,[]);a.equal(r.publicationApproved,false);
+ a.equal(r.stopReason,null);
+});
+test('sequential observer stops on failure, unexpected layout, invalid result and never retries automatically',async()=>{
+ const {runSequentialBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'];
+ for(const kind of ['transport','layout','wrong-id']){
+  const calls=[];
+  const r=await runSequentialBatches({ids,observeBatch:async batch=>{
+   calls.push(batch);
+   if(calls.length===1)return observation(batch);
+   if(kind==='transport')throw Error('HTTP 429');
+   if(kind==='layout')return observation(batch,['unrecognized-event-layout']);
+   return observation(['39999',batch[1]]);
+  }});
+  a.equal(calls.length,2);a.deepEqual(r.unattemptedIds,[ids[4]]);
+  a.deepEqual(r.uncertainIds,kind==='layout'?[]:ids.slice(2,4));
+  a.equal(r.stopReason,kind==='layout'?'source-structure-unresolved':'batch-observation-failed');
+ }
+ const empty=await runSequentialBatches({ids:[],observeBatch:()=>{throw Error('must not call')}});
+ a.equal(empty.stopReason,null);a.deepEqual(empty.observedIds,[]);
+});

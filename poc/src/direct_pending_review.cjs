@@ -55,4 +55,46 @@ function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
   status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
   siteAccessAuthorized:false,publicationApproved:false};
 }
-module.exports={verifyDirectReview,describePending,planEventDrivenIntake,partitionBatches};
+// Transport-independent controller. A caller must separately establish
+// authority to use a real observer; the daily planner never invokes this.
+async function runSequentialBatches({ids,observeBatch}={}){
+ const batches=partitionBatches(ids);
+ assert(typeof observeBatch==='function','Missing batch observer');
+ const completed=[],held=[],unattempted=ids.slice();
+ let stopReason=null,uncertainIds=[];
+ for(const batch of batches){
+  let result;
+  try{
+   result=await observeBatch(batch.slice());
+   assert(result?.publicationApproved===false&&result.existingDatabaseUnchanged===true&&
+    result.sourceSiteTextCopied===false&&Array.isArray(result.selectedCardIds)&&
+    JSON.stringify(result.selectedCardIds)===JSON.stringify(batch)&&Array.isArray(result.results)&&
+    result.results.length===batch.length,'Unexpected observation');
+   for(let i=0;i<batch.length;i++){
+    const r=result.results[i];
+    assert(r?.cardId===batch[i]&&r.publicationApproved===false&&
+     ['private-schema-only','not-listed-yet','unrecognized-event-layout'].includes(r.status),
+     'Unexpected observation status');
+   }
+  }catch{
+   // A thrown transport/layout error might follow a partial visit. Do not
+   // assert that any member of this batch was unvisited or safely retry it.
+   stopReason='batch-observation-failed';uncertainIds=batch.slice();
+   unattempted.splice(0,batch.length);break;
+  }
+  for(const r of result.results){
+   if(r.status==='private-schema-only')completed.push(r.cardId);
+   else held.push({cardId:r.cardId,status:r.status});
+  }
+  unattempted.splice(0,batch.length);
+  // Unrecognized structure may indicate a site-wide change; stop further
+  // batches. A single absent listing does not block unrelated cards.
+  if(result.results.some(r=>r.status==='unrecognized-event-layout')){
+   stopReason='source-structure-unresolved';break;
+  }
+ }
+ return {dataKind:'d069-sequential-observation-report',schemaVersion:1,
+  observedIds:completed,held,uncertainIds,unattemptedIds:unattempted,stopReason,
+  publicationApproved:false};
+}
+module.exports={verifyDirectReview,describePending,planEventDrivenIntake,partitionBatches,runSequentialBatches};
