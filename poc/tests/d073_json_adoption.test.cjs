@@ -17,10 +17,14 @@ test('ordinary explicit facts accepted from JSON alone, not published or game ve
  a.equal(r.publicationApproved,false);a.equal(r.independentGameVerification,false);a.equal(r.identifyingTitlesRequired,true);
  a.doesNotMatch(JSON.stringify(r),/Synthetic event|pageProps|eventData/);
 });
-test('ordinary facts and unresolved topology are separated, never infer a chain',()=>{
+test('ordinary chain classification uses D035/D038; abnormal stage groups remain exceptions',()=>{
  const r=classify(fixture({random:[ev(1)],arrows:[ev(2),ev(3)]}));
- a.equal(r.status,'exception-review');a.equal(r.exceptionEventCount,2);a.equal(r.events[0].factStatus,'source-facts-accepted');
- a.ok(r.events[1].reasonCodes.includes('chain-reachability-not-established'));
+ a.equal(r.status,'source-facts-accepted');a.equal(r.exceptionEventCount,0);
+ for(const arrows of [[ev(2)],[ev(2),ev(3),ev(4),ev(5)],[ev(2,{c:[{o:'',r:[{t:'ee'}]}]}),ev(3)]]){
+  const q=classify(fixture({random:[ev(1)],arrows}));
+  a.equal(q.status,'exception-review');
+  a.ok(q.events[1].reasonCodes.includes('chain-reachability-not-established'));
+ }
 });
 test('unknown codes, invalid scope, history, level-dependent data and legacy metadata are exceptions',()=>{
  for(const f of [fixture({random:[ev(1,{c:[{o:'',r:[{t:'weird'}]}]})]}),fixture({random:[ev(1,{history:[{}]})]}),fixture({random:[ev(1)]},{isLevelDependent:true}),fixture({random:[ev(1)]},{isLevelDependent:'yes'})]){
@@ -31,7 +35,7 @@ test('unknown codes, invalid scope, history, level-dependent data and legacy met
  f.packet.events[0].groups[0].routes[0].hints[0].level=3;a.throws(()=>classify(f),/receipt mismatch/);
 });
 
-test('source candidates require only exact titles and explicitly established chain topology; unknowns remain blocked',()=>{
+test('manual chain evidence remains supported; missing evidence or policy is blocked',()=>{
  const {prepareSourceCandidate}=require('../src/d073_json_adoption.cjs');
  const f=fixture({random:[ev(1)],arrows:[ev(2),ev(3)]});
  const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[f.row]};
@@ -46,4 +50,31 @@ test('source candidates require only exact titles and explicitly established cha
  a.equal(x.receipt.chainEvidenceSha256,digest(input.chainEvidence));
  input.chainEvidence.events[1].previousSourceEventId=null;
  a.throws(()=>prepareSourceCandidate(args),/topology/);
+});
+
+test('ordinary chain policy preserves per-result stop and downstream reachability',()=>{
+ const {prepareSourceCandidate,ordinaryChainEvidence}=require('../src/d073_json_adoption.cjs');
+ const f=fixture({random:[ev(1)],arrows:[
+  ev(2,{c:[{o:'A',r:[{t:'sk',v:'+1',d:990002},{t:'di'},{t:'ee'}]},{o:'B',r:[{t:'ee'}]}]}),
+  ev(3),ev(4)]});
+ const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[f.row]};
+ const chainEvidence=ordinaryChainEvidence(f.packet);
+ const input={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256:digest(f.packet),
+  titles:[1,2,3,4].map(i=>({sourceEventId:i,title:'Synthetic event '+i})),chainEvidence};
+ const args={packet:f.packet,skillText,ledger,existingCatalog:{schemaVersion:1,cards:[]},input};
+ const {candidate,receipt}=prepareSourceCandidate(args);
+ const es=candidate.card.events,first=es[1],last=es[3],{reachability}=require('../src/core.js');
+ a.deepEqual(last.requires,{all:[{eventId:es[2].id}]});
+ a.equal(first.choices[0].outcomes[1].terminal,true);
+ a.equal(first.choices[0].outcomes[0].terminal,undefined);
+ a.equal(reachability(last,{},es).status,'blocked');
+ a.equal(reachability(last,{[first.id]:'c1'},es).status,'conditional');
+ a.equal(reachability(last,{[first.id]:'c1'},es,{[first.id]:'r1'}).status,'reachable');
+ a.equal(reachability(last,{[first.id]:'c1'},es,{[first.id]:'r2'}).status,'blocked');
+ a.equal(reachability(last,{[first.id]:'c2'},es).status,'blocked');
+ a.equal(receipt.chainEvidenceSha256,digest(chainEvidence));
+ a.equal(receipt.independentGameVerification,false);a.equal(candidate.publicationApproved,false);
+ for(const bad of [{...chainEvidence,packetSha256:'0'.repeat(64)},{...chainEvidence,events:chainEvidence.events.slice(1)},{...chainEvidence,policy:'fake'}]){
+  a.throws(()=>prepareSourceCandidate({...args,input:{...input,chainEvidence:bad}}),/policy scope or digest/);
+ }
 });

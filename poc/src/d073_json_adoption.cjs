@@ -1,10 +1,26 @@
 'use strict';
 // Source-based editorial adoption, not independent game verification or
-// publication approval. Unknown topology is never inferred from array order.
+// publication approval. D035/D038 ordinary continuation is a product rule,
+// not independent verification of game topology. Ambiguous chains remain held.
 const {scope}=require('./d069_review_packet_archive.cjs');
 const {digest,secureUrl}=require('./event_release_gate.cjs');
 const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
 const {registryFromSkillText}=require('./official_gametora_skill_id_crosswalk.cjs');
+// A single explicit arrows category of 2–3 stages, with at least one
+// non-terminal result at every nonfinal stage, is the conservative initial
+// scope. Other lengths or contradictions need specific adjudication.
+const POLICY_URLS=[
+ 'https://github.com/Nimrodx0/Umasupport/blob/f21466075f8333f73937123adc4f5500ec4da100/docs/decisions/log.md#decision-d-035',
+ 'https://github.com/Nimrodx0/Umasupport/blob/f21466075f8333f73937123adc4f5500ec4da100/docs/decisions/log.md#decision-d-038'
+];
+function ordinaryChainEvidence(packet){
+ const chain=packet.events.filter(e=>e.category==='arrows');
+ if(chain.length<2||chain.length>3||chain.some((e,i)=>e.categoryOrdinal!==i+1)||
+    chain.slice(0,-1).some(e=>e.groups.every(g=>g.routes.every(r=>r.terminal))))return null;
+ return {dataKind:'d073-ordinary-chain-policy',schemaVersion:1,policy:'D035-D038',
+  packetSha256:digest(packet),evidenceUrls:POLICY_URLS.slice(),
+  events:chain.map((e,i)=>({sourceEventId:e.sourceEventId,previousSourceEventId:i?chain[i-1].sourceEventId:null}))};
+}
 function classify({packet,row,skillText,registry}={}){
  scope(packet,row);
  if(!registry){
@@ -17,6 +33,7 @@ function classify({packet,row,skillText,registry}={}){
   if(packet.sourceContext.levelDependent===true||packet.sourceContext.levelDependentFieldInvalid)cardReasons.add('level-dependent-or-invalid-source-flag');
  }
  if(packet.domEvidence?.status==='mismatch')cardReasons.add('recorded-source-representation-discrepancy');
+ const ordinary=ordinaryChainEvidence(packet);
  const seen=new Set(),titleHashes=new Set(),categoryNext=new Map();
  const events=packet.events.map(e=>{
   const reasons=new Set();
@@ -25,7 +42,7 @@ function classify({packet,row,skillText,registry}={}){
   const next=(categoryNext.get(e.category)||0)+1;categoryNext.set(e.category,next);
   if(e.categoryOrdinal!==next)reasons.add('event-position-discontinuity');
   if(e.category!=='random'&&e.category!=='arrows')reasons.add('unsupported-event-category');
-  if(e.category==='arrows')reasons.add('chain-reachability-not-established');
+  if(e.category==='arrows'&&!ordinary)reasons.add('chain-reachability-not-established');
   if(packet.sourceContext?.historyEventIds.includes(e.sourceEventId))reasons.add('source-history-semantics-unverified');
   const selection=e.groups.length===1&&!e.groups[0].labelPresent?'auto':e.groups.length>=2&&e.groups.every(g=>g.labelPresent)?'choice':null;
   if(!selection||selection!==e.selection)reasons.add('selection-ambiguous');
@@ -64,6 +81,12 @@ function checkChainEvidence({packet,classification,chainEvidence=null}){
  const chain=packet.events.filter(e=>e.category==='arrows');
  const topology=new Map(packet.events.filter(e=>e.category==='random').map(e=>[e.sourceEventId,null]));
  if(!chain.length){if(chainEvidence!==null)fail('unexpected chain evidence');return topology;}
+ if(chainEvidence?.dataKind==='d073-ordinary-chain-policy'){
+  const expected=ordinaryChainEvidence(packet);
+  if(!expected||classification.status!=='source-facts-accepted'||digest(chainEvidence)!==digest(expected))fail('ordinary chain policy scope or digest mismatch');
+  for(const v of expected.events)topology.set(v.sourceEventId,v.previousSourceEventId);
+  return topology;
+ }
  if(!exact(chainEvidence,'reviewer,reviewedAt,evidenceUrls,events')||
     typeof chainEvidence.reviewer!=='string'||!chainEvidence.reviewer.trim()||chainEvidence.reviewer.length>120||
     typeof chainEvidence.reviewedAt!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(chainEvidence.reviewedAt)||
@@ -105,4 +128,4 @@ function prepareSourceCandidate({packet,ledger,input,skillText,existingCatalog})
   independentGameVerification:false,publicationApproved:false};
  return {candidate,receipt};
 }
-module.exports={classify,checkChainEvidence,parseSourceInput,prepareSourceCandidate};
+module.exports={classify,checkChainEvidence,parseSourceInput,prepareSourceCandidate,ordinaryChainEvidence};

@@ -7,9 +7,9 @@ const {gitBlobSha}=require('../src/current_umasim_roster_delta.cjs');
 const catalog={schemaVersion:1,cards:[]};
 const skillText=JSON.stringify(Array.from({length:101},(_,i)=>({id:String(990001+i),name:'Synthetic '+i,rarity:'normal',group:i})));
 const pin={commit:'a'.repeat(40),cardBlob:'b'.repeat(40),skillBlob:gitBlobSha(skillText)};
-function packet(cardId,category='random'){
+function packet(cardId,category='random',count=1){
  return inspect({cardId,sourceUrl:'https://gametora.com/ja/umamusume/supports/'+cardId+'-example',buildId:'synthetic',sourcePin:pin,skillText,existingCatalog:catalog,
- body:JSON.stringify({pageProps:{sourceData:{support_id:Number(cardId)},eventData:{ja:JSON.stringify({[category]:[{i:1,n:'Synthetic title',c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}]})}}})});
+ body:JSON.stringify({pageProps:{sourceData:{support_id:Number(cardId)},eventData:{ja:JSON.stringify({[category]:Array.from({length:count},(_,i)=>({i:i+1,n:'Synthetic title'+(i===0?'':i+1),c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}))})}}})});
 }
 function fixture(){
  const packets=new Map([['39995',packet('39995')],['39996',packet('39996','special')],['39997',packet('39997')]]);
@@ -87,4 +87,19 @@ test('daily queue prepares an archived normal card with metadata only and no new
  a.equal(row.routine.publicationApproved,false);
  a.doesNotMatch(JSON.stringify(q),/Synthetic title|pageProps|eventData/);
  a.equal(q.rows[2].routine,undefined);
+});
+
+test('daily queue prepares normal two-stage chains without human chain evidence; abnormal lengths held',async()=>{
+ const f=fixture();
+ for(const [id,n] of [['39995',2],['39997',4]]){
+  const p=packet(id,'arrows',n);
+  p.identifyingTitles=p.events.map((e,i)=>({sourceEventId:e.sourceEventId,title:'Synthetic title'+(i===0?'':i+1)}));
+  f.packets.set(id,p);f.ledger.rows.find(r=>r.cardId===id).packetSha256=digest(p);
+ }
+ const q=await buildReviewQueue(f.args);
+ a.equal(q.rows[0].status,'ready-for-publication-decision');
+ a.equal(q.rows[0].routine.input.chainEvidence.dataKind,'d073-ordinary-chain-policy');
+ a.equal(q.rows[0].routine.events.length,2);
+ a.equal(q.rows[2].status,'ready-for-independent-review');a.equal(q.rows[2].routine,undefined);
+ a.doesNotMatch(JSON.stringify(q),/Synthetic title|pageProps|eventData/);
 });

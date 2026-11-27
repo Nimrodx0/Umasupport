@@ -5,16 +5,16 @@
 ## 適用範囲と入力
 
 - **通常の入力（D-067）**：GameTora本体の個別カードページから限定直接取得した構造・数値事実。通常ヒント・新カードIDはUmaSimの固定公開元と照合します。従来の派生GitHubは既存固定版の履歴照合のみ。[現行の出典](../reference/data-sources.md)。
-- **増分のみ**：UmaSim名簿の新規カードIDだけを対象にし、既存の承認済みイベントやユーザーの設定を一括更新しません。[W3の作業計画](../plans/product.md)。
+- **増分のみ**：UmaSim名簿の新規カードIDだけを対象にし、既存イベント・設定を一括更新しない。[W3の作業計画](../plans/product.md)。
 - **例外の裁定**：GameTora本体の個別イベントに欠損・衝突・曖昧な進行条件がある場合、GameWithの掲載事実で個別裁定します。[例外の仕様](../reference/event-adjudication-enforcement.md)。
 
 ## 収録工程
 
 1. [最新状況](../project/status.md)と[詳細計画](../plans/product.md)から未収録の数値カードIDと今回の対象を確定します。
-2. 固定UmaSim名簿の差分で新規IDを抽出し、最新名簿と独立スキル辞書のコミット・blobを固定します。GameToraの一覧から個別URLを解決し、限定ブラウザ検証でイベント見出しと本文を照合します。未掲載・構造不明は保留台帳へ持ち越します。[直接取得検証](../../.github/workflows/direct-new-card-intake.yml)。
+2. UmaSim名簿の新規IDと最新名簿・辞書のcommit/blobを固定。GameToraの一覧から個別URLを解決し、限定ブラウザ検証でイベント見出しと本文を照合します。未掲載・構造不明は保留台帳へ持ち越します。[直接取得検証](../../.github/workflows/direct-new-card-intake.yml)。
 3. 現行の変換・増分取込コード（[現行抽出器](../../poc/src/official_gametora_route_dom_extractor.cjs)・[未承認スキーマ投影](../../poc/src/official_gametora_private_schema_projection.cjs)・[new card increment](../../poc/src/new_card_event_incremental.cjs)）を確認し、分岐、結果ごとのスキルID・ヒントLv、継続・打ち切りが保持されるか検査します。
 4. 不一致、重複、未知の条件、公開前の候補を**未確認のまま保持**します。未掲載を確定0件として数えず、結果の異なる選択肢を無条件の報酬へ変換しません。
-5. D-068の条件付き包括承認に従い、事実・取得条件・公開根拠を確認した候補に限り、利用者再承認なしで公開へ進めます。[正式公開ゲート](checker-public-catalog.md)で採否と承認台帳の内容ハッシュを検証します。追加対象以外の既存DB・保存済み設定・キャッシュの回帰検査も行います。
+5. D-068の条件付き包括承認に従い、事実・取得条件・公開根拠を確認した候補に限り、利用者再承認なしで公開へ進めます。[正式公開ゲート](checker-public-catalog.md)で採否と承認台帳の内容ハッシュを検証します。既存DB・設定・キャッシュを回帰検査。
 
 ## D-067のローカルレビュー候補出力
 
@@ -46,7 +46,7 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## D-072 JSON優先の通常取得と例外診断
 
-D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。連続到達のみ追加確認。正常randomは日次で `routine.input` と内容SHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
+D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。D-035/D-038の通常2〜3段arrowsは解放・明示終了を自動変換。異常段のみ確認。正常候補は日次で `routine.input` とSHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
 
 ## D-072 承認対象の準備と公開提案の生成
 
