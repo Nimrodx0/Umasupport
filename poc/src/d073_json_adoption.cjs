@@ -2,7 +2,7 @@
 // Source-based editorial adoption, not independent game verification or
 // publication approval. Unknown topology is never inferred from array order.
 const {scope}=require('./d069_review_packet_archive.cjs');
-const {digest,secureUrl,canonical}=require('./event_release_gate.cjs');
+const {digest,secureUrl}=require('./event_release_gate.cjs');
 const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
 const {registryFromSkillText}=require('./official_gametora_skill_id_crosswalk.cjs');
 function classify({packet,row,skillText,registry}={}){
