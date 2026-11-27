@@ -1,0 +1,61 @@
+'use strict';
+const {test}=require('node:test'),a=require('node:assert/strict'),crypto=require('node:crypto');
+const {createSourceReader}=require('../src/d072_verified_umasim_source.cjs');
+const {gitBlobSha,POLICY}=require('../src/current_umasim_roster_delta.cjs');
+const {createReviewedIntake}=require('../src/d072_github_reviewed_intake.cjs');
+const {digest}=require('../src/event_release_gate.cjs');
+const {inspect,prepare}=require('../src/d069_json_review_bridge.cjs');
+function gitFixture(){
+ const commit='a'.repeat(40),treeSha='b'.repeat(40),support='synthetic roster',skills='synthetic dictionary';
+ const pin={commit,cardBlob:gitBlobSha(support),skillBlob:gitBlobSha(skills)};
+ const files=[{path:'data/support_card.txt',mode:'100644',type:'blob',sha:pin.cardBlob},{path:'data/skill_data.txt',mode:'100644',type:'blob',sha:pin.skillBlob}];
+ const texts=new Map([[pin.cardBlob,support],[pin.skillBlob,skills]]);
+ const calls=[],state={};
+ const check=(x)=>{a.equal(x.owner,'mee1080');a.equal(x.repo,'umasim');};
+ const github={rest:{repos:{getCommit:async x=>{check(x);calls.push(['commit',x.ref]);return {data:{sha:state.commit??commit,commit:{tree:{sha:treeSha}}}};}},git:{
+  getTree:async x=>{check(x);a.equal(x.tree_sha,treeSha);a.equal(x.recursive,'1');calls.push(['tree']);return {data:{sha:treeSha,truncated:state.truncated??false,tree:state.files??files}};},
+  getBlob:async x=>{check(x);calls.push(['blob',x.file_sha]);const text=texts.get(x.file_sha);return {data:{sha:x.file_sha,encoding:'base64',size:Buffer.byteLength(text),content:Buffer.from(state.badBlob?'bad':text).toString('base64')}};}
+ }}};
+ return {pin,support,skills,github,calls,state,files};
+}
+test('verify same-commit file coordinates and blob contents, cache only immutable coordinates',async()=>{
+ const f=gitFixture(),s=createSourceReader(f.github);
+ a.deepEqual(await s.latest(),{pin:f.pin,supportText:f.support,skillText:f.skills});
+ a.deepEqual(await s.load(f.pin),{pin:f.pin,supportText:f.support,skillText:f.skills});
+ a.equal(f.calls.filter(x=>x[0]==='blob').length,2);
+ await a.rejects(s.load({...f.pin,skillBlob:f.pin.cardBlob}),/commit\/blob path mismatch/);
+ await a.rejects(s.resolve('other'),/commit coordinate/);
+});
+test('truncated trees, duplicate paths, bad bytes and changed commit fail closed',async()=>{
+ for(const alter of [f=>f.state.truncated=true,f=>f.state.files=[...f.files,f.files[0]],f=>f.state.badBlob=true]){
+  const f=gitFixture();alter(f);await a.rejects(createSourceReader(f.github).load(f.pin),/incomplete tree|immutable file missing|blob encoding\/size|blob content mismatch/);
+ }
+ const f=gitFixture();f.state.commit='c'.repeat(40);await a.rejects(createSourceReader(f.github).load(f.pin),/commit mismatch/);
+});
+test('GitHub preparation and staging require durable receipt, separately supplied evidence and final approval',async()=>{
+ const cardId='39998',name='Synthetic event';
+ const support=(id)=>Array.from({length:5},(_,stage)=>{const f=Array(62).fill('0');f[0]=id;f[1]='[Synthetic]カード'+id;f[3]='2';f[4]=String(stage);f[6]='スピード';f[59]='末脚';return f.join('\t');}).join('\n')+'\n';
+ const before=Array.from({length:500},(_,i)=>support(String(10000+i))).join(''),supportText=before+support(cardId);
+ const skillText=JSON.stringify(Array.from({length:101},(_,i)=>({id:String(990001+i),name:'Synthetic '+i,rarity:'normal',group:i})));
+ const pin={commit:'a'.repeat(40),cardBlob:gitBlobSha(supportText),skillBlob:gitBlobSha(skillText)},sourceInput={pin,supportText,skillText};
+ const existingCatalog={schemaVersion:1,cards:[]},existingApprovals={schemaVersion:1,entries:[]};
+ const packet=inspect({cardId,sourceUrl:'https://gametora.com/ja/umamusume/supports/'+cardId+'-example',buildId:'synthetic',sourcePin:pin,skillText,existingCatalog,
+  body:JSON.stringify({pageProps:{sourceData:{support_id:Number(cardId)},eventData:{ja:JSON.stringify({random:[{i:1,n:name,c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}]})}}})});
+ const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:pin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+ let reads=0;
+ const store={load:async()=>structuredClone(ledger),loadPacket:async id=>{a.equal(id,cardId);reads++;return structuredClone(packet);}};
+ const source={load:async p=>{a.deepEqual(p,pin);return sourceInput;},latest:async()=>sourceInput,baseline:async()=>({cardBlob:gitBlobSha(before),supportText:before}),historicalSkill:async()=>skillText};
+ const evidence={schemaVersion:1,cardId,packetSha256:digest(packet),reviewer:'synthetic',reviewedAt:'2026-11-27',evidenceUrls:['https://example.org/synthetic'],nonSkillPolicy:'omit-explicitly-skill-path-only',events:[{sourceEventId:1,title:name,category:'random',categoryOrdinal:1,selection:'auto',previousSourceEventId:null,groups:[{ordinal:1,labelPresent:false,routes:[{ordinal:1,hints:[{skillId:'skill:990001',level:2}],terminal:false,nonSkillCount:0}]}]}]};
+ const intake=createReviewedIntake({store,source}),prep=await intake.prepare({evidence:[evidence],existingCatalog});
+ a.equal(prep.publicationApproved,false);a.equal(reads,1);
+ const event=prep.items[0].candidate.card.events[0],fields=['card','event','choices','outcomes','dependencies','publication'];
+ const entry={cardId,eventId:event.id,eventSha256:digest(event),reviewer:'synthetic',reviewedAt:'2026-11-27',checks:Object.fromEntries(fields.map(k=>[k,true])),evidence:Object.fromEntries(fields.map(k=>[k,['https://example.org/synthetic']])),publicationBasis:{kind:'original-factual-description',reason:'synthetic fixture'}};
+ const args={evidence:[evidence],existingCatalog,existingApprovals,newApprovals:{schemaVersion:1,entries:[entry]}};
+ const result=await intake.stage(args);
+ a.equal(result.appendedCardCount,1);a.equal(result.appendedEventCount,1);
+ a.equal(result.independentReviewReceipts[0].packetSha256,digest(packet));
+ await a.rejects(intake.stage({...args,newApprovals:existingApprovals}),/承認/);
+ await a.rejects(intake.prepare({evidence:[{...evidence,packetSha256:'0'.repeat(64)}],existingCatalog}),/receipt unavailable/);
+ const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
+ a.equal(current.currentRosterCount,501);a.equal(current.sourceRequestsToGameTora,0);a.equal(current.publicationChanged,false);
+});
