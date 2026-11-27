@@ -179,7 +179,7 @@ jobs:
                 '; attempted: '+(eventPlan.attemptedIds.join(', ')||'none')+
                 '; new-card-only acquisition; publication remains gated.')
               .addHeading('Archived packet review preflight')
-              .addRaw(reviewQueue.rows.map(r=>r.cardId+': '+r.status+(r.sourceCandidateInputReady?' (source candidate input ready)':'')).join('; ')||'No pending cards')
+              .addRaw(reviewQueue.rows.map(r=>r.cardId+': '+r.status+(r.routine?' (candidate prepared; publication decision required)':'')).join('; ')||'No pending cards')
               .write();
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));

@@ -1,6 +1,6 @@
 # サポートカードのイベントを増分収録する：現行手順
 
-本書は現行の主要なイベント取込経路だけを扱います。[GameWith-first方式の旧全文](../evidence/events/curated-event-intake-legacy-20261019.md)は2026-10-19当時の記録であり、今の全件取込指示ではありません。
+本書は現行取込手順。[GameWith-first方式の旧全文](../evidence/events/curated-event-intake-legacy-20261019.md)は2026-10-19当時の記録であり、今の全件取込指示ではありません。
 
 ## 適用範囲と入力
 
@@ -24,7 +24,7 @@
 node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <skill-data> <pinned-metadata> <offset> --private-draft /outside/repo/review.json
 ```
 
-同一コミットの `commit`・`cardBlob`・`skillBlob` を持つメタデータが必要。1回最大2枚、offsetで保留列を移動。CIでの候補出力・既存ファイルの上書き・リポジトリ内出力は拒否する。候補の数値スキルID・結果位置・効果・分類は独自のレビュー入力であり、未承認のため公開カタログではない。内部到達条件と選択・結果の意味を個別審査後、既存の非破壊追加／公開ゲートを適用する。
+同一commit/cardBlob/skillBlobが必須。1回最大2枚、offsetで保留列を移動。CIでの候補出力・既存ファイルの上書き・リポジトリ内出力は拒否する。候補は独自構造の審査入力で未承認。内部到達条件と選択・結果の意味を個別審査後、既存増分・公開ゲートを適用。
 
 ## 個別の事実照合（D-067）
 
@@ -40,19 +40,19 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## D-072の保存済みパケットからの審査・増分準備
 
-[独立事実照合](../../poc/src/d072_independent_review.cjs) の `compareIndependentReview` は保存済みパケットと台帳に、別途実際に確認した `evidence`（schemaVersion、cardId、packetSha256、reviewer、reviewedAt、evidenceUrls、nonSkillPolicy、events）を照合する。各イベントは sourceEventId、正式title、category、categoryOrdinal、selection、previousSourceEventId、groups（ordinal、labelPresent、routes: ordinal、hints: skillId/level、terminal、nonSkillCount）を独立確認する。タイトルSHA・選択と結果位置・報酬と終了・前段・省略方針が全て合致した場合だけ、既存審査契約と証跡SHAを返す。`prepareIndependentCandidate` は未承認候補とイベント内容SHAを返す。パケットから独立証拠を自動生成してはならない。
+[独立事実照合](../../poc/src/d072_independent_review.cjs) の `compareIndependentReview` は保存済みパケットと台帳に、別途確認した `evidence`（schemaVersion、cardId、packetSha256、reviewer、reviewedAt、evidenceUrls、nonSkillPolicy、events）を照合する。各イベントは sourceEventId、正式title、category、categoryOrdinal、selection、previousSourceEventId、groups（ordinal、labelPresent、routes: ordinal、hints: skillId/level、terminal、nonSkillCount）を独立確認する。タイトルSHA・選択と結果位置・報酬と終了・前段・省略方針が全て合致した場合だけ、既存審査契約と証跡SHAを返す。`prepareIndependentCandidate` は未承認候補とイベント内容SHAを返す。パケットから独立証拠を自動生成してはならない。
 
-`stageIndependentEvidenceAcrossVersions` は1〜2枚のパケット・独立証拠・取得時の固定UmaSim名簿／辞書、基準名簿、公開時の固定名簿／辞書、現行カタログ・承認台帳、新規個別承認を入力とする。[異版増分](../../poc/src/d072_cross_version_reviewed_append.cjs) では各blobの内容一致、基準からの新規ID、観測時の名簿IDの消失なし、対象カードの解析済み属性・通常ヒント・性能解放情報、報酬スキルのID・名称・レアリティ・groupの一致を検査する。別版でのイベント事実の不変や法的許諾を証明するものではない。呼出し側で公式UmaSimのcommitとblobの対応・基準固定版・旧固定辞書の検証を行う。既存DBの追記だけを許し、旧内容や承認を変更せず、内容SHA承認と本番preflightを実行する。中核関数は通信・書込みなし。接続は [公式固定版ソース読取](../../poc/src/d072_verified_umasim_source.cjs) と [GitHub審査アダプタ](../../poc/src/d072_github_reviewed_intake.cjs) の `createReviewedIntake({github,owner,repo})` を用いる。`prepare({evidence,existingCatalog})` は専用台帳・パケット・取得時辞書から未承認候補SHAを返す。`stage({evidence,existingCatalog,existingApprovals,newApprovals})` は公式固定基準・取得時各版・最新版・旧固定辞書を照合し、承認済み増分と証跡をメモリ上に返す。呼出し側で現行mainのカタログ・台帳を固定。[固定入力検証](../../.github/workflows/d072-verified-release-inputs.yml) は実出典・既存DBのみで動作を検査する。元データ・未承認候補の公開禁止。実カード試験は残る。
+`stageIndependentEvidenceAcrossVersions` は1〜2枚のパケット・独立証拠・取得時の固定UmaSim名簿／辞書、基準名簿、公開時の固定名簿／辞書、現行カタログ・承認台帳、新規個別承認を入力とする。[異版増分](../../poc/src/d072_cross_version_reviewed_append.cjs) では各blobの内容一致、基準からの新規ID、観測時の名簿IDの消失なし、対象カードの解析済み属性・通常ヒント・性能解放情報、報酬スキルのID・名称・レアリティ・groupの一致を検査する。別版でのイベント事実の不変や法的許諾を証明するものではない。呼出し側で公式UmaSimのcommitとblobの対応・基準固定版・旧固定辞書の検証を行う。既存DBの追記だけを許し、旧内容や承認を変更せず、内容SHA承認と本番preflightを実行する。中核関数は通信・書込みなし。接続は [公式固定版ソース読取](../../poc/src/d072_verified_umasim_source.cjs) と [GitHub審査アダプタ](../../poc/src/d072_github_reviewed_intake.cjs) の `createReviewedIntake({github,owner,repo})` を用いる。`prepare({evidence,existingCatalog})` は専用台帳・パケット・取得時辞書から未承認候補SHAを返す。`stage({evidence,existingCatalog,existingApprovals,newApprovals})` は公式固定基準・取得時各版・最新版・旧固定辞書を照合し、承認済み増分と証跡をメモリ上に返す。呼出し側で現行mainのカタログ・台帳を固定。[固定入力検証](../../.github/workflows/d072-verified-release-inputs.yml) は実出典・既存DBのみで動作を検査する。元データ・未承認候補は公開不可。実カード未検証。
 
 ## D-072 JSON優先の通常取得と例外診断
 
-D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で取得時の短い識別名（専用state、ログ除外）は `titles:null` で再利用。連続到達のみ追加確認。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
+D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。連続到達のみ追加確認。正常randomは日次で `routine.input` と内容SHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
 
 ## D-072 承認対象の準備と公開提案の生成
 
 [審査準備workflow](../../.github/workflows/d072-independent-review-preparation.yml) をmainで手動実行し `evidence` 配列を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。正常候補は公開根拠を実審査。準備は承認・追加取得なし。
 
-[公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合1〜2枚）と `newApprovals`（個別承認v1）または `attestations`（[カード一括証跡](../../poc/src/d072_card_review_attestation.cjs)）のJSON。後者は全イベントSHA・証拠SHA・6確認・公開根拠を個別台帳へ展開。D-073の `publicationDecisions` はパケット・証跡・イベント一覧SHAと明示取得条件・公開判断を固定し、[個別承認](../../poc/src/d073_publication_decision.cjs)を生成。秘密・元JSON・原文・未承認候補は入力不可。既定 `plan` は読取専用。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一コミットにまとめて専用 `automation/d072-release-<SHA>` refを新規作成する。main書込・強制更新・自動mergeは禁止。同一tree・親のrefのみ再利用。main移動時は最新版で再実行。
+[公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合1〜2枚）と `newApprovals`（個別承認v1）または `attestations`（[カード一括証跡](../../poc/src/d072_card_review_attestation.cjs)）のJSON。後者は全イベントSHA・証拠SHA・6確認・公開根拠を個別台帳へ展開。D-073の `publicationDecisions` はパケット・証跡・イベント一覧SHAと明示取得条件・公開判断を固定し、[個別承認](../../poc/src/d073_publication_decision.cjs)を生成。[共通方針](checker-public-catalog.md) は `routinePublicationPolicy` で指定（未設定）。秘密・原文・元JSON不可。既定 `plan` は読取専用。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一commitの専用 `automation/d072-release-<SHA>` refを新規作成する。main書込・強制更新・自動mergeは禁止。同一tree・親のrefのみ再利用。main移動時は最新版で再実行。
 
 `pr` は検証済みbranchからmain向けPRを作成。同一open PRのみ再利用、競合・権限拒否・ref変更時停止。PR作成・CI起動はGitHub設定に依存するため、拒否時はbranchから手動PR、必要なら管理者がCI実行承認。[CI引渡し](../../.github/workflows/d072-release-ci-handoff.yml) をmainでPR番号指定し、固定6ファイル・証跡・最新必須CIを読取専用検証する。成功時のみ通常権限で統合し、[Pages受入](../../.github/workflows/pages-real-browser-acceptance.yml) の全資産・イベントID照合を確認。標準トークンの自動merge、権限設定変更、自動事実承認はしない。
 

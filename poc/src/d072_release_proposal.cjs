@@ -63,7 +63,7 @@ function render({files,result,baseSha}){
   [LIVE]:live.replaceAll(oldVersion,version),[receiptPath]:json(receipt)};
  return {proposalSha,branch:'automation/d072-release-'+proposalSha.slice(0,24),version,receipt,files:output};
 }
-async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,attestations,publicationDecisions,mode='plan',intake=createReviewedIntake({github,owner,repo})}={}){
+async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,mode='plan',intake=createReviewedIntake({github,owner,repo})}={}){
  if(!['plan','branch','pr'].includes(mode)||!SHA.test(baseSha||'')||!github?.rest?.git||!owner||!repo)fail('proposal scope');
  const g=github.rest.git,coord={owner,repo};
  const main=async()=>(await g.getRef({...coord,ref:'heads/main'})).data.object.sha;
@@ -77,7 +77,7 @@ async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,at
   if(entries.length!==1||entries[0].type!=='blob'||entries[0].mode!=='100644'||typeof files?.[path]!=='string'||
      gitBlobSha(files[path])!==entries[0].sha)fail('base file mismatch: '+path);
  }
- const result=await intake.stage({evidence,newApprovals,attestations,publicationDecisions,existingCatalog:JSON.parse(files[CATALOG]),existingApprovals:JSON.parse(files[APPROVALS])});
+ const result=await intake.stage({evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,existingCatalog:JSON.parse(files[CATALOG]),existingApprovals:JSON.parse(files[APPROVALS])});
  const plan=render({files,result,baseSha});
  const summary={proposalSha:plan.proposalSha,branch:plan.branch,version:plan.version,newCardIds:plan.receipt.newCardIds,
   before:plan.receipt.before,after:plan.receipt.after,baseSha,releasePin:plan.receipt.releasePin,

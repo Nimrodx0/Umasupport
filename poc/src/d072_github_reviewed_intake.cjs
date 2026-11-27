@@ -35,10 +35,13 @@ function createReviewedIntake({github,owner,repo,store=createStore({github,owner
   return {dataKind:'d072-independent-candidate-preparation',schemaVersion:1,publicationApproved:false,
    items:items.map(x=>prepareItem(x,ledger,existingCatalog))};
  }
- async function stage({evidence,existingCatalog,existingApprovals,newApprovals,attestations,publicationDecisions}={}){
-  if([newApprovals,attestations,publicationDecisions].filter(x=>x!==undefined).length!==1)fail('exactly one explicit approval input required');
+ async function stage({evidence,existingCatalog,existingApprovals,newApprovals,attestations,publicationDecisions,routinePublicationPolicy}={}){
+  if([newApprovals,attestations,publicationDecisions,routinePublicationPolicy].filter(x=>x!==undefined).length!==1)fail('exactly one explicit approval input required');
   const {ledger,items}=await readItems(evidence);
   const hasSource=items.some(x=>x.evidence?.dataKind==='d073-source-title-input');
+  if(routinePublicationPolicy!==undefined){
+   publicationDecisions=require('./d073_routine_publication_policy.cjs').derive({policy:routinePublicationPolicy,ledger,items:items.map(x=>({packet:x.packet,input:x.evidence,prepared:prepareItem(x,ledger,existingCatalog)}))});
+  }
   if(publicationDecisions!==undefined){
    if(items.some(x=>x.evidence?.dataKind!=='d073-source-title-input'))fail('publication decisions require source-fact candidates only');
    newApprovals=require('./d073_publication_decision.cjs').generate({items:items.map(x=>({packet:x.packet,prepared:prepareItem(x,ledger,existingCatalog)})),decisions:publicationDecisions});
