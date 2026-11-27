@@ -24,6 +24,10 @@ on:
       - 'poc/src/d072_offline_review_queue.cjs'
       - 'poc/src/d073_json_adoption.cjs'
       - 'poc/src/d073_daily_proposal.cjs'
+      - 'poc/src/d074_daily_data.cjs'
+      - 'poc/src/d074_event_data_branch.cjs'
+      - 'poc/config/d074-daily-data.v1.json'
+      - 'poc/tests/d074_daily_data.test.cjs'
       - 'poc/src/d073_routine_publication_policy.cjs'
       - 'poc/config/d073-daily-proposal.v1.json'
       - 'poc/tests/d073_daily_proposal.test.cjs'
@@ -37,7 +41,7 @@ on:
 permissions:
   contents: write
   issues: write
-  pull-requests: write
+  pull-requests: read
 
 concurrency:
   group: gametora-direct-new-card-limited-read
@@ -57,7 +61,22 @@ jobs:
           node-version: '22'
       - name: Verify metadata-only ledger and replay logic
         run: |
-          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d073_daily_proposal.test.cjs
+          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d073_daily_proposal.test.cjs poc/tests/d074_daily_data.test.cjs poc/tests/d074_event_data_branch.test.cjs
+      - name: Read verified authoritative event snapshot
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {readCurrent,REF}=require('./poc/src/d074_event_data_branch.cjs');
+            const legacy=require('./poc/config/d073-daily-proposal.v1.json');
+            if(legacy.mode!=='disabled'||legacy.routinePublicationPolicy!==null)throw Error('Legacy proposal config must remain disabled');
+            const snapshot=await readCurrent({github,...context.repo});
+            const ref=async ref=>(await github.rest.git.getRef({...context.repo,ref})).data.object.sha;
+            if(await ref('heads/main')!==context.sha||await ref(REF)!==snapshot.head)throw Error('Code or data head drift');
+            const t=process.env.RUNNER_TEMP;
+            fs.writeFileSync(t+'/d074-catalog.json',snapshot.catalogText);
+            fs.writeFileSync(t+'/d074-snapshot.json',JSON.stringify({head:snapshot.head,manifest:snapshot.manifest}));
+            core.info('D074_DAILY_SNAPSHOT='+JSON.stringify({head:snapshot.head,revision:snapshot.manifest.revision,cardCount:snapshot.manifest.cardCount,eventCount:snapshot.manifest.eventCount}));
       - name: Read latest UmaSim commit and the previous pending-card Issue
         uses: actions/github-script@v7
         with:
@@ -122,7 +141,7 @@ jobs:
             "$RUNNER_TEMP/pending-baseline-roster.txt" \
             "$RUNNER_TEMP/pending-latest-roster.txt" \
             "$RUNNER_TEMP/pending-before.json" \
-            "$RUNNER_TEMP/pending-after" "$GITHUB_OUTPUT" --direct-roster-only
+            "$RUNNER_TEMP/pending-after" "$GITHUB_OUTPUT" --direct-roster-only --catalog "$RUNNER_TEMP/d074-catalog.json"
       - name: Update a single public numeric-ID-only pending issue if status changed
         uses: actions/github-script@v7
         with:
@@ -145,7 +164,13 @@ jobs:
               policy:require('./poc/config/direct-event-intake-policy.v1.json')});
             const attemptStore=require('./poc/src/d069_github_attempt_store.cjs').createStore({github,...context.repo});
             const policy=require('./poc/config/direct-event-intake-policy.v1.json');
-            const catalog=require('./poc/data/reviewed_events.v1.json');
+            const {REF}=require('./poc/src/d074_event_data_branch.cjs');
+            const snapshot=JSON.parse(fs.readFileSync(temp+'/d074-snapshot.json','utf8'));
+            const catalogText=fs.readFileSync(temp+'/d074-catalog.json','utf8');
+            if(require('node:crypto').createHash('sha256').update(catalogText).digest('hex')!==snapshot.manifest.catalogSha256)throw Error('Local snapshot bytes changed');
+            const ref=async ref=>(await github.rest.git.getRef({...context.repo,ref})).data.object.sha;
+            if(await ref('heads/main')!==context.sha||await ref(REF)!==snapshot.head)throw Error('Code or data head drift before acquisition');
+            const catalog=JSON.parse(catalogText);
             const auto=await require('./poc/src/d072_automatic_json_intake.cjs').runAutomatic({
               plan:basePlan,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob,skillBlob:pin.skillBlob},
               policy,existingCatalog:catalog,store:attemptStore,loadSkillText:async()=>{
@@ -177,7 +202,7 @@ jobs:
               ])
               .addRaw('New cards: '+summary.discoveredNewCardIds.join(', ')+
                 '; review flags: '+summary.reviewIssues+
-                '. Existing catalog untouched; no automatic event publication.')
+                '. Acquisition step does not publish; later handoff separately gated.')
               .addRaw(summary.sourceStatus==='direct-review-pending'?'\nD067: direct GameTora review pending; new-card-only acquisition; no legacy repository requests.':'')
               .addHeading('D069 event-driven intake preflight')
               .addRaw('Status: '+eventPlan.status+'; newly queued: '+(eventPlan.newlyQueuedIds.join(', ')||'none')+
@@ -240,21 +265,22 @@ jobs:
                 owner,repo,title,body});
               core.notice('Created new-card pending Issue: '+created.data.html_url);
             }
-      - name: Prepare configured routine proposal (never merge)
+      - name: Hand off configured routine data append
         uses: actions/github-script@v7
         with:
           script: |
             const fs=require('node:fs');
-            const {PATHS}=require('./poc/src/d072_release_proposal.cjs');
-            const {runDailyProposal}=require('./poc/src/d073_daily_proposal.cjs');
+            const {runDailyData}=require('./poc/src/d074_daily_data.cjs');
             const {createStore}=require('./poc/src/d069_github_attempt_store.cjs');
-            const config=require('./poc/config/d073-daily-proposal.v1.json');
-            const {queue,auto}=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/d073-handoff.json','utf8'));
-            const report=await runDailyProposal({config,queue,auto,github,...context.repo,baseSha:context.sha,
-              files:Object.fromEntries(PATHS.map(path=>[path,fs.readFileSync(path,'utf8')])),
-              store:createStore({github,...context.repo})});
-            core.info('D073_DAILY_PROPOSAL='+JSON.stringify(report));
-            await core.summary.addHeading('Routine proposal handoff')
+            const config=require('./poc/config/d074-daily-data.v1.json');
+            const policy=require('./poc/config/direct-event-intake-policy.v1.json');
+            const t=process.env.RUNNER_TEMP;
+            const {queue,auto}=JSON.parse(fs.readFileSync(t+'/d073-handoff.json','utf8'));
+            const snapshot=JSON.parse(fs.readFileSync(t+'/d074-snapshot.json','utf8'));
+            const report=await runDailyData({config,policy,queue,auto,github,...context.repo,baseSha:context.sha,
+              expectedHead:snapshot.head,store:createStore({github,...context.repo})});
+            core.info('D074_DAILY_DATA='+JSON.stringify(report));
+            await core.summary.addHeading('Routine data handoff')
               .addRaw('Status: '+report.status+'; selected: '+(report.selectedIds.join(', ')||'none')+
-                '; main merge and deployment not performed.')
-              .addRaw(report.prNumber?' PR: '+report.prUrl+'; verify exact PR checks before merge.':'').write();
+                '; data ref written: '+report.branchWritten+'; public Raw verified: '+report.publicRawVerified+
+                '; no main write or Pages deployment. Pending Issue reconciles on next run.').write();

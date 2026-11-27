@@ -9,12 +9,12 @@ const path=require('node:path');
 const {planRosterFirst,preserveOnSourceOutage}=require('../src/derived_github_pending_refresh.cjs');
 const {emptyLedger,verifyLedger}=require('../src/derived_github_pending_ledger.cjs');
 function main(args){
- if(!(args.length===5||args.length===6&&args[5]==='--direct-roster-only'))throw Error('usage: <old-roster> <current-roster> <previous-ledger> <output-prefix> <github-output> [--direct-roster-only]');
+ if(!(args.length===5||args.length===6&&args[5]==='--direct-roster-only'||args.length===8&&args[5]==='--direct-roster-only'&&args[6]==='--catalog'))throw Error('usage: <old-roster> <current-roster> <previous-ledger> <output-prefix> <github-output> [--direct-roster-only [--catalog <verified-snapshot-file>]]');
  const [oldFile,newFile,previousFile,outputPrefix,ghOutput]=args;
  const directReview=args[5]==='--direct-roster-only';
  const read=p=>fs.readFileSync(path.resolve(p),'utf8');
  const previous=verifyLedger(JSON.parse(read(previousFile)));
- const existingCatalog=require('../data/reviewed_events.v1.json');
+ const existingCatalog=args.length===8?JSON.parse(read(args[7])):require('../data/reviewed_events.v1.json');
  const {discovery,targetIds,needThirdPartySource}=planRosterFirst({
   previousRosterText:read(oldFile),currentRosterText:read(newFile),
   previousLedger:previous,existingCatalog});

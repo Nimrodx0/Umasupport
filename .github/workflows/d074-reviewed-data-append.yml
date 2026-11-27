@@ -25,7 +25,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('d074-append-pr-{0}', github.run_id) || 'd074-event-data-branch' }}
+  group: ${{ github.event_name == 'pull_request' && format('d074-append-pr-{0}', github.run_id) || 'gametora-direct-new-card-limited-read' }}
   cancel-in-progress: false
 jobs:
   unit:
