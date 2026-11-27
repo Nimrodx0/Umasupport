@@ -8,7 +8,7 @@ on:
         options: [plan, branch, pr]
         default: plan
       bundle:
-        description: JSON with evidence and either newApprovals or attestations; reviewed facts only, no raw source or secrets
+        description: D072 evidence or D073 title/chain input and explicit approvals; no raw source or secrets
         type: string
         required: true
 permissions:
