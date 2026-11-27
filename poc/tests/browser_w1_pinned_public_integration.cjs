@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.2/W1.3: real public catalog + immutable, external UmaSim source snapshots
 // in Chromium. External dictionaries are fetched only in CI memory, never
 // published, logged as raw text, committed or recorded in test artifacts.
@@ -72,11 +73,11 @@ async function boot(page,url){
  assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'online');
 }
 async function appCases(page){
- const sample=await page.evaluate(()=>{
+ const sample=await page.evaluate(expected=>{
   const model=window.UmaDemoData,core=window.UmaCore;
   assertModel();
   function assertModel(){
-   if(model.meta.reviewedEventRecords!==2499||model.meta.reviewedEventCards!==562)
+   if(model.meta.reviewedEventRecords!==expected.events||model.meta.reviewedEventCards!==expected.cards)
     throw Error('Unexpected public review cohort');
    if(model.meta.runtimeSources.events.mode!=='reviewed')
     throw Error('Public event data was not attached');
@@ -110,7 +111,7 @@ async function appCases(page){
    }
   }
   return {choice,outcome,hint,cards:model.cards.length,skills:model.skills.length};
- });
+ },CURRENT_PUBLIC);
  assert.ok(sample.cards>=500);
  assert.ok(sample.skills>=700);
  assert.ok(sample.choice,'No published choice grants an independent skill candidate');
@@ -328,7 +329,7 @@ async function appCases(page){
  assert.ok(geometry.documentWidth<=geometry.width+3,
   'Page-wide overflow at simulated mobile width: '+JSON.stringify(geometry));
  assert.deepEqual(errors,[]);
- return {cards:sample.cards,skills:sample.skills,reviewedEvents:2499,
+ return {cards:sample.cards,skills:sample.skills,reviewedEvents:CURRENT_PUBLIC.events,
   goalByBothDecks:true,choicePersistedAfterReload:true,exclusiveResultUI:true,
   pinnedRealNormalHintsChecked:true,sourceBackedParentChildUI:true,
   simulatedMobileWidth:geometry.width};

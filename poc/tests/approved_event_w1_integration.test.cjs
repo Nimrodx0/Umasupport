@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.2/W1.3: exercise actual approved, published event facts through the
 // exact runtime aggregation/overview functions. No additional third-party
 // data, invented event records, or true game-activation probabilities.
@@ -64,8 +65,8 @@ function findChain(){
 }
 test('published cohort is exact, and unselected choices never leak any skill routes',()=>{
  assert.equal(catalog.schemaVersion,1);
- assert.equal(entries.length,562);
- assert.equal(allEvents.length,2499);
+ assert.equal(entries.length,CURRENT_PUBLIC.cards);
+ assert.equal(allEvents.length,CURRENT_PUBLIC.events);
  let choices=0,autos=0,checked=0;
  for(const card of Object.values(cards)){
   const config=makeSlot(card.id);
@@ -79,8 +80,8 @@ test('published cohort is exact, and unselected choices never leak any skill rou
   autos+=card.events.filter(e=>e.type==='auto').length;
   checked++;
  }
- assert.equal(checked,562);
- assert.equal(choices+autos,2499);
+ assert.equal(checked,CURRENT_PUBLIC.cards);
+ assert.equal(choices+autos,CURRENT_PUBLIC.events);
  assert.ok(choices>0&&autos>0);
 });
 const automatic=findAuto();
