@@ -103,3 +103,22 @@ test('concurrent non-fast-forward write fails, no force or silent retry',async()
  f.args.github.rest.git.updateRef=async()=>{calls++;throw Object.assign(Error('non-fast-forward'),{status:422});};
  await a.rejects(appendReviewed({...args,mode:'publish'}),/non-fast-forward/);a.equal(calls,1);a.equal(f.refs.get(REF),args.expectedHead);
 });
+
+test('routine queue receipts bind the staged candidate before any git objects are created',async()=>{
+ const {f,args}=await appendFixture();
+ const r=addition(catalog,approvals),source={dataKind:'d073-source-fact-receipt',schemaVersion:1,cardId,packetSha256,
+  sourceFactsSha256:'4'.repeat(64),titleInputSha256:'5'.repeat(64),chainEvidenceSha256:null,chainEvidenceUrls:[],independentGameVerification:false,publicationApproved:false};
+ r.independentReviewReceipts=[];r.sourceFactReceipts=[source];
+ args.intake={stage:async()=>structuredClone(r)};
+ const expectedRoutine=[{cardId,receiptSha256:digest(source),eventDigestsSha256:digest({events:r.catalog.cards.at(-1).events.map(e=>({eventId:e.id,sha256:digest(e)}))})}];
+ const n=f.writes.length;
+ await a.rejects(appendReviewed({...args,mode:'publish',expectedRoutine:[{...expectedRoutine[0],eventDigestsSha256:'0'.repeat(64)}]}),/routine receipt changed/);
+ a.equal(f.writes.length,n);
+ const plan=await appendReviewed({...args,expectedRoutine});a.equal(plan.status,'planned');
+ const pub=await appendReviewed({...args,expectedRoutine,mode:'publish'});a.equal(pub.branchWritten,true);
+ const {verifyPublicRaw}=require('../src/d074_event_data_branch.cjs');
+ const read=await readCurrent(args);
+ const raw=await verifyPublicRaw({owner:'o',repo:'r',report:pub,attempts:1,fetchImpl:async url=>new Response(url.endsWith('manifest.json')?JSON.stringify(pub.manifest):url.endsWith(CATALOG)?read.catalogText:read.approvalsText)});
+ a.equal(raw.publicRawVerified,true);
+ await a.rejects(verifyPublicRaw({owner:'o',repo:'r',report:pub,attempts:1,fetchImpl:async()=>new Response('{}')}),/public Raw verification failed/);
+});
