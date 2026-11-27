@@ -116089,6 +116089,360 @@
           ]
         }
       ]
+    },
+    {
+      "cardId": "10149",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "gt-json:10149:1494",
+          "name": "妙なる巫女、吾妻",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:10149:1495",
+          "name": "まばゆき二人三脚",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:10149:1497",
+          "name": "縁、また巡る日まで",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:10149:1498",
+          "name": "吾妻との絆・新たなる年に",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": [
+            {
+              "skillId": "skill:200512",
+              "kind": "hint",
+              "level": 3,
+              "verifiedSkillName": "末脚"
+            }
+          ]
+        },
+        {
+          "id": "gt-json:10149:1499",
+          "name": "信じ、歩みを見守りて",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": []
+            }
+          ]
+        },
+        {
+          "id": "gt-json:10149:1496",
+          "name": "求むるは、新たな書",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:204812",
+                  "kind": "hint",
+                  "level": 5,
+                  "verifiedSkillName": "弧を描いて"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-json:10149:1500",
+          "name": "故に我、日々を綴る",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:10149:1496"
+              }
+            ]
+          },
+          "rewards": []
+        },
+        {
+          "id": "gt-json:10149:1501",
+          "name": "流れ、追い難く",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:10149:1500"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "skill:202552",
+              "kind": "hint",
+              "level": 2,
+              "verifiedSkillName": "快速"
+            }
+          ]
+        },
+        {
+          "id": "gt-json:10149:1502",
+          "name": "共に、今を辿る",
+          "type": "choice",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:10149:1501"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": []
+            }
+          ]
+        },
+        {
+          "id": "gt-json:10149:1503",
+          "name": "時重ね、絆は",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:10149:1502"
+              }
+            ]
+          },
+          "rewards": []
+        },
+        {
+          "id": "gt-json:10149:1504",
+          "name": "其は泡沫、されど――",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:10149:1503"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "skill:202551",
+              "kind": "hint",
+              "level": 3,
+              "verifiedSkillName": "神速"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30323",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "gt-json:30323:1494",
+          "name": "妙なる巫女、吾妻",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:30323:1495",
+          "name": "まばゆき二人三脚",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:30323:1497",
+          "name": "縁、また巡る日まで",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": []
+        },
+        {
+          "id": "gt-json:30323:1498",
+          "name": "吾妻との絆・新たなる年に",
+          "type": "auto",
+          "availabilityKind": "special-trigger",
+          "rewards": [
+            {
+              "skillId": "skill:200512",
+              "kind": "hint",
+              "level": 3,
+              "verifiedSkillName": "末脚"
+            }
+          ]
+        },
+        {
+          "id": "gt-json:30323:1499",
+          "name": "信じ、歩みを見守りて",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": []
+            }
+          ]
+        },
+        {
+          "id": "gt-json:30323:1496",
+          "name": "求むるは、新たな書",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:204812",
+                  "kind": "hint",
+                  "level": 5,
+                  "verifiedSkillName": "弧を描いて"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-json:30323:1500",
+          "name": "故に我、日々を綴る",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:30323:1496"
+              }
+            ]
+          },
+          "rewards": []
+        },
+        {
+          "id": "gt-json:30323:1501",
+          "name": "流れ、追い難く",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:30323:1500"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "skill:202552",
+              "kind": "hint",
+              "level": 2,
+              "verifiedSkillName": "快速"
+            }
+          ]
+        },
+        {
+          "id": "gt-json:30323:1502",
+          "name": "共に、今を辿る",
+          "type": "choice",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:30323:1501"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "c1",
+              "label": "選択肢1（仮）",
+              "rewards": []
+            },
+            {
+              "id": "c2",
+              "label": "選択肢2（仮）",
+              "rewards": []
+            }
+          ]
+        },
+        {
+          "id": "gt-json:30323:1503",
+          "name": "時重ね、絆は",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:30323:1502"
+              }
+            ]
+          },
+          "rewards": []
+        },
+        {
+          "id": "gt-json:30323:1504",
+          "name": "其は泡沫、されど――",
+          "type": "auto",
+          "availabilityKind": "outing-sequence",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-json:30323:1503"
+              }
+            ]
+          },
+          "rewards": [
+            {
+              "skillId": "skill:202551",
+              "kind": "hint",
+              "level": 3,
+              "verifiedSkillName": "神速"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

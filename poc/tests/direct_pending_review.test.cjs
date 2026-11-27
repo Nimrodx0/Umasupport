@@ -2,7 +2,9 @@
 const {test}=require('node:test'),a=require('node:assert/strict');
 const {emptyLedger}=require('../src/derived_github_pending_ledger.cjs');
 const {verifyDirectReview,describePending}=require('../src/direct_pending_review.cjs');
-const review=require('../config/direct-event-pending-review.v1.json');
+const currentReview=require('../config/direct-event-pending-review.v1.json');
+// Historical hold fixture: the actual current queue may be empty or advance.
+const review={...currentReview,cards:['10149','30323'].map(cardId=>({cardId,observedAt:'2026-11-27',observedEvents:11,runId:45984465780,reasonCodes:['source-structure-unresolved','internal-reachability-unverified','publication-review-pending']}))};
 const row=cardId=>({cardId,status:'awaiting-source-json',sourceBlobSha:null,sourceCommit:null,sourceEvents:null,modeledEvents:null,excludedEvents:null,reviewItems:[],skillRegistryBlobSha:null});
 test('D067 current view preserves historical rows; observed counts are not release counts',()=>{
  const ledger={...emptyLedger(),cards:['10149','30323','39999'].map(row)},before=JSON.stringify(ledger);
@@ -98,10 +100,15 @@ test('sequential observer stops on failure, unexpected layout, invalid result an
  a.equal(empty.stopReason,null);a.deepEqual(empty.observedIds,[]);
 });
 
-test('D070 removes external disagreement as a hold only for the two named cards; publication remains pending',()=>{
+test('D070 historical hold reasons remain valid',()=>{
  for(const card of review.cards.filter(r=>['10149','30323'].includes(r.cardId))){
   a.deepEqual(card.reasonCodes,['source-structure-unresolved','internal-reachability-unverified','publication-review-pending']);
   a.equal(card.observedEvents,11);a.equal(card.runId,45984465780);
  }
  a.equal(review.publicationApproved,false);
+});
+
+test('D070 released cards no longer appear in the live hold metadata',()=>{
+ a.doesNotThrow(()=>verifyDirectReview(currentReview));
+ a.ok(!currentReview.cards.some(r=>['10149','30323'].includes(r.cardId)));
 });

@@ -34,6 +34,10 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 2026-11-27の利用者包括承認と実レビューに基づき、20102/30322/30324の12件のみ [正式形状SHA](../../poc/config/direct-named-release-d068-20261127.v1.json) に固定。run 45926697083で旧署名保持・12個別証跡・本番読込を検査し、承認された独自構造のみを公開JSONに追記する。通常の候補出力は引き続き非公開、追加対象の再取得は行わない。以降のバッチも実審査と内容ハッシュを固定し、旧履歴を変更せず追加する。
 
+## D-070のカード別JSON公開増分
+
+吾妻10149／30323のみ [正式形状SHA](../../poc/config/d070-azuma-json-release.v1.json) に固定。run [45989546830](https://github.com/Nimrodx0/Umasupport/actions/runs/45989546830) にて、D-068個別承認22件、旧DBと旧承認の非破壊追加、現行・固定辞書による本番preflightを検査。スキル経路だけの部分収録で、未解釈非スキル効果は収録せず、実ゲーム全件性を主張しない。一般カードの無人取得・自動審査は未実装。
+
 ## 実行確認
 
 ```sh
