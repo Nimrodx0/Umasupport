@@ -39,7 +39,7 @@ test('GitHub preparation and staging require durable receipt, separately supplie
  const skillText=JSON.stringify(Array.from({length:101},(_,i)=>({id:String(990001+i),name:'Synthetic '+i,rarity:'normal',group:i})));
  const pin={commit:'a'.repeat(40),cardBlob:gitBlobSha(supportText),skillBlob:gitBlobSha(skillText)},sourceInput={pin,supportText,skillText};
  const existingCatalog={schemaVersion:1,cards:[]},existingApprovals={schemaVersion:1,entries:[]};
- const packet=inspect({cardId,sourceUrl:'https://gametora.com/ja/umamusume/supports/'+cardId+'-example',buildId:'synthetic',sourcePin:pin,skillText,existingCatalog,
+ const packet=inspect({retainIdentifyingTitles:true,cardId,sourceUrl:'https://gametora.com/ja/umamusume/supports/'+cardId+'-example',buildId:'synthetic',sourcePin:pin,skillText,existingCatalog,
   body:JSON.stringify({pageProps:{sourceData:{support_id:Number(cardId)},eventData:{ja:JSON.stringify({random:[{i:1,n:name,c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}]})}}})});
  const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:pin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
  let reads=0;
@@ -74,6 +74,23 @@ test('GitHub preparation and staging require durable receipt, separately supplie
  a.deepEqual(sourceResult.independentReviewReceipts,[]);a.equal(sourceResult.sourceFactReceipts.length,1);
  await a.rejects(intake.stage({...args,evidence:[titleInput],newApprovals:existingApprovals}),/承認/);
  await a.rejects(intake.prepare({evidence:[{...titleInput,titles:[{sourceEventId:1,title:'wrong'}]}],existingCatalog}),/title/);
+ const archivedInput={...titleInput,titles:null};
+ const archivedPrep=(await intake.prepare({evidence:[archivedInput],existingCatalog})).items[0];
+ a.deepEqual(archivedPrep,preparedSource.items[0]);
+ const decision={schemaVersion:1,cardId,packetSha256:digest(packet),receiptSha256:digest(archivedPrep.receipt),
+  eventDigestsSha256:digest({events:archivedPrep.candidate.eventDigests}),reviewer:'synthetic',reviewedAt:'2026-11-27',
+  accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic'],
+  publicationBasis:{kind:'original-factual-description',reason:'synthetic fixture'}};
+ const autoArgs={evidence:[archivedInput],existingCatalog,existingApprovals,publicationDecisions:[decision]};
+ const auto=await intake.stage(autoArgs);
+ a.deepEqual(auto.catalog,result.catalog);a.equal(auto.approvals.entries[0].eventSha256,entry.eventSha256);
+ a.match(auto.approvals.entries[0].reviewer,/mechanical facts/);
+ a.deepEqual(auto.approvals.entries[0].evidence.publication,decision.evidenceUrls);
+ a.deepEqual(auto.independentReviewReceipts,[]);
+ for(const change of [{accessConditionsReviewed:false},{publicationApproved:false},{receiptSha256:'0'.repeat(64)},{eventDigestsSha256:'0'.repeat(64)},{evidenceUrls:[]}]){
+  await a.rejects(intake.stage({...autoArgs,publicationDecisions:[{...decision,...change}]}),/publication decision/);
+ }
+ await a.rejects(intake.stage({...autoArgs,newApprovals:args.newApprovals}),/exactly one/);
  const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
  a.equal(current.currentRosterCount,501);a.equal(current.sourceRequestsToGameTora,0);a.equal(current.publicationChanged,false);
 });

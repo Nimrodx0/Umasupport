@@ -80,7 +80,7 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
     return {cardId:r.cardId,status:'not-listed',packetSha256:null};
    }
    if(r.status!=='json'||Object.keys(r).sort().join(',')!=='body,buildId,cardId,sourceUrl,status')fail('response shape');
-   const packet=inspect({body:r.body,buildId:r.buildId,cardId:r.cardId,sourceUrl:r.sourceUrl,sourcePin,skillText,existingCatalog});
+   const packet=inspect({body:r.body,buildId:r.buildId,cardId:r.cardId,sourceUrl:r.sourceUrl,sourcePin,skillText,existingCatalog,retainIdentifyingTitles:true});
    reviewPackets.push(packet);
    return {cardId:r.cardId,status:packet.status==='held'?'held':'awaiting-fact-review',packetSha256:digest(packet)};
   });

@@ -1,5 +1,6 @@
 'use strict';
 // Independent factual packet only: no raw JSON, source choice text or images.
+const crypto=require('node:crypto');
 const {canonical,digest}=require('./event_release_gate.cjs');
 const SHA=/^[a-f0-9]{64}$/,ID=/^[1-9]\d{4}$/;
 const fail=m=>{throw Error('D072 factual review archive: '+m);};
@@ -19,7 +20,8 @@ function verifyDisplay(v){
 }
 function scope(packet,row){
  const baseKeys='dataKind,schemaVersion,cardId,sourceUrl,buildId,bodySha256,sourcePin,existingCatalogSha256,events,status,reasonCodes,sourceSiteTextCopied,publicationApproved';
- if(!(exact(packet,baseKeys)||exact(packet,baseKeys+',domEvidence')||exact(packet,baseKeys+',sourceContext')||exact(packet,baseKeys+',domEvidence,sourceContext'))||
+ const optional=['domEvidence','sourceContext','identifyingTitles'].filter(k=>Object.hasOwn(packet||{},k));
+ if(!exact(packet,[baseKeys,...optional].join(','))||
     packet.dataKind!=='d069-json-review-packet'||packet.schemaVersion!==1||packet.sourceSiteTextCopied!==false||packet.publicationApproved!==false||
     !SHA.test(packet.bodySha256||'')||!SHA.test(packet.existingCatalogSha256||'')||
     !Array.isArray(packet.events)||!packet.events.length||packet.events.length>100||
@@ -35,6 +37,10 @@ function scope(packet,row){
   const x=packet.sourceContext;
   if(!exact(x,'levelDependent,levelDependentFieldInvalid,historyEventIds')||![null,true,false].includes(x.levelDependent)||typeof x.levelDependentFieldInvalid!=='boolean'||
      !Array.isArray(x.historyEventIds)||new Set(x.historyEventIds).size!==x.historyEventIds.length||x.historyEventIds.some(id=>!packet.events.some(e=>e.sourceEventId===id)))fail('source context metadata');
+ }
+ if(Object.hasOwn(packet,'identifyingTitles')){
+  const names=packet.identifyingTitles;
+  if(row.status!=='awaiting-fact-review'||!packet.sourceContext||!Array.isArray(names)||names.length!==packet.events.length||names.some((v,i)=>!exact(v,'sourceEventId,title')||v.sourceEventId!==packet.events[i].sourceEventId||typeof v.title!=='string'||!v.title.trim()||v.title.length>80||/[\r\n\u0000-\u001f]/.test(v.title)||crypto.createHash('sha256').update(v.title).digest('hex')!==packet.events[i].exactTitleSha256))fail('identifying title metadata');
  }
  require('./official_gametora_card_json.cjs').cardJsonUrl(packet);
  for(const e of packet.events){

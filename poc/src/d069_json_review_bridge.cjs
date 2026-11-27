@@ -13,7 +13,7 @@ const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
 const fail=m=>{throw Error('D069 JSON review: '+m);};
 const same=(a,b)=>canonical(a)===canonical(b);
 const GIT=/^[a-f0-9]{40}$/;
-function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCatalog}={}){
+function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCatalog,retainIdentifyingTitles=false}={}){
  if(!GIT.test(sourcePin?.commit||'')||!GIT.test(sourcePin?.cardBlob||'')||
     !GIT.test(sourcePin?.skillBlob||'')||typeof skillText!=='string'||gitBlobSha(skillText)!==sourcePin.skillBlob||
     existingCatalog?.schemaVersion!==1||!Array.isArray(existingCatalog.cards)||existingCatalog.cards.some(c=>c.cardId===cardId))
@@ -22,6 +22,7 @@ function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCata
  const page=JSON.parse(body).pageProps;
  const titles=new Map(Object.values(JSON.parse(page.eventData.ja)).flatMap(es=>es.map(e=>[e.i,e.n])));
  const reasons=new Set();
+ if(retainIdentifyingTitles&&[...titles.values()].some(name=>typeof name!=='string'||!name.trim()||name.length>80||/[\r\n\u0000-\u001f]/.test(name)))reasons.add('invalid-identifying-title');
  const events=o.events.map(e=>{
   if(!['random','arrows'].includes(e.category))reasons.add('unsupported-event-category');
   if(e.eventType!==null||e.blockers.some(x=>!['selection-semantics-unverified','publication-not-reviewed','internal-reachability-unverified'].includes(x)))reasons.add('event-semantics-unresolved');
@@ -51,6 +52,7 @@ function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCata
   existingCatalogSha256:digest(existingCatalog),events,
   status:reasons.size?'held':'awaiting-independent-fact-review',reasonCodes:[...reasons].sort(),
   sourceContext:{levelDependent:o.levelDependent,levelDependentFieldInvalid:Object.hasOwn(page,'isLevelDependent')&&typeof page.isLevelDependent!=='boolean',historyEventIds:o.events.filter(e=>e.historyCount>0).map(e=>e.sourceEventId)},
+  ...(retainIdentifyingTitles&&!reasons.size?{identifyingTitles:events.map(e=>({sourceEventId:e.sourceEventId,title:titles.get(e.sourceEventId)}))}:{}),
   sourceSiteTextCopied:false,publicationApproved:false};
 }
 function prepare(input,review){

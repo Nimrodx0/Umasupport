@@ -31,6 +31,8 @@ test('reserve before observation, record only metadata, never revisit on replay'
  a.equal(f.ledger().revision,2);a.equal(f.observations(),1);
  a.doesNotMatch(JSON.stringify(f.ledger()),/非保存タイトル|body|選択肢/);
  a.equal(r.publicationApproved,false);
+ a.deepEqual(r.reviewPackets[0].identifyingTitles,[{sourceEventId:1,title:'非保存タイトル'}]);
+ a.doesNotMatch(JSON.stringify(r.reviewPackets),/pageProps|eventData/);
  const repeat=await runBatch(f.input);
  a.deepEqual(repeat.selectedIds,[]);a.deepEqual(repeat.previouslyAttemptedIds,f.input.targetIds);
  a.equal(f.observations(),1);

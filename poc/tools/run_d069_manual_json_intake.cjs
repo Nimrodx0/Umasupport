@@ -44,7 +44,7 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
   observeBatch:createObserver({manualAuthorized:true,knownIds:existingCatalog.cards.map(c=>c.cardId)})});
  // Prose-free review packets only, after successful completion CAS.
  // The raw body is never serialized to log or disk.
- core.info('D069_MANUAL_RESULT='+JSON.stringify(result));
+ core.info('D069_MANUAL_RESULT='+JSON.stringify({...result,reviewPackets:result.reviewPackets.map(({identifyingTitles,...packet})=>({...packet,identifyingTitleCount:identifyingTitles?.length??0}))}));
  if(result.stopReason)core.setFailed('D069 observation failed; reserved IDs uncertain, no automatic retry');
  return result;
 }
