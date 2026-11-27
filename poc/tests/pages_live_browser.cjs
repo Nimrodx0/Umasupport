@@ -11,6 +11,17 @@ const ROOT=path.resolve(__dirname,'../..');
 const BASE='https://nimrodx0.github.io/Umasupport';
 const APP=BASE+'/';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+async function expectedRuntime(){
+ const live=await fs.readFile(path.join(ROOT,'poc/live.html'),'utf8');
+ const version=/data-release="([a-zA-Z0-9-]+)"/.exec(live)?.[1];
+ assert.ok(version,'Missing release identifier');
+ const urls=[...live.matchAll(/\.\/src\/([a-zA-Z0-9_.-]+\.(?:js|css))\?v=([a-zA-Z0-9-]+)/g)];
+ assert.ok(urls.length>=3&&urls.every(x=>x[2]===version),'Mixed asset versions');
+ const assets=new Map();
+ for(const [,file] of urls){const relative='poc/src/'+file;assets.set(BASE+'/'+relative+'?v='+version,sha(await fs.readFile(path.join(ROOT,relative))));}
+ assert.ok(assets.has(BASE+'/poc/src/live_app.js?v='+version));
+ return {version,assets};
+}
 async function checkPublishedFiles(request){
  for(const file of ['index.html','poc/live.html','poc/src/core.js','poc/src/live_loader.js','poc/src/skill_hierarchy.js',
                       'poc/src/skill_bridge.js','poc/src/live_app.js',
@@ -100,6 +111,18 @@ async function main(){
   const context=await browser.newContext({viewport:{width:1280,height:900},locale:'ja-JP'});
   const page=await context.newPage();page.setDefaultTimeout(20000);
   await checkPublishedFiles(page.request);
+  const runtime=await expectedRuntime(),loaded=new Map(),responseChecks=[];
+  page.on('response',response=>{
+   const url=response.url();
+   if(!url.startsWith(BASE+'/poc/src/')||!['script','stylesheet'].includes(response.request().resourceType()))return;
+   responseChecks.push((async()=>{
+    assert.ok(runtime.assets.has(url),'Unexpected local execution asset: '+url);
+    assert.equal(response.status(),200,'Asset HTTP '+url);
+    assert.equal(sha(Buffer.from(await response.body())),runtime.assets.get(url),'Actual loaded asset differs: '+url);
+    loaded.set(url,true);
+   })());
+   responseChecks.at(-1).catch(()=>{});
+  });
   const external=[],errors=[],warnings=[];
   page.on('console',msg=>{if(['warning','error'].includes(msg.type()))warnings.push(msg.text().slice(0,500));});
   page.on('request',req=>{
@@ -108,6 +131,10 @@ async function main(){
   });
   page.on('pageerror',err=>errors.push(err.message));
   const status=await boot(page);
+  await Promise.all(responseChecks);
+  assert.deepEqual([...loaded.keys()].sort(),[...runtime.assets.keys()].sort(),'Missing actual runtime assets');
+  assert.equal(await page.locator('#app-release').getAttribute('data-release'),runtime.version);
+  console.log('D072_PAGES_RUNTIME='+JSON.stringify({version:runtime.version,assetCount:loaded.size,normalEntry:true}));
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'online');
   assert.match(status,/金白構造候補/);
   assert.equal(external.filter(u=>u.endsWith('/support_card.txt')).length,1);
@@ -143,6 +170,10 @@ async function main(){
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
   assert.equal(actual.reviewedEvents,CURRENT_PUBLIC.events,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
   assert.equal(actual.reviewedCards,CURRENT_PUBLIC.cards,'Published event card coverage changed');
+  const approved=JSON.parse(await fs.readFile(path.join(ROOT,'poc/data/reviewed_events.v1.json'),'utf8'));
+  const expectedIds=approved.cards.map(c=>[c.cardId,c.events.map(e=>e.id).sort()]).sort((a,b)=>a[0].localeCompare(b[0]));
+  const runtimeIds=await page.evaluate(ids=>ids.map(id=>[id,(window.UmaDemoData.cardById[id]?.events||[]).map(e=>e.id).sort()]),expectedIds.map(x=>x[0]));
+  assert.deepEqual(runtimeIds,expectedIds,'Runtime event identity coverage differs from approved catalog');
   assert.deepEqual(await page.evaluate(()=>['20102','30322','30324'].map(id=>[id,window.UmaDemoData.cardById[id]?.events.length])),[['20102',4],['30322',5],['30324',3]]);
   assert.deepEqual(await page.evaluate(()=>['10149','30323'].map(id=>{const c=window.UmaDemoData.cardById[id];const event=c.events.find(e=>e.id==='gt-json:'+id+':1504');return [id,c.events.length,event.rewards[0].skillId,event.rewards[0].level];})),[['10149',11,'skill:202551',3],['30323',11,'skill:202551',3]]);
   assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
