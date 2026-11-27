@@ -28,7 +28,7 @@ test('no new IDs means no skill fetch, observer creation or site access',async()
 test('only new unattempted IDs, all sequential batches, no revisit on replay',async()=>{
  const ids=['39995','39996','39997'],f=fixture(ids);
  const r=await runAutomatic(f.args);a.deepEqual(r.attemptedIds,ids);
- a.deepEqual(f.counts().visits,[ids.slice(0,2),ids.slice(2)]);
+ a.deepEqual(f.counts().visits,ids.map(id=>[id]));
  a.equal(f.ledger().rows.length,3);a.equal(r.publicationApproved,false);
  a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
  a.equal(f.counts().loads,1);
@@ -37,7 +37,7 @@ test('stop at first failed batch, later IDs remain unattempted',async()=>{
  const f=fixture(['39995','39996','39997']);let calls=0;
  const r=await runAutomatic({...f.args,observerFactory:()=>async()=>{calls++;throw Error('source refused');}});
  a.equal(calls,1);a.equal(r.stopReason,'observation-failed');
- a.deepEqual(r.attemptedIds,['39995','39996']);
+ a.deepEqual(r.attemptedIds,['39995']);
  a.ok(f.ledger().rows.every(x=>x.status==='uncertain'));
 });
 

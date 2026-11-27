@@ -6,7 +6,8 @@ const fail=m=>{throw Error('D072 factual review archive: '+m);};
 const same=(a,b)=>canonical(a)===canonical(b);
 const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join(',')===keys.split(',').sort().join(',');
 function scope(packet,row){
- if(!exact(packet,'dataKind,schemaVersion,cardId,sourceUrl,buildId,bodySha256,sourcePin,existingCatalogSha256,events,status,reasonCodes,sourceSiteTextCopied,publicationApproved')||
+ const baseKeys='dataKind,schemaVersion,cardId,sourceUrl,buildId,bodySha256,sourcePin,existingCatalogSha256,events,status,reasonCodes,sourceSiteTextCopied,publicationApproved';
+ if(!(exact(packet,baseKeys)||exact(packet,baseKeys+',domEvidence'))||
     packet.dataKind!=='d069-json-review-packet'||packet.schemaVersion!==1||packet.sourceSiteTextCopied!==false||packet.publicationApproved!==false||
     !SHA.test(packet.bodySha256||'')||!SHA.test(packet.existingCatalogSha256||'')||
     !Array.isArray(packet.events)||!packet.events.length||packet.events.length>100||
@@ -14,6 +15,10 @@ function scope(packet,row){
     !ID.test(row?.cardId||'')||packet.cardId!==row.cardId||!same(packet.sourcePin,row.sourcePin)||
     row.packetSha256!==digest(packet)||!['awaiting-fact-review','held'].includes(row.status)||
     packet.status!==(row.status==='held'?'held':'awaiting-independent-fact-review'))fail('packet receipt mismatch');
+ if(Object.hasOwn(packet,'domEvidence')){
+  const v=require('./d072_display_corroboration.cjs').verifyDisplay(packet.domEvidence);
+  if(v.status==='matched-visible-facts'&&v.observedEvents!==packet.events.length)fail('display event count mismatch');
+ }
  require('./official_gametora_card_json.cjs').cardJsonUrl(packet);
  for(const e of packet.events){
   if(!exact(e,'sourceEventId,category,categoryOrdinal,titleSha256,exactTitleSha256,selection,groups')||
