@@ -174,3 +174,5 @@ summary:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
 
 /* Shared modal presentation for the all-skill catalogue. */
 .modal-body .catalog-panel{margin:0;scroll-margin-top:0}.picker-acquisition-count{font-size:12px;font-weight:650;color:var(--teal);font-variant-numeric:tabular-nums}
+
+.deck-training{margin:0 0 12px}.deck-training label{flex:1 1 0}.deck-training .field{width:100%;min-width:0}@media(max-width:490px){.deck-training{gap:6px}.deck-training label{flex:1 1 0}.deck-training .field{padding:6px 5px;font-size:12px}}

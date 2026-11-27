@@ -177,6 +177,8 @@ async function main(){
    await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');await first.click();
    await page.locator('[data-action="edit-card"]').first().click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
    const detail=page.locator('#card-fit-detail');await detail.waitFor();
    const verifyDetail=async stage=>{
     const v=await page.evaluate(({id,stage,rows})=>UmaCardSuitabilityView.browseCard(UmaDemoData.cardById[id],{stage},UmaDemoData,new Map(rows.map(r=>[r.appSkillId,r])),{running_style:2,ground_condition:1}),{id,stage,rows:bundle.rows});
