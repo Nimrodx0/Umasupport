@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const crypto=require('node:crypto');
@@ -39,7 +40,7 @@ test('P0 numerical hint missing from GT events adds exactly one separately condi
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   require('../data/reviewed_events.v1.json'),
   require('../src/current_public_event_approvals.cjs').forCatalog(
-   require('../data/reviewed_events.v1.json'))).publicEvents,2499);
+   require('../data/reviewed_events.v1.json'))).publicEvents,CURRENT_PUBLIC.events);
 });
 test('production event loader attaches resolved skill names to disposable model',()=>{
  const f=fixture(),assembled=apply(f),card={id:'30180',hints:[],events:[]};
