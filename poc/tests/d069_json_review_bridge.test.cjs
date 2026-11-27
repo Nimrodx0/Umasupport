@@ -64,3 +64,16 @@ test('generic approved append actually traverses the existing gate and preserves
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[{...entry,eventSha256:'0'.repeat(64)}]}}),/SHA|変更|ハッシュ/);
  a.throws(()=>append({...args,currentSupportText:before}),/roster blob/);
 });
+
+test('resume uses durable receipt and exact independently supplied title, not raw JSON',()=>{
+ const {resume}=require('../src/d069_json_review_bridge.cjs');
+ const input=fixture({random:[e(1,[g('',[hint])])]}),packet=inspect(input),v=review(packet);
+ const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:input.sourcePin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+ const args={packet,titles:new Map([[1,'架空イベント1']]),skillText,existingCatalog:input.existingCatalog,ledger,review:v};
+ a.deepEqual(resume(args),prepare(input,v));
+ a.throws(()=>resume({...args,titles:new Map([[1,'架空イベント１']])}),/title/);
+ a.throws(()=>resume({...args,ledger:{...ledger,rows:[]}}),/receipt/);
+ const changed=structuredClone(packet);changed.events[0].groups[0].routes[0].hints[0].level=5;
+ a.throws(()=>resume({...args,packet:changed,review:review(changed)}),/receipt/);
+ a.throws(()=>resume({...args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39998',events:[]}]}}),/drift/);
+});
