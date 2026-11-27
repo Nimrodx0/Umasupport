@@ -21,6 +21,7 @@
 新規ADRは[テンプレート](template.md)を複製して`NNNN-short-topic.md`として作成します。全ADRはこの索引に追加し、採用・置換を更新します。
 
 - [ADR-0001：文書体系をどう分類するか](0001-documentation-architecture.md)（`Proposed`：レビュー中）
+- [ADR-0002：イベントDBの配信分離](0002-event-data-distribution.md)（`Accepted`）
 - [利用者の判断状態索引](../decisions/index.md)
 
 参考：[Architecture Decision Records（Michael Nygard）](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) ／ [英国政府GDS ADR運用](https://gds-way.digital.cabinet-office.gov.uk/standards/architecture-decisions.html)。
