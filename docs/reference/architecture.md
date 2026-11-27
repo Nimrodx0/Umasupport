@@ -23,7 +23,7 @@
 
 ## D-074：イベントDBの配信分離（移行中）
 
-[採用判断](../decisions/log.md#decision-d-074)・[ADR-0002](../adr/0002-event-data-distribution.md)。アプリはmain／Pagesのまま、承認済みDB・台帳を同一repoの `data/events` に分離する。moving manifestは固定スナップショットcommitと生バイトSHA256・内容SHA・件数を指す。初期化・Raw検証を先に実装し、ブラウザ切替・増分書込みは後続。以下の現行構成は切替完了まで有効。
+[採用判断](../decisions/log.md#decision-d-074)・[ADR-0002](../adr/0002-event-data-distribution.md)。アプリはmain／Pagesのまま、承認済みDB・台帳を同一repoの `data/events` に分離する。moving manifestは固定スナップショットcommitと生バイトSHA256・内容SHA・件数を指す。初期化・Raw検証は成功。公開Pagesの通常入口はmanifest→固定snapshotの生バイトSHA・件数・現行モデル照合を行い、同一版の検証済みキャッシュは再利用。障害時は新専用キャッシュ、次に固定SHAの旧同一オリジンDB／旧キャッシュへ復旧。ローカル試験は同一オリジンの固定DBを維持。増分書込みは後続。
 
 ## 現行構成
 
@@ -43,7 +43,7 @@ GitHub Pages: index.html → poc/live.html
   └─ poc/src/settings.js：現行設定の入力検証・保存
 
 第三者公開元：通常ヒントとスキル辞書をブラウザが起動時に直接取得
-独自公開DB：poc/data/reviewed_events.v1.json（同一オリジン、2026-11-04時点の承認済み公開イベント2,487件）
+独自公開DB：data/eventsのmanifest→固定commitのpoc/data/reviewed_events.v1.json（公開Pages）。main同一オリジンDBは固定復旧版・ローカル試験用。
 保存：IndexedDB（検証済みゲームデータ）／localStorage（利用者の編集設定）
 検証：poc/tests/（人工データ）＋ 明示実行のオンライン全件監査・統合検証
 ~~~
@@ -104,7 +104,7 @@ P2/P3再現用のイベントDBは [固定研究入力ヘルパー](../../poc/to
 ## データ故障時の境界
 
 - support_card／skill_dataの外部取得失敗・不正更新：検証済みIndexedDBキャッシュを使い、使用状態を表示。初回でキャッシュもなければ明確なエラー。
-- イベント独自JSONの失敗：未検証のイベント報酬を採用せず、通常ヒントの利用を維持。イベントDBの永続的な旧版復旧は別途検討。
+- イベント独自JSONの失敗：未検証のイベント報酬を採用せず、通常ヒントの利用を維持。専用キャッシュまたは固定SHAの旧公開版を再検証して復旧し、復旧状態と版を区別。
 - 利用者設定の不正：現行スキーマ・存在IDを検証し、エラーを明示。ユーザーの確認なく元の保存値を上書きしない。開発段階の旧保存ID・旧スキーマの後方互換は維持しない。
 - **完全オフライン**：IndexedDBデータのフォールバックは実ブラウザ確認済み。ただしHTML/JSまでネットワーク不要で起動する仕組み（Service Worker等）は未実装で、別の公開品質判断事項。
 
