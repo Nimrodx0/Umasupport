@@ -115306,6 +115306,789 @@
           ]
         }
       ]
+    },
+    {
+      "cardId": "20102",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "gt-site:20102:1",
+          "name": "風来坊のごとく",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "power",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "mood",
+                  "delta": 1,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:20102:2",
+          "name": "ゆらりぶらり、ままならぬ",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-site:20102:1"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:203742",
+                  "kind": "hint",
+                  "level": 1,
+                  "verifiedSkillName": "間隙を突いて"
+                }
+              ],
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "power",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 20,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "skill_points",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:20102:3",
+          "name": "黄金を探し求めて",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:200362",
+                  "kind": "hint",
+                  "level": 1,
+                  "verifiedSkillName": "直線巧者"
+                }
+              ],
+              "effects": [
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 1
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 20,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:20102:4",
+          "name": "猛者たちの、さらに上",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "delta": 20,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "guts",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "skill_points",
+                  "delta": 40,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30322",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "gt-site:30322:1",
+          "name": "神様仏様、マヤノ様",
+          "type": "auto",
+          "effects": [
+            {
+              "kind": "energy",
+              "delta": 20,
+              "sourceEffectOrdinal": 1
+            },
+            {
+              "kind": "mood",
+              "delta": 1,
+              "sourceEffectOrdinal": 2
+            },
+            {
+              "kind": "power",
+              "delta": 5,
+              "sourceEffectOrdinal": 3
+            },
+            {
+              "kind": "bond",
+              "delta": 10,
+              "sourceEffectOrdinal": 4
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30322:2",
+          "name": "みんなに必要なもの",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-site:30322:1"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "power",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "skill_points",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 3
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 4
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:210052",
+                  "kind": "hint",
+                  "level": 1,
+                  "verifiedSkillName": "アオハル点火・賢"
+                }
+              ],
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "skill_points",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30322:3",
+          "name": "マヤ、わかっちゃった！",
+          "type": "choice",
+          "requires": {
+            "all": [
+              {
+                "eventId": "gt-site:30322:2"
+              }
+            ]
+          },
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "outcomes": [
+                {
+                  "id": "result-1",
+                  "label": "結果1（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204731",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "機転"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "power",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 3
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 4
+                    }
+                  ]
+                },
+                {
+                  "id": "result-2",
+                  "label": "結果2（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204731",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "機転"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 10,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "outcomes": [
+                {
+                  "id": "result-1",
+                  "label": "結果1（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204741",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "希代の才覚"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "stamina",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 3
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 4
+                    }
+                  ]
+                },
+                {
+                  "id": "result-2",
+                  "label": "結果2（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204741",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "希代の才覚"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 10,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "group-3",
+              "label": "選択肢3（仮）",
+              "outcomes": [
+                {
+                  "id": "result-1",
+                  "label": "結果1（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204751",
+                      "kind": "hint",
+                      "level": 2,
+                      "verifiedSkillName": "アドバンテージ"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "speed",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 15,
+                      "sourceEffectOrdinal": 3
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 4
+                    }
+                  ]
+                },
+                {
+                  "id": "result-2",
+                  "label": "結果2（仮）",
+                  "rewards": [
+                    {
+                      "skillId": "skill:203501",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "英俊豪傑"
+                    },
+                    {
+                      "skillId": "skill:204751",
+                      "kind": "hint",
+                      "level": 1,
+                      "verifiedSkillName": "アドバンテージ"
+                    }
+                  ],
+                  "effects": [
+                    {
+                      "kind": "energy",
+                      "delta": 10,
+                      "sourceEffectOrdinal": 1
+                    },
+                    {
+                      "kind": "skill_points",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 2
+                    },
+                    {
+                      "kind": "bond",
+                      "delta": 5,
+                      "sourceEffectOrdinal": 3
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30322:4",
+          "name": "マヤノ的おやつ会議！",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "guts",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30322:5",
+          "name": "マヤノ的ファッション会議！",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:200362",
+                  "kind": "hint",
+                  "level": 1,
+                  "verifiedSkillName": "直線巧者"
+                }
+              ],
+              "effects": [
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 1
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "stamina",
+                  "delta": 10,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30324",
+      "coverageStatus": "partial",
+      "events": [
+        {
+          "id": "gt-site:30324:1",
+          "name": "万策尽きてなお",
+          "type": "auto",
+          "rewards": [
+            {
+              "skillId": "skill:203621",
+              "kind": "hint",
+              "level": 2,
+              "verifiedSkillName": "ストレートハート"
+            },
+            {
+              "skillId": "skill:204771",
+              "kind": "hint",
+              "level": 2,
+              "verifiedSkillName": "出陣"
+            }
+          ],
+          "effects": [
+            {
+              "kind": "mood",
+              "delta": 2,
+              "sourceEffectOrdinal": 1
+            },
+            {
+              "kind": "stamina",
+              "delta": 40,
+              "sourceEffectOrdinal": 2
+            },
+            {
+              "kind": "power",
+              "delta": 20,
+              "sourceEffectOrdinal": 3
+            },
+            {
+              "kind": "guts",
+              "delta": 10,
+              "sourceEffectOrdinal": 4
+            },
+            {
+              "kind": "bond",
+              "delta": 15,
+              "sourceEffectOrdinal": 5
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30324:2",
+          "name": "甘味争奪合戦之巻",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "speed",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "rewards": [
+                {
+                  "skillId": "skill:201702",
+                  "kind": "hint",
+                  "level": 1,
+                  "verifiedSkillName": "ありったけ"
+                }
+              ],
+              "effects": [
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gt-site:30324:3",
+          "name": "昼休、避球試合之巻",
+          "type": "choice",
+          "choices": [
+            {
+              "id": "group-1",
+              "label": "選択肢1（仮）",
+              "effects": [
+                {
+                  "kind": "energy",
+                  "delta": -5,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "speed",
+                  "delta": 25,
+                  "sourceEffectOrdinal": 2
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 3
+                }
+              ]
+            },
+            {
+              "id": "group-2",
+              "label": "選択肢2（仮）",
+              "effects": [
+                {
+                  "kind": "power",
+                  "delta": 15,
+                  "sourceEffectOrdinal": 1
+                },
+                {
+                  "kind": "bond",
+                  "delta": 5,
+                  "sourceEffectOrdinal": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -55,7 +55,7 @@ test('three contextual replacements and a separate R/SSR overseas event preserve
  const published=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
  const {verifyRelease}=require('../src/event_release_gate.cjs');
- assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2487);
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2499);
 });
 test('R and SSR Mei have separately scoped foreign event facts without copying domestic ID',()=>{
  const f=fixture(),row=f.ledger.overseasSeparate;
