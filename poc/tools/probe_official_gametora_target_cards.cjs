@@ -9,6 +9,7 @@
  */
 const fs=require('node:fs');
 const crypto=require('node:crypto');
+const {headingFingerprint}=require('../src/direct_event_fact_review.cjs');
 const {robotsDisallows}=require('../src/official_gametora_probe.cjs');
 const {registryFromSkillText}=
  require('../src/official_gametora_skill_id_crosswalk.cjs');
@@ -147,7 +148,9 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=nu
       category:(()=>{const label=el.parentElement?.parentElement?.firstElementChild?.innerText?.trim();
        return ['連続イベント','ランダムイベント','お出かけイベント','特別イベント'].includes(label)?label:'unknown';})()};
     }):null;
+    const title=visibleCount?headingFingerprint(await event.locator('h3').innerText()):null;
     structure.push({ordinal:i+1,category:shape?.category||'unknown',
+     ...(title?{titleSha256:title.sha256,chainStage:title.stage}:{}),
      routePieces:pieces.length,ambiguous:pieces.some(r=>r.unresolvedOr),
      ...(pieces.length===0||pieces.some(r=>r.unresolvedOr)?{shape:shape?.body}: {})});
     observations.push(assembleLiveEvent({

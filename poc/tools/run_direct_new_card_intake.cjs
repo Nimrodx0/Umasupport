@@ -6,7 +6,10 @@ const path=require('node:path');
 const policy=require('../config/direct-event-intake-policy.v1.json');
 const {gitBlobSha,POLICY}=require('../src/current_umasim_roster_delta.cjs');
 const {plan}=require('./plan_new_card_event_intake.cjs');
-const {inspect}=require('./probe_official_gametora_target_cards.cjs');
+const {inspect,getSkillRegistry}=require('./probe_official_gametora_target_cards.cjs');
+const {reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate}=require('../src/direct_event_fact_review.cjs');
+const reviewEvidence=require('../config/direct-event-fact-review-evidence.v1.json');
+const reviewManifest=require('../config/direct-event-fact-review.v1.json');
 function validatePolicy(){
  if(policy.schemaVersion!==1||policy.decision!=='D-067'||policy.origin!=='https://gametora.com'||
     policy.sourceType!=='GameTora-original-site'||policy.sourceVisitLimitPerInvocation!==2||
@@ -26,7 +29,7 @@ function privatePath(file,env=process.env){
 }
 async function main(args){
  validatePolicy();
- if(!(args.length===5||args.length===7&&args[5]==='--private-draft'))throw Error('usage: old-roster current-roster skill-data pinned-metadata batch-offset [--private-draft /outside/repo/review.json]');
+ if(!(args.length===5||args.length===6&&args[5]==='--review-known'||args.length===7&&args[5]==='--private-draft'))throw Error('usage: old-roster current-roster skill-data pinned-metadata batch-offset [--review-known | --private-draft /outside/repo/review.json]');
  const draftFile=args.length===7?privatePath(args[6]):null,drafts=[];
  const [oldPath,newPath,skillFile,metaPath,offsetText]=args;
  const meta=JSON.parse(fs.readFileSync(metaPath,'utf8'));
@@ -35,8 +38,21 @@ async function main(args){
  if(gitBlobSha(old)!==POLICY.beforeBlob||gitBlobSha(current)!==meta.cardBlob)throw Error('UmaSim roster hash mismatch');
  const p=plan({previousSupportText:old,currentSupportText:current,existingCatalog:require('../data/reviewed_events.v1.json')});
  const offset=Number(offsetText);
+ const review=args[5]==='--review-known',reviews=[];
+ const registry=review||draftFile?getSkillRegistry(skillFile,meta.skillBlob):null;
  const result=await inspect({plan:p,skillFile,skillBlobSha:meta.skillBlob,offset,
-  onProjection:draftFile?record=>drafts.push(record):null});
+  onProjection:review||draftFile?record=>{
+   const spec=reviewManifest.cards.find(x=>x.cardId===record.cardId);
+   if(review&&!spec)throw Error('No reviewed evidence for selected card '+record.cardId);
+   const checked=spec?reviewCard(record,spec,registry):null;
+   if(checked){verifyObservedDigest(checked.summary,reviewEvidence);reviews.push(checked.summary);}
+   if(draftFile)drafts.push({...record,reviewedCandidate:checked?.candidate||null,
+    unapprovedIntakeCandidate:checked?toUnapprovedIntakeCandidate(checked,reviewEvidence):null});
+  }:null});
+ if(review){
+  if(reviews.length!==result.selectedCardIds.length||reviews.length===0)throw Error('Reviewed card source unavailable');
+  process.stdout.write('GT_DIRECT_FACT_REVIEW='+JSON.stringify({cards:reviews,publicationApproved:false,existingCatalogUnchanged:true})+'\n');
+ }
  if(draftFile){
   // Raw HTML, event/choice prose and screenshots are not returned by the
   // projection. This file is an unapproved local review input, not a catalog.

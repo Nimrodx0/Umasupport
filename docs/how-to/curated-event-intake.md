@@ -26,6 +26,10 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 同一コミットの `commit`・`cardBlob`・`skillBlob` を持つメタデータが必要。1回最大2枚、offsetで保留列を移動。CIでの候補出力・既存ファイルの上書き・リポジトリ内出力は拒否する。候補の数値スキルID・結果位置・効果・分類は独自のレビュー入力であり、未承認のため公開カタログではない。内部到達条件と選択・結果の意味を個別審査後、既存の非破壊追加／公開ゲートを適用する。
 
+## 個別の事実照合（D-067）
+
+初回の20102/30322/30324は [照合指紋](../../poc/config/direct-event-fact-review.v1.json) にカード別URL、イベント見出しのハッシュ、選択式/自動・通常連続段、結果別の数値/スキルLvのハッシュのみを記録。名前・選択肢文面・候補DBは保存しない。`--review-known` は検証済み対象だけの内容照合・既存スキーマ検査・未承認ゲート拒否を行い、[実試験の候補SHA](../../poc/config/direct-event-fact-review-evidence.v1.json) とも一致する場合だけ件数と候補SHAを出力する。ローカル `--private-draft` の既知カードでは一致時のみ仮称の審査用候補と `unapprovedIntakeCandidate`（既存増分stagingの入力形式）を保存する。候補は現在イベント名も仮称で、正式名を採る場合は別途確認して内容SHAを再審査する。これらは公開承認ではない。友人R/SSRのレア度差、特殊イベントの母数と凸依存効果は別に裁定し、SSRのスキルをRへ流用しない。
+
 ## 実行確認
 
 ```sh
