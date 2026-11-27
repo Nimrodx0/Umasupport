@@ -6,7 +6,10 @@ const {REF}=require('../src/d074_event_data_branch.cjs');
 const config=require('../config/d074-daily-data.v1.json');
 const acquisitionPolicy=require('../config/direct-event-intake-policy.v1.json');
 const publicationPolicy=require('../config/d074-publication-policy.v1.json');
-const routinePolicy={schemaVersion:1,scope:'D073-normal-random-skill-path-identifying-titles-only',reviewer:'synthetic fixture',reviewedAt:'2000-01-01',validThrough:'2099-12-31',accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic'],publicationBasis:{kind:'original-factual-description',reason:'Synthetic regression only'}};
+const routinePolicy={schemaVersion:2,scope:'D073-normal-random-skill-path-identifying-titles-only',reviewer:'synthetic fixture',reviewedAt:'2000-01-01',validThrough:null,accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic'],publicationBasis:{kind:'original-factual-description',reason:'Synthetic regression only'}};
+const {DOCS}=require('../src/d075_conditions_monitor.cjs');
+const conditionConfig={schemaVersion:1,baseline:{policySha256:digest(routinePolicy),documents:DOCS.map(([id])=>({id,sha256:'1'.repeat(64)}))}};
+const conditions={status:'verified',policySha256:digest(routinePolicy),baselineSha256:digest(conditionConfig.baseline)};
 const base='a'.repeat(40),head='b'.repeat(40),hash='c'.repeat(64);
 function fixture(){
  const catalog={schemaVersion:1,cards:[]},ids=['39999','39997','39998'];
@@ -18,16 +21,17 @@ function fixture(){
  const calls=[],state={main:base,head,open:[],catalog};
  const github={rest:{git:{getRef:async({ref})=>{calls.push(ref);return {data:{object:{sha:ref===REF?state.head:state.main}}};}},pulls:{list:async()=>({data:state.open})}}};
  const args={config:{schemaVersion:1,mode:'plan',routinePublicationPolicy:structuredClone(routinePolicy)},publicationPolicy,
+  conditionConfig,checkConditions:async()=>conditions,
   queue,auto:{attemptedIds:[],stopReason:null,publicationApproved:false},store:{load:async()=>structuredClone(ledger)},github,owner:'o',repo:'r',baseSha:base,expectedHead:head,
   reader:async()=>({head:state.head,catalogText:JSON.stringify(state.catalog)}),appender:async x=>{calls.push(x);return {baseSha:base,previousHead:head,newCardIds:x.evidence.map(v=>v.cardId),mainWritten:false,pagesDeployed:false,branchWritten:x.mode==='publish',receiptSha256:hash,revision:2,head:'9'.repeat(40)};},
   rawVerifier:async({report})=>{calls.push('raw');return {...report,publicRawVerified:true};}};
  return {args,state,queue,ledger,calls};
 }
 test('production default disabled; publication flag independently prevents writes',async()=>{
- const f=fixture();a.deepEqual(config,{schemaVersion:1,mode:'disabled',routinePublicationPolicy:null});
+ const f=fixture();a.equal(config.mode,'plan');a.equal(config.routinePublicationPolicy.schemaVersion,2);a.equal(config.routinePublicationPolicy.validThrough,null);
  a.deepEqual(publicationPolicy,{schemaVersion:1,automaticPublicationAllowed:false});
  a.equal(acquisitionPolicy.automaticPublicationAllowed,false);
- a.equal((await runDailyData({...f.args,config})).status,'disabled');
+ a.equal((await runDailyData({...f.args,config:{schemaVersion:1,mode:'disabled',routinePublicationPolicy:null}})).status,'disabled');
  a.equal((await runDailyData({...f.args,config:{...f.args.config,mode:'publish'}})).status,'publication-disabled-by-policy');
  a.deepEqual(f.calls,[]);
 });
@@ -66,4 +70,14 @@ test('publication configuration is distinct from intake and validated even with 
  a.match(workflow,/runAutomatic\(\{[\s\S]*?policy,existingCatalog:catalog/);
  a.match(workflow,/const publicationPolicy=require\('\.\/poc\/config\/d074-publication-policy\.v1\.json'\);/);
  a.match(workflow,/runDailyData\(\{config,publicationPolicy,/);
+});
+
+test('D075 active daily publication requires a verified policy-bound baseline',async()=>{
+ const f=fixture(),active={...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy:{...publicationPolicy,automaticPublicationAllowed:true}};
+ await a.rejects(runDailyData({...active,checkConditions:undefined}),/preflight required/);
+ for(const report of [{status:'document-changed'},{status:'verified',policySha256:'0'.repeat(64),baselineSha256:conditions.baselineSha256}]){
+  const r=await runDailyData({...active,checkConditions:async()=>report});a.equal(r.status,'external-conditions-held');a.equal(r.branchWritten,false);
+ }
+ const r=await runDailyData({...active,conditionConfig:{schemaVersion:1,baseline:null},checkConditions:async()=>({status:'baseline-unreviewed'})});a.equal(r.status,'external-conditions-held');
+ a.ok(f.calls.every(x=>typeof x==='string'));
 });
