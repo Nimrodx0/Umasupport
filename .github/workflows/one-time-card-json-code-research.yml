@@ -1,0 +1,25 @@
+name: One-time card JSON effect code research
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-card-json-code-research.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d069-card-json-code-semantics'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node poc/tools/probe_card_json_codes_once.cjs
