@@ -57,7 +57,13 @@ test('generic approved append actually traverses the existing gate and preserves
  const old={schemaVersion:1,entries:[]},model=require('../src/live_loader.js').buildModel(current);
  const args={inputs:[input],reviews:[v],existingCatalog:input.existingCatalog,existingApprovals:old,
   newApprovals:{schemaVersion:1,entries:[entry]},discovery,model,skillText,currentSupportText:current,previousSupportText:before};
- const out=append(args);a.equal(out.appendedEventCount,1);a.equal(out.existingCatalogUnchanged,true);
+ const out=append(args);a.equal(out.appendedEventCount,1);
+ const packet=inspect(input),ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:input.sourcePin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+ const {inputs,...rest}=args;
+ const resumedArgs={...rest,packets:[packet],titles:[new Map([[1,'架空イベント1']])],ledger};
+ const {appendResumed}=require('../src/d069_json_review_bridge.cjs');
+ a.deepEqual(appendResumed(resumedArgs),out);
+ a.throws(()=>appendResumed({...resumedArgs,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);a.equal(out.existingCatalogUnchanged,true);
  a.equal(out.catalog.cards[0].events[0].rewards[0].skillId,'skill:990001');
  a.deepEqual(input.existingCatalog.cards,[]);a.deepEqual(old.entries,[]);
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);

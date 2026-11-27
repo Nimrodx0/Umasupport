@@ -58,6 +58,7 @@ function prepare(input,review){
  return preparePacket({packet:p,titles,skillText:input.skillText,existingCatalog:input.existingCatalog},review);
 }
 function preparePacket({packet:p,titles,skillText,existingCatalog},review){
+ if(p?.status!=='awaiting-independent-fact-review')fail('held observation');
  if(p?.dataKind!=='d069-json-review-packet'||p.schemaVersion!==1||p.publicationApproved!==false||
     p.sourceSiteTextCopied!==false||!Array.isArray(p.events)||!p.events.length||p.events.length>100||
     !Array.isArray(p.reasonCodes)||p.reasonCodes.length||!GIT.test(p.sourcePin?.commit||'')||
@@ -67,7 +68,6 @@ function preparePacket({packet:p,titles,skillText,existingCatalog},review){
     existingCatalog.cards.some(c=>c.cardId===p.cardId)||digest(existingCatalog)!==p.existingCatalogSha256||
     !(titles instanceof Map)||titles.size!==p.events.length)fail('packet scope or catalog/registry drift');
  cardJsonUrl(p);
- if(p.status!=='awaiting-independent-fact-review')fail('held observation');
  if(review?.schemaVersion!==1||review.publicationApproved!==false||
     review.packetSha256!==digest(p)||review.cardId!==p.cardId||
     review.nonSkillPolicy!=='omit-explicitly-skill-path-only'||
