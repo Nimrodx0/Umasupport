@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-070",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：吾妻R・SSRの掲載事実はGameToraを採用する",
+      "status": "current",
+      "relation": [],
+      "note": "10149・30323に限りGameTora掲載事実を編集上の採用基準とする。他サイトとの差異のみで保留しない。未掲載の追加・未解釈の進行条件・実ゲーム全件性・取得条件・D-068公開審査は別。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-070",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-070",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-069",
       "date": "2026-11-27",
       "heading": "2026-11-27：新カード更新をGitHub内のイベント駆動型運用とする",
@@ -43,12 +55,13 @@
       "status": "qualified",
       "relation": [
         "D-068",
-        "D-069"
+        "D-069",
+        "D-070"
       ],
-      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。 公開承認の単位はD-068で条件付き包括承認へ変更。 D-069はイベント駆動型の運用目標を追加し、現行の取得・公開ゲートは維持。",
+      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。 公開承認の単位はD-068で条件付き包括承認へ変更。 D-069はイベント駆動型の運用目標を追加し、現行の取得・公開ゲートは維持。 D-070は吾妻2枚のみGameTora掲載事実を採用基準とする。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-067",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-069",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-070",
       "reviewedAt": "2026-11-27"
     },
     {

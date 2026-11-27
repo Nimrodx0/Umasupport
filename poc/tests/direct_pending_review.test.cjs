@@ -97,3 +97,11 @@ test('sequential observer stops on failure, unexpected layout, invalid result an
  const empty=await runSequentialBatches({ids:[],observeBatch:()=>{throw Error('must not call')}});
  a.equal(empty.stopReason,null);a.deepEqual(empty.observedIds,[]);
 });
+
+test('D070 removes external disagreement as a hold only for the two named cards; publication remains pending',()=>{
+ for(const card of review.cards.filter(r=>['10149','30323'].includes(r.cardId))){
+  a.deepEqual(card.reasonCodes,['source-structure-unresolved','internal-reachability-unverified','publication-review-pending']);
+  a.equal(card.observedEvents,11);a.equal(card.runId,45984465780);
+ }
+ a.equal(review.publicationApproved,false);
+});

@@ -33,7 +33,7 @@ test('unsupported effects and uncertain direct grant never silently become confi
  const x=inspect({special:[event(8002,'架空',[group('',[token('sg',null,990003),token('ds'),{t:'se',v:null,d:9,r:true},token('en','+10',{secret:'原文'}),token('sk','+0',990001)])],{type:'tf',meaningless_choices:true})]});
  const r=x.events[0].groups[0].routes[0];
  a.equal(r.hints.length,0);a.equal(r.effects.length,0);a.equal(r.directGrants.length,1);
- a.deepEqual(r.unresolved.map(x=>x.reason),['direct-grant-kind-unverified','unsupported-effect-code','unsupported-effect-code','unexpected-scalar-fields','invalid-hint']);
+ a.deepEqual(r.unresolved.map(x=>x.reason),['direct-grant-kind-unverified','unsupported-effect-code','condition-application-semantics-unverified','unexpected-scalar-fields','invalid-hint']);
  a.doesNotMatch(JSON.stringify(x),/原文|架空/);
  a.ok(x.events[0].blockers.includes('meaningless-choices-unverified'));
 });
@@ -77,4 +77,27 @@ test('unknown effect prevents a full reward parity claim even when known facts a
  const old={cardId:scope.cardId,events:[{id:'old-1',name:'架空',type:'auto',effects:[{kind:'energy',delta:7}],rewards:[]}]};
  const r=legacyCompare(x,old).rows[0];
  a.equal(r.knownFactsMatch,true);a.equal(r.allComparedRewardFactsMatch,false);
+});
+
+test('special codes keep all-stat bundle, random targets and full restoration distinct',()=>{
+ const x=inspect({special:[event(8100,'架空特別',[group('',[token('po','+4'),token('5s','+3'),token('rs','+8',2),token('fe'),{t:'se',v:null,d:9,r:true}])])]});
+ const r=x.events[0].groups[0].routes[0];
+ a.equal(r.effects[0].kind,'power');
+ a.deepEqual(r.effects.slice(1).map(z=>[z.kind,z.delta,z.sourceBundle]),['speed','stamina','power','guts','wisdom'].map(k=>[k,3,'all_stats']));
+ a.deepEqual(r.dynamicEffects.map(z=>z.kind),['random-stats','restore-current-max-energy']);
+ a.equal(r.dynamicEffects[0].statCount,2);a.equal(r.dynamicEffects[1].delta,undefined);
+ a.deepEqual(r.statusCandidates,[{kind:'add-condition',conditionId:9,possible:true,sourceFlag:true,sourceOrdinal:5}]);
+ a.deepEqual(r.unresolved.map(z=>z.reason),['condition-application-semantics-unverified']);
+ a.equal(x.numericValueBasis,'source-json-unadjusted');a.equal(x.levelDependent,null);
+ const old={cardId:scope.cardId,events:[{id:'ref',name:'架空特別',type:'auto',
+ effects:r.effects.map(({sourceOrdinal,...v})=>v),dynamicEffects:r.dynamicEffects.map(({sourceOrdinal,...v})=>v),
+ statusEffects:[{kind:'add-condition',conditionId:9,possible:true}],rewards:[]}]};
+ const p=legacyCompare(x,old).rows[0];a.equal(p.knownFactsMatch,true);a.equal(p.allComparedRewardFactsMatch,false);
+ old.events[0].dynamicEffects[0].statCount=3;
+ a.equal(legacyCompare(x,old).rows[0].knownFactsMatch,false);
+});
+test('malformed special codes do not become scalar gains or valid states',()=>{
+ const r=inspect({random:[event(8101,'架空',[group('',[token('rs','+3',6),token('5s','+2/+8'),token('fe','+10'),{t:'se',v:null,d:9,r:'yes'}])])]}).events[0].groups[0].routes[0];
+ a.equal(r.effects.length+r.dynamicEffects.length+r.statusCandidates.length,0);
+ a.equal(r.unresolved.length,4);
 });

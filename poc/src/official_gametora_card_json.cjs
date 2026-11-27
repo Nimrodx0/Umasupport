@@ -12,7 +12,7 @@ const BUILD=/^[A-Za-z0-9_-]{1,80}$/;
 const CODE=/^[a-z0-9_]{1,20}$/;
 const SHA=/^[a-f0-9]{64}$/;
 const categories=new Set(['random','arrows','special','dates']);
-const SCALARS=Object.freeze({sp:'speed',st:'stamina',gu:'guts',in:'wisdom',en:'energy',me:'max_energy',pt:'skill_points',mo:'mood',bo:'bond'});
+const SCALARS=Object.freeze({sp:'speed',st:'stamina',po:'power',gu:'guts',in:'wisdom',en:'energy',me:'max_energy',pt:'skill_points',mo:'mood',bo:'bond'});
 const sha=s=>crypto.createHash('sha256').update(s).digest('hex');
 const canonicalTitle=s=>{
  if(typeof s!=='string'||!s.trim()||s.length>300)fail('invalid title');
@@ -59,7 +59,7 @@ function parseGroup(g,index){
   fail('invalid result group');
  const group={ordinal:index+1,labelPresent:!!g.o.trim(),routes:[],blockers:[]};
  if(!only(g,['o','r']))group.blockers.push('unknown-group-fields');
- const fresh=()=>({effects:[],hints:[],directGrants:[],unresolved:[],markers:[],sourceOrdinals:[]});
+ const fresh=()=>({effects:[],hints:[],directGrants:[],dynamicEffects:[],statusCandidates:[],unresolved:[],markers:[],sourceOrdinals:[]});
  let r=fresh();
  const finish=()=>{
   if(!r.sourceOrdinals.length)fail('empty explicit result');
@@ -89,6 +89,32 @@ function parseGroup(g,index){
    // Numeric grant candidate only; independent rarity check still required.
    r.directGrants.push({skillId:'skill:'+x.d,sourceOrdinal:at});
    unresolved('direct-grant-kind-unverified');continue;
+  }
+  // Scoped legacy parity: 30080 all-stats, random-stat and max-energy
+  // restoration codes. Do not conflate restoration with a fixed delta.
+  if(x.t==='5s'){
+   const delta=signed(x.v);
+   if(!only(x,['t','v'])||delta===null){unresolved('invalid-all-stats');continue;}
+   for(const kind of ['speed','stamina','power','guts','wisdom'])
+    r.effects.push({kind,delta,sourceBundle:'all_stats',sourceOrdinal:at});
+   continue;
+  }
+  if(x.t==='rs'){
+   const delta=signed(x.v);
+   if(!only(x,['t','v','d'])||delta===null||!positive(x.d)||x.d>5){unresolved('invalid-random-stats');continue;}
+   r.dynamicEffects.push({kind:'random-stats',delta,statCount:x.d,targetSelection:'random-distinct',sourceOrdinal:at});continue;
+  }
+  if(x.t==='fe'){
+   if(!only(x,['t'])){unresolved('invalid-full-energy');continue;}
+   r.dynamicEffects.push({kind:'restore-current-max-energy',possible:true,targetSelection:'current-max-energy',sourceOrdinal:at});continue;
+  }
+  if(x.t==='se'){
+   if(!only(x,['t','v','d','r'])||x.v!==null||!positive(x.d)||own(x,'r')&&typeof x.r!=='boolean'){
+    unresolved('invalid-condition-candidate');continue;
+   }
+   // The optional source flag is preserved, not interpreted as certainty or probability.
+   r.statusCandidates.push({kind:'add-condition',conditionId:x.d,possible:true,sourceFlag:own(x,'r')?x.r:null,sourceOrdinal:at});
+   unresolved('condition-application-semantics-unverified');continue;
   }
   if(own(SCALARS,x.t)){
    if(!only(x,x.t==='bo'?['t','v','d']:['t','v'])||own(x,'d')&&!positive(x.d)){
@@ -147,7 +173,7 @@ function inspectCardJson({body,cardId,sourceUrl,buildId}={}){
  if(events.length>100)fail('event cap');
  return {dataKind:'gametora-card-json-private-observation',schemaVersion:1,
   cardId,buildId,sourceUrl,jsonUrl:url,bodySha256:sha(body),bodyBytes:Buffer.byteLength(body),
-  events,sourceSiteTextCopied:false,existingDatabaseUnchanged:true,
+  events,numericValueBasis:'source-json-unadjusted',levelDependent:typeof p.isLevelDependent==='boolean'?p.isLevelDependent:null,sourceSiteTextCopied:false,existingDatabaseUnchanged:true,
   publicationApproved:false,appEventSchemaAdoptable:false};
 }
 // A single explicit pair can be tried against an independently reviewed
@@ -166,7 +192,9 @@ function comparisonRoutes(group){
  })})),rangeHypothesis:true,rangeBlocked:false};
 }
 const bag=a=>a.slice().sort().join('|');
-const effect=x=>x.kind+':'+x.delta+':'+(x.recipientCharId??'');
+const effect=x=>x.kind+':'+x.delta+':'+(x.recipientCharId??'')+':'+(x.sourceBundle??'');
+const dynamic=x=>JSON.stringify([x.kind,x.delta??null,x.statCount??null,x.targetSelection??null,x.possible??null]);
+const status=x=>JSON.stringify([x.kind,x.conditionId??null,x.possible??null]);
 const hint=x=>x.skillId+':'+x.level;
 const same=(a,b)=>bag(a)===bag(b);
 function legacyCompare(observation,card){
@@ -199,9 +227,11 @@ function legacyCompare(observation,card){
     return {ordinal:j+1,hintCount:r.hints.length,scalarCount:r.effects.length,directGrantCount:r.directGrants.length,
      hintsMatch:!!leaf&&same(r.hints.map(hint),oldHints.map(hint)),
      effectsMatch:!!leaf&&same(r.effects.map(effect),(leaf.effects||[]).map(effect)),
+     dynamicEffectsMatch:!!leaf&&same((r.dynamicEffects||[]).map(dynamic),(leaf.dynamicEffects||[]).map(dynamic)),
+     statusCandidateIdsMatch:!!leaf&&same((r.statusCandidates||[]).map(status),(leaf.statusEffects||[]).map(status)),
      directGrantIdsMatch:!!leaf&&same(r.directGrants.map(x=>x.skillId),oldDirect.map(x=>x.skillId)),
      stopMarkerMatches:!!leaf&&r.markers.some(m=>m.kind==='explicit-chain-stop')===(leaf.terminal===true||p.terminal===true),
-     unresolved:unknown,referenceNonScalarCount:(leaf?.statusEffects?.length||0)+(leaf?.dynamicEffects?.length||0)+otherRewards.length,
+     unresolved:unknown,referenceNonScalarCount:otherRewards.length+(leaf?.statusEffects||[]).filter(x=>x.chance!==undefined).length,
      referenceConditionalRewardCount:(leaf?.rewards||[]).filter(x=>x.condition!==undefined).length};
    });
    return {ordinal:i+1,routeCountMatches:!trial.rangeBlocked&&trial.routes.length===refs.length,
@@ -209,7 +239,7 @@ function legacyCompare(observation,card){
   });
   const groupsMatch=parents.length===e.groups.length;
   const matchedFacts=groupsMatch&&groups.every(g=>g.routeCountMatches&&g.routeRows.every(r=>
-   r.hintsMatch&&r.effectsMatch&&r.directGrantIdsMatch&&r.stopMarkerMatches));
+   r.hintsMatch&&r.effectsMatch&&r.dynamicEffectsMatch&&r.statusCandidateIdsMatch&&r.directGrantIdsMatch&&r.stopMarkerMatches));
   const fullyCovered=matchedFacts&&groups.every(g=>!g.groupBlockers.length&&g.routeRows.every(r=>
    !r.unresolved.length&&!r.referenceNonScalarCount&&!r.referenceConditionalRewardCount));
   return {sourceEventId:e.sourceEventId,oldEventId:old.id,status:'compared',groupsMatch,
