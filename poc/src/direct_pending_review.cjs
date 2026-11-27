@@ -27,6 +27,13 @@ function describePending(ledger,review){
 // D069: determine exact queued targets from the current verified ledger.
 // This stage is intentionally network-free. Access conditions have not
 // yet been established; a queue entry is not authority to visit a site.
+function partitionBatches(ids,limit=2){
+ assert(Array.isArray(ids)&&ids.length<=1000&&ids.every(id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id))&&new Set(ids).size===ids.length,'Invalid batch IDs');
+ assert(Number.isSafeInteger(limit)&&limit>=1&&limit<=2,'Invalid batch limit');
+ const batches=[];
+ for(let i=0;i<ids.length;i+=limit)batches.push(ids.slice(i,i+limit));
+ return batches;
+}
 function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
  const {verifyLedger}=require('./derived_github_pending_ledger.cjs');
  verifyLedger(previous);
@@ -43,8 +50,51 @@ function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
  const eligibleIds=rows.filter(r=>r.currentStatus==='awaiting-direct-source-review').map(r=>r.cardId);
  return {dataKind:'d069-event-driven-intake-plan',schemaVersion:1,
   sourcePin:{...sourcePin},newlyQueuedIds,heldIds,eligibleIds,
+  batches:partitionBatches(eligibleIds,policy.sourceVisitLimitPerInvocation),
   nextBatchIds:eligibleIds.slice(0,2),remainingIds:eligibleIds.slice(2),
   status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
   siteAccessAuthorized:false,publicationApproved:false};
 }
-module.exports={verifyDirectReview,describePending,planEventDrivenIntake};
+// Transport-independent controller. A caller must separately establish
+// authority to use a real observer; the daily planner never invokes this.
+async function runSequentialBatches({ids,observeBatch}={}){
+ const batches=partitionBatches(ids);
+ assert(typeof observeBatch==='function','Missing batch observer');
+ const completed=[],held=[],unattempted=ids.slice();
+ let stopReason=null,uncertainIds=[];
+ for(const batch of batches){
+  let result;
+  try{
+   result=await observeBatch(batch.slice());
+   assert(result?.publicationApproved===false&&result.existingDatabaseUnchanged===true&&
+    result.sourceSiteTextCopied===false&&Array.isArray(result.selectedCardIds)&&
+    JSON.stringify(result.selectedCardIds)===JSON.stringify(batch)&&Array.isArray(result.results)&&
+    result.results.length===batch.length,'Unexpected observation');
+   for(let i=0;i<batch.length;i++){
+    const r=result.results[i];
+    assert(r?.cardId===batch[i]&&r.publicationApproved===false&&
+     ['private-schema-only','not-listed-yet','unrecognized-event-layout'].includes(r.status),
+     'Unexpected observation status');
+   }
+  }catch{
+   // A thrown transport/layout error might follow a partial visit. Do not
+   // assert that any member of this batch was unvisited or safely retry it.
+   stopReason='batch-observation-failed';uncertainIds=batch.slice();
+   unattempted.splice(0,batch.length);break;
+  }
+  for(const r of result.results){
+   if(r.status==='private-schema-only')completed.push(r.cardId);
+   else held.push({cardId:r.cardId,status:r.status});
+  }
+  unattempted.splice(0,batch.length);
+  // Unrecognized structure may indicate a site-wide change; stop further
+  // batches. A single absent listing does not block unrelated cards.
+  if(result.results.some(r=>r.status==='unrecognized-event-layout')){
+   stopReason='source-structure-unresolved';break;
+  }
+ }
+ return {dataKind:'d069-sequential-observation-report',schemaVersion:1,
+  observedIds:completed,held,uncertainIds,unattemptedIds:unattempted,stopReason,
+  publicationApproved:false};
+}
+module.exports={verifyDirectReview,describePending,planEventDrivenIntake,partitionBatches,runSequentialBatches};

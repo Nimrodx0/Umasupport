@@ -139,7 +139,7 @@ jobs:
               .addRaw(summary.sourceStatus==='direct-review-pending'?'\nD067: direct GameTora review pending; no legacy repository or site access in roster-only job.':'')
               .addHeading('D069 event-driven intake preflight')
               .addRaw('Status: '+eventPlan.status+'; newly queued: '+(eventPlan.newlyQueuedIds.join(', ')||'none')+
-                '; next batch: '+(eventPlan.nextBatchIds.join(', ')||'none')+
+                '; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
                 '; held: '+(eventPlan.heldIds.join(', ')||'none')+
                 '; no site access or automatic publication authorized.')
               .write();
@@ -161,8 +161,8 @@ jobs:
               'D067: GameTora original site is the new-card source. GameWith is consulted only for specific flagged facts. Historical ledger repository and existing rows retain old observations, not current availability.',
               'A successfully converted card stays pending until actually appended under the separate approval gate.',
               ...(direct?['**Direct source review pending. This roster-only job makes no event-source requests. Current review status is separate from historical GitHub observations. Observed event counts are not game coverage or publication.**']:[]),
-              'D069 preflight: '+eventPlan.status+'; next bounded batch: '+(eventPlan.nextBatchIds.join(', ')||'none')+
-                '; remaining unreviewed: '+(eventPlan.remainingIds.join(', ')||'none')+
+              'D069 preflight: '+eventPlan.status+'; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
+                '; total unreviewed: '+eventPlan.eligibleIds.length+
                 '. Site access is not authorized by this plan.',
               'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
               '',

@@ -33,6 +33,7 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.deepEqual(result.heldIds,['10149','30323']);
  a.deepEqual(result.nextBatchIds,['39997','39998']);
  a.deepEqual(result.remainingIds,['39999']);
+ a.deepEqual(result.batches,[['39997','39998'],['39999']]);
  a.equal(result.status,'blocked-access-conditions');
  a.equal(result.siteAccessAuthorized,false);
  a.equal(result.publicationApproved,false);
@@ -50,4 +51,49 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.throws(()=>planEventDrivenIntake({...input,sourcePin:{...sourcePin,cardBlob:'latest'}}),/immutable/);
  a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticScheduledSiteAccessAllowed:true}}),/gate/);
  a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticPublicationAllowed:true}}),/gate/);
+});
+
+test('partition covers all IDs exactly once, not two per day',()=>{
+ const {partitionBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'];
+ a.deepEqual(partitionBatches(ids),[['39991','39992'],['39993','39994'],['39995']]);
+ a.deepEqual(partitionBatches([]),[]);
+ a.throws(()=>partitionBatches(['39991','39991']));
+ a.throws(()=>partitionBatches(ids,3));
+});
+
+const observation=(ids,statuses=[])=>({selectedCardIds:ids,publicationApproved:false,existingDatabaseUnchanged:true,sourceSiteTextCopied:false,
+ results:ids.map((cardId,i)=>({cardId,status:statuses[i]||'private-schema-only',publicationApproved:false}))});
+test('sequential observer processes all five, tolerates absent listings, and never overlaps batches',async()=>{
+ const {runSequentialBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'],calls=[];
+ let active=0;
+ const r=await runSequentialBatches({ids,observeBatch:async batch=>{
+  a.equal(active++,0);calls.push(batch);await Promise.resolve();active--;
+  return observation(batch,calls.length===1?['not-listed-yet']:[]);
+ }});
+ a.deepEqual(calls,[ids.slice(0,2),ids.slice(2,4),ids.slice(4)]);
+ a.deepEqual(r.observedIds,ids.slice(1));
+ a.deepEqual(r.held,[{cardId:ids[0],status:'not-listed-yet'}]);
+ a.deepEqual(r.unattemptedIds,[]);a.equal(r.publicationApproved,false);
+ a.equal(r.stopReason,null);
+});
+test('sequential observer stops on failure, unexpected layout, invalid result and never retries automatically',async()=>{
+ const {runSequentialBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'];
+ for(const kind of ['transport','layout','wrong-id']){
+  const calls=[];
+  const r=await runSequentialBatches({ids,observeBatch:async batch=>{
+   calls.push(batch);
+   if(calls.length===1)return observation(batch);
+   if(kind==='transport')throw Error('HTTP 429');
+   if(kind==='layout')return observation(batch,['unrecognized-event-layout']);
+   return observation(['39999',batch[1]]);
+  }});
+  a.equal(calls.length,2);a.deepEqual(r.unattemptedIds,[ids[4]]);
+  a.deepEqual(r.uncertainIds,kind==='layout'?[]:ids.slice(2,4));
+  a.equal(r.stopReason,kind==='layout'?'source-structure-unresolved':'batch-observation-failed');
+ }
+ const empty=await runSequentialBatches({ids:[],observeBatch:()=>{throw Error('must not call')}});
+ a.equal(empty.stopReason,null);a.deepEqual(empty.observedIds,[]);
 });
