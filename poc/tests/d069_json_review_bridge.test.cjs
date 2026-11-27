@@ -40,3 +40,27 @@ test('even a reviewed packet cannot be reused after source or catalog changes',(
  a.throws(()=>prepare(changed,v),/stale/);
  a.throws(()=>prepare({...input,existingCatalog:{schemaVersion:1,cards:[{cardId:'39998',events:[]}]}},v),/stale/);
 });
+
+test('generic approved append actually traverses the existing gate and preserves old data',()=>{
+ const supportRow=(id,stage)=>{
+  const f=Array(62).fill('0');f[0]=id;f[1]='[Synthetic]カード'+id;f[3]='2';f[4]=String(stage);f[6]='スピード';f[59]='末脚';return f.join('\t');
+ };
+ const before=Array.from({length:500},(_,i)=>String(10000+i)).flatMap(id=>Array.from({length:5},(_,j)=>supportRow(id,j))).join('\n')+'\n';
+ const current=before+Array.from({length:5},(_,j)=>supportRow(cardId,j)).join('\n')+'\n';
+ const discovery=require('../src/new_card_event_incremental.cjs').discoverNewCardsFromUmaSim({previousSupportText:before,currentSupportText:current});
+ const input=fixture({random:[e(1,[g('',[hint])])]});
+ input.sourcePin.cardBlob=gitBlobSha(current);
+ const v=review(inspect(input)),candidate=prepare(input,v);
+ const checks=Object.fromEntries(['card','event','choices','outcomes','dependencies','publication'].map(k=>[k,true]));
+ const evidence=Object.fromEntries(Object.keys(checks).map(k=>[k,['https://example.org/synthetic']]));
+ const entry={cardId,eventId:candidate.card.events[0].id,eventSha256:digest(candidate.card.events[0]),reviewer:'synthetic fixture',reviewedAt:'2026-11-27',checks,evidence,publicationBasis:{kind:'original-factual-description',reason:'synthetic fixture'}};
+ const old={schemaVersion:1,entries:[]},model=require('../src/live_loader.js').buildModel(current);
+ const args={inputs:[input],reviews:[v],existingCatalog:input.existingCatalog,existingApprovals:old,
+  newApprovals:{schemaVersion:1,entries:[entry]},discovery,model,skillText,currentSupportText:current,previousSupportText:before};
+ const out=append(args);a.equal(out.appendedEventCount,1);a.equal(out.existingCatalogUnchanged,true);
+ a.equal(out.catalog.cards[0].events[0].rewards[0].skillId,'skill:990001');
+ a.deepEqual(input.existingCatalog.cards,[]);a.deepEqual(old.entries,[]);
+ a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);
+ a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[{...entry,eventSha256:'0'.repeat(64)}]}}),/SHA|変更|ハッシュ/);
+ a.throws(()=>append({...args,currentSupportText:before}),/roster blob/);
+});
