@@ -44,6 +44,12 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 `stageIndependentEvidenceAcrossVersions` は1〜2枚のパケット・独立証拠・取得時の固定UmaSim名簿／辞書、基準名簿、公開時の固定名簿／辞書、現行カタログ・承認台帳、新規個別承認を入力とする。[異版増分](../../poc/src/d072_cross_version_reviewed_append.cjs) では各blobの内容一致、基準からの新規ID、観測時の名簿IDの消失なし、対象カードの解析済み属性・通常ヒント・性能解放情報、報酬スキルのID・名称・レアリティ・groupの一致を検査する。別版でのイベント事実の不変や法的許諾を証明するものではない。呼出し側で公式UmaSimのcommitとblobの対応・基準固定版・旧固定辞書の検証を行う。既存DBの追記だけを許し、旧内容や承認を変更せず、内容SHA承認と本番preflightを実行する。これらの中核関数は通信・ファイル書込みをしない。実行時の接続は [公式固定版ソース読取](../../poc/src/d072_verified_umasim_source.cjs) と [GitHub審査アダプタ](../../poc/src/d072_github_reviewed_intake.cjs) の `createReviewedIntake({github,owner,repo})` を用いる。`prepare({evidence,existingCatalog})` は専用台帳・パケット・取得時辞書から未承認候補SHAを返す。`stage({evidence,existingCatalog,existingApprovals,newApprovals})` は公式固定基準・取得時各版・最新版・旧固定辞書を照合し、承認済み増分と証跡をメモリ上に返す。呼出し側で現行mainからカタログと承認台帳を同時に固定すること。GitHub Actionsの[固定入力検証](../../.github/workflows/d072-verified-release-inputs.yml) は実出典・既存DBのみで動作を検査する。元データ・未承認候補をログ出力／公開しない。実際の独立審査入力取得、自動公開PR、実カード試験は残る。
 
+## D-072 承認済み公開提案の生成
+
+[公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合の配列1〜2枚）と `newApprovals`（個別承認v1）だけのJSON。事実審査と公開可否を実際に確認した入力のみ、正式名称・独自数値構造・根拠URLを含める。公開Actionsの入力・ログに秘密や元JSON・原文・未承認候補を渡さない。既定 `plan` は検証・件数・提案SHAのみで書込なし。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一コミットにまとめて専用 `automation/d072-release-<SHA>` refを新規作成する。mainへの書込・強制更新・自動merge・自動公開は行わない。既存refは同一treeと親コミットの場合のみ再利用。mainが移動した場合は最新のmainから再実行する。
+
+出力のbranchを通常のPRとしてmainへ提出し、全CIと変更対象を検証し、統合後Pages・通常入口の公開受入を行う。GitHub標準トークンによるPR作成にはCI実行承認が必要になる場合があり、同トークンからのpushではPagesビルドも起動しないため、現段階では通常PRの作成と統合を別にする。追加の個人トークンや秘密鍵は必須化しない。取得側の自動承認・事実の推測・第三者許諾の擬制はしない。
+
 ## 実行確認
 
 ```sh
