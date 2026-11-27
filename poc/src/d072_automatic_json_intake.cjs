@@ -6,8 +6,13 @@ const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
 // Existing approval gate remains independent of source collection.
 async function runAutomatic({plan,sourcePin,policy,existingCatalog,store,loadSkillText,observerFactory=createObserver}){
  if(policy?.automaticScheduledSiteAccessAllowed!==true||policy.automaticPublicationAllowed!==false)throw Error('D072 automatic intake policy mismatch');
- const eligible=excludeAttempted(plan,await store.load());
+ const ledger=await store.load();
+ const eligible=excludeAttempted(plan,ledger);
  if(!eligible.eligibleIds.length)return {attemptedIds:[],stopReason:null,sourceRequestsPerformed:false,publicationApproved:false};
+ // A source refusal is a site-level stop, not merely a card-level retry ban.
+ // Preserve the receipt across daily runs; reopening requires a reviewed policy change.
+ if(ledger.rows.some(row=>row.status==='uncertain'&&row.failureCode==='source-refused'))
+  return {attemptedIds:[],stopReason:'prior-source-refused',sourceRequestsPerformed:false,publicationApproved:false};
  const skillText=await loadSkillText();
  if(gitBlobSha(skillText)!==sourcePin.skillBlob)throw Error('UmaSim skill blob mismatch');
  const observer=observerFactory({automaticAuthorized:true,knownIds:existingCatalog.cards.map(c=>c.cardId)});
