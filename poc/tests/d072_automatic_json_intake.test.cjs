@@ -16,7 +16,7 @@ function fixture(ids){
  const plan={dataKind:'d069-event-driven-intake-plan',schemaVersion:1,sourcePin:{commit:sourcePin.commit,cardBlob:sourcePin.cardBlob},eligibleIds:ids,heldIds:[],batches:require('../src/direct_pending_review.cjs').partitionBatches(ids),siteAccessAuthorized:false,publicationApproved:false};
  const args={plan,sourcePin,policy,existingCatalog:{schemaVersion:1,cards:[]},store,
   loadSkillText:async()=>{loads++;return skillText;},
-  observerFactory:opts=>{factory++;a.equal(opts.automaticAuthorized,true);return async batch=>{
+  observerFactory:opts=>{factory++;a.equal(opts.automaticAuthorized,true);a.deepEqual(Object.keys(opts).sort(),['automaticAuthorized','knownIds']);return async batch=>{
    visits.push(batch);return batch.map(cardId=>({cardId,status:'not-listed'}));
   };}};
  return {args,counts:()=>({loads,visits,factory}),ledger:()=>ledger};
@@ -28,7 +28,7 @@ test('no new IDs means no skill fetch, observer creation or site access',async()
 test('only new unattempted IDs, all sequential batches, no revisit on replay',async()=>{
  const ids=['39995','39996','39997'],f=fixture(ids);
  const r=await runAutomatic(f.args);a.deepEqual(r.attemptedIds,ids);
- a.deepEqual(f.counts().visits,ids.map(id=>[id]));
+ a.deepEqual(f.counts().visits,[ids.slice(0,2),ids.slice(2)]);
  a.equal(f.ledger().rows.length,3);a.equal(r.publicationApproved,false);
  a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
  a.equal(f.counts().loads,1);
@@ -37,7 +37,7 @@ test('stop at first failed batch, later IDs remain unattempted',async()=>{
  const f=fixture(['39995','39996','39997']);let calls=0;
  const r=await runAutomatic({...f.args,observerFactory:()=>async()=>{calls++;throw Error('source refused');}});
  a.equal(calls,1);a.equal(r.stopReason,'observation-failed');
- a.deepEqual(r.attemptedIds,['39995']);
+ a.deepEqual(r.attemptedIds,['39995','39996']);
  a.ok(f.ledger().rows.every(x=>x.status==='uncertain'));
 });
 
