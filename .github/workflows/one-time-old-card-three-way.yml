@@ -1,0 +1,31 @@
+name: One-time old-card three-way parity
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-old-card-three-way.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d069-three-way-old-card-parity'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare pinned UmaSim registry and browser
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 30 'https://raw.githubusercontent.com/mee1080/umasim/main/data/skill_data.txt' -o "$RUNNER_TEMP/skills.txt"
+          git hash-object "$RUNNER_TEMP/skills.txt"
+          npm install --no-save --no-package-lock playwright@1.55.1
+      - run: node poc/tools/probe_old_card_three_way_once.cjs "$RUNNER_TEMP/skills.txt"
