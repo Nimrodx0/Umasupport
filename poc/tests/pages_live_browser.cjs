@@ -50,7 +50,7 @@ async function cacheInventory(page){
    const tx=db.transaction('sources','readonly'),store=tx.objectStore('sources'),res={};
    for(const key of ['umasupport/umasim/support_card.txt/v1','umasupport/umasim/skill_data.txt/v1',
                      'umasupport/umasim/skill_data.txt/cf9366f6a487bd8f197b53d8a11981207beb9f6c',
-                     'umasupport/public/reviewed_events.v1.json/v1']){
+                     'umasupport/public/event-data-snapshot/v1']){
     const request=store.get(key);
     const item=await new Promise((resolve,reject)=>{
      request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
@@ -178,6 +178,16 @@ async function main(){
   assert.deepEqual(await page.evaluate(()=>['10149','30323'].map(id=>{const c=window.UmaDemoData.cardById[id];const event=c.events.find(e=>e.id==='gt-json:'+id+':1504');return [id,c.events.length,event.rewards[0].skillId,event.rewards[0].level];})),[['10149',11,'skill:202551',3],['30323',11,'skill:202551',3]]);
   assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
   assert.equal(actual.eventMode,'reviewed');
+  const provenance=await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events);
+  const manifestResponse=await page.request.get('https://raw.githubusercontent.com/Nimrodx0/Umasupport/refs/heads/data/events/manifest.json');
+  assert.equal(manifestResponse.status(),200);
+  const manifest=await manifestResponse.json();
+  assert.equal(provenance.revision,manifest.revision);
+  assert.equal(provenance.snapshotCommit,manifest.snapshotCommit);
+  assert.equal(provenance.url,'https://raw.githubusercontent.com/Nimrodx0/Umasupport/'+manifest.snapshotCommit+'/poc/data/reviewed_events.v1.json');
+  assert.equal(manifest.catalogSha256,sha(await fs.readFile(path.join(ROOT,'poc/data/reviewed_events.v1.json'))));
+  console.log('D074_PAGES_DATA_SOURCE='+JSON.stringify({revision:provenance.revision,snapshotCommit:provenance.snapshotCommit}));
+
   assert.ok(status.includes(`${CURRENT_PUBLIC.events}件`),'Current event count missing from status');
   assert.ok(actual.eventPick,'No selectable and rewarded real public event found');
   assert.ok(actual.rare>=325,'Current master lost historical rare skill inventory');
@@ -240,7 +250,8 @@ async function main(){
   let supportBlocked=0,skillBlocked=0,eventBlocked=0;
   await page.route('**/data/support_card.txt',r=>{supportBlocked++;return r.abort();});
   await page.route('**/data/skill_data.txt',r=>{skillBlocked++;return r.abort();});
-  await page.route('**/poc/data/reviewed_events.v1.json',r=>{eventBlocked++;return r.abort();});
+  await page.route('**/refs/heads/data/events/manifest.json',r=>{eventBlocked++;return r.abort();});
+  await page.route('**/poc/data/reviewed_events.v1.json',r=>r.abort());
   const cached=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
   assert.match(cached,/スキル辞書は保存済み版を使用/);
@@ -256,6 +267,7 @@ async function main(){
   await page.unroute('**/data/support_card.txt');
   await page.unroute('**/data/skill_data.txt');
   await page.unroute('**/poc/data/reviewed_events.v1.json');
+  await page.unroute('**/refs/heads/data/events/manifest.json');
   // Desktop Chromium resized to a narrow viewport is NOT an actual Android device.
   await page.setViewportSize({width:390,height:844});
   const geometry=await page.evaluate(()=>({width:window.innerWidth,
@@ -344,6 +356,12 @@ async function main(){
   await boot(stateless);
   assert.equal(await stateless.locator('#bootstrap-status').getAttribute('data-mode'),'online');
   assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.skillHierarchy.linked),actual.linked);
+  // Fresh profile without a distributed cache: pinned local baseline only.
+  await stateless.route('**/refs/heads/data/events/manifest.json',r=>r.abort());
+  const fallback=await boot(stateless);
+  assert.match(fallback,/固定済み旧版/);
+  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'fallback');
+  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
   await noStorage.close();
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 

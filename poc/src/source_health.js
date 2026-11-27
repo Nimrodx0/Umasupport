@@ -18,6 +18,7 @@ function modeLabel(mode,kind){
  if(kind==='event'){
   if(mode==='reviewed')return '公開JSONの検証成功';
   if(mode==='cached')return '保存済みの検証済み公開イベントJSONを利用';
+  if(mode==='fallback')return 'イベント配信に接続できないため固定済み旧版を利用';
   if(mode==='preview')return '未承認イベント試用中（公開承認0件）';
   if(mode==='preview-failed')return '公開JSONは正常・試用データ検証失敗';
   if(mode==='failed')return '公開JSONの検証失敗・未反映';
@@ -39,7 +40,7 @@ function summarize(model){
  const eventMode=src.events?.mode||
   (m.eventStatus==='reviewed-empty'||m.eventStatus==='reviewed-partial'?'reviewed':'unknown');
  const rows=model.cards;
- const eventsVerified=eventMode==='reviewed'||eventMode==='cached'||eventMode==='preview';
+ const eventsVerified=eventMode==='reviewed'||eventMode==='cached'||eventMode==='fallback'||eventMode==='preview';
  const eventRecords=eventsVerified&&Number.isSafeInteger(m.reviewedEventRecords)?m.reviewedEventRecords:null;
  const eventCards=eventsVerified&&Number.isSafeInteger(m.reviewedEventCards)?m.reviewedEventCards:null;
  const hierarchy=m.skillHierarchy||null;
@@ -58,6 +59,7 @@ function summarize(model){
    hierarchyTotal:hierarchy&&Number.isSafeInteger(hierarchy.totalRare)?hierarchy.totalRare:null},
   events:{mode:eventMode,label:modeLabel(eventMode,'event'),
    sourceUrl:src.events?.url||null,
+   revision:src.events?.revision??null,snapshotCommit:src.events?.snapshotCommit??null,
    fetchedAt:src.events?.fetchedAt||null,
    checkedAt:src.events?.checkedAt||null,
    records:eventRecords,cards:eventCards,
