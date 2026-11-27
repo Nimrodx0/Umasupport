@@ -1,0 +1,31 @@
+name: One-time Azuma named JSON skill-path rehearsal
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-azuma-named-rehearsal.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d070-named-azuma-json-rehearsal'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test poc/tests/official_gametora_card_json.test.cjs poc/tests/d070_azuma_json_outing_review.test.cjs
+      - name: Download pinned independent UmaSim registry
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 30 'https://raw.githubusercontent.com/mee1080/umasim/e9bb2939ba117ea93e556790c353ed3edec27eab/data/skill_data.txt' -o "$RUNNER_TEMP/skills.txt"
+          curl --fail --silent --show-error --max-time 30 'https://raw.githubusercontent.com/mee1080/umasim/e9bb2939ba117ea93e556790c353ed3edec27eab/data/support_card.txt' -o "$RUNNER_TEMP/cards.txt"
+      - run: node poc/tools/probe_d070_named_azuma_once.cjs "$RUNNER_TEMP/skills.txt" "$RUNNER_TEMP/cards.txt"
