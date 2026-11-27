@@ -94,3 +94,28 @@ test('source fact receipt is distinct from independent evidence and reconstructs
  f.result.sourceFactReceipts[0].independentGameVerification=true;
  a.throws(()=>render({files:f.files,result:f.result,baseSha:base}),/source receipt/);
 });
+
+test('daily handoff runs the real immutable proposal writer and PR helper, then stops on open PR',async()=>{
+ const f=fixture(),cardId='39998',packetSha256=f.result.proofs[0].packetSha256;
+ const {runDailyProposal}=require('../src/d073_daily_proposal.cjs');
+ const catalog=JSON.parse(f.files[catalogPath]),ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:pin,status:'awaiting-fact-review',packetSha256}]};
+ const input={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256,titles:null,chainEvidence:null};
+ const queue={dataKind:'d072-offline-review-queue',schemaVersion:1,ledgerRevision:2,catalogSha256:digest(catalog),publicationApproved:false,
+  rows:[{cardId,packetSha256,status:'ready-for-publication-decision',sourceCandidateInputReady:true,publicationApproved:false,routine:{input,publicationApproved:false}}]};
+ f.result.independentReviewReceipts=[];
+ f.result.sourceFactReceipts=[{dataKind:'d073-source-fact-receipt',schemaVersion:1,cardId,packetSha256,sourceFactsSha256:'2'.repeat(64),titleInputSha256:'3'.repeat(64),chainEvidenceSha256:null,chainEvidenceUrls:[],independentGameVerification:false,publicationApproved:false}];
+ let open=[],stages=0;const repo={full_name:'test/test'};
+ f.args.github.rest.pulls={list:async()=>({data:open}),create:async q=>{
+  const p={number:17,state:'open',draft:false,title:q.title,body:q.body,head:{ref:q.head,sha:f.state.branch,repo},base:{ref:'main',sha:base,repo}};
+  open=[p];return {data:p};
+ }};
+ const policy={scope:'D073-normal-random-skill-path-identifying-titles-only'};
+ const args={github:f.args.github,owner:'test',repo:'test',baseSha:base,files:f.files,queue,auto:{attemptedIds:[],stopReason:null,publicationApproved:false},
+  store:{load:async()=>structuredClone(ledger)},config:{schemaVersion:1,mode:'plan',routinePublicationPolicy:policy},
+  proposer:x=>propose({...x,intake:{stage:async v=>{stages++;a.deepEqual(v.evidence,[input]);a.deepEqual(v.routinePublicationPolicy,policy);return structuredClone(f.result);}}})};
+ const plan=await runDailyProposal(args);a.equal(plan.status,'planned');a.equal(f.state.writes,0);
+ const pr=await runDailyProposal({...args,config:{...args.config,mode:'pr'}});
+ a.equal(pr.prNumber,17);a.equal(pr.proposalSha,plan.proposalSha);a.equal(f.state.main,base);
+ a.equal((await runDailyProposal({...args,config:{...args.config,mode:'pr'}})).status,'existing-proposal-open');
+ a.equal(stages,2);a.equal(f.state.writes,6);
+});
