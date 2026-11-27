@@ -3,28 +3,5 @@
   "dataKind": "direct-event-pending-review",
   "publicationApproved": false,
   "sourceProseIncluded": false,
-  "cards": [
-    {
-      "cardId": "10149",
-      "observedAt": "2026-11-27",
-      "observedEvents": 11,
-      "runId": 45984465780,
-      "reasonCodes": [
-        "source-structure-unresolved",
-        "internal-reachability-unverified",
-        "publication-review-pending"
-      ]
-    },
-    {
-      "cardId": "30323",
-      "observedAt": "2026-11-27",
-      "observedEvents": 11,
-      "runId": 45984465780,
-      "reasonCodes": [
-        "source-structure-unresolved",
-        "internal-reachability-unverified",
-        "publication-review-pending"
-      ]
-    }
-  ]
+  "cards": []
 }

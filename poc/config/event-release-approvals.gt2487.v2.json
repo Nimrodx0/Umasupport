@@ -772,6 +772,1172 @@
         "kind": "original-factual-description",
         "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
       }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1494",
+      "eventSha256": "a862fe488ff8691cadd6980e4064e9446ff383ea2a02b2596220fe32eb9f46fc",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1495",
+      "eventSha256": "7ccf59000c776b99972ca4bb3e15d70f736d1c1820a0ef0befd0294cd3dc9ace",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1497",
+      "eventSha256": "997445c4a4be215d6b426ee569f7b2b185f55f2294f43f9b890763eb5a325e2a",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1498",
+      "eventSha256": "43d1ad4078f99092e747e432ab393e36be0d09e5655cf0ba570ea28f6f6ba66d",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1499",
+      "eventSha256": "e7a2301468aef0a0be9cce4b5a53aa6915bb65e3b3bbbcd86a6a5907c4c5bf9d",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1496",
+      "eventSha256": "aea2b6e8f33f4c48520bb402da5661dd0c6cc062597e9a1c0d5f7f0217217708",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1500",
+      "eventSha256": "dc722c8fe1e73d7fcb2b44fd2594bc228da0a09cf856785c6f9b2f27346708e6",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1501",
+      "eventSha256": "a840865f1367cd6bd88dfd7720140bf19d73e517768752cf4fea1b201ab649bc",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1502",
+      "eventSha256": "a4f57b40510476d1fb0442b8b1b42e3583665ab458583b93824f4b5e28deee24",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1503",
+      "eventSha256": "56129c5812247d4722ac16e321749fe0441cc58918766b0bfab4413a2026fb75",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "10149",
+      "eventId": "gt-json:10149:1504",
+      "eventSha256": "c8c7a4fc4c0a4b069a3cdb490e547c1f325432ba3695eedd9da60d5970fae8f6",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/10149-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1494",
+      "eventSha256": "d5f7d6871ebee550f100b2ada83848e7e1ace6357cf775305e995ec9903f2ef9",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1495",
+      "eventSha256": "67cbd2594e89d939bdaadc4c98fd693003e2963c9b97e718d204e677ee6b5a3f",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1497",
+      "eventSha256": "b25d1d613404f3fc14a8b1e82fc78bff91eb1af7304a368a1407db69e3f289ae",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1498",
+      "eventSha256": "f5cf5510e64b07e04b0422333062b0900a47f6073e1a39ed09ae5d67a83a4cd2",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1499",
+      "eventSha256": "510a4986cb8fc3cb9ffd7ba4215542ff8686b00ee609ea25bc515554497d1dad",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1496",
+      "eventSha256": "828af43b4cd9998c218c3cb603f6cf46bd2f197f8dfcea5e32ad79f12a8da210",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1500",
+      "eventSha256": "afe78ebe42df2494e27a74c24b9d703dc1a16daa878305249ff045eebcd53bdf",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1501",
+      "eventSha256": "f626f358d93190baeaabaaf6b01a5c7b2761c81ecfd3cfc43ede303b12c1a561",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1502",
+      "eventSha256": "199cc310300f99b8e1d16438d4b765d3431bb6f9dfa500e8f07fdbd2cce78189",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1503",
+      "eventSha256": "d8a4ed68717d94976ed43d6feed2da0932a78db1046ad07bbe19438ba845c7a0",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
+    },
+    {
+      "cardId": "30323",
+      "eventId": "gt-json:30323:1504",
+      "eventSha256": "6d3ec25d4c784a4e060a7df824061dc10408c1321bb15e3d42dd49fdf9ca5635",
+      "reviewer": "ChatGPT technical/editorial review under D-068 and D-070",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30323-azuma",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-070",
+          "https://github.com/Nimrodx0/Umasupport/blob/302cf98f03b58b8809b8991316babe85ba3bf073/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 conditional owner authorization and D-070 scoped source decision. Independently structured numeric skill IDs and levels, short identifying event titles, generated choice labels and reviewed outing sequence. No source prose, source JSON, images, non-skill effect reproduction, or claim of complete in-game coverage."
+      }
     }
   ]
 }

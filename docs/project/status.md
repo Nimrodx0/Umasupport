@@ -16,6 +16,8 @@
 
 ## 現在の到達点と残る課題
 
+**D-070 / W3.5 最初のカード別JSON公開増分（2026-11-27 20:18 JST以降）**：#559 main 302cf98の全CI/Pages成功。#560 [正式名称付き試験45986515070](https://github.com/Nimrodx0/Umasupport/actions/runs/45986515070) 各11イベント/14経路/4ヒント/5辺、UmaSim固定カード・スキルblob照合成功。#561 [承認付き増分試験45989546830](https://github.com/Nimrodx0/Umasupport/actions/runs/45989546830) 旧562枚2499件を保持、吾妻10149/30323の22件だけ追記し564枚2521件・旧コホート2487件・個別34件の公開ゲート／本番preflight成功。正式名・仮称選択肢・スキル事実のみ、非スキル数値・状態／シナリオ効果は未収録、partial。D-070の限定採用とD-068の内容SHA承認、通常公開ページの限定取得・独自事実編集に基づく。第三者の許諾を擬制しない。公開JSONと台帳・保留メタデータを同時更新、版20261127-d070-r1。CI・Pages・公開受入を本PRで検証する。無人取得・一般カード自動変換は未接続。
+
 **D-070 / W3.5 吾妻のお出かけ経路（2026-11-27 19:54 JST以降）**：#557 main 22d2ade、main Core/文書/台帳/Pages全成功。[#558再試験45985103259](https://github.com/Nimrodx0/Umasupport/actions/runs/45985103259) は両カード各11イベント/14結果をJSONと画面で照合。1496の両選択肢のdsと表示上のお出かけ解放が一致。5段階のお出かけを掲載順に連結する限定非公開スキル投影を追加、4ヒント/5辺/特殊条件付きとし、他カードへの自動一般化はしない。#555/#556の固定body SHAと名称ハッシュ、選択位置、ヒント、未解釈コードと照合。基礎数値・状態付与・シナリオ効果は投影外と明示し、公開承認は未実施。実JSONとUmaSim辞書での再検査、正式名、公開審査は残る。公開DBは不変。
 
 **D-070 / W3.5（2026-11-27 19:42 JST以降）**：利用者は吾妻10149・30323のGameTora掲載事実を採用値に指定。外部サイトとの差だけを理由とした保留を解除。限定研究 #556 [run 45984465780](https://github.com/Nimrodx0/Umasupport/actions/runs/45984465780) は旧30030/30080、吾妻2枚を取得し、poの4出現、5s/rs/se/feの旧公開対応を確認。吾妻各11件で抽出した数値・コード・構造は同一（原文や未対応の任意値の同一性は主張しない）。isLevelDependentは30030 false、30080/吾妻 true。po/5s/rs/feと状態付与候補を変換器へ実装、seのフラグ意味、ds/シナリオ固有コード、内部到達条件、公開ゲートは未解決。両カードの保留理由を技術・審査に更新。公開DB不変。前回#554 main ffd5edf、PR全回帰成功、main Core成功・Pages成功・browser-smoke Chromium導入失敗（再実行を要求）。本PRで新規回帰を検証する。
@@ -184,7 +186,7 @@ P3.1〜P3.4の初期研究結果と当時の未完事項は[更新前の固定�
 
 ## 公開イベントの検証対象（本番JSON）
 
-- 公開イベント（公開JSON実測）：**2,499件**／**562カード**。測定対象：[poc/data/reviewed_events.v1.json](../../poc/data/reviewed_events.v1.json)。公開承認と初回投入は [PR #309](https://github.com/Nimrodx0/Umasupport/pull/309)（2026-11-02）、D-068初回増分は [PR #537](https://github.com/Nimrodx0/Umasupport/pull/537)（2026-11-27）。D-068はPages配信および公開ブラウザ受入45931649803成功。実ゲーム全体の網羅率ではない。CIの機械検査でJSONのイベント数とこの記載を突き合わせます。
+- 公開イベント（公開JSON実測）：**2,521件**／**564カード**。測定対象：[poc/data/reviewed_events.v1.json](../../poc/data/reviewed_events.v1.json)。公開承認と初回投入は [PR #309](https://github.com/Nimrodx0/Umasupport/pull/309)（2026-11-02）、D-068初回増分は [PR #537](https://github.com/Nimrodx0/Umasupport/pull/537)（2026-11-27）。D-068はPages配信および公開ブラウザ受入45931649803成功。実ゲーム全体の網羅率ではない。CIの機械検査でJSONのイベント数とこの記載を突き合わせます。
 - 固定技術変換2,512件のうち **25件** は公開保留（GameWith補正が入ったGT由来1件、別出典から編集追加した24件）。保留は公開データから分離したままで、ゲーム中に存在しない意味ではありません。根拠は [公開承認の監査](../evidence/events/phase2-no-inquiry-publication-assessment-20261102.md) と [出典例外分類](../evidence/events/phase2-source-lineage-exception-map-20261102.md)。
 - 公開JSONは、未承認の試用モードや非公開候補とは別。通常の起動時にロードできることは [PR #312・#313](https://github.com/Nimrodx0/Umasupport/pull/313) とPages実ブラウザで確認。元のイベント本文・画像を無断再配布しない。
 

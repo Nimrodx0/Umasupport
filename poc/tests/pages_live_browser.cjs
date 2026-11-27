@@ -144,6 +144,7 @@ async function main(){
   assert.equal(actual.reviewedEvents,CURRENT_PUBLIC.events,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
   assert.equal(actual.reviewedCards,CURRENT_PUBLIC.cards,'Published event card coverage changed');
   assert.deepEqual(await page.evaluate(()=>['20102','30322','30324'].map(id=>[id,window.UmaDemoData.cardById[id]?.events.length])),[['20102',4],['30322',5],['30324',3]]);
+  assert.deepEqual(await page.evaluate(()=>['10149','30323'].map(id=>{const c=window.UmaDemoData.cardById[id];const event=c.events.find(e=>e.id==='gt-json:'+id+':1504');return [id,c.events.length,event.rewards[0].skillId,event.rewards[0].level];})),[['10149',11,'skill:202551',3],['30323',11,'skill:202551',3]]);
   assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
   assert.equal(actual.eventMode,'reviewed');
   assert.ok(status.includes(`${CURRENT_PUBLIC.events}件`),'Current event count missing from status');
