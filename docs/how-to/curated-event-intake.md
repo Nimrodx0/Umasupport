@@ -30,6 +30,10 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 初回の20102/30322/30324は [照合指紋](../../poc/config/direct-event-fact-review.v1.json) にカード別URL、イベント見出しのハッシュ、選択式/自動・通常連続段、結果別の数値/スキルLvのハッシュのみを記録。名前・選択肢文面・候補DBは保存しない。`--review-known` は検証済み対象だけの内容照合・既存スキーマ検査・未承認ゲート拒否を行い、[実試験の候補SHA](../../poc/config/direct-event-fact-review-evidence.v1.json) とも一致する場合だけ件数と候補SHAを出力する。ローカル `--private-draft` の既知カードでは一致時のみ仮称の審査用候補と `unapprovedIntakeCandidate`（既存増分stagingの入力形式）を保存する。従来の仮称候補とは別に `prepareNamedCandidate` で見出しSHA一致時だけ正式イベント名を復元し、独立辞書の `verifiedSkillName` を付与。本番形状の新しい内容SHAで別審査する。`verify_direct_release_shape.cjs` は既存公開DBと3枚の候補を一時メモリで結合し、現行・旧固定辞書の実読込検査と未承認拒否を検証する。実ファイルは公開しない。ローカルの `--private-draft` 出力には `namedProductionCandidate` とその内容SHAを追加する（未承認、CI出力禁止）。これらは公開承認ではない。友人R/SSRのレア度差、特殊イベントの母数と凸依存効果は別に裁定し、SSRのスキルをRへ流用しない。
 
+## D-068の初回公開増分
+
+2026-11-27の利用者包括承認と実レビューに基づき、20102/30322/30324の12件のみ [正式形状SHA](../../poc/config/direct-named-release-d068-20261127.v1.json) に固定。run 45926697083で旧署名保持・12個別証跡・本番読込を検査し、承認された独自構造のみを公開JSONに追記する。通常の候補出力は引き続き非公開、追加対象の再取得は行わない。以降のバッチも実審査と内容ハッシュを固定し、旧履歴を変更せず追加する。
+
 ## 実行確認
 
 ```sh

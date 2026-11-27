@@ -141,10 +141,10 @@ async function main(){
   assert.ok(actual.cards>=500,'Card count too small: '+actual.cards);
   assert.ok(actual.hints>3000,'Hint count too small: '+actual.hints);
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
-  assert.equal(actual.reviewedEvents,2487,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
-  assert.equal(actual.reviewedCards,559,'Published event card coverage changed');
+  assert.equal(actual.reviewedEvents,2499,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
+  assert.equal(actual.reviewedCards,562,'Published event card coverage changed');
   assert.equal(actual.eventMode,'reviewed');
-  assert.match(status,/2487件/);
+  assert.match(status,/2499件/);
   assert.ok(actual.eventPick,'No selectable and rewarded real public event found');
   assert.ok(actual.rare>=325,'Current master lost historical rare skill inventory');
   assert.equal(actual.linked,actual.rare-actual.withoutLower);
@@ -212,7 +212,7 @@ async function main(){
   assert.match(cached,/スキル辞書は保存済み版を使用/);
   assert.equal(blocked,2);
   assert.equal(eventBlocked,1);
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2487);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   const restored=await page.evaluate(()=>({cards:window.UmaDemoData.cards.length,
    linked:window.UmaDemoData.meta.skillHierarchy.linked}));
@@ -313,7 +313,7 @@ async function main(){
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
-  console.log('PASS: real Pages Chromium, real 2487 published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
+  console.log('PASS: real Pages Chromium, real 2499 published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),
    viewport:geometry,cards:actual.cards,hints:actual.hints,skills:actual.skills,
    rare:actual.rare,linked:actual.linked,withoutLower:actual.withoutLower,

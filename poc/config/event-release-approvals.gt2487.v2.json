@@ -76,5 +76,702 @@
       }
     }
   ],
-  "entries": []
+  "entries": [
+    {
+      "cardId": "20102",
+      "eventId": "gt-site:20102:1",
+      "eventSha256": "24bac8703a2486b5310760aef7b6aea6485f56baf75ced83602240376c6498de",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "20102",
+      "eventId": "gt-site:20102:2",
+      "eventSha256": "72ad423d815f57f92c5e551a2bd6c31d4060c23e6f49a297ab715be044dad26a",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "20102",
+      "eventId": "gt-site:20102:3",
+      "eventSha256": "f8da8fbbc4d48dc6be3f63899be2ccbca2b1c42b571162d7312b42d8ecca6a4f",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "20102",
+      "eventId": "gt-site:20102:4",
+      "eventSha256": "d42167f6842848120182ebc1ed92ef8b7a3c805d2c15e629e0be5cbc081b8de9",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+          "https://gamewith.jp/uma-musume/article/show/587274",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30322",
+      "eventId": "gt-site:30322:1",
+      "eventSha256": "ff45a23f2b70495b96055b5fb18ba7e7ac6fa9a7d9de31766c0b23077e7d2fc5",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30322",
+      "eventId": "gt-site:30322:2",
+      "eventSha256": "d16c1c5247733647980ccb49b060f5a009a692cd1f88dc4d414c4d74f4389083",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30322",
+      "eventId": "gt-site:30322:3",
+      "eventSha256": "9484d47b7ad01d34fb29dbf7412cf9c5435234b57fef4db4deb66493f44e5866",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30322",
+      "eventId": "gt-site:30322:4",
+      "eventSha256": "dbf96e7afbbd3ca9ce088221e5b870a4f40d68d5f85bd75507f3afc09843b61e",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30322",
+      "eventId": "gt-site:30322:5",
+      "eventSha256": "7e89988155378482bd0a940556604b4e9822c2f6bc30e79e5c24866236d10fc7",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+          "https://gamewith.jp/uma-musume/article/show/584253",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30324",
+      "eventId": "gt-site:30324:1",
+      "eventSha256": "fda11ba18e595dce877ab3caf76bfa8a976caf7f166fb53bcff8412691dafe4d",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30324",
+      "eventId": "gt-site:30324:2",
+      "eventSha256": "109d661d4b0d86d399973eefc0c8f009aaf2ac0c89518e3401392f3b787cb974",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    },
+    {
+      "cardId": "30324",
+      "eventId": "gt-site:30324:3",
+      "eventSha256": "d9d93cf6dcc6cc601baa5743f9780234aeb82513b12bfb76ce8efcaf9b6088e1",
+      "reviewer": "ChatGPT technical/editorial review under project-owner D-068 conditional approval",
+      "reviewedAt": "2026-11-27",
+      "checks": {
+        "card": true,
+        "event": true,
+        "choices": true,
+        "outcomes": true,
+        "dependencies": true,
+        "publication": true
+      },
+      "evidence": {
+        "card": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "event": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "choices": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "outcomes": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "dependencies": [
+          "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+          "https://gamewith.jp/uma-musume/article/show/587189",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45924877939",
+          "https://github.com/Nimrodx0/Umasupport/actions/runs/45925832049"
+        ],
+        "publication": [
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068",
+          "https://gametora.com/robots.txt",
+          "https://gametora.com/docs/cla",
+          "https://umamusume.jp/derivativework_guidelines",
+          "https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md"
+        ]
+      },
+      "publicationBasis": {
+        "kind": "original-factual-description",
+        "reason": "D-068 owner conditional approval; 12 individually crosschecked game-event facts, short identifying titles, independently resolved skill IDs/names and numeric effects; generated choice/result placeholders, no source article prose, imagery or source JSON. Noncommercial nonofficial factual lookup, no game interaction. Not a third-party license or legal guarantee."
+      }
+    }
+  ]
 }
