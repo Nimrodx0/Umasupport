@@ -46,7 +46,7 @@ test('generic approved append actually traverses the existing gate and preserves
   const f=Array(62).fill('0');f[0]=id;f[1]='[Synthetic]カード'+id;f[3]='2';f[4]=String(stage);f[6]='スピード';f[59]='末脚';return f.join('\t');
  };
  const before=Array.from({length:500},(_,i)=>String(10000+i)).flatMap(id=>Array.from({length:5},(_,j)=>supportRow(id,j))).join('\n')+'\n';
- const current=before+Array.from({length:5},(_,j)=>supportRow(cardId,j)).join('\n')+'\n';
+ const current=before+['39999','39998'].flatMap(id=>Array.from({length:5},(_,j)=>supportRow(id,j))).join('\n')+'\n';
  const discovery=require('../src/new_card_event_incremental.cjs').discoverNewCardsFromUmaSim({previousSupportText:before,currentSupportText:current});
  const input=fixture({random:[e(1,[g('',[hint])])]});
  input.sourcePin.cardBlob=gitBlobSha(current);
@@ -69,6 +69,18 @@ test('generic approved append actually traverses the existing gate and preserves
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[{...entry,eventSha256:'0'.repeat(64)}]}}),/SHA|変更|ハッシュ/);
  a.throws(()=>append({...args,currentSupportText:before}),/roster blob/);
+ // A second card acquired against the same empty catalog may be published
+ // after the first card, without changing its archived packet or approval.
+ const second={...input,cardId:'39998',sourceUrl:'https://gametora.com/ja/umamusume/supports/39998-example',body:input.body.replace('39999','39998')};
+ const p2=inspect(second),v2=review(p2),c2=prepare(second,v2);
+ const entry2={...entry,cardId:'39998',eventId:c2.card.events[0].id,eventSha256:digest(c2.card.events[0])};
+ const ledger2={...ledger,rows:[...ledger.rows,{cardId:'39998',sourcePin:second.sourcePin,status:'awaiting-fact-review',packetSha256:digest(p2)}]};
+ const a2={...resumedArgs,packets:[p2],reviews:[v2],titles:[new Map([[1,'架空イベント1']])],ledger:ledger2,existingCatalog:out.catalog,existingApprovals:out.approvals,newApprovals:{schemaVersion:1,entries:[entry2]}};
+ const result2=appendResumed(a2);
+ a.equal(result2.appendedEventCount,1);a.deepEqual(result2.catalog.cards[0],out.catalog.cards[0]);a.deepEqual(result2.approvals.entries[0],out.approvals.entries[0]);
+ a.throws(()=>appendResumed({...a2,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);
+ a.throws(()=>appendResumed({...a2,existingCatalog:{...out.catalog,changed:true}}),/catalog drift/);
+ a.throws(()=>appendResumed({...a2,existingCatalog:result2.catalog}),/already imported/);
 });
 
 test('resume uses durable receipt and exact independently supplied title, not raw JSON',()=>{

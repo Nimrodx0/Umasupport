@@ -19,6 +19,7 @@ on:
       - 'poc/src/d069_github_attempt_store.cjs'
       - 'poc/src/d072_automatic_json_intake.cjs'
       - 'poc/src/d072_offline_review_queue.cjs'
+      - 'poc/src/d072_catalog_prefix.cjs'
       - 'poc/tests/d072_offline_review_queue.test.cjs'
       - 'poc/src/d069_review_packet_archive.cjs'
       - 'poc/config/direct-event-pending-review.v1.json'
