@@ -61,3 +61,31 @@ test('independent review, exact packet, all release approvals remain mandatory',
  a.throws(()=>stageReviewedAcrossVersions({...x,ledger:{...x.ledger,rows:[]}}),/receipt/);
  a.throws(()=>stageReviewedAcrossVersions({...x,existingCatalog:{...catalog,metadata:'changed'}}),/catalog drift/);
 });
+
+test('separate fact evidence must match actual title, route facts and topology; release approval is still required',()=>{
+ const x=fixture(),{compareIndependentReview,prepareIndependentCandidate,stageIndependentEvidenceAcrossVersions}=require('../src/d072_independent_review.cjs');
+ const evidenceFor=(id,p)=>({schemaVersion:1,cardId:id,packetSha256:digest(p),reviewer:'synthetic independent reviewer',reviewedAt:'2026-11-27',evidenceUrls:['https://example.org/synthetic-view'],nonSkillPolicy:'omit-explicitly-skill-path-only',events:[{
+  sourceEventId:1,title:'Synthetic title '+id,category:'random',categoryOrdinal:1,selection:'auto',previousSourceEventId:null,
+  groups:[{ordinal:1,labelPresent:false,routes:[{ordinal:1,hints:[{skillId:'skill:990001',level:2}],terminal:false,nonSkillCount:0}]}]
+ }]});
+ const items=x.items.map(i=>({packet:i.packet,source:i.source,evidence:evidenceFor(i.packet.cardId,i.packet)}));
+ const {packet,source,evidence}=items[0];
+ const m=compareIndependentReview({packet,ledger:x.ledger,evidence});
+ a.deepEqual(m.review,x.items[0].review);a.equal(m.receipt.publicationApproved,false);
+ a.equal(m.receipt.independentEvidenceSha256,digest(evidence));
+ const p=prepareIndependentCandidate({packet,ledger:x.ledger,evidence,skillText:source.skillText,existingCatalog:catalog});
+ a.equal(p.candidate.publicationApproved,false);a.equal(p.candidate.eventDigests[0].sha256,x.items[0].approval.eventSha256);
+ for(const alter of [
+  v=>v.events[0].title+=' wrong',
+  v=>v.events[0].previousSourceEventId=2,
+  v=>v.events[0].groups[0].routes[0].hints[0].level=3,
+  v=>v.events[0].groups[0].routes[0].terminal=true,
+  v=>v.events[0].groups[0].routes[0].nonSkillCount=1,
+  v=>v.evidenceUrls=[],
+  v=>v.reviewedAt='2026-02-30',
+  v=>v.packetSha256='0'.repeat(64)
+ ]){const v=structuredClone(evidence);alter(v);a.throws(()=>compareIndependentReview({packet,ledger:x.ledger,evidence:v}),/D072 independent review/);}
+ const staged=stageIndependentEvidenceAcrossVersions({...x,items});
+ a.equal(staged.appendedCardCount,2);a.equal(staged.independentReviewReceipts.length,2);
+ a.throws(()=>stageIndependentEvidenceAcrossVersions({...x,items,newApprovals:approvals}),/承認/);
+});
