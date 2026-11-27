@@ -1,6 +1,6 @@
 'use strict';
 const {test}=require('node:test'),a=require('node:assert/strict');
-const {manifest,verifySnapshot,bootstrap,REF,CATALOG,APPROVALS,MANIFEST}=require('../src/d074_event_data_branch.cjs');
+const {manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed,REF,CATALOG,APPROVALS,MANIFEST}=require('../src/d074_event_data_branch.cjs');
 const {digest}=require('../src/event_release_gate.cjs'),{gitBlobSha}=require('../src/current_umasim_roster_delta.cjs');
 const base='a'.repeat(40),snap='b'.repeat(40);
 const e={id:'test:1',name:'Synthetic',type:'auto',rewards:[]};
@@ -29,7 +29,8 @@ function fixture(){
   getBlob:async({file_sha})=>{const text=blobs.get(file_sha);return data({sha:file_sha,encoding:'base64',size:Buffer.byteLength(text),content:Buffer.from(text).toString('base64')});},
   createBlob:async({content})=>{writes.push('blob');return data({sha:blob(content)});},
   createTree:async({tree})=>{writes.push('tree');const sha=id();trees.set(sha,tree);return data({sha});},
-  createCommit:async({tree,parents})=>{writes.push('commit');const sha=id();commits.set(sha,{sha,tree:{sha:tree},parents:parents.map(sha=>({sha}))});return data({sha});},
+  createCommit:async({tree,parents,message})=>{writes.push('commit');const sha=id();commits.set(sha,{sha,tree:{sha:tree},parents:parents.map(sha=>({sha})),message});return data({sha});},
+  updateRef:async({ref,sha,force})=>{a.equal(ref,REF);a.equal(force,false);const prior=commits.get(commits.get(sha).parents[0].sha).parents[0].sha;if(refs.get(ref)!==prior)throw Object.assign(Error('non-fast-forward'),{status:422});writes.push('update');refs.set(ref,sha);return data({object:{sha}});},
   createRef:async({ref,sha})=>{a.equal(ref,'refs/'+REF);writes.push('ref');refs.set(REF,sha);return data({object:{sha}});}
  }}};
  return {refs,commits,trees,writes,args:{github,owner:'o',repo:'r',baseSha:base,catalogText,approvalsText,allowCreate:true}};
@@ -49,4 +50,56 @@ test('seed is atomic, verified before ref creation, re-run read only and main un
 test('changed checkout or main stops before any writes',async()=>{
  const f=fixture();await a.rejects(bootstrap({...f.args,catalogText:catalogText+' '}),/checkout mismatch/);a.deepEqual(f.writes,[]);
  f.refs.set('heads/main',snap);await a.rejects(bootstrap(f.args),/main drift/);a.deepEqual(f.writes,[]);
+});
+
+const pin={commit:'c'.repeat(40),cardBlob:'d'.repeat(40),skillBlob:'e'.repeat(40)};
+const packetSha256='1'.repeat(64),cardId='39999';
+function addition(oldCatalog,oldApprovals,id=cardId){
+ const event={id:'test:'+id,name:'Synthetic new',type:'auto',rewards:[]};
+ return {catalog:{...oldCatalog,cards:[...oldCatalog.cards,{cardId:id,coverageStatus:'partial',events:[event]}]},
+  approvals:{...oldApprovals,entries:[...oldApprovals.entries,{...approvals.entries[0],cardId:id,eventId:event.id,eventSha256:digest(event)}]},
+  status:'ready-to-append',existingCatalogUnchanged:true,newCardIds:[id],appendedCardCount:1,appendedEventCount:1,releasePin:pin,
+  proofs:[{cardId:id,packetSha256,sourcePin:pin,releasePin:pin,matchedSkillIds:[]}],
+  independentReviewReceipts:[{schemaVersion:1,cardId:id,packetSha256,independentEvidenceSha256:'2'.repeat(64),reviewer:'synthetic',reviewedAt:'2026-11-28',evidenceUrls:['https://example.org/synthetic'],publicationApproved:false}]};
+}
+async function appendFixture(){
+ const f=fixture(),seed=await bootstrap(f.args);
+ const args={github:f.args.github,owner:'o',repo:'r',baseSha:base,expectedHead:seed.head,evidence:[{cardId,packetSha256}],newApprovals:{synthetic:true},
+  intake:{stage:async x=>addition(x.existingCatalog,x.existingApprovals)}};
+ return {f,seed,args};
+}
+test('approved plan read only; publish atomically changes only data ref; fixed receipt and next revision',async()=>{
+ const {f,seed,args}=await appendFixture(),n=f.writes.length;
+ const plan=await appendReviewed(args);a.equal(plan.status,'planned');a.equal(f.writes.length,n);
+ a.equal(plan.revision,2);a.deepEqual(plan.before,{cards:1,events:1});a.deepEqual(plan.after,{cards:2,events:2});
+ const pub=await appendReviewed({...args,mode:'publish'});a.equal(pub.branchWritten,true);a.equal(pub.receiptSha256,plan.receiptSha256);
+ a.equal(f.refs.get('heads/main'),base);a.equal(f.refs.get(REF),pub.head);a.equal(f.writes.at(-1),'update');
+ const curr=await readCurrent(args);a.equal(curr.manifest.revision,2);a.equal(curr.manifest.previousManifestCommit,seed.head);
+ a.deepEqual(JSON.parse(curr.catalogText).cards.slice(0,1),catalog.cards);
+ a.deepEqual(JSON.parse(curr.approvalsText).entries.slice(0,1),approvals.entries);
+ const msg=f.commits.get(pub.snapshotCommit).message,proof=JSON.parse(msg.split('\n\n')[1]);
+ a.equal(digest(proof),pub.receiptSha256);
+ const writes=f.writes.length;
+ await a.rejects(appendReviewed({...args,mode:'publish'}),/data head drift/);a.equal(f.writes.length,writes);
+ const id='39996',next=await appendReviewed({...args,expectedHead:pub.head,evidence:[{cardId:id,packetSha256}],mode:'publish',intake:{stage:async x=>addition(x.existingCatalog,x.existingApprovals,id)}});
+ a.equal(next.revision,3);a.deepEqual(next.before,{cards:2,events:2});a.deepEqual(next.after,{cards:3,events:3});
+});
+test('unapproved, modified prior, mismatched evidence, and drift all fail before ref change',async()=>{
+ for(const alter of [
+  x=>{x.approvals.entries.pop();},
+  x=>{x.catalog.cards[0].events[0].name='changed';x.approvals.entries[0].eventSha256=digest(x.catalog.cards[0].events[0]);},
+  x=>{x.proofs[0].packetSha256='3'.repeat(64);x.independentReviewReceipts[0].packetSha256='3'.repeat(64);}
+ ]){
+  const {f,seed,args}=await appendFixture(),n=f.writes.length;
+  args.intake={stage:async x=>{const r=addition(x.existingCatalog,x.existingApprovals);alter(r);return r;}};
+  await a.rejects(appendReviewed({...args,mode:'publish'}));a.equal(f.writes.length,n);a.equal(f.refs.get(REF),seed.head);
+ }
+ const {f,seed,args}=await appendFixture(),n=f.writes.length;
+ args.intake={stage:async x=>{f.refs.set('heads/main',snap);return addition(x.existingCatalog,x.existingApprovals);}};
+ await a.rejects(appendReviewed({...args,mode:'publish'}),/main drift/);a.equal(f.writes.length,n);a.equal(f.refs.get(REF),seed.head);
+});
+test('concurrent non-fast-forward write fails, no force or silent retry',async()=>{
+ const {f,args}=await appendFixture();let calls=0;
+ f.args.github.rest.git.updateRef=async()=>{calls++;throw Object.assign(Error('non-fast-forward'),{status:422});};
+ await a.rejects(appendReviewed({...args,mode:'publish'}),/non-fast-forward/);a.equal(calls,1);a.equal(f.refs.get(REF),args.expectedHead);
 });
