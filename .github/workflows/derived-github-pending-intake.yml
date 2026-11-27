@@ -27,6 +27,7 @@ on:
       - 'poc/src/d074_daily_data.cjs'
       - 'poc/src/d074_event_data_branch.cjs'
       - 'poc/config/d074-daily-data.v1.json'
+      - 'poc/config/d074-publication-policy.v1.json'
       - 'poc/tests/d074_daily_data.test.cjs'
       - 'poc/src/d073_routine_publication_policy.cjs'
       - 'poc/config/d073-daily-proposal.v1.json'
@@ -276,11 +277,11 @@ jobs:
             const {runDailyData}=require('./poc/src/d074_daily_data.cjs');
             const {createStore}=require('./poc/src/d069_github_attempt_store.cjs');
             const config=require('./poc/config/d074-daily-data.v1.json');
-            const policy=require('./poc/config/direct-event-intake-policy.v1.json');
+            const publicationPolicy=require('./poc/config/d074-publication-policy.v1.json');
             const t=process.env.RUNNER_TEMP;
             const {queue,auto}=JSON.parse(fs.readFileSync(t+'/d073-handoff.json','utf8'));
             const snapshot=JSON.parse(fs.readFileSync(t+'/d074-snapshot.json','utf8'));
-            const report=await runDailyData({config,policy,queue,auto,github,...context.repo,baseSha:context.sha,
+            const report=await runDailyData({config,publicationPolicy,queue,auto,github,...context.repo,baseSha:context.sha,
               expectedHead:snapshot.head,store:createStore({github,...context.repo})});
             core.info('D074_DAILY_DATA='+JSON.stringify(report));
             if(report.branchWritten&&report.publicRawVerified)core.setOutput('published_head',report.head);
