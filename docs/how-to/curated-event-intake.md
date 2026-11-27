@@ -38,6 +38,12 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 吾妻10149／30323のみ [正式形状SHA](../../poc/config/d070-azuma-json-release.v1.json) に固定。run [45989546830](https://github.com/Nimrodx0/Umasupport/actions/runs/45989546830) にて、D-068個別承認22件、旧DBと旧承認の非破壊追加、現行・固定辞書による本番preflightを検査。スキル経路だけの部分収録で、未解釈非スキル効果は収録せず、実ゲーム全件性を主張しない。一般カードの無人取得・自動審査は未実装。
 
+## D-072の保存済みパケットからの審査・増分準備
+
+[独立事実照合](../../poc/src/d072_independent_review.cjs) の `compareIndependentReview` は保存済みパケットと台帳に、別途実際に確認した `evidence`（schemaVersion、cardId、packetSha256、reviewer、reviewedAt、evidenceUrls、nonSkillPolicy、events）を照合する。各イベントは sourceEventId、正式title、category、categoryOrdinal、selection、previousSourceEventId、groups（ordinal、labelPresent、routes: ordinal、hints: skillId/level、terminal、nonSkillCount）を独立確認する。タイトルSHA・選択と結果位置・報酬と終了・前段・省略方針が全て合致した場合だけ、既存審査契約と証跡SHAを返す。`prepareIndependentCandidate` は未承認候補とイベント内容SHAを返す。パケットから独立証拠を自動生成してはならない。
+
+`stageIndependentEvidenceAcrossVersions` は1〜2枚のパケット・独立証拠・取得時の固定UmaSim名簿／辞書、基準名簿、公開時の固定名簿／辞書、現行カタログ・承認台帳、新規個別承認を入力とする。[異版増分](../../poc/src/d072_cross_version_reviewed_append.cjs) では各blobの内容一致、基準からの新規ID、観測時の名簿IDの消失なし、対象カードの解析済み属性・通常ヒント・性能解放情報、報酬スキルのID・名称・レアリティ・groupの一致を検査する。別版でのイベント事実の不変や法的許諾を証明するものではない。呼出し側で公式UmaSimのcommitとblobの対応・基準固定版・旧固定辞書の検証を行う。既存DBの追記だけを許し、旧内容や承認を変更せず、内容SHA承認と本番preflightを実行する。現段階は通信・ファイル書込みをしない関数と合成試験であり、実際の独立審査入力・自動公開PRへの接続は残る。
+
 ## 実行確認
 
 ```sh
