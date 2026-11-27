@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {build}=require('../src/phase2_integrated_private_catalog.cjs');
@@ -87,8 +88,8 @@ test('all eight independent events and the corrected 30080 are in one validated,
   /公開イベントに承認証跡がありません/);
  const published=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
- assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2499);
- assert.equal(published.cards.length,562);
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,CURRENT_PUBLIC.events);
+ assert.equal(published.cards.length,CURRENT_PUBLIC.cards);
 });
 test('source mapping, title identity and review hashes are checked before joining',()=>{
  const changes=[

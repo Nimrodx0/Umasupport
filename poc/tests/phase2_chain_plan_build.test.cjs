@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -28,7 +29,7 @@ test('source-bound planning data equals generated JSON, without individual route
   x.continuation==='ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF'));
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   release,require('../src/current_public_event_approvals.cjs').forCatalog(release)
- ).publicEvents,2499);
+ ).publicEvents,CURRENT_PUBLIC.events);
  assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
 });
 test('event flags are enforced by the real core, regardless of event appearance RNG',()=>{
