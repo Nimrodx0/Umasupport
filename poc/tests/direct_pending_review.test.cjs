@@ -19,3 +19,35 @@ test('metadata rejects text, unknown reasons, false publication, duplicate and i
  {sourceText:'not allowed'},{reasonCodes:['invented prose']},{observedEvents:-1},{runId:0},{observedAt:'2026-02-30'}
  ].map(extra=>({...review,cards:[{...review.cards[0],...extra},review.cards[1]]}))])a.throws(()=>verifyDirectReview(x));
 });
+
+test('D069 plans bounded exact IDs, does not revisit held cards, and never authorizes a site visit',()=>{
+ const {planEventDrivenIntake}=require('../src/direct_pending_review.cjs');
+ const policy=require('../config/direct-event-intake-policy.v1.json');
+ const previous={...emptyLedger(),cards:['10149','30323','39997'].map(row)};
+ const next={...emptyLedger(),cards:['10149','30323','39997','39998','39999'].map(row)};
+ const sourcePin={commit:'a'.repeat(40),cardBlob:'b'.repeat(40)};
+ const input={previous,next,review,sourcePin,policy};
+ const before=JSON.stringify(input);
+ const result=planEventDrivenIntake(input);
+ a.deepEqual(result.newlyQueuedIds,['39998','39999']);
+ a.deepEqual(result.heldIds,['10149','30323']);
+ a.deepEqual(result.nextBatchIds,['39997','39998']);
+ a.deepEqual(result.remainingIds,['39999']);
+ a.equal(result.status,'blocked-access-conditions');
+ a.equal(result.siteAccessAuthorized,false);
+ a.equal(result.publicationApproved,false);
+ a.equal(JSON.stringify(input),before);
+ // Repeated runs preserve the backlog without treating it as a new discovery.
+ const repeat=planEventDrivenIntake({...input,previous:next});
+ a.deepEqual(repeat.newlyQueuedIds,[]);
+ a.deepEqual(repeat.nextBatchIds,result.nextBatchIds);
+ const held=planEventDrivenIntake({...input,next:{...emptyLedger(),cards:['10149','30323'].map(row)}});
+ a.equal(held.status,'no-eligible-cards');
+ a.deepEqual(held.nextBatchIds,[]);
+ const empty=planEventDrivenIntake({...input,next:emptyLedger()});
+ a.equal(empty.status,'no-eligible-cards');
+ a.deepEqual(empty.eligibleIds,[]);
+ a.throws(()=>planEventDrivenIntake({...input,sourcePin:{...sourcePin,cardBlob:'latest'}}),/immutable/);
+ a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticScheduledSiteAccessAllowed:true}}),/gate/);
+ a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticPublicationAllowed:true}}),/gate/);
+});

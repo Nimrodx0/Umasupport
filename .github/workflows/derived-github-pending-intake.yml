@@ -16,6 +16,8 @@ on:
       - 'poc/tools/plan_umasim_first_pending_intake.cjs'
       - 'poc/src/direct_pending_review.cjs'
       - 'poc/config/direct-event-pending-review.v1.json'
+      - 'poc/config/direct-event-intake-policy.v1.json'
+      - 'poc/tests/direct_pending_review.test.cjs'
 
 permissions:
   contents: read
@@ -48,9 +50,16 @@ jobs:
             const uma=await github.rest.repos.getCommit({
               owner:'mee1080',repo:'umasim',ref:'main'
             });
+            const tree=(await github.rest.git.getTree({
+              owner:'mee1080',repo:'umasim',tree_sha:uma.data.commit.tree.sha,recursive:'1'
+            })).data;
+            if(tree.truncated!==false)throw Error('Incomplete UmaSim tree');
+            const cards=tree.tree.filter(x=>x.path==='data/support_card.txt'&&x.type==='blob');
+            if(cards.length!==1||!/^[0-9a-f]{40}$/.test(cards[0].sha)||!/^[0-9a-f]{40}$/.test(uma.data.sha))
+              throw Error('Missing immutable UmaSim roster coordinates');
             const temp=process.env.RUNNER_TEMP;
             fs.writeFileSync(temp+'/pending-heads.json',JSON.stringify({
-              skillCommit:uma.data.sha
+              skillCommit:uma.data.sha,cardBlob:cards[0].sha
             }));
             const title='New support cards pending GameTora-derived event intake';
             const open=await github.paginate(github.rest.issues.listForRepo,{
@@ -89,6 +98,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node -e "const fs=require('node:fs'); const t=process.env.RUNNER_TEMP; const pin=require(t+'/pending-heads.json'); const {gitBlobSha}=require('./poc/src/current_umasim_roster_delta.cjs'); if(gitBlobSha(fs.readFileSync(t+'/pending-latest-roster.txt','utf8'))!==pin.cardBlob)throw Error('Latest UmaSim roster blob mismatch')"
           node poc/tools/plan_umasim_first_pending_intake.cjs \
             "$RUNNER_TEMP/pending-baseline-roster.txt" \
             "$RUNNER_TEMP/pending-latest-roster.txt" \
@@ -109,6 +119,12 @@ jobs:
               fs.readFileSync(temp+'/pending-after.summary.json','utf8'));
             const prior=JSON.parse(
               fs.readFileSync(temp+'/pending-issue.json','utf8'));
+            const pin=JSON.parse(fs.readFileSync(temp+'/pending-heads.json','utf8'));
+            const review=require('./poc/config/direct-event-pending-review.v1.json');
+            const eventPlan=require('./poc/src/direct_pending_review.cjs').planEventDrivenIntake({
+              previous,next,review,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob},
+              policy:require('./poc/config/direct-event-intake-policy.v1.json')});
+            core.info('D069_EVENT_DRIVEN_PLAN='+JSON.stringify(eventPlan));
             const owner=context.repo.owner,repo=context.repo.repo;
             const title='New support cards pending GameTora-derived event intake';
             core.info('NEW_CARD_INTAKE_SUMMARY='+JSON.stringify(summary));
@@ -121,6 +137,11 @@ jobs:
                 '; review flags: '+summary.reviewIssues+
                 '. Existing catalog untouched; no automatic event publication.')
               .addRaw(summary.sourceStatus==='direct-review-pending'?'\nD067: direct GameTora review pending; no legacy repository or site access in roster-only job.':'')
+              .addHeading('D069 event-driven intake preflight')
+              .addRaw('Status: '+eventPlan.status+'; newly queued: '+(eventPlan.newlyQueuedIds.join(', ')||'none')+
+                '; next batch: '+(eventPlan.nextBatchIds.join(', ')||'none')+
+                '; held: '+(eventPlan.heldIds.join(', ')||'none')+
+                '; no site access or automatic publication authorized.')
               .write();
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));
@@ -140,6 +161,9 @@ jobs:
               'D067: GameTora original site is the new-card source. GameWith is consulted only for specific flagged facts. Historical ledger repository and existing rows retain old observations, not current availability.',
               'A successfully converted card stays pending until actually appended under the separate approval gate.',
               ...(direct?['**Direct source review pending. This roster-only job makes no event-source requests. Current review status is separate from historical GitHub observations. Observed event counts are not game coverage or publication.**']:[]),
+              'D069 preflight: '+eventPlan.status+'; next bounded batch: '+(eventPlan.nextBatchIds.join(', ')||'none')+
+                '; remaining unreviewed: '+(eventPlan.remainingIds.join(', ')||'none')+
+                '. Site access is not authorized by this plan.',
               'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
               '',
               '| Card ID | Current direct review | Observed events | Observation | Hold reasons | Historical GitHub status |',
