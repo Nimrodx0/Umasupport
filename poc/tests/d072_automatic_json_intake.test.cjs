@@ -56,3 +56,14 @@ test('explicit source refusal stops future new-card automatic attempts without a
  a.deepEqual(second,{attemptedIds:[],stopReason:'prior-source-refused',sourceRequestsPerformed:false,publicationApproved:false});
  a.equal(requests,1);a.equal(f.counts().loads,1);a.equal(f.counts().factory,0);a.deepEqual(f.ledger(),before);
 });
+
+test('ordinary acquisition has no DOM parser, browser or display comparison dependency',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ for(const file of ['d072_automatic_json_intake.cjs','d069_card_json_transport.cjs','d069_json_attempt_ledger.cjs','d069_review_packet_archive.cjs']){
+  const source=fs.readFileSync(path.join(__dirname,'../src',file),'utf8');
+  a.doesNotMatch(source,/require\(['"].*(?:d072_display_corroboration|route_dom_extractor|playwright|live_event_assembler)/);
+  a.doesNotMatch(source,/observeHtml|domObservation|displayObserver/);
+ }
+ const workflow=fs.readFileSync(path.join(__dirname,'../../.github/workflows/derived-github-pending-intake.yml'),'utf8');
+ a.doesNotMatch(workflow,/playwright|chromium|needs_display_browser/i);
+});
