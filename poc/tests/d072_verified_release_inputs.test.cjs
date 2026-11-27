@@ -110,6 +110,20 @@ test('GitHub preparation and staging require durable receipt, separately supplie
  ledger.rows.push({cardId:'39999',sourcePin:pin,status:'uncertain',packetSha256:null,failureCode:'source-refused'});
  await a.rejects(intake.stage(commonArgs),/prior source refusal/);
  ledger.rows.pop();
+ // Exercise the full staging path again with an ordinary three-stage chain.
+ const p=inspect({retainIdentifyingTitles:true,cardId,sourceUrl:packet.sourceUrl,buildId:'synthetic',sourcePin:pin,skillText,existingCatalog,
+  body:JSON.stringify({pageProps:{sourceData:{support_id:Number(cardId)},eventData:{ja:JSON.stringify({arrows:[1,2,3].map(i=>({i,n:'Synthetic stage '+i,c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}))})}}})});
+ const chainLedger={...ledger,rows:[{...ledger.rows[0],packetSha256:digest(p)}]};
+ const chainIntake=createReviewedIntake({source,store:{load:async()=>structuredClone(chainLedger),loadPacket:async()=>structuredClone(p)}});
+ const chainInput={...archivedInput,packetSha256:digest(p),chainEvidence:require('../src/d073_json_adoption.cjs').ordinaryChainEvidence(p)};
+ const chainArgs={...commonArgs,evidence:[chainInput]};
+ await a.rejects(chainIntake.stage(chainArgs),/outside routine scope/);
+ const expanded={...policy,scope:'D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'};
+ const chainResult=await chainIntake.stage({...chainArgs,routinePublicationPolicy:expanded});
+ a.equal(chainResult.appendedEventCount,3);
+ a.equal(chainResult.sourceFactReceipts[0].chainEvidenceSha256,digest(chainInput.chainEvidence));
+ a.equal(chainResult.sourceFactReceipts[0].independentGameVerification,false);
+ a.deepEqual(chainResult.catalog.cards[0].events[2].requires,{all:[{eventId:'gt-json:'+cardId+':2'}]});
  const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
  a.equal(current.currentRosterCount,501);a.equal(current.sourceRequestsToGameTora,0);a.equal(current.publicationChanged,false);
 });
