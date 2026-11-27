@@ -132,6 +132,10 @@ jobs:
           node --test poc/tests/official_gametora_private_schema_projection.test.cjs
       - name: Verify card-scoped GameTora JSON private adapter and exact legacy comparison
         run: node --check poc/src/official_gametora_card_json.cjs && node --test poc/tests/official_gametora_card_json.test.cjs
+      - name: Verify D069 generic private JSON review bridge
+        run: node --check poc/src/d069_json_review_bridge.cjs && node --test poc/tests/d069_json_review_bridge.test.cjs
+      - name: Verify D069 atomic attempt reservation and replay safety
+        run: node --check poc/src/d069_json_attempt_ledger.cjs && node --test poc/tests/d069_json_attempt_ledger.test.cjs
       - name: Verify D070 scoped Azuma JSON outing review and runtime reachability
         run: node --check poc/src/d070_azuma_json_outing_review.cjs && node --test poc/tests/d070_azuma_json_outing_review.test.cjs
       - name: Verify D070 exact published JSON increment and individual approvals
