@@ -1,61 +1,69 @@
 'use strict';
+// Local response substitution in a disposable browser only. Upstream is
+// read-only. No source content is persisted or logged.
 const crypto=require('node:crypto');
+const {chromium}=require('playwright');
 const {robotsDisallows}=require('../src/official_gametora_probe.cjs');
-const {headingFingerprint}=require('../src/direct_event_fact_review.cjs');
-const catalog=require('../data/reviewed_events.v1.json');
 const origin='https://gametora.com';
-const versions={'training_events/ssr':'fa74f9c4','training_events/shared':'b2a8aa8f','training_events/friend':'3e027684','dict/te_names_ja':'8e06334e','dict/evrew':'a687fca9'};
-const hashes=['3c582bbac14c012bb9468d99c5cb54f3e288279cc0f7f744e7799891de3b7e6c','b721b7ff75a78adb219c6e321b7edc0de1175c1dc7e05700e2342361a271327d','c84eb586aecf42914e87f1c519d0527ad5a583faffc8242170c93f4ded8457d7','027a1da18ec05e24d279618a08277eae415dea8966ddf78c76d233532cb3bcb5','da663fff09d4530fcc6b9094504196ae34d4863e27c3e00fd09bd8f3897a5062'];
-const domHints=[['201142:1'],['201342:2'],['200512:1','200511:3'],['200762:1'],[]];
-const domScalar=[2,9,10,3,7];
-const domIds=['003','004','005','001','002'];
-const bag=a=>a.slice().sort().join('|');
-const fact=(id,lv)=>String(id).replace(/^skill:/,'')+':'+Number(lv);
-const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
-const leaves=e=>(e.type==='auto'?[e]:e.choices||[]).flatMap(g=>g.outcomes||[g]);
-const oldHints=e=>leaves(e).flatMap(o=>(o.rewards||[]).filter(r=>r.kind==='hint'||r.kind===undefined&&Number.isInteger(r.level)).map(r=>fact(r.skillId,r.level)));
-const rootShape=v=>Array.isArray(v)?{type:'array',length:v.length,first:v.length?Array.isArray(v[0])?{type:'array',length:v[0].length}:typeof v[0]:null}:v&&typeof v==='object'?{type:'object',count:Object.keys(v).length}:typeof v;
-const nameHash=v=>typeof v==='string'&&v.trim()?headingFingerprint(v).sha256:null;
-const rowEvent=x=>Array.isArray(x)&&x.length>=3&&Number.isSafeInteger(x[0])&&Array.isArray(x[1])&&Number.isSafeInteger(x[2]);
-function findEvents(v,out=[]){if(rowEvent(v)){out.push(v);return out;}if(Array.isArray(v))for(const x of v)findEvents(x,out);return out;}
+const marker='UMASUPPORT_LOCAL_TEST_30001';
+const expected=[559,560,561];
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 (async()=>{
  const rr=await fetch(origin+'/robots.txt',{redirect:'manual',signal:AbortSignal.timeout(20000)});
- if(rr.status!==200)throw Error('robots unavailable');const robots=await rr.text(),docs={};
- for(const [key,version] of Object.entries(versions)){
-  const path='/data/umamusume/'+key+'.'+version+'.json';
-  if(robotsDisallows(robots,path).length)throw Error('robots denied');
-  await new Promise(r=>setTimeout(r,6000));
-  const res=await fetch(origin+path,{redirect:'manual',signal:AbortSignal.timeout(20000)});
-  if(res.status!==200||!String(res.headers.get('content-type')).includes('json'))throw Error('HTTP '+res.status+'; stop');
-  const b=Buffer.from(await res.arrayBuffer());
-  if(b.length>4*1024*1024||!digest(b).startsWith(version))throw Error('version/size mismatch');
-  docs[key]=JSON.parse(b);
-  console.log('DECODE_INPUT='+JSON.stringify({key,version,bytes:b.length,sha256:digest(b)}));
- }
- const names=docs['dict/te_names_ja'],dict=docs['dict/evrew'];
- const old=catalog.cards.find(c=>c.cardId==='30001');
- const oldParity=domIds.map((suffix,i)=>{
-  const e=old.events.find(e=>e.id==='gt-30001-event-'+suffix);
-  if(!e)throw Error('missing approved event');
-  const h=oldHints(e),scalar=leaves(e).reduce((n,r)=>n+(r.effects||[]).length,0);
-  return {ordinal:i+1,oldId:e.id,oldHints:h,htmlHints:domHints[i],hintMatch:bag(h)===bag(domHints[i]),oldScalarCount:scalar,htmlScalarCount:domScalar[i]};
- });
- console.log('DECODE_OLD_PARITY='+JSON.stringify(oldParity));
- const rows=Object.entries(names);
- const matches=hashes.map((h,i)=>({htmlOrdinal:i+1,matchingNameRefs:rows.filter(([,v])=>nameHash(v)===h).map(([k])=>k)}));
- const scopes=[
-  ['ssr30001',docs['training_events/ssr'].filter(r=>String(r?.[0])==='30001')],
-  ['shared1001',docs['training_events/shared'].filter(r=>String(r?.[0])==='1001')],
-  ['friend9005',docs['training_events/friend'].filter(r=>String(r?.[0])==='9005')]
- ];
- console.log('DECODE_NAME_MAP='+JSON.stringify({root:rootShape(names),firstTypes:names.slice(0,6).map(rootShape),matches,scopes:scopes.map(([k,v])=>({key:k,rows:v.length,shape:rootShape(v[0])}))}));
- for(const [scope,records] of scopes){
-  const events=findEvents(records);
-  console.log('DECODE_EVENTS='+JSON.stringify({scope,events:events.map(e=>{
-   const name=names[e[0]],hash=nameHash(name),m=hashes.indexOf(hash);
-   const refs=e[1].flatMap(g=>Array.isArray(g?.[1])?g[1]:[]);
-   const hints=refs.flatMap(k=>{const r=dict[k];return Array.isArray(r)&&r[0]==='sk'?[fact(r[2],r[1])]:[];});
-   return {storyId:e[2],nameRef:e[0],nameType:rootShape(name),nameHash:hash,htmlOrdinal:m<0?null:m+1,groups:e[1].length,rewardRefCount:refs.length,hints,htmlHints:m<0?null:domHints[m],hintMatch:m<0?null:bag(hints)===bag(domHints[m])};
-  })}));
- }
-})().catch(e=>{console.error('DECODE_STOP='+String(e.message).slice(0,180));process.exitCode=1;});
+ if(rr.status!==200)throw Error('robots unavailable');
+ const robots=await rr.text();
+ const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+ let blocked=false,mutationCount=0,handlerError=null;const scriptMeta=[],requests=[];
+ try{
+  const ctx=await browser.newContext({locale:'ja-JP',serviceWorkers:'block'});
+  await ctx.route('**/*',async route=>{
+   const req=route.request(),u=new URL(req.url());
+   if(blocked||u.origin!==origin||robotsDisallows(robots,u.pathname).length||['image','font','media'].includes(req.resourceType()))return route.abort();
+   if(!/^\/data\/umamusume\/dict\/te_names_ja\.[a-f0-9]{8}\.json$/.test(u.pathname))return route.continue();
+   try{
+    if(mutationCount!==0)throw Error('unexpected repeat of dictionary');
+    const res=await route.fetch({maxRedirects:0,maxRetries:0,timeout:20000});
+    if([403,429].includes(res.status()))blocked=true;
+    if(res.status()!==200)throw Error('dictionary unavailable');
+    const bytes=await res.body();
+    if(bytes.length>1024*1024||!sha(bytes).startsWith('8e06334e')||!u.pathname.endsWith('.8e06334e.json'))throw Error('dictionary version changed');
+    const data=JSON.parse(bytes);
+    if(!Array.isArray(data)||!expected.every(i=>typeof data[i]==='string'))throw Error('dictionary shape changed');
+    expected.forEach(i=>{data[i]=marker+'_'+i;});
+    mutationCount++;
+    await route.fulfill({status:200,headers:{'content-type':'application/json','cache-control':'no-store'},body:JSON.stringify(data)});
+   }catch(e){handlerError=String(e.message).slice(0,100);await route.abort();}
+  });
+  const page=await ctx.newPage(),pending=[];
+  page.on('response',res=>{
+   const u=new URL(res.url());if(u.origin!==origin)return;
+   if([403,429].includes(res.status()))blocked=true;
+   if(res.status()!==200)return;
+   if(u.pathname.startsWith('/data/'))requests.push({path:u.pathname});
+   if(!u.pathname.endsWith('.js'))return;
+   pending.push((async()=>{
+    try{
+     const b=await res.body();if(b.length>4*1024*1024)return;
+     const s=b.toString('utf8');
+     const signals=['dict/evrew','dict/te_names_ja','te_names','training_events/ssr','training_events/shared','ttl_gauge','bo_l'].filter(x=>s.includes(x));
+     if(signals.length)scriptMeta.push({asset:u.pathname,bytes:b.length,sha256:sha(b),signals});
+    }catch{}
+   })());
+  });
+  const url=origin+'/ja/umamusume/supports/30001-special-week';
+  const r=await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+  if(!r||r.status()!==200||r.url()!==url||blocked)throw Error('page unavailable');
+  await page.getByRole('heading',{name:'育成イベント',exact:true}).waitFor({timeout:20000});
+  await page.waitForTimeout(3500);
+  await Promise.all(pending);
+  if(handlerError||blocked)throw Error(handlerError||'access stopped');
+  const result=await page.evaluate(marker=>{
+   const titles=[...document.querySelectorAll('h3')].filter(el=>el.closest('section')).map(el=>el.innerText);
+   const initial=document.querySelector('#__NEXT_DATA__')?.textContent;
+   let pagePropsKeys=[],initialTitleHits=0;
+   if(initial)try{const v=JSON.parse(initial);pagePropsKeys=Object.keys(v.props?.pageProps||{}).filter(x=>/^[A-Za-z0-9_]{1,50}$/.test(x));initialTitleHits=titles.filter(t=>t.length>1&&initial.includes(t)).length;}catch{}
+   return {h3Count:titles.length,markerH3Count:titles.filter(t=>t.includes(marker)).length,markerAnywhere:document.body.innerText.includes(marker),initialJsonPresent:!!initial,pagePropsKeys,initialTitleHits};
+  },marker);
+  console.log('CAUSAL_LOCAL_TEST='+JSON.stringify({mutationCount,indices:expected,...result,scriptMeta,versionedJsonCount:requests.length,publicationApproved:false}));
+ }finally{await browser.close();}
+})().catch(e=>{console.error('CAUSAL_STOP='+String(e.message).slice(0,180));process.exitCode=1;});
