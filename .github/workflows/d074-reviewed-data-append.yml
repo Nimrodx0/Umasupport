@@ -45,6 +45,8 @@ jobs:
       contents: write
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      published_head: ${{ steps.publish.outputs.published_head }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,6 +56,7 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/github-script@v7
+        id: publish
         env:
           BUNDLE: ${{ inputs.bundle }}
           MODE: ${{ inputs.mode }}
@@ -86,4 +89,14 @@ jobs:
               }
               if(!ok)throw Error('Ref published but public Raw verification failed; inspect before retry');
               core.info('D074_APPEND_RAW_VERIFIED='+JSON.stringify({head:report.head,revision:report.revision,after:report.after}));
+              core.setOutput('published_head',report.head);
             }
+
+  accept-published-data:
+    needs: append
+    if: needs.append.outputs.published_head != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/pages-real-browser-acceptance.yml
+    with:
+      expected_head: ${{ needs.append.outputs.published_head }}
