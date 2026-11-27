@@ -11,9 +11,8 @@ const SHA=/^[a-f0-9]{40}$/;
 const fail=m=>{throw Error('D072 release proposal: '+m);};
 const same=(a,b)=>canonical(a)===canonical(b);
 const count=c=>({cards:c.cards.length,events:c.cards.reduce((n,x)=>n+x.events.length,0)});
-function render({files,result,baseSha}){
- if(!SHA.test(baseSha||'')||PATHS.some(p=>typeof files?.[p]!=='string'))fail('fixed base files required');
- const old=JSON.parse(files[CATALOG]),approvals=JSON.parse(files[APPROVALS]);
+function validateAppend({old,approvals,result,baseSha}){
+ if(!SHA.test(baseSha||''))fail('fixed base commit required');
  verifyRelease(old,approvals);verifyRelease(result.catalog,result.approvals);
  const sources=result.sourceFactReceipts??[],independent=result.independentReviewReceipts;
  if(!Array.isArray(sources)||!Array.isArray(independent))fail('review receipt arrays');
@@ -43,6 +42,12 @@ function render({files,result,baseSha}){
   beforeApprovalsSha256:digest(approvals),afterApprovalsSha256:digest(result.approvals),
   newCardIds:ids,before,after,proofs:result.proofs,independentReviewReceipts:independent,...(sources.length?{sourceFactReceipts:sources}:{}),
   deploymentVerified:false};
+ return receipt;
+}
+function render({files,result,baseSha}){
+ if(PATHS.some(p=>typeof files?.[p]!=='string'))fail('fixed base files required');
+ const old=JSON.parse(files[CATALOG]),approvals=JSON.parse(files[APPROVALS]);
+ const receipt=validateAppend({old,approvals,result,baseSha}),{before,after,newCardIds:ids}=receipt;
  const proposalSha=digest(receipt),receiptPath='poc/config/d072-release-receipts/'+proposalSha+'.json';
  const version='d072-'+proposalSha.slice(0,16),entry=files[ENTRY],live=files[LIVE];
  const match=live.match(/data-release="([a-zA-Z0-9-]+)"/g);
@@ -119,4 +124,4 @@ async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,at
  }
  return confirm(sha);
 }
-module.exports={PATHS,render,propose};
+module.exports={PATHS,validateAppend,render,propose};
