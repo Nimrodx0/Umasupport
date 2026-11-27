@@ -62,3 +62,27 @@ test('over 80 numeric leaves reject instead of treating partial page as complete
  const big=el([el(leaves)]);
  assert.throws(()=>extractRoutePieces(button([big])),/上限超過/);
 });
+
+// Current GameTora uses always-visible h3 sections, not accordion buttons.
+function eventSection(body){
+ return el([el([el([el([],'fictional heading','H3')]),body])],'','SECTION');
+}
+test('current semantic section yields one result without requiring a button',()=>{
+ const r=extractRoutePieces(eventSection(el([el([el([],'体力 +10'),el([],'賢さ +3')])])));
+ assert.equal(r.length,1);
+ assert.deepEqual(r[0].numericEffectTexts,['体力 +10','賢さ +3']);
+});
+test('current section distinguishes visible choice roots and nested OR without mixing results',()=>{
+ const r=extractRoutePieces(eventSection(el([el([
+  el([el([],'上'),el([el([],'体力 +10'),el([],'OR'),el([],'体力 +5')])]),
+  el([el([],'下'),el([el([],'賢さ +3')])])
+ ])])));
+ assert.deepEqual(r.map(x=>[x.choiceOrdinal,x.outcomeOrdinal,x.numericEffectTexts,x.unresolvedOr]),[
+  [1,1,['体力 +10'],false],[1,2,['体力 +5'],false],[2,1,['賢さ +3'],false]
+ ]);
+});
+test('current section rejects ambiguous labels and unbound shared numeric effects',()=>{
+ const a=el([el([],'上'),el([],'体力 +10')]),b=el([el([],'下'),el([],'賢さ +3')]);
+ assert.deepEqual(extractRoutePieces(eventSection(el([el([],'体力 +1'),el([a,b])]))),[]);
+ assert.deepEqual(extractRoutePieces(eventSection(el([el([el([],'上'),el([],'体力 +1')])]))),[]);
+});

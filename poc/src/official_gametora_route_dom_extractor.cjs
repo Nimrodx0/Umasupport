@@ -6,11 +6,49 @@
  * The returned raw pieces are ephemeral process memory, not deployment data.
  */
 function extractRoutePieces(button){
-     const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
-     const body=panel?.firstElementChild?.firstElementChild?.firstElementChild
-      ?.firstElementChild?.children?.[1];
-     if(!body)return [];
-     const groups=[...body.children];
+     let body,groups,layoutAmbiguous=false;
+     if(button.tagName==='SECTION'){
+      // Current site: one semantic h3 title and its sibling result body.
+      // Do not depend on styled-component hash classes or card IDs.
+      const children=[...button.children];
+      if(children.length!==1)return [];
+      const row=children[0],parts=[...row.children];
+      if(parts.length!==2||
+        [...parts[0].querySelectorAll('*')].filter(x=>x.tagName==='H3').length!==1||
+        [...parts[1].querySelectorAll('*')].some(x=>x.tagName==='H3'))return [];
+      body=parts[1];
+      const all=[body,...body.querySelectorAll('*')];
+      const own=el=>[...el.childNodes].filter(n=>n.nodeType===3)
+       .map(n=>n.textContent||'').join('').trim();
+      // Position labels are visible site UI, not copied event prose.
+      // Locate their lowest common container; each choice must have one
+      // distinct root, with no signed reward leaves outside those roots.
+      const labels=all.filter(x=>/^(上|中|下)$/.test(own(x)));
+      if(labels.length){
+       if(labels.length<2||labels.length>3||
+          new Set(labels.map(own)).size!==labels.length)return [];
+       let common=labels[0].parentElement;
+       while(common&&body.contains(common)&&!labels.every(x=>common.contains(x)))
+        common=common.parentElement;
+       if(!common||!body.contains(common))return [];
+       groups=labels.map(x=>[...common.children].find(c=>c.contains(x)));
+       if(groups.some(x=>!x)||new Set(groups).size!==labels.length||
+          groups.some((g,i)=>[...common.children].indexOf(g)!==
+           [...common.children].indexOf(groups[0])+i))return [];
+       if(all.some(x=>/[+＋\-－−]\s*\d/.test(own(x))&&!groups.some(g=>g.contains(x))))
+        return [];
+      }else{
+       // No visible positional labels: one display group, never infer
+       // player choice semantics. Explicit OR still identifies alternatives.
+       groups=[body];
+      }
+     }else{
+      const panel=[...button.parentElement.children].find(x=>x.tagName==='DIV');
+      body=panel?.firstElementChild?.firstElementChild?.firstElementChild
+       ?.firstElementChild?.children?.[1];
+      if(!body)return [];
+      groups=[...body.children];
+     }
      if(groups.length>20)throw Error('GameTora結果表示グループが上限超過、黙って欠落させません');
      return groups.flatMap((group,choiceIndex)=>{
       const inner=group.children.length===1?group.firstElementChild:group;
@@ -19,7 +57,7 @@ function extractRoutePieces(button){
        /^(?:OR|または|又は)$/i.test((x.el.innerText||'').trim()));
       const allOrLeaves=[...group.querySelectorAll('*')].filter(el=>
        el.children.length===0&&/^(?:OR|または|又は)$/i.test((el.innerText||'').trim()));
-      let segments=[[group]],ambiguous=allOrLeaves.length>0;
+      let segments=[[group]],ambiguous=layoutAmbiguous||allOrLeaves.length>0;
       if(separators.length===1){
        const pos=separators[0].i;
        if(pos>0&&pos<rows.length-1){
@@ -45,6 +83,15 @@ function extractRoutePieces(button){
         }
         at=parent;
        }
+      }
+      if(segments.length>1){
+       // An OR split must account for every signed leaf in this group.
+       // Otherwise keep it pending rather than lose common rewards.
+       const signed=el=>[...el.childNodes].filter(n=>n.nodeType===3)
+        .map(n=>n.textContent||'').join('').trim();
+       if([group,...group.querySelectorAll('*')].some(x=>
+          /[+＋\-－−]\s*\d/.test(signed(x))&&
+          !segments.flat().some(root=>root.contains(x))))ambiguous=true;
       }
       const fragments=[group,...group.querySelectorAll('*')]
        .map(el=>[...el.childNodes].filter(n=>n.nodeType===3)

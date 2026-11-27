@@ -105,46 +105,55 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
    blocked=false;
    await goto(entry.url);
    cardVisits++;
-   // Diagnostic report contains DOM structure only, never event names/choices,
-   // source text, HTML, images, or application data.
-   const shape=await page.evaluate(()=>{
-    const labels=/^(?:育成イベント|サポートイベント|連続イベント|ランダムイベント|お出かけイベント|おでかけイベント|イベント|Training Events|Support Events|Chain Events|Random Events)$/i;
-    const labelType=t=>labels.test(t)?t:'';
-    const sig=el=>({tag:el.tagName.toLowerCase(),
-      classes:[...el.classList].filter(c=>/^[A-Za-z0-9_-]{1,90}$/.test(c)).slice(0,4),
-      children:el.children.length,expanded:el.getAttribute('aria-expanded'),
-      textLen:(el.innerText||'').trim().length,
-      numeric:/[+＋−－-]\s*\d/.test(el.innerText||''),
-      label:labelType((el.innerText||'').trim())});
-    const tree=(el,d=0)=>({...sig(el),...(d<4?{nodes:[...el.children].slice(0,15).map(x=>tree(x,d+1))}:{})});
-    const headers=[...document.querySelectorAll('h1,h2,h3,h4,h5,[role="heading"]')].map(el=>sig(el));
-    const hits=[...document.querySelectorAll('h1,h2,h3,h4,h5,div,span,button')].filter(el=>labelType((el.innerText||'').trim())&&![...el.children].some(c=>labelType((c.innerText||'').trim()))).slice(0,8);
-    const controls=[...document.querySelectorAll('button,[aria-expanded],summary,[role="button"]')];
-    return {headers,controls:controls.slice(0,40).map(el=>({...sig(el),parent:el.parentElement?sig(el.parentElement):null})),
-     sections:hits.map(el=>({heading:sig(el),parent:el.parentElement?tree(el.parentElement):null,grandparent:el.parentElement?.parentElement?{...sig(el.parentElement.parentElement),nodes:[...el.parentElement.parentElement.children].slice(0,15).map(x=>tree(x,2))}:null})),
-     nextData:!!document.querySelector('script#__NEXT_DATA__')};
-   });
-   process.stdout.write('GT_DOM_STRUCTURE='+JSON.stringify({cardId:entry.cardId,...shape})+'\n');
-   const buttons=page.locator('section button[aria-expanded]');
-   const panels=await buttons.count();
+   // The event area is identified by its semantic Japanese heading.
+   // Current pages are already expanded; historical pages use accordions.
+   const heading=page.getByRole('heading',{name:'育成イベント',exact:true});
+   if(await heading.count()!==1)fail('育成イベントの領域を一意に検出できない');
+   const area=heading.locator('..');
+   const headings=area.locator('h3');
+   const visibleCount=await headings.count();
+   const buttons=area.locator('button[aria-expanded]');
+   const layout=visibleCount?'visible-sections':'legacy-accordion';
+   const panels=visibleCount||await buttons.count();
    if(panels===0){
-    results.push({cardId:entry.cardId,status:'no-visible-event-panels',
-     siteEventPanelCount:0,publicationApproved:false});
+    results.push({cardId:entry.cardId,status:'unrecognized-event-layout',
+     sourceEventPanels:null,publicationApproved:false});
     continue;
    }
    if(panels>20)fail('イベントパネル20件超。途中まで取得して完了扱いしない');
-   const observations=[];
+   const observations=[],structure=[];
    for(let i=0;i<panels;i++){
-    const button=buttons.nth(i);
-    if((await button.getAttribute('aria-expanded'))!=='true')
-     await button.click({timeout:5000});
-    await page.waitForTimeout(650);
+    let event;
+    if(visibleCount){
+     event=headings.nth(i).locator('xpath=ancestor::section[1]');
+     if(await event.count()!==1||await event.locator('h3').count()!==1)
+      fail('イベント見出しと本文の対応が一意でない');
+    }else{
+     event=buttons.nth(i);
+     if((await event.getAttribute('aria-expanded'))!=='true')await event.click({timeout:5000});
+     await page.waitForTimeout(650);
+    }
     if(blocked)fail('取得制限によりイベントの途中読取を中止');
-    const pieces=await button.evaluate(extractRoutePieces);
+    const pieces=await event.evaluate(extractRoutePieces);
+    // For layout mismatches preserve only structural diagnostics (no prose).
+    const shape=visibleCount?await event.evaluate(el=>{
+     const own=e=>[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent||'').join('').trim();
+     const walk=(e,d=0)=>({tag:e.tagName,children:e.children.length,
+      marker:/^(?:上|中|下|OR|または|又は)$/i.test(own(e))?own(e):undefined,
+      signed:/[+＋\-－−]\s*\d/.test(own(e)),
+      ...(d<6?{nodes:[...e.children].slice(0,12).map(x=>walk(x,d+1))}:{})});
+     return {body:el.firstElementChild?.children?.[1]?walk(el.firstElementChild.children[1]):null,
+      category:(()=>{const label=el.parentElement?.parentElement?.firstElementChild?.innerText?.trim();
+       return ['連続イベント','ランダムイベント','お出かけイベント','特別イベント'].includes(label)?label:'unknown';})()};
+    }):null;
+    structure.push({ordinal:i+1,category:shape?.category||'unknown',
+     routePieces:pieces.length,ambiguous:pieces.some(r=>r.unresolvedOr),
+     ...(pieces.length===0||pieces.some(r=>r.unresolvedOr)?{shape:shape?.body}: {})});
     observations.push(assembleLiveEvent({
      cardId:entry.cardId,siteEventOrdinal:i+1,routePieces:pieces,registry
     }));
    }
+   process.stdout.write('GT_EVENT_LAYOUT='+JSON.stringify({cardId:entry.cardId,layout,panels,structure})+'\n');
    if(observations.length!==panels)fail('表示イベントの途中欠損');
    const projected=projectNewCardSite({
     cardId:entry.cardId,siteEventPanelCount:panels,
@@ -156,7 +165,7 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
       projected.intakeCandidate.unresolvedEventCount!==panels)
     fail('保留候補の公開ゲートを迂回');
    results.push({cardId:entry.cardId,status:'private-schema-only',
-    ...summary});
+    layout,...summary});
   }
   return {
    dataKind:'gametora-new-card-listing-probe',version:1,
