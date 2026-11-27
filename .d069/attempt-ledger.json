@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "dataKind": "d069-json-attempt-ledger",
-  "revision": 5,
+  "revision": 6,
   "rows": [
     {
       "cardId": "39998",
@@ -30,8 +30,8 @@
         "cardBlob": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         "skillBlob": "cfa7860131e2beaef29b3f9b75f9b70fbecc19e5"
       },
-      "status": "reserved",
-      "packetSha256": null
+      "status": "awaiting-fact-review",
+      "packetSha256": "b7ed360f84aaecd71fae49eb42cd4c87d3b1527cb744b0c159be67bdc5695149"
     }
   ]
 }
