@@ -18,7 +18,7 @@ test('four fixed cards × two standalone events, sixteen alternatives, four nume
  assert.equal(p.summary.skillHintFacts,4);
  assert.equal(p.summary.unpublishedSourceChainStages,12);
  assert.equal(p.summary.approvedForPublication,0);
- assert.equal(p.summary.currentlyPublishedEvents,2487);
+ assert.equal(p.summary.currentlyPublishedEvents,require('../data/reviewed_events.v1.json').cards.reduce((n,c)=>n+c.events.length,0));
  assert.equal(p.summary.sourceEventPositionsAdjudicated,8);
  assert.equal(p.summary.publicDisplayLabelsApproved,0);
  assert.equal(p.summary.reportedAdditionalOutcomeBranches,0);
@@ -88,8 +88,16 @@ test('a ready-looking draft is never implicitly released by review pack',()=>{
  const p=build();
  const publicCatalog=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
- assert.equal(verifyRelease(publicCatalog,forCatalog(publicCatalog)).publicEvents,2487);
- assert.equal(forCatalog(publicCatalog).entries.length,0);
+ const approvals=forCatalog(publicCatalog);
+ const approved=verifyRelease(publicCatalog,approvals);
+ assert.equal(approved.publicEvents,publicCatalog.cards.reduce((n,c)=>n+c.events.length,0));
+ const publicKeys=new Set(publicCatalog.cards.flatMap(c=>c.events.map(e=>JSON.stringify([c.cardId,e.id]))));
+ const approvedKeys=new Set(approvals.entries.map(e=>JSON.stringify([e.cardId,e.eventId])));
+ for(const card of p.previewCatalog.cards)for(const e of card.events){
+  const key=JSON.stringify([card.cardId,e.id]);
+  assert.ok(!publicKeys.has(key),'private preview must not be in public catalog');
+  assert.ok(!approvedKeys.has(key),'private preview must not be individually approved');
+ }
  assert.throws(()=>verifyRelease(p.previewCatalog,{schemaVersion:1,entries:[]}),
   /承認証跡/);
  const sample=p.previewCatalog.cards[0].events[0];

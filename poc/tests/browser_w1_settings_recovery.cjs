@@ -8,6 +8,7 @@ const {chromium}=require('playwright');
 const {getSources,server,boot,chooseCard,SAVE_KEY}=
  require('./browser_w1_pinned_public_integration.cjs');
 
+const bridge=require('../src/skill_bridge.js');
 const EVENT_CACHE='umasupport/public/reviewed_events.v1.json/v1';
 const SUPPORT_CACHE='umasupport/umasim/support_card.txt/v1';
 const SKILL_CACHE='umasupport/umasim/skill_data.txt/v1';
@@ -55,7 +56,7 @@ async function main(){
    status:200,contentType:'text/plain',body:inputs.supports
   }));
   await page.route('**/data/skill_data.txt',r=>r.fulfill({
-   status:200,contentType:'application/json',body:inputs.skills
+   status:200,contentType:'application/json',body:r.request().url()===bridge.PINNED_URL?inputs.pinnedSkills:inputs.skills
   }));
   const app='http://127.0.0.1:'+srv.address().port+'/poc/live.html';
   await boot(page,app);
@@ -161,7 +162,7 @@ async function main(){
    '**/reviewed_events.v1.json'])await page.route(uri,block);
   await reload(page,app,'cached');
   assert.equal(await getSaved(page),JSON.stringify(initial));
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2487);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   // Invalid online event JSON must not replace the already-verified cached JSON.
@@ -185,7 +186,7 @@ async function main(){
    'Event source+cache failures must not destroy saved user data');
   await cachedEvent(page,lastGood);
   await reload(page,app,'cached');
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2487);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
   assert.deepEqual(JSON.parse(await getSaved(page)),initial);
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   for(const uri of ['**/data/support_card.txt','**/data/skill_data.txt',
@@ -258,7 +259,7 @@ async function main(){
    status:200,contentType:'text/plain',body:inputs.supports
   }));
   await deniedPage.route('**/data/skill_data.txt',r=>r.fulfill({
-   status:200,contentType:'application/json',body:inputs.skills
+   status:200,contentType:'application/json',body:r.request().url()===bridge.PINNED_URL?inputs.pinnedSkills:inputs.skills
   }));
   await boot(deniedPage,app);
   const quotaDialog=deniedPage.waitForEvent('dialog');
@@ -284,7 +285,7 @@ async function main(){
   assert.equal(await getSaved(empty),null);
   await cold.close();
   console.log('W1_SETTINGS_RESILIENCE_PASS='+JSON.stringify({
-   cohort:2487,pinnedSource:true,exportAndReplace:true,cancelAndMerge:true,
+   cohort:2499,pinnedSource:true,exportAndReplace:true,cancelAndMerge:true,
    invalidImportAtomic:true,offlineVerifiedCache:true,corruptEventCacheFailClosed:true,
    invalidOnlineEventKeptCache:true,corruptSettingsPreserved:true,coldOfflineFailClosed:true,
    malformedSupportSkillRejected:true,upstreamCacheNotPoisoned:true,

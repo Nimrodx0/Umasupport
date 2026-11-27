@@ -56,7 +56,7 @@ test('GameWith-reviewed overseas Mei outcomes project to exactly 2 isolated R/SS
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   require('../data/reviewed_events.v1.json'),
   require('../src/current_public_event_approvals.cjs').forCatalog(
-    require('../data/reviewed_events.v1.json'))).publicEvents,2487);
+    require('../data/reviewed_events.v1.json'))).publicEvents,2499);
  assert.deepEqual(require('../config/event-release-approvals.v1.json'),
   {schemaVersion:1,entries:[]});
 });

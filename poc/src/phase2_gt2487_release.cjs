@@ -11,7 +11,9 @@ const {worksheet}=require('./phase2_factual_review_worksheet.cjs');
 const {inventory}=require('./event_release_cohorts.cjs');
 const {canonical}=require('./event_release_gate.cjs');
 const {prepare}=require('./approved_event_release_build.cjs');
-const review=require('../config/event-release-approvals.gt2487.v2.json');
+const activeReview=require('../config/event-release-approvals.gt2487.v2.json');
+// Historical rebuild is only the original cohort, never an overwrite of the active catalog.
+const review={schemaVersion:activeReview.schemaVersion,cohorts:activeReview.cohorts,entries:[]};
 const SOURCE_SHA='9cfb7f3241c1c94250605ef418260eef4080404debcfeea46738ba24bc756d2e';
 const EXCEPTION_KEY=JSON.stringify(['30080','gt-30080-event-006']);
 const fail=s=>{throw Error('GT 2487公開準備: '+s);};

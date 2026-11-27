@@ -63,8 +63,8 @@ test('real attach reads corrected special choice and GameWith choice hints throu
  const published=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
  const {verifyRelease}=require('../src/event_release_gate.cjs');
- assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2487);
- assert.equal(published.cards.length,559);
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2499);
+ assert.equal(published.cards.length,562);
  assert.equal(forCatalog(published).schemaVersion,2);
 });
 test('a swapped skill ID, name, missing registry row and false release flags all fail',()=>{

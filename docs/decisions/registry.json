@@ -11,15 +11,29 @@
   ],
   "entries": [
     {
+      "id": "D-068",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：検証済み新規イベントの条件付き包括公開承認",
+      "status": "current",
+      "relation": [],
+      "note": "D-067の新規カード限定・独自構造変換を維持。正確性・取得条件・公開根拠・内容SHA・既存DB非破壊・本番回帰を満たした新規イベントはカード毎の利用者再承認なしで公開可。疑義は個別裁定・保留、元記事・画像・元JSONは再配布しない。定期自動取得や無審査公開は対象外。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-068",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-068",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-067",
       "date": "2026-11-27",
       "heading": "2026-11-27：新規イベント取得をGameTora本体へ移行",
-      "status": "current",
-      "relation": [],
-      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。",
+      "status": "qualified",
+      "relation": [
+        "D-068"
+      ],
+      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。 公開承認の単位はD-068で条件付き包括承認へ変更。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-067",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-067",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-068",
       "reviewedAt": "2026-11-27"
     },
     {
