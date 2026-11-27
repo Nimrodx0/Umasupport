@@ -61,3 +61,15 @@ test('empty selection, wrong target, imported card, policy drift and malformed l
  a.throws(()=>verify({...empty(),rows:[{cardId:'39998',status:'reserved',sourcePin,packetSha256:null,body:'raw'}]}),/shape/);
  a.equal(f.observations(),0);
 });
+
+test('daily plan excludes attempted cards but preserves their pending identity',async()=>{
+ const f=fixture(),{excludeAttempted}=require('../src/d069_json_attempt_ledger.cjs');
+ await runBatch({...f.input,targetIds:['39998']});
+ const p=excludeAttempted(f.input.plan,f.ledger());
+ a.deepEqual(p.eligibleIds,['39999']);a.deepEqual(p.heldIds,['39998']);
+ a.deepEqual(p.batches,[['39999']]);a.deepEqual(p.attemptedIds,['39998']);
+ a.equal(p.siteAccessAuthorized,false);a.equal(p.publicationApproved,false);
+ a.equal(f.observations(),1);
+ const none=excludeAttempted({...f.input.plan,eligibleIds:[],heldIds:[],batches:[]},f.ledger());
+ a.deepEqual(none.attemptedIds,[]);
+});

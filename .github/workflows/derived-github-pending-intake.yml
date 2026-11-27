@@ -15,6 +15,8 @@ on:
       - 'poc/tools/refresh_derived_github_pending_ledger.cjs'
       - 'poc/tools/plan_umasim_first_pending_intake.cjs'
       - 'poc/src/direct_pending_review.cjs'
+      - 'poc/src/d069_json_attempt_ledger.cjs'
+      - 'poc/src/d069_github_attempt_store.cjs'
       - 'poc/config/direct-event-pending-review.v1.json'
       - 'poc/config/direct-event-intake-policy.v1.json'
       - 'poc/tests/direct_pending_review.test.cjs'
@@ -40,7 +42,7 @@ jobs:
           node-version: '22'
       - name: Verify metadata-only ledger and replay logic
         run: |
-          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs
+          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs
       - name: Read latest UmaSim commit and the previous pending-card Issue
         uses: actions/github-script@v7
         with:
@@ -121,9 +123,11 @@ jobs:
               fs.readFileSync(temp+'/pending-issue.json','utf8'));
             const pin=JSON.parse(fs.readFileSync(temp+'/pending-heads.json','utf8'));
             const review=require('./poc/config/direct-event-pending-review.v1.json');
-            const eventPlan=require('./poc/src/direct_pending_review.cjs').planEventDrivenIntake({
+            const basePlan=require('./poc/src/direct_pending_review.cjs').planEventDrivenIntake({
               previous,next,review,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob},
               policy:require('./poc/config/direct-event-intake-policy.v1.json')});
+            const attemptStore=require('./poc/src/d069_github_attempt_store.cjs').createStore({github,...context.repo});
+            const eventPlan=require('./poc/src/d069_json_attempt_ledger.cjs').excludeAttempted(basePlan,await attemptStore.load());
             core.info('D069_EVENT_DRIVEN_PLAN='+JSON.stringify(eventPlan));
             const owner=context.repo.owner,repo=context.repo.repo;
             const title='New support cards pending GameTora-derived event intake';
@@ -141,10 +145,13 @@ jobs:
               .addRaw('Status: '+eventPlan.status+'; newly queued: '+(eventPlan.newlyQueuedIds.join(', ')||'none')+
                 '; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
                 '; held: '+(eventPlan.heldIds.join(', ')||'none')+
+                '; attempted: '+(eventPlan.attemptedIds.join(', ')||'none')+
                 '; no site access or automatic publication authorized.')
               .write();
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));
+            const attempts=new Map(eventPlan.attemptStates.map(r=>[r.cardId,r]));
+            for(const row of rows){const a=attempts.get(row.cardId);if(a){row.currentStatus='json-attempt-'+a.status;row.reasonCodes=[...row.reasonCodes,'no-automatic-revisit'];}}
             core.info('DIRECT_PENDING_REVIEW='+JSON.stringify(rows));
             if(next.cards.length===0){
               if(prior.number)await github.rest.issues.update({
@@ -164,6 +171,7 @@ jobs:
               'D069 preflight: '+eventPlan.status+'; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
                 '; total unreviewed: '+eventPlan.eligibleIds.length+
                 '. Site access is not authorized by this plan.',
+              'Persistent JSON attempts: '+(eventPlan.attemptedIds.join(', ')||'none')+'. These remain pending until approved append.',
               'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
               '',
               '| Card ID | Current direct review | Observed events | Observation | Hold reasons | Historical GitHub status |',
