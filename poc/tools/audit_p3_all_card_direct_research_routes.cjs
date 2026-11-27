@@ -16,7 +16,7 @@ async function main(args){
  const [supportText,pinned]=await Promise.all([
   get('https://raw.githubusercontent.com/mee1080/umasim/'+q.source.revision+'/data/support_card.txt'),get(bridge.PINNED_URL)]);
  a.equal(hash(supportText),q.source.supportRegistrySha256);a.equal(hash(pinned),bridge.PINNED_SHA256);
- const eventText=fs.readFileSync(event,'utf8'),app=loader.buildModel(supportText,{mode:'online'});
+ const eventText=require('./fixed_research_event_catalog.cjs').verifyFixedEventText(fs.readFileSync(event)),app=loader.buildModel(supportText,{mode:'online'});
  catalog.attach(app,JSON.parse(eventText),{skillText,pinnedSkillText:pinned,fullRegistry:true,allowReviewedLegacy:true});
  const p=profiles.attach(app,{skillText,pinnedSkillText:pinned});
  a.equal(app.cards.length,566);a.equal(app.skills.length,881);a.equal(app.meta.reviewedEventRecords,2487);

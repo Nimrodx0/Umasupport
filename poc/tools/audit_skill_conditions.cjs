@@ -77,7 +77,7 @@ function matchedRecord(skill,live,old){
  const source=bridge.parseSource(skillText),old=bridge.parseSource(pinnedText);
  const whole=inventory(raw);
  const model=loader.buildModel(supportText,{mode:'online'});
- const published=JSON.parse(fs.readFileSync('poc/data/reviewed_events.v1.json','utf8'));
+ const published=JSON.parse(await require('./fixed_research_event_catalog.cjs').loadFixedEventText());
  publicEvents.attach(model,published,{skillText,pinnedSkillText:pinnedText,
   fullRegistry:true,allowReviewedLegacy:true});
  const seen=new Map(),unknown=[],sourceCounts={live:0,pinned:0};

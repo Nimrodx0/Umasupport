@@ -10,7 +10,7 @@ async function main(args){
  a.equal(report.status,'P3.4j-D052-initial-scoped-skill-labels');a.deepEqual(report.counts,{general:257,targeted:43,undetermined:581});
  const base='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/';
  const [supportText,skillText,pinnedSkillText]=await Promise.all([get(base+'support_card.txt'),get(base+'skill_data.txt'),get(bridge.PINNED_URL)]);
- const p=routes.provenance,eventText=fs.readFileSync('poc/data/reviewed_events.v1.json','utf8');
+ const p=routes.provenance,eventText=await require('./fixed_research_event_catalog.cjs').loadFixedEventText();
  a.equal(hash(supportText),p.supportRegistrySHA256);a.equal(hash(skillText),p.skillRegistrySHA256);a.equal(hash(pinnedSkillText),p.historicalRegistrySHA256);a.equal(hash(eventText),p.approvedEventCatalogSHA256);
  const data=loader.buildModel(supportText,{mode:'online'});
  catalog.attach(data,JSON.parse(eventText),{skillText,pinnedSkillText,fullRegistry:true,allowReviewedLegacy:true});
