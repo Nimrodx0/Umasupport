@@ -1,5 +1,24 @@
 {
   "schemaVersion": 1,
-  "mode": "disabled",
-  "routinePublicationPolicy": null
+  "mode": "plan",
+  "routinePublicationPolicy": {
+    "schemaVersion": 2,
+    "scope": "D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only",
+    "reviewer": "Project owner D-068/D-072/D-073/D-075; editorial review by development assistant",
+    "reviewedAt": "2026-11-27",
+    "validThrough": null,
+    "accessConditionsReviewed": true,
+    "publicationApproved": true,
+    "evidenceUrls": [
+      "https://gametora.com/robots.txt",
+      "https://gametora.com/privacy-policy",
+      "https://gametora.com/docs/cla",
+      "https://umamusume.jp/derivativework_guidelines/",
+      "https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-075"
+    ],
+    "publicationBasis": {
+      "kind": "original-factual-description",
+      "reason": "D068/D072/D073/D075 limited original skill-path facts and short necessary identifying titles only; no source JSON, article or choice text, images or creative database replication. No third-party blanket permission asserted. D075 reviewed live document baseline and preflight required for automation; unresolved facts, access restrictions and rights concerns held."
+    }
+  }
 }
