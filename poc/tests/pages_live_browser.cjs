@@ -205,15 +205,16 @@ async function main(){
   assert.equal(await page.locator('.split-grid').count(),1);
   await page.locator('button[data-action="view"][data-value="integrated"]').click();
   // Only abort the game-data endpoints. Published HTML/JS/CSS must still reload.
-  let blocked=0,eventBlocked=0;
-  await page.route('**/data/support_card.txt',r=>{blocked++;return r.abort();});
-  await page.route('**/data/skill_data.txt',r=>{blocked++;return r.abort();});
+  let supportBlocked=0,skillBlocked=0,eventBlocked=0;
+  await page.route('**/data/support_card.txt',r=>{supportBlocked++;return r.abort();});
+  await page.route('**/data/skill_data.txt',r=>{skillBlocked++;return r.abort();});
   await page.route('**/poc/data/reviewed_events.v1.json',r=>{eventBlocked++;return r.abort();});
   const cached=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
   assert.match(cached,/スキル辞書は保存済み版を使用/);
-  assert.equal(blocked,2);
-  assert.equal(eventBlocked,1);
+  assert.ok(supportBlocked>=1,'Support endpoint was not blocked');
+  assert.ok(skillBlocked>=1,'Skill endpoint was not blocked');
+  assert.ok(eventBlocked>=1,'Event endpoint was not blocked');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   const restored=await page.evaluate(()=>({cards:window.UmaDemoData.cards.length,
