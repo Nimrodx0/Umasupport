@@ -14,7 +14,7 @@ function verifyProposalFiles({baseSha,hash,oldFiles,newFiles,receipt}){
  const r=render({files:oldFiles,baseSha,result:{catalog:JSON.parse(newFiles[PATHS[0]]),approvals:JSON.parse(newFiles[PATHS[1]]),
   status:'ready-to-append',existingCatalogUnchanged:true,newCardIds:receipt.newCardIds,
   appendedCardCount:receipt.after.cards-receipt.before.cards,appendedEventCount:receipt.after.events-receipt.before.events,
-  releasePin:receipt.releasePin,proofs:receipt.proofs,independentReviewReceipts:receipt.independentReviewReceipts}});
+  releasePin:receipt.releasePin,proofs:receipt.proofs,independentReviewReceipts:receipt.independentReviewReceipts,sourceFactReceipts:receipt.sourceFactReceipts}});
  if(r.proposalSha!==hash||!same(r.receipt,receipt)||!same(r.files,newFiles))fail('proposal reconstruction mismatch');
  return r;
 }

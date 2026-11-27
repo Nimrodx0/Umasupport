@@ -59,7 +59,7 @@ function prepare(input,review){
  const titles=new Map(Object.values(raw).flatMap(es=>es.map(e=>[e.i,e.n])));
  return preparePacket({packet:p,titles,skillText:input.skillText,existingCatalog:input.existingCatalog},review);
 }
-function preparePacket({packet:p,titles,skillText,existingCatalog},review){
+function preparePacket({packet:p,titles,skillText,existingCatalog},review,sourceTopology=null){
  if(p?.status!=='awaiting-independent-fact-review')fail('held observation');
  if(p?.dataKind!=='d069-json-review-packet'||p.schemaVersion!==1||p.publicationApproved!==false||
     p.sourceSiteTextCopied!==false||!Array.isArray(p.events)||!p.events.length||p.events.length>100||
@@ -70,24 +70,24 @@ function preparePacket({packet:p,titles,skillText,existingCatalog},review){
     existingCatalog.cards.some(c=>c.cardId===p.cardId)||digest(existingCatalog)!==p.existingCatalogSha256||
     !(titles instanceof Map)||titles.size!==p.events.length)fail('packet scope or catalog/registry drift');
  cardJsonUrl(p);
- if(review?.schemaVersion!==1||review.publicationApproved!==false||
+ if(sourceTopology===null&&(review?.schemaVersion!==1||review.publicationApproved!==false||
     review.packetSha256!==digest(p)||review.cardId!==p.cardId||
     review.nonSkillPolicy!=='omit-explicitly-skill-path-only'||
-    !Array.isArray(review.events)||review.events.length!==p.events.length)
+    !Array.isArray(review.events)||review.events.length!==p.events.length))
   fail('independent review missing or stale');
  // Reviewer supplies exact selection, result counts and topology.
  // Never generate review statements from source order in production.
  const registry=registryFromSkillText(skillText);
  const id=n=>'gt-json:'+p.cardId+':'+n,omissions=[];
  const events=p.events.map((e,i)=>{
-  const v=review.events[i];
-  if(!v||v.sourceEventId!==e.sourceEventId||v.titleSha256!==e.titleSha256||
+  const v=review?.events[i];
+  if(sourceTopology===null&&(!v||v.sourceEventId!==e.sourceEventId||v.titleSha256!==e.titleSha256||
      v.selection!==e.selection||!same(v.resultCounts,e.groups.map(g=>g.routes.length))||
      v.routeFactsSha256!==digest({groups:e.groups})||
      !Object.hasOwn(v,'previousSourceEventId')||
-     Object.keys(v).some(k=>!['sourceEventId','titleSha256','selection','resultCounts','routeFactsSha256','previousSourceEventId'].includes(k)))
+     Object.keys(v).some(k=>!['sourceEventId','titleSha256','selection','resultCounts','routeFactsSha256','previousSourceEventId'].includes(k))))
    fail('event or route review mismatch');
-  const previous=v.previousSourceEventId;
+  const previous=sourceTopology===null?v.previousSourceEventId:sourceTopology.get(e.sourceEventId);
   // One ordinary sequential chain, independently reviewed. Other
   // reachability models remain held; absence of a marker proves nothing.
   const predecessor=e.category==='arrows'&&e.categoryOrdinal>1?
@@ -163,9 +163,23 @@ function resumeForCurrentCatalog({packet,titles,skillText,existingCatalog,ledger
  const prepared=resume({packet,titles,skillText,existingCatalog:base.catalog,ledger,review});
  return {...prepared,existingCatalogSha256:digest(existingCatalog)};
 }
+// D073: source-fact adoption, with exact identifying names and only the
+// unresolved chain topology supplied separately. Never forge a D072 review.
+function resumeSourceFacts({packet,titles,skillText,existingCatalog,ledger,chainEvidence=null}={}){
+ const {classify,checkChainEvidence}=require('./d073_json_adoption.cjs');
+ require('./d069_json_attempt_ledger.cjs').verify(ledger);
+ const row=ledger.rows.find(r=>r.cardId===packet?.cardId);
+ if(!row||row.status!=='awaiting-fact-review')fail('source receipt unavailable');
+ const classification=classify({packet,row,skillText});
+ const topology=checkChainEvidence({packet,classification,chainEvidence});
+ const base=require('./d072_catalog_prefix.cjs').findObservedCatalog(existingCatalog,packet.existingCatalogSha256);
+ if(!base||existingCatalog.cards.some(c=>c.cardId===packet.cardId))fail('catalog drift or already imported');
+ const candidate=preparePacket({packet,titles,skillText,existingCatalog:base.catalog},null,topology);
+ return {...candidate,dataKind:'d073-source-fact-private-shape',existingCatalogSha256:digest(existingCatalog)};
+}
 function appendResumed({packets,reviews,titles,ledger,...args}={}){
  if(!Array.isArray(packets)||!packets.length||packets.length>2||!Array.isArray(reviews)||reviews.length!==packets.length||!Array.isArray(titles)||titles.length!==packets.length)fail('resume batch scope');
  const prepared=packets.map((packet,i)=>resumeForCurrentCatalog({packet,titles:titles[i],skillText:args.skillText,existingCatalog:args.existingCatalog,ledger,review:reviews[i]}));
  return appendPrepared({...args,prepared});
 }
-module.exports={inspect,prepare,append,resume,resumeForCurrentCatalog,appendResumed};
+module.exports={inspect,prepare,append,resume,resumeForCurrentCatalog,appendResumed,resumeSourceFacts};

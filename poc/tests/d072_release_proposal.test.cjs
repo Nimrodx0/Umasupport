@@ -80,3 +80,17 @@ test('PR mode cannot call pulls before the approved branch is verified',async()=
  g.args.github.rest.pulls={list:async()=>{throw Error('unexpected PR access');}};
  await a.rejects(propose({...g.args,mode:'pr'}),/承認/);a.equal(g.state.writes,0);
 });
+
+test('source fact receipt is distinct from independent evidence and reconstructs exact proposal',()=>{
+ const f=fixture(),proof=f.result.proofs[0];
+ f.result.independentReviewReceipts=[];
+ f.result.sourceFactReceipts=[{dataKind:'d073-source-fact-receipt',schemaVersion:1,cardId:proof.cardId,packetSha256:proof.packetSha256,
+  sourceFactsSha256:'2'.repeat(64),titleInputSha256:'3'.repeat(64),chainEvidenceSha256:null,chainEvidenceUrls:[],independentGameVerification:false,publicationApproved:false}];
+ const p=render({files:f.files,result:f.result,baseSha:base});
+ a.deepEqual(p.receipt.independentReviewReceipts,[]);
+ a.deepEqual(p.receipt.sourceFactReceipts,f.result.sourceFactReceipts);
+ const {verifyProposalFiles}=require('../src/d072_release_ci_gate.cjs');
+ a.deepEqual(verifyProposalFiles({baseSha:base,hash:p.proposalSha,oldFiles:f.files,newFiles:p.files,receipt:p.receipt}),p);
+ f.result.sourceFactReceipts[0].independentGameVerification=true;
+ a.throws(()=>render({files:f.files,result:f.result,baseSha:base}),/source receipt/);
+});

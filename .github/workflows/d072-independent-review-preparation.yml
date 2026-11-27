@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       evidence:
-        description: JSON array of independently reviewed facts only, no raw source or secrets
+        description: JSON array of D072 reviewed facts or D073 source title and chain inputs; no raw source or secrets
         type: string
         required: true
 permissions:

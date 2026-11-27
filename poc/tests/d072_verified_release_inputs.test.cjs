@@ -64,6 +64,16 @@ test('GitHub preparation and staging require durable receipt, separately supplie
  await a.rejects(intake.stage({...compact,attestations:[{...attestations[0],events:[]}]}),/digest coverage/);
  await a.rejects(intake.stage({...args,newApprovals:existingApprovals}),/承認/);
  await a.rejects(intake.prepare({evidence:[{...evidence,packetSha256:'0'.repeat(64)}],existingCatalog}),/receipt unavailable/);
+ const titleInput={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256:digest(packet),titles:[{sourceEventId:1,title:name}],chainEvidence:null};
+ const preparedSource=await intake.prepare({evidence:[titleInput],existingCatalog});
+ a.deepEqual(preparedSource.items[0].candidate.card,prep.items[0].candidate.card);
+ a.equal(preparedSource.items[0].receipt.independentGameVerification,false);
+ a.equal(preparedSource.items[0].receipt.independentEvidenceSha256,undefined);
+ const sourceResult=await intake.stage({...args,evidence:[titleInput]});
+ a.deepEqual(sourceResult.catalog,result.catalog);a.deepEqual(sourceResult.approvals,result.approvals);
+ a.deepEqual(sourceResult.independentReviewReceipts,[]);a.equal(sourceResult.sourceFactReceipts.length,1);
+ await a.rejects(intake.stage({...args,evidence:[titleInput],newApprovals:existingApprovals}),/承認/);
+ await a.rejects(intake.prepare({evidence:[{...titleInput,titles:[{sourceEventId:1,title:'wrong'}]}],existingCatalog}),/title/);
  const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
  a.equal(current.currentRosterCount,501);a.equal(current.sourceRequestsToGameTora,0);a.equal(current.publicationChanged,false);
 });

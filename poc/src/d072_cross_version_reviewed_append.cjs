@@ -33,7 +33,7 @@ function stageReviewedAcrossVersions({items,ledger,baseline,release,existingCata
  const latest=verifyPin(release);
  const discovery=discoverNewCardsFromUmaSim({previousSupportText:baseline.supportText,currentSupportText:latest.supportText});
  const newIds=new Set(discovery.addedCardIds),observed=new Map(),proofs=[];
- const candidates=items.map(({packet,titles,review,source})=>{
+ const candidates=items.map(({packet,titles,review,source,sourceInput})=>{
   if(!newIds.has(packet?.cardId)||!same(packet.sourcePin,source?.pin))fail('not a verified new ID or observation pin mismatch');
   const key=source.pin.commit+':'+source.pin.cardBlob+':'+source.pin.skillBlob;
   if(!observed.has(key)){
@@ -46,7 +46,8 @@ function stageReviewedAcrossVersions({items,ledger,baseline,release,existingCata
   // A removed ID anywhere signals a partial or incompatible roster.
   if([...old.cards.keys()].some(x=>!latest.cards.has(x)))fail('observed roster IDs missing from release');
   if(!same(old.cards.get(id),latest.cards.get(id)))fail('target card changed since observation: '+id);
-  const prepared=resumeForCurrentCatalog({packet,titles,skillText:old.skillText,existingCatalog,ledger,review});
+  const prepared=sourceInput===undefined?resumeForCurrentCatalog({packet,titles,skillText:old.skillText,existingCatalog,ledger,review}):
+   require('./d073_json_adoption.cjs').prepareSourceCandidate({packet,ledger,input:sourceInput,skillText:old.skillText,existingCatalog}).candidate;
   const ids=[...new Set(packet.events.flatMap(e=>e.groups.flatMap(g=>g.routes.flatMap(r=>r.hints.map(h=>h.skillId.slice(6))))))].sort();
   for(const skillId of ids)if(!same(uniqueSkill(old.skills,skillId),uniqueSkill(latest.skills,skillId)))fail('skill identity changed since observation: '+skillId);
   proofs.push({cardId:id,packetSha256:prepared.packetSha256,sourcePin:prepared.sourcePin,releasePin:latest.pin,matchedSkillIds:ids});
