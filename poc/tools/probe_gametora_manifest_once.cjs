@@ -41,27 +41,27 @@ function locate(x){
  walk(x,[],0);
  return {matches:matches.slice(0,12),matchCount:matches.length};
 }
-// Exact known target records only. No text, raw HTML or unrelated records.
-function numericShape(v,d=0){
- if(d>10)return {type:kind(v),depthLimit:true};
- if(Array.isArray(v))return v.slice(0,30).map(x=>numericShape(x,d+1));
- if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,30).map(([k,x],i)=>[/^[a-zA-Z_][a-zA-Z0-9_-]{0,35}$/.test(k)?k:'key'+i,numericShape(x,d+1)]));
- if(typeof v==='string')return {type:'string',length:v.length,code:/^[a-zA-Z0-9_:+;,.|/@#% -]{1,28}$/.test(v)&&/\d/.test(v)?v:undefined};
+// Reward references observed in the two scoped records, not a full export.
+const friendCodes=[71,41,46,68,186,1358,756,1359,1360,246,1361,1362,1209,49,47,39,82,1243,45,66,1280,48,56,108,1363,40,802,52,1364,121,1365,695,72,110,60,886];
+const ssrCodes=[99,41,56,1193,92,44,114,186,1194,103,1195,1196,155,40,1197,1198,43,1199,1200,47,1201,1202];
+function codeShape(v,d=0){
+ if(d>5)return {type:kind(v)};
+ if(Array.isArray(v))return v.slice(0,20).map(x=>codeShape(x,d+1));
+ if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,20).map(([k,x],i)=>[/^[a-zA-Z_][a-zA-Z0-9_-]{0,35}$/.test(k)?k:'key'+i,codeShape(x,d+1)]));
+ if(typeof v==='string'){
+  // Only compact machine tokens or numerical facts, never source prose.
+  if(/^[A-Za-z0-9_:+;,.|/@#%=-]{1,40}$/.test(v))return v;
+  return {type:'string',length:v.length,numbers:v.match(/[-+]?\d+/g)?.slice(0,12).map(Number)||[],hasRare:/SSR|レア|金|rare/i.test(v),hasHint:/ヒント|hint/i.test(v)};
+ }
  return v;
 }
 (async()=>{
  robots=await read('/robots.txt',100000,'text/plain');
- const fetchPinned=async(key,version)=>{
-  await new Promise(r=>setTimeout(r,6000));
-  const body=await read('/data/umamusume/'+key+'.'+version+'.json',4*1024*1024,'json');
-  if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
-  return JSON.parse(body);
- };
- const friend=await fetchPinned('training_events/friend','3e027684');
- const found=friend.filter(row=>Array.isArray(row)&&row[0]===9052);
- if(found.length!==1)throw Error('Target mapping changed');
- console.log('GT_FRIEND_TARGET_NUMERIC='+JSON.stringify(numericShape(found[0])));
- const ssr=await fetchPinned('training_events/ssr','fa74f9c4');
- const compare=ssr.filter(row=>Array.isArray(row)&&row[0]===30322);
- console.log('GT_SSR_REFERENCE='+JSON.stringify({rootType:kind(ssr),rootCount:ssr.length,rowShape:shape(ssr[0]),matches:compare.map(x=>numericShape(x))}));
+ await new Promise(r=>setTimeout(r,6000));
+ const version='a687fca9';
+ const body=await read('/data/umamusume/dict/evrew.'+version+'.json',4*1024*1024,'json');
+ if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
+ const doc=JSON.parse(body);
+ const codes=[...new Set([...friendCodes,...ssrCodes])].sort((a,b)=>a-b);
+ console.log('GT_REWARD_DICTIONARY='+JSON.stringify({rootType:kind(doc),rootCount:Object.keys(doc).length,rootShape:shape(doc),selected:codes.map(id=>({id,present:Object.hasOwn(doc,id),value:codeShape(doc[id])}))}));
 })().catch(e=>{console.error('GT_PROBE_STOP='+String(e.message).slice(0,180));process.exitCode=1;});
