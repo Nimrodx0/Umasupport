@@ -55,7 +55,7 @@ async function checkConditions({config,policy,github,owner,repo,observer=probe}=
  try{b=validateBaseline(config,policy);}catch{b=undefined;}
  const result=b===null?{status:'baseline-unreviewed'}:b===undefined?{status:'baseline-invalid'}:await observer({expected:b.documents});
  if(result.status==='verified'){
-  if(digest(result.documents)!==digest(b.documents))throw Error('D075 observer mismatch');
+  if(!Array.isArray(result.documents)||digest({documents:result.documents})!==digest({documents:b.documents}))throw Error('D075 observer mismatch');
   return {status:'verified',policySha256,baselineSha256:digest(b)};
  }
  const issue=await github.rest.issues.create({...coord,title:TITLE,body:[
