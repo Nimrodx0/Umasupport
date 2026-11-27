@@ -29,7 +29,7 @@ test('no targets means no site access; missing link remains not-listed',async()=
 test('fail closed on partial listing, robots wildcard, redirects, refusal and wrong card',async()=>{
  a.throws(()=>createObserver({knownIds:known}),/manual/);
  a.throws(()=>listingLinks('<script>'+listing+'</script>',known),/incomplete/);
- a.throws(()=>checkRobots('User-agent: *\nDisallow: /_next/*/supports/','/_next/data/x/supports/'),/denied/);
+ a.throws(()=>checkRobots('User-agent: *\nDisallow: /_next/*/supports/','/_next/data/x/supports/'),e=>require('../src/d069_card_json_transport.cjs').failureCode(e)==='source-refused');
  const tests=[
   {[list]:['text/html','<a href="'+url('39999')+'">x</a>']},
   {[base+'/robots.txt']:['text/plain','User-agent: *\nDisallow: /_next/']},
