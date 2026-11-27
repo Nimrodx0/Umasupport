@@ -39,3 +39,12 @@ test('fail closed on partial listing, robots wildcard, redirects, refusal and wr
  ];
  for(const x of tests){const f=fixture(x);await a.rejects(f.observe(['39999','39998']));a.ok(!f.calls.includes(jsonUrl('39998')));}
 });
+
+test('transport records refusal separately from a network error without message leakage',async()=>{
+ const {failureCode}=require('../src/d069_card_json_transport.cjs');
+ const f=fixture({[jsonUrl('39999')]:['application/json','{}',429]});
+ await a.rejects(f.observe(['39999']),e=>failureCode(e)==='source-refused');
+ const o=createObserver({manualAuthorized:true,knownIds:known,sleep:async()=>{},fetchImpl:async()=>{throw new TypeError('private network detail');}});
+ await a.rejects(o(['39999']),e=>failureCode(e)==='network-transient'&&!e.message.includes('private'));
+ a.equal(failureCode(Error('unclassified')),'unclassified');
+});

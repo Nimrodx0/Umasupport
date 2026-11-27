@@ -3,13 +3,14 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'plan = no GameTora access; observe = explicit bounded read'
+        description: 'plan = no GameTora access; observe = explicit bounded read; retry = one reviewed retry'
         required: true
         default: plan
         type: choice
         options:
           - plan
           - observe
+          - retry
       target_card_ids:
         description: 'Exact unimported card IDs, comma separated, maximum two'
         required: true

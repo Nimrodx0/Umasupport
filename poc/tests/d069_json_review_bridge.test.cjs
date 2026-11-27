@@ -57,10 +57,29 @@ test('generic approved append actually traverses the existing gate and preserves
  const old={schemaVersion:1,entries:[]},model=require('../src/live_loader.js').buildModel(current);
  const args={inputs:[input],reviews:[v],existingCatalog:input.existingCatalog,existingApprovals:old,
   newApprovals:{schemaVersion:1,entries:[entry]},discovery,model,skillText,currentSupportText:current,previousSupportText:before};
- const out=append(args);a.equal(out.appendedEventCount,1);a.equal(out.existingCatalogUnchanged,true);
+ const out=append(args);a.equal(out.appendedEventCount,1);
+ const packet=inspect(input),ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:input.sourcePin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+ const {inputs,...rest}=args;
+ const resumedArgs={...rest,packets:[packet],titles:[new Map([[1,'架空イベント1']])],ledger};
+ const {appendResumed}=require('../src/d069_json_review_bridge.cjs');
+ a.deepEqual(appendResumed(resumedArgs),out);
+ a.throws(()=>appendResumed({...resumedArgs,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);a.equal(out.existingCatalogUnchanged,true);
  a.equal(out.catalog.cards[0].events[0].rewards[0].skillId,'skill:990001');
  a.deepEqual(input.existingCatalog.cards,[]);a.deepEqual(old.entries,[]);
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[]}}),/承認/);
  a.throws(()=>append({...args,newApprovals:{schemaVersion:1,entries:[{...entry,eventSha256:'0'.repeat(64)}]}}),/SHA|変更|ハッシュ/);
  a.throws(()=>append({...args,currentSupportText:before}),/roster blob/);
+});
+
+test('resume uses durable receipt and exact independently supplied title, not raw JSON',()=>{
+ const {resume}=require('../src/d069_json_review_bridge.cjs');
+ const input=fixture({random:[e(1,[g('',[hint])])]}),packet=inspect(input),v=review(packet);
+ const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[{cardId,sourcePin:input.sourcePin,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+ const args={packet,titles:new Map([[1,'架空イベント1']]),skillText,existingCatalog:input.existingCatalog,ledger,review:v};
+ a.deepEqual(resume(args),prepare(input,v));
+ a.throws(()=>resume({...args,titles:new Map([[1,'架空イベント１']])}),/title/);
+ a.throws(()=>resume({...args,ledger:{...ledger,rows:[]}}),/receipt/);
+ const changed=structuredClone(packet);changed.events[0].groups[0].routes[0].hints[0].level=5;
+ a.throws(()=>resume({...args,packet:changed,review:review(changed)}),/receipt/);
+ a.throws(()=>resume({...args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39998',events:[]}]}}),/drift/);
 });
