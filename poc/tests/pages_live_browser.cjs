@@ -1,5 +1,7 @@
 'use strict';
-const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs'); // fixed recovery only
+const {verifySnapshot,CATALOG,APPROVALS}=require('../src/d074_event_data_branch.cjs');
+const {digest}=require('../src/event_release_gate.cjs');
 // Production GitHub Pages verification, after main deployment or manual dispatch. Runtime game data is never checked in or printed.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
@@ -11,6 +13,31 @@ const ROOT=path.resolve(__dirname,'../..');
 const BASE='https://nimrodx0.github.io/Umasupport';
 const APP=BASE+'/';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+const RAW='https://raw.githubusercontent.com/Nimrodx0/Umasupport/';
+const MANIFEST_URL=RAW+'refs/heads/data/events/manifest.json';
+async function readRaw(request,url){
+ const response=await request.get(url,{timeout:30000,headers:{'Cache-Control':'no-cache'}});
+ assert.equal(response.status(),200,'Public data HTTP '+url);
+ return Buffer.from(await response.body());
+}
+async function readDistributed(request){
+ const manifest=JSON.parse(await readRaw(request,MANIFEST_URL));
+ assert.match(manifest.snapshotCommit||'',/^[a-f0-9]{40}$/,'Invalid immutable snapshot coordinate');
+ const expectedHead=process.env.D074_EXPECTED_HEAD;
+ if(expectedHead){
+  assert.match(expectedHead,/^[a-f0-9]{40}$/);
+  const fixed=JSON.parse(await readRaw(request,RAW+expectedHead+'/manifest.json'));
+  assert.equal(digest(manifest),digest(fixed),'Moving manifest does not match published head');
+ }
+ const [catalogBytes,approvalBytes]=await Promise.all([CATALOG,APPROVALS].map(p=>readRaw(request,RAW+manifest.snapshotCommit+'/'+p)));
+ assert.equal(sha(catalogBytes),manifest.catalogSha256,'Distributed catalog byte hash');
+ assert.equal(sha(approvalBytes),manifest.approvalSha256,'Distributed approval byte hash');
+ verifySnapshot(manifest,catalogBytes.toString('utf8'),approvalBytes.toString('utf8'));
+ const catalog=JSON.parse(catalogBytes);
+ const baseline=JSON.parse(await fs.readFile(path.join(ROOT,CATALOG),'utf8'));
+ assert.deepEqual(catalog.cards.slice(0,baseline.cards.length),baseline.cards,'Fixed approved baseline must remain an exact prefix');
+ return {manifest,catalog};
+}
 async function expectedRuntime(){
  const live=await fs.readFile(path.join(ROOT,'poc/live.html'),'utf8');
  const version=/data-release="([a-zA-Z0-9-]+)"/.exec(live)?.[1];
@@ -111,6 +138,7 @@ async function main(){
   const context=await browser.newContext({viewport:{width:1280,height:900},locale:'ja-JP'});
   const page=await context.newPage();page.setDefaultTimeout(20000);
   await checkPublishedFiles(page.request);
+  const {manifest,catalog:approved}=await readDistributed(page.request);
   const runtime=await expectedRuntime(),loaded=new Map(),responseChecks=[];
   page.on('response',response=>{
    const url=response.url();
@@ -168,9 +196,8 @@ async function main(){
   assert.ok(actual.cards>=500,'Card count too small: '+actual.cards);
   assert.ok(actual.hints>3000,'Hint count too small: '+actual.hints);
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
-  assert.equal(actual.reviewedEvents,CURRENT_PUBLIC.events,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
-  assert.equal(actual.reviewedCards,CURRENT_PUBLIC.cards,'Published event card coverage changed');
-  const approved=JSON.parse(await fs.readFile(path.join(ROOT,'poc/data/reviewed_events.v1.json'),'utf8'));
+  assert.equal(actual.reviewedEvents,manifest.eventCount,'Distributed event cohort differs from verified manifest: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
+  assert.equal(actual.reviewedCards,manifest.cardCount,'Distributed event card coverage differs from verified manifest');
   const expectedIds=approved.cards.map(c=>[c.cardId,c.events.map(e=>e.id).sort()]).sort((a,b)=>a[0].localeCompare(b[0]));
   const runtimeIds=await page.evaluate(ids=>ids.map(id=>[id,(window.UmaDemoData.cardById[id]?.events||[]).map(e=>e.id).sort()]),expectedIds.map(x=>x[0]));
   assert.deepEqual(runtimeIds,expectedIds,'Runtime event identity coverage differs from approved catalog');
@@ -179,16 +206,12 @@ async function main(){
   assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
   assert.equal(actual.eventMode,'reviewed');
   const provenance=await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events);
-  const manifestResponse=await page.request.get('https://raw.githubusercontent.com/Nimrodx0/Umasupport/refs/heads/data/events/manifest.json');
-  assert.equal(manifestResponse.status(),200);
-  const manifest=await manifestResponse.json();
   assert.equal(provenance.revision,manifest.revision);
   assert.equal(provenance.snapshotCommit,manifest.snapshotCommit);
-  assert.equal(provenance.url,'https://raw.githubusercontent.com/Nimrodx0/Umasupport/'+manifest.snapshotCommit+'/poc/data/reviewed_events.v1.json');
-  assert.equal(manifest.catalogSha256,sha(await fs.readFile(path.join(ROOT,'poc/data/reviewed_events.v1.json'))));
+  assert.equal(provenance.url,RAW+manifest.snapshotCommit+'/'+CATALOG);
   console.log('D074_PAGES_DATA_SOURCE='+JSON.stringify({revision:provenance.revision,snapshotCommit:provenance.snapshotCommit}));
 
-  assert.ok(status.includes(`${CURRENT_PUBLIC.events}件`),'Current event count missing from status');
+  assert.ok(status.includes(`${manifest.eventCount}件`),'Current event count missing from status');
   assert.ok(actual.eventPick,'No selectable and rewarded real public event found');
   assert.ok(actual.rare>=325,'Current master lost historical rare skill inventory');
   assert.equal(actual.linked,actual.rare-actual.withoutLower);
@@ -258,7 +281,9 @@ async function main(){
   assert.ok(supportBlocked>=1,'Support endpoint was not blocked');
   assert.ok(skillBlocked>=1,'Skill endpoint was not blocked');
   assert.ok(eventBlocked>=1,'Event endpoint was not blocked');
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),manifest.eventCount);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventCards),manifest.cardCount);
+  assert.deepEqual(await page.evaluate(ids=>ids.map(id=>[id,(window.UmaDemoData.cardById[id]?.events||[]).map(e=>e.id).sort()]),expectedIds.map(x=>x[0])),expectedIds,'Cached distributed event IDs differ');
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   const restored=await page.evaluate(()=>({cards:window.UmaDemoData.cards.length,
    linked:window.UmaDemoData.meta.skillHierarchy.linked}));
@@ -362,9 +387,11 @@ async function main(){
   assert.match(fallback,/固定済み旧版/);
   assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'fallback');
   assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
+  assert.equal(await stateless.evaluate(()=>window.UmaDemoData.meta.reviewedEventCards),CURRENT_PUBLIC.cards);
   await noStorage.close();
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 
+  assert.equal(digest(JSON.parse(await readRaw(page.request,MANIFEST_URL))),digest(manifest),'Distributed manifest changed during acceptance; retry against a stable revision');
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
   console.log('PASS: real Pages Chromium, verified current published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),
