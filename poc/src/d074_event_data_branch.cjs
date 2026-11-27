@@ -110,7 +110,7 @@ async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText,al
 }
 // Explicit reviewed append only. readCurrent is the new data authority;
 // the main checkout remains the code authority and fixed recovery fixture.
-async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan',evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,
+async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan',evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,expectedRoutine,
  intake=require('./d072_github_reviewed_intake.cjs').createReviewedIntake({github,owner,repo})}={}){
  if(!SHA.test(baseSha||'')||!SHA.test(expectedHead||'')||!['plan','publish'].includes(mode))fail('append scope');
  const {g,coord,getRef,main,checkExisting,makeTree,makeCommit,makeBlob}=access({github,owner,repo});
@@ -122,6 +122,15 @@ async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan
  const receipt=require('./d072_release_proposal.cjs').validateAppend({old:catalog,approvals,result,baseSha});
  if(!Array.isArray(evidence)||evidence.length!==receipt.newCardIds.length||evidence.some((x,i)=>x?.cardId!==receipt.newCardIds[i]||
    x.packetSha256!==receipt.proofs.find(p=>p.cardId===x.cardId)?.packetSha256))fail('evidence coordinates mismatch');
+ if(expectedRoutine!==undefined){
+  if(!Array.isArray(expectedRoutine)||expectedRoutine.length!==receipt.newCardIds.length||!Array.isArray(result.sourceFactReceipts)||
+     result.sourceFactReceipts.length!==expectedRoutine.length)fail('routine receipt scope');
+  for(const [i,x] of expectedRoutine.entries()){
+   const card=result.catalog.cards.find(c=>c.cardId===x.cardId),source=result.sourceFactReceipts.find(r=>r.cardId===x.cardId);
+   if(x.cardId!==receipt.newCardIds[i]||!card||!source||digest(source)!==x.receiptSha256||
+     digest({events:card.events.map(e=>({eventId:e.id,sha256:digest(e)}))})!==x.eventDigestsSha256)fail('routine receipt changed since queue');
+  }
+ }
  const proof={schemaVersion:1,dataKind:'d074-reviewed-data-append',previousManifestCommit:expectedHead,revision:old.manifest.revision+1,receipt};
  const proofSha=digest(proof),message='D074 reviewed data append '+proofSha+'\n\n'+JSON.stringify(proof);
  if(Buffer.byteLength(message)>60000)fail('receipt too large');
@@ -145,4 +154,21 @@ async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan
  if(updated.data.object?.sha!==head||await getRef(REF)!==head)fail('published ref not confirmed');
  return {...summary,status:'published-ref',head,snapshotCommit,manifest:m,branchWritten:true};
 }
-module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed};
+async function verifyPublicRaw({owner,repo,report,fetchImpl=fetch,wait=ms=>new Promise(r=>setTimeout(r,ms)),attempts=6}={}){
+ if(report?.branchWritten!==true||!SHA.test(report.head||'')||!report.manifest||!Number.isSafeInteger(attempts)||attempts<1||attempts>6)fail('public verification scope');
+ const root='https://raw.githubusercontent.com/'+owner+'/'+repo+'/';
+ const read=async path=>{
+  const r=await fetchImpl(root+path,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000)});
+  if(!r.ok)fail('Raw HTTP '+r.status);return r.text();
+ };
+ for(let i=0;i<attempts;i++){
+  try{
+   const m=JSON.parse(await read('refs/heads/data/events/manifest.json'));
+   if(digest(m)!==digest(report.manifest))fail('moving manifest not current');
+   const [c,a]=await Promise.all([read(m.snapshotCommit+'/'+CATALOG),read(m.snapshotCommit+'/'+APPROVALS)]);
+   verifySnapshot(m,c,a);
+   return {...report,publicRawVerified:true};
+  }catch(e){if(i===attempts-1)throw Error('Ref published but public Raw verification failed; inspect before retry: '+e.message);await wait(10000);}
+ }
+}
+module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed,verifyPublicRaw};
