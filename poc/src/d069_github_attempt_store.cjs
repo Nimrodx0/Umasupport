@@ -4,6 +4,7 @@
 const {verify}=require('./d069_json_attempt_ledger.cjs');
 const {canonical,digest}=require('./event_release_gate.cjs');
 const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
+const archive=require('./d069_review_packet_archive.cjs');
 const REF='heads/state/d069-json-attempts',PATH='.d069/attempt-ledger.json';
 const SHA=/^[a-f0-9]{40}$/;
 const fail=s=>{throw Error('D069 Git attempt store: '+s);};
@@ -16,7 +17,7 @@ function transition(old,next){
  for(let i=0;i<old.rows.length;i++){
   const a=old.rows[i],b=next.rows[i];
   if(same(a,b))continue;
-  if(a.cardId===b.cardId&&!a.retry&&['not-listed','uncertain'].includes(a.status)&&b.status==='reserved'&&b.retry?.priorRowSha256===digest(a)&&b.retry.priorStatus===a.status){retried++;continue;}
+  if(a.cardId===b.cardId&&!a.retry&&(a.status==='not-listed'||a.status==='uncertain'&&a.failureCode==='network-transient')&&b.status==='reserved'&&b.retry?.priorRowSha256===digest(a)&&b.retry.priorStatus===a.status){retried++;continue;}
   if(a.status!=='reserved'||b.status==='reserved'||a.cardId!==b.cardId||!same(a.sourcePin,b.sourcePin)||!same(a.retry??null,b.retry??null))fail('invalid row transition');
   changed++;
  }
@@ -26,7 +27,7 @@ function transition(old,next){
  }else if(changed<1||changed>2)fail('invalid completion');
  return next;
 }
-function createStore({github,owner,repo,ref=REF}={}){
+function createStore({github,owner,repo,ref=REF,archiveKey=null}={}){
  // Production ref only. Test ref is deliberately distinct and caller
  // must explicitly create it; never initialize/reset an absent live ref.
  if(!github?.rest?.git||!github?.rest?.repos||!owner||!repo||
@@ -46,14 +47,27 @@ function createStore({github,owner,repo,ref=REF}={}){
  }
  return {
   load:async()=>structuredClone((await read()).state),
-  compareAndSet:async(old,next)=>{
+  loadPacket:async(cardId)=>{
+   const cur=await read(),row=cur.state.rows.find(r=>r.cardId===cardId);
+   if(!row||!row.packetSha256)fail('packet receipt missing');
+   const file=(await github.rest.repos.getContent({...coord,path:archive.pathFor(row),ref:cur.head})).data;
+   if(file?.type!=='file'||file.encoding!=='base64'||!SHA.test(file.sha||'')||typeof file.content!=='string'||file.content.length>1400000)fail('packet file');
+   const raw=Buffer.from(file.content,'base64').toString('utf8');if(gitBlobSha(raw)!==file.sha)fail('packet blob hash');
+   return archive.open(JSON.parse(raw),row,archiveKey);
+  },
+  compareAndSet:async(old,next,packets=[])=>{
    transition(old,next);
    const cur=await read();
    if(!same(cur.state,old))return false;
+   const changed=next.rows.filter((r,i)=>r.packetSha256&&!same(r,old.rows[i]??null));
+   if(!Array.isArray(packets)||packets.length!==changed.length||new Set(packets.map(p=>p.cardId)).size!==packets.length)fail('archive packet set mismatch');
+   const sealed=changed.map(row=>({path:archive.pathFor(row),content:JSON.stringify(archive.seal(packets.find(p=>p.cardId===row.cardId),row,archiveKey))+'\n'}));
    const raw=JSON.stringify(next,null,2)+'\n';
    const blob=(await g.createBlob({...coord,content:raw,encoding:'utf-8'})).data.sha;
    if(blob!==gitBlobSha(raw))fail('created blob mismatch');
-   const tree=(await g.createTree({...coord,base_tree:cur.tree,tree:[{path:PATH,mode:'100644',type:'blob',sha:blob}]})).data.sha;
+   const entries=[{path:PATH,mode:'100644',type:'blob',sha:blob}];
+   for(const p of sealed){const sha=(await g.createBlob({...coord,content:p.content,encoding:'utf-8'})).data.sha;if(sha!==gitBlobSha(p.content))fail('packet blob mismatch');entries.push({path:p.path,mode:'100644',type:'blob',sha});}
+   const tree=(await g.createTree({...coord,base_tree:cur.tree,tree:entries})).data.sha;
    if(!SHA.test(tree||''))fail('created tree');
    const commit=(await g.createCommit({...coord,message:'D069 attempt ledger revision '+next.revision,tree,parents:[cur.head]})).data.sha;
    if(!SHA.test(commit||''))fail('created commit');

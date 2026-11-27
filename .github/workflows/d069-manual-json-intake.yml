@@ -55,6 +55,7 @@ jobs:
       - name: Explicit plan or bounded observation with durable reservation
         uses: actions/github-script@v7
         env:
+          D069_ARCHIVE_KEY: ${{ secrets.D069_ARCHIVE_KEY }}
           MODE: ${{ inputs.mode }}
           TARGET_CARD_IDS: ${{ inputs.target_card_ids }}
         with:

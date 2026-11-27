@@ -28,7 +28,8 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
  const {discovery}=planRosterFirst({previousRosterText,currentRosterText,previousLedger:previous,existingCatalog});
  const {ledger:next}=preserveOnSourceOutage({discovery,previousLedger:previous,existingCatalog,directReview:true});
  const plan=planEventDrivenIntake({previous,next,review,sourcePin:{commit:sourcePin.commit,cardBlob:sourcePin.cardBlob},policy});
- const store=createStore({github,...coord});
+ const archiveKey=mode==='plan'?null:require('../src/d069_review_packet_archive.cjs').keyFromEnv(process.env.D069_ARCHIVE_KEY);
+ const store=createStore({github,...coord,archiveKey});
  const selected=planBatch({plan,ledger:await store.load(),targetIds,sourcePin,policy,existingCatalog});
  core.info('D069_MANUAL_SELECTION='+JSON.stringify(selected));
  let retryApproval=null;
@@ -44,7 +45,8 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
   observeBatch:createObserver({manualAuthorized:true,knownIds:existingCatalog.cards.map(c=>c.cardId)})});
  // Prose-free review packets only, after successful completion CAS.
  // The raw body is never serialized to log or disk.
- core.info('D069_MANUAL_RESULT='+JSON.stringify(result));
+ const {reviewPackets,...metadata}=result;
+ core.info('D069_MANUAL_RESULT='+JSON.stringify({...metadata,archivedPacketCount:reviewPackets.length}));
  if(result.stopReason)core.setFailed('D069 observation failed; reserved IDs uncertain, no automatic retry');
  return result;
 }

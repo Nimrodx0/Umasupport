@@ -96,7 +96,7 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
   return x?{...r,status:x.status,packetSha256:x.packetSha256,...(x.failureCode?{failureCode:x.failureCode}:{})}:r;
  })};
  verify(finished);
- if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished))!==true)fail('completion conflict; reservation remains non-retryable');
+ if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished),structuredClone(reviewPackets))!==true)fail('completion conflict; reservation remains non-retryable');
  return {...selection,selectedIds:ids,results,stopReason,reviewPackets};
 }
 // Daily roster-only reporting, no observer call. The persistent attempt
