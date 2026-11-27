@@ -21,11 +21,11 @@ async function main(){
  const file=process.argv[2];assert(file,'same-run compact label bundle required');
  const bundle=JSON.parse(await fs.readFile(file,'utf8'));const n=bundle.rows.length,general=bundle.rows.filter(r=>r.label.state==='general').length,targeted=n-general;
  assert.deepEqual([n,general,targeted],({'D-052':[300,257,43],'D-056':[324,281,43],'D-059':[404,304,100]})[bundle.decisionId]);
- const [supports,skills,historical]=await Promise.all([get(BASE+'support_card.txt'),get(BASE+'skill_data.txt'),get(bridge.PINNED_URL)]);
+ const [supports,skills,historical,fixedEvents]=await Promise.all([get(BASE+'support_card.txt'),get(BASE+'skill_data.txt'),get(bridge.PINNED_URL),require('../tools/fixed_research_event_catalog.cjs').loadFixedEventText()]);
  const server=http.createServer(async(req,res)=>{try{
   const f=path.resolve(ROOT,'.'+new URL(req.url,'http://localhost').pathname);
   assert(f.startsWith(ROOT+path.sep));
-  const buf=await fs.readFile(f);
+  const buf=f===path.join(ROOT,'poc/data/reviewed_events.v1.json')?Buffer.from(fixedEvents):await fs.readFile(f);
   res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json'})[path.extname(f)]||'text/plain'});res.end(buf);
  }catch{res.writeHead(404);res.end();}});
  await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
@@ -40,6 +40,7 @@ async function main(){
    await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,body:r.request().url()===bridge.PINNED_URL?historical:skills}));
    if(!auto)await page.route('**/data/skill-suitability-d059.v1.txt',r=>r.abort());
    await page.goto(url);await page.locator('#app main.app').waitFor({timeout:40000});
+   assert.deepEqual(await page.evaluate(()=>[UmaDemoData.cards.length,UmaDemoData.skills.length,UmaDemoData.meta.reviewedEventRecords]),[566,881,2487]);
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
    const modelSkills=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));
@@ -176,6 +177,8 @@ async function main(){
    await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');await first.click();
    await page.locator('[data-action="edit-card"]').first().click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await page.locator('[data-picker-fit-axis="ground_condition"]').selectOption('1');
    const detail=page.locator('#card-fit-detail');await detail.waitFor();
    const verifyDetail=async stage=>{
     const v=await page.evaluate(({id,stage,rows})=>UmaCardSuitabilityView.browseCard(UmaDemoData.cardById[id],{stage},UmaDemoData,new Map(rows.map(r=>[r.appSkillId,r])),{running_style:2,ground_condition:1}),{id,stage,rows:bundle.rows});

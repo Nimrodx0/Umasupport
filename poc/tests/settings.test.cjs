@@ -360,3 +360,20 @@ test('automatic label completion does not replace invalid saved settings recover
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(app.writes,0);assert.equal(app.values.get('uma-support-lab-runtime-umasim-v1'),'{broken');assert.match(app.nodes.app.innerHTML,/保存設定を読み込めませんでした/);
 });
+
+test('deck training context validates, copies, merges and preserves legacy settings',()=>{
+ const {deckTrainingContext:get,setDeckTrainingContext:set}=require('../src/settings.js');
+ const s=sample(),original=activeDeck(s,'main');
+ assert.deepEqual(get(original),{});
+ set(s,'main',{running_style:2,distance_type:3,ground_type:1});
+ assert.deepEqual(get(activeDeck(s,'inherit')),{});
+ const copy=addDeck(s,'main',true);assert.deepEqual(get(copy),get(original));
+ set(s,'main',{running_style:4});assert.equal(get(original).running_style,2);
+ assert.deepEqual(get(addDeck(s,'main')),{});selectDeck(s,'main',original.id);
+ const restored=parse(JSON.stringify(s),data);assert.deepEqual(get(activeDeck(restored,'main')),{running_style:2,distance_type:3,ground_type:1});
+ assert.deepEqual(get(merge(sample(),restored,data).settings.decks.main[1]),get(original));
+ for(const invalid of [null,[],{running_style:5},{distance_type:'3'},{ground_type:3},{ground_condition:1}]){
+  const bad=sample();bad.decks.inherit[0].trainingContext=invalid;assert.throws(()=>parse(bad,data),/育成条件/);
+ }
+ set(s,'main',{});assert.deepEqual(get(original),{});assert.equal(original.trainingContext,undefined);
+});

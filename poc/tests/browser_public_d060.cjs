@@ -129,6 +129,7 @@ async function main(){
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');a(id);await first.click();
    const slot=page.locator('[data-action="edit-card"][data-deck="main"][data-index="0"]');
    await slot.click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    const verifyDetail=async stage=>{
     const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
     const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
@@ -137,6 +138,20 @@ async function main(){
    };
    await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();
    // Verify the displayed matching/new intersection against real data, including a populated deck.
+   // D066: each stored deck supplies the initial picker context; temporary changes are not saved.
+   const training=[['running_style','2'],['distance_type','3'],['ground_type','1']];
+   const axis=(k,n)=>page.locator('[data-deck-training-axis="'+n+'"][data-deck="'+k+'"]');
+   const pickerAxis=n=>page.locator('[data-picker-fit-axis="'+n+'"]');
+   for(const [n,v] of training)await axis('main',n).selectOption(v);
+   await axis('inherit','running_style').selectOption('4');
+   await page.locator('[data-action="pick"][data-deck="inherit"]').first().click();
+   a.equal(await pickerAxis('running_style').inputValue(),'4');a.equal(await pickerAxis('distance_type').inputValue(),'');await closeModal();
+   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
+   const trainingSaved=await snapshot();await pickerAxis('running_style').selectOption('1');await closeModal();a.equal(await snapshot(),trainingSaved);
+   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
+   await closeModal();
    const beforeRanking=await snapshot();
    await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
    await page.locator('#picker-sort').selectOption('new-skills-desc');
@@ -154,7 +169,8 @@ async function main(){
     a(actual.length);for(let i=0;i<actual.length;i++){const x=actual[i];a.equal(x.n,expected[x.id].newCount);a.equal(x.total,expected[x.id].total);if(i)a(actual[i-1].n>=x.n);}
     a.deepEqual(actual.map(x=>x.id),Object.keys(expected).sort((a,b)=>expected[b].newCount-expected[a].newCount||Number(b)-Number(a)).slice(0,120));
    };
-   await verifyNew({running_style:2});
+   await verifyNew({running_style:2,distance_type:3,ground_type:1});
+   await pickerAxis('distance_type').selectOption('');await pickerAxis('ground_type').selectOption('');await verifyNew({running_style:2});
    await page.locator('[data-picker-fit-axis="distance_type"]').selectOption('3');await verifyNew({running_style:2,distance_type:3});
    await page.locator('[data-picker-fit-axis="ground_type"]').selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
    await page.locator('[data-picker-fit-axis="running_style"]').selectOption('');await verifyNew({});
@@ -162,6 +178,11 @@ async function main(){
    const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
+   for(const [n,v] of training)a.equal(await axis('main',n).inputValue(),v);
+   a.equal(await axis('inherit','running_style').inputValue(),'4');
+   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
+   await closeModal();a.equal(await snapshot(),populated);
    const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
    await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();
    await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),now.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+now.length+' 件');

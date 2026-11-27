@@ -22,7 +22,7 @@ function main(args){
  if(sha(historicalText)!==bridge.PINNED_SHA256)
   throw Error('P3.2 original reviewed event historical source SHA changed');
  const app=loader.buildModel(supportText,{mode:'online'});
- const reviewed=JSON.parse(fs.readFileSync(catalogf,'utf8'));
+ const reviewed=JSON.parse(require('./fixed_research_event_catalog.cjs').verifyFixedEventText(fs.readFileSync(catalogf)));
  events.attach(app,reviewed,{
   skillText,pinnedSkillText:historicalText,
   fullRegistry:true,allowReviewedLegacy:true

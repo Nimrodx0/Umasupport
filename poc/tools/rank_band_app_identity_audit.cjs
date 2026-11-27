@@ -130,7 +130,7 @@ function main(args){
   skillText:fs.readFileSync(skillPath,'utf8'),
   supportText:fs.readFileSync(supportPath,'utf8'),
   pinnedText:fs.readFileSync(pinnedPath,'utf8'),
-  catalog:JSON.parse(fs.readFileSync(catalogPath,'utf8'))
+  catalog:JSON.parse(require('./fixed_research_event_catalog.cjs').verifyFixedEventText(fs.readFileSync(catalogPath)))
  });
  if(result.candidates!==24||
   result.app.totalSkills!==881||

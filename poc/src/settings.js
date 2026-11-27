@@ -8,6 +8,18 @@ const MAX_DECKS=50;
 const MAX_GOAL_SETS=100;
 const MAX_NAME_LENGTH=60;
 
+const TRAINING_AXES=Object.freeze({running_style:4,distance_type:4,ground_type:2});
+function validateTrainingContext(context){
+ if(!obj(context)||Object.entries(context).some(([k,v])=>!own(TRAINING_AXES,k)||!Number.isInteger(v)||v<1||v>TRAINING_AXES[k]))
+  throw new Error('デッキの育成条件が不正です');
+ return {...context};
+}
+function deckTrainingContext(deck){return validateTrainingContext(deck.trainingContext===undefined?{}:deck.trainingContext);}
+function setDeckTrainingContext(s,key,context){
+ const d=activeDeck(s,key),next=validateTrainingContext(context);
+ if(Object.keys(next).length)d.trainingContext=next;else delete d.trainingContext;
+ return d;
+}
 function activeDeck(s,key){
  if(!KEYS.includes(key)||!obj(s)||!obj(s.decks)||!obj(s.activeDecks)||!Array.isArray(s.decks[key]))throw new Error('デッキ選択の状態が不正です');
  const found=s.decks[key].find(d=>d.id===s.activeDecks[key]);
@@ -50,6 +62,7 @@ function parse(raw,data){
      typeof d.name!=='string'||!d.name.trim()||d.name.length>MAX_NAME_LENGTH||
      !Array.isArray(d.slots)||d.slots.length!==6)
      throw new Error('デッキの構造・ID・名前が不正です');
+   deckTrainingContext(d);
    ids.add(d.id);
    for(const slot of d.slots){
     if(!obj(slot)||!(slot.cardId===null||typeof slot.cardId==='string')||
@@ -127,6 +140,7 @@ function addDeck(s,key,copy=false){
  const slots=copy?JSON.parse(JSON.stringify(current.slots)):
   Array.from({length:6},()=>({cardId:null,stage:4,choices:{},outcomes:{}}));
  const created={id,name:baseName.slice(0,MAX_NAME_LENGTH),slots};
+ if(copy&&current.trainingContext!==undefined)created.trainingContext=deckTrainingContext(current);
  s.decks[key].push(created);s.activeDecks[key]=id;
  return created;
 }
@@ -221,7 +235,7 @@ function merge(currentRaw,importedRaw,data){
   activeSelectionsPreserved:true,displayPreferencesPreserved:true
  }};
 }
-const api={parse,activeDeck,selectDeck,addDeck,renameDeck,deleteDeck,addGoalSet,renameGoalSet,deleteGoalSet,merge,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS,MAX_GOAL_SETS};
+const api={parse,activeDeck,deckTrainingContext,setDeckTrainingContext,selectDeck,addDeck,renameDeck,deleteDeck,addGoalSet,renameGoalSet,deleteGoalSet,merge,ownedStatus,setOwnedCard,setOwnedBulk,MAX_DECKS,MAX_GOAL_SETS};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 g.UmaSettings=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
