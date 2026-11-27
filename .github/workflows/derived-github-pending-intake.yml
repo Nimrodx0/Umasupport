@@ -146,6 +146,15 @@ jobs:
             core.info('D072_AUTOMATIC_INTAKE='+JSON.stringify(auto));
             const eventPlan=require('./poc/src/d069_json_attempt_ledger.cjs').excludeAttempted(basePlan,await attemptStore.load());
             core.info('D069_EVENT_DRIVEN_PLAN='+JSON.stringify(eventPlan));
+            const reviewQueue=await require('./poc/src/d072_offline_review_queue.cjs').buildReviewQueue({
+              store:attemptStore,pendingIds:next.cards.map(c=>c.cardId),existingCatalog:catalog,
+              loadSkillText:async source=>{
+                const r=await github.rest.git.getBlob({owner:'mee1080',repo:'umasim',file_sha:source.skillBlob});
+                if(r.data.encoding!=='base64'||r.data.sha!==source.skillBlob)throw Error('Pinned skill blob mismatch');
+                return Buffer.from(r.data.content,'base64').toString('utf8');
+              }
+            });
+            core.info('D072_OFFLINE_REVIEW_QUEUE='+JSON.stringify(reviewQueue));
             const owner=context.repo.owner,repo=context.repo.repo;
             const title='New support cards pending GameTora-derived event intake';
             core.info('NEW_CARD_INTAKE_SUMMARY='+JSON.stringify(summary));
@@ -164,11 +173,15 @@ jobs:
                 '; held: '+(eventPlan.heldIds.join(', ')||'none')+
                 '; attempted: '+(eventPlan.attemptedIds.join(', ')||'none')+
                 '; new-card-only acquisition; publication remains gated.')
+              .addHeading('Archived packet review preflight')
+              .addRaw(reviewQueue.rows.map(r=>r.cardId+': '+r.status).join('; ')||'No pending cards')
               .write();
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));
             const attempts=new Map(eventPlan.attemptStates.map(r=>[r.cardId,r]));
             for(const row of rows){const a=attempts.get(row.cardId);if(a){row.currentStatus='json-attempt-'+a.status;row.reasonCodes=[...row.reasonCodes,'no-automatic-revisit'];}}
+            const reviews=new Map(reviewQueue.rows.map(r=>[r.cardId,r]));
+            for(const row of rows){const v=reviews.get(row.cardId);if(v&&v.packetSha256){row.currentStatus='json-review-'+v.status;row.observedEvents=v.eventCount;row.reasonCodes=[...new Set([...row.reasonCodes,...v.reasonCodes])];}}
             core.info('DIRECT_PENDING_REVIEW='+JSON.stringify(rows));
             if(next.cards.length===0){
               if(prior.number)await github.rest.issues.update({
