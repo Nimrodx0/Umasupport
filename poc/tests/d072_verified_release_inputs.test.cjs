@@ -54,6 +54,14 @@ test('GitHub preparation and staging require durable receipt, separately supplie
  const result=await intake.stage(args);
  a.equal(result.appendedCardCount,1);a.equal(result.appendedEventCount,1);
  a.equal(result.independentReviewReceipts[0].packetSha256,digest(packet));
+ const {eventId,eventSha256,...common}=entry;
+ const attestations=[{...common,schemaVersion:1,packetSha256:digest(packet),independentEvidenceSha256:digest(evidence),events:[{eventId,sha256:eventSha256}]}];
+ const {newApprovals,...compact}=args;
+ a.deepEqual(await intake.stage({...compact,attestations}),result);
+ await a.rejects(intake.stage({...compact,attestations:[]}),/batch scope/);
+ await a.rejects(intake.stage({...args,attestations}),/exactly one/);
+ await a.rejects(intake.stage(compact),/exactly one/);
+ await a.rejects(intake.stage({...compact,attestations:[{...attestations[0],events:[]}]}),/digest coverage/);
  await a.rejects(intake.stage({...args,newApprovals:existingApprovals}),/承認/);
  await a.rejects(intake.prepare({evidence:[{...evidence,packetSha256:'0'.repeat(64)}],existingCatalog}),/receipt unavailable/);
  const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
