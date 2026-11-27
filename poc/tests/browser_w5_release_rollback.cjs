@@ -12,6 +12,11 @@ async function main(){
  const old=path.resolve(process.argv[2]||'');
  a.notEqual(old,root);a.equal(digest(await fs.readFile(path.join(old,'poc/data/reviewed_events.v1.json'))),oldSHA);
  const inputs=await getSources();
+ const historicalBase='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/';
+ const {gitBlobSha}=require('../src/current_umasim_roster_delta.cjs');
+ const load=async(name,expected)=>{const r=await fetch(historicalBase+name,{signal:AbortSignal.timeout(30000)});a(r.ok);const t=await r.text();a.equal(gitBlobSha(t),expected);return t;};
+ const [oldSupports,oldSkills]=await Promise.all([load('support_card.txt','3a9204291615ce0c3573bf91e388e6ba48854848'),load('skill_data.txt','0c6ea6d72b037b24ee40860f73b0e86db47aab1d')]);
+ let historicSources=false;
  let served=old;
  const srv=http.createServer(async(req,res)=>{try{
   const u=new URL(req.url,'http://127.0.0.1');
@@ -28,11 +33,11 @@ async function main(){
   for(const width of [1280,390]){
    const ctx=await browser.newContext({viewport:{width,height:850},locale:'ja-JP'});
    const page=await ctx.newPage();
-   await page.route('**/data/support_card.txt',r=>r.fulfill({status:200,body:inputs.supports}));
-   await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,body:r.request().url()===bridge.PINNED_URL?inputs.pinnedSkills:inputs.skills}));
+   await page.route('**/data/support_card.txt',r=>r.fulfill({status:200,body:historicSources?oldSupports:inputs.supports}));
+   await page.route('**/data/skill_data.txt',r=>r.fulfill({status:200,body:r.request().url()===bridge.PINNED_URL?inputs.pinnedSkills:historicSources?oldSkills:inputs.skills}));
    const saved=()=>page.evaluate(key=>localStorage.getItem(key),SAVE_KEY);
-   const boot=async(dir,version,events,settingsError=false)=>{
-    served=dir;
+   const boot=async(dir,version,events,settingsError=false,historical=false)=>{
+    served=dir;historicSources=historical;
     await page.goto(url,{waitUntil:'domcontentloaded'});
     await page.waitForURL('**/poc/live.html?v='+version);
     await page.locator('#app-release').waitFor();
@@ -44,12 +49,13 @@ async function main(){
     a.equal(await page.evaluate(()=>UmaDemoData.meta.reviewedEventRecords),events);
     a.equal(await page.evaluate(()=>UmaDemoData.meta.runtimeSources.events.mode),'reviewed');
    };
-   await boot(old,'20261127-d065-r1',2487);
+   await boot(old,'20261127-d065-r1',2487,false,true);
+   a.equal(await page.evaluate(()=>UmaDemoData.skills.length),881);
    const previous=await page.evaluate(()=>({skills:UmaDemoData.skills.map(s=>s.id),card:UmaDemoData.cards.find(c=>c.events?.length&&c.hints?.length)}));
    const version=/data-release="([^"]+)"/.exec(await fs.readFile(path.join(root,'poc/live.html'),'utf8'))[1];
    await boot(root,version,current.events);
    const newSkill=await page.evaluate(oldIds=>UmaDemoData.skills.find(s=>!oldIds.includes(s.id)&&s.tier!=='negative')?.id,previous.skills);
-   a(newSkill,'No genuine new-version goal ID; revise rollback pair explicitly');
+   a(newSkill,'No real goal ID exclusive to current source snapshot');
    const axis=(deck,n)=>page.locator('[data-deck-training-axis="'+n+'"][data-deck="'+deck+'"]');
    await axis('main','running_style').selectOption('2');
    await axis('main','distance_type').selectOption('3');
@@ -63,7 +69,7 @@ async function main(){
    await boot(root,version,current.events);
    a.equal(await axis('main','running_style').inputValue(),'2');a.equal(await axis('main','distance_type').inputValue(),'3');a.equal(await axis('inherit','ground_type').inputValue(),'1');
    a.deepEqual(JSON.parse(await saved()),edited);
-   // Genuine new reward-only skill may not exist in the old event model.
+   // A genuine newer skill ID is absent when both release and upstream snapshot roll back.
    await page.locator('button[data-action="goals"]').click();
    await page.locator('#new-goal-skill-search').fill(newSkill);
    await page.locator('#new-goal-skill').selectOption(newSkill);
@@ -71,12 +77,12 @@ async function main(){
    await page.locator('button[data-action="add-goal"]').click();
    await page.locator('button[data-action="close"]').click();
    const newer=await saved();a(JSON.parse(newer).goalSets[0].goals.some(g=>g.skillId===newSkill));
-   await boot(old,'20261127-d065-r1',2487,true);
+   await boot(old,'20261127-d065-r1',2487,true,true);
    a.equal(await saved(),newer,'incompatible downgrade must preserve original bytes');
    await boot(root,version,current.events);
    a.equal(await saved(),newer,'restore must recover exact original bytes');
    a.equal(await axis('main','running_style').inputValue(),'2');
-   console.log('W5_ROLLBACK_REHEARSAL='+JSON.stringify({width,oldEvents:2487,currentEvents:current.events,oldVersion:'20261127-d065-r1',currentVersion:version,ordinarySavePreserved:true,incompatibleGoalPreserved:true,restoreExact:true,publicDeploymentChanged:false}));
+   console.log('W5_ROLLBACK_REHEARSAL='+JSON.stringify({width,oldEvents:2487,currentEvents:current.events,oldVersion:'20261127-d065-r1',currentVersion:version,ordinarySavePreserved:true,combinedSourceRollback:true,incompatibleGoalPreserved:true,restoreExact:true,publicDeploymentChanged:false}));
    await ctx.close();
   }
  }finally{await browser?.close();await new Promise(ok=>srv.close(ok));}
