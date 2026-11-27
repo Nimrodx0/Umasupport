@@ -23,6 +23,10 @@ on:
       - 'poc/src/d069_json_review_bridge.cjs'
       - 'poc/src/d072_offline_review_queue.cjs'
       - 'poc/src/d073_json_adoption.cjs'
+      - 'poc/src/d073_daily_proposal.cjs'
+      - 'poc/src/d073_routine_publication_policy.cjs'
+      - 'poc/config/d073-daily-proposal.v1.json'
+      - 'poc/tests/d073_daily_proposal.test.cjs'
       - 'poc/src/d072_catalog_prefix.cjs'
       - 'poc/tests/d072_offline_review_queue.test.cjs'
       - 'poc/src/d069_review_packet_archive.cjs'
@@ -33,6 +37,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: gametora-direct-new-card-limited-read
@@ -40,6 +45,7 @@ concurrency:
 
 jobs:
   update-new-card-pending:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -51,7 +57,7 @@ jobs:
           node-version: '22'
       - name: Verify metadata-only ledger and replay logic
         run: |
-          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs
+          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d073_daily_proposal.test.cjs
       - name: Read latest UmaSim commit and the previous pending-card Issue
         uses: actions/github-script@v7
         with:
@@ -160,6 +166,7 @@ jobs:
               }
             });
             core.info('D072_OFFLINE_REVIEW_QUEUE='+JSON.stringify(reviewQueue));
+            fs.writeFileSync(temp+'/d073-handoff.json',JSON.stringify({queue:reviewQueue,auto}));
             const owner=context.repo.owner,repo=context.repo.repo;
             const title='New support cards pending GameTora-derived event intake';
             core.info('NEW_CARD_INTAKE_SUMMARY='+JSON.stringify(summary));
@@ -233,4 +240,21 @@ jobs:
                 owner,repo,title,body});
               core.notice('Created new-card pending Issue: '+created.data.html_url);
             }
-
+      - name: Prepare configured routine proposal (never merge)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {PATHS}=require('./poc/src/d072_release_proposal.cjs');
+            const {runDailyProposal}=require('./poc/src/d073_daily_proposal.cjs');
+            const {createStore}=require('./poc/src/d069_github_attempt_store.cjs');
+            const config=require('./poc/config/d073-daily-proposal.v1.json');
+            const {queue,auto}=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/d073-handoff.json','utf8'));
+            const report=await runDailyProposal({config,queue,auto,github,...context.repo,baseSha:context.sha,
+              files:Object.fromEntries(PATHS.map(path=>[path,fs.readFileSync(path,'utf8')])),
+              store:createStore({github,...context.repo})});
+            core.info('D073_DAILY_PROPOSAL='+JSON.stringify(report));
+            await core.summary.addHeading('Routine proposal handoff')
+              .addRaw('Status: '+report.status+'; selected: '+(report.selectedIds.join(', ')||'none')+
+                '; main merge and deployment not performed.')
+              .addRaw(report.prNumber?' PR: '+report.prUrl+'; verify exact PR checks before merge.':'').write();

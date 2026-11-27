@@ -28,7 +28,7 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## 個別の事実照合（D-067）
 
-初回の20102/30322/30324は [照合指紋](../../poc/config/direct-event-fact-review.v1.json) にカード別URL、イベント見出しのハッシュ、選択式/自動・通常連続段、結果別の数値/スキルLvのハッシュのみを記録。名前・選択肢文面・候補DBは保存しない。`--review-known` は検証済み対象だけの内容照合・既存スキーマ検査・未承認ゲート拒否を行い、[実試験の候補SHA](../../poc/config/direct-event-fact-review-evidence.v1.json) とも一致する場合だけ件数と候補SHAを出力する。ローカル `--private-draft` の既知カードでは一致時のみ仮称の審査用候補と `unapprovedIntakeCandidate`（既存増分stagingの入力形式）を保存する。従来の仮称候補とは別に `prepareNamedCandidate` で見出しSHA一致時だけ正式イベント名を復元し、独立辞書の `verifiedSkillName` を付与。本番形状の新しい内容SHAで別審査する。`verify_direct_release_shape.cjs` は既存公開DBと3枚の候補を一時メモリで結合し、現行・旧固定辞書の実読込検査と未承認拒否を検証する。実ファイルは公開しない。ローカルの `--private-draft` 出力には `namedProductionCandidate` とその内容SHAを追加する（未承認、CI出力禁止）。これらは公開承認ではない。友人R/SSRのレア度差、特殊イベントの母数と凸依存効果は別に裁定し、SSRのスキルをRへ流用しない。
+初回の20102/30322/30324は [照合指紋](../../poc/config/direct-event-fact-review.v1.json) にカード別URL、イベント見出しのハッシュ、選択式/自動・通常連続段、結果別の数値/スキルLvのハッシュのみを記録。名前・選択肢文面・候補DBは保存しない。`--review-known` は検証済み対象だけの内容照合・既存スキーマ検査・未承認ゲート拒否を行い、[実試験の候補SHA](../../poc/config/direct-event-fact-review-evidence.v1.json) とも一致する場合だけ件数と候補SHAを出力する。ローカル `--private-draft` の既知カードでは一致時のみ仮称の審査用候補と `unapprovedIntakeCandidate`（既存増分stagingの入力形式）を保存する。従来の仮称候補とは別に `prepareNamedCandidate` で見出しSHA一致時だけ正式イベント名を復元し、独立辞書の `verifiedSkillName` を付与。本番内容SHAで別審査する。`verify_direct_release_shape.cjs` は既存公開DBと3枚の候補を一時メモリで結合し、現行・旧固定辞書の実読込検査と未承認拒否を検証する。実ファイルは公開しない。ローカルの `--private-draft` 出力には `namedProductionCandidate` とその内容SHAを追加する（未承認、CI出力禁止）。これらは公開承認ではない。友人R/SSRのレア度差、特殊イベントの母数と凸依存効果は別に裁定し、SSRのスキルをRへ流用しない。
 
 ## D-068の初回公開増分
 
@@ -46,11 +46,11 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## D-072 JSON優先の通常取得と例外診断
 
-D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。D-035/D-038の通常2〜3段arrowsは解放・明示終了を自動変換。異常段のみ確認。正常候補は日次で `routine.input` とSHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
+D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。D-035/D-038の通常2〜3段arrowsは解放・明示終了を自動変換。異常段のみ確認。日次で候補SHA・[提案](checker-public-catalog.md)を準備（既定無効）。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
 
 ## D-072 承認対象の準備と公開提案の生成
 
-[審査準備workflow](../../.github/workflows/d072-independent-review-preparation.yml) をmainで手動実行し `evidence` 配列を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。正常候補は公開根拠を実審査。準備は承認・追加取得なし。
+[審査準備workflow](../../.github/workflows/d072-independent-review-preparation.yml) をmainで手動で `evidence` を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。正常候補は公開根拠を実審査。準備は承認・追加取得なし。
 
 [公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合1〜2枚）と `newApprovals`（個別承認v1）または `attestations`（[カード一括証跡](../../poc/src/d072_card_review_attestation.cjs)）のJSON。後者は全イベントSHA・証拠SHA・6確認・公開根拠を個別台帳へ展開。D-073の `publicationDecisions` はパケット・証跡・イベント一覧SHAと明示取得条件・公開判断を固定し、[個別承認](../../poc/src/d073_publication_decision.cjs)を生成。[共通方針](checker-public-catalog.md) は `routinePublicationPolicy` で指定（未設定）。秘密・原文・元JSON不可。既定 `plan` は読取専用。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一commitの専用 `automation/d072-release-<SHA>` refを新規作成する。main書込・強制更新・自動mergeは禁止。同一tree・親のrefのみ再利用。main移動時は最新版で再実行。
 
