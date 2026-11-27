@@ -135,6 +135,7 @@ async function main(){
    assert.equal(await pickerPage.locator('.picker-card .card-character').first().innerText(),'サポカ562');
    assert.equal(await pickerPage.locator('.picker-card .card-variant').first().innerText(),'架空30563');
    assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'id-desc');
+    for(const mode of ['source','owned-first','type'])assert.equal(await pickerPage.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);
    assert.equal(await pickerPage.locator('#picker-sort option[value="release-desc"]').count(),0,
     'Release dates absent from current runtime source must not offer fake chronological sorting');
    await pickerPage.locator('#picker-sort').selectOption('id-desc');
@@ -147,7 +148,7 @@ async function main(){
    await pickerPage.locator('#picker-sort').selectOption('total-skills-desc');
    const totals=await pickerPage.locator('.picker-acquisition-count').evaluateAll(es=>es.map(e=>Number(e.dataset.totalSkills)));
    assert(totals.every((n,i)=>i===0||totals[i-1]>=n));
-   await pickerPage.locator('#picker-sort').selectOption('source');
+   await pickerPage.locator('#picker-sort').selectOption('id-asc');
    await pickerPage.locator('#picker-search').fill('サポカ0');
    await pickerPage.locator('#picker-skill-search').fill('右回り○');
    await pickerPage.locator('#picker-route').selectOption('hint');
@@ -168,7 +169,7 @@ async function main(){
    await pickerPage.locator('[data-picker-fit-axis="running_style"]').selectOption('');
    await pickerPage.locator('[data-picker-fit-axis="distance_type"]').selectOption('');
    assert.equal(await acquisition.getAttribute('data-new-skills'),'1','clearing style restores all candidate counting');
-   await pickerPage.locator('#picker-sort').selectOption('source');
+   await pickerPage.locator('#picker-sort').selectOption('id-asc');
    await pickerPage.locator('button[data-action="close"]').click();
    for(const [axis,value] of [['running_style','1'],['distance_type','3'],['ground_type','1']])await pickerPage.locator('[data-deck-training-axis="'+axis+'"][data-deck="main"]').selectOption(value);
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
@@ -185,7 +186,7 @@ async function main(){
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
    await pickerPage.locator('#picker-sort').selectOption('new-skills-desc');
    assert.equal(await pickerPage.locator('.picker-acquisition-count').getAttribute('data-new-skills'),'0');
-   await pickerPage.locator('#picker-sort').selectOption('source');
+   await pickerPage.locator('#picker-sort').selectOption('id-asc');
    await pickerPage.locator('#picker-search').focus();await pickerPage.locator('#picker-search').selectText();
    assert.equal(await pickerPage.locator('#picker-search').inputValue(),'サポカ0');
    const retainedSelection=await pickerPage.locator('#picker-search').evaluate(input=>({
@@ -204,7 +205,7 @@ async function main(){
    assert.equal(await pickerPage.locator('#picker-route').inputValue(),'hint');
    assert.equal(await pickerPage.locator('#picker-rarity').inputValue(),'SSR');
    assert.equal(await pickerPage.locator('#picker-type').inputValue(),'スピード');
-   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'source');
+   assert.equal(await pickerPage.locator('#picker-sort').inputValue(),'id-asc');
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),1);
    await pickerPage.locator('#picker-only-owned').check();
    assert.equal(await pickerPage.locator('button[data-action="set-card"]').count(),0);
@@ -299,7 +300,7 @@ async function main(){
   const speedColors={background:'rgb(41, 172, 235)',foreground:'rgb(17, 36, 54)'};
   assert.deepEqual(await palette(page.locator('.picker-card .card-icon').first()),speedColors,
    'Picker support card must use blue Speed hue and legible dark text');
-  await page.locator('#picker-sort').selectOption('source');
+  await page.locator('#picker-sort').selectOption('id-asc');
   await page.locator('button[data-action="set-card"][data-id="30001"]').click();
   assert.deepEqual(await palette(page.locator('.slot .card-icon').first()),speedColors,
    'Selected deck card must use the same palette as the picker');
@@ -345,9 +346,10 @@ async function main(){
   // Phase 3: ownership registry uses all 563 cards, not the first 120 picker entries.
   await page.locator('button[data-action="owned-manage"]').click();
   assert.equal(await page.locator('#owned-sort').inputValue(),'id-desc');
+   for(const mode of ['source','owned-first','type'])assert.equal(await page.locator(`#owned-sort option[value="${mode}"]`).count(),0,mode);
   await page.locator('#owned-sort').selectOption('id-desc');
   assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30563');
-  await page.locator('#owned-sort').selectOption('source');
+  await page.locator('#owned-sort').selectOption('id-asc');
   assert.equal(await page.locator('.owned-card').first().getAttribute('data-owned-id'),'30001');
   assert.equal(await page.locator('.owned-card').count(),36);
   assert.match(await page.locator('#owned-results').innerText(),/563枚/);
@@ -653,7 +655,7 @@ async function main(){
   await boot(eventPage,base);
   for(const [kind,index,id] of [['main',0,'30001'],['main',1,'30002'],['main',2,'30003'],['inherit',0,'30001']]){
    await eventPage.locator('button[data-action="pick"][data-deck="'+kind+'"][data-index="'+index+'"]').click();
-   await eventPage.locator('#picker-sort').selectOption('source');
+   await eventPage.locator('#picker-sort').selectOption('id-asc');
    await eventPage.locator('button[data-action="set-card"][data-id="'+id+'"]').click();
   }
   await eventPage.evaluate(()=>{

@@ -56,10 +56,10 @@ function cardIdentityHTML(c){
  return `<span class="card-identity"><strong class="card-character">${esc(character)}</strong>${title?`<span class="card-variant">${esc(title)}</span>`:''}</span>`;
 }
 const SORT_LABELS=[
- ['id-desc','カードID：大きい順'],['source','元の順'],['id-asc','カードID：小さい順'],
+ ['id-desc','カードID：大きい順'],['id-asc','カードID：小さい順'],
  ['rarity-desc','レアリティ：SSRから'],['rarity-asc','レアリティ：Rから'],
  ['name-asc','ウマ娘名：あいうえお順'],['name-desc','ウマ娘名：逆順'],
- ['type','タイプ順'],['hints-desc','通常ヒント数：多い順'],['owned-first','所持サポカ優先']
+ ['hints-desc','通常ヒント数：多い順']
 ];
 function sortOptions(current,picker=false){
  const choices=picker?[...(ui.modal?.kind==='card-library'?[]:[['new-skills-desc','新規獲得候補数が多い順'],['total-skills-desc','獲得候補総数が多い順'],['goals-desc','目標候補が多い順']]),...(ui.pickerFitContext.running_style?[['fit-count-desc','一致候補数が多い順']]:[]),...SORT_LABELS]:SORT_LABELS;
