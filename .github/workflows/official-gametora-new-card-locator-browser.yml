@@ -61,7 +61,7 @@ jobs:
           // 2026-11-27 independent public heading counts; former 6/12
           // accordion counts included obsolete controls. Reward/route counts
           // must be re-reviewed, not assumed identical to old snapshots.
-          const expected=[{id:'30322',panels:5},{id:'30323',panels:11}];
+          const expected=[{id:'30322',panels:5,results:13,numeric:40,hints:14,flow:0},{id:'30323',panels:11,results:14,numeric:68,hints:4,flow:2}];
           if(report.results?.length!==2||report.sourceSiteCardVisitsPerformed!==2||
              report.publicationApproved!==false||report.existingDatabaseUnchanged!==true||
              report.sourceSiteTextCopied!==false||
@@ -71,10 +71,11 @@ jobs:
            const got=report.results[i],exp=expected[i];
            if(got.cardId!==exp.id||got.status!=='private-schema-only'||
               got.sourceEventPanels!==exp.panels||got.layout!=='visible-sections'||
-              got.schemaShapedEvents+got.skippedOrAmbiguousEvents!==exp.panels||
-              got.schemaShapedEvents<1||got.schemaShapedResults<1||
+              got.schemaShapedEvents!==exp.panels||got.skippedOrAmbiguousEvents!==0||
+              got.schemaShapedResults!==exp.results||got.numericEffects!==exp.numeric||
+              got.skillHints!==exp.hints||got.flowMarkers!==exp.flow||
               got.pendingEventCount!==exp.panels||got.publicationApproved!==false)
             throw Error('Observed GameTora source sample changed: '+exp.id);
           }
-          console.log('Verified current semantic event counts and provisional result extraction; all events remain unpublished. Historical exact reward parity is not asserted.');
+          console.log('Verified current semantic event counts and provisional result extraction; all events remain unpublished. Current reward and route counts match the earlier limited observations; no public approval.');
           NODE

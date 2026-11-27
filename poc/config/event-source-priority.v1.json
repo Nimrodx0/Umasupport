@@ -52,5 +52,20 @@
     "directWebsiteHtmlAdapter": "paused-not-a-prerequisite",
     "manualExceptionSource": "GameWith",
     "automaticPublicationAllowed": false
+  },
+  "newCardIntakeD067": {
+    "decision": "D-067",
+    "status": "direct-primary-preflight-in-progress",
+    "sourceType": "GameTora-original-site",
+    "origin": "https://gametora.com",
+    "lookup": "visible-Japanese-support-listing",
+    "updateMode": "new-card-only-append",
+    "legacyDerivedRole": "historical-fixed-baseline-only",
+    "routineLegacySourceRequests": false,
+    "sourceVisitLimitPerInvocation": 2,
+    "missingCardPolicy": "persist-pending-and-continue-other-cards",
+    "manualExceptionSource": "GameWith",
+    "automaticScheduledSiteAccessAllowed": false,
+    "automaticPublicationAllowed": false
   }
 }

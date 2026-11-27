@@ -4,15 +4,15 @@
 
 ## 適用範囲と入力
 
-- **通常の入力**：固定コミットとカード別blobを照合したGameTora由来の第三者GitHub構造化JSON。通常ヒント・新カードIDはUmaSimの公開元と照合します。[現行の出典](../reference/data-sources.md)。
+- **通常の入力（D-067）**：GameTora本体の個別カードページから限定直接取得した構造・数値事実。通常ヒント・新カードIDはUmaSimの固定公開元と照合します。従来の派生GitHubは既存固定版の履歴照合のみ。[現行の出典](../reference/data-sources.md)。
 - **増分のみ**：UmaSim名簿の新規カードIDだけを対象にし、既存の承認済みイベントやユーザーの設定を一括更新しません。[W3の作業計画](../plans/product.md)。
-- **例外の裁定**：特定カードの派生JSONに欠損・衝突・未掲載がある場合だけ、元GameToraやGameWithの掲載事実に基づき個別検証します。[例外の仕様](../reference/event-adjudication-enforcement.md)。
+- **例外の裁定**：GameTora本体の個別イベントに欠損・衝突・曖昧な進行条件がある場合、GameWithの掲載事実で個別裁定します。[例外の仕様](../reference/event-adjudication-enforcement.md)。
 
 ## 収録工程
 
 1. [最新状況](../project/status.md)と[詳細計画](../plans/product.md)から未収録の数値カードIDと今回の対象を確定します。
-2. 固定UmaSim名簿の差分で新規IDを抽出し、派生GitHub元のコミット、カードJSONパス、blob SHAを固定します。未掲載なら保留台帳へ持ち越します。[実装監査](../evidence/sources/derived-github-new-card-review-staging-20261029.md)。
-3. 現行の変換・増分取込コード（[staging bridge](../../poc/src/derived_github_staging_bridge.cjs)・[new card increment](../../poc/src/new_card_event_incremental.cjs)）を確認し、分岐、結果ごとのスキルID・ヒントLv、継続・打ち切りが保持されるか検査します。
+2. 固定UmaSim名簿の差分で新規IDを抽出し、最新名簿と独立スキル辞書のコミット・blobを固定します。GameToraの一覧から個別URLを解決し、限定ブラウザ検証でイベント見出しと本文を照合します。未掲載・構造不明は保留台帳へ持ち越します。[直接取得検証](../../.github/workflows/direct-new-card-intake.yml)。
+3. 現行の変換・増分取込コード（[現行抽出器](../../poc/src/official_gametora_route_dom_extractor.cjs)・[未承認スキーマ投影](../../poc/src/official_gametora_private_schema_projection.cjs)・[new card increment](../../poc/src/new_card_event_incremental.cjs)）を確認し、分岐、結果ごとのスキルID・ヒントLv、継続・打ち切りが保持されるか検査します。
 4. 不一致、重複、未知の条件、公開前の候補を**未確認のまま保持**します。未掲載を確定0件として数えず、結果の異なる選択肢を無条件の報酬へ変換しません。
 5. [正式公開ゲート](checker-public-catalog.md)で採否と承認台帳の内容ハッシュを検証します。追加対象以外の既存DB・保存済み設定・キャッシュの回帰検査も行います。
 
