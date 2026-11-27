@@ -1,6 +1,5 @@
 'use strict';
-// Production GitHub Pages verification. Run only on an explicitly changed workflow PR
-// or a manual dispatch. Runtime game data is never checked in or printed.
+// Production GitHub Pages verification, after main deployment or manual dispatch. Runtime game data is never checked in or printed.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
@@ -9,10 +8,10 @@ const {chromium}=require('playwright');
 
 const ROOT=path.resolve(__dirname,'../..');
 const BASE='https://nimrodx0.github.io/Umasupport';
-const APP=BASE+'/poc/live.html';
+const APP=BASE+'/';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 async function checkPublishedFiles(request){
- for(const file of ['poc/live.html','poc/src/core.js','poc/src/live_loader.js','poc/src/skill_hierarchy.js',
+ for(const file of ['index.html','poc/live.html','poc/src/core.js','poc/src/live_loader.js','poc/src/skill_hierarchy.js',
                       'poc/src/skill_bridge.js','poc/src/live_app.js',
                       'poc/src/public_event_catalog.js','poc/data/reviewed_events.v1.json']){
   const resp=await request.get(BASE+'/'+file,{timeout:30000});
@@ -143,6 +142,8 @@ async function main(){
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
   assert.equal(actual.reviewedEvents,2499,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
   assert.equal(actual.reviewedCards,562,'Published event card coverage changed');
+  assert.deepEqual(await page.evaluate(()=>['20102','30322','30324'].map(id=>[id,window.UmaDemoData.cardById[id]?.events.length])),[['20102',4],['30322',5],['30324',3]]);
+  assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
   assert.equal(actual.eventMode,'reviewed');
   assert.match(status,/2499件/);
   assert.ok(actual.eventPick,'No selectable and rewarded real public event found');

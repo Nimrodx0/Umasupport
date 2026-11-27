@@ -19,7 +19,7 @@ function entriesFor(candidates){
   const fact='https://github.com/Nimrodx0/Umasupport/actions/runs/'+reviewed.factReviewRun;
   const runtime='https://github.com/Nimrodx0/Umasupport/actions/runs/'+reviewed.rehearsalRun;
   const source=[ref.sourceUrl,ref.adjudicatorUrl,fact,runtime];
-  const policy=['https://github.com/Nimrodx0/Umasupport/blob/main/docs/decisions/log.md#decision-d-068','https://gametora.com/robots.txt','https://gametora.com/docs/cla','https://umamusume.jp/derivativework_guidelines','https://github.com/Nimrodx0/Umasupport/blob/main/docs/evidence/events/d067-azuma-and-release-review-20261127.md'];
+  const policy=['https://github.com/Nimrodx0/Umasupport/blob/112ef8b1b74565539adacc85faeb497e0c8c9684/docs/decisions/log.md#decision-d-068','https://gametora.com/robots.txt','https://gametora.com/docs/cla','https://umamusume.jp/derivativework_guidelines','https://github.com/Nimrodx0/Umasupport/blob/48e9072dba84dfa6e6335522071b6a24073ad288/docs/evidence/events/d067-azuma-and-release-review-20261127.md'];
   for(const e of c.events)out.push({cardId:c.cardId,eventId:e.id,eventSha256:digest(e),
    reviewer:'ChatGPT technical/editorial review under project-owner D-068 conditional approval',reviewedAt:reviewed.reviewedAt,
    checks:{card:true,event:true,choices:true,outcomes:true,dependencies:true,publication:true},
