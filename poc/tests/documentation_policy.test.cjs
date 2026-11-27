@@ -11,8 +11,11 @@ test('active product documentation retains source and publication boundaries',()
  const req=read('docs/reference/requirements.md');
  const roadmap=read('docs/project/roadmap.md');
  const decisions=read('docs/decisions/log.md');
- assert.match(req,/現行の主入力は第三者GitHubの構造化GameTora派生JSON/);
- assert.match(decisions,/現行.*GameTora派生JSONを主経路/);
+ assert.match(req,/新規カードの主入力はGameTora本体の限定直接取得（D-067）/);
+ assert.doesNotMatch(req,/現行の主入力は第三者GitHubの構造化GameTora派生JSON/);
+ assert.match(decisions,/<a id="decision-d-067"><\/a>[\s\S]*?新カードだけをGameTora本体から直接取得/);
+ assert.match(read('docs/reference/architecture.md'),/イベント取得の主経路（D-067）/);
+ assert.match(read('docs/how-to/upstream-refresh-operations.md'),/通常実行は固定／最新UmaSimのblob比較だけ/);
  assert.match(roadmap,/GameTora派生GitHub JSON/);
  assert.match(roadmap,/GameWith/);
  assert.match(roadmap,/公開済みイベントの利用受け入れ/);
@@ -20,6 +23,7 @@ test('active product documentation retains source and publication boundaries',()
  assert.doesNotMatch(roadmap,/最優先：自動提供方法・利用条件/);
  const verification=read('docs/quality/verification-plan.md');
  assert.match(verification,/2,512件を1件ずつ人手承認する手順は主工程ではない/);
+ assert.match(verification,/D-067 新カード限定直接取得の増分ゲート/);
 });
 
 test('historical decisions and verification remain available without being treated as current',()=>{
