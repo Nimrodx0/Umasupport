@@ -1,6 +1,6 @@
 # サポートカードのイベントを増分収録する：現行手順
 
-本書は現行の取込経路を扱う。[GameWith-first方式の旧全文](../evidence/events/curated-event-intake-legacy-20261019.md)は2026-10-19当時の記録であり、今の全件取込指示ではありません。
+本書は現行取込手順。[GameWith-first方式の旧全文](../evidence/events/curated-event-intake-legacy-20261019.md)は2026-10-19当時の記録であり、今の全件取込指示ではありません。
 
 ## 適用範囲と入力
 
@@ -46,7 +46,7 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 ## D-072 JSON優先の通常取得と例外診断
 
-D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で取得時の短い識別名（専用state、ログ除外）は `titles:null` で再利用。連続到達のみ追加確認。正常randomは日次で `routine.input` と内容SHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
+D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。連続到達のみ追加確認。正常randomは日次で `routine.input` と内容SHAを準備。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
 
 ## D-072 承認対象の準備と公開提案の生成
 
