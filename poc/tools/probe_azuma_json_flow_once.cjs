@@ -35,7 +35,7 @@ const hash=s=>crypto.createHash('sha256').update(s.normalize('NFKC').replace(/[\
     matched.add(e[0].sourceEventId);
     const pieces=await section.evaluate(extractRoutePieces);
     if(!pieces.length||pieces.some(x=>x.unresolvedOr))throw Error('route ambiguity');
-    const flows=routeFlowCandidates({cardId,siteEventOrdinal:i+1,routes:pieces});
+    const flows=routeFlowCandidates({cardId,siteEventOrdinal:i+1,routes:pieces.map(p=>({...p,choiceGroupOrdinal:p.choiceOrdinal,resultOrdinal:p.outcomeOrdinal}))});
     const source=e[0],routes=source.groups.flatMap(g=>g.routes.map(r=>({group:g.ordinal,result:r.ordinal,ds:r.unresolved.filter(x=>x.code==='ds').length,stop:r.markers.some(x=>x.kind==='explicit-chain-stop'),shun:r.unresolved.filter(x=>x.code==='shun_act_low').length})));
     const comparison=routes.map(x=>{
      const p=flows.routes.filter(y=>y.choiceGroupOrdinal===x.group&&y.resultOrdinal===x.result);

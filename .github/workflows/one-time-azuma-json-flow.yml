@@ -1,10 +1,11 @@
 name: One-time Azuma JSON and rendered flow parity
 on:
   pull_request:
-    types: [opened]
+    types: [synchronize]
     branches: [main]
     paths:
       - '.github/workflows/one-time-azuma-json-flow.yml'
+      - 'poc/tools/probe_azuma_json_flow_once.cjs'
 permissions:
   contents: read
 concurrency:
