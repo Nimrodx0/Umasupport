@@ -48,11 +48,13 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 通常の自動取得は最大2枚／5 GET、6秒間隔のJSON直接取得。HTMLは掲載URLとNext build IDの確認に限定し、ChromiumやDOM表示照合を実行しない。JSON変換の構造・効果・経路位置の固定期待値、未知構造の保留、独立審査と個別公開承認を必須とする。#577の `domEvidence` は旧記録の互換読取のみ。表示解析器は明示診断用に保持し、取得済みHTMLを用いる任意の合成診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境のみ）。通常CIや公開条件にしない。例外調査の追加サイト訪問はD-072/D-067の既存制限を守る。
 
-## D-072 承認済み公開提案の生成
+## D-072 承認対象の準備と公開提案の生成
+
+[独立審査準備ワークフロー](../../.github/workflows/d072-independent-review-preparation.yml) をmainから手動実行し、独立確認済み事実の `evidence` 配列を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・独立審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。各イベントの6項目の審査と公開根拠を別途確認して `newApprovals` を作成する。準備は承認を生成せず、元サイトへの追加取得も行わない。
 
 [公開提案ワークフロー](../../.github/workflows/d072-reviewed-release-proposal.yml) をmainから手動実行する。`bundle` は `evidence`（独立事実照合の配列1〜2枚）と `newApprovals`（個別承認v1）だけのJSON。事実審査と公開可否を実際に確認した入力のみ、正式名称・独自数値構造・根拠URLを含める。公開Actionsの入力・ログに秘密や元JSON・原文・未承認候補を渡さない。既定 `plan` は検証・件数・提案SHAのみで書込なし。`branch` は現行mainのGit blobを再照合し、承認済みカタログ、承認台帳、件数記録、入口／全資産の版識別子、固定審査証跡を同一コミットにまとめて専用 `automation/d072-release-<SHA>` refを新規作成する。mainへの書込・強制更新・自動merge・自動公開は行わない。既存refは同一treeと親コミットの場合のみ再利用。mainが移動した場合は最新のmainから再実行する。
 
-出力のbranchを通常のPRとしてmainへ提出し、全CIと変更対象を検証し、統合後Pages・通常入口の公開受入を行う。GitHub標準トークンによるPR作成にはCI実行承認が必要になる場合があり、同トークンからのpushではPagesビルドも起動しないため、現段階では通常PRの作成と統合を別にする。追加の個人トークンや秘密鍵は必須化しない。取得側の自動承認・事実の推測・第三者許諾の擬制はしない。
+明示 `pr` モードは `branch` と同じ固定検証の後、同一リポジトリmain向け通常PRを作成する。同じ固定head/base・表題・本文の開いたPRだけを再利用し、閉じたPR・競合・権限拒否・変更されたrefは停止する。PR番号とURLを出力するが、CI成功・統合・配信とはみなさない。GitHub標準トークンによるPR作成・CI実行はリポジトリ設定に依存し、権限拒否時は既存branchから通常PRを手動作成できる。CI承認が必要な場合は管理者が行う。全CIと変更対象を検証し、統合後Pages・通常入口の公開受入を別途行う。追加の個人トークンや秘密鍵は必須化せず、設定も変更しない。取得側の自動承認・事実の推測・第三者許諾の擬制はしない。
 
 ## 実行確認
 
