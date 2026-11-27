@@ -120,7 +120,7 @@ jobs:
         continue-on-error: true
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
-          npx playwright install chromium
+          npx playwright install --with-deps chromium
       - name: Update a single public numeric-ID-only pending issue if status changed
         uses: actions/github-script@v7
         with:
