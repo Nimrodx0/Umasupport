@@ -15,7 +15,10 @@ function scope(packet,row){
     !ID.test(row?.cardId||'')||packet.cardId!==row.cardId||!same(packet.sourcePin,row.sourcePin)||
     row.packetSha256!==digest(packet)||!['awaiting-fact-review','held'].includes(row.status)||
     packet.status!==(row.status==='held'?'held':'awaiting-independent-fact-review'))fail('packet receipt mismatch');
- if(Object.hasOwn(packet,'domEvidence'))require('./d072_display_corroboration.cjs').verifyDisplay(packet.domEvidence);
+ if(Object.hasOwn(packet,'domEvidence')){
+  const v=require('./d072_display_corroboration.cjs').verifyDisplay(packet.domEvidence);
+  if(v.status==='matched-visible-facts'&&v.observedEvents!==packet.events.length)fail('display event count mismatch');
+ }
  require('./official_gametora_card_json.cjs').cardJsonUrl(packet);
  for(const e of packet.events){
   if(!exact(e,'sourceEventId,category,categoryOrdinal,titleSha256,exactTitleSha256,selection,groups')||
