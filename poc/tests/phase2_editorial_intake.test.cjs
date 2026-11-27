@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {build}=require('../src/phase2_editorial_intake.cjs');
@@ -73,6 +74,6 @@ test('provisional data is NOT a public release artifact and has no approval reco
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   require('../data/reviewed_events.v1.json'),
   require('../src/current_public_event_approvals.cjs').forCatalog(
-   require('../data/reviewed_events.v1.json'))).publicEvents,2499);
+   require('../data/reviewed_events.v1.json'))).publicEvents,CURRENT_PUBLIC.events);
  assert.deepEqual(approvals.entries,[]);
 });

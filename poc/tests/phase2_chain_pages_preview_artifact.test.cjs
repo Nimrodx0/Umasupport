@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -37,7 +38,7 @@ test('publicly viewable but nonapproved numeric preview matches the curated 12-s
   [2,2,0],[2,2,0],[2,2,0],[2,0,0],[0,0,0]
  ]);
  assert.ok(stages.every(s=>s.manualReachedRequired&&s.priorStageDependenceVerified===false));
- assert.equal(require('../src/event_release_gate.cjs').verifyRelease(published,approvals).publicEvents,2499);
+ assert.equal(require('../src/event_release_gate.cjs').verifyRelease(published,approvals).publicEvents,CURRENT_PUBLIC.events);
  assert.equal(approvals.schemaVersion,2);
 });
 test('all 15 numeric stages remain isolated from their unverified preceding stages',()=>{

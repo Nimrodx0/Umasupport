@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {verify}=require('../src/phase2_p1_scenario_event_ledger.cjs');
@@ -55,7 +56,7 @@ test('three contextual replacements and a separate R/SSR overseas event preserve
  const published=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
  const {verifyRelease}=require('../src/event_release_gate.cjs');
- assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,2499);
+ assert.equal(verifyRelease(published,forCatalog(published)).publicEvents,CURRENT_PUBLIC.events);
 });
 test('R and SSR Mei have separately scoped foreign event facts without copying domestic ID',()=>{
  const f=fixture(),row=f.ledger.overseasSeparate;

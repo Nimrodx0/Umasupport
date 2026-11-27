@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const db=require('../data/candidates/checker_event_hints.v1.json');
@@ -87,7 +88,7 @@ test('published event and approval registries stay untouched',()=>{
  const current=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
  const {verifyRelease}=require('../src/event_release_gate.cjs');
- assert.equal(verifyRelease(current,forCatalog(current)).publicEvents,2499);
- assert.equal(current.cards.length,562);
+ assert.equal(verifyRelease(current,forCatalog(current)).publicEvents,CURRENT_PUBLIC.events);
+ assert.equal(current.cards.length,CURRENT_PUBLIC.cards);
  assert.equal(forCatalog(current).schemaVersion,2);
 });

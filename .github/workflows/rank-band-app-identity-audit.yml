@@ -50,11 +50,12 @@ jobs:
           NODE
       - name: Match all newly supported source skills to actual application skill identities
         run: |
+          node poc/tools/fixed_research_event_catalog.cjs /tmp/p2-app-identity/fixed-reviewed-events.json
           node poc/tools/rank_band_app_identity_audit.cjs \
             /tmp/p2-app-identity/skill_data.txt \
             /tmp/p2-app-identity/support_card.txt \
             /tmp/p2-app-identity/pinned_legacy_skills.txt \
-            poc/data/reviewed_events.v1.json \
+            /tmp/p2-app-identity/fixed-reviewed-events.json \
             /tmp/p2-app-identity/report.json
           node - <<'NODE'
           const assert=require('node:assert/strict');

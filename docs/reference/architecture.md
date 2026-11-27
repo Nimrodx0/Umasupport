@@ -9,7 +9,7 @@
 ### 主な章
 
 - [現行構成](#現行構成)
-- [イベント取得の主経路（2026-10-29更新）](#イベント取得の主経路2026-10-29更新)
+- [イベント取得の主経路（D-067）](#イベント取得の主経路d-067)
 - [出典ピンの継続更新監視（監査層）](#出典ピンの継続更新監視監査層)
 - [モジュールの責務](#モジュールの責務)
 - [データ故障時の境界](#データ故障時の境界)
@@ -48,33 +48,30 @@ GitHub Pages: index.html → poc/live.html
 
 `skill_data.txt`（実行時直接取得＋既存の検証済みキャッシュ）→ `skill_condition_profiles.attach`（元条件・作戦の明示表示とASTを独立保持）→ `skill_rank_timing.analyze`（OR中の個別ANDごとの順位割合・局面解釈）→ `skill_style_tendency.attach`（全OR経路の合意等を確認し、推定と保留を区別）→ `skill.activationTendency`および`model.meta.skillStyleTendencies`。
 
-**厳格な作戦条件と発動状況からの適性推定は別属性。** また、P2の脚質傾向の補助データは表示・通常ヒント／イベント報酬・獲得候補・検索フィルター・保存設定の判定にはまだ使わない。全件監査は[固定辞書と現在アプリの集計](../evidence/skills/skill-style-tendency-audit-20261104.md)。元ゲーム辞書全文のGitHub同梱や、実際の発動率・効果実用性のスコアリングは実施しない。
+**厳格な脚質条件と発動状況からの適性推定は別属性。** 上記は2026-11-04の内部分析機構。現行の製品適性はD-059の独自判定データをD-060に基づき起動時照合し、検索・カード候補集約に反映する。明示適用範囲・適性・未判定を区別し、実ゲーム発動率・効果量・総合点にはしない。[当時の固定監査](../evidence/skills/skill-style-tendency-audit-20261104.md)。
 
 **React / TypeScript / Viteは未導入。** 導入する場合は、[Phase 3](../project/roadmap.md)で既存UIとテストの保守性を比較して判断する。
 
-## イベント取得の主経路（2026-10-29更新）
+<a id="イベント取得の主経路2026-10-29更新"></a>
+## イベント取得の主経路（D-067）
 
 ```text
-UmaSim全カード名簿（旧版／現行版）
-    ↓ 新規IDと前回未取込の保留IDを抽出
-第三者GitHub：systemless10/UmamusumePS（GameTora由来の構造化JSON）
-    ↓ 固定コミットの完全なGit treeとsupport_<ID>.jsonのGit blobを確認
-poc/src/derived_github_new_card_source_plan.cjs
-    ↓ JSON存在／未入手／既存DBに収録済みを分類（未入手は次回保留）
-既存のGameTora派生イベント全件変換器・編集監査（今後の接続）
-    ↓ スキルID・結果位置・連続内部条件を独立スキーマへ照合
-出典・内容・対象データと利用方法に即した公開条件の検証（公開前）
-    ↓ 追加対象の新カードだけ検証し、既存カードを無変更
+UmaSim固定旧名簿・現行名簿／スキル辞書
+    ↓ 新規ID・持越保留（名簿監視は日次）
+plan_new_card_event_intake.cjs / new_card_event_incremental.cjs
+    ↓ GameTora本体の対象カードだけを限定取得（明示手動）
+probe_official_gametora_target_cards.cjs / direct_event_fact_review.cjs
+    ↓ 独立辞書と結果・ヒント・内部依存を照合、疑義は個別裁定
+stageNewCardEvents → 内容ハッシュ・公開条件・承認台帳の検証
+    ↓ appendApprovedNewCards（既存カタログ不変）
 poc/data/reviewed_events.v1.json（GitHub Pages）
     ↓
 poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 ```
 
-**GameTora本体HTMLの共通直接取得器は未完成のまま開発保留**。従来のPlaywright DOM抽出試作とその監査は削除せず、主経路のランタイム、収録機能の先行条件、CI必須のオンライン取得には組み込まない。GameWithは特定の欠損／疑義を個別編集裁定する補助資料として維持する。第三者GitHub派生JSON自体の存在は公開可能性の保証ではなく、本文の再配布や権利問題も別途審査する。
+D-067の取得器は開発時の限定直接取得であり、アプリ利用時のサイト巡回・定期自動アクセスではない。未確認の構造・報酬・ID・出典差は保留し、GameWithは具体的な疑義の個別裁定に使う。正式公開の条件は独立する。[現行運用](../how-to/upstream-refresh-operations.md)・[取得元契約](data-sources.md)。
 
-**増分取り込みの実装状況（2026-10-29）**：`derived_github_new_card_source_plan` → `derived_github_card_event_preflight` → `derived_github_existing_converter_adapter` → `derived_github_staging_bridge` → `new_card_event_incremental.stageNewCardEvents`。**既存の** `gametora_whole_event_normalize`・`gametora_event_skill_crosswalk`・`gametora_app_schema_dry_run` を、新カード1枚の固定GitHub JSONへ再利用する。以前の `derived_github_runtime_draft` は実績記録として保持するが、現在の新カード主経路では使用しない。元JSONの不明点や未変換事項は要確認記録に区別して残し、既存DBは書き換えない。[設計と検証](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)。
-
-この接続は**非公開の技術候補とレビュー待ち**を扱う。
+旧 `derived_github_new_card_source_plan` 等の派生JSON経路は固定コホートの再現・履歴照合に限定する。[当時の設計と検証](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)。全件再生成は行わない。
 
 **既存563カード・2,512イベントの主経路（2026-10-30方針）**：過去に全件検証した `phase2_2512_private_effect_join.cjs` および `public_event_catalog.preflight/attach` で**非公開の使い捨てモデル**へ一括受け入れする既存工程を継続し、新変換経路で作り直さない。SSR30240の連続3段階、Checkerの11未同定元位置、非スキル16保留等は別の例外台帳に区別し、見つからない報酬を0として確定しない。現在の `public_event_catalog` は署名済み公開JSON用のローダーで、開発用の `attach` が成功しても一般利用者のサイトへ提供されたことにはならない。
 
@@ -82,11 +79,15 @@ poc/src/public_event_catalog.js → live.html → デッキ／比較／保存
 
 **配信方式の検討履歴**：2026-10-30の出典別配信比較（[検討記録](../evidence/events/phase2-event-delivery-route-assessment-20261030.md)）では、ランタイム多重取得か独自JSON配信かを検討した。そこでの「公開前」「公開0件」という記述は当時のもので、現在の公開判断として採用しない。旧8件追記リハーサルは補助ツールとして保持し、2,512件を逐一手作業で承認することを主工程としない。
 
-**2026-10-29：継続保留の実装**：`derived_github_pending_refresh.cjs` → `derived_github_pending_ledger.cjs` → `.github/workflows/derived-github-pending-intake.yml` により、最新UmaSimの新ID差分と前回の未取込カードを再試行する。GitHub Issueには数値ID・出典blob・変換数・要確認理由のみを保存し、イベント本文・非公開草稿は保存しない。既存DBは読み取り専用。日次ワークフローの稼働証拠と実際のGameWith裁定・承認後追記は別工程。[設計・運用境界](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)。\n\n公開のイベントDBに新サポカを自動追加する処理ではない。
+**継続保留の実装（D-067）**：日次 `derived-github-pending-intake.yml` はUmaSim名簿と既存公開DBだけから新ID・持越を管理する。旧派生GitHubの観測行は履歴として保持し、新規行は `awaiting-direct-source-review`。Issueに数値ID・状態だけを保存し、未承認イベントを公開しない。[旧台帳の設計](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)。
 
 ## 出典ピンの継続更新監視（監査層）
 
-[日次GitHub Actionsと更新手順](../how-to/upstream-refresh-operations.md)は、GameTora元イベントの559固定JSONとUmaSimサポカ・数値スキル辞書の**固定Git blob／最新main**をメタデータだけで比較する。差分があればGitHubの1件のレビューIssueと、未承認Git tree／Git blobだけの候補マニフェストを含む**Draft PR**を作成／更新する。Bot専用候補ブランチからread-only Core CIと候補GT／UmaSim元ファイルの**全件構造preflight**を明示起動する。出典本文は一時Actionsランナー以外に保存しない。ただしB検証のうち、イベント報酬の内容やGT↔UmaSimスキルIDの意味的照合、再利用許可は未実施。スナップショットが進んでも現在の本番カタログ・ユーザー設定・デッキ表示には自動反映しない。更新済みの固定コミット採用は従来のA/B/C監査と公開承認とは別にレビューする。
+[日次GitHub Actionsと更新手順](../how-to/upstream-refresh-operations.md)では、通常の監視はUmaSimの固定／最新blobだけを比較し、GameTora派生GitHubを問い合わせない。旧GTツリー・候補Draftの比較は `legacy_event_audit=true` を指定した明示手動監査に限定する。旧元の404は判定不能で、固定ピン・既存DB・利用者設定を変更しない。候補Draftの権限不足は別課題。新カードの直接取得・公開審査は別工程。
+
+### 固定研究と現行製品の入力境界
+
+P2/P3再現用のイベントDBは [固定研究入力ヘルパー](../../poc/tools/fixed_research_event_catalog.cjs) のGitコミット・Git blob・SHA-256で固定する（559枚・2,487件、固定UmaSim 566枚・881スキルとの組合せ）。監査・固定ブラウザだけが参照し、必要時に一時ファイルへ出力する。現行製品の承認済みDBと実ブラウザ受入は現行カタログと現行辞書を検証する。新イベント追加・旧イベント修正・現行台帳変更で固定研究を再定義しない。取得失敗・SHA不一致は停止し、現行版へ代替しない。固定研究の更新は新しい版・根拠・母集団を明示した別工程。
 
 ## モジュールの責務
 

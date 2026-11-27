@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.2 real approved-catalog prerequisite replay. This is an in-memory
 // test-only witness search; it neither changes user choices nor invents
 // unreleased events. A witness means the published logical rules permit a
@@ -125,7 +126,7 @@ function gatedTargets(card){
 }
 test('all approved prerequisites are classified and replayed using only published condition IDs',()=>{
  assert.equal(catalog.schemaVersion,1);
- assert.equal(cases.length,562);
+ assert.equal(cases.length,CURRENT_PUBLIC.cards);
  let events=0,targets=0,satisfied=0,unresolved=0,auto=0,choice=0,result=0,
   conditional=0,unblockedWithoutParents=0,negativeChecks=0,terminalChecks=0;
  const failures=[],categories={eventRequires:0,optionRequires:0,outcomeRequires:0,
@@ -250,7 +251,7 @@ test('all approved prerequisites are classified and replayed using only publishe
   unblockedWithoutParents,negativeChecks,terminalChecks,categories,failureKinds,
   failures:failures.slice(0,30)};
  console.log('W1_REVIEWED_GATED_REPLAY_AUDIT='+JSON.stringify(report));
- assert.equal(events,2499);
+ assert.equal(events,CURRENT_PUBLIC.events);
  // Unresolvable branches are kept as visible audit exceptions rather than
  // reclassified as nonexistent or silently counted as verified.
  assert.ok(targets>0);

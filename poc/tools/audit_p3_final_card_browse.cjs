@@ -35,7 +35,7 @@ async function main([reportPath,routePath]){
  a.equal(r.status,'P3-final-practical-held-review');a.deepEqual(r.counts,{general:304,targeted:100,undetermined:477});
  const base='https://raw.githubusercontent.com/mee1080/umasim/f6e4501ee6c6c2d4ac8698e7796e309d31575bde/data/';
  const [supportText,skillText,pinnedSkillText]=await Promise.all([get(base+'support_card.txt'),get(base+'skill_data.txt'),get(bridge.PINNED_URL)]);
- const p=routes.provenance,eventText=fs.readFileSync('poc/data/reviewed_events.v1.json','utf8');
+ const p=routes.provenance,eventText=await require('./fixed_research_event_catalog.cjs').loadFixedEventText();
  a.equal(hash(supportText),p.supportRegistrySHA256);a.equal(hash(skillText),p.skillRegistrySHA256);a.equal(hash(pinnedSkillText),p.historicalRegistrySHA256);a.equal(hash(eventText),p.approvedEventCatalogSHA256);
  const data=loader.buildModel(supportText,{mode:'online'});
  events.attach(data,JSON.parse(eventText),{skillText,pinnedSkillText,fullRegistry:true,allowReviewedLegacy:true});

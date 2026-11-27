@@ -23,7 +23,7 @@ function main(args){
   skillText=fs.readFileSync(skillPath,'utf8'),
   supportText=fs.readFileSync(supportPath,'utf8'),
   historical=fs.readFileSync(historicalPath,'utf8'),
-  catalogText=fs.readFileSync(catalogPath,'utf8');
+  catalogText=require('./fixed_research_event_catalog.cjs').verifyFixedEventText(fs.readFileSync(catalogPath));
  const identity=JSON.parse(identityText);
  if(sha(skillText)!==fixed.SOURCE_SHA||
   sha(historical)!==bridge.PINNED_SHA256||

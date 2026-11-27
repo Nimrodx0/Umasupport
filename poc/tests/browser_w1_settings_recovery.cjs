@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.4 A-gate: real approved public JSON, SHA-pinned UmaSim and real
 // Chromium persistence/JSON workflows. No published Pages or device claim.
 // The two external source files exist only in CI memory and are never emitted.
@@ -162,7 +163,7 @@ async function main(){
    '**/reviewed_events.v1.json'])await page.route(uri,block);
   await reload(page,app,'cached');
   assert.equal(await getSaved(page),JSON.stringify(initial));
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   // Invalid online event JSON must not replace the already-verified cached JSON.
@@ -186,7 +187,7 @@ async function main(){
    'Event source+cache failures must not destroy saved user data');
   await cachedEvent(page,lastGood);
   await reload(page,app,'cached');
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
   assert.deepEqual(JSON.parse(await getSaved(page)),initial);
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
   for(const uri of ['**/data/support_card.txt','**/data/skill_data.txt',
@@ -285,7 +286,7 @@ async function main(){
   assert.equal(await getSaved(empty),null);
   await cold.close();
   console.log('W1_SETTINGS_RESILIENCE_PASS='+JSON.stringify({
-   cohort:2499,pinnedSource:true,exportAndReplace:true,cancelAndMerge:true,
+   cohort:CURRENT_PUBLIC.events,pinnedSource:true,exportAndReplace:true,cancelAndMerge:true,
    invalidImportAtomic:true,offlineVerifiedCache:true,corruptEventCacheFailClosed:true,
    invalidOnlineEventKeptCache:true,corruptSettingsPreserved:true,coldOfflineFailClosed:true,
    malformedSupportSkillRejected:true,upstreamCacheNotPoisoned:true,
