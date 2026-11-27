@@ -9,14 +9,15 @@ const fail=s=>{throw Error('Direct event review: '+s);};
 const sha=x=>crypto.createHash('sha256').update(canonical(x)).digest('hex');
 const isSha=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
 const normalize=x=>String(x).normalize('NFKC').trim();
-function headingFingerprint(raw){
+function headingIdentity(raw){
  if(typeof raw!=='string'||!raw.trim()||raw.length>300)fail('invalid heading');
  const value=normalize(raw);
  const prefix=/^\s*\(?\s*([❯›»>→]+)\s*\)?\s*/u.exec(value);
  const title=(prefix?value.slice(prefix[0].length):value).trim();
  if(!title)fail('missing title');
- return {sha256:sha(title),stage:prefix?Array.from(prefix[1]).length:null};
+ return {title,sha256:sha(title),stage:prefix?Array.from(prefix[1]).length:null};
 }
+function headingFingerprint(raw){const {sha256,stage}=headingIdentity(raw);return {sha256,stage};}
 function routeFingerprint(route,registry){
  if(!route||route.terminal===true||route.requires!==undefined||
     route.statusEffects!==undefined||route.dynamicEffects!==undefined||
@@ -115,4 +116,34 @@ function toUnapprovedIntakeCandidate(checked,evidence){
   siteEventPanelCount:card.events.length,convertedEventCount:card.events.length,
   unresolvedEventCount:0,events:structuredClone(card.events)};
 }
-module.exports={headingFingerprint,routeFingerprint,reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate};
+function prepareNamedCandidate(checked,spec,registry,titles,evidence){
+ const candidate=toUnapprovedIntakeCandidate(checked,evidence);
+ if(spec?.cardId!==candidate.cardId||!Array.isArray(titles)||titles.length!==candidate.events.length||
+    spec.events.length!==titles.length)fail('title scope mismatch');
+ const events=candidate.events.map((event,i)=>{
+  const title=headingIdentity(titles[i]);
+  if(title.sha256!==spec.events[i].titleSha256||title.title.length>80||
+     /[\r\n\u0000-\u001f]/.test(title.title))fail('reviewed title mismatch '+candidate.cardId+':'+(i+1));
+  const e=structuredClone(event);e.name=title.title;
+  function enrich(part){
+   for(const reward of part.rewards||[]){
+    const skill=registry.byId.get(reward.skillId.slice(6));
+    if(!skill||registry.byName.get(skill.name)?.length!==1||!['normal','rare'].includes(skill.rarity))fail('runtime skill name mismatch');
+    reward.verifiedSkillName=skill.name;
+   }
+   for(const o of part.outcomes||[])enrich(o);
+   for(const c of part.choices||[])enrich(c);
+  }
+  enrich(e);
+  return e;
+ });
+ const out={...candidate,events};
+ const normalized=project({schemaVersion:1,cards:[{cardId:out.cardId,coverageStatus:'partial',events}]}).catalog.cards[0];
+ if(canonical(normalized.events)!==canonical(events))fail('production labels not normalized');
+ // Retain original fact hashes as a different namespace; never overwrite them.
+ return {candidate:out,summary:{cardId:out.cardId,events:events.length,
+  titlesPreserved:events.length,verifiedSkillNames:checked.summary.hintCount,
+  eventDigests:events.map(e=>({eventId:e.id,sha256:digest(e)})),
+  publicationApproved:false}};
+}
+module.exports={headingFingerprint,routeFingerprint,reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate,prepareNamedCandidate};

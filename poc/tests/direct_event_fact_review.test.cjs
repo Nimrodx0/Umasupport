@@ -68,3 +68,16 @@ test('real evidence ledger is metadata-only and exactly 12 content hashes',()=>{
  assert.equal(hashes.length,12);assert.equal(new Set(hashes.map(h=>h.eventId)).size,12);
  assert.ok(hashes.every(h=>/^[a-f0-9]{64}$/.test(h.sha256)));
 });
+
+test('production candidate preserves exact reviewed title and adds required runtime skill name without changing original fact hash',()=>{
+ const {prepareNamedCandidate}=require('../src/direct_event_fact_review.cjs');
+ const {record,spec}=fixture(),checked=reviewCard(record,spec,registry);
+ const evidence={schemaVersion:1,publicationApproved:false,cards:[checked.summary]};
+ const before=JSON.stringify(checked);
+ const n=prepareNamedCandidate(checked,spec,registry,['(❯) 架空一','(❯❯) 架空二'],evidence);
+ assert.equal(n.candidate.events[0].name,'架空一');
+ assert.equal(n.candidate.events[1].choices[0].outcomes[0].rewards[0].verifiedSkillName,skill.name);
+ assert.notEqual(n.summary.eventDigests[0].sha256,checked.summary.eventDigests[0].sha256);
+ assert.equal(n.candidate.publicationApproved,false);assert.equal(JSON.stringify(checked),before);
+ assert.throws(()=>prepareNamedCandidate(checked,spec,registry,['架空二','架空一'],evidence),/title mismatch/);
+});
