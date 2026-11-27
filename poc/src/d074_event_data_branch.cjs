@@ -39,8 +39,8 @@ function access({github,owner,repo}={}){
  const getCommit=async sha=>{const c=(await g.getCommit({...coord,commit_sha:sha})).data;if(c.sha!==sha||!SHA.test(c.tree?.sha||''))fail('commit mismatch');return c;};
  const getTree=async c=>{const t=(await g.getTree({...coord,tree_sha:c.tree.sha,recursive:'1'})).data;if(t.sha!==c.tree.sha||t.truncated!==false||!Array.isArray(t.tree))fail('tree incomplete');return t.tree;};
  const entry=(tree,path)=>{const rows=tree.filter(x=>x.path===path);if(rows.length!==1||rows[0].mode!=='100644'||rows[0].type!=='blob'||!SHA.test(rows[0].sha||''))fail('file scope '+path);return rows[0];};
- async function read(e){const b=(await g.getBlob({...coord,file_sha:e.sha})).data;if(b.sha!==e.sha||b.encoding!=='base64'||typeof b.content!=='string')fail('blob encoding');const bytes=Buffer.from(b.content,'base64'),text=bytes.toString('utf8');if(bytes.length!==b.size||gitBlobSha(text)!==e.sha)fail('blob mismatch');return text;}
- async function checkExisting(head){
+ async function read(e){const b=(await g.getBlob({...coord,file_sha:e.sha})).data;if(b.sha!==e.sha||b.encoding!=='base64'||typeof b.content!=='string'||!Number.isSafeInteger(b.size)||b.size<0||b.size>15000000||b.content.length>22000000)fail('blob encoding');const bytes=Buffer.from(b.content,'base64'),text=bytes.toString('utf8');if(bytes.length!==b.size||gitBlobSha(text)!==e.sha)fail('blob mismatch');return text;}
+ async function readVersion(head){
   const c=await getCommit(head),tree=await getTree(c);
   if(tree.filter(x=>x.type!=='tree').length!==3)fail('unexpected data branch paths');
   const m=JSON.parse(await read(entry(tree,MANIFEST)));
@@ -50,7 +50,30 @@ function access({github,owner,repo}={}){
   const catalogText=await read(entry(st,CATALOG)),approvalsText=await read(entry(st,APPROVALS));
   verifySnapshot(m,catalogText,approvalsText);
   if(snap.parents?.length!==1||snap.parents[0].sha!==(m.previousManifestCommit??m.codeCommit))fail('snapshot parent mismatch');
-  return {head,manifest:m,catalogText,approvalsText};
+  return {head,manifest:m,catalogText,approvalsText,snapshotMessage:snap.message,manifestMessage:c.message};
+ }
+ async function checkExisting(head){
+  const cur=await readVersion(head),m=cur.manifest;
+  if(m.revision>1){
+   const prior=await readVersion(m.previousManifestCommit);
+   if(prior.manifest.revision!==m.revision-1)fail('revision discontinuity');
+   const msg=cur.snapshotMessage;
+   if(typeof msg!=='string'||Buffer.byteLength(msg)>60000)fail('append receipt message');
+   const match=/^D074 reviewed data append ([a-f0-9]{64})\n\n([\s\S]+)$/.exec(msg);
+   if(!match||cur.manifestMessage!=='D074 data manifest '+match[1])fail('append receipt message');
+   const p=JSON.parse(match[2]),r=p?.receipt;
+   if(!exact(p,'schemaVersion,dataKind,previousManifestCommit,revision,receipt')||p.schemaVersion!==1||
+      p.dataKind!=='d074-reviewed-data-append'||p.previousManifestCommit!==prior.head||p.revision!==m.revision||
+      digest(p)!==match[1]||r?.baseSha!==m.codeCommit)fail('append receipt coordinates');
+   const result={catalog:JSON.parse(cur.catalogText),approvals:JSON.parse(cur.approvalsText),
+    status:'ready-to-append',existingCatalogUnchanged:true,newCardIds:r.newCardIds,appendedCardCount:r.after.cards-r.before.cards,
+    appendedEventCount:r.after.events-r.before.events,releasePin:r.releasePin,proofs:r.proofs,
+    independentReviewReceipts:r.independentReviewReceipts,sourceFactReceipts:r.sourceFactReceipts};
+   const reconstructed=require('./d072_release_proposal.cjs').validateAppend({old:JSON.parse(prior.catalogText),
+    approvals:JSON.parse(prior.approvalsText),result,baseSha:m.codeCommit});
+   if(digest(reconstructed)!==digest(r))fail('append receipt mismatch');
+  }
+  const {snapshotMessage,manifestMessage,...value}=cur;return value;
  }
  const makeTree=async entries=>{const sha=(await g.createTree({...coord,tree:entries})).data.sha;if(!SHA.test(sha||''))fail('created tree');return sha;};
  const makeCommit=async(tree,parent,message)=>{const sha=(await g.createCommit({...coord,message,tree,parents:[parent]})).data.sha;if(!SHA.test(sha||''))fail('created commit');return sha;};
