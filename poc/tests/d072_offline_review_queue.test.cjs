@@ -28,6 +28,7 @@ test('read-only queue identifies review work, holds and missing observations wit
  a.equal(q.rows[0].eventChecks[0].exactTitleSha256,f.packets.get('39995').events[0].exactTitleSha256);
  a.equal(q.rows[0].eventChecks[0].routeFactsSha256,digest({groups:f.packets.get('39995').events[0].groups}));
  a.deepEqual(q.rows[0].eventChecks[0].resultCounts,[1]);
+ a.equal(q.rows[0].adoption.status,'source-facts-accepted');a.equal(q.rows[0].adoption.publicationApproved,false);
  a.ok(q.rows[1].reasonCodes.includes('unsupported-event-category'));
  a.deepEqual(q.rows[3].reasonCodes,['source-refused']);a.deepEqual(f.counts(),{calls:1,reads:3});
  a.equal(q.publicationApproved,false);a.ok(q.rows.every(r=>r.publicationApproved===false));
