@@ -9,9 +9,9 @@ const day=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite
 const bounded=(s,n)=>typeof s==='string'&&!!s.trim()&&s.length<=n&&!/[\r\n\u0000-\u001f]/.test(s);
 function validatePolicy(policy,today=new Date().toISOString().slice(0,10)) {
  if(!exact(policy,'schemaVersion,scope,reviewer,reviewedAt,validThrough,accessConditionsReviewed,publicationApproved,evidenceUrls,publicationBasis')||
-    policy.schemaVersion!==1||!['D073-normal-random-skill-path-identifying-titles-only','D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'].includes(policy.scope)||
-    !bounded(policy.reviewer,120)||!day(today)||!day(policy.reviewedAt)||!day(policy.validThrough)||
-    policy.reviewedAt>today||policy.validThrough<today||
+    ![1,2].includes(policy.schemaVersion)||!['D073-normal-random-skill-path-identifying-titles-only','D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'].includes(policy.scope)||
+    !bounded(policy.reviewer,120)||!day(today)||!day(policy.reviewedAt)||
+    policy.reviewedAt>today||(policy.schemaVersion===1?(!day(policy.validThrough)||policy.validThrough<today):policy.validThrough!==null)||
     policy.accessConditionsReviewed!==true||policy.publicationApproved!==true||
     !Array.isArray(policy.evidenceUrls)||!policy.evidenceUrls.length||policy.evidenceUrls.length>20||
     policy.evidenceUrls.some(x=>!secureUrl(x))||

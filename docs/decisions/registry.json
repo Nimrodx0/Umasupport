@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-075",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：共通公開方針を無期限・変更時再審査とする",
+      "status": "current",
+      "relation": [],
+      "note": "定期再承認なし。変更検知・取得拒否・疑義を契機に停止しIssueで再審査。既存ゲート維持。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-075",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-075",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-074",
       "date": "2026-11-28",
       "heading": "2026-11-28：イベントDBを同一リポジトリの専用データブランチから配信する",

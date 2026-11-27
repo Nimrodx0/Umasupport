@@ -1,0 +1,37 @@
+name: D075 capture external condition fingerprints (not approval)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/d075-condition-baseline.yml'
+permissions:
+  contents: read
+  issues: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  capture:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture fixed public document fingerprints without enrollment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {probe,TITLE}=require('./poc/src/d075_conditions_monitor.cjs');
+            const ledger=await require('./poc/src/d069_github_attempt_store.cjs').createStore({github,...context.repo}).load();
+            if(ledger.rows.some(r=>r.failureCode==='source-refused'))throw Error('Prior source refusal; no external requests');
+            const open=await github.paginate(github.rest.issues.listForRepo,{...context.repo,state:'open',per_page:100});
+            if(context.eventName==='push'&&open.some(x=>!x.pull_request&&x.title===TITLE))throw Error('Existing condition review hold; no automatic capture');
+            const result=await probe();
+            core.info('D075_CAPTURE='+JSON.stringify(result));
+            if(result.status!=='captured-not-approved')core.setFailed(result.status);

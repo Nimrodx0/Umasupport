@@ -5,9 +5,10 @@ const {selectRoutine}=require('./d073_daily_proposal.cjs');
 const {readCurrent,appendReviewed,verifyPublicRaw,REF,CATALOG}=require('./d074_event_data_branch.cjs');
 const {digest}=require('./event_release_gate.cjs');
 const {validatePolicy}=require('./d073_routine_publication_policy.cjs');
+const {requireVerified}=require('./d075_conditions_monitor.cjs');
 const HASH=/^[a-f0-9]{64}$/,SHA=/^[a-f0-9]{40}$/;
 const fail=m=>{throw Error('D074 daily data: '+m);};
-async function runDailyData({config,publicationPolicy,queue,auto,store,github,owner,repo,baseSha,expectedHead,
+async function runDailyData({config,publicationPolicy,queue,auto,store,github,owner,repo,baseSha,expectedHead,conditionConfig,checkConditions,
  reader=readCurrent,appender=appendReviewed,rawVerifier=verifyPublicRaw}={}){
  if(!config||Object.keys(config).sort().join(',')!=='mode,routinePublicationPolicy,schemaVersion'||config.schemaVersion!==1||
    !['disabled','plan','publish'].includes(config.mode)||(config.mode==='disabled'?config.routinePublicationPolicy!==null:!config.routinePublicationPolicy))fail('explicit configuration required');
@@ -18,6 +19,7 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  if(config.mode==='disabled')return report('disabled');
  if(config.mode==='publish'&&publicationPolicy.automaticPublicationAllowed!==true)return report('publication-disabled-by-policy');
  validatePolicy(config.routinePublicationPolicy);
+ if(config.routinePublicationPolicy.schemaVersion!==2)fail('D075 indefinite policy required for daily automation');
  if(!SHA.test(expectedHead||'')||!SHA.test(baseSha||'')||!github?.rest?.git||!github?.rest?.pulls)fail('fixed coordinates required');
  const coord={owner,repo},ref=async ref=>(await github.rest.git.getRef({...coord,ref})).data.object.sha;
  const stable=async()=>{if(await ref('heads/main')!==baseSha||await ref(REF)!==expectedHead)fail('code or data head drift');};
@@ -26,6 +28,9 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  if(current.head!==expectedHead||digest(JSON.parse(current.catalogText))!==queue?.catalogSha256)fail('queue snapshot drift');
  const selected=await selectRoutine({config,queue,auto,store,github,...coord,baseSha,files:{[CATALOG]:current.catalogText}});
  if(selected.status!=='selected')return report(selected.status);
+ if(typeof checkConditions!=='function')fail('D075 external condition preflight required');
+ const conditions=await checkConditions();
+ if(!requireVerified(conditions,config.routinePublicationPolicy,conditionConfig))return report('external-conditions-held',{conditionStatus:conditions?.status||'missing',issueNumber:conditions?.issueNumber||null});
  const expectedRoutine=selected.selectedIds.map(cardId=>{
   const r=queue.rows.find(r=>r.cardId===cardId)?.routine;
   if(!HASH.test(r?.receiptSha256||'')||!HASH.test(r?.eventDigestsSha256||'')||!Array.isArray(r.events)||
