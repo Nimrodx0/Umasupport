@@ -59,7 +59,7 @@
 
 ### D069 手動カードJSON取得と永続試行台帳
 
-専用ブランチ `state/d069-json-attempts` の `.d069/attempt-ledger.json` を正本とする。main／Pagesではない。予約と完了は非強制fast-forward CASのみ、欠損時の自動初期化や強制更新はしない。予約中／不確定／未掲載／保留／審査待ちは自動で再訪しない。取得器は `d069-manual-json-intake.yml` のmain手動dispatchのみ（`mode=plan` が既定、GameToraへの通信なし、`mode=observe` は明示ID最大2枚の限定取得）。現行名簿・辞書blobと新規未収録IDを検査。robots・同一origin・HTTP200・リダイレクト禁止・6秒間隔・最大5 GET・サイズ・カードIDを検証。静的一覧に既存カードの十分なリンクがなければ中止し、未掲載扱いにしない。本文／選択肢は保存せず、数値・構造審査パケットとSHAのみをログ／台帳に残す。実サイト適合性と実ストア競合は未確認。既存HTML比較の手動経路は別であり、日次ワークフローは専用台帳を読取専用で照合し、試行済みIDの状態をIssueと計画に反映するが、本取得器を起動しない。権利・公開ゲートは維持。
+専用ブランチ `state/d069-json-attempts` の `.d069/attempt-ledger.json` を正本とする。main／Pagesではない。予約と完了は非強制fast-forward CASのみ、欠損時の自動初期化や強制更新はしない。予約中／不確定／未掲載／保留／審査待ちは自動で再訪しない。取得器は `d069-manual-json-intake.yml` のmain手動dispatchのみ（`mode=plan` が既定、GameToraへの通信なし、`mode=observe` は明示ID最大2枚の限定取得）。現行名簿・辞書blobと新規未収録IDを検査。robots・同一origin・HTTP200・リダイレクト禁止・6秒間隔・最大5 GET・サイズ・カードIDを検証。静的一覧に既存カードの十分なリンクがなければ中止し、未掲載扱いにしない。本文／選択肢は保存せず、数値・構造審査パケットとSHAのみをログ／台帳に残す。実GitHub隔離refの競合・再読込・完了CASは [45993721800](https://github.com/Nimrodx0/Umasupport/actions/runs/45993721800) で成功（本番台帳不変、GameTora通信0）。実サイト一覧の適合性は未確認。既存HTML比較の手動経路は別であり、日次ワークフローは専用台帳を読取専用で照合し、試行済みIDの状態をIssueと計画に反映するが、本取得器を起動しない。権利・公開ゲートは維持。
 
 ## 保留カードを指定して再確認する
 

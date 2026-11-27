@@ -8,7 +8,7 @@ const ORIGIN='https://gametora.com',ROBOTS=ORIGIN+'/robots.txt';
 const ID=/^[1-9]\d{4}$/;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // Deliberately conservative: apply every disallow rule, even for other
-// agents, and never override with Allow. Unknown rules fail closed.
+// agents, and never override with Allow. Malformed syntax fails closed.
 function checkRobots(text,path){
  if(typeof text!=='string'||!text.trim()||text.length>100000||!/^\/[^?#]*$/.test(path))fail('robots shape');
  let agent=false;
