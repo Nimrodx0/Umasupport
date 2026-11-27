@@ -828,6 +828,8 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           npx playwright install --with-deps chromium
+      - name: Verify D072 offline display corroboration in Chromium
+        run: node poc/tests/browser_d072_display_corroboration.cjs
       - name: Browser-test option-based prospective chain plan and continuity safeguards
         run: node poc/tests/browser_phase2_chain_plan.cjs
       - name: Browser-test manual chain stages on GitHub Pages-style subpath
