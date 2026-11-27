@@ -130,6 +130,8 @@ jobs:
           node --test poc/tests/official_gametora_route_dom_extractor.test.cjs
           node --check poc/src/official_gametora_private_schema_projection.cjs
           node --test poc/tests/official_gametora_private_schema_projection.test.cjs
+      - name: Verify card-scoped GameTora JSON private adapter and exact legacy comparison
+        run: node --check poc/src/official_gametora_card_json.cjs && node --test poc/tests/official_gametora_card_json.test.cjs
       - name: Verify GameTora-only generic conversion and neutral result numbering
         run: node --test poc/tests/gametora_generic_converter_scope.test.cjs
       - name: Verify original GameTora multi-card site event assembler and exact result parity
