@@ -1,0 +1,44 @@
+name: One-time isolated encrypted packet archive integration
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-d069-archive-integration.yml'
+permissions:
+  contents: write
+jobs:
+  test-archive:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d069-encrypted-archive-roundtrip'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const a=require('node:assert/strict'),crypto=require('node:crypto');
+            const {createStore}=require('./poc/src/d069_github_attempt_store.cjs');
+            const {inspect}=require('./poc/src/d069_json_review_bridge.cjs');
+            const {gitBlobSha}=require('./poc/src/current_umasim_roster_delta.cjs');
+            const {digest}=require('./poc/src/event_release_gate.cjs');
+            const key=crypto.randomBytes(32);
+            const make=(archiveKey=key)=>createStore({github,...context.repo,ref:'heads/test/d069-attempt-store',archiveKey});
+            const production=createStore({github,...context.repo}),prodBefore=await production.load();
+            const old=await make().load(),cardId='39999';
+            a.ok(!old.rows.some(r=>r.cardId===cardId));
+            const skillText=JSON.stringify(Array.from({length:101},(_,i)=>({id:String(990001+i),name:'Synthetic '+i,rarity:'normal',group:i})));
+            const sourcePin={commit:'a'.repeat(40),cardBlob:'b'.repeat(40),skillBlob:gitBlobSha(skillText)};
+            const packet=inspect({cardId,sourceUrl:'https://gametora.com/ja/umamusume/supports/39999-example',buildId:'synthetic',sourcePin,skillText,existingCatalog:{schemaVersion:1,cards:[]},body:JSON.stringify({pageProps:{sourceData:{support_id:39999},eventData:{ja:JSON.stringify({random:[{i:1,n:'Synthetic title',c:[{o:'',r:[{t:'sk',v:'+2',d:990001}]}]}]})}}})});
+            const row={cardId,sourcePin,status:'reserved',packetSha256:null};
+            const reservation={...old,revision:old.revision+1,rows:[...old.rows,row]};
+            a.equal(await make().compareAndSet(old,reservation),true);
+            const next={...reservation,revision:reservation.revision+1,rows:[...old.rows,{...row,status:'awaiting-fact-review',packetSha256:digest(packet)}]};
+            await a.rejects(make().compareAndSet(reservation,next),/packet set/);
+            a.equal(await make().compareAndSet(reservation,next,[packet]),true);
+            a.deepEqual(await make().loadPacket(cardId),packet);
+            await a.rejects(make(crypto.randomBytes(32)).loadPacket(cardId),/authentication/);
+            a.deepEqual(await production.load(),prodBefore);
+            core.info('D069_ARCHIVE_INTEGRATION='+JSON.stringify({atomicReceiptAndCiphertext:true,roundtrip:true,wrongKeyRejected:true,productionUnchanged:true,sourceRequests:0,syntheticOnly:true}));
