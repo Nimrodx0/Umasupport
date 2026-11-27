@@ -1,0 +1,63 @@
+name: D069 manual card JSON intake
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'plan = no GameTora access; observe = explicit bounded read'
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - observe
+      target_card_ids:
+        description: 'Exact unimported card IDs, comma separated, maximum two'
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  manual:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate offline acquisition and persistence
+        run: node --test poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d069_card_json_transport.test.cjs
+      - name: Resolve immutable UmaSim source coordinates
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const c=(await github.rest.repos.getCommit({owner:'mee1080',repo:'umasim',ref:'main'})).data;
+            const t=(await github.rest.git.getTree({owner:'mee1080',repo:'umasim',tree_sha:c.commit.tree.sha,recursive:'1'})).data;
+            if(t.truncated!==false||!/^[a-f0-9]{40}$/.test(c.sha))throw Error('Invalid UmaSim coordinates');
+            function blob(path){const rows=t.tree.filter(x=>x.type==='blob'&&x.path===path);if(rows.length!==1||!/^[a-f0-9]{40}$/.test(rows[0].sha))throw Error('Missing blob');return rows[0].sha;}
+            fs.writeFileSync(process.env.RUNNER_TEMP+'/direct-uma-meta.json',JSON.stringify({commit:c.sha,cardBlob:blob('data/support_card.txt'),skillBlob:blob('data/skill_data.txt')}));
+      - name: Obtain pinned roster and registry in disposable runner
+        run: |
+          set -euo pipefail
+          SHA=$(node -p "require(process.env.RUNNER_TEMP+'/direct-uma-meta.json').commit")
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+          curl --fail --silent --show-error --max-time 30 'https://raw.githubusercontent.com/mee1080/umasim/91952973eb334ae530b8cd76541bce8a01a141cd/data/support_card.txt' -o "$RUNNER_TEMP/direct-before.txt"
+          curl --fail --silent --show-error --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/support_card.txt" -o "$RUNNER_TEMP/direct-current.txt"
+          curl --fail --silent --show-error --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/skill_data.txt" -o "$RUNNER_TEMP/direct-skills.txt"
+      - name: Explicit plan or bounded observation with durable reservation
+        uses: actions/github-script@v7
+        env:
+          MODE: ${{ inputs.mode }}
+          TARGET_CARD_IDS: ${{ inputs.target_card_ids }}
+        with:
+          script: |
+            await require('./poc/tools/run_d069_manual_json_intake.cjs').execute({
+              github,context,core,mode:process.env.MODE,targetText:process.env.TARGET_CARD_IDS
+            });
