@@ -173,8 +173,8 @@ async function loadDistributed({
  try{
   const online=await withTimeout(async signal=>{
    const m=manifestShape(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(await get(MANIFEST_URL,16384,signal))));
-   if(cached&&(m.revision<cached.m.revision||m.revision===cached.m.revision&&
-      JSON.stringify(m)!==JSON.stringify(cached.m)))throw Error('配信版の巻き戻り・同一版不一致');
+   if(cached&&(m.cardCount<cached.m.cardCount||m.eventCount<cached.m.eventCount||m.revision<cached.m.revision||m.revision===cached.m.revision&&
+      Object.keys(m).some(k=>m[k]!==cached.m[k])))throw Error('配信版の巻き戻り・同一版不一致');
    // If the already verified bytes are exactly the same, no second network
    // download is necessary. The current model was revalidated above.
    if(cached&&m.revision===cached.m.revision&&m.catalogSha256===cached.m.catalogSha256)
