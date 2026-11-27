@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/direct-new-card-intake.yml'
       - 'poc/tools/run_direct_new_card_intake.cjs'
+      - 'poc/tools/probe_official_gametora_target_cards.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
   workflow_dispatch:
     inputs:
       batch_offset:

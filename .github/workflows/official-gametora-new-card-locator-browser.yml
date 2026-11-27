@@ -52,8 +52,12 @@ jobs:
           const fs=require('node:fs');
           const text=fs.readFileSync(process.env.RUNNER_TEMP+'/new-card-structure-only.log','utf8').trim();
           const prefix='GT_NEW_CARD_READONLY_PROBE=';
-          if(!text.startsWith(prefix))throw Error('No generic source probe output');
-          const report=JSON.parse(text.slice(prefix.length));
+          const lines=text.split('\n');
+          for(const l of lines.filter(l=>l.startsWith('GT_DOM_STRUCTURE=')))console.log(l);
+          const result=lines.find(l=>l.startsWith(prefix));
+          if(!result)throw Error('No generic source probe output');
+          console.log(result);
+          const report=JSON.parse(result.slice(prefix.length));
           const expected=[
             {id:'30322',panels:6,events:5,results:13,numeric:40,hints:14,flow:0},
             {id:'30323',panels:12,events:11,results:14,numeric:68,hints:4,flow:2}

@@ -105,6 +105,26 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
    blocked=false;
    await goto(entry.url);
    cardVisits++;
+   // Diagnostic report contains DOM structure only, never event names/choices,
+   // source text, HTML, images, or application data.
+   const shape=await page.evaluate(()=>{
+    const labels=/^(?:育成イベント|サポートイベント|連続イベント|ランダムイベント|お出かけイベント|おでかけイベント|イベント|Training Events|Support Events|Chain Events|Random Events)$/i;
+    const labelType=t=>labels.test(t)?t:'';
+    const sig=el=>({tag:el.tagName.toLowerCase(),
+      classes:[...el.classList].filter(c=>/^[A-Za-z0-9_-]{1,90}$/.test(c)).slice(0,4),
+      children:el.children.length,expanded:el.getAttribute('aria-expanded'),
+      textLen:(el.innerText||'').trim().length,
+      numeric:/[+＋−－-]\s*\d/.test(el.innerText||''),
+      label:labelType((el.innerText||'').trim())});
+    const tree=(el,d=0)=>({...sig(el),...(d<4?{nodes:[...el.children].slice(0,15).map(x=>tree(x,d+1))}:{})});
+    const headers=[...document.querySelectorAll('h1,h2,h3,h4,h5,[role="heading"]')].map(el=>sig(el));
+    const hits=[...document.querySelectorAll('h1,h2,h3,h4,h5,div,span,button')].filter(el=>labelType((el.innerText||'').trim())&&![...el.children].some(c=>labelType((c.innerText||'').trim()))).slice(0,8);
+    const controls=[...document.querySelectorAll('button,[aria-expanded],summary,[role="button"]')];
+    return {headers,controls:controls.slice(0,40).map(el=>({...sig(el),parent:el.parentElement?sig(el.parentElement):null})),
+     sections:hits.map(el=>({heading:sig(el),parent:el.parentElement?tree(el.parentElement):null,grandparent:el.parentElement?.parentElement?{...sig(el.parentElement.parentElement),nodes:[...el.parentElement.parentElement.children].slice(0,15).map(x=>tree(x,2))}:null})),
+     nextData:!!document.querySelector('script#__NEXT_DATA__')};
+   });
+   process.stdout.write('GT_DOM_STRUCTURE='+JSON.stringify({cardId:entry.cardId,...shape})+'\n');
    const buttons=page.locator('section button[aria-expanded]');
    const panels=await buttons.count();
    if(panels===0){
