@@ -186,7 +186,7 @@ jobs:
               if(conditions===null){
                 if(daily.mode==='disabled'){conditions={status:'policy-disabled'};return conditions;}
                 require('./poc/src/d073_routine_publication_policy.cjs').validatePolicy(daily.routinePublicationPolicy);
-                conditions=await require('./poc/src/d075_conditions_monitor.cjs').checkConditions({config:conditionConfig,policy:daily.routinePublicationPolicy,github,...context.repo});
+                conditions=await require('./poc/src/d075_conditions_monitor.cjs').checkConditions({config:conditionConfig,policy:daily.routinePublicationPolicy,mode:daily.mode,github,...context.repo});
                 core.info('D075_CONDITIONS='+JSON.stringify(conditions));
               }
               return conditions;
@@ -302,7 +302,7 @@ jobs:
             const {queue,auto,conditions}=JSON.parse(fs.readFileSync(t+'/d073-handoff.json','utf8'));
             const snapshot=JSON.parse(fs.readFileSync(t+'/d074-snapshot.json','utf8'));
             const report=await runDailyData({config,publicationPolicy,queue,auto,github,...context.repo,baseSha:context.sha,
-              expectedHead:snapshot.head,store:createStore({github,...context.repo}),conditionConfig:require('./poc/config/d075-condition-baseline.v1.json'),checkConditions:async()=>conditions}});
+              expectedHead:snapshot.head,store:createStore({github,...context.repo}),conditionConfig:require('./poc/config/d075-condition-baseline.v1.json'),checkConditions:async()=>conditions});
             core.info('D074_DAILY_DATA='+JSON.stringify(report));
             if(report.branchWritten&&report.publicRawVerified)core.setOutput('published_head',report.head);
             await core.summary.addHeading('Routine data handoff')

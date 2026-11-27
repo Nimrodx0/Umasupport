@@ -6,7 +6,7 @@ const {validatePolicy}=require('../src/d073_routine_publication_policy.cjs');
 const policy=require('../config/d074-daily-data.v1.json').routinePublicationPolicy;
 const body=i=>i.endsWith('-robots')?'User-agent: *\nDisallow: /private\n':'<html>synthetic '+i+'</html>';
 const docs=DOCS.map(([id])=>({id,sha256:crypto.createHash('sha256').update(body(id)).digest('hex')}));
-const config={schemaVersion:1,baseline:{policySha256:digest(policy),documents:docs}};
+const config={schemaVersion:1,baseline:{policySha256:digest(policy),reviewStatus:'reviewed',captureRun:'1',documents:docs}};
 function transport({changed,refused,blocked,redirected,oversize}={}){
  const calls=[];
  return {calls,fetchImpl:async(url,opts)=>{
@@ -50,4 +50,33 @@ test('missing baseline holds before network, change latches Issue until explicit
  const verified=await checkConditions({...args,observer:async()=>({status:'verified',documents:docs})});
  a.equal(requireVerified(verified,policy,config),true);a.equal(requireVerified({...verified,policySha256:'0'.repeat(64)},policy,config),false);
  await a.rejects(checkConditions({...args,observer:async()=>({status:'verified',documents:[]})}),/observer mismatch/);
+});
+
+test('all inline GitHub scripts compile, including the live handoff',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+ for(const filename of ['derived-github-pending-intake.yml','d075-condition-baseline.yml']){
+  const lines=fs.readFileSync(path.join(__dirname,'../../.github/workflows',filename),'utf8').split('\n');
+  let n=0;
+  for(let i=0;i<lines.length;i++){
+   if(!/^\s*script: \|\s*$/.test(lines[i]))continue;
+   const indent=lines[i].match(/^\s*/)[0].length;
+   const body=[];
+   for(let j=i+1;j<lines.length;j++){
+    if(lines[j].trim()&&lines[j].match(/^\s*/)[0].length<=indent)break;
+    body.push(lines[j].slice(indent+2));
+   }
+   a.doesNotThrow(()=>new AsyncFunction('github','context','core',body.join('\n')),filename+':'+(i+1));n++;
+  }
+  a.ok(n>0,filename);
+ }
+});
+
+test('production observed baseline is pinned to the actual capture and cannot authorize publish',async()=>{
+ const live=require('../config/d075-condition-baseline.v1.json');
+ a.equal(live.baseline.reviewStatus,'observed');a.equal(live.baseline.captureRun,'46051690350');
+ a.equal(require('../src/d075_conditions_monitor.cjs').validateBaseline(live,policy),live.baseline);
+ const f=fakeGithub();let visits=0;
+ const result=await checkConditions({config:live,policy,github:f.github,owner:'o',repo:'r',mode:'publish',observer:async()=>{visits++;throw Error('must not request');}});
+ a.equal(result.status,'baseline-review-required');a.equal(visits,0);a.equal(f.issues.length,1);
 });

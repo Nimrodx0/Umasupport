@@ -30,7 +30,7 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  if(selected.status!=='selected')return report(selected.status);
  if(typeof checkConditions!=='function')fail('D075 external condition preflight required');
  const conditions=await checkConditions();
- if(!requireVerified(conditions,config.routinePublicationPolicy,conditionConfig))return report('external-conditions-held',{conditionStatus:conditions?.status||'missing',issueNumber:conditions?.issueNumber||null});
+ if(!requireVerified(conditions,config.routinePublicationPolicy,conditionConfig,config.mode))return report('external-conditions-held',{conditionStatus:conditions?.status||'missing',issueNumber:conditions?.issueNumber||null});
  const expectedRoutine=selected.selectedIds.map(cardId=>{
   const r=queue.rows.find(r=>r.cardId===cardId)?.routine;
   if(!HASH.test(r?.receiptSha256||'')||!HASH.test(r?.eventDigestsSha256||'')||!Array.isArray(r.events)||

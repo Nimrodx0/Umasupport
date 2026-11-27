@@ -8,7 +8,7 @@ const acquisitionPolicy=require('../config/direct-event-intake-policy.v1.json');
 const publicationPolicy=require('../config/d074-publication-policy.v1.json');
 const routinePolicy={schemaVersion:2,scope:'D073-normal-random-skill-path-identifying-titles-only',reviewer:'synthetic fixture',reviewedAt:'2000-01-01',validThrough:null,accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic'],publicationBasis:{kind:'original-factual-description',reason:'Synthetic regression only'}};
 const {DOCS}=require('../src/d075_conditions_monitor.cjs');
-const conditionConfig={schemaVersion:1,baseline:{policySha256:digest(routinePolicy),documents:DOCS.map(([id])=>({id,sha256:'1'.repeat(64)}))}};
+const conditionConfig={schemaVersion:1,baseline:{policySha256:digest(routinePolicy),reviewStatus:'reviewed',captureRun:'1',documents:DOCS.map(([id])=>({id,sha256:'1'.repeat(64)}))}};
 const conditions={status:'verified',policySha256:digest(routinePolicy),baselineSha256:digest(conditionConfig.baseline)};
 const base='a'.repeat(40),head='b'.repeat(40),hash='c'.repeat(64);
 function fixture(){
@@ -80,4 +80,12 @@ test('D075 active daily publication requires a verified policy-bound baseline',a
  }
  const r=await runDailyData({...active,conditionConfig:{schemaVersion:1,baseline:null},checkConditions:async()=>({status:'baseline-unreviewed'})});a.equal(r.status,'external-conditions-held');
  a.ok(f.calls.every(x=>typeof x==='string'));
+});
+
+test('observed live baseline can plan but cannot publish even with the publication switch',async()=>{
+ const f=fixture(),conditionConfig={schemaVersion:1,baseline:{...f.args.conditionConfig.baseline,reviewStatus:'observed'}};
+ const checkConditions=async()=>({...conditions,baselineSha256:digest(conditionConfig.baseline)});
+ a.equal((await runDailyData({...f.args,conditionConfig,checkConditions})).status,'planned');
+ const r=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy:{...publicationPolicy,automaticPublicationAllowed:true},conditionConfig,checkConditions});
+ a.equal(r.status,'external-conditions-held');a.equal(r.branchWritten,false);
 });
