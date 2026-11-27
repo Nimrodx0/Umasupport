@@ -52,4 +52,18 @@ function compareIndependentReview({packet,ledger,evidence}={}){
   receipt:{schemaVersion:1,cardId:packet.cardId,packetSha256:digest(packet),independentEvidenceSha256:digest(evidence),
    reviewer:evidence.reviewer,reviewedAt:evidence.reviewedAt,evidenceUrls:evidence.evidenceUrls.slice(),publicationApproved:false}};
 }
-module.exports={compareIndependentReview};
+function prepareIndependentCandidate({packet,ledger,evidence,skillText,existingCatalog}={}){
+ const {titles,review,receipt}=compareIndependentReview({packet,ledger,evidence});
+ const candidate=require('./d069_json_review_bridge.cjs').resumeForCurrentCatalog({packet,ledger,titles,review,skillText,existingCatalog});
+ return {candidate,receipt};
+}
+function stageIndependentEvidenceAcrossVersions({items,ledger,...args}={}){
+ if(!Array.isArray(items)||!items.length||items.length>2)fail('batch scope');
+ const matched=items.map(({packet,source,evidence})=>{
+  const {titles,review,receipt}=compareIndependentReview({packet,ledger,evidence});
+  return {packet,source,titles,review,receipt};
+ });
+ const result=require('./d072_cross_version_reviewed_append.cjs').stageReviewedAcrossVersions({...args,ledger,items:matched});
+ return {...result,independentReviewReceipts:matched.map(x=>x.receipt)};
+}
+module.exports={compareIndependentReview,prepareIndependentCandidate,stageIndependentEvidenceAcrossVersions};
