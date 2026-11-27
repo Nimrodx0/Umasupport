@@ -18,7 +18,7 @@ function validateBaseline(config,policy){
  if(!exact(config,'schemaVersion,baseline')||config.schemaVersion!==1)throw Error('D075 baseline config');
  if(config.baseline===null)return null;
  const b=config.baseline;
- if(!exact(b,'policySha256,documents')||b.policySha256!==digest(policy)||!Array.isArray(b.documents)||b.documents.length!==DOCS.length||
+ if(!exact(b,'policySha256,reviewStatus,captureRun,documents')||b.policySha256!==digest(policy)||!['observed','reviewed'].includes(b.reviewStatus)||!/^\d{1,20}$/.test(b.captureRun||'')||!Array.isArray(b.documents)||b.documents.length!==DOCS.length||
  b.documents.some((d,i)=>!exact(d,'id,sha256')||d.id!==DOCS[i][0]||!SHA.test(d.sha256||'')))throw Error('D075 baseline not bound to policy or fixed documents');
  return b;
 }
@@ -45,7 +45,8 @@ async function probe({fetchImpl=fetch,wait=sleep,expected=null}={}){
  }
  return {status:expected?'verified':'captured-not-approved',documents};
 }
-async function checkConditions({config,policy,github,owner,repo,observer=probe}={}){
+async function checkConditions({config,policy,github,owner,repo,mode='plan',observer=probe}={}){
+ if(!['plan','publish'].includes(mode))throw Error('D075 condition mode');
  const policySha256=digest(policy),coord={owner,repo};
  const open=await github.paginate(github.rest.issues.listForRepo,{...coord,state:'open',per_page:100});
  const holds=open.filter(x=>!x.pull_request&&x.title===TITLE);
@@ -53,7 +54,7 @@ async function checkConditions({config,policy,github,owner,repo,observer=probe}=
  if(holds.length)return {status:'review-hold',policySha256,issueNumber:holds[0].number};
  let b;
  try{b=validateBaseline(config,policy);}catch{b=undefined;}
- const result=b===null?{status:'baseline-unreviewed'}:b===undefined?{status:'baseline-invalid'}:await observer({expected:b.documents});
+ const result=b===null?{status:'baseline-unreviewed'}:b===undefined?{status:'baseline-invalid'}:mode==='publish'&&b.reviewStatus!=='reviewed'?{status:'baseline-review-required'}:await observer({expected:b.documents});
  if(result.status==='verified'){
   if(!Array.isArray(result.documents)||digest({documents:result.documents})!==digest({documents:b.documents}))throw Error('D075 observer mismatch');
   return {status:'verified',policySha256,baselineSha256:digest(b)};
@@ -68,8 +69,8 @@ async function checkConditions({config,policy,github,owner,repo,observer=probe}=
  ].join('\n')});
  return {status:result.status,policySha256,issueNumber:issue.data.number};
 }
-function requireVerified(report,policy,config){
+function requireVerified(report,policy,config,mode='plan'){
  const b=validateBaseline(config,policy);
- return !!b&&report?.status==='verified'&&report.policySha256===digest(policy)&&report.baselineSha256===digest(b);
+ return !!b&&['plan','publish'].includes(mode)&&(mode!=='publish'||b.reviewStatus==='reviewed')&&report?.status==='verified'&&report.policySha256===digest(policy)&&report.baselineSha256===digest(b);
 }
 module.exports={DOCS,TITLE,probe,checkConditions,validateBaseline,requireVerified};
