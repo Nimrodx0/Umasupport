@@ -92,6 +92,8 @@ jobs:
             "$RUNNER_TEMP/pending-before.json" \
             "$RUNNER_TEMP/pending-after" "$GITHUB_OUTPUT"
       - name: Fetch third-party Git tree only for unimported UmaSim cards
+        id: gt
+        continue-on-error: true
         if: steps.targets.outputs.needs_source == 'true'
         uses: actions/github-script@v7
         with:
@@ -113,7 +115,7 @@ jobs:
               ...heads,sourceCommit:source.data.sha
             }));
       - name: Fetch independent UmaSim numeric skill registry only if source needed
-        if: steps.targets.outputs.needs_source == 'true'
+        if: steps.targets.outputs.needs_source == 'true' && steps.gt.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -123,7 +125,7 @@ jobs:
             "https://raw.githubusercontent.com/mee1080/umasim/$UMA_SHA/data/skill_data.txt" \
             -o "$RUNNER_TEMP/pending-latest-skills.txt"
       - name: Fetch only new pinned card JSONs, validate and reconcile pending issue metadata
-        if: steps.targets.outputs.needs_source == 'true'
+        if: steps.targets.outputs.needs_source == 'true' && steps.gt.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -161,11 +163,9 @@ jobs:
               .addRaw('New cards: '+summary.discoveredNewCardIds.join(', ')+
                 '; review flags: '+summary.reviewIssues+
                 '. Existing catalog untouched; no automatic event publication.')
+              .addRaw(summary.sourceStatus==='unavailable'?'\nEvent repository unavailable: prior observations retained; current event availability unknown.':'')
               .write();
-            if(JSON.stringify(previous)===JSON.stringify(next)){
-              core.info('No pending-card metadata changes; leave Issue unchanged');
-              return;
-            }
+            const unavailable=summary.sourceStatus==='unavailable';
             if(next.cards.length===0){
               if(prior.number)await github.rest.issues.update({
                 owner,repo,issue_number:prior.number,
@@ -180,6 +180,7 @@ jobs:
               'Event text, choice descriptions, source JSON, private drafts and copyrighted prose are not stored here.',
               'GameTora-derived GitHub JSON is the default source. GameWith is consulted only to resolve specific flagged facts.',
               'A successfully converted card stays pending until actually appended under the separate approval gate.',
+              ...(unavailable?['**Event repository currently unavailable. Existing rows are last-known observations; current source JSON availability is unknown. New rows awaiting-source-availability have not been checked.**']:[]),
               'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
               '',
               '| Card ID | State | Source events | Converted | Pending | Review flags |',
@@ -196,6 +197,8 @@ jobs:
             const body=lines.join('\n');
             if(body.length>62000)throw Error('Pending issue metadata exceeds GitHub issue limit');
             if(prior.number){
+              const current=await github.rest.issues.get({owner,repo,issue_number:prior.number});
+              if(current.data.body===body){core.info('No pending-card metadata changes; leave Issue unchanged');return;}
               await github.rest.issues.update({
                 owner,repo,issue_number:prior.number,body});
               core.notice('Updated new-card pending Issue #'+prior.number);
@@ -204,3 +207,9 @@ jobs:
                 owner,repo,title,body});
               core.notice('Created new-card pending Issue: '+created.data.html_url);
             }
+
+      - name: Surface event-source outage after retaining independent roster results
+        if: steps.gt.outcome == 'failure'
+        run: |
+          echo 'Event source unavailable; UmaSim roster and pending observations retained. See #522.' >&2
+          exit 1

@@ -6,7 +6,7 @@
  */
 const fs=require('node:fs');
 const path=require('node:path');
-const {planRosterFirst}=require('../src/derived_github_pending_refresh.cjs');
+const {planRosterFirst,preserveOnSourceOutage}=require('../src/derived_github_pending_refresh.cjs');
 const {emptyLedger,verifyLedger}=require('../src/derived_github_pending_ledger.cjs');
 function main(args){
  if(args.length!==5)throw Error('usage: <old-roster> <current-roster> <previous-ledger> <output-prefix> <github-output>');
@@ -22,7 +22,11 @@ function main(args){
  const prefix=path.resolve(outputPrefix);
  if(prefix.startsWith(path.resolve(__dirname,'../..')+path.sep))
   throw Error('persistent source preview files in checked-in tree forbidden');
- if(!needThirdPartySource){
+ if(needThirdPartySource){
+  const fallback=preserveOnSourceOutage({discovery,previousLedger:previous,existingCatalog});
+  fs.writeFileSync(prefix+'.ledger.json',JSON.stringify(fallback.ledger,null,2)+'\n');
+  fs.writeFileSync(prefix+'.summary.json',JSON.stringify(fallback.summary,null,2)+'\n');
+ }else{
   const empty=emptyLedger();
   const summary={previousRosterCount:discovery.previousRosterCount,
    currentRosterCount:discovery.currentRosterCount,
