@@ -104,6 +104,7 @@ const AXIS_NAMES={running_style:'脚質',distance_type:'距離',ground_type:'馬
 function styleName(ctx){return catalog.AXES.running_style[(ctx.running_style||0)-1]||'選択脚質';}
 function axisFields(ctx,attr){return Object.entries(catalog.AXES).map(([k,vs])=>'<label><span>'+AXIS_NAMES[k]+'</span><select class="field" '+attr+'="'+k+'" aria-label="'+(attr==='data-picker-fit-axis'?'サポカ候補の':'')+AXIS_NAMES[k]+'">'+catalogOptions([['','指定なし'],...vs.map((v,i)=>[i+1,v])],ctx[k])+'</select></label>').join('');}
 function deckTrainingFields(d,k){
+ if(!catalog?.AXES)return '';
  const ctx=window.UmaSettings.deckTrainingContext(d);
  return ['running_style','distance_type','ground_type'].map(axis=>'<label><span>'+AXIS_NAMES[axis]+'</span><select class="field" data-deck-training-axis="'+axis+'" data-deck="'+k+'" aria-label="'+scopeLabel[k]+'の育成'+AXIS_NAMES[axis]+'">'+catalogOptions([['','指定なし'],...catalog.AXES[axis].map((v,i)=>[i+1,v])],ctx[axis])+'</select></label>').join('');
 }
