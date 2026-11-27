@@ -18,11 +18,11 @@ GameTora JSONの明示事実は構造・ID・結果・固定辞書の機械検�
 
 ### D-073 共通公開判断（通常候補限定）
 
-日次キューは正常random・通常arrows（D-035/D-038の2〜3段）・名称保存済みの候補を変換し、名称を含まない `routine.input`、内容SHA一覧・証跡SHAを報告する。`routinePublicationPolicy` は明示審査済みの共通取得・公開判断を使う手動公開提案の入力であり、自動公開許可ではない。実際の方針は未設定。従来のrandom限定方針は拡張しない。通常連続を含めるには別scope `D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only` を明示する。適用範囲・有効期限・根拠URL・判断者を固定し、取得拒否履歴、再試行、未解決の連続到達、個別例外があれば停止する。既存の内容SHA承認・非破壊・CI・公開受入は必須。
+日次キューは正常random・通常arrows（D-035/D-038の2〜3段）・名称保存済みの候補を変換し、名称を含まない `routine.input`、内容SHA一覧・証跡SHAを報告する。`routinePublicationPolicy` は明示審査済みの共通取得・公開判断を使う手動公開提案の入力であり、自動公開許可ではない。実際の方針は未設定。[D-074専用配信の有効化手順と共通方針案](event-data-branch-update.md)を参照。従来のrandom限定方針は拡張しない。通常連続を含めるには別scope `D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only` を明示する。適用範囲・有効期限・根拠URL・判断者を固定し、取得拒否履歴、再試行、未解決の連続到達、個別例外があれば停止する。既存の内容SHA承認・非破壊・CI・公開受入は必須。
 
 ### 日次提案の設定
 
-[日次提案設定](../../poc/config/d073-daily-proposal.v1.json) は `mode:disabled`、`routinePublicationPolicy:null` が既定。審査済み共通方針を明示した `plan` は読取専用、`pr` は承認済み増分の通常PRまで。毎回最大2枚、取得停止・拒否・台帳差分・main移動・既存提案PR・範囲外は停止／除外。日次・手動提案は同一concurrency。PR作成権限・CI起動の設定は変更していない。自動merge・無審査公開は対象外。
+旧日次提案（退役）の[設定](../../poc/config/d073-daily-proposal.v1.json) は `mode:disabled`、`routinePublicationPolicy:null` が既定。審査済み共通方針を明示した `plan` は読取専用、`pr` は承認済み増分の通常PRまで。毎回最大2枚、取得停止・拒否・台帳差分・main移動・既存提案PR・範囲外は停止／除外。日次・手動提案は同一concurrency。PR作成権限・CI起動の設定は変更していない。自動merge・無審査公開は対象外。
 
 ## 公開前チェック
 

@@ -4,16 +4,20 @@
 const {selectRoutine}=require('./d073_daily_proposal.cjs');
 const {readCurrent,appendReviewed,verifyPublicRaw,REF,CATALOG}=require('./d074_event_data_branch.cjs');
 const {digest}=require('./event_release_gate.cjs');
+const {validatePolicy}=require('./d073_routine_publication_policy.cjs');
 const HASH=/^[a-f0-9]{64}$/,SHA=/^[a-f0-9]{40}$/;
 const fail=m=>{throw Error('D074 daily data: '+m);};
-async function runDailyData({config,policy,queue,auto,store,github,owner,repo,baseSha,expectedHead,
+async function runDailyData({config,publicationPolicy,queue,auto,store,github,owner,repo,baseSha,expectedHead,
  reader=readCurrent,appender=appendReviewed,rawVerifier=verifyPublicRaw}={}){
  if(!config||Object.keys(config).sort().join(',')!=='mode,routinePublicationPolicy,schemaVersion'||config.schemaVersion!==1||
    !['disabled','plan','publish'].includes(config.mode)||(config.mode==='disabled'?config.routinePublicationPolicy!==null:!config.routinePublicationPolicy))fail('explicit configuration required');
  const report=(status,extra={})=>({dataKind:'d074-daily-data',schemaVersion:1,status,mode:config.mode,selectedIds:[],
   branchWritten:false,mainWritten:false,pagesDeployed:false,publicRawVerified:false,...extra});
+ if(!publicationPolicy||Object.keys(publicationPolicy).sort().join(',')!=='automaticPublicationAllowed,schemaVersion'||
+   publicationPolicy.schemaVersion!==1||typeof publicationPolicy.automaticPublicationAllowed!=='boolean')fail('explicit separate publication policy required');
  if(config.mode==='disabled')return report('disabled');
- if(config.mode==='publish'&&policy?.automaticPublicationAllowed!==true)return report('publication-disabled-by-policy');
+ if(config.mode==='publish'&&publicationPolicy.automaticPublicationAllowed!==true)return report('publication-disabled-by-policy');
+ validatePolicy(config.routinePublicationPolicy);
  if(!SHA.test(expectedHead||'')||!SHA.test(baseSha||'')||!github?.rest?.git||!github?.rest?.pulls)fail('fixed coordinates required');
  const coord={owner,repo},ref=async ref=>(await github.rest.git.getRef({...coord,ref})).data.object.sha;
  const stable=async()=>{if(await ref('heads/main')!==baseSha||await ref(REF)!==expectedHead)fail('code or data head drift');};

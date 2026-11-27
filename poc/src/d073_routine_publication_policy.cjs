@@ -7,8 +7,7 @@ const fail=m=>{throw Error('D073 routine policy: '+m);};
 const exact=(x,keys)=>x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).sort().join(',')===keys.split(',').sort().join(',');
 const day=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(Date.parse(s+'T00:00:00Z'))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
 const bounded=(s,n)=>typeof s==='string'&&!!s.trim()&&s.length<=n&&!/[\r\n\u0000-\u001f]/.test(s);
-function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}={}){
- verify(ledger);
+function validatePolicy(policy,today=new Date().toISOString().slice(0,10)) {
  if(!exact(policy,'schemaVersion,scope,reviewer,reviewedAt,validThrough,accessConditionsReviewed,publicationApproved,evidenceUrls,publicationBasis')||
     policy.schemaVersion!==1||!['D073-normal-random-skill-path-identifying-titles-only','D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'].includes(policy.scope)||
     !bounded(policy.reviewer,120)||!day(today)||!day(policy.reviewedAt)||!day(policy.validThrough)||
@@ -18,6 +17,11 @@ function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}
     policy.evidenceUrls.some(x=>!secureUrl(x))||
     !exact(policy.publicationBasis,'kind,reason')||!['permission','open-license','original-factual-description'].includes(policy.publicationBasis.kind)||
     !bounded(policy.publicationBasis.reason,1600))fail('explicit valid common policy required');
+ return policy;
+}
+function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}={}){
+ verify(ledger);
+ validatePolicy(policy,today);
  if(ledger.rows.some(r=>r.failureCode==='source-refused'))fail('prior source refusal; re-evaluation required');
  if(!Array.isArray(items)||items.length<1||items.length>2||new Set(items.map(x=>x?.packet?.cardId)).size!==items.length)fail('batch scope');
  const policySha=digest(policy);
@@ -42,4 +46,4 @@ function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}
    publicationBasis:{kind:policy.publicationBasis.kind,reason:policy.publicationBasis.reason+' [D073 common policy SHA-256: '+policySha+']'}};
  });
 }
-module.exports={derive};
+module.exports={derive,validatePolicy};

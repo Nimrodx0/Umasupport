@@ -14,4 +14,26 @@
 
 ## 移行の境界
 
-現在の公開済み初版は固定snapshot `12618f01a2e317311f28e768d5fca7a0b757386f`、564カード・2521イベント。日次監視は専用DBを固定headとSHAで検証して使用し、手動増分と同一排他群。旧PR生成workflowは退役、旧日次設定はdisabled必須。新日次設定 `poc/config/d074-daily-data.v1.json` はdisabled/null（planは明示審査済み共通方針が必要、publishは加えて `automaticPublicationAllowed:true` が必要）。キューのreceiptSha256・eventDigestsSha256を増分前に再照合し、Raw検証まで実施。保留Issueは次の日次runで再照合。公開ブラウザ受入はmoving manifestと公開headの固定manifest、固定snapshotのカタログ・台帳のSHAと承認、実ロードID・件数、キャッシュ復旧を照合する。mainの固定旧版は復旧専用で、manifestの途中変更は失敗とする。実新カード試験、共通公開方針、追加版の実ブラウザでの実測は残る。D-068/D-072/D-073の公開条件は変えない。GitHubの標準トークンを利用し、追加の秘密鍵・PATは不要。
+現在の公開済み初版は固定snapshot `12618f01a2e317311f28e768d5fca7a0b757386f`、564カード・2521イベント。日次監視は専用DBを固定headとSHAで検証して使用し、手動増分と同一排他群。旧PR生成workflowは退役、旧日次設定はdisabled必須。新日次設定 `poc/config/d074-daily-data.v1.json` はdisabled/null（planは明示審査済み共通方針が必要、publishは加えて [独立の公開許可設定](../../poc/config/d074-publication-policy.v1.json) の `automaticPublicationAllowed:true` が必要）。キューのreceiptSha256・eventDigestsSha256を増分前に再照合し、Raw検証まで実施。保留Issueは次の日次runで再照合。公開ブラウザ受入はmoving manifestと公開headの固定manifest、固定snapshotのカタログ・台帳のSHAと承認、実ロードID・件数、キャッシュ復旧を照合する。mainの固定旧版は復旧専用で、manifestの途中変更は失敗とする。実新カード試験、共通公開方針の確定、追加版の実ブラウザでの実測は残る。D-068/D-072/D-073の公開条件は変えない。GitHubの標準トークンを利用し、追加の秘密鍵・PATは不要。
+
+## 共通公開方針の有効化手順（2026-11-28）
+
+取得ポリシー `direct-event-intake-policy.v1.json` の `automaticPublicationAllowed:false` は、取得器・計画器・試行台帳が公開承認を生成しない不変条件。ここをtrueにしてはならない。D-074の公開許可は別ファイル `d074-publication-policy.v1.json` に移し、既定false。日次の `mode:publish` と有効な共通方針、独立の許可trueが全て必要。共通方針は候補0枚の日も日付・範囲・判断者・根拠・明示確認を検証し、期限切れ／不正な設定は成功扱いせず停止する。planは独立の公開許可falseでも承認済み方針で読取専用検証が可能。
+
+1. 次節の提案を確定した後、D-073の `routinePublicationPolicy` に実際の判断者・審査日・期限・根拠を設定し、`mode:plan`、公開許可falseで日次監視を実行。
+2. 正常・保留・拒否・期限切れ・データ版移動を検証。候補0件は新カード公開成功ではない。実データは次回の新カード検知まで待ち、既存カードを再取得しない。
+3. 共通方針の承認と公開準備の確認後、`mode:publish` と専用公開許可trueを同時に設定。取得側falseは維持。増分Rawと公開ブラウザ受入の結果を確認する。
+4. 取消・条件変更・拒否・異常が判明した場合は専用許可false、必要なら日次modeをdisabledへ戻す。既存承認済みDBは変更せず、問題のカードは個別審査。
+
+### 共通公開方針の提案（未確定・設定への投入不可）
+
+D-068/D-072/D-073/D-074の既存判断に沿い、新規未試行カードの通常random・機械検証可能な2〜3段の通常arrows（scope: `D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only`）を対象に、独自構造のカード・イベント識別子、結果位置、スキル数値ID・ヒントLv、明示終了・解放フラグと既定UIに必要な短い識別名だけを採用する。元JSON・説明・選択肢原文・画像・非スキル原文、既存カードの巡回、全件再構築は除外。短い名称の創作性・異常な表現や条件に疑義がある場合、機械的な長さ検査だけで権利判断を済ませない。未知構造・矛盾・再試行・拒否履歴・公開根拠の疑義は個別審査。根拠の種別は許諾・オープンライセンスではなく `original-factual-description` の限定的な独自事実利用。初回は確定日から30日を有効期限として提案（期間は運用判断、第三者の許諾期間ではない）。
+
+根拠確認（2026-11-28、Web取得資料。GameTora資料には数か月前のキャッシュを含み、現在の条件の完全確認ではない）：
+
+- [GameTora robots.txt](https://gametora.com/robots.txt)：閲覧版ではサポカ公開ページ等の一律禁止は見当たらない。実取得時に現行robotsを再検証し、明示禁止・HTTP401/403/429/451で停止する。robotsは再利用許諾ではない。
+- [GameTora Privacy Policy](https://gametora.com/privacy-policy) と [Contributor License Agreement](https://gametora.com/docs/cla)：前者はプライバシー、後者は寄稿者からGameToraへのライセンスであり、当プロジェクトへの包括的なデータ再配布許諾ではない。公開範囲の限定取得以外は承認対象としない。
+- [文化庁・他人の著作物を利用したい場合など](https://www.bunka.go.jp/seisaku/chosakuken/seidokaisetsu/chosakukensha_fumei/)：単なる事実・データ等と創作的表現を区別する一般原則。個別名称・編集著作物・データベースの構成や利用条件の評価を代替しない。
+- [Cygames・ウマ娘二次創作ガイドライン](https://umamusume.jp/derivativework_guidelines/)：第三者の権利侵害や同人活動の範囲を超える営利利用等を避ける。独自事実DBの個別許諾を意味しない。非公式・非営利での範囲を維持。
+
+D-072の事前問い合わせ不要の判断を維持するが、第三者の包括許諾や合法性の保証は主張しない。実際の新規カードの事実・表現・権利疑義は未観測。提案への承認記録を捏造しないため、現段階では日次共通方針null、mode disabled、専用公開許可false。
