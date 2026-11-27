@@ -14,7 +14,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: d074-event-data-branch
+  group: ${{ github.event_name == 'pull_request' && format('d074-bootstrap-pr-{0}', github.run_id) || 'd074-event-data-branch' }}
   cancel-in-progress: false
 jobs:
   unit:
