@@ -16,6 +16,11 @@ on:
         required: true
         default: '0'
         type: string
+      target_card_ids:
+        description: 'Optional exact pending card IDs, comma-separated (maximum two); batch_offset must be 0'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -76,7 +81,13 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         env:
           BATCH_OFFSET: ${{ inputs.batch_offset || '0' }}
+          TARGET_CARD_IDS: ${{ inputs.target_card_ids || '' }}
         run: |
           set -euo pipefail
           [[ "$BATCH_OFFSET" =~ ^[0-9]{1,3}$ ]]
-          node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" "$BATCH_OFFSET" | tee "$RUNNER_TEMP/direct-summary.log"
+          SELECTION="$BATCH_OFFSET"
+          if [[ -n "$TARGET_CARD_IDS" ]]; then
+            [[ "$BATCH_OFFSET" == 0 && "$TARGET_CARD_IDS" =~ ^[1-9][0-9]{4}(,[1-9][0-9]{4})?$ ]] || { echo "Exact pending IDs require offset 0 and at most two IDs"; exit 1; }
+            SELECTION="ids:$TARGET_CARD_IDS"
+          fi
+          node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" "$SELECTION" | tee "$RUNNER_TEMP/direct-summary.log"

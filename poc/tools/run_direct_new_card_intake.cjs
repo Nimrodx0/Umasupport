@@ -27,9 +27,21 @@ function privatePath(file,env=process.env){
  if(fs.existsSync(destination))throw Error('Refusing to overwrite private draft');
  return destination;
 }
+// Stable card IDs avoid accidentally visiting a different pending card when
+// a previous card is published or the roster changes between review runs.
+function parseSelection(value){
+ if(typeof value!=='string')throw Error('Invalid intake selection');
+ if(/^[0-9]{1,3}$/.test(value))return {offset:Number(value),targetIds:null};
+ if(/^ids:[1-9][0-9]{4}(,[1-9][0-9]{4})?$/.test(value)){
+  const targetIds=value.slice(4).split(',');
+  if(new Set(targetIds).size!==targetIds.length)throw Error('Duplicate target card ID');
+  return {offset:0,targetIds};
+ }
+ throw Error('Use a batch offset or ids:<card-id>[,<card-id>] (maximum two)');
+}
 async function main(args){
  validatePolicy();
- if(!(args.length===5||args.length===6&&args[5]==='--review-known'||args.length===7&&args[5]==='--private-draft'))throw Error('usage: old-roster current-roster skill-data pinned-metadata batch-offset [--review-known | --private-draft /outside/repo/review.json]');
+ if(!(args.length===5||args.length===6&&args[5]==='--review-known'||args.length===7&&args[5]==='--private-draft'))throw Error('usage: old-roster current-roster skill-data pinned-metadata batch-offset|ids:<card-id>[,<card-id>] [--review-known | --private-draft /outside/repo/review.json]');
  const draftFile=args.length===7?privatePath(args[6]):null,drafts=[];
  const [oldPath,newPath,skillFile,metaPath,offsetText]=args;
  const meta=JSON.parse(fs.readFileSync(metaPath,'utf8'));
@@ -37,10 +49,10 @@ async function main(args){
  const old=fs.readFileSync(oldPath,'utf8'),current=fs.readFileSync(newPath,'utf8');
  if(gitBlobSha(old)!==POLICY.beforeBlob||gitBlobSha(current)!==meta.cardBlob)throw Error('UmaSim roster hash mismatch');
  const p=plan({previousSupportText:old,currentSupportText:current,existingCatalog:require('../data/reviewed_events.v1.json')});
- const offset=Number(offsetText);
+ const {offset,targetIds}=parseSelection(offsetText);
  const review=args[5]==='--review-known',reviews=[];
  const registry=review||draftFile?getSkillRegistry(skillFile,meta.skillBlob):null;
- const result=await inspect({plan:p,skillFile,skillBlobSha:meta.skillBlob,offset,
+ const result=await inspect({plan:p,skillFile,skillBlobSha:meta.skillBlob,offset,targetIds,
   onProjection:review||draftFile?(record,titles)=>{
    const spec=reviewManifest.cards.find(x=>x.cardId===record.cardId);
    if(review&&!spec)throw Error('No reviewed evidence for selected card '+record.cardId);
@@ -67,4 +79,4 @@ async function main(args){
  process.stdout.write('GT_DIRECT_NEW_CARD_INTAKE='+JSON.stringify(report)+'\n');
 }
 if(require.main===module)main(process.argv.slice(2)).catch(e=>{process.stderr.write(String(e.message).slice(0,240)+'\n');process.exitCode=1;});
-module.exports={main,privatePath,validatePolicy};
+module.exports={main,privatePath,validatePolicy,parseSelection};
