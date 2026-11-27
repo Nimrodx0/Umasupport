@@ -31,7 +31,7 @@ function verifySnapshot(m,catalogText,approvalsText){
  if(digest(m)!==digest(expected))fail('snapshot digest or counts');
  return m;
 }
-async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText}={}){
+async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText,allowCreate=false}={}){
  if(!github?.rest?.git||!owner||!repo||!SHA.test(baseSha||''))fail('scope');
  const g=github.rest.git,coord={owner,repo};
  const getRef=async ref=>(await g.getRef({...coord,ref})).data.object.sha;
@@ -53,6 +53,7 @@ async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText}={
  // Never overwrite an existing branch; it may already contain newer data.
  let prior;try{prior=await getRef(REF);}catch(e){if(e.status!==404)throw e;}
  if(prior)return checkExisting(prior);
+ if(allowCreate!==true)fail('missing branch; explicit initial creation required');
  await main();
  const base=await getCommit(baseSha),tree=await getTree(base);
  const ct=entry(tree,CATALOG),at=entry(tree,APPROVALS);
@@ -66,11 +67,12 @@ async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText}={
  const text=JSON.stringify(m,null,2)+'\n',sha=(await g.createBlob({...coord,content:text,encoding:'utf-8'})).data.sha;
  if(sha!==gitBlobSha(text))fail('manifest blob mismatch');
  const head=await makeCommit(await makeTree([...entries,{path:MANIFEST,mode:'100644',type:'blob',sha}]),snapshotCommit,'D074 initial data manifest');
+ const verified=await checkExisting(head);
  await main();
  // Creation only, no updateRef, no main write or force. A race fails closed.
  const created=(await g.createRef({...coord,ref:'refs/'+REF,sha:head})).data;
  if(created.object?.sha!==head)fail('ref creation not confirmed');
- const verified=await checkExisting(head);
+ if(await getRef(REF)!==head)fail('published ref drift');
  return {...verified,status:'initialized',branchWritten:true};
 }
 module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap};
