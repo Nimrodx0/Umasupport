@@ -145,3 +145,12 @@ test('newly available GT JSON for all three current cards still requires manual 
  assert.match(issue,/公開許可を保証しません/);
  assert.doesNotMatch(issue,/元イベント本文/);
 });
+
+test('UmaSim-only drift is observable without any GT tree and still validates pinned source',()=>{
+ const {inspectUmaSim}=require('../src/upstream_refresh_watch.cjs');
+ const head=source([], {...BASE_UMA,'data/support_card.txt':H('c')});
+ const r=inspectUmaSim({umaSimPinnedTree:base.uma,umaSimLatestTree:head.uma,umaSimLatestCommit:H('d')});
+ assert.deepEqual(r.affectedUmaSimFiles,['data/support_card.txt']);
+ assert.equal(r.eventData,undefined);assert.equal(r.sourceContentsIncluded,false);
+ assert.throws(()=>inspectUmaSim({umaSimPinnedTree:head.uma,umaSimLatestTree:head.uma,umaSimLatestCommit:H('d')}),/出典Git blob/);
+});

@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-067",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：新規イベント取得をGameTora本体へ移行",
+      "status": "current",
+      "relation": [],
+      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-067",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-067",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-066",
       "date": "2026-11-27",
       "heading": "2026-11-27：デッキごとの育成条件と編成候補の既定値",
@@ -617,13 +629,15 @@
       "id": "D-023",
       "date": "2026-10-29",
       "heading": "2026-10-29：派生GitHub DB主経路へ復帰し製品完成を最優先",
-      "status": "current",
-      "relation": [],
-      "note": "外部構造化GT派生JSONを主経路、元HTMLの汎用取得は保留",
+      "status": "qualified",
+      "relation": [
+        "D-067"
+      ],
+      "note": "既存固定GT派生JSONの履歴と製品優先方針は保持。新カードの主経路はD-067で本体直接取得へ変更。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-023",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-023",
-      "reviewedAt": "2026-11-10"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-067",
+      "reviewedAt": "2026-11-27"
     },
     {
       "id": "D-024",
@@ -827,13 +841,15 @@
       "id": "D-040",
       "date": "2026-10-29",
       "heading": "2026-10-29：新サポカの差分自動登録を目標に確定（取得元は後続の派生GitHub決定を優先）",
-      "status": "current",
-      "relation": [],
-      "note": "新規IDだけ増分追加。データ源の優先順位は後続の派生GitHub主経路に従う",
+      "status": "qualified",
+      "relation": [
+        "D-067"
+      ],
+      "note": "新規IDだけ増分追加する方針は保持。取得元はD-067の本体直接取得へ変更。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-040",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-040",
-      "reviewedAt": "2026-11-10"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-067",
+      "reviewedAt": "2026-11-27"
     }
   ],
   "statusSemantics": {

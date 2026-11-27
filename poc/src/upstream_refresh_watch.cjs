@@ -59,19 +59,9 @@ function gitDiff(before,after){
  for(const xs of [added,removed,modified])xs.sort();
  return {added,removed,modified};
 }
-function inspect({gameToraPinnedTree,gameToraLatestTree,
-  umaSimPinnedTree,umaSimLatestTree,
-  gameToraLatestCommit,umaSimLatestCommit},{strict=true}={}){
- if(!HEX.test(String(gameToraLatestCommit||''))||
-    !HEX.test(String(umaSimLatestCommit||'')))
-  fail('HEADのコミットSHAが不正');
- const gtBase=pathTree(gameToraPinnedTree,'GT固定'),
-  gtHead=pathTree(gameToraLatestTree,'GT最新'),
-  umaBase=pathTree(umaSimPinnedTree,'UmaSim固定'),
-  umaHead=pathTree(umaSimLatestTree,'UmaSim最新');
- const baseEvents=gtEvents(gtBase,'GT固定'),headEvents=gtEvents(gtHead,'GT最新');
- if(strict&&baseEvents.size!==PINS.gameTora.expectedBaselineCards)
-  fail('GT固定版の母数が想定と異なる: '+baseEvents.size);
+function inspectUmaSim({umaSimPinnedTree,umaSimLatestTree,umaSimLatestCommit}){
+ if(!HEX.test(String(umaSimLatestCommit||'')))fail('UmaSim HEADのコミットSHAが不正');
+ const umaBase=pathTree(umaSimPinnedTree,'UmaSim固定'),umaHead=pathTree(umaSimLatestTree,'UmaSim最新');
  for(const [path,expect] of [
   ['data/support_card.txt',PINS.umaSim.cardBlob],
   ['data/skill_data.txt',PINS.umaSim.skillBlob]
@@ -79,18 +69,6 @@ function inspect({gameToraPinnedTree,gameToraLatestTree,
   if(umaBase.get(path)?.sha!==expect||umaBase.get(path)?.type!=='blob')
    fail('UmaSim固定ソースの出典Git blob SHAが一致しない: '+path);
  }
- const {added,removed,modified}=gitDiff(baseEvents,headEvents);
- // These three numeric card IDs are independently present in the current
- // UmaSim roster but absent from the historical GT baseline. Track BOTH
- // their arrival and their continued absence, without ever claiming that a
- // new GT JSON has already passed event-result or publication adjudication.
- const expectedIds=roster.expectedNewIds;
- if(!Array.isArray(expectedIds)||expectedIds.length!==3||
-    new Set(expectedIds).size!==3||
-    expectedIds.some(id=>!/^[0-9]{5}$/.test(id)||baseEvents.has(id)))
-  fail('既知の現行サポカ追加IDと固定GT基準の不一致');
- const coveredKnown=expectedIds.filter(id=>headEvents.has(id));
- const missingKnown=expectedIds.filter(id=>!headEvents.has(id));
  const umaChanges={};
  for(const path of UMA_FILES){
   const current=umaHead.get(path);
@@ -103,6 +81,33 @@ function inspect({gameToraPinnedTree,gameToraLatestTree,
   };
  }
  const changedSourceFiles=UMA_FILES.filter(k=>umaChanges[k].changed);
+ return {sourcePin:PINS.umaSim.revision,observedHeadCommit:umaSimLatestCommit,
+  umaSimData:umaChanges,affectedUmaSimFiles:changedSourceFiles,sourceContentsIncluded:false};
+}
+function inspect({gameToraPinnedTree,gameToraLatestTree,
+  umaSimPinnedTree,umaSimLatestTree,
+  gameToraLatestCommit,umaSimLatestCommit},{strict=true}={}){
+ if(!HEX.test(String(gameToraLatestCommit||''))||
+    !HEX.test(String(umaSimLatestCommit||'')))
+  fail('HEADのコミットSHAが不正');
+ const gtBase=pathTree(gameToraPinnedTree,'GT固定'),
+  gtHead=pathTree(gameToraLatestTree,'GT最新');
+ const {umaSimData:umaChanges,affectedUmaSimFiles:changedSourceFiles}=inspectUmaSim({umaSimPinnedTree,umaSimLatestTree,umaSimLatestCommit});
+ const baseEvents=gtEvents(gtBase,'GT固定'),headEvents=gtEvents(gtHead,'GT最新');
+ if(strict&&baseEvents.size!==PINS.gameTora.expectedBaselineCards)
+  fail('GT固定版の母数が想定と異なる: '+baseEvents.size);
+ const {added,removed,modified}=gitDiff(baseEvents,headEvents);
+ // These three numeric card IDs are independently present in the current
+ // UmaSim roster but absent from the historical GT baseline. Track BOTH
+ // their arrival and their continued absence, without ever claiming that a
+ // new GT JSON has already passed event-result or publication adjudication.
+ const expectedIds=roster.expectedNewIds;
+ if(!Array.isArray(expectedIds)||expectedIds.length!==3||
+    new Set(expectedIds).size!==3||
+    expectedIds.some(id=>!/^[0-9]{5}$/.test(id)||baseEvents.has(id)))
+  fail('既知の現行サポカ追加IDと固定GT基準の不一致');
+ const coveredKnown=expectedIds.filter(id=>headEvents.has(id));
+ const missingKnown=expectedIds.filter(id=>!headEvents.has(id));
  const needsReview=!!(added.length||removed.length||modified.length||changedSourceFiles.length);
  // Include the latest blob SHA for changes to an EXISTING event card.
  // Otherwise a second rewrite of the same card would be hidden behind an
@@ -181,4 +186,4 @@ function issueBody(result){
  '<!-- umasupport-source-refresh-issue fingerprint:'+result.reviewFingerprint+' -->'
  ].join('\n');
 }
-module.exports={inspect,issueBody,PINS};
+module.exports={inspect,inspectUmaSim,issueBody,PINS};

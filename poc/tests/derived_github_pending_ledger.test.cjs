@@ -151,3 +151,31 @@ test('skill registry changes also invalidate event conversion cache',()=>{
  assert.equal(changed.ledger.cards[0].skillRegistryBlobSha,sha('e'));
  assert.notDeepEqual(changed.ledger.cards[0],first.ledger.cards[0]);
 });
+
+test('source outage retains prior facts and independently registers new UmaSim cards',()=>{
+ const {preserveOnSourceOutage}=require('../src/derived_github_pending_refresh.cjs');
+ const first=simulate(),before=JSON.stringify(first.ledger);
+ const discovery=discoverNewCards({previousRosterIds:['30001'],currentRosterIds:['30001','30322','30323','30324']});
+ const r=preserveOnSourceOutage({discovery,previousLedger:first.ledger,existingCatalog:first.original});
+ assert.deepEqual(r.ledger.cards.slice(0,2),first.ledger.cards);
+ assert.equal(r.ledger.cards[2].status,'awaiting-source-availability');
+ assert.equal(r.ledger.cards[2].sourceEvents,null);
+ assert.equal(r.summary.sourceStatus,'unavailable');assert.equal(r.summary.pendingCards,3);
+ assert.equal(r.summary.missingSourceIds,undefined);
+ assert.equal(JSON.stringify(first.ledger),before);
+ const again=preserveOnSourceOutage({discovery,previousLedger:r.ledger,existingCatalog:first.original});
+ assert.deepEqual(again.ledger,r.ledger);
+ const admitted=preserveOnSourceOutage({discovery,previousLedger:r.ledger,existingCatalog:{schemaVersion:1,cards:[{cardId:'30322'}]}});
+ assert.deepEqual(admitted.ledger.cards.map(x=>x.cardId),['30323','30324']);
+});
+
+test('D067 direct roster queue distinguishes new review targets from historical missing JSON',()=>{
+ const {preserveOnSourceOutage}=require('../src/derived_github_pending_refresh.cjs');
+ const first=simulate();
+ const discovery=discoverNewCards({previousRosterIds:['30001'],currentRosterIds:['30001','30322','30323','30324']});
+ const r=preserveOnSourceOutage({discovery,previousLedger:first.ledger,existingCatalog:first.original,directReview:true});
+ assert.deepEqual(r.ledger.cards.slice(0,2),first.ledger.cards);
+ assert.equal(r.ledger.cards[2].status,'awaiting-direct-source-review');
+ assert.equal(r.summary.sourceStatus,'direct-review-pending');
+ assert.equal(r.summary.publicationApproved,false);
+});

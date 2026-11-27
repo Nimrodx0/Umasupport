@@ -1,0 +1,82 @@
+name: D067 direct GameTora new-card intake preflight
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/direct-new-card-intake.yml'
+      - 'poc/tools/run_direct_new_card_intake.cjs'
+      - 'poc/tools/probe_official_gametora_target_cards.cjs'
+      - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/config/direct-event-intake-policy.v1.json'
+      - 'poc/tests/direct_event_intake_policy.test.cjs'
+  workflow_dispatch:
+    inputs:
+      batch_offset:
+        description: 'Start offset in sorted unimported new-card queue (two cards maximum)'
+        required: true
+        default: '0'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Share the live-site lock only for explicit network runs. Offline PRs
+  # must not cancel one another's pending jobs.
+  group: ${{ github.event_name == 'workflow_dispatch' && 'gametora-direct-new-card-limited-read' || format('{0}-{1}', github.workflow, github.ref) }}
+  cancel-in-progress: false
+
+jobs:
+  direct-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate bounded selector and direct source projection
+        run: |
+          node --test poc/tests/official_gametora_new_card_locator.test.cjs poc/tests/official_gametora_route_dom_extractor.test.cjs poc/tests/direct_event_intake_policy.test.cjs
+          node --check poc/tools/run_direct_new_card_intake.cjs
+          node --check poc/tools/probe_official_gametora_target_cards.cjs
+      - name: Resolve immutable latest UmaSim roster and skill blobs
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const c=(await github.rest.repos.getCommit({owner:'mee1080',repo:'umasim',ref:'main'})).data;
+            const tree=(await github.rest.git.getTree({owner:'mee1080',repo:'umasim',tree_sha:c.commit.tree.sha,recursive:'1'})).data;
+            if(tree.truncated!==false)throw Error('Incomplete UmaSim tree');
+            const blob=path=>{
+              const matches=tree.tree.filter(x=>x.path===path&&x.type==='blob');
+              if(matches.length!==1||!/^[a-f0-9]{40}$/.test(matches[0].sha))throw Error('Missing pinned file '+path);
+              return matches[0].sha;
+            };
+            if(!/^[a-f0-9]{40}$/.test(c.sha))throw Error('Invalid UmaSim commit');
+            fs.writeFileSync(process.env.RUNNER_TEMP+'/direct-uma-meta.json',JSON.stringify({commit:c.sha,cardBlob:blob('data/support_card.txt'),skillBlob:blob('data/skill_data.txt')}));
+      - name: Obtain only pinned UmaSim data in disposable runner
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          SHA=$(node -p "require(process.env.RUNNER_TEMP+'/direct-uma-meta.json').commit")
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 'https://raw.githubusercontent.com/mee1080/umasim/91952973eb334ae530b8cd76541bce8a01a141cd/data/support_card.txt' -o "$RUNNER_TEMP/direct-before.txt"
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/support_card.txt" -o "$RUNNER_TEMP/direct-current.txt"
+          curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/skill_data.txt" -o "$RUNNER_TEMP/direct-skills.txt"
+      - name: Prepare Chrome
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Observe selected new cards, never publish or write raw data
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BATCH_OFFSET: ${{ inputs.batch_offset || '0' }}
+        run: |
+          set -euo pipefail
+          [[ "$BATCH_OFFSET" =~ ^[0-9]{1,3}$ ]]
+          node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" "$BATCH_OFFSET" | tee "$RUNNER_TEMP/direct-summary.log"

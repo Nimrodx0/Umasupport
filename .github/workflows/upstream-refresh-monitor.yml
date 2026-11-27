@@ -5,6 +5,11 @@ on:
     # 03:27 UTC = 12:27 JST. GitHub scheduled runs can start late.
     - cron: '27 3 * * *'
   workflow_dispatch:
+    inputs:
+      legacy_event_audit:
+        description: 'Explicit historical derived GitHub audit (not new-card intake)'
+        type: boolean
+        default: false
   push:
     paths:
       - '.github/workflows/upstream-refresh-monitor.yml'
@@ -52,24 +57,33 @@ jobs:
               {owner:p.gameTora.owner,repo:p.gameTora.repo,revision:p.gameTora.revision},
               {owner:p.umaSim.owner,repo:p.umaSim.repo,revision:p.umaSim.revision}
             ];
-            const heads=await Promise.all(owners.map(async src=>{
-              const head=await github.rest.repos.getCommit({
-                owner:src.owner,repo:src.repo,ref:'main'
-              });
-              return head.data.sha;
-            }));
-            const tree=async(src,ref)=>{
-              const response=await github.rest.git.getTree({
-                owner:src.owner,repo:src.repo,tree_sha:ref,recursive:'1'
-              });
-              return response.data;
-            };
-            const [gtPin,gtHead,umaPin,umaHead]=await Promise.all([
-              tree(owners[0],owners[0].revision),
-              tree(owners[0],heads[0]),
-              tree(owners[1],owners[1].revision),
-              tree(owners[1],heads[1])
+            const fetchHead=async src=>(await github.rest.repos.getCommit({owner:src.owner,repo:src.repo,ref:'main'})).data.sha;
+            const tree=async(src,ref)=>(await github.rest.git.getTree({
+              owner:src.owner,repo:src.repo,tree_sha:ref,recursive:'1'
+            })).data;
+            const umaHeadCommit=await fetchHead(owners[1]);
+            const [umaPin,umaHead]=await Promise.all([
+              tree(owners[1],owners[1].revision),tree(owners[1],umaHeadCommit)
             ]);
+            const uma=monitor.inspectUmaSim({umaSimPinnedTree:umaPin,umaSimLatestTree:umaHead,umaSimLatestCommit:umaHeadCommit});
+            core.info('UPSTREAM_UMASIM_ONLY='+JSON.stringify(uma));
+            if(context.eventName!=='workflow_dispatch'||String(context.payload.inputs?.legacy_event_audit)!=='true'){
+              await core.summary.addHeading('Independent UmaSim source observation (D067)')
+                .addRaw('UmaSim pinned: '+uma.sourcePin+'; head: '+uma.observedHeadCommit+'; changed files: '+(uma.affectedUmaSimFiles.join(', ')||'none'))
+                .addRaw('\nLegacy event repository not queried; new-card source is direct GameTora. No event approval or snapshot promotion.').write();
+              return;
+            }
+            let gtPin,gtHead,gtHeadCommit;
+            try{
+              gtHeadCommit=await fetchHead(owners[0]);
+              [gtPin,gtHead]=await Promise.all([tree(owners[0],owners[0].revision),tree(owners[0],gtHeadCommit)]);
+            }catch(e){
+              await core.summary.addHeading('Event source unavailable — partial UmaSim observation')
+                .addRaw('GT event availability and drift: unknown; no candidate snapshot or event approval. HTTP status: '+(Number.isInteger(e.status)?e.status:'unknown')+'; see #522.\n\n')
+                .addRaw('UmaSim pinned: '+uma.sourcePin+'; head: '+uma.observedHeadCommit+'; changed files: '+(uma.affectedUmaSimFiles.join(', ')||'none')).write();
+              throw e;
+            }
+            const heads=[gtHeadCommit,umaHeadCommit];
             const result=monitor.inspect({
               gameToraPinnedTree:gtPin,gameToraLatestTree:gtHead,
               umaSimPinnedTree:umaPin,umaSimLatestTree:umaHead,

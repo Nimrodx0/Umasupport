@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-11-27",
+  "publicationApproved": false,
+  "cards": [
+    {
+      "cardId": "20102",
+      "sourceUrl": "https://gametora.com/ja/umamusume/supports/20102-stay-gold",
+      "adjudicatorUrl": "https://gamewith.jp/uma-musume/article/show/587274",
+      "events": [
+        {
+          "category": "連続イベント",
+          "titleSha256": "023d4a34ebf05cefbd9e84b292401c0246ce3c226e21bda109b342830a516311",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "1358566ba6894c53638e15ddf7d1e17cb11575987aac2b6f480a0bcb765bb7fa"
+            ],
+            [
+              "073ac83901b1fb1782d1ca2d5485939ce5dbf0a7d972b0564de5f20177bca086"
+            ]
+          ]
+        },
+        {
+          "category": "連続イベント",
+          "titleSha256": "9611584fc33f54a1541cb60ca14eeced527a1b290003abc83c0a581e61d59e4c",
+          "selection": "choice",
+          "previousOrdinal": 1,
+          "groups": [
+            [
+              "687ea1f82af9b363a872108a168b86f8978fc27140c6fb1910a7a45ac7e5b2e7"
+            ],
+            [
+              "8700759a6a1cb150678352395d9f6a5cdd0eef48105782e757517ebbd72e9722"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "ed43a76dd86fb414c1162cdaf669b418a2527b09a54a87da97b3ae7fe13c0830",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "a1b7e1c03d1928580b3fc86db38a687cee1bcf5937627da0148967a2204d7fe1"
+            ],
+            [
+              "5d1b561f3e8ab727a40be7112a6e3117917af959fe6b128dc3300199147209d1"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "39f237774e29971500bc14b219f2e31aee4828cad5251f564f7590f2f91417c4",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "757399e901cb51ad1856a4b593a11bd80a6d2a2179dfdeac61281f00bf74c55a"
+            ],
+            [
+              "b16362cd5e52b1216fd00e7dd2f6a6e7ad4834578d5fa86ad2e3dd1af3f38040"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30322",
+      "sourceUrl": "https://gametora.com/ja/umamusume/supports/30322-mayano-top-gun",
+      "adjudicatorUrl": "https://gamewith.jp/uma-musume/article/show/584253",
+      "events": [
+        {
+          "category": "連続イベント",
+          "titleSha256": "fc12c90165f0cd4f50193b46e723f5bc758c6afe0821b062ba19d9dcaede2a7d",
+          "selection": "auto",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "f828daec1f49411ba8d3021376b6ab0a82b95b60e7b2f9ed390d78c0b3ecd66f"
+            ]
+          ]
+        },
+        {
+          "category": "連続イベント",
+          "titleSha256": "2765e6eab5c95e8b18c07a8fd1316d7744122163c77252e7835fbbaa5ef714f1",
+          "selection": "choice",
+          "previousOrdinal": 1,
+          "groups": [
+            [
+              "9797757a81c9410576bf4ccd0d688c98315db881cdb7a0815982683da4cda327"
+            ],
+            [
+              "739b5f2a0b17b8931bda0d3c1ab5de0fd38f9604c22c7e642e1d59a0da8b80b3"
+            ]
+          ]
+        },
+        {
+          "category": "連続イベント",
+          "titleSha256": "aadd48b3a525e1afb9a2b2960bf0ae2958bab397c0d7ee130c659e787b499744",
+          "selection": "choice",
+          "previousOrdinal": 2,
+          "groups": [
+            [
+              "07388c15c7168771784386bc6d6c137876423b34532239bd93d34fde0c073181",
+              "3ef18092b842e3f4a546bd34b018a33be31b6cbabc673a5c1b575a756ca739f4"
+            ],
+            [
+              "e51025675e07414e650258b9e30b807ef6221be123b55e41506f9b891bb1f515",
+              "d678f57c77c89d21e5cfd1766a123bfe7c3820317faba98f79c8e9611702c740"
+            ],
+            [
+              "6b530b49406dc1bff6db757f38399e1924220f8e4856b512fccd3418500c794f",
+              "56c7ecd5544c4013c0854ec61e83ae257031e9a08122ff9aac430ec6b0e41c82"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "0730100945c4ea158a4d916493067214811338404023105a462286b28676f416",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "6f2c30bbb36a95bc4c7b79a89c4c9ca6c06d6cfc42fa41ebcee6890f54147868"
+            ],
+            [
+              "0816a4037412b939a6ff17ca5746647305905093057952c9970e091d588b157d"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "234d7d9d24027510e687958b3963097f70571c532ea361a0dc38a98df55ab06f",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "a1b7e1c03d1928580b3fc86db38a687cee1bcf5937627da0148967a2204d7fe1"
+            ],
+            [
+              "0816a4037412b939a6ff17ca5746647305905093057952c9970e091d588b157d"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cardId": "30324",
+      "sourceUrl": "https://gametora.com/ja/umamusume/supports/30324-no-reason",
+      "adjudicatorUrl": "https://gamewith.jp/uma-musume/article/show/587189",
+      "events": [
+        {
+          "category": "連続イベント",
+          "titleSha256": "076063041112fb5f45389e0c815deafe79bafae8ef2febe2a022ce6bee60a59a",
+          "selection": "auto",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "99cefbd1332c0850f388b43cef5a9c0bad08261420ecd165383d784344d31dd4"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "eb24379899554d0b0f0d68548aec5bfbdec10d24f50e9152d610530b152bc781",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "36a2ee71ce7c9273058e2d19e65efa4f0a65a1d5687808bfbb76b45ebb474b72"
+            ],
+            [
+              "060a7fcf533891afb2f2d217ab3e6a135c2caf9ab85bd84573a10ec17cb67532"
+            ]
+          ]
+        },
+        {
+          "category": "ランダムイベント",
+          "titleSha256": "82dc284e1df1bc5907db5ae536e45aaea61d3a5672c9e7eb001e636c28e1aa53",
+          "selection": "choice",
+          "previousOrdinal": null,
+          "groups": [
+            [
+              "d98e30fbd45fa3ac08473fe745e7f596861bf4c281e55224cd97591a9160dbee"
+            ],
+            [
+              "1358566ba6894c53638e15ddf7d1e17cb11575987aac2b6f480a0bcb765bb7fa"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

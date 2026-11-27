@@ -6,11 +6,12 @@
  */
 const fs=require('node:fs');
 const path=require('node:path');
-const {planRosterFirst}=require('../src/derived_github_pending_refresh.cjs');
+const {planRosterFirst,preserveOnSourceOutage}=require('../src/derived_github_pending_refresh.cjs');
 const {emptyLedger,verifyLedger}=require('../src/derived_github_pending_ledger.cjs');
 function main(args){
- if(args.length!==5)throw Error('usage: <old-roster> <current-roster> <previous-ledger> <output-prefix> <github-output>');
+ if(!(args.length===5||args.length===6&&args[5]==='--direct-roster-only'))throw Error('usage: <old-roster> <current-roster> <previous-ledger> <output-prefix> <github-output> [--direct-roster-only]');
  const [oldFile,newFile,previousFile,outputPrefix,ghOutput]=args;
+ const directReview=args[5]==='--direct-roster-only';
  const read=p=>fs.readFileSync(path.resolve(p),'utf8');
  const previous=verifyLedger(JSON.parse(read(previousFile)));
  const existingCatalog=require('../data/reviewed_events.v1.json');
@@ -22,7 +23,11 @@ function main(args){
  const prefix=path.resolve(outputPrefix);
  if(prefix.startsWith(path.resolve(__dirname,'../..')+path.sep))
   throw Error('persistent source preview files in checked-in tree forbidden');
- if(!needThirdPartySource){
+ if(needThirdPartySource){
+  const fallback=preserveOnSourceOutage({discovery,previousLedger:previous,existingCatalog,directReview});
+  fs.writeFileSync(prefix+'.ledger.json',JSON.stringify(fallback.ledger,null,2)+'\n');
+  fs.writeFileSync(prefix+'.summary.json',JSON.stringify(fallback.summary,null,2)+'\n');
+ }else{
   const empty=emptyLedger();
   const summary={previousRosterCount:discovery.previousRosterCount,
    currentRosterCount:discovery.currentRosterCount,
@@ -40,7 +45,7 @@ function main(args){
   fs.writeFileSync(prefix+'.summary.json',JSON.stringify(summary,null,2)+'\n');
  }
  fs.appendFileSync(path.resolve(ghOutput),
-  'needs_source='+String(needThirdPartySource)+'\n');
+  'needs_source='+String(needThirdPartySource&&!directReview)+'\n');
  process.stdout.write('UMASIM_FIRST_PENDING_CHECK='+JSON.stringify(result)+'\n');
  return result;
 }

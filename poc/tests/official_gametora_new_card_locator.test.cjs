@@ -77,3 +77,11 @@ test('resolve only requested IDs and leave absent cards pending without slug gue
  ]}),/複数/);
  assert.throws(()=>resolveListedPages({targetCardIds:['30322','30323','30324'],hrefs:[]}),/一括/);
 });
+
+test('bounded later batch selects only unimported IDs and retains every other card',()=>{
+ const q=selectIntakeTargets(plan(),{offset:2});
+ assert.deepEqual(q.targetCardIds,['30324']);
+ assert.deepEqual(q.unvisitedCardIds,['30322','30323']);
+ assert.throws(()=>selectIntakeTargets(plan(),{offset:-1}),/開始位置/);
+ assert.deepEqual(selectIntakeTargets(plan(),{offset:3}).targetCardIds,[]);
+});

@@ -14,7 +14,8 @@ function cardIds(values,label){
     new Set(values).size!==values.length)fail(label+'が不正／重複');
  return values;
 }
-function selectIntakeTargets(plan,{limit=2}={}){
+function selectIntakeTargets(plan,{limit=2,offset=0,targetIds=null}={}){
+ if(!Number.isSafeInteger(offset)||offset<0||offset>1000)fail('訪問開始位置が不正');
  if(!Number.isSafeInteger(limit)||limit<1||limit>2)
   fail('1回に訪問できる新カードは最大2枚');
  if(plan?.dataKind!=='new-card-event-intake-plan'||plan.version!==1||
@@ -32,9 +33,11 @@ function selectIntakeTargets(plan,{limit=2}={}){
   fail('新規名簿の差分が保留台帳と一致しない');
  if(pending.some(x=>imported.has(x)))
   fail('取込済みIDへの再訪問は禁止');
+ const selected=targetIds===null?pending.slice(offset,offset+limit):cardIds(targetIds,'明示対象ID');
+ if(selected.length>limit||selected.some(id=>!pending.includes(id))||targetIds!==null&&offset!==0)fail('明示対象は未収録カードのみ、最大2枚');
  return {
-  targetCardIds:pending.slice(0,limit),
-  unvisitedCardIds:pending.slice(limit),
+  targetCardIds:selected,
+  unvisitedCardIds:pending.filter(id=>!selected.includes(id)),
   sourceOnly:true,publicationApproved:false
  };
 }

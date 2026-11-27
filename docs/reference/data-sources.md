@@ -7,7 +7,7 @@
 | 対象 | 現在の主経路 | 採用境界 |
 | --- | --- | --- |
 | カード実ID・通常ヒント・スキル数値辞書 | UmaSimの公開元からブラウザで取得し検証・キャッシュ | [実行時取得](runtime-data-loading.md) |
-| 新カードのイベント候補 | GameTora由来の第三者GitHub構造化JSON（コミット・カードblob固定） | [増分取込手順](../how-to/curated-event-intake.md)。既存承認済みイベントを全件置換しない |
+| 新カードのイベント候補 | D-067：GameTora本体の個別カードページ（直接取得・独自変換を整備中） | [増分取込手順](../how-to/curated-event-intake.md)。既存承認済みイベントを全件置換しない |
 | 欠損・疑義がある個別候補 | 特定の出典と結果だけ、GameTora元サイト・GameWith記事を照合 | [裁定契約](event-adjudication-enforcement.md)。未確認を確定にしない |
 | 公開イベント | ウマサルタント独自に編集し、対象ごとに承認されたJSON | [公開ゲート](../how-to/checker-public-catalog.md)、[承認台帳](../../poc/config/event-release-approvals.gt2487.v2.json) |
 
@@ -21,7 +21,7 @@
 - 取得日時、元コミットや版、変換ログ、収録率を追跡する。
 
 - **通常ヒントとイベント報酬は別の経路**。変換可能な候補、公開承認、実ゲーム全件の正確性はそれぞれ別の状態です。
-- 元GameTora HTMLの全件直接取得、およびGameWithの大量巡回は現行の主データ入力ではありません。
+- 新カードに限ったGameTora本体直接取得を主経路とする。設定正本は [D-067直接取得ポリシー](../../poc/config/direct-event-intake-policy.v1.json)。旧 `event-source-priority.v1.json` は既存固定版の裁定・監査契約であり、新カードの取得方式を指定しない。既存固定GT派生JSONは歴史的基準として維持。全件HTML再取得およびGameWithの大量巡回は対象外。robots・アクセス条件・公開審査は別。
 - 新カードの未掲載を「イベントなし」へ確定させず、ID単位の欠損と出典の失敗を保留します。
 
 ## データの利用・公開条件
