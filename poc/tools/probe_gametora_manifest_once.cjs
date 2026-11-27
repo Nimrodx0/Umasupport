@@ -41,18 +41,40 @@ function locate(x){
  walk(x,[],0);
  return {matches:matches.slice(0,12),matchCount:matches.length};
 }
+// Current verified manifest coordinates from the first explicit run.
+const refs={support:'6ea0c160',friend:'3e027684'};
+function matchesRow(v,ids){
+ if(!v||typeof v!=='object')return false;
+ return Object.entries(v).some(([k,x])=>ids.includes(k)||((typeof x==='number'||typeof x==='string')&&ids.includes(String(x))));
+}
+function relevantRows(doc,ids){
+ const found=[];
+ function walk(v,d){
+  if(!v||typeof v!=='object'||d>8||found.length>=20)return;
+  if(matchesRow(v,ids)){
+   const fields=Object.entries(v).filter(([k,x])=>/^(?:.*(?:id|event|char|card|rarity|type).*)$/i.test(k)&&typeof x==='number'&&Number.isSafeInteger(x)).map(([k,x])=>[k,x]);
+   const numericPositions=Array.isArray(v)?v.slice(0,12).map((x,i)=>typeof x==='number'&&Number.isSafeInteger(x)?[i,x]:null).filter(Boolean):[];
+   found.push({shape:shape(v),identityFields:fields,numericPositions});
+  }
+  for(const x of Object.values(v))if(x&&typeof x==='object')walk(x,d+1);
+ }
+ walk(doc,0);
+ return found;
+}
 (async()=>{
  robots=await read('/robots.txt',100000,'text/plain');
  await new Promise(r=>setTimeout(r,6000));
- const manifest=JSON.parse(await read('/data/manifests/umamusume.json',256000,'json'));
- if(!manifest||typeof manifest!=='object'||Array.isArray(manifest))throw Error('Manifest layout changed');
- const keys=Object.keys(manifest).filter(k=>/^(training_events\/|dict\/(?:evrew|te_|choice_)|support-cards$)/.test(k)&&/^[a-zA-Z0-9_/-]+$/.test(k));
- console.log('GT_MANIFEST_META='+JSON.stringify({keys:keys.map(k=>({key:k,version:typeof manifest[k]==='string'&&/^[a-f0-9]{8,64}$/.test(manifest[k])?manifest[k]:null}))}));
- // A single category file, if advertised by the live manifest. No full
- // catalog scan, no other category files, no source or candidate artifacts.
- const key='training_events/friend',version=manifest[key];
- if(typeof version!=='string'||!/^[a-f0-9]{8,64}$/.test(version))throw Error('Current friend event entry absent');
+ const fetchPinned=async(key,version)=>{
+  const body=await read('/data/umamusume/'+key+'.'+version+'.json',4*1024*1024,'json');
+  if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
+  return JSON.parse(body);
+ };
+ const supports=await fetchPinned('support-cards',refs.support);
+ const rows=relevantRows(supports,targets);
+ console.log('GT_SUPPORT_TARGET_MAP='+JSON.stringify({root:shape(supports,1),matches:rows}));
+ const related=[...new Set([...targets,...rows.flatMap(r=>r.identityFields.filter(([k,v])=>/char/i.test(k)&&v>0).map(([k,v])=>String(v)))])];
  await new Promise(r=>setTimeout(r,6000));
- const document=JSON.parse(await read('/data/umamusume/'+key+'.'+version+'.json',4*1024*1024,'json'));
- console.log('GT_TARGET_SHAPES='+JSON.stringify({rootType:kind(document),rootCount:Object.keys(document).length,...locate(document),publicationApproved:false}));
+ const friend=await fetchPinned('training_events/friend',refs.friend);
+ console.log('GT_FRIEND_ROOT_SHAPE='+JSON.stringify(shape(friend)));
+ console.log('GT_FRIEND_TARGET_MAP='+JSON.stringify({relatedIds:related,matches:relevantRows(friend,related)}));
 })().catch(e=>{console.error('GT_PROBE_STOP='+String(e.message).slice(0,180));process.exitCode=1;});

@@ -1,7 +1,7 @@
 name: One-time GameTora manifest verification (D069)
 on:
   pull_request:
-    types: [opened]
+    types: [synchronize]
     branches: [main]
     paths:
       - '.github/workflows/one-time-gt-manifest-probe.yml'
