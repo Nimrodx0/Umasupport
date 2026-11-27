@@ -54,6 +54,10 @@ test('plain factual packet and receipt commit together; no secret or raw prose',
  a.deepEqual(await f.store().loadPacket(cardId),packet);
  const raw=f.rawFiles().find(x=>x.path===pathFor(row)).content;
  a.match(raw,/skill:990001/);a.doesNotMatch(raw,/Synthetic title|pageProps|eventData/);
+ const withTitles={...packet,identifyingTitles:[{sourceEventId:1,title:'Synthetic title'}]};
+ const titleRow={...row,packetSha256:digest(withTitles)};
+ a.deepEqual(open(record(withTitles,titleRow),titleRow),withTitles);
+ for(const title of ['wrong','x'.repeat(81),'invalid\nline']){const bad={...withTitles,identifyingTitles:[{sourceEventId:1,title}]};a.throws(()=>record(bad,{...row,packetSha256:digest(bad)}),/title metadata/);}
  const changed=JSON.parse(raw);changed.packet.events[0].groups[0].routes[0].hints[0].level=9;
  a.throws(()=>open(changed,row),/receipt/);
  const unsafe={...packet,events:[{...packet.events[0],title:'raw prose'}]};
