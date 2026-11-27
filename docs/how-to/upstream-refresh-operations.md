@@ -19,6 +19,10 @@
 
 増分検出・GitHub派生JSONの検証・既存全イベント変換器への接続・日次の未掲載Issue引継ぎは[新カード取込記録](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)と[既存変換器の再利用](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)に整備済み。**新カードの収録・未収録状態は監視の最新結果で確認**し、掲載済みという報告だけで公開審査・承認済み追記の完了とは扱わない。GameTora本体HTMLの全パネルを直接取得・変換する旧経路は開発保留。
 
+## 供給元停止時の部分運用（#522 / #283）
+
+GT派生元を取得できない場合、GT差分は判定不能とし、固定ピン・候補Draft・既存公開DBを変更しない。UmaSimのGit blob差分は独立してログとJob summaryへ出す。新カード監視はUmaSim名簿と承認済みDBから対象IDを先に確定し、GT取得失敗でも従来の保留行を保持し、新規IDは `awaiting-source-availability`（JSON有無未確認）で追加する。Issue本文に現時点の取得不能を明記し、ジョブは最後に失敗を通知する。復旧時は正常な取得結果で再判定する。出典変更は別途承認する。
+
 ## 日次監視（実装済み）
 
 [`Monitor pinned GT events and UmaSim sources`](../../.github/workflows/upstream-refresh-monitor.yml) は GitHub Actions の毎日 **03:27 UTC／12:27 JST** の予約実行、または手動 `workflow_dispatch` で起動（実行時刻はGitHubのスケジューラ都合で遅れる場合がある）。
