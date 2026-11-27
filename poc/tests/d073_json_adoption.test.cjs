@@ -20,7 +20,7 @@ test('ordinary explicit facts accepted from JSON alone, not published or game ve
 test('ordinary chain classification uses D035/D038; abnormal stage groups remain exceptions',()=>{
  const r=classify(fixture({random:[ev(1)],arrows:[ev(2),ev(3)]}));
  a.equal(r.status,'source-facts-accepted');a.equal(r.exceptionEventCount,0);
- for(const arrows of [[ev(2)],[ev(2),ev(3),ev(4),ev(5)],[ev(2,{c:[{o:'',r:[{t:'ee'}]}]}),ev(3)]]]){
+ for(const arrows of [[ev(2)],[ev(2),ev(3),ev(4),ev(5)],[ev(2,{c:[{o:'',r:[{t:'ee'}]}]}),ev(3)]]){
   const q=classify(fixture({random:[ev(1)],arrows}));
   a.equal(q.status,'exception-review');
   a.ok(q.events[1].reasonCodes.includes('chain-reachability-not-established'));
