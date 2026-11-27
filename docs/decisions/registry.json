@@ -11,15 +11,29 @@
   ],
   "entries": [
     {
+      "id": "D-069",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：新カード更新をGitHub内のイベント駆動型運用とする",
+      "status": "current",
+      "relation": [],
+      "note": "UmaSim新規ID検知時だけGameTora限定取得・審査・条件付き公開へ進む目標。ChatGPT定期タスクを通常運用に使わない。取得条件確認・実装・試験前は現行の明示手動取得を維持。疑義は保留、D-068の公開条件は維持。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-069",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-069",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-068",
       "date": "2026-11-27",
       "heading": "2026-11-27：検証済み新規イベントの条件付き包括公開承認",
-      "status": "current",
-      "relation": [],
-      "note": "D-067の新規カード限定・独自構造変換を維持。正確性・取得条件・公開根拠・内容SHA・既存DB非破壊・本番回帰を満たした新規イベントはカード毎の利用者再承認なしで公開可。疑義は個別裁定・保留、元記事・画像・元JSONは再配布しない。定期自動取得や無審査公開は対象外。",
+      "status": "qualified",
+      "relation": [
+        "D-069"
+      ],
+      "note": "D-067の新規カード限定・独自構造変換を維持。正確性・取得条件・公開根拠・内容SHA・既存DB非破壊・本番回帰を満たした新規イベントはカード毎の利用者再承認なしで公開可。疑義は個別裁定・保留、元記事・画像・元JSONは再配布しない。定期自動取得や無審査公開は対象外。 D-069はイベント駆動型の運用目標を追加し、現行の取得・公開ゲートは維持。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-068",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-068",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-069",
       "reviewedAt": "2026-11-27"
     },
     {
@@ -28,12 +42,13 @@
       "heading": "2026-11-27：新規イベント取得をGameTora本体へ移行",
       "status": "qualified",
       "relation": [
-        "D-068"
+        "D-068",
+        "D-069"
       ],
-      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。 公開承認の単位はD-068で条件付き包括承認へ変更。",
+      "note": "新カードだけをGameTora本体から直接取得・独自構造へ変換する方針を再採用。派生GitHubは既存固定版の履歴・照合に限定。UmaSim名簿と独立スキル辞書、GameWith個別疑義裁定、非破壊増分、取得条件・公開審査を維持する。 公開承認の単位はD-068で条件付き包括承認へ変更。 D-069はイベント駆動型の運用目標を追加し、現行の取得・公開ゲートは維持。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-067",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-068",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-069",
       "reviewedAt": "2026-11-27"
     },
     {
