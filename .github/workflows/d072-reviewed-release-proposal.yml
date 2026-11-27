@@ -15,7 +15,7 @@ permissions:
   contents: write
   pull-requests: write
 concurrency:
-  group: d072-reviewed-release-proposal
+  group: gametora-direct-new-card-limited-read
   cancel-in-progress: false
 jobs:
   proposal:
