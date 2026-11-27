@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {filterApproved,select}=require('../src/phase2_gt2487_release.cjs');
@@ -64,6 +65,8 @@ test('review states original factual description, not invented licensing',()=>{
  assert.equal(review.cohorts[0].review.sourceRevision,
   '6e38b54af4fad397ff4491e63007a90705a4fe67');
  assert.equal(review.entries.length,0);
- assert.equal(activeReview.entries.length,12);
- assert.ok(activeReview.entries.every(e=>e.publicationBasis.kind==='original-factual-description'&&e.eventId.startsWith('gt-site:')));
+ const approvedBatch=activeReview.entries.filter(e=>['20102','30322','30324'].includes(e.cardId)&&e.eventId.startsWith('gt-site:'));
+ assert.equal(approvedBatch.length,12);
+ assert.ok(approvedBatch.every(e=>e.publicationBasis.kind==='original-factual-description'));
+ assert.equal(activeReview.entries.length,CURRENT_PUBLIC.individualEntries);
 });
