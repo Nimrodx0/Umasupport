@@ -43,11 +43,12 @@ function getSkillRegistry(file,expectedSha=SHA){
  if(blob!==expectedSha)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
  return registryFromSkillText(bytes.toString('utf8'));
 }
-async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
+async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=null}={}){
+ if(onProjection!==null&&typeof onProjection!=='function')fail('非公開候補出力先の指定が不正');
  const selection=selectIntakeTargets(plan,{offset});
  if(!selection.targetCardIds.length)return {
   dataKind:'gametora-new-card-listing-probe',version:1,
-  selectedCardIds:[],unvisitedCardIds:[],results:[],pendingCardIds:[],
+  selectedCardIds:[],unvisitedCardIds:selection.unvisitedCardIds,results:[],pendingCardIds:plan.carryForwardPendingIds.slice(),
   sourceSiteCardVisitsPerformed:0,existingDatabaseUnchanged:true,
   sourceSiteTextCopied:false,publicationApproved:false
  };
@@ -164,8 +165,14 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
       projected.intakeCandidate.events.length!==0||
       projected.intakeCandidate.unresolvedEventCount!==panels)
     fail('保留候補の公開ゲートを迂回');
+   const privateReview={cardId:entry.cardId,sourceUrl:entry.url,layout,structure,
+    projected,publicationApproved:false};
+   // This hash binds the exact normalized numeric/route facts, not raw page
+   // HTML. Only the digest is emitted in Actions; privateReview is local-only.
+   const reviewDigest=crypto.createHash('sha256').update(JSON.stringify(privateReview)).digest('hex');
+   if(onProjection)onProjection(privateReview);
    results.push({cardId:entry.cardId,status:'private-schema-only',
-    layout,...summary});
+    layout,reviewDigest,...summary});
   }
   return {
    dataKind:'gametora-new-card-listing-probe',version:1,

@@ -7,6 +7,8 @@ on:
       - 'poc/tools/run_direct_new_card_intake.cjs'
       - 'poc/tools/probe_official_gametora_target_cards.cjs'
       - 'poc/src/official_gametora_route_dom_extractor.cjs'
+      - 'poc/config/direct-event-intake-policy.v1.json'
+      - 'poc/tests/direct_event_intake_policy.test.cjs'
   workflow_dispatch:
     inputs:
       batch_offset:
@@ -35,10 +37,11 @@ jobs:
           node-version: '22'
       - name: Validate bounded selector and direct source projection
         run: |
-          node --test poc/tests/official_gametora_new_card_locator.test.cjs poc/tests/official_gametora_route_dom_extractor.test.cjs
+          node --test poc/tests/official_gametora_new_card_locator.test.cjs poc/tests/official_gametora_route_dom_extractor.test.cjs poc/tests/direct_event_intake_policy.test.cjs
           node --check poc/tools/run_direct_new_card_intake.cjs
           node --check poc/tools/probe_official_gametora_target_cards.cjs
       - name: Resolve immutable latest UmaSim roster and skill blobs
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v7
         with:
           script: |
@@ -54,6 +57,7 @@ jobs:
             if(!/^[a-f0-9]{40}$/.test(c.sha))throw Error('Invalid UmaSim commit');
             fs.writeFileSync(process.env.RUNNER_TEMP+'/direct-uma-meta.json',JSON.stringify({commit:c.sha,cardBlob:blob('data/support_card.txt'),skillBlob:blob('data/skill_data.txt')}));
       - name: Obtain only pinned UmaSim data in disposable runner
+        if: github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
           SHA=$(node -p "require(process.env.RUNNER_TEMP+'/direct-uma-meta.json').commit")
@@ -62,26 +66,15 @@ jobs:
           curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/support_card.txt" -o "$RUNNER_TEMP/direct-current.txt"
           curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/skill_data.txt" -o "$RUNNER_TEMP/direct-skills.txt"
       - name: Prepare Chrome
+        if: github.event_name == 'workflow_dispatch'
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           command -v google-chrome || command -v google-chrome-stable
       - name: Observe selected new cards, never publish or write raw data
+        if: github.event_name == 'workflow_dispatch'
         env:
-          # Initial migration acceptance: final pending batch (30324).
-          # Later manual runs use the user-provided offset, default 0.
-          BATCH_OFFSET: ${{ inputs.batch_offset || '4' }}
+          BATCH_OFFSET: ${{ inputs.batch_offset || '0' }}
         run: |
           set -euo pipefail
           [[ "$BATCH_OFFSET" =~ ^[0-9]{1,3}$ ]]
           node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" "$BATCH_OFFSET" | tee "$RUNNER_TEMP/direct-summary.log"
-      - name: Verify final initial migration card on this PR
-        if: github.event_name == 'pull_request'
-        run: |
-          node - <<'NODE'
-          const fs=require('node:fs');
-          const line=fs.readFileSync(process.env.RUNNER_TEMP+'/direct-summary.log','utf8').split('\n').find(x=>x.startsWith('GT_DIRECT_NEW_CARD_INTAKE='));
-          if(!line)throw Error('Missing direct intake summary');
-          const r=JSON.parse(line.slice('GT_DIRECT_NEW_CARD_INTAKE='.length)),c=r.results[0];
-          if(r.publicationApproved!==false||r.existingDatabaseUnchanged!==true||r.sourceSiteTextCopied!==false||r.results.length!==1||c?.cardId!=='30324'||c.layout!=='visible-sections'||c.sourceEventPanels!==3||c.schemaShapedEvents!==3||c.schemaShapedResults!==5||c.skillHints!==3||c.pendingEventCount!==3||c.publicationApproved!==false)throw Error('30324 current page observation mismatch: review required');
-          console.log('30324: all three current displayed events, five result routes and three hint rows observed; unpublished.');
-          NODE
