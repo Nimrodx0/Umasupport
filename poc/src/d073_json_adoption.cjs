@@ -52,7 +52,7 @@ function classify({packet,row,skillText,registry}={}){
  const reasonCodes=[...cardReasons].sort(),exceptionEventCount=events.filter(x=>x.factStatus==='exception-review').length;
  return {schemaVersion:1,dataKind:'d073-json-adoption',cardId:packet.cardId,packetSha256:digest(packet),
   status:reasonCodes.length||exceptionEventCount?'exception-review':'source-facts-accepted',
-  reasonCodes,events,exceptionEventCount,identifyingTitlesRequired:true,
+  reasonCodes,events,exceptionEventCount,identifyingTitlesRequired:!packet.identifyingTitles,
   independentGameVerification:false,publicationApproved:false};
 }
 const exact=(x,keys)=>x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).sort().join(',')===keys.split(',').sort().join(',');
@@ -84,9 +84,9 @@ function parseSourceInput({packet,input}){
  if(!exact(input,'dataKind,schemaVersion,cardId,packetSha256,titles,chainEvidence')||
     input.dataKind!=='d073-source-title-input'||input.schemaVersion!==1||
     input.cardId!==packet.cardId||input.packetSha256!==digest(packet)||
-    !Array.isArray(input.titles)||input.titles.length!==packet.events.length)fail('source input scope');
+    !(input.titles===null&&Array.isArray(packet.identifyingTitles)||Array.isArray(input.titles))||(input.titles??packet.identifyingTitles).length!==packet.events.length)fail('source input scope');
  const titles=new Map();
- for(const [i,v] of input.titles.entries()){
+ for(const [i,v] of (input.titles??packet.identifyingTitles).entries()){
   if(!exact(v,'sourceEventId,title')||v.sourceEventId!==packet.events[i].sourceEventId||
      typeof v.title!=='string'||titles.has(v.sourceEventId))fail('title input scope');
   titles.set(v.sourceEventId,v.title);
@@ -99,7 +99,7 @@ function prepareSourceCandidate({packet,ledger,input,skillText,existingCatalog})
  const classification=classify({packet,row,skillText});
  const candidate=require('./d069_json_review_bridge.cjs').resumeSourceFacts({packet,titles,chainEvidence,skillText,existingCatalog,ledger});
  const receipt={dataKind:'d073-source-fact-receipt',schemaVersion:1,cardId:packet.cardId,packetSha256:digest(packet),
-  sourceFactsSha256:digest(classification),titleInputSha256:digest({titles:input.titles}),
+  sourceFactsSha256:digest(classification),titleInputSha256:digest({titles:input.titles??packet.identifyingTitles}),
   chainEvidenceSha256:chainEvidence===null?null:digest(chainEvidence),
   chainEvidenceUrls:chainEvidence===null?[]:chainEvidence.evidenceUrls.slice(),
   independentGameVerification:false,publicationApproved:false};
