@@ -38,16 +38,26 @@ async function buildReviewQueue({store,pendingIds,existingCatalog,loadSkillText}
    if(!registries.has(blob)){
     const text=await loadSkillText({...row.sourcePin});
     if(typeof text!=='string'||gitBlobSha(text)!==blob)throw Error('skill blob mismatch');
-    registries.set(blob,registryFromSkillText(text));
+    registries.set(blob,{text,registry:registryFromSkillText(text)});
    }
-   registry=registries.get(blob);
+   registry=registries.get(blob).registry;
   }catch{rows.push({...observed,status:'skill-dictionary-unavailable-or-invalid',reasonCodes:['pinned-skill-dictionary-failed']});continue;}
   const hints=packet.events.flatMap(e=>e.groups.flatMap(g=>g.routes.flatMap(r=>r.hints)));
   if(hints.some(h=>{const s=registry.byId.get(h.skillId.slice(6));return !s||!['normal','rare'].includes(s.rarity)||registry.byName.get(s.name)?.length!==1;})){
    rows.push({...observed,status:'skill-id-unresolved',reasonCodes:['pinned-skill-id-unresolved']});continue;
   }
   const adoption=require('./d073_json_adoption.cjs').classify({packet,row,registry});
-  rows.push({...observed,adoption,sourceCandidateInputReady:adoption.status==='source-facts-accepted'&&!adoption.identifyingTitlesRequired,status:'ready-for-independent-review',baseCatalogStatus:baseStatus,reasonCodes:['independent-titles-facts-topology-and-publication-review-required',...(packet.domEvidence?.status==='mismatch'?['display-json-mismatch-needs-adjudication']:[])],
+  const ready=adoption.status==='source-facts-accepted'&&!adoption.identifyingTitlesRequired;
+  let routine=null;
+  if(ready){
+   const input={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256:digest(packet),titles:null,chainEvidence:null};
+   const {candidate,receipt}=require('./d073_json_adoption.cjs').prepareSourceCandidate({packet,ledger,input,skillText:registries.get(row.sourcePin.skillBlob).text,existingCatalog});
+   routine={input,receiptSha256:digest(receipt),eventDigestsSha256:digest({events:candidate.eventDigests}),events:candidate.eventDigests,
+    nonSkillOmissionCount:candidate.omissions.length,publicationApproved:false};
+  }
+  rows.push({...observed,adoption,sourceCandidateInputReady:ready,...(routine?{routine}:{}),
+   status:ready?'ready-for-publication-decision':'ready-for-independent-review',baseCatalogStatus:baseStatus,
+   reasonCodes:ready?['publication-decision-required']:['independent-titles-facts-topology-and-publication-review-required',...(packet.domEvidence?.status==='mismatch'?['display-json-mismatch-needs-adjudication']:[])],
    eventChecks:packet.events.map(e=>({sourceEventId:e.sourceEventId,exactTitleSha256:e.exactTitleSha256,
     routeFactsSha256:digest({groups:e.groups}),resultCounts:e.groups.map(g=>g.routes.length)}))});
  }
