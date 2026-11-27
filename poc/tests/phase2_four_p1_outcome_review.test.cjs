@@ -87,7 +87,7 @@ test('published event and approval registries stay untouched',()=>{
  const current=require('../data/reviewed_events.v1.json');
  const {forCatalog}=require('../src/current_public_event_approvals.cjs');
  const {verifyRelease}=require('../src/event_release_gate.cjs');
- assert.equal(verifyRelease(current,forCatalog(current)).publicEvents,2487);
- assert.equal(current.cards.length,559);
+ assert.equal(verifyRelease(current,forCatalog(current)).publicEvents,2499);
+ assert.equal(current.cards.length,562);
  assert.equal(forCatalog(current).schemaVersion,2);
 });

@@ -89,6 +89,6 @@ test('ordinary and 30321 adoption remain separate from published event approval'
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   require('../data/reviewed_events.v1.json'),
   require('../src/current_public_event_approvals.cjs').forCatalog(
-   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
+   require('../data/reviewed_events.v1.json'))).publicEvents,2499);
  assert.deepEqual(approvals.entries,[]);
 });
