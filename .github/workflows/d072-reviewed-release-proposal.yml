@@ -8,7 +8,7 @@ on:
         options: [plan, branch, pr]
         default: plan
       bundle:
-        description: D072 evidence or D073 title/chain input and explicit approvals or publication decisions; no raw source or secrets
+        description: D072 evidence or D073 title/chain input and explicit approvals or explicit routine policy; no raw source or secrets
         type: string
         required: true
 permissions:
@@ -41,9 +41,9 @@ jobs:
             const input=context.payload.inputs;
             if(typeof input?.bundle!=='string'||input.bundle.length>60000)throw Error('bounded explicit approval bundle required');
             const bundle=JSON.parse(input.bundle);
-            if(!['evidence,newApprovals','attestations,evidence','evidence,publicationDecisions'].includes(Object.keys(bundle||{}).sort().join(',')))throw Error('invalid approval bundle keys');
+            if(!['evidence,newApprovals','attestations,evidence','evidence,publicationDecisions','evidence,routinePublicationPolicy'].includes(Object.keys(bundle||{}).sort().join(',')))throw Error('invalid approval bundle keys');
             const files=Object.fromEntries(PATHS.map(path=>[path,fs.readFileSync(path,'utf8')]));
-            const report=await propose({github,...context.repo,baseSha:context.sha,files,evidence:bundle.evidence,newApprovals:bundle.newApprovals,attestations:bundle.attestations,publicationDecisions:bundle.publicationDecisions,mode:input.mode});
+            const report=await propose({github,...context.repo,baseSha:context.sha,files,evidence:bundle.evidence,newApprovals:bundle.newApprovals,attestations:bundle.attestations,publicationDecisions:bundle.publicationDecisions,routinePublicationPolicy:bundle.routinePublicationPolicy,mode:input.mode});
             core.info('D072_RELEASE_PROPOSAL='+JSON.stringify(report));
             await core.summary.addHeading('Independently approved release proposal')
               .addRaw('Cards: '+report.newCardIds.join(', ')+'; branch written: '+report.branchWritten+
