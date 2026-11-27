@@ -34,23 +34,25 @@ async function getRobots(){
  if(text.length>100000)fail('robots.txtの取得サイズが不正');
  return text;
 }
-function getSkillRegistry(file){
+function getSkillRegistry(file,expectedSha=SHA){
+ if(!/^[a-f0-9]{40}$/.test(expectedSha))fail('独立スキル辞書のGit blobが不正');
  const bytes=fs.readFileSync(file);
  if(bytes.byteLength>6*1024*1024)fail('独立辞書がサイズ上限を超過');
  const blob=crypto.createHash('sha1').update('blob '+bytes.length+'\0')
   .update(bytes).digest('hex');
- if(blob!==SHA)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
+ if(blob!==expectedSha)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
  return registryFromSkillText(bytes.toString('utf8'));
 }
-async function inspect({plan,skillFile}={}){
- const selection=selectIntakeTargets(plan);
+async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=null}={}){
+ if(onProjection!==null&&typeof onProjection!=='function')fail('非公開候補出力先の指定が不正');
+ const selection=selectIntakeTargets(plan,{offset});
  if(!selection.targetCardIds.length)return {
   dataKind:'gametora-new-card-listing-probe',version:1,
-  selectedCardIds:[],unvisitedCardIds:[],results:[],pendingCardIds:[],
+  selectedCardIds:[],unvisitedCardIds:selection.unvisitedCardIds,results:[],pendingCardIds:plan.carryForwardPendingIds.slice(),
   sourceSiteCardVisitsPerformed:0,existingDatabaseUnchanged:true,
   sourceSiteTextCopied:false,publicationApproved:false
  };
- const registry=getSkillRegistry(skillFile);
+ const registry=getSkillRegistry(skillFile,skillBlobSha);
  const robots=await getRobots();
  const allowed=address=>{
   const path=new URL(address).pathname;
@@ -104,26 +106,55 @@ async function inspect({plan,skillFile}={}){
    blocked=false;
    await goto(entry.url);
    cardVisits++;
-   const buttons=page.locator('section button[aria-expanded]');
-   const panels=await buttons.count();
+   // The event area is identified by its semantic Japanese heading.
+   // Current pages are already expanded; historical pages use accordions.
+   const heading=page.getByRole('heading',{name:'育成イベント',exact:true});
+   if(await heading.count()!==1)fail('育成イベントの領域を一意に検出できない');
+   const area=heading.locator('..');
+   const headings=area.locator('h3');
+   const visibleCount=await headings.count();
+   const buttons=area.locator('button[aria-expanded]');
+   const layout=visibleCount?'visible-sections':'legacy-accordion';
+   const panels=visibleCount||await buttons.count();
    if(panels===0){
-    results.push({cardId:entry.cardId,status:'no-visible-event-panels',
-     siteEventPanelCount:0,publicationApproved:false});
+    results.push({cardId:entry.cardId,status:'unrecognized-event-layout',
+     sourceEventPanels:null,publicationApproved:false});
     continue;
    }
    if(panels>20)fail('イベントパネル20件超。途中まで取得して完了扱いしない');
-   const observations=[];
+   const observations=[],structure=[];
    for(let i=0;i<panels;i++){
-    const button=buttons.nth(i);
-    if((await button.getAttribute('aria-expanded'))!=='true')
-     await button.click({timeout:5000});
-    await page.waitForTimeout(650);
+    let event;
+    if(visibleCount){
+     event=headings.nth(i).locator('xpath=ancestor::section[1]');
+     if(await event.count()!==1||await event.locator('h3').count()!==1)
+      fail('イベント見出しと本文の対応が一意でない');
+    }else{
+     event=buttons.nth(i);
+     if((await event.getAttribute('aria-expanded'))!=='true')await event.click({timeout:5000});
+     await page.waitForTimeout(650);
+    }
     if(blocked)fail('取得制限によりイベントの途中読取を中止');
-    const pieces=await button.evaluate(extractRoutePieces);
+    const pieces=await event.evaluate(extractRoutePieces);
+    // For layout mismatches preserve only structural diagnostics (no prose).
+    const shape=visibleCount?await event.evaluate(el=>{
+     const own=e=>[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent||'').join('').trim();
+     const walk=(e,d=0)=>({tag:e.tagName,children:e.children.length,
+      marker:/^(?:上|中|下|OR|または|又は)$/i.test(own(e))?own(e):undefined,
+      signed:/[+＋\-－−]\s*\d/.test(own(e)),
+      ...(d<6?{nodes:[...e.children].slice(0,12).map(x=>walk(x,d+1))}:{})});
+     return {body:el.firstElementChild?.children?.[1]?walk(el.firstElementChild.children[1]):null,
+      category:(()=>{const label=el.parentElement?.parentElement?.firstElementChild?.innerText?.trim();
+       return ['連続イベント','ランダムイベント','お出かけイベント','特別イベント'].includes(label)?label:'unknown';})()};
+    }):null;
+    structure.push({ordinal:i+1,category:shape?.category||'unknown',
+     routePieces:pieces.length,ambiguous:pieces.some(r=>r.unresolvedOr),
+     ...(pieces.length===0||pieces.some(r=>r.unresolvedOr)?{shape:shape?.body}: {})});
     observations.push(assembleLiveEvent({
      cardId:entry.cardId,siteEventOrdinal:i+1,routePieces:pieces,registry
     }));
    }
+   process.stdout.write('GT_EVENT_LAYOUT='+JSON.stringify({cardId:entry.cardId,layout,panels,structure})+'\n');
    if(observations.length!==panels)fail('表示イベントの途中欠損');
    const projected=projectNewCardSite({
     cardId:entry.cardId,siteEventPanelCount:panels,
@@ -134,8 +165,14 @@ async function inspect({plan,skillFile}={}){
       projected.intakeCandidate.events.length!==0||
       projected.intakeCandidate.unresolvedEventCount!==panels)
     fail('保留候補の公開ゲートを迂回');
+   const privateReview={cardId:entry.cardId,sourceUrl:entry.url,layout,structure,
+    projected,publicationApproved:false};
+   // This hash binds the exact normalized numeric/route facts, not raw page
+   // HTML. Only the digest is emitted in Actions; privateReview is local-only.
+   const reviewDigest=crypto.createHash('sha256').update(JSON.stringify(privateReview)).digest('hex');
+   if(onProjection)onProjection(privateReview);
    results.push({cardId:entry.cardId,status:'private-schema-only',
-    ...summary});
+    layout,reviewDigest,...summary});
   }
   return {
    dataKind:'gametora-new-card-listing-probe',version:1,
@@ -144,9 +181,7 @@ async function inspect({plan,skillFile}={}){
    results,
    // Even structurally parsed cards remain queued UNTIL separately approved
    // and appended to the existing catalog. Never drop a pending card here.
-   pendingCardIds:[
-    ...selection.targetCardIds,...selection.unvisitedCardIds
-   ],
+   pendingCardIds:plan.carryForwardPendingIds.slice(),
    sourceSiteCardVisitsPerformed:cardVisits,
    existingDatabaseUnchanged:true,sourceSiteTextCopied:false,
    publicationApproved:false

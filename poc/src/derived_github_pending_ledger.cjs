@@ -11,7 +11,7 @@ const SHA=/^[a-f0-9]{40}$/;
 const ID=/^[1-9]\d{4}$/;
 const REASON=/^[A-Za-z][A-Za-z0-9_-]{0,100}$/;
 const fail=x=>{throw Error('新カード未取込保留台帳: '+x);};
-const STATUS=new Set(['awaiting-source-availability','awaiting-source-json','awaiting-source-download',
+const STATUS=new Set(['awaiting-direct-source-review','awaiting-source-availability','awaiting-source-json','awaiting-source-download',
  'awaiting-source-validation','awaiting-source-resolution','awaiting-review']);
 const PENDING=new Map([
  ['derived-github-json-not-yet-published','awaiting-source-json'],
