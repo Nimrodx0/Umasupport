@@ -71,3 +71,20 @@ test('catalog prefix proof accepts append only, rejects mutation, reordering and
  ])a.equal(findObservedCatalog(changed,expected),null);
  a.throws(()=>findObservedCatalog({...base,cards:[aCard,aCard]},expected),/card IDs/);
 });
+
+test('daily queue prepares an archived normal card with metadata only and no new review input',async()=>{
+ const f=fixture(),p=f.packets.get('39995');
+ p.identifyingTitles=[{sourceEventId:1,title:'Synthetic title'}];
+ f.ledger.rows[0].packetSha256=digest(p);
+ const q=await buildReviewQueue(f.args),row=q.rows[0];
+ a.equal(row.status,'ready-for-publication-decision');
+ a.equal(row.sourceCandidateInputReady,true);
+ a.deepEqual(row.routine.input,{dataKind:'d073-source-title-input',schemaVersion:1,cardId:'39995',packetSha256:digest(p),titles:null,chainEvidence:null});
+ const {candidate,receipt}=require('../src/d073_json_adoption.cjs').prepareSourceCandidate({packet:p,ledger:f.ledger,input:row.routine.input,skillText,existingCatalog:catalog});
+ a.equal(row.routine.receiptSha256,digest(receipt));
+ a.equal(row.routine.eventDigestsSha256,digest({events:candidate.eventDigests}));
+ a.deepEqual(row.routine.events,candidate.eventDigests);
+ a.equal(row.routine.publicationApproved,false);
+ a.doesNotMatch(JSON.stringify(q),/Synthetic title|pageProps|eventData/);
+ a.equal(q.rows[2].routine,undefined);
+});
