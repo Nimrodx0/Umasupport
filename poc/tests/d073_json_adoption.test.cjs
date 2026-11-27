@@ -30,3 +30,20 @@ test('unknown codes, invalid scope, history, level-dependent data and legacy met
  a.ok(classify(f).reasonCodes.includes('legacy-source-context-unavailable'));
  f.packet.events[0].groups[0].routes[0].hints[0].level=3;a.throws(()=>classify(f),/receipt mismatch/);
 });
+
+test('source candidates require only exact titles and explicitly established chain topology; unknowns remain blocked',()=>{
+ const {prepareSourceCandidate}=require('../src/d073_json_adoption.cjs');
+ const f=fixture({random:[ev(1)],arrows:[ev(2),ev(3)]});
+ const ledger={schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:2,rows:[f.row]};
+ const input={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256:digest(f.packet),titles:[1,2,3].map(i=>({sourceEventId:i,title:'Synthetic event '+i})),chainEvidence:null};
+ const args={packet:f.packet,skillText,ledger,existingCatalog:{schemaVersion:1,cards:[]},input};
+ a.throws(()=>prepareSourceCandidate(args),/explicit chain evidence/);
+ input.chainEvidence={reviewer:'synthetic fixture',reviewedAt:'2026-11-28',evidenceUrls:['https://example.org/synthetic'],events:[{sourceEventId:2,previousSourceEventId:null},{sourceEventId:3,previousSourceEventId:2}]};
+ const x=prepareSourceCandidate(args);
+ a.equal(x.candidate.publicationApproved,false);a.equal(x.receipt.independentGameVerification,false);
+ a.equal(x.candidate.card.events[0].requires,undefined);
+ a.deepEqual(x.candidate.card.events[2].requires,{all:[{eventId:'gt-json:39998:2'}]});
+ a.equal(x.receipt.chainEvidenceSha256,digest(input.chainEvidence));
+ input.chainEvidence.events[1].previousSourceEventId=null;
+ a.throws(()=>prepareSourceCandidate(args),/topology/);
+});
