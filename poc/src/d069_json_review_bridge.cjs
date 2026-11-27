@@ -152,9 +152,18 @@ function resume({packet,titles,skillText,existingCatalog,ledger,review}={}){
  if(!row||row.status!=='awaiting-fact-review'||row.packetSha256!==digest(packet)||!same(row.sourcePin,packet.sourcePin))fail('attempt receipt mismatch');
  return preparePacket({packet,titles,skillText,existingCatalog},review);
 }
+// Keep the original packet and review receipt immutable. A later catalog can
+// be used only when its exact old prefix matches the observation digest.
+function resumeForCurrentCatalog({packet,titles,skillText,existingCatalog,ledger,review}={}){
+ if(existingCatalog?.cards?.some(c=>c.cardId===packet?.cardId))fail('already imported card');
+ const base=require('./d072_catalog_prefix.cjs').findObservedCatalog(existingCatalog,packet?.existingCatalogSha256);
+ if(!base)fail('catalog drift; original append-only prefix unavailable');
+ const prepared=resume({packet,titles,skillText,existingCatalog:base.catalog,ledger,review});
+ return {...prepared,existingCatalogSha256:digest(existingCatalog)};
+}
 function appendResumed({packets,reviews,titles,ledger,...args}={}){
  if(!Array.isArray(packets)||!packets.length||packets.length>2||!Array.isArray(reviews)||reviews.length!==packets.length||!Array.isArray(titles)||titles.length!==packets.length)fail('resume batch scope');
- const prepared=packets.map((packet,i)=>resume({packet,titles:titles[i],skillText:args.skillText,existingCatalog:args.existingCatalog,ledger,review:reviews[i]}));
+ const prepared=packets.map((packet,i)=>resumeForCurrentCatalog({packet,titles:titles[i],skillText:args.skillText,existingCatalog:args.existingCatalog,ledger,review:reviews[i]}));
  return appendPrepared({...args,prepared});
 }
-module.exports={inspect,prepare,append,resume,appendResumed};
+module.exports={inspect,prepare,append,resume,resumeForCurrentCatalog,appendResumed};
