@@ -1,6 +1,17 @@
 {
   "schemaVersion": 1,
   "dataKind": "d069-json-attempt-ledger",
-  "revision": 0,
-  "rows": []
+  "revision": 1,
+  "rows": [
+    {
+      "cardId": "39998",
+      "sourcePin": {
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cardBlob": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "skillBlob": "cccccccccccccccccccccccccccccccccccccccc"
+      },
+      "status": "reserved",
+      "packetSha256": null
+    }
+  ]
 }
