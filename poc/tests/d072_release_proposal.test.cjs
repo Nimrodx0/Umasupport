@@ -65,3 +65,18 @@ test('modified checkout or moving main stops before creating any blob or branch'
  const f=fixture();f.files[entryPath]+='changed';await a.rejects(propose({...f.args,mode:'branch'}),/base file mismatch/);a.equal(f.state.writes,0);
  const g=fixture();g.state.drift=true;await a.rejects(propose({...g.args,mode:'branch'}),/main drift after review/);a.equal(g.state.writes,0);a.equal(g.state.branch,null);
 });
+
+test('PR mode cannot call pulls before the approved branch is verified',async()=>{
+ const f=fixture();let called=0;
+ const repo={full_name:'test/test'};
+ f.args.github.rest.pulls={list:async()=>({data:[]}),create:async q=>{
+  called++;a.equal(f.state.branch,'9'.repeat(40));
+  return {data:{number:17,state:'open',draft:false,title:q.title,body:q.body,
+   head:{ref:q.head,sha:f.state.branch,repo},base:{ref:'main',sha:base,repo}}};
+ }};
+ const plan=await propose(f.args);a.equal(plan.branchWritten,false);a.equal(called,0);
+ const pr=await propose({...f.args,mode:'pr'});a.equal(pr.prNumber,17);a.equal(pr.ciVerified,false);a.equal(called,1);
+ const g=fixture();g.result.approvals.entries.pop();
+ g.args.github.rest.pulls={list:async()=>{throw Error('unexpected PR access');}};
+ await a.rejects(propose({...g.args,mode:'pr'}),/承認/);a.equal(g.state.writes,0);
+});
