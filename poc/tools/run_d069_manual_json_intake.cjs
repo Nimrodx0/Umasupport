@@ -12,7 +12,7 @@ const policy=require('../config/direct-event-intake-policy.v1.json');
 const review=require('../config/direct-event-pending-review.v1.json');
 const fail=x=>{throw Error('D069 manual intake: '+x);};
 async function execute({github,context,core,mode,targetText,temp=process.env.RUNNER_TEMP}={}){
- if(context?.eventName!=='workflow_dispatch'||context.ref!=='refs/heads/main'||!['plan','observe'].includes(mode)||
+ if(context?.eventName!=='workflow_dispatch'||context.ref!=='refs/heads/main'||!['plan','observe','retry'].includes(mode)||
     !/^[1-9]\d{4}(,[1-9]\d{4})?$/.test(targetText||''))fail('explicit main dispatch required');
  const targetIds=targetText.split(',');
  if(new Set(targetIds).size!==targetIds.length)fail('duplicate targets');
@@ -31,8 +31,16 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
  const store=createStore({github,...coord});
  const selected=planBatch({plan,ledger:await store.load(),targetIds,sourcePin,policy,existingCatalog});
  core.info('D069_MANUAL_SELECTION='+JSON.stringify(selected));
- if(mode==='plan'||!selected.selectedIds.length)return {selection:selected,results:[],sourceRequestsPerformed:false};
- const result=await runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,
+ let retryApproval=null;
+ if(mode==='retry'){
+  const config=require('../config/d069-reviewed-retries.v1.json');
+  if(config.schemaVersion!==1||!Array.isArray(config.approvals)||targetIds.length!==1)fail('retry approval configuration');
+  const matches=config.approvals.filter(x=>x.cardId===targetIds[0]);
+  if(matches.length!==1)fail('no unique reviewed retry approval');
+  retryApproval=matches[0];
+ }
+ if(mode==='plan'||mode==='observe'&&!selected.selectedIds.length)return {selection:selected,results:[],sourceRequestsPerformed:false};
+ const result=await runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,retryApproval,now:new Date().toISOString().replace(/\.\d{3}Z$/,'Z'),
   observeBatch:createObserver({manualAuthorized:true,knownIds:existingCatalog.cards.map(c=>c.cardId)})});
  // Prose-free review packets only, after successful completion CAS.
  // The raw body is never serialized to log or disk.

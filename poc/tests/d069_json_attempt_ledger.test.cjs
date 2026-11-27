@@ -73,3 +73,21 @@ test('daily plan excludes attempted cards but preserves their pending identity',
  const none=excludeAttempted({...f.input.plan,eligibleIds:[],heldIds:[],batches:[]},f.ledger());
  a.deepEqual(none.attemptedIds,[]);
 });
+
+test('reviewed retry consumes exactly one approval and retains previous-state digest',async()=>{
+ const {digest}=require('../src/event_release_gate.cjs'),{transition}=require('../src/d069_github_attempt_store.cjs');
+ const f=fixture(),targetIds=['39998'];
+ await runBatch({...f.input,targetIds});
+ const old=f.ledger(),row=old.rows[0];
+ const approval={schemaVersion:1,cardId:row.cardId,decision:'explicit-single-retry',priorRowSha256:digest(row),reason:'listing-now-available',reviewedAt:'2026-11-27T11:00:00Z',notBefore:'2026-11-27T12:00:00Z',sourcePin,reviewEvidence:['https://github.com/Nimrodx0/Umasupport/issues/549']};
+ const args={...f.input,targetIds,retryApproval:approval,now:'2026-11-27T12:01:00Z'};
+ await a.rejects(runBatch({...args,now:'2026-11-27T11:30:00Z'}),/timing/);
+ await a.rejects(runBatch({...args,retryApproval:{...approval,priorRowSha256:'0'.repeat(64)}}),/prior state/);
+ a.equal(f.observations(),1);
+ const store={...f.input.store,compareAndSet:async(before,next)=>{transition(before,next);return f.input.store.compareAndSet(before,next);}};
+ await runBatch({...args,store});a.equal(f.observations(),2);
+ a.equal(f.ledger().rows[0].retry.priorRowSha256,digest(row));
+ a.equal(f.ledger().rows[0].retry.approvalSha256,digest(approval));
+ await a.rejects(runBatch(args),/already consumed/);
+ a.equal(f.observations(),2);
+});

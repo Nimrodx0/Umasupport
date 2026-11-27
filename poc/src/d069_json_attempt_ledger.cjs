@@ -18,7 +18,8 @@ function verify(x){
     Object.keys(x).sort().join(',')!=='dataKind,revision,rows,schemaVersion')fail('ledger shape');
  const seen=new Set();
  for(const r of x.rows){
-  if(!r||Object.keys(r).sort().join(',')!=='cardId,packetSha256,sourcePin,status'||
+  if(!r||!['cardId,packetSha256,sourcePin,status','cardId,packetSha256,retry,sourcePin,status'].includes(Object.keys(r).sort().join(','))||
+     r.retry!==undefined&&(!r.retry||Object.keys(r.retry).sort().join(',')!=='approvalSha256,priorRowSha256,priorStatus'||!SHA.test(r.retry.approvalSha256||'')||!SHA.test(r.retry.priorRowSha256||'')||!['not-listed','uncertain'].includes(r.retry.priorStatus))||
      !ID.test(r.cardId||'')||seen.has(r.cardId)||!states.has(r.status)||
      Object.keys(r.sourcePin||{}).sort().join(',')!=='cardBlob,commit,skillBlob'||
      !Object.values(r.sourcePin).every(z=>typeof z==='string'&&GIT.test(z))||
@@ -51,15 +52,19 @@ function planBatch({plan,ledger,targetIds,sourcePin,policy,existingCatalog}={}){
   previouslyAttemptedIds:targetIds.filter(id=>attempted.has(id)),
   siteAccessAuthorized:false,publicationApproved:false};
 }
-async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,observeBatch}={}){
+async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,observeBatch,retryApproval=null,now=null}={}){
  if(typeof skillText!=='string'||gitBlobSha(skillText)!==sourcePin?.skillBlob||
     typeof store?.load!=='function'||typeof store.compareAndSet!=='function'||typeof observeBatch!=='function')
   fail('pinned inputs and atomic store required');
  const before=structuredClone(verify(await store.load()));
  const selection=planBatch({plan,ledger:before,targetIds,sourcePin,policy,existingCatalog});
- const ids=selection.selectedIds;
+ let ids=selection.selectedIds;
+ if(retryApproval!==null){
+  if(targetIds.length!==1||targetIds[0]!==retryApproval.cardId||selection.previouslyAttemptedIds.length!==1)fail('retry target scope');
+  ids=targetIds.slice();
+ }
  if(!ids.length)return {...selection,results:[],stopReason:null,reviewPackets:[]};
- const reservation={...before,revision:before.revision+1,rows:[...before.rows,...ids.map(cardId=>({cardId,sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null}))]};
+ const reservation=retryApproval===null?{...before,revision:before.revision+1,rows:[...before.rows,...ids.map(cardId=>({cardId,sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null}))]}:require('./d069_reviewed_retry.cjs').reserveRetry({ledger:before,approval:retryApproval,sourcePin,existingCatalog,now});
  verify(reservation);
  if(await store.compareAndSet(structuredClone(before),structuredClone(reservation))!==true)fail('reservation conflict; no observation');
  let results,stopReason=null,reviewPackets=[];
@@ -90,7 +95,7 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
  })};
  verify(finished);
  if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished))!==true)fail('completion conflict; reservation remains non-retryable');
- return {...selection,results,stopReason,reviewPackets};
+ return {...selection,selectedIds:ids,results,stopReason,reviewPackets};
 }
 // Daily roster-only reporting, no observer call. The persistent attempt
 // register is additional to the manual review holds and does not remove
