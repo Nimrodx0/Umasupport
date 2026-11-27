@@ -74,6 +74,13 @@ function parseGroup(g,index){
   }
   r.sourceOrdinals.push(at);
   const unresolved=reason=>r.unresolved.push({code:x.t,sourceOrdinal:at,reason});
+  if(x.t==='ds'){
+   if(!only(x,['t'])){unresolved('invalid-outing-unlock-marker');continue;}
+   if(r.markers.some(m=>m.kind==='outing-unlock-candidate'))fail('duplicate outing unlock marker');
+   // A source token is not automatically proof of an edge. D070 separately
+   // verifies this token against the displayed result on both named cards.
+   r.markers.push({kind:'outing-unlock-candidate',sourceOrdinal:at});unresolved('outing-unlock-semantics-unverified');continue;
+  }
   if(x.t==='ee'){
    if(!only(x,['t'])){unresolved('invalid-stop-marker');continue;}
    if(r.markers.some(m=>m.kind==='explicit-chain-stop'))fail('duplicate stop marker');
@@ -166,7 +173,7 @@ function inspectCardJson({body,cardId,sourceUrl,buildId}={}){
    if(own(e,'history')&&!Array.isArray(e.history))fail('invalid history container');
    const groups=e.c.map(parseGroup);
    events.push({sourceEventId:e.i,category,categoryOrdinal:index+1,titleSha256,
-    historyCount:e.history?.length||0,groups,blockers});
+    historyCount:e.history?.length||0,eventType:typeof e.type==='string'&&CODE.test(e.type)?e.type:null,meaninglessChoices:e.meaningless_choices===true,groups,blockers});
   }
  }
  if(!events.length)fail('empty event collection is not verified no-events');
