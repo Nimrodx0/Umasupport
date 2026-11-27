@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "dataKind": "d069-json-attempt-ledger",
-  "revision": 4,
+  "revision": 5,
   "rows": [
     {
       "cardId": "39998",
@@ -22,6 +22,16 @@
       },
       "status": "awaiting-fact-review",
       "packetSha256": "ab01083d220b741f28fad32742e3f46763cafdbdaba499ba89155c0cdff6c9d6"
+    },
+    {
+      "cardId": "39997",
+      "sourcePin": {
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "cardBlob": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "skillBlob": "cfa7860131e2beaef29b3f9b75f9b70fbecc19e5"
+      },
+      "status": "reserved",
+      "packetSha256": null
     }
   ]
 }
