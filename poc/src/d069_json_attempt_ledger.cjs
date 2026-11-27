@@ -58,11 +58,11 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
  const before=structuredClone(verify(await store.load()));
  const selection=planBatch({plan,ledger:before,targetIds,sourcePin,policy,existingCatalog});
  const ids=selection.selectedIds;
- if(!ids.length)return {...selection,results:[],stopReason:null};
+ if(!ids.length)return {...selection,results:[],stopReason:null,reviewPackets:[]};
  const reservation={...before,revision:before.revision+1,rows:[...before.rows,...ids.map(cardId=>({cardId,sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null}))]};
  verify(reservation);
  if(await store.compareAndSet(structuredClone(before),structuredClone(reservation))!==true)fail('reservation conflict; no observation');
- let results,stopReason=null;
+ let results,stopReason=null,reviewPackets=[];
  try{
   // The caller is responsible for a separately reviewed transport.
   // Only in-memory raw responses enter this callback contract.
@@ -75,13 +75,14 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
    }
    if(r.status!=='json'||Object.keys(r).sort().join(',')!=='body,buildId,cardId,sourceUrl,status')fail('response shape');
    const packet=inspect({body:r.body,buildId:r.buildId,cardId:r.cardId,sourceUrl:r.sourceUrl,sourcePin,skillText,existingCatalog});
+   reviewPackets.push(packet);
    return {cardId:r.cardId,status:packet.status==='held'?'held':'awaiting-fact-review',packetSha256:digest(packet)};
   });
  }catch{
   // Failure after any partial access means the whole reserved batch is
   // uncertain. No source strings or exception messages are persisted.
   results=ids.map(cardId=>({cardId,status:'uncertain',packetSha256:null}));
-  stopReason='observation-failed';
+  stopReason='observation-failed';reviewPackets=[];
  }
  const finished={...reservation,revision:reservation.revision+1,rows:reservation.rows.map(r=>{
   const x=results.find(z=>z.cardId===r.cardId);
@@ -89,6 +90,6 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
  })};
  verify(finished);
  if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished))!==true)fail('completion conflict; reservation remains non-retryable');
- return {...selection,results,stopReason};
+ return {...selection,results,stopReason,reviewPackets};
 }
 module.exports={empty,verify,planBatch,runBatch};
