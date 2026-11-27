@@ -26,20 +26,35 @@ function createReviewedIntake({github,owner,repo,store=createStore({github,owner
   }
   return {ledger,items};
  }
+ function prepareItem(x,ledger,existingCatalog){
+  if(x.evidence?.dataKind==='d073-source-title-input')return require('./d073_json_adoption.cjs').prepareSourceCandidate({packet:x.packet,input:x.evidence,ledger,skillText:x.source.skillText,existingCatalog});
+  return prepareIndependentCandidate({packet:x.packet,evidence:x.evidence,ledger,skillText:x.source.skillText,existingCatalog});
+ }
  async function prepare({evidence,existingCatalog}={}){
   const {ledger,items}=await readItems(evidence);
   return {dataKind:'d072-independent-candidate-preparation',schemaVersion:1,publicationApproved:false,
-   items:items.map(x=>prepareIndependentCandidate({packet:x.packet,evidence:x.evidence,ledger,skillText:x.source.skillText,existingCatalog}))};
+   items:items.map(x=>prepareItem(x,ledger,existingCatalog))};
  }
  async function stage({evidence,existingCatalog,existingApprovals,newApprovals,attestations}={}){
   if((newApprovals===undefined)===(attestations===undefined))fail('exactly one explicit approval input required');
   const {ledger,items}=await readItems(evidence);
+  const hasSource=items.some(x=>x.evidence?.dataKind==='d073-source-title-input');
+  if(hasSource&&attestations!==undefined)fail('source facts require explicit individual approvals');
   if(attestations!==undefined){
-   const prepared=items.map(x=>prepareIndependentCandidate({packet:x.packet,evidence:x.evidence,ledger,skillText:x.source.skillText,existingCatalog}));
+   const prepared=items.map(x=>prepareItem(x,ledger,existingCatalog));
    newApprovals=require('./d072_card_review_attestation.cjs').expandAttestations({prepared,attestations});
   }
   const baseline=await source.baseline(),release=await source.latest(),pinnedSkillText=await source.historicalSkill();
-  return stageIndependentEvidenceAcrossVersions({items,ledger,baseline,release,existingCatalog,existingApprovals,newApprovals,pinnedSkillText});
+  if(!hasSource)return stageIndependentEvidenceAcrossVersions({items,ledger,baseline,release,existingCatalog,existingApprovals,newApprovals,pinnedSkillText});
+  const matched=items.map(x=>{
+   if(x.evidence?.dataKind==='d073-source-title-input'){
+    const {receipt}=prepareItem(x,ledger,existingCatalog);
+    return {packet:x.packet,source:x.source,sourceInput:x.evidence,receipt};
+   }
+   return {packet:x.packet,source:x.source,...require('./d072_independent_review.cjs').compareIndependentReview({packet:x.packet,ledger,evidence:x.evidence})};
+  });
+  const result=require('./d072_cross_version_reviewed_append.cjs').stageReviewedAcrossVersions({items:matched,ledger,baseline,release,existingCatalog,existingApprovals,newApprovals,pinnedSkillText});
+  return {...result,independentReviewReceipts:matched.filter(x=>!x.sourceInput).map(x=>x.receipt),sourceFactReceipts:matched.filter(x=>x.sourceInput).map(x=>x.receipt)};
  }
  // Does not enumerate or fetch any event-site target. Useful for a real
  // GitHub source/production catalog preflight even when pending IDs are zero.
