@@ -31,11 +31,11 @@ function verifySnapshot(m,catalogText,approvalsText){
  if(digest(m)!==digest(expected))fail('snapshot digest or counts');
  return m;
 }
-async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText,allowCreate=false}={}){
- if(!github?.rest?.git||!owner||!repo||!SHA.test(baseSha||''))fail('scope');
+function access({github,owner,repo}={}){
+ if(!github?.rest?.git||!owner||!repo)fail('scope');
  const g=github.rest.git,coord={owner,repo};
  const getRef=async ref=>(await g.getRef({...coord,ref})).data.object.sha;
- const main=async()=>{if(await getRef('heads/main')!==baseSha)fail('main drift');};
+ const main=async baseSha=>{if(!SHA.test(baseSha||'')||await getRef('heads/main')!==baseSha)fail('main drift');};
  const getCommit=async sha=>{const c=(await g.getCommit({...coord,commit_sha:sha})).data;if(c.sha!==sha||!SHA.test(c.tree?.sha||''))fail('commit mismatch');return c;};
  const getTree=async c=>{const t=(await g.getTree({...coord,tree_sha:c.tree.sha,recursive:'1'})).data;if(t.sha!==c.tree.sha||t.truncated!==false||!Array.isArray(t.tree))fail('tree incomplete');return t.tree;};
  const entry=(tree,path)=>{const rows=tree.filter(x=>x.path===path);if(rows.length!==1||rows[0].mode!=='100644'||rows[0].type!=='blob'||!SHA.test(rows[0].sha||''))fail('file scope '+path);return rows[0];};
@@ -47,32 +47,79 @@ async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText,al
   if(c.parents?.length!==1||c.parents[0].sha!==m.snapshotCommit)fail('manifest parent mismatch');
   const snap=await getCommit(m.snapshotCommit),st=await getTree(snap);
   if(st.filter(x=>x.type!=='tree').length!==2||[CATALOG,APPROVALS].some(p=>entry(st,p).sha!==entry(tree,p).sha))fail('snapshot tree mismatch');
-  verifySnapshot(m,await read(entry(st,CATALOG)),await read(entry(st,APPROVALS)));
-  return {status:'existing-verified',head,manifest:m,branchWritten:false};
+  const catalogText=await read(entry(st,CATALOG)),approvalsText=await read(entry(st,APPROVALS));
+  verifySnapshot(m,catalogText,approvalsText);
+  if(snap.parents?.length!==1||snap.parents[0].sha!==(m.previousManifestCommit??m.codeCommit))fail('snapshot parent mismatch');
+  return {head,manifest:m,catalogText,approvalsText};
  }
+ const makeTree=async entries=>{const sha=(await g.createTree({...coord,tree:entries})).data.sha;if(!SHA.test(sha||''))fail('created tree');return sha;};
+ const makeCommit=async(tree,parent,message)=>{const sha=(await g.createCommit({...coord,message,tree,parents:[parent]})).data.sha;if(!SHA.test(sha||''))fail('created commit');return sha;};
+ const makeBlob=async(path,content)=>{const sha=(await g.createBlob({...coord,content,encoding:'utf-8'})).data.sha;if(sha!==gitBlobSha(content))fail('created blob mismatch');return {path,mode:'100644',type:'blob',sha};};
+ return {g,coord,getRef,main,getCommit,getTree,entry,checkExisting,makeTree,makeCommit,makeBlob};
+}
+const publicReport=(x,status,branchWritten)=>({status,head:x.head,manifest:x.manifest,branchWritten});
+async function readCurrent(args){const a=access(args);return a.checkExisting(await a.getRef(REF));}
+async function bootstrap({github,owner,repo,baseSha,catalogText,approvalsText,allowCreate=false}={}){
+ if(!SHA.test(baseSha||''))fail('scope');
+ const {g,coord,getRef,main,getCommit,getTree,entry,checkExisting,makeTree,makeCommit}=access({github,owner,repo});
  // Never overwrite an existing branch; it may already contain newer data.
  let prior;try{prior=await getRef(REF);}catch(e){if(e.status!==404)throw e;}
- if(prior)return checkExisting(prior);
+ if(prior)return publicReport(await checkExisting(prior),'existing-verified',false);
  if(allowCreate!==true)fail('missing branch; explicit initial creation required');
- await main();
+ await main(baseSha);
  const base=await getCommit(baseSha),tree=await getTree(base);
  const ct=entry(tree,CATALOG),at=entry(tree,APPROVALS);
  if(ct.sha!==gitBlobSha(catalogText)||at.sha!==gitBlobSha(approvalsText))fail('checkout mismatch');
  facts(catalogText,approvalsText);
  const entries=[ct,at].map(({path,mode,type,sha})=>({path,mode,type,sha}));
- const makeTree=async entries=>{const sha=(await g.createTree({...coord,tree:entries})).data.sha;if(!SHA.test(sha||''))fail('created tree');return sha;};
- const makeCommit=async(tree,parent,message)=>{const sha=(await g.createCommit({...coord,message,tree,parents:[parent]})).data.sha;if(!SHA.test(sha||''))fail('created commit');return sha;};
  const snapshotCommit=await makeCommit(await makeTree(entries),baseSha,'D074 existing approved event snapshot');
  const m=manifest({catalogText,approvalsText,snapshotCommit,codeCommit:baseSha});
  const text=JSON.stringify(m,null,2)+'\n',sha=(await g.createBlob({...coord,content:text,encoding:'utf-8'})).data.sha;
  if(sha!==gitBlobSha(text))fail('manifest blob mismatch');
  const head=await makeCommit(await makeTree([...entries,{path:MANIFEST,mode:'100644',type:'blob',sha}]),snapshotCommit,'D074 initial data manifest');
  const verified=await checkExisting(head);
- await main();
+ await main(baseSha);
  // Creation only, no updateRef, no main write or force. A race fails closed.
  const created=(await g.createRef({...coord,ref:'refs/'+REF,sha:head})).data;
  if(created.object?.sha!==head)fail('ref creation not confirmed');
  if(await getRef(REF)!==head)fail('published ref drift');
- return {...verified,status:'initialized',branchWritten:true};
+ return publicReport(verified,'initialized',true);
 }
-module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap};
+// Explicit reviewed append only. readCurrent is the new data authority;
+// the main checkout remains the code authority and fixed recovery fixture.
+async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan',evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,
+ intake=require('./d072_github_reviewed_intake.cjs').createReviewedIntake({github,owner,repo})}={}){
+ if(!SHA.test(baseSha||'')||!SHA.test(expectedHead||'')||!['plan','publish'].includes(mode))fail('append scope');
+ const {g,coord,getRef,main,checkExisting,makeTree,makeCommit,makeBlob}=access({github,owner,repo});
+ const stable=async()=>{await main(baseSha);if(await getRef(REF)!==expectedHead)fail('data head drift');};
+ await stable();
+ const old=await checkExisting(expectedHead);
+ const catalog=JSON.parse(old.catalogText),approvals=JSON.parse(old.approvalsText);
+ const result=await intake.stage({evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,existingCatalog:catalog,existingApprovals:approvals});
+ const receipt=require('./d072_release_proposal.cjs').validateAppend({old:catalog,approvals,result,baseSha});
+ if(!Array.isArray(evidence)||evidence.length!==receipt.newCardIds.length||evidence.some((x,i)=>x?.cardId!==receipt.newCardIds[i]||
+   x.packetSha256!==receipt.proofs.find(p=>p.cardId===x.cardId)?.packetSha256))fail('evidence coordinates mismatch');
+ const proof={schemaVersion:1,dataKind:'d074-reviewed-data-append',previousManifestCommit:expectedHead,revision:old.manifest.revision+1,receipt};
+ const proofSha=digest(proof),message='D074 reviewed data append '+proofSha+'\n\n'+JSON.stringify(proof);
+ if(Buffer.byteLength(message)>60000)fail('receipt too large');
+ const json=x=>JSON.stringify(x,null,2)+'\n';
+ const catalogText=json(result.catalog),approvalsText=json(result.approvals);
+ facts(catalogText,approvalsText);
+ const summary={status:'planned',baseSha,previousHead:expectedHead,revision:proof.revision,newCardIds:receipt.newCardIds,
+  before:receipt.before,after:receipt.after,receiptSha256:proofSha,branchWritten:false,mainWritten:false,pagesDeployed:false,publicRawVerified:false};
+ await stable();
+ if(mode==='plan')return summary;
+ const entries=[await makeBlob(CATALOG,catalogText),await makeBlob(APPROVALS,approvalsText)];
+ const snapshotCommit=await makeCommit(await makeTree(entries),expectedHead,message);
+ const m=manifest({catalogText,approvalsText,snapshotCommit,codeCommit:baseSha,revision:proof.revision,previousManifestCommit:expectedHead});
+ const head=await makeCommit(await makeTree([...entries,await makeBlob(MANIFEST,json(m))]),snapshotCommit,'D074 data manifest '+proofSha);
+ const verified=await checkExisting(head);
+ if(digest(verified.manifest)!==digest(m)||verified.catalogText!==catalogText||verified.approvalsText!==approvalsText)fail('prepared snapshot mismatch');
+ await stable();
+ // Only a descendant of the exact prior head, no force, no reset. Never
+ // retry an ambiguous write. Another writer's sibling commit must conflict.
+ const updated=await g.updateRef({...coord,ref:REF,sha:head,force:false});
+ if(updated.data.object?.sha!==head||await getRef(REF)!==head)fail('published ref not confirmed');
+ return {...summary,status:'published-ref',head,snapshotCommit,manifest:m,branchWritten:true};
+}
+module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed};
