@@ -95,3 +95,37 @@ test('resume uses durable receipt and exact independently supplied title, not ra
  a.throws(()=>resume({...args,packet:changed,review:review(changed)}),/receipt/);
  a.throws(()=>resume({...args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39998',events:[]}]}}),/drift/);
 });
+
+test('JSON-only oracle: explicit choice and result position, hint IDs/Lv and non-skill count survive conversion',()=>{
+ const input=fixture({arrows:[
+  e(101,[g('A',[hint,pt,{t:'di'},{...hint,v:'+3'},{t:'ee'}]),g('B',[pt,{t:'5s',v:'+3'}])]),
+  e(102,[g('',[{...hint,v:'+1'},{t:'fe'}])])],
+  random:[e(103,[g('',[pt])])]});
+ const packet=inspect(input);
+ const projection=packet.events.map(e=>({id:e.sourceEventId,category:e.category,ordinal:e.categoryOrdinal,selection:e.selection,
+  groups:e.groups.map(g=>({ordinal:g.ordinal,label:g.labelPresent,routes:g.routes.map(r=>({ordinal:r.ordinal,
+   hints:r.hints,terminal:r.terminal,nonSkillCount:r.nonSkillCount,unresolved:r.unresolved}))}))}));
+ const route=(ordinal,hints,terminal,nonSkillCount)=>({ordinal,hints,terminal,nonSkillCount,unresolved:[]});
+ const h=(level,sourceOrdinal)=>({skillId:'skill:990001',level,sourceOrdinal});
+ a.deepEqual(projection,[
+  {id:101,category:'arrows',ordinal:1,selection:'choice',groups:[
+   {ordinal:1,label:true,routes:[route(1,[h(2,1)],false,1),route(2,[h(3,4)],true,0)]},
+   {ordinal:2,label:true,routes:[route(1,[],false,6)]}]},
+  {id:102,category:'arrows',ordinal:2,selection:'auto',groups:[{ordinal:1,label:false,routes:[route(1,[h(1,1)],false,1)]}]},
+  {id:103,category:'random',ordinal:1,selection:'auto',groups:[{ordinal:1,label:false,routes:[route(1,[],false,1)]}]}
+ ]);
+ a.equal(packet.status,'awaiting-independent-fact-review');a.equal(packet.publicationApproved,false);
+ a.equal(Object.hasOwn(packet,'domEvidence'),false);
+ a.throws(()=>prepare(input,undefined),/review/);
+});
+test('JSON-only review rejects new semantic fields and malformed hint/flow rather than silently adopting them',()=>{
+ const cases=[
+  {random:[{...e(1,[g('',[hint])]),unexpected:true}]},
+  {random:[e(1,[{...g('',[hint]),unexpected:true}])]},
+  {random:[e(1,[g('',[{...hint,d:'990001'}])])]},
+  {random:[e(1,[g('',[{t:'ee',v:'+1'}])])]},
+  {random:[e(1,[g('',[{t:'en',v:'+1/+2'}])])]},
+  {random:[e(1,[g('',[{t:'sg',v:null,d:990001}])])]}
+ ];
+ for(const doc of cases){const input=fixture(doc),p=inspect(input);a.equal(p.status,'held');a.ok(p.reasonCodes.length);a.throws(()=>prepare(input,review(p)),/held/);}
+});
