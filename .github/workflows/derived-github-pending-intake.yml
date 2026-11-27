@@ -186,7 +186,7 @@ jobs:
               if(conditions===null){
                 if(daily.mode==='disabled'){conditions={status:'policy-disabled'};return conditions;}
                 require('./poc/src/d073_routine_publication_policy.cjs').validatePolicy(daily.routinePublicationPolicy);
-                conditions=await require('./poc/src/d075_conditions_monitor.cjs').checkConditions({config:conditionConfig,policy:daily.routinePublicationPolicy,github,...context.repo});
+                conditions=await require('./poc/src/d075_conditions_monitor.cjs').checkConditions({config:conditionConfig,policy:daily.routinePublicationPolicy,mode:daily.mode,github,...context.repo});
                 core.info('D075_CONDITIONS='+JSON.stringify(conditions));
               }
               return conditions;
