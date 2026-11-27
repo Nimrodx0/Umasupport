@@ -109,9 +109,11 @@ function deckTrainingFields(d,k){
  return ['running_style','distance_type','ground_type'].map(axis=>'<label><span>'+AXIS_NAMES[axis]+'</span><select class="field" data-deck-training-axis="'+axis+'" data-deck="'+k+'" aria-label="'+scopeLabel[k]+'の育成'+AXIS_NAMES[axis]+'">'+catalogOptions([['','指定なし'],...catalog.AXES[axis].map((v,i)=>[i+1,v])],ctx[axis])+'</select></label>').join('');
 }
 function initDeckPicker(k){
- ui.pickerFitContext=window.UmaSettings.deckTrainingContext(activeDeck(k));
- if(!ui.pickerFitContext.running_style){ui.pickerFitOnly=false;if(ui.pickerSort==='fit-count-desc')ui.pickerSort='id-desc';}
- ui.pickerPage=0;
+ const previous=ui.pickerFitContext,next=window.UmaSettings.deckTrainingContext(activeDeck(k));
+ const changed=Object.keys({...previous,...next}).some(axis=>previous[axis]!==next[axis]);
+ ui.pickerFitContext=next;
+ if(!next.running_style){ui.pickerFitOnly=false;if(ui.pickerSort==='fit-count-desc')ui.pickerSort='id-desc';}
+ if(changed)ui.pickerPage=0;
 }
 function catalogSuitDisabled(o){return ['outside','unknown'].includes(o.scope);}
 function catalogSuitOptions(o){const s=styleName(o.context),selected=o.context.running_style!=null;return catalogOptions([['all','すべて'],['supported','一致候補（適性あり＋汎用）'],['apt-positive',selected?s+'適性あり':'特定脚質への適性あり'],['explicitOnly',selected?s+'限定（明示条件）':'単一脚質限定（明示条件）'],['targeted',selected?s+'向け（比較判定）':'特定脚質向け（比較判定）'],['general','汎用'],...(selected?[['otherTargeted','他の脚質向け'],['scopePending','適用条件未指定']]:[]),['undetermined','適性未判定']],o.suitability);}
