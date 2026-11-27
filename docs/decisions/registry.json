@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-26",
+  "asOf": "2026-11-27",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-066",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：デッキごとの育成条件と編成候補の既定値",
+      "status": "current",
+      "relation": [],
+      "note": "各保存デッキに脚質・距離・馬場を独立保存し、スロット選択・入替・編成済み詳細を開く際の初期条件とする。検索内の変更は一時的。複製時は引継ぎ、新規・旧設定は指定なし。馬場状態は従来どおり一時指定。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-066",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-066",
+      "reviewedAt": "2026-11-27"
+    },
     {
       "id": "D-065",
       "date": "2026-11-27",

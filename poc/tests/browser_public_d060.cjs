@@ -129,6 +129,7 @@ async function main(){
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');a(id);await first.click();
    const slot=page.locator('[data-action="edit-card"][data-deck="main"][data-index="0"]');
    await slot.click();
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
    const verifyDetail=async stage=>{
     const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
     const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
@@ -154,7 +155,7 @@ async function main(){
     a(actual.length);for(let i=0;i<actual.length;i++){const x=actual[i];a.equal(x.n,expected[x.id].newCount);a.equal(x.total,expected[x.id].total);if(i)a(actual[i-1].n>=x.n);}
     a.deepEqual(actual.map(x=>x.id),Object.keys(expected).sort((a,b)=>expected[b].newCount-expected[a].newCount||Number(b)-Number(a)).slice(0,120));
    };
-   await verifyNew({running_style:2});
+   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');await verifyNew({running_style:2});
    await page.locator('[data-picker-fit-axis="distance_type"]').selectOption('3');await verifyNew({running_style:2,distance_type:3});
    await page.locator('[data-picker-fit-axis="ground_type"]').selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
    await page.locator('[data-picker-fit-axis="running_style"]').selectOption('');await verifyNew({});

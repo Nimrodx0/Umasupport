@@ -169,6 +169,18 @@ async function main(){
    await pickerPage.locator('[data-picker-fit-axis="distance_type"]').selectOption('');
    assert.equal(await acquisition.getAttribute('data-new-skills'),'1','clearing style restores all candidate counting');
    await pickerPage.locator('#picker-sort').selectOption('source');
+   await pickerPage.locator('button[data-action="close"]').click();
+   for(const [axis,value] of [['running_style','1'],['distance_type','3'],['ground_type','1']])await pickerPage.locator('[data-deck-training-axis="'+axis+'"][data-deck="main"]').selectOption(value);
+   await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
+   for(const [axis,value] of [['running_style','1'],['distance_type','3'],['ground_type','1']])assert.equal(await pickerPage.locator('[data-picker-fit-axis="'+axis+'"]').inputValue(),value);
+   await pickerPage.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await pickerPage.locator('button[data-action="close"]').click();
+   assert.equal(await pickerPage.locator('[data-deck-training-axis="running_style"][data-deck="main"]').inputValue(),'1');
+   await pickerPage.locator('button[data-action="pick"][data-deck="inherit"][data-index="0"]').click();
+   assert.equal(await pickerPage.locator('[data-picker-fit-axis="running_style"]').inputValue(),'');
+   await pickerPage.locator('button[data-action="close"]').click();
+   for(const axis of ['running_style','distance_type','ground_type'])await pickerPage.locator('[data-deck-training-axis="'+axis+'"][data-deck="main"]').selectOption('');
+   await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
    await pickerPage.locator('button[data-action="set-card"][data-id="30001"]').click();
    await pickerPage.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
    await pickerPage.locator('#picker-sort').selectOption('new-skills-desc');
