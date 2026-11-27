@@ -41,27 +41,55 @@ function locate(x){
  walk(x,[],0);
  return {matches:matches.slice(0,12),matchCount:matches.length};
 }
-// Reward references observed in the two scoped records, not a full export.
-const friendCodes=[71,41,46,68,186,1358,756,1359,1360,246,1361,1362,1209,49,47,39,82,1243,45,66,1280,48,56,108,1363,40,802,52,1364,121,1365,695,72,110,60,886];
-const ssrCodes=[99,41,56,1193,92,44,114,186,1194,103,1195,1196,155,40,1197,1198,43,1199,1200,47,1201,1202];
-function codeShape(v,d=0){
- if(d>5)return {type:kind(v)};
- if(Array.isArray(v))return v.slice(0,20).map(x=>codeShape(x,d+1));
- if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,20).map(([k,x],i)=>[/^[a-zA-Z_][a-zA-Z0-9_-]{0,35}$/.test(k)?k:'key'+i,codeShape(x,d+1)]));
- if(typeof v==='string'){
-  // Only compact machine tokens or numerical facts, never source prose.
-  if(/^[A-Za-z0-9_:+;,.|/@#%=-]{1,40}$/.test(v))return v;
-  return {type:'string',length:v.length,numbers:v.match(/[-+]?\d+/g)?.slice(0,12).map(Number)||[],hasRare:/SSR|レア|金|rare/i.test(v),hasHint:/ヒント|hint/i.test(v)};
- }
- return v;
+// Compare only the three already independently reviewed SSR 30322 chain
+// events and the pending friend card identities. No catalog mutation.
+const assert=require('node:assert/strict');
+const {canonical,digest}=require('../src/event_release_gate.cjs');
+const approved=require('../data/reviewed_events.v1.json');
+const count=x=>Array.isArray(x)?x.length:null;
+function publishedRewards(event){
+ const groups=event.type==='auto'?[event]:event.choices||[];
+ return groups.map(g=>(g.outcomes||[g]).map(o=>(o.rewards||[]).map(r=>({id:Number(r.skillId?.replace(/^skill:/,'')),kind:r.kind,level:r.level??null})).sort((a,b)=>a.id-b.id||String(a.kind).localeCompare(String(b.kind))||a.level-b.level)));
+}
+function parseGroup(g,dict){
+ assert(Array.isArray(g)&&g.length===2&&Number.isSafeInteger(g[0])&&Array.isArray(g[1]),'Unexpected choice encoding');
+ const refs=g[1].map(id=>{
+  assert(Number.isSafeInteger(id)&&id>0&&Array.isArray(dict[id]),'Unresolved reward ref');
+  return dict[id];
+ });
+ const hints=refs.filter(r=>r[0]==='sk').map(r=>({id:r[2],kind:'hint',level:Number(r[1])})).sort((a,b)=>a.id-b.id||a.level-b.level);
+ const types=[...new Set(refs.map(r=>r[0]))].sort();
+ return {hints,types};
 }
 (async()=>{
  robots=await read('/robots.txt',100000,'text/plain');
- await new Promise(r=>setTimeout(r,6000));
- const version='a687fca9';
- const body=await read('/data/umamusume/dict/evrew.'+version+'.json',4*1024*1024,'json');
- if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
- const doc=JSON.parse(body);
- const codes=[...new Set([...friendCodes,...ssrCodes])].sort((a,b)=>a-b);
- console.log('GT_REWARD_DICTIONARY='+JSON.stringify({rootType:kind(doc),rootCount:Object.keys(doc).length,rootShape:shape(doc),selected:codes.map(id=>({id,present:Object.hasOwn(doc,id),value:codeShape(doc[id])}))}));
+ const fetchPinned=async(key,version)=>{
+  await new Promise(r=>setTimeout(r,6000));
+  const body=await read('/data/umamusume/'+key+'.'+version+'.json',4*1024*1024,'json');
+  if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
+  return JSON.parse(body);
+ };
+ const ssr=await fetchPinned('training_events/ssr','fa74f9c4');
+ const dict=await fetchPinned('dict/evrew','a687fca9');
+ const supports=await fetchPinned('support-cards','6ea0c160');
+ const compare=ssr.filter(row=>Array.isArray(row)&&row[0]===30322);
+ const pub=approved.cards.filter(c=>c.cardId==='30322');
+ assert(compare.length===1&&pub.length===1,'Missing comparator');
+ const chain=pub[0].events.filter(e=>e.id.startsWith('gt-site:30322:')).slice(0,3);
+ const pairs=compare[0][1].map((r,i)=>{
+  const actual=r[1].map(g=>parseGroup(g,dict));
+  const expected=publishedRewards(chain[i]);
+  // The source's flat group references may contain unresolved OR markers;
+  // do not presume equivalence to a player choice or separate result.
+  const actualHints=actual.flatMap(g=>g.hints).sort((a,b)=>a.id-b.id||a.level-b.level);
+  const expectedHints=expected.flat(2).sort((a,b)=>a.id-b.id||a.level-b.level);
+  return {ordinal:i+1,storyId:r[2],publishedEventId:chain[i]?.id,
+   sourceGroups:actual.length,publishedGroups:expected.length,
+   publishedOutcomeCounts:expected.map(g=>g.length),
+   sourceHints:actualHints,publishedHints:expectedHints,
+   hintMultisetMatches:canonical(actualHints)===canonical(expectedHints),
+   sourceRewardTypes:[...new Set(actual.flatMap(g=>g.types))].sort()};
+ });
+ const friendCards=supports.filter(x=>targets.includes(String(x.support_id))).map(x=>({cardId:x.support_id,charId:x.char_id,rarity:x.rarity,eventSkillIds:x.event_skills}));
+ console.log('GT_APPROVED_PARITY='+JSON.stringify({cardId:30322,sourceChainCount:compare[0][1].length,publishedCount:pub[0].events.length,pairs,friendCards,publicationApproved:false}));
 })().catch(e=>{console.error('GT_PROBE_STOP='+String(e.message).slice(0,180));process.exitCode=1;});
