@@ -1,0 +1,39 @@
+name: One-time isolated GitHub CAS integration
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-d069-store-integration.yml'
+permissions:
+  contents: write
+jobs:
+  test-store:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d069-github-store-roundtrip'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const a=require('node:assert/strict');
+            const {createStore}=require('./poc/src/d069_github_attempt_store.cjs');
+            const make=()=>createStore({github,...context.repo,ref:'heads/test/d069-attempt-store'});
+            const live=createStore({github,...context.repo});
+            const productionBefore=await live.load();
+            const s=make(),old=await s.load();
+            a.equal(old.revision,0);a.equal(old.rows.length,0);
+            const pin={commit:'a'.repeat(40),cardBlob:'b'.repeat(40),skillBlob:'c'.repeat(40)};
+            const reserve=id=>({...old,revision:1,rows:[{cardId:id,sourcePin:pin,status:'reserved',packetSha256:null}]});
+            const results=await Promise.all([s.compareAndSet(old,reserve('39998')),make().compareAndSet(old,reserve('39999'))]);
+            a.equal(results.filter(Boolean).length,1);
+            const actual=await make().load();
+            a.equal(actual.revision,1);a.equal(actual.rows.length,1);
+            const next={...actual,revision:2,rows:actual.rows.map(r=>({...r,status:'uncertain'}))};
+            a.equal(await make().compareAndSet(actual,next),true);
+            a.deepEqual(await make().load(),next);
+            a.deepEqual(await live.load(),productionBefore);
+            core.info('D069_GITHUB_STORE_INTEGRATION='+JSON.stringify({competingReservations:2,winners:1,completionRevision:2,productionUnchanged:true,sourceRequests:0}));
