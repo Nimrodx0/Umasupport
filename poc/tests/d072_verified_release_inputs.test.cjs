@@ -91,6 +91,25 @@ test('GitHub preparation and staging require durable receipt, separately supplie
   await a.rejects(intake.stage({...autoArgs,publicationDecisions:[{...decision,...change}]}),/publication decision/);
  }
  await a.rejects(intake.stage({...autoArgs,newApprovals:args.newApprovals}),/exactly one/);
+ const today=new Date().toISOString().slice(0,10);
+ const policy={schemaVersion:1,scope:'D073-normal-random-skill-path-identifying-titles-only',reviewer:'synthetic common reviewer',reviewedAt:today,validThrough:today,
+  accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic-policy'],
+  publicationBasis:{kind:'original-factual-description',reason:'synthetic common policy only'}};
+ const commonArgs={evidence:[archivedInput],existingCatalog,existingApprovals,routinePublicationPolicy:policy};
+ const commonResult=await intake.stage(commonArgs);
+ a.deepEqual(commonResult.catalog,result.catalog);
+ a.equal(commonResult.approvals.entries[0].eventSha256,entry.eventSha256);
+ a.ok(commonResult.approvals.entries[0].publicationBasis.reason.includes(digest(policy)));
+ a.deepEqual(commonResult.approvals.entries[0].evidence.publication,policy.evidenceUrls);
+ a.deepEqual(commonResult.independentReviewReceipts,[]);
+ for(const change of [{accessConditionsReviewed:false},{publicationApproved:false},{validThrough:'2000-01-01'},{reviewedAt:'2999-01-01'},{scope:'all-cards'},{evidenceUrls:[]}]){
+  await a.rejects(intake.stage({...commonArgs,routinePublicationPolicy:{...policy,...change}}),/routine policy/);
+ }
+ await a.rejects(intake.stage({...commonArgs,evidence:[titleInput]}),/outside routine scope/);
+ await a.rejects(intake.stage({...commonArgs,publicationDecisions:[decision]}),/exactly one/);
+ ledger.rows.push({cardId:'39999',sourcePin:pin,status:'uncertain',packetSha256:null,failureCode:'source-refused'});
+ await a.rejects(intake.stage(commonArgs),/prior source refusal/);
+ ledger.rows.pop();
  const current=await intake.verifyCurrent({existingCatalog,existingApprovals});
  a.equal(current.currentRosterCount,501);a.equal(current.sourceRequestsToGameTora,0);a.equal(current.publicationChanged,false);
 });
