@@ -41,40 +41,27 @@ function locate(x){
  walk(x,[],0);
  return {matches:matches.slice(0,12),matchCount:matches.length};
 }
-// Current verified manifest coordinates from the first explicit run.
-const refs={support:'6ea0c160',friend:'3e027684'};
-function matchesRow(v,ids){
- if(!v||typeof v!=='object')return false;
- return Object.entries(v).some(([k,x])=>ids.includes(k)||((typeof x==='number'||typeof x==='string')&&ids.includes(String(x))));
-}
-function relevantRows(doc,ids){
- const found=[];
- function walk(v,d){
-  if(!v||typeof v!=='object'||d>8||found.length>=20)return;
-  if(matchesRow(v,ids)){
-   const fields=Object.entries(v).filter(([k,x])=>/^(?:.*(?:id|event|char|card|rarity|type).*)$/i.test(k)&&typeof x==='number'&&Number.isSafeInteger(x)).map(([k,x])=>[k,x]);
-   const numericPositions=Array.isArray(v)?v.slice(0,12).map((x,i)=>typeof x==='number'&&Number.isSafeInteger(x)?[i,x]:null).filter(Boolean):[];
-   found.push({shape:shape(v),identityFields:fields,numericPositions});
-  }
-  for(const x of Object.values(v))if(x&&typeof x==='object')walk(x,d+1);
- }
- walk(doc,0);
- return found;
+// Exact known target records only. No text, raw HTML or unrelated records.
+function numericShape(v,d=0){
+ if(d>10)return {type:kind(v),depthLimit:true};
+ if(Array.isArray(v))return v.slice(0,30).map(x=>numericShape(x,d+1));
+ if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,30).map(([k,x],i)=>[/^[a-zA-Z_][a-zA-Z0-9_-]{0,35}$/.test(k)?k:'key'+i,numericShape(x,d+1)]));
+ if(typeof v==='string')return {type:'string',length:v.length,code:/^[a-zA-Z0-9_:+;,.|/@#% -]{1,28}$/.test(v)&&/\d/.test(v)?v:undefined};
+ return v;
 }
 (async()=>{
  robots=await read('/robots.txt',100000,'text/plain');
- await new Promise(r=>setTimeout(r,6000));
  const fetchPinned=async(key,version)=>{
+  await new Promise(r=>setTimeout(r,6000));
   const body=await read('/data/umamusume/'+key+'.'+version+'.json',4*1024*1024,'json');
   if(!crypto.createHash('sha256').update(body).digest('hex').startsWith(version))throw Error('Version digest mismatch');
   return JSON.parse(body);
  };
- const supports=await fetchPinned('support-cards',refs.support);
- const rows=relevantRows(supports,targets);
- console.log('GT_SUPPORT_TARGET_MAP='+JSON.stringify({root:shape(supports,1),matches:rows}));
- const related=[...new Set([...targets,...rows.flatMap(r=>r.identityFields.filter(([k,v])=>/char/i.test(k)&&v>0).map(([k,v])=>String(v)))])];
- await new Promise(r=>setTimeout(r,6000));
- const friend=await fetchPinned('training_events/friend',refs.friend);
- console.log('GT_FRIEND_ROOT_SHAPE='+JSON.stringify(shape(friend)));
- console.log('GT_FRIEND_TARGET_MAP='+JSON.stringify({relatedIds:related,matches:relevantRows(friend,related)}));
+ const friend=await fetchPinned('training_events/friend','3e027684');
+ const found=friend.filter(row=>Array.isArray(row)&&row[0]===9052);
+ if(found.length!==1)throw Error('Target mapping changed');
+ console.log('GT_FRIEND_TARGET_NUMERIC='+JSON.stringify(numericShape(found[0])));
+ const ssr=await fetchPinned('training_events/ssr','fa74f9c4');
+ const compare=ssr.filter(row=>Array.isArray(row)&&row[0]===30322);
+ console.log('GT_SSR_REFERENCE='+JSON.stringify({rootType:kind(ssr),rootCount:ssr.length,rowShape:shape(ssr[0]),matches:compare.map(x=>numericShape(x))}));
 })().catch(e=>{console.error('GT_PROBE_STOP='+String(e.message).slice(0,180));process.exitCode=1;});
