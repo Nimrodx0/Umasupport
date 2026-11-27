@@ -14,4 +14,4 @@
 
 ## 移行の境界
 
-現在の公開済み初版は固定snapshot `12618f01a2e317311f28e768d5fca7a0b757386f`、564カード・2521イベント。実新カードの増分試験、日次監視の正本切替、旧PR更新経路の退役、共通公開方針の実設定、公開ブラウザでの追加版受入は残る。旧日次提案はdisabledを維持。旧main更新経路と同時運用しない。新規publishは公開アプリの読取切替がmainに統合されるまで拒否する。D-068/D-072/D-073の公開条件は変えない。GitHubの標準トークンを利用し、追加の秘密鍵・PATは不要。
+現在の公開済み初版は固定snapshot `12618f01a2e317311f28e768d5fca7a0b757386f`、564カード・2521イベント。日次監視は専用DBを固定headとSHAで検証して使用し、手動増分と同一排他群。旧PR生成workflowは退役、旧日次設定はdisabled必須。新日次設定 `poc/config/d074-daily-data.v1.json` はdisabled/null（planは明示審査済み共通方針が必要、publishは加えて `automaticPublicationAllowed:true` が必要）。キューのreceiptSha256・eventDigestsSha256を増分前に再照合し、Raw検証まで実施。保留Issueは次の日次runで再照合。実新カード試験、共通公開方針、公開ブラウザでの追加版受入は残る。D-068/D-072/D-073の公開条件は変えない。GitHubの標準トークンを利用し、追加の秘密鍵・PATは不要。
