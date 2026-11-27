@@ -118,7 +118,7 @@ async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan
  await stable();
  const old=await checkExisting(expectedHead);
  const catalog=JSON.parse(old.catalogText),approvals=JSON.parse(old.approvalsText);
- const result=await intake.stage({evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,existingCatalog:catalog,existingApprovals:approvals});
+ const result=await intake.stage({evidence,newApprovals,attestations,publicationDecisions,routinePublicationPolicy,existingCatalog:structuredClone(catalog),existingApprovals:structuredClone(approvals)});
  const receipt=require('./d072_release_proposal.cjs').validateAppend({old:catalog,approvals,result,baseSha});
  if(!Array.isArray(evidence)||evidence.length!==receipt.newCardIds.length||evidence.some((x,i)=>x?.cardId!==receipt.newCardIds[i]||
    x.packetSha256!==receipt.proofs.find(p=>p.cardId===x.cardId)?.packetSha256))fail('evidence coordinates mismatch');
