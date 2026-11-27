@@ -27,6 +27,13 @@ function describePending(ledger,review){
 // D069: determine exact queued targets from the current verified ledger.
 // This stage is intentionally network-free. Access conditions have not
 // yet been established; a queue entry is not authority to visit a site.
+function partitionBatches(ids,limit=2){
+ assert(Array.isArray(ids)&&ids.length<=1000&&ids.every(id=>typeof id==='string'&&/^[1-9]\\d{4}$/.test(id))&&new Set(ids).size===ids.length,'Invalid batch IDs');
+ assert(Number.isSafeInteger(limit)&&limit>=1&&limit<=2,'Invalid batch limit');
+ const batches=[];
+ for(let i=0;i<ids.length;i+=limit)batches.push(ids.slice(i,i+limit));
+ return batches;
+}
 function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
  const {verifyLedger}=require('./derived_github_pending_ledger.cjs');
  verifyLedger(previous);
@@ -43,8 +50,9 @@ function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
  const eligibleIds=rows.filter(r=>r.currentStatus==='awaiting-direct-source-review').map(r=>r.cardId);
  return {dataKind:'d069-event-driven-intake-plan',schemaVersion:1,
   sourcePin:{...sourcePin},newlyQueuedIds,heldIds,eligibleIds,
+  batches:partitionBatches(eligibleIds,policy.sourceVisitLimitPerInvocation),
   nextBatchIds:eligibleIds.slice(0,2),remainingIds:eligibleIds.slice(2),
   status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
   siteAccessAuthorized:false,publicationApproved:false};
 }
-module.exports={verifyDirectReview,describePending,planEventDrivenIntake};
+module.exports={verifyDirectReview,describePending,planEventDrivenIntake,partitionBatches};

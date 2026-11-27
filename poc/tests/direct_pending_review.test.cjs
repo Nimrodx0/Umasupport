@@ -33,6 +33,7 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.deepEqual(result.heldIds,['10149','30323']);
  a.deepEqual(result.nextBatchIds,['39997','39998']);
  a.deepEqual(result.remainingIds,['39999']);
+ a.deepEqual(result.batches,[['39997','39998'],['39999']]);
  a.equal(result.status,'blocked-access-conditions');
  a.equal(result.siteAccessAuthorized,false);
  a.equal(result.publicationApproved,false);
@@ -50,4 +51,13 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.throws(()=>planEventDrivenIntake({...input,sourcePin:{...sourcePin,cardBlob:'latest'}}),/immutable/);
  a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticScheduledSiteAccessAllowed:true}}),/gate/);
  a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticPublicationAllowed:true}}),/gate/);
+});
+
+test('partition covers all IDs exactly once, not two per day',()=>{
+ const {partitionBatches}=require('../src/direct_pending_review.cjs');
+ const ids=['39991','39992','39993','39994','39995'];
+ a.deepEqual(partitionBatches(ids),[['39991','39992'],['39993','39994'],['39995']]);
+ a.deepEqual(partitionBatches([]),[]);
+ a.throws(()=>partitionBatches(['39991','39991']));
+ a.throws(()=>partitionBatches(ids,3));
 });
