@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Audit pinned UmaSim dictionary and current public event cohort
+      - name: Audit pinned UmaSim dictionary and fixed historical event cohort
         env:
           UMASIM_REVISION: f6e4501ee6c6c2d4ac8698e7796e309d31575bde
         run: |

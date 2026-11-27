@@ -2,15 +2,14 @@
 /* Read-only whole-population report. Run manually, not in every ordinary CI. */
 'use strict';
 const fs=require('node:fs');
-const path=require('node:path');
 const loader=require('../src/live_loader.js');
 const bridge=require('../src/skill_bridge.js');
 const catalogLoader=require('../src/public_event_catalog.js');
 const skillEffects=require('../src/skill_effects.js');
 
 const REVISION=process.env.UMASIM_REVISION||'f6e4501ee6c6c2d4ac8698e7796e309d31575bde';
+if(REVISION!=='f6e4501ee6c6c2d4ac8698e7796e309d31575bde')throw Error('Fixed effect audit requires its original UmaSim revision');
 const BASE='https://raw.githubusercontent.com/mee1080/umasim/'+REVISION+'/data/';
-const ROOT=path.resolve(__dirname,'../..');
 function n(s){return String(s??'').normalize('NFKC').replace(/\s+/g,' ').trim();}
 function percent(a,b){return b?Math.round(a/b*10000)/100:null;}
 function sample(list,n=25){return list.slice(0,n);}
@@ -86,7 +85,7 @@ function rewards(part,out){
  const hintNamesNotInSource=[...uniqueHints].filter(name=>!source.byName.has(name));
  const hintNamesAmbiguous=[...uniqueHints].filter(name=>(source.byName.get(name)||[]).length>1);
  const before=stats(hintSkills);
- const reviewed=JSON.parse(fs.readFileSync(path.join(ROOT,'poc/data/reviewed_events.v1.json'),'utf8'));
+ const reviewed=JSON.parse(await require('./fixed_research_event_catalog.cjs').loadFixedEventText());
  const attached=catalogLoader.attach(model,reviewed,{skillText,pinnedSkillText,
   fullRegistry:true,allowReviewedLegacy:true});
  const skillIdsFromEvents=new Set();
