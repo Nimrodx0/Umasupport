@@ -90,15 +90,14 @@ README・ロードマップ・製品計画の現行記述をD-052〜D-067およ�
 | --- | --- | --- |
 | Webアプリ | 本育成／継承育成、通常ヒント・公開イベント候補、選択分岐、重複・目標カバー、所持・検索、保存／JSON復元をGitHub Pagesで提供 | Windows／Android物理端末の最終受入、障害・復帰の公開運用 |
 | 公開イベント | GameTora派生JSON由来の承認済み数値事実を公開 | 25件の出典例外・現行ゲームとの独立照合・公開条件の継続管理（[W2](../plans/product.md)） |
-| 新サポカ | UmaSim追加ID検出、GameTora派生JSON確認、未入手の持越台帳・増分追加機構 | 未掲載イベントの収録・審査、監視用Draft PR作成の権限問題（[Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283)・[#386](https://github.com/Nimrodx0/Umasupport/issues/386)） |
+| 新サポカ | UmaSim追加ID検出、D-067のGameTora本体限定直接取得・変換、持越台帳・増分追加機構 | 未収録イベントの個別裁定・正式増分公開、旧監視用Draft PR作成の権限問題（[Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283)・[#386](https://github.com/Nimrodx0/Umasupport/issues/386)） |
 | スキル辞書 | 固定881スキルのうち818件の元効果・条件を照合 | 63件の効果・条件未照合。辞書収録とカード獲得可能性は別 |
 | P0／P1 | 元スキル条件監査と内部モデル実装済み | 出典更新時の回帰 |
 | P2 | 完了（D-052、全6ゲート、#497～498統合） | 新規研究は具体的反例のみ |
-| P3.1 | 10元部分条件×脚質6ペア＝60件のW専用研究を出典固定で隔離受入・元ID検索可能 | D、全条件、取得経路、採点は未検証・未承認 |
-| P3.2 | 元10スキルをID・名称・全条件構造でアプリ照合。**9件一意一致／1件未収録**（[研究証拠](../evidence/skills/skill-p3-2-original-source-app-identity-20261112.md)） | P3.3で限定直接候補を検証済み。全件取得経路は未検証 |
-| P3.3（研究限定） | 11月12日の固定CIで、P3.2の9一致スキルについて承認済みイベントの直接獲得**候補6経路／5スキル**を照合。厳密IDによる通常ヒント候補は0。**同じ候補をサポカ→スキル→直接経路の順で整理する読取専用の集約を追加し、固定元CIで4枚・5組・6経路を照合**（[P3.3証拠](../evidence/skills/skill-p3-3-approved-card-route-intake-20261112.md)） | 固定9技能以外の全カード集約、本番の選択済み分岐、間接取得、未確認通常ヒントの同定、実ゲーム獲得、適性スコアは未検証 |
-| P3.4 | 881件の研究用不確実性分類、適性3状態の利用者方針、人工相対差プローブと元4スキル監査を[#472](https://github.com/Nimrodx0/Umasupport/pull/472)で統合 | 正式ラベル0件、閾値・全スキルの認定・カード集約・P3.5未完 |
-| P4／P5 | 研究から製品への工程・受入条件を定義 | 全スキル一覧の公開UI・固定およびPages自動試験成功、物理端末・ラベル永続配布・最終公開判定は未完 |
+| P3 | D-058/D-059の実用判定と全固定カードの直接取得候補集約、D-060の独自ラベル公開を実施済み | 未判定・出典更新への回帰、具体的な反例のみ再評価。効果量・総合点は対象外 |
+| P4／P5 | D-060〜D-065の主要UI・固定およびPages自動受入成功 | 実機（保留）、障害復帰の回帰維持・ロールバック受入 |
+
+P3.1〜P3.4の初期研究結果と当時の未完事項は[更新前の固定スナップショット](https://github.com/Nimrodx0/Umasupport/blob/48e9072dba84dfa6e6335522071b6a24073ad288/docs/project/status.md)および[P3詳細計画](../plans/skill-conditions/p3.md)に保存。現行工程の未完判定には用いない。
 
 **2026-11-24統合レビュー**：#465～#468と#469～#472をmainへ統合。再現性修正[#475](https://github.com/Nimrodx0/Umasupport/pull/475)をmainへ統合（[a91200c](https://github.com/Nimrodx0/Umasupport/commit/a91200c9c0b81db90f40cb6cab32a346b4ae0f9e)）。キャッシュなしから5,760レースの5点・2,160レースの2点の固定SHA-256を完全再現し、15+15シード比較・旧P2.31再導出も成功。[証拠](../evidence/quality/pinned-research-regeneration-20261124.md)。#464・#476・#477をmainへ統合（[8758537](https://github.com/Nimrodx0/Umasupport/commit/8758537dfe06de20ae6f9576ce790832e4f69e5f)）。#476の全件横断、#477の派生報告旧SHAの再現も成功。公開データ・製品採点・UI変更なし。今後の順序は[D-047](../decisions/log.md#decision-d-047)と[ロードマップ](roadmap.md)、暫定G判定は[P2計画](../plans/skill-conditions/p2.md)に記録。
 
