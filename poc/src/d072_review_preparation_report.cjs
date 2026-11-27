@@ -26,7 +26,7 @@ async function prepareReport({github,owner,repo,baseSha,catalogText,evidence,int
      (evidence[i]?.dataKind==='d073-source-title-input'?(receipt.dataKind!=='d073-source-fact-receipt'||receipt.titleInputSha256!==digest({titles:evidence[i].titles??candidate.card.events.map(e=>({sourceEventId:Number(e.id.split(':').at(-1)),title:e.name}))})||receipt.chainEvidenceSha256!==(evidence[i].chainEvidence===null?null:digest(evidence[i].chainEvidence))):receipt.independentEvidenceSha256!==digest(evidence[i]))||
      candidate.eventDigests.length!==candidate.card.events.length||
      candidate.card.events.some((e,i)=>candidate.eventDigests[i].eventId!==e.id||candidate.eventDigests[i].sha256!==digest(e)))fail('candidate receipt mismatch');
-  return {cardId:receipt.cardId,packetSha256:receipt.packetSha256,...(receipt.dataKind==='d073-source-fact-receipt'?{sourceFactsSha256:receipt.sourceFactsSha256,titleInputSha256:receipt.titleInputSha256,chainEvidenceSha256:receipt.chainEvidenceSha256}:{independentEvidenceSha256:receipt.independentEvidenceSha256}),
+  return {cardId:receipt.cardId,packetSha256:receipt.packetSha256,...(receipt.dataKind==='d073-source-fact-receipt'?{sourceFactsSha256:receipt.sourceFactsSha256,titleInputSha256:receipt.titleInputSha256,chainEvidenceSha256:receipt.chainEvidenceSha256,receiptSha256:digest(receipt),eventDigestsSha256:digest({events:candidate.eventDigests})}:{independentEvidenceSha256:receipt.independentEvidenceSha256}),
    events:candidate.eventDigests,nonSkillOmissionCount:candidate.omissions.length};
  });
  if(await main()!==baseSha)fail('main drift after preparation');
