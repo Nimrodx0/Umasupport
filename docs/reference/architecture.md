@@ -21,6 +21,10 @@
 
 対象は公開中の**静的サイト＋外部データ実行時取得＋承認済みイベントJSON**。旧単一HTML実データ同梱v8.1と区別する。最新の公開・実装到達点は [status.md](../project/status.md) で確認する。
 
+## D-074：イベントDBの配信分離（移行中）
+
+[採用判断](../decisions/log.md#decision-d-074)・[ADR-0002](../adr/0002-event-data-distribution.md)。アプリはmain／Pagesのまま、承認済みDB・台帳を同一repoの `data/events` に分離する。moving manifestは固定スナップショットcommitと生バイトSHA256・内容SHA・件数を指す。初期化・Raw検証を先に実装し、ブラウザ切替・増分書込みは後続。以下の現行構成は切替完了まで有効。
+
 ## 現行構成
 
 ~~~text
