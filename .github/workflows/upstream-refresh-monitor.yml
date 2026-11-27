@@ -5,6 +5,11 @@ on:
     # 03:27 UTC = 12:27 JST. GitHub scheduled runs can start late.
     - cron: '27 3 * * *'
   workflow_dispatch:
+    inputs:
+      legacy_event_audit:
+        description: 'Explicit historical derived GitHub audit (not new-card intake)'
+        type: boolean
+        default: false
   push:
     paths:
       - '.github/workflows/upstream-refresh-monitor.yml'
@@ -62,6 +67,12 @@ jobs:
             ]);
             const uma=monitor.inspectUmaSim({umaSimPinnedTree:umaPin,umaSimLatestTree:umaHead,umaSimLatestCommit:umaHeadCommit});
             core.info('UPSTREAM_UMASIM_ONLY='+JSON.stringify(uma));
+            if(context.eventName!=='workflow_dispatch'||String(context.payload.inputs?.legacy_event_audit)!=='true'){
+              await core.summary.addHeading('Independent UmaSim source observation (D067)')
+                .addRaw('UmaSim pinned: '+uma.sourcePin+'; head: '+uma.observedHeadCommit+'; changed files: '+(uma.affectedUmaSimFiles.join(', ')||'none'))
+                .addRaw('\nLegacy event repository not queried; new-card source is direct GameTora. No event approval or snapshot promotion.').write();
+              return;
+            }
             let gtPin,gtHead,gtHeadCommit;
             try{
               gtHeadCommit=await fetchHead(owners[0]);

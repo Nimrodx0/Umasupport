@@ -45,18 +45,18 @@ function planRosterFirst({previousRosterText,currentRosterText,
   originalLedger:previousLedger};
 }
 // Never infer missing JSON from an inaccessible repository.
-function preserveOnSourceOutage({discovery,previousLedger=emptyLedger(),existingCatalog}={}){
+function preserveOnSourceOutage({discovery,previousLedger=emptyLedger(),existingCatalog,directReview=false}={}){
  const targets=pendingTargetIds({discovery,previousLedger,existingCatalog});
  const old=new Map(previousLedger.cards.map(x=>[x.cardId,x]));
  const cards=targets.map(cardId=>old.has(cardId)?JSON.parse(JSON.stringify(old.get(cardId))):{
-  cardId,status:'awaiting-source-availability',sourceBlobSha:null,sourceCommit:null,
+  cardId,status:directReview?'awaiting-direct-source-review':'awaiting-source-availability',sourceBlobSha:null,sourceCommit:null,
   sourceEvents:null,modeledEvents:null,excludedEvents:null,reviewItems:[],skillRegistryBlobSha:null
  });
  const ledger=verifyLedger({...emptyLedger(),cards});
  return {ledger,summary:{
   previousRosterCount:discovery.previousRosterCount,currentRosterCount:discovery.currentRosterCount,
   discoveredNewCardIds:discovery.addedCardIds,sourceCommit:null,sourceTreeSha:null,
-  independentlyPinnedSkillCommit:null,sourceStatus:'unavailable',
+  independentlyPinnedSkillCommit:null,sourceStatus:directReview?'direct-review-pending':'unavailable',
   pendingCards:cards.length,states:Object.fromEntries([...new Set(cards.map(x=>x.status))].sort().map(s=>[s,cards.filter(x=>x.status===s).length])),
   reviewIssues:cards.reduce((n,x)=>n+x.reviewItems.length,0),
   sourceProseIncluded:false,publicationApproved:false,existingDatabaseUnchanged:true
