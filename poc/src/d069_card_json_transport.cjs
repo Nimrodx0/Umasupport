@@ -27,7 +27,7 @@ function checkRobots(text,path){
    if(!m[2].startsWith('/'))fail('robots rule');
    const end=m[2].endsWith('$'),rule=end?m[2].slice(0,-1):m[2];
    const re=new RegExp('^'+rule.split('*').map(x=>x.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&')).join('.*')+(end?'$':''));
-   if(re.test(path))fail('robots denied');
+   if(re.test(path))throw new TransportFailure('source-refused');
   }
  }
  if(!agent)fail('robots agent missing');
