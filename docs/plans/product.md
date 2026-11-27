@@ -38,7 +38,7 @@
 | ID | 小工程 | 状態・結果 | 終了条件 |
 | --- | --- | --- | --- |
 | W3.1 | UmaSim名簿差分によるID検出 | 部分完了。監視記録は[status](../project/status.md) | 旧／新IDを版固定して確認 |
-| W3.2 | 派生GitHub JSONのコミット・blob検証と変換 | 部分完了。[アダプタ監査](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md) | 結果・ヒントLv・内部遷移を検証 |
+| W3.2 | D-067：GameTora本体の新カード限定取得・独自変換 | 直接取得器を最新UmaSim差分・辞書に接続。旧派生GitHubは歴史的基準 | 結果・ヒントLv・内部遷移を検証、公開審査別 |
 | W3.3 | 未掲載IDの保留と翌回再試行 | 継続。[Issue #283](https://github.com/Nimrodx0/Umasupport/issues/283) でID・状態を保持。11/11時点の未掲載5IDを個別確認。アプリの未収録表示は [PR #399](https://github.com/Nimrodx0/Umasupport/pull/399) で改善 | 保留と収録済みを混同しない |
 | W3.4 | 既存DBを変えず新カードを個別に増分追加 | 未完 | 権利・公開審査と非破壊テストを満たす |
 

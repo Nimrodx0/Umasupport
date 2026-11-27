@@ -34,23 +34,24 @@ async function getRobots(){
  if(text.length>100000)fail('robots.txtの取得サイズが不正');
  return text;
 }
-function getSkillRegistry(file){
+function getSkillRegistry(file,expectedSha=SHA){
+ if(!/^[a-f0-9]{40}$/.test(expectedSha))fail('独立スキル辞書のGit blobが不正');
  const bytes=fs.readFileSync(file);
  if(bytes.byteLength>6*1024*1024)fail('独立辞書がサイズ上限を超過');
  const blob=crypto.createHash('sha1').update('blob '+bytes.length+'\0')
   .update(bytes).digest('hex');
- if(blob!==SHA)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
+ if(blob!==expectedSha)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
  return registryFromSkillText(bytes.toString('utf8'));
 }
-async function inspect({plan,skillFile}={}){
- const selection=selectIntakeTargets(plan);
+async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0}={}){
+ const selection=selectIntakeTargets(plan,{offset});
  if(!selection.targetCardIds.length)return {
   dataKind:'gametora-new-card-listing-probe',version:1,
   selectedCardIds:[],unvisitedCardIds:[],results:[],pendingCardIds:[],
   sourceSiteCardVisitsPerformed:0,existingDatabaseUnchanged:true,
   sourceSiteTextCopied:false,publicationApproved:false
  };
- const registry=getSkillRegistry(skillFile);
+ const registry=getSkillRegistry(skillFile,skillBlobSha);
  const robots=await getRobots();
  const allowed=address=>{
   const path=new URL(address).pathname;
@@ -144,9 +145,7 @@ async function inspect({plan,skillFile}={}){
    results,
    // Even structurally parsed cards remain queued UNTIL separately approved
    // and appended to the existing catalog. Never drop a pending card here.
-   pendingCardIds:[
-    ...selection.targetCardIds,...selection.unvisitedCardIds
-   ],
+   pendingCardIds:plan.carryForwardPendingIds.slice(),
    sourceSiteCardVisitsPerformed:cardVisits,
    existingDatabaseUnchanged:true,sourceSiteTextCopied:false,
    publicationApproved:false
