@@ -1,0 +1,89 @@
+name: D074 reviewed data append
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'plan (read only) or publish (approved append only)'
+        type: choice
+        options: [plan, publish]
+        default: plan
+        required: true
+      expected_head:
+        description: 'Exact data/events head SHA'
+        type: string
+        required: true
+      bundle:
+        description: 'Evidence and one explicit reviewed approval input JSON'
+        type: string
+        required: true
+  pull_request:
+    paths:
+      - '.github/workflows/d074-reviewed-data-append.yml'
+      - 'poc/src/d074_event_data_branch.cjs'
+      - 'poc/src/d072_release_proposal.cjs'
+      - 'poc/tests/d074_event_data_branch.test.cjs'
+permissions:
+  contents: read
+concurrency:
+  group: d074-event-data-branch
+  cancel-in-progress: false
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test poc/tests/d074_event_data_branch.test.cjs poc/tests/d072_release_proposal.test.cjs
+  append:
+    needs: unit
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/github-script@v7
+        env:
+          BUNDLE: ${{ inputs.bundle }}
+          MODE: ${{ inputs.mode }}
+          EXPECTED_HEAD: ${{ inputs.expected_head }}
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {appendReviewed,verifySnapshot,CATALOG,APPROVALS}=require('./poc/src/d074_event_data_branch.cjs');
+            if(process.env.BUNDLE.length>60000)throw Error('Bundle size');
+            const bundle=JSON.parse(process.env.BUNDLE);
+            if(!bundle||Array.isArray(bundle)||Object.keys(bundle).some(k=>!['evidence','newApprovals','attestations','publicationDecisions','routinePublicationPolicy'].includes(k)))throw Error('Bundle shape');
+            if(process.env.MODE==='publish'&&!fs.readFileSync('poc/live.html','utf8').includes('UmaPublicEventCatalog.loadDistributed'))throw Error('Runtime transition not integrated');
+            const report=await appendReviewed({...bundle,github,...context.repo,baseSha:context.sha,expectedHead:process.env.EXPECTED_HEAD,mode:process.env.MODE});
+            core.info('D074_APPEND='+JSON.stringify(report));
+            if(report.branchWritten){
+              const root='https://raw.githubusercontent.com/'+context.repo.owner+'/'+context.repo.repo+'/';
+              const read=async(path)=>{
+                const r=await fetch(root+path,{cache:'no-store',signal:AbortSignal.timeout(15000)});
+                if(!r.ok)throw Error('Raw HTTP '+r.status);
+                return r.text();
+              };
+              let ok=false;
+              for(let i=0;i<6;i++){
+                try{
+                  const m=JSON.parse(await read('refs/heads/data/events/manifest.json'));
+                  if(JSON.stringify(m)!==JSON.stringify(report.manifest))throw Error('Moving manifest not current');
+                  const [c,a]=await Promise.all([read(m.snapshotCommit+'/'+CATALOG),read(m.snapshotCommit+'/'+APPROVALS)]);
+                  verifySnapshot(m,c,a);ok=true;break;
+                }catch(e){core.info('Raw verification attempt '+(i+1)+': '+e.message);if(i<5)await new Promise(r=>setTimeout(r,10000));}
+              }
+              if(!ok)throw Error('Ref published but public Raw verification failed; inspect before retry');
+              core.info('D074_APPEND_RAW_VERIFIED='+JSON.stringify({head:report.head,revision:report.revision,after:report.after}));
+            }
