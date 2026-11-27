@@ -10,7 +10,7 @@ const bounded=(s,n)=>typeof s==='string'&&!!s.trim()&&s.length<=n&&!/[\r\n\u0000
 function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}={}){
  verify(ledger);
  if(!exact(policy,'schemaVersion,scope,reviewer,reviewedAt,validThrough,accessConditionsReviewed,publicationApproved,evidenceUrls,publicationBasis')||
-    policy.schemaVersion!==1||policy.scope!=='D073-normal-random-skill-path-identifying-titles-only'||
+    policy.schemaVersion!==1||!['D073-normal-random-skill-path-identifying-titles-only','D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'].includes(policy.scope)||
     !bounded(policy.reviewer,120)||!day(today)||!day(policy.reviewedAt)||!day(policy.validThrough)||
     policy.reviewedAt>today||policy.validThrough<today||
     policy.accessConditionsReviewed!==true||policy.publicationApproved!==true||
@@ -24,10 +24,15 @@ function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}
  return items.map(({packet,input,prepared:{candidate,receipt}})=>{
   const row=ledger.rows.find(r=>r.cardId===packet?.cardId);
   require('./d069_review_packet_archive.cjs').scope(packet,row);
+  const hasChain=packet.events.some(e=>e.category==='arrows');
+  const chain=hasChain?require('./d073_json_adoption.cjs').ordinaryChainEvidence(packet):null;
+  const chainOK=hasChain?policy.scope==='D073-normal-random-and-ordinary-chain-skill-path-identifying-titles-only'&&
+    chain!==null&&input?.chainEvidence?.dataKind==='d073-ordinary-chain-policy'&&digest(input.chainEvidence)===digest(chain)&&receipt.chainEvidenceSha256===digest(chain):
+    input?.chainEvidence===null&&receipt.chainEvidenceSha256===null;
   if(row.status!=='awaiting-fact-review'||row.retry!==undefined||
-     !packet.identifyingTitles||packet.events.some(e=>e.category!=='random')||
-     input?.dataKind!=='d073-source-title-input'||input.titles!==null||input.chainEvidence!==null||
-     receipt.dataKind!=='d073-source-fact-receipt'||receipt.chainEvidenceSha256!==null||
+     !packet.identifyingTitles||packet.events.some(e=>!['random','arrows'].includes(e.category))||
+     input?.dataKind!=='d073-source-title-input'||input.titles!==null||!chainOK||
+     receipt.dataKind!=='d073-source-fact-receipt'||
      receipt.independentGameVerification!==false||receipt.publicationApproved!==false||
      candidate.publicationApproved!==false||candidate.skillPathOnly!==true||
      receipt.packetSha256!==digest(packet)||candidate.packetSha256!==receipt.packetSha256)fail('outside routine scope');
