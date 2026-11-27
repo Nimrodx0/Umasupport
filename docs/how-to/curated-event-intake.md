@@ -48,11 +48,7 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 D-073は[正常候補入力](../../poc/src/d073_json_adoption.cjs)で短い識別名（専用state、ログ除外）は `titles:null` で再利用。D-035/D-038の通常2〜3段arrowsは解放・明示終了を自動変換。異常段のみ確認。日次で候補SHA・[提案](checker-public-catalog.md)を準備（既定無効）。通常取得は最大2枚／5 GET、6秒間隔。HTMLは掲載URL・Next build ID確認のみ。JSON構造・効果・位置の期待値検査、未知構造の保留、例外審査・個別承認を維持。旧表示証跡は互換読取のみ。任意の合成HTML診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境）。通常CI・公開条件外。
 
-## D-074 専用データブランチへの移行
-
-[専用イベントDBの増分更新](event-data-branch-update.md)を参照。以下は移行前のPR方式。新方式との同時運用は行わない。
-
-## D-072 承認対象の準備と公開提案の生成
+## D-072 公開提案（旧方式）／[D-074](event-data-branch-update.md)
 
 [審査準備workflow](../../.github/workflows/d072-independent-review-preparation.yml) をmainで手動で `evidence` を渡す。読取専用権限で固定mainのカタログblob・永続パケット・固定辞書・審査を照合し、カードID・イベントID・内容SHA・非スキル省略件数・審査証跡SHAだけを出力する。正常候補は公開根拠を実審査。準備は承認・追加取得なし。
 
