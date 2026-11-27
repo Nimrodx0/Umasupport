@@ -8,21 +8,22 @@
       "cardId": "10149",
       "observedAt": "2026-11-27",
       "observedEvents": 11,
-      "runId": 45923701308,
+      "runId": 45984465780,
       "reasonCodes": [
-        "rarity-reward-conflict",
-        "outing-unlock-sequence-gap"
+        "source-structure-unresolved",
+        "internal-reachability-unverified",
+        "publication-review-pending"
       ]
     },
     {
       "cardId": "30323",
       "observedAt": "2026-11-27",
       "observedEvents": 11,
-      "runId": 45923701308,
+      "runId": 45984465780,
       "reasonCodes": [
-        "ending-event-coverage-gap",
-        "external-condition-unresolved",
-        "stage-effect-scaling-unresolved"
+        "source-structure-unresolved",
+        "internal-reachability-unverified",
+        "publication-review-pending"
       ]
     }
   ]

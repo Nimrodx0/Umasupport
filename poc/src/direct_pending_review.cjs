@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const reasons=new Set(['rarity-reward-conflict','outing-unlock-sequence-gap','ending-event-coverage-gap','external-condition-unresolved','stage-effect-scaling-unresolved','source-structure-unresolved','numeric-id-unresolved','source-access-unavailable']);
+const reasons=new Set(['rarity-reward-conflict','outing-unlock-sequence-gap','ending-event-coverage-gap','external-condition-unresolved','stage-effect-scaling-unresolved','source-structure-unresolved','numeric-id-unresolved','source-access-unavailable','internal-reachability-unverified','publication-review-pending']);
 function verifyDirectReview(x){
  assert(x&&x.schemaVersion===1&&x.dataKind==='direct-event-pending-review'&&x.publicationApproved===false&&x.sourceProseIncluded===false&&Array.isArray(x.cards),'Invalid direct review metadata');
  assert.deepEqual(Object.keys(x).sort(),['cards','dataKind','publicationApproved','schemaVersion','sourceProseIncluded']);
