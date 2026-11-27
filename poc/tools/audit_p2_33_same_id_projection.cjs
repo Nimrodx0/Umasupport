@@ -26,7 +26,7 @@ function main(args){
   sha(legacy)!==bridge.PINNED_SHA256)
   throw Error('P2.33 pinned original source SHA changed');
  const app=loader.buildModel(support,{mode:'online'});
- const reviewed=JSON.parse(fs.readFileSync(eventsPath,'utf8'));
+ const reviewed=JSON.parse(require('./fixed_research_event_catalog.cjs').verifyFixedEventText(fs.readFileSync(eventsPath)));
  publicEvents.attach(app,reviewed,{
   skillText:skill,pinnedSkillText:legacy,
   fullRegistry:true,allowReviewedLegacy:true});
