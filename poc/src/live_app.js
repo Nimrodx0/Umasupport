@@ -253,7 +253,8 @@ function pickerFit(card){
 }
 function pickerFitControls(detail=false){
  const ctx=ui.pickerFitContext;
- return '<section class="picker-fit-controls fit-filter-group"><h3>スキルの適用条件・脚質適性</h3><div class="fit-filter-fields">'+axisFields(ctx,'data-picker-fit-axis')+'</div><p class="tiny-note">'+(ctx.running_style?esc(styleName(ctx))+'の候補を比較します。':'脚質を指定すると、適用範囲と適性の内訳を表示します。')+' '+(catalogLabels.size?'適性データ照合済み。':'適性データ未読込。明示条件は引き続き確認できます。')+'</p>'+(detail?'':'<label class="filterlabel"><input id="picker-fit-only" type="checkbox" '+(ui.pickerFitOnly?'checked':'')+' '+(ctx.running_style?'':'disabled')+'>一致候補ありのみ</label>')+'<p class="tiny-note">'+(detail?(ui.modal?.kind==='card-detail'?'選択した凸数・全分岐の候補数。':'現在の凸数・選択済み経路と全分岐候補を比較。'):'4凸・全分岐での候補数。')+' 一致候補＝明示適用条件を満たす脚質適性あり・汎用。距離・馬場・馬場状態の明示制限が未指定なら条件未指定（集計外）。発動・同時獲得の保証ではありません。</p></section>';
+ const deckNote=['pick','edit'].includes(ui.modal?.kind)?'<p class="tiny-note">デッキの育成条件を初期値に使用します。ここでの変更は今回の閲覧・検索だけに適用されます。</p>':'';
+ return '<section class="picker-fit-controls fit-filter-group"><h3>スキルの適用条件・脚質適性</h3><div class="fit-filter-fields">'+axisFields(ctx,'data-picker-fit-axis')+'</div>'+deckNote+'<p class="tiny-note">'+(ctx.running_style?esc(styleName(ctx))+'の候補を比較します。':'脚質を指定すると、適用範囲と適性の内訳を表示します。')+' '+(catalogLabels.size?'適性データ照合済み。':'適性データ未読込。明示条件は引き続き確認できます。')+'</p>'+(detail?'':'<label class="filterlabel"><input id="picker-fit-only" type="checkbox" '+(ui.pickerFitOnly?'checked':'')+' '+(ctx.running_style?'':'disabled')+'>一致候補ありのみ</label>')+'<p class="tiny-note">'+(detail?(ui.modal?.kind==='card-detail'?'選択した凸数・全分岐の候補数。':'現在の凸数・選択済み経路と全分岐候補を比較。'):'4凸・全分岐での候補数。')+' 一致候補＝明示適用条件を満たす脚質適性あり・汎用。距離・馬場・馬場状態の明示制限が未指定なら条件未指定（集計外）。発動・同時獲得の保証ではありません。</p></section>';
 }
 function pickerFiltersHtml(){
  const rarities=[...new Set(data.cards.map(c=>c.rarity))].sort(),types=[...new Set(data.cards.map(c=>c.type))].sort();
