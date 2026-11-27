@@ -7,9 +7,9 @@ const {propose}=require('./d072_release_proposal.cjs');
 const SHA=/^[a-f0-9]{40}$/,HASH=/^[a-f0-9]{64}$/,ID=/^[1-9]\d{4}$/;
 const fail=m=>{throw Error('D073 daily proposal: '+m);};
 const exact=(x,keys)=>x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).sort().join(',')===keys.split(',').sort().join(',');
-async function runDailyProposal({config,queue,auto,store,github,owner,repo,baseSha,files,proposer=propose}={}){
+async function selectRoutine({config,queue,auto,store,github,owner,repo,baseSha,files}={}){
  if(!exact(config,'schemaVersion,mode,routinePublicationPolicy')||config.schemaVersion!==1||
-    !['disabled','plan','pr'].includes(config.mode)||(config.mode==='disabled'?config.routinePublicationPolicy!==null:!config.routinePublicationPolicy))
+    !['disabled','plan','pr','publish'].includes(config.mode)||(config.mode==='disabled'?config.routinePublicationPolicy!==null:!config.routinePublicationPolicy))
   fail('explicit configuration required');
  const report=(status,extra={})=>({dataKind:'d073-daily-proposal',schemaVersion:1,status,mode:config.mode,
   selectedIds:[],branchWritten:false,prCreatedOrReused:false,merged:false,deployed:false,...extra});
@@ -43,7 +43,15 @@ async function runDailyProposal({config,queue,auto,store,github,owner,repo,baseS
   return true;
  }).sort((a,b)=>a.cardId.localeCompare(b.cardId)).slice(0,2);
  if(!eligible.length)return report('no-routine-candidates');
- const selectedIds=eligible.map(r=>r.cardId),coord={owner,repo};
+ return {status:'selected',selectedIds:eligible.map(r=>r.cardId),evidence:eligible.map(r=>r.routine.input)};
+}
+async function runDailyProposal({config,queue,auto,store,github,owner,repo,baseSha,files,proposer=propose}={}){
+ if(!['disabled','plan','pr'].includes(config?.mode))fail('explicit configuration required');
+ const report=(status,extra={})=>({dataKind:'d073-daily-proposal',schemaVersion:1,status,mode:config.mode,
+  selectedIds:[],branchWritten:false,prCreatedOrReused:false,merged:false,deployed:false,...extra});
+ const selection=await selectRoutine({config,queue,auto,store,github,owner,repo,baseSha,files});
+ if(selection.status!=='selected')return report(selection.status);
+ const {selectedIds,evidence}=selection,coord={owner,repo};
  const main=async()=>(await github.rest.git.getRef({...coord,ref:'heads/main'})).data.object.sha;
  if(await main()!==baseSha)fail('main drift');
  // Do not generate overlapping increments while another proposal is open,
@@ -53,7 +61,7 @@ async function runDailyProposal({config,queue,auto,store,github,owner,repo,baseS
  if(open.some(p=>p.head?.ref?.startsWith('automation/d072-release-')||/^<!-- D072_RELEASE_PROPOSAL /.test(p.body||'')))
   return report('existing-proposal-open');
  if(await main()!==baseSha)fail('main drift after PR check');
- const result=await proposer({github,owner,repo,baseSha,files,evidence:eligible.map(r=>r.routine.input),
+ const result=await proposer({github,owner,repo,baseSha,files,evidence,
   routinePublicationPolicy:config.routinePublicationPolicy,mode:config.mode});
  if(result?.baseSha!==baseSha||JSON.stringify(result.newCardIds)!==JSON.stringify(selectedIds)||
     result.merged!==false||result.deployed!==false||
@@ -63,4 +71,4 @@ async function runDailyProposal({config,queue,auto,store,github,owner,repo,baseS
   branchWritten:result.branchWritten,prCreatedOrReused:result.prCreatedOrReused===true,
   ...(config.mode==='pr'?{prNumber:result.prNumber,prUrl:result.prUrl}:{})});
 }
-module.exports={runDailyProposal};
+module.exports={runDailyProposal,selectRoutine};
