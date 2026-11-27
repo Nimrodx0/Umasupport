@@ -40,3 +40,19 @@ test('stop at first failed batch, later IDs remain unattempted',async()=>{
  a.deepEqual(r.attemptedIds,['39995','39996']);
  a.ok(f.ledger().rows.every(x=>x.status==='uncertain'));
 });
+
+test('explicit source refusal stops future new-card automatic attempts without another request',async()=>{
+ const f=fixture(['39995','39996','39997']);let requests=0;
+ const {createObserver}=require('../src/d069_card_json_transport.cjs');
+ const first=await runAutomatic({...f.args,observerFactory:opts=>createObserver({...opts,sleep:async()=>{},fetchImpl:async()=>{
+  requests++;return new Response('refused',{status:429});
+ }})});
+ a.equal(first.stopReason,'observation-failed');
+ a.equal(requests,1);
+ a.ok(f.ledger().rows.every(x=>x.status==='uncertain'&&x.failureCode==='source-refused'));
+ const ids=['39997','39998'],plan={...f.args.plan,eligibleIds:ids,batches:require('../src/direct_pending_review.cjs').partitionBatches(ids)};
+ const before=structuredClone(f.ledger());
+ const second=await runAutomatic({...f.args,plan});
+ a.deepEqual(second,{attemptedIds:[],stopReason:'prior-source-refused',sourceRequestsPerformed:false,publicationApproved:false});
+ a.equal(requests,1);a.equal(f.counts().loads,1);a.equal(f.counts().factory,0);a.deepEqual(f.ledger(),before);
+});
