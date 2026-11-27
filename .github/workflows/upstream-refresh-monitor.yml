@@ -52,11 +52,11 @@ jobs:
               {owner:p.gameTora.owner,repo:p.gameTora.repo,revision:p.gameTora.revision},
               {owner:p.umaSim.owner,repo:p.umaSim.repo,revision:p.umaSim.revision}
             ];
-            const head=async src=>(await github.rest.repos.getCommit({owner:src.owner,repo:src.repo,ref:'main'})).data.sha;
+            const fetchHead=async src=>(await github.rest.repos.getCommit({owner:src.owner,repo:src.repo,ref:'main'})).data.sha;
             const tree=async(src,ref)=>(await github.rest.git.getTree({
               owner:src.owner,repo:src.repo,tree_sha:ref,recursive:'1'
             })).data;
-            const umaHeadCommit=await head(owners[1]);
+            const umaHeadCommit=await fetchHead(owners[1]);
             const [umaPin,umaHead]=await Promise.all([
               tree(owners[1],owners[1].revision),tree(owners[1],umaHeadCommit)
             ]);
@@ -64,7 +64,7 @@ jobs:
             core.info('UPSTREAM_UMASIM_ONLY='+JSON.stringify(uma));
             let gtPin,gtHead,gtHeadCommit;
             try{
-              gtHeadCommit=await head(owners[0]);
+              gtHeadCommit=await fetchHead(owners[0]);
               [gtPin,gtHead]=await Promise.all([tree(owners[0],owners[0].revision),tree(owners[0],gtHeadCommit)]);
             }catch(e){
               await core.summary.addHeading('Event source unavailable — partial UmaSim observation')
