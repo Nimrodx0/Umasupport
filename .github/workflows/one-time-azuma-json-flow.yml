@@ -1,0 +1,26 @@
+name: One-time Azuma JSON and rendered flow parity
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+    paths:
+      - '.github/workflows/one-time-azuma-json-flow.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/d070-azuma-flow-parity'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.1
+      - run: node poc/tools/probe_azuma_json_flow_once.cjs
