@@ -45,7 +45,7 @@ function main(args){
   fs.writeFileSync(prefix+'.summary.json',JSON.stringify(summary,null,2)+'\n');
  }
  fs.appendFileSync(path.resolve(ghOutput),
-  'needs_source='+String(needThirdPartySource&&!directReview)+'\n');
+  'needs_source='+String(needThirdPartySource&&!directReview)+'\n'+'needs_display_browser='+String(needThirdPartySource&&directReview)+'\n');
  process.stdout.write('UMASIM_FIRST_PENDING_CHECK='+JSON.stringify(result)+'\n');
  return result;
 }
