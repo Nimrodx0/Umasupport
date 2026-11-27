@@ -55,7 +55,7 @@ function render({files,result,baseSha}){
  return {proposalSha,branch:'automation/d072-release-'+proposalSha.slice(0,24),version,receipt,files:output};
 }
 async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,mode='plan',intake=createReviewedIntake({github,owner,repo})}={}){
- if(!['plan','branch'].includes(mode)||!SHA.test(baseSha||'')||!github?.rest?.git||!owner||!repo)fail('proposal scope');
+ if(!['plan','branch','pr'].includes(mode)||!SHA.test(baseSha||'')||!github?.rest?.git||!owner||!repo)fail('proposal scope');
  const g=github.rest.git,coord={owner,repo};
  const main=async()=>(await g.getRef({...coord,ref:'heads/main'})).data.object.sha;
  if(await main()!==baseSha)fail('main drift');
@@ -94,7 +94,8 @@ async function propose({github,owner,repo,baseSha,files,evidence,newApprovals,mo
  async function confirm(sha){
   const c=(await g.getCommit({...coord,commit_sha:sha})).data;
   if(c.sha!==sha||c.tree?.sha!==targetTree||c.parents?.length!==1||c.parents[0].sha!==baseSha)fail('proposal branch collision');
-  return {...summary,branchWritten:true,headSha:sha};
+  const verified={...summary,branchWritten:true,headSha:sha};
+  return mode==='pr'?require('./d072_release_pr.cjs').openProposalPR({github,owner,repo,proposal:verified}):verified;
  }
  if(await main()!==baseSha)fail('main drift before branch creation');
  const prior=await existing();if(prior)return confirm(prior);
