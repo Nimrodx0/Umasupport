@@ -31,8 +31,13 @@ function createReviewedIntake({github,owner,repo,store=createStore({github,owner
   return {dataKind:'d072-independent-candidate-preparation',schemaVersion:1,publicationApproved:false,
    items:items.map(x=>prepareIndependentCandidate({packet:x.packet,evidence:x.evidence,ledger,skillText:x.source.skillText,existingCatalog}))};
  }
- async function stage({evidence,existingCatalog,existingApprovals,newApprovals}={}){
+ async function stage({evidence,existingCatalog,existingApprovals,newApprovals,attestations}={}){
+  if((newApprovals===undefined)===(attestations===undefined))fail('exactly one explicit approval input required');
   const {ledger,items}=await readItems(evidence);
+  if(attestations!==undefined){
+   const prepared=items.map(x=>prepareIndependentCandidate({packet:x.packet,evidence:x.evidence,ledger,skillText:x.source.skillText,existingCatalog}));
+   newApprovals=require('./d072_card_review_attestation.cjs').expandAttestations({prepared,attestations});
+  }
   const baseline=await source.baseline(),release=await source.latest(),pinnedSkillText=await source.historicalSkill();
   return stageIndependentEvidenceAcrossVersions({items,ledger,baseline,release,existingCatalog,existingApprovals,newApprovals,pinnedSkillText});
  }
