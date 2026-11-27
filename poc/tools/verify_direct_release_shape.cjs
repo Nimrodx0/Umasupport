@@ -50,7 +50,13 @@ async function main(args){
     sha(canonical(oldCatalog))!==oldDigest||
     canonical(combined.cards.slice(0,oldCatalog.cards.length))!==canonical(oldCatalog.cards))throw Error('combined runtime or existing catalog mismatch');
  let releaseBlocked=false;
- try{verifyRelease(combined,approvals);}catch(e){if(!String(e).includes('未承認のイベント'))throw e;releaseBlocked=true;}
+ try{verifyRelease(combined,approvals);}catch(e){
+  // The historical cohort uses the broad gt- prefix. It must reject
+  // unsigned gt-site additions by cohort fingerprint mismatch BEFORE
+  // any individual entry can be approved. Neither gate nor cohort changes.
+  if(!/未承認のイベント|コホート数／承認済みSHA不一致: gt-derived-factual-2026-11-02-first-release$/.test(String(e)))throw e;
+  releaseBlocked=true;
+ }
  if(!releaseBlocked)throw Error('approval boundary bypassed');
  console.log('GT_DIRECT_PRODUCTION_SHAPE='+JSON.stringify({cards:summaries,
   baseline:oldVerified,combinedCards:mergedRuntime.cardsWithRecords,combinedEvents:mergedRuntime.eventsWithRecords,

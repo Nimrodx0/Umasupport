@@ -81,3 +81,12 @@ test('production candidate preserves exact reviewed title and adds required runt
  assert.equal(n.candidate.publicationApproved,false);assert.equal(JSON.stringify(checked),before);
  assert.throws(()=>prepareNamedCandidate(checked,spec,registry,['架空二','架空一'],evidence),/title mismatch/);
 });
+
+test('named candidate preserves fullwidth punctuation, normalizing only its identity hash',()=>{
+ const {prepareNamedCandidate}=require('../src/direct_event_fact_review.cjs');
+ const {record,spec}=fixture();record.structure[0].titleSha256=headingFingerprint('架空一!').sha256;
+ spec.events[0].titleSha256=record.structure[0].titleSha256;
+ const checked=reviewCard(record,spec,registry),evidence={schemaVersion:1,publicationApproved:false,cards:[checked.summary]};
+ const n=prepareNamedCandidate(checked,spec,registry,['(❯) 架空一！','(❯❯) 架空二'],evidence);
+ assert.equal(n.candidate.events[0].name,'架空一！');
+});

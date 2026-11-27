@@ -7,7 +7,7 @@ const policy=require('../config/direct-event-intake-policy.v1.json');
 const {gitBlobSha,POLICY}=require('../src/current_umasim_roster_delta.cjs');
 const {plan}=require('./plan_new_card_event_intake.cjs');
 const {inspect,getSkillRegistry}=require('./probe_official_gametora_target_cards.cjs');
-const {reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate}=require('../src/direct_event_fact_review.cjs');
+const {reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate,prepareNamedCandidate}=require('../src/direct_event_fact_review.cjs');
 const reviewEvidence=require('../config/direct-event-fact-review-evidence.v1.json');
 const reviewManifest=require('../config/direct-event-fact-review.v1.json');
 function validatePolicy(){
@@ -41,13 +41,14 @@ async function main(args){
  const review=args[5]==='--review-known',reviews=[];
  const registry=review||draftFile?getSkillRegistry(skillFile,meta.skillBlob):null;
  const result=await inspect({plan:p,skillFile,skillBlobSha:meta.skillBlob,offset,
-  onProjection:review||draftFile?record=>{
+  onProjection:review||draftFile?(record,titles)=>{
    const spec=reviewManifest.cards.find(x=>x.cardId===record.cardId);
    if(review&&!spec)throw Error('No reviewed evidence for selected card '+record.cardId);
    const checked=spec?reviewCard(record,spec,registry):null;
    if(checked){verifyObservedDigest(checked.summary,reviewEvidence);reviews.push(checked.summary);}
    if(draftFile)drafts.push({...record,reviewedCandidate:checked?.candidate||null,
-    unapprovedIntakeCandidate:checked?toUnapprovedIntakeCandidate(checked,reviewEvidence):null});
+    unapprovedIntakeCandidate:checked?toUnapprovedIntakeCandidate(checked,reviewEvidence):null,
+    namedProductionCandidate:checked?prepareNamedCandidate(checked,spec,registry,titles,reviewEvidence):null});
   }:null});
  if(review){
   if(reviews.length!==result.selectedCardIds.length||reviews.length===0)throw Error('Reviewed card source unavailable');

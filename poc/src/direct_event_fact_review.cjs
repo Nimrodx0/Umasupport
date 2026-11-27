@@ -11,11 +11,11 @@ const isSha=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
 const normalize=x=>String(x).normalize('NFKC').trim();
 function headingIdentity(raw){
  if(typeof raw!=='string'||!raw.trim()||raw.length>300)fail('invalid heading');
- const value=normalize(raw);
+ const value=raw.trim();
  const prefix=/^\s*\(?\s*([❯›»>→]+)\s*\)?\s*/u.exec(value);
  const title=(prefix?value.slice(prefix[0].length):value).trim();
  if(!title)fail('missing title');
- return {title,sha256:sha(title),stage:prefix?Array.from(prefix[1]).length:null};
+ return {title,sha256:sha(normalize(title)),stage:prefix?Array.from(prefix[1]).length:null};
 }
 function headingFingerprint(raw){const {sha256,stage}=headingIdentity(raw);return {sha256,stage};}
 function routeFingerprint(route,registry){
