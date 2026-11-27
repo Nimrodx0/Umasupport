@@ -1,0 +1,24 @@
+name: D075 capture external condition fingerprints (not approval)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/d075-condition-baseline.yml'
+permissions:
+  contents: read
+jobs:
+  capture:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture fixed public document fingerprints without enrollment
+        run: |
+          node -e "require('./poc/src/d075_conditions_monitor.cjs').probe().then(r=>{console.log('D075_CAPTURE='+JSON.stringify(r));if(r.status!=='captured-not-approved')process.exitCode=1;})"
