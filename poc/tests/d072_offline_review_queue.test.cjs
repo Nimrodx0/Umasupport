@@ -45,8 +45,10 @@ test('missing or tampered archive, stale catalog and invalid pinned dictionary n
  let q=await buildReviewQueue(f.args);
  a.equal(q.rows[0].status,'packet-unavailable-or-invalid');a.equal(q.rows[2].status,'packet-unavailable-or-invalid');
  const g=fixture();
- q=await buildReviewQueue({...g.args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39994',events:[]}]}});
+ q=await buildReviewQueue({...g.args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39994',events:[]}],changed:true}});
  a.equal(q.rows[0].status,'catalog-drift');a.equal(g.counts().calls,0);
+ q=await buildReviewQueue({...g.args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39994',events:[]}]}});
+ a.equal(q.rows[0].status,'ready-for-independent-review');a.equal(q.rows[0].baseCatalogStatus,'verified-append-only-prefix');
  q=await buildReviewQueue({...g.args,loadSkillText:async()=> 'wrong'});
  a.equal(q.rows[0].status,'skill-dictionary-unavailable-or-invalid');
  await a.rejects(buildReviewQueue({...g.args,existingCatalog:{schemaVersion:1,cards:[{cardId:'39995'}]}}),/already imported/);
