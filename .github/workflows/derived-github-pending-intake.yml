@@ -52,6 +52,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
+    outputs:
+      published_head: ${{ steps.handoff.outputs.published_head }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -266,6 +268,7 @@ jobs:
               core.notice('Created new-card pending Issue: '+created.data.html_url);
             }
       - name: Hand off configured routine data append
+        id: handoff
         uses: actions/github-script@v7
         with:
           script: |
@@ -280,7 +283,17 @@ jobs:
             const report=await runDailyData({config,policy,queue,auto,github,...context.repo,baseSha:context.sha,
               expectedHead:snapshot.head,store:createStore({github,...context.repo})});
             core.info('D074_DAILY_DATA='+JSON.stringify(report));
+            if(report.branchWritten&&report.publicRawVerified)core.setOutput('published_head',report.head);
             await core.summary.addHeading('Routine data handoff')
               .addRaw('Status: '+report.status+'; selected: '+(report.selectedIds.join(', ')||'none')+
                 '; data ref written: '+report.branchWritten+'; public Raw verified: '+report.publicRawVerified+
                 '; no main write or Pages deployment. Pending Issue reconciles on next run.').write();
+
+  accept-published-data:
+    needs: update-new-card-pending
+    if: needs.update-new-card-pending.outputs.published_head != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/pages-real-browser-acceptance.yml
+    with:
+      expected_head: ${{ needs.update-new-card-pending.outputs.published_head }}

@@ -10,6 +10,12 @@ on:
       - 'index.html'
       - 'poc/src/public_event_catalog.js'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      expected_head:
+        description: 'Exact published data/events head for post-append acceptance'
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -51,4 +57,6 @@ jobs:
           })().catch(e=>{console.error(e);process.exitCode=1;});
           NODE
       - name: Test live GitHub Pages in Chromium with live sources
+        env:
+          D074_EXPECTED_HEAD: ${{ inputs.expected_head || '' }}
         run: node poc/tests/pages_live_browser.cjs
