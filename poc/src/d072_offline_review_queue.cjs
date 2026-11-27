@@ -24,7 +24,7 @@ async function buildReviewQueue({store,pendingIds,existingCatalog,loadSkillText}
   let packet;
   try{packet=scope(await store.loadPacket(cardId),row);}
   catch{rows.push({...base,status:'packet-unavailable-or-invalid',reasonCodes:['archive-read-or-integrity-failed']});continue;}
-  const observed={...base,eventCount:packet.events.length};
+  const observed={...base,eventCount:packet.events.length,...(packet.domEvidence?{displayEvidenceStatus:packet.domEvidence.status}:{})};
   if(row.status==='held'){rows.push({...observed,status:'held',reasonCodes:packet.reasonCodes});continue;}
   let baseStatus='exact';
   if(packet.existingCatalogSha256!==catalogSha){
@@ -46,7 +46,7 @@ async function buildReviewQueue({store,pendingIds,existingCatalog,loadSkillText}
   if(hints.some(h=>{const s=registry.byId.get(h.skillId.slice(6));return !s||!['normal','rare'].includes(s.rarity)||registry.byName.get(s.name)?.length!==1;})){
    rows.push({...observed,status:'skill-id-unresolved',reasonCodes:['pinned-skill-id-unresolved']});continue;
   }
-  rows.push({...observed,status:'ready-for-independent-review',baseCatalogStatus:baseStatus,reasonCodes:['independent-titles-facts-topology-and-publication-review-required'],
+  rows.push({...observed,status:'ready-for-independent-review',baseCatalogStatus:baseStatus,reasonCodes:['independent-titles-facts-topology-and-publication-review-required',...(packet.domEvidence?.status==='mismatch'?['display-json-mismatch-needs-adjudication']:[])],
    eventChecks:packet.events.map(e=>({sourceEventId:e.sourceEventId,exactTitleSha256:e.exactTitleSha256,
     routeFactsSha256:digest({groups:e.groups}),resultCounts:e.groups.map(g=>g.routes.length)}))});
  }
