@@ -44,3 +44,27 @@ test('actual manifest covers exactly three reviewed cards, 12 events and 26 rout
  assert.equal(m.cards.reduce((a,c)=>a+c.events.length,0),12);
  assert.equal(m.cards.flatMap(c=>c.events).flatMap(e=>e.groups).flat().length,26);
 });
+
+test('exact digest-bound candidate can enter append staging but not publication',()=>{
+ const {verifyObservedDigest,toUnapprovedIntakeCandidate}=require('../src/direct_event_fact_review.cjs');
+ const {discoverNewCards,stageNewCardEvents}=require('../src/new_card_event_incremental.cjs');
+ const {record,spec}=fixture(),checked=reviewCard(record,spec,registry);
+ const evidence={schemaVersion:1,publicationApproved:false,cards:[checked.summary]};
+ assert.equal(verifyObservedDigest(checked.summary,evidence),true);
+ const c=toUnapprovedIntakeCandidate(checked,evidence);
+ assert.equal(c.convertedEventCount,2);assert.equal(c.publicationApproved,false);
+ const stage=stageNewCardEvents({discovery:discoverNewCards({previousRosterIds:['30002'],currentRosterIds:['30002',id]}),existingCatalog:{schemaVersion:1,cards:[]},candidates:[c]});
+ assert.equal(stage.ready.length,1);assert.equal(stage.publicationApproved,false);
+ const tamper=structuredClone(checked);tamper.candidate.events[0].effects[0].delta++;
+ assert.throws(()=>toUnapprovedIntakeCandidate(tamper,evidence),/changed after fact review/);
+ const changed=structuredClone(checked.summary);changed.hintCount++;
+ assert.throws(()=>verifyObservedDigest(changed,evidence),/digest drift/);
+});
+test('real evidence ledger is metadata-only and exactly 12 content hashes',()=>{
+ const e=require('../config/direct-event-fact-review-evidence.v1.json'),m=require('../config/direct-event-fact-review.v1.json');
+ assert.deepEqual(e.cards.map(c=>c.cardId),m.cards.map(c=>c.cardId));
+ assert.equal(e.publicationApproved,false);
+ const hashes=e.cards.flatMap(c=>c.eventDigests);
+ assert.equal(hashes.length,12);assert.equal(new Set(hashes.map(h=>h.eventId)).size,12);
+ assert.ok(hashes.every(h=>/^[a-f0-9]{64}$/.test(h.sha256)));
+});

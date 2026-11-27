@@ -21,7 +21,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: gametora-direct-new-card-limited-read
+  # Share the live-site lock only for explicit network runs. Offline PRs
+  # must not cancel one another's pending jobs.
+  group: ${{ github.event_name == 'workflow_dispatch' && 'gametora-direct-new-card-limited-read' || format('{0}-{1}', github.workflow, github.ref) }}
   cancel-in-progress: false
 
 jobs:

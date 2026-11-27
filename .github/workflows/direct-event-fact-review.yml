@@ -7,13 +7,16 @@ on:
       - 'poc/src/direct_event_fact_review.cjs'
       - 'poc/tests/direct_event_fact_review.test.cjs'
       - 'poc/config/direct-event-fact-review.v1.json'
+      - 'poc/config/direct-event-fact-review-evidence.v1.json'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: gametora-direct-new-card-limited-read
+  # Share the live-site lock only for explicit network runs. Offline PRs
+  # must not cancel one another's pending jobs.
+  group: ${{ github.event_name == 'workflow_dispatch' && 'gametora-direct-new-card-limited-read' || format('{0}-{1}', github.workflow, github.ref) }}
   cancel-in-progress: false
 
 jobs:
@@ -34,6 +37,7 @@ jobs:
           node --check poc/tools/run_direct_new_card_intake.cjs
           node --check poc/tools/probe_official_gametora_target_cards.cjs
       - name: Resolve immutable latest UmaSim roster and skill blobs
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/github-script@v7
         with:
           script: |
@@ -49,6 +53,7 @@ jobs:
             if(!/^[a-f0-9]{40}$/.test(c.sha))throw Error('Invalid UmaSim commit');
             fs.writeFileSync(process.env.RUNNER_TEMP+'/direct-uma-meta.json',JSON.stringify({commit:c.sha,cardBlob:blob('data/support_card.txt'),skillBlob:blob('data/skill_data.txt')}));
       - name: Obtain only pinned UmaSim data in disposable runner
+        if: github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
           SHA=$(node -p "require(process.env.RUNNER_TEMP+'/direct-uma-meta.json').commit")
@@ -57,18 +62,22 @@ jobs:
           curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/support_card.txt" -o "$RUNNER_TEMP/direct-current.txt"
           curl --fail --silent --show-error --location --retry 1 --max-time 30 "https://raw.githubusercontent.com/mee1080/umasim/$SHA/data/skill_data.txt" -o "$RUNNER_TEMP/direct-skills.txt"
       - name: Prepare Chrome
+        if: github.event_name == 'workflow_dispatch'
         run: |
           npm install --no-save --no-package-lock playwright@1.55.1
           command -v google-chrome || command -v google-chrome-stable
       - name: Verify 20102 and 30322, two cards maximum per invocation
+        if: github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
           node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" 1 --review-known | tee "$RUNNER_TEMP/review-first.log"
       - name: Verify 30324 in a separate bounded invocation
+        if: github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
           node poc/tools/run_direct_new_card_intake.cjs "$RUNNER_TEMP/direct-before.txt" "$RUNNER_TEMP/direct-current.txt" "$RUNNER_TEMP/direct-skills.txt" "$RUNNER_TEMP/direct-uma-meta.json" 4 --review-known | tee "$RUNNER_TEMP/review-last.log"
       - name: Confirm all three independently scoped cards without publication
+        if: github.event_name == 'workflow_dispatch'
         run: |
           node - <<'NODE'
           const fs=require('node:fs');

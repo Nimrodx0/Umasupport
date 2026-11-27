@@ -93,4 +93,26 @@ function reviewCard(record,spec,registry){
  if(!releaseBlocked)fail('review must not approve publication');
  return {candidate,summary:{cardId:id,events:events.length,routeCount,hintCount,scalarCount,autoEvents:events.filter(x=>x.type==='auto').length,chainEdges:events.filter(x=>x.requires).length,eventDigests:candidate.events.map(e=>({eventId:e.id,sha256:digest(e)})),sourceUrl:spec.sourceUrl,adjudicatorUrl:spec.adjudicatorUrl,ordinaryChainRuleApplied:true,publicationApproved:false,releaseGateBlocked:true}};
 }
-module.exports={headingFingerprint,routeFingerprint,reviewCard};
+function verifyObservedDigest(summary,evidence){
+ const match=evidence?.cards?.find(c=>c.cardId===summary?.cardId);
+ if(evidence?.schemaVersion!==1||evidence.publicationApproved!==false||!match||
+    summary.publicationApproved!==false||summary.releaseGateBlocked!==true||
+    ['events','routeCount','hintCount','scalarCount','autoEvents','chainEdges'].some(k=>summary[k]!==match[k])||
+    canonical(summary.eventDigests)!==canonical(match.eventDigests))
+  fail('candidate digest drift: '+(summary?.cardId||'unknown'));
+ return true;
+}
+function toUnapprovedIntakeCandidate(checked,evidence){
+ verifyObservedDigest(checked?.summary,evidence);
+ const card=checked.candidate;
+ if(card?.cardId!==checked.summary.cardId||card.coverageStatus!=='partial'||
+    canonical(card.events.map(e=>({eventId:e.id,sha256:digest(e)})))!==canonical(checked.summary.eventDigests))
+  fail('candidate changed after fact review');
+ // Acceptable as an input to the existing append stage, NOT a release.
+ // The separate per-event approval ledger remains mandatory.
+ return {source:'GameTora-original-site',cardId:card.cardId,
+  sourceSiteTextCopied:false,publicationApproved:false,appEventSchemaAdoptable:false,
+  siteEventPanelCount:card.events.length,convertedEventCount:card.events.length,
+  unresolvedEventCount:0,events:structuredClone(card.events)};
+}
+module.exports={headingFingerprint,routeFingerprint,reviewCard,verifyObservedDigest,toUnapprovedIntakeCandidate};
