@@ -18,6 +18,8 @@ on:
       - 'poc/src/d069_json_attempt_ledger.cjs'
       - 'poc/src/d069_github_attempt_store.cjs'
       - 'poc/src/d072_automatic_json_intake.cjs'
+      - 'poc/src/d072_display_corroboration.cjs'
+      - 'poc/src/d069_card_json_transport.cjs'
       - 'poc/src/d072_offline_review_queue.cjs'
       - 'poc/src/d072_catalog_prefix.cjs'
       - 'poc/tests/d072_offline_review_queue.test.cjs'
