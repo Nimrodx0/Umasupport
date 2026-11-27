@@ -5,6 +5,8 @@ on:
       - '.github/workflows/direct-production-shape.yml'
       - 'poc/tools/verify_direct_release_shape.cjs'
       - 'poc/src/direct_event_fact_review.cjs'
+      - 'poc/config/direct-named-release-d068-20261127.v1.json'
+      - 'poc/src/direct_named_release_d068.cjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,18 +28,6 @@ jobs:
         run: |
           node --test poc/tests/direct_event_fact_review.test.cjs poc/tests/official_gametora_new_card_locator.test.cjs
           node --check poc/tools/verify_direct_release_shape.cjs
-      - name: Download fixed UmaSim inputs only
-        run: |
-          set -euo pipefail
-          root=https://raw.githubusercontent.com/mee1080/umasim
-          curl -fsSL --max-time 60 "$root/91952973eb334ae530b8cd76541bce8a01a141cd/data/support_card.txt" -o "$RUNNER_TEMP/old-roster"
-          curl -fsSL --max-time 60 "$root/e9bb2939ba117ea93e556790c353ed3edec27eab/data/support_card.txt" -o "$RUNNER_TEMP/current-roster"
-          curl -fsSL --max-time 60 "$root/e9bb2939ba117ea93e556790c353ed3edec27eab/data/skill_data.txt" -o "$RUNNER_TEMP/current-skill"
-          curl -fsSL --max-time 60 "$root/cf9366f6a487bd8f197b53d8a11981207beb9f6c/data/skill_data.txt" -o "$RUNNER_TEMP/historical-skill"
-          node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP+"/meta.json",JSON.stringify({commit:"e9bb2939ba117ea93e556790c353ed3edec27eab",cardBlob:"a6fec178de309785ce049966122d11dc29506b8a",skillBlob:"0bc7075be624880f6a6f3e65967db0b00d37c4a8"}))'
-      - name: Prepare bounded browser
-        run: |
-          npm install --no-save --no-package-lock playwright@1.55.1
-          command -v google-chrome || command -v google-chrome-stable
-      - name: Actual runtime preflight in memory only
-        run: node poc/tools/verify_direct_release_shape.cjs "$RUNNER_TEMP/old-roster" "$RUNNER_TEMP/current-roster" "$RUNNER_TEMP/current-skill" "$RUNNER_TEMP/meta.json" "$RUNNER_TEMP/historical-skill"
+      # One-time D068 exact payload review passed run 45926697083.
+      # Do not revisit already-published cards on further PRs or manual runs.
+      # New batches use their own bounded review and content-bound evidence.

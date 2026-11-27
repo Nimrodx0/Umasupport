@@ -97,6 +97,6 @@ test('the actual public event DB and approvals are never touched',()=>{
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   require('../data/reviewed_events.v1.json'),
   require('../src/current_public_event_approvals.cjs').forCatalog(
-   require('../data/reviewed_events.v1.json'))).publicEvents,2487);
+   require('../data/reviewed_events.v1.json'))).publicEvents,2499);
  assert.deepEqual(require('../config/event-release-approvals.v1.json').entries,[]);
 });

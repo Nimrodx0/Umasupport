@@ -28,8 +28,8 @@ test('static browser preview matches exactly the audited eight-event source',()=
 });
 test('static preview explicitly contains no published event approval, source prose or extra stages',()=>{
  const p=build();
- assert.equal(verifyRelease(catalog,approvals).publicEvents,2487);
- assert.equal(catalog.cards.length,559);
+ assert.equal(verifyRelease(catalog,approvals).publicEvents,2499);
+ assert.equal(catalog.cards.length,562);
  assert.equal(approvals.schemaVersion,2);
  for(const c of p.cards){
   assert.deepEqual(c.events.map(e=>e.ordinal),[4,5]);

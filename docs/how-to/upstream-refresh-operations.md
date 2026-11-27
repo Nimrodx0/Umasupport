@@ -71,3 +71,7 @@
 - 未掲載は欠損・保留として管理し、勝手に公開候補を承認済みへ昇格させません。
 - [W3工程](../plans/product.md)、[取得元契約](../reference/data-sources.md)、[公開審査](checker-public-catalog.md)の条件に従います。候補PRの自動作成は正式公開の承認ではありません。
 - 過去の直接HTML取得・GameWithの待機閾値・2026-10-26の測定結果は[以前の全文](../evidence/sources/upstream-refresh-original-20261110.md)にのみ保存しています。
+
+### D-068以降の公開増分と歴史全件監査
+
+旧 `whole-event-inventory.yml` は明示手動の歴史監査とし、旧固定ソースが404の場合は失敗を保持する。初回2487件をmainへ書き戻す旧自動公開ジョブは退役。新規増分は公開承認台帳・既存コホートSHA・増分実データのCIとPRで配信し、main配信後の `pages-real-browser-acceptance.yml` で公開JSONと実ブラウザを確認する。

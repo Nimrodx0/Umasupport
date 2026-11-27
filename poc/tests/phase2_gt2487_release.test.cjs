@@ -3,7 +3,8 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {filterApproved,select}=require('../src/phase2_gt2487_release.cjs');
 const {verifyRelease}=require('../src/event_release_gate.cjs');
-const review=require('../config/event-release-approvals.gt2487.v2.json');
+const activeReview=require('../config/event-release-approvals.gt2487.v2.json');
+const review={schemaVersion:activeReview.schemaVersion,cohorts:activeReview.cohorts,entries:[]};
 const fixture=()=>({schemaVersion:1,cards:[
  {cardId:'30080',coverageStatus:'partial',events:[
   {id:'gt-30080-event-001',name:'架空イベント',type:'choice',choices:[
@@ -63,4 +64,6 @@ test('review states original factual description, not invented licensing',()=>{
  assert.equal(review.cohorts[0].review.sourceRevision,
   '6e38b54af4fad397ff4491e63007a90705a4fe67');
  assert.equal(review.entries.length,0);
+ assert.equal(activeReview.entries.length,12);
+ assert.ok(activeReview.entries.every(e=>e.publicationBasis.kind==='original-factual-description'&&e.eventId.startsWith('gt-site:')));
 });

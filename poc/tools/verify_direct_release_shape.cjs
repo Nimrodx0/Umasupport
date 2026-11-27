@@ -17,8 +17,9 @@ const oldCatalog=require('../data/reviewed_events.v1.json');
 const approvals=require('../config/event-release-approvals.gt2487.v2.json');
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 async function main(args){
- if(args.length!==5)throw Error('usage: old-roster current-roster current-skill pinned-meta historical-skill');
+ if(!(args.length===5||args.length===6&&args[5]==='--d068-approved-payload'))throw Error('usage: old-roster current-roster current-skill pinned-meta historical-skill');
  const [oldPath,newPath,skillFile,metaFile,pinnedFile]=args;
+ const approvedPayload=args[5]==='--d068-approved-payload';
  const before=fs.readFileSync(oldPath,'utf8'),current=fs.readFileSync(newPath,'utf8'),skills=fs.readFileSync(skillFile,'utf8'),pinned=fs.readFileSync(pinnedFile,'utf8');
  const meta=JSON.parse(fs.readFileSync(metaFile,'utf8'));
  if(gitBlobSha(before)!==POLICY.beforeBlob||gitBlobSha(current)!==meta.cardBlob||gitBlobSha(skills)!==meta.skillBlob||
@@ -58,6 +59,12 @@ async function main(args){
   releaseBlocked=true;
  }
  if(!releaseBlocked)throw Error('approval boundary bypassed');
+ if(approvedPayload){
+  const payload=require('../src/direct_named_release_d068.cjs').prepare({discovery,existingCatalog:oldCatalog,candidates,existingApprovals:approvals,model:loader.buildModel(current),skillText:skills,pinnedSkillText:pinned,allowReviewedLegacy:true});
+  // This is the exact owner-authorized, hash-pinned and gate-validated
+  // factual increment, not an unapproved draft or any raw source content.
+  console.log('D068_APPROVED_APPEND='+JSON.stringify(payload));
+ }
  console.log('GT_DIRECT_PRODUCTION_SHAPE='+JSON.stringify({cards:summaries,
   baseline:oldVerified,combinedCards:mergedRuntime.cardsWithRecords,combinedEvents:mergedRuntime.eventsWithRecords,
   existingCatalogUnchanged:true,pendingIds:stage.pending.map(x=>x.cardId),releaseBlocked,publicationApproved:false}));

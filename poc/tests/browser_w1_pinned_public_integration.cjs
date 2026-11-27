@@ -12,11 +12,13 @@ const loader=require('../src/live_loader.js');
 const bridge=require('../src/skill_bridge.js');
 
 const ROOT=path.resolve(__dirname,'../..');
-const REV='cf9366f6a487bd8f197b53d8a11981207beb9f6c';
+const REV='e9bb2939ba117ea93e556790c353ed3edec27eab';
 const SUPPORT_URL='https://raw.githubusercontent.com/mee1080/umasim/'+REV+'/data/support_card.txt';
-const SKILL_URL=bridge.PINNED_URL;
+const SKILL_URL='https://raw.githubusercontent.com/mee1080/umasim/'+REV+'/data/skill_data.txt';
+const {gitBlobSha}=require('../src/current_umasim_roster_delta.cjs');
 const PINNED_SKILL_SHA=bridge.PINNED_SHA256;
-const PINNED_SUPPORT_SHA='153213019b5232df6c211427b862978218b60df6baee03c2a5fee75e0966d424';
+const SUPPORT_BLOB='a6fec178de309785ce049966122d11dc29506b8a';
+const SKILL_BLOB='0bc7075be624880f6a6f3e65967db0b00d37c4a8';
 const SAVE_KEY='uma-support-lab-runtime-umasim-v1';
 const sha=text=>crypto.createHash('sha256').update(text).digest('hex');
 
@@ -28,12 +30,13 @@ async function readPinned(url){
  return body;
 }
 async function getSources(){
- const [supports,skills]=await Promise.all([readPinned(SUPPORT_URL),readPinned(SKILL_URL)]);
- assert.equal(sha(skills),PINNED_SKILL_SHA,'approved-event registry pin drift');
- assert.equal(sha(supports),PINNED_SUPPORT_SHA,'immutable support roster bytes drift');
- assert.equal(loader.parseSupportCards(supports).cards.size,563);
+ const [supports,skills,pinnedSkills]=await Promise.all([readPinned(SUPPORT_URL),readPinned(SKILL_URL),readPinned(bridge.PINNED_URL)]);
+ assert.equal(sha(pinnedSkills),PINNED_SKILL_SHA,'historic approved-event registry pin drift');
+ assert.equal(gitBlobSha(supports),SUPPORT_BLOB,'immutable support roster bytes drift');
+ assert.equal(gitBlobSha(skills),SKILL_BLOB,'new-card skill registry pin drift');
+ assert.equal(loader.parseSupportCards(supports).cards.size,568);
  assert.ok(bridge.parseSource(skills).count>=100);
- return {supports,skills};
+ return {supports,skills,pinnedSkills};
 }
 function server(){
  const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
@@ -73,7 +76,7 @@ async function appCases(page){
   const model=window.UmaDemoData,core=window.UmaCore;
   assertModel();
   function assertModel(){
-   if(model.meta.reviewedEventRecords!==2487||model.meta.reviewedEventCards!==559)
+   if(model.meta.reviewedEventRecords!==2499||model.meta.reviewedEventCards!==562)
     throw Error('Unexpected public review cohort');
    if(model.meta.runtimeSources.events.mode!=='reviewed')
     throw Error('Public event data was not attached');
@@ -325,7 +328,7 @@ async function appCases(page){
  assert.ok(geometry.documentWidth<=geometry.width+3,
   'Page-wide overflow at simulated mobile width: '+JSON.stringify(geometry));
  assert.deepEqual(errors,[]);
- return {cards:sample.cards,skills:sample.skills,reviewedEvents:2487,
+ return {cards:sample.cards,skills:sample.skills,reviewedEvents:2499,
   goalByBothDecks:true,choicePersistedAfterReload:true,exclusiveResultUI:true,
   pinnedRealNormalHintsChecked:true,sourceBackedParentChildUI:true,
   simulatedMobileWidth:geometry.width};
@@ -344,14 +347,14 @@ async function main(){
    status:200,contentType:'text/plain; charset=utf-8',body:inputs.supports
   }));
   await page.route('**/data/skill_data.txt',route=>route.fulfill({
-   status:200,contentType:'application/json; charset=utf-8',body:inputs.skills
+   status:200,contentType:'application/json; charset=utf-8',body:route.request().url()===bridge.PINNED_URL?inputs.pinnedSkills:inputs.skills
   }));
   const app='http://127.0.0.1:'+srv.address().port+'/poc/live.html';
   await boot(page,app);
   const outcome=await appCases(page);
   console.log('W1_PINNED_PUBLIC_BROWSER_PASS='+JSON.stringify({
    ...outcome,umasimRevision:REV,supportSha256:sha(inputs.supports),
-   skillSha256:PINNED_SKILL_SHA,publishedPayloadUnchanged:true,
+   skillSha256:sha(inputs.skills),historicalSkillSha256:PINNED_SKILL_SHA,publishedPayloadUnchanged:true,
    testsUseRealEventData:true,physicalWindowsAndroidTested:false
   }));
   await context.close();

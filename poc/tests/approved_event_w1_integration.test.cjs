@@ -64,8 +64,8 @@ function findChain(){
 }
 test('published cohort is exact, and unselected choices never leak any skill routes',()=>{
  assert.equal(catalog.schemaVersion,1);
- assert.equal(entries.length,559);
- assert.equal(allEvents.length,2487);
+ assert.equal(entries.length,562);
+ assert.equal(allEvents.length,2499);
  let choices=0,autos=0,checked=0;
  for(const card of Object.values(cards)){
   const config=makeSlot(card.id);
@@ -79,8 +79,8 @@ test('published cohort is exact, and unselected choices never leak any skill rou
   autos+=card.events.filter(e=>e.type==='auto').length;
   checked++;
  }
- assert.equal(checked,559);
- assert.equal(choices+autos,2487);
+ assert.equal(checked,562);
+ assert.equal(choices+autos,2499);
  assert.ok(choices>0&&autos>0);
 });
 const automatic=findAuto();

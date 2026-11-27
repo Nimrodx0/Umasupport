@@ -187,22 +187,29 @@ test('additional GT-prefixed card can be reviewed individually without widening 
  const omitted=clone(after);omitted.cards[0].events.pop();
  assert.throws(()=>verifyRelease(omitted,next),/SHA不一致/);
 });
-test('the actual released GT2487 cohort accepts only explicit extra-card V1 evidence',()=>{
+test('actual released catalog retains the immutable GT2487 cohort and accepts only explicit extra-card V1 evidence',()=>{
  const original=require('../data/reviewed_events.v1.json');
  const signed=require('../config/event-release-approvals.gt2487.v2.json');
  const old=JSON.stringify(signed);
- const extra=event('gt-30322-event-001');
+ const baseline=verifyRelease(original,signed);
+ assert.equal(baseline.publicEvents,2499);
+ assert.equal(baseline.reviewedIndividualExceptions,12);
+ // A deliberately fictional next card, NOT one of the three now published.
+ const extraId='39999',extra=event('gt-39999-event-001');
+ assert.ok(!original.cards.some(c=>c.cardId===extraId));
  const candidate={schemaVersion:1,cards:[
-  ...original.cards,{cardId:'30322',coverageStatus:'partial',events:[extra]}
+  ...original.cards,{cardId:extraId,coverageStatus:'partial',events:[extra]}
  ]};
  const ledger={schemaVersion:2,cohorts:clone(signed.cohorts),
-  entries:[v1Entry(extra,'30322')]};
+  entries:[...clone(signed.entries),v1Entry(extra,extraId)]};
  const passed=verifyRelease(candidate,ledger);
  assert.deepEqual([passed.publicCards,passed.publicEvents,
    passed.reviewedCohorts,passed.reviewedIndividualExceptions],
-  [560,2488,1,1]);
+  [563,2500,1,13]);
  assert.equal(JSON.stringify(signed),old);
  assert.deepEqual(ledger.cohorts,signed.cohorts);
- const unapproved=clone(ledger);unapproved.entries=[];
+ const unapproved=clone(ledger);unapproved.entries.pop();
  assert.throws(()=>verifyRelease(candidate,unapproved),/SHA不一致|未承認/);
+ const tampered=clone(candidate);tampered.cards.find(c=>c.cardId==='30322').events[0].name+='改ざん';
+ assert.throws(()=>verifyRelease(tampered,ledger),/SHA不一致|不一致/);
 });

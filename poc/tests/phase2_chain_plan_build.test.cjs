@@ -28,7 +28,7 @@ test('source-bound planning data equals generated JSON, without individual route
   x.continuation==='ORDINARY_DEFAULT_NO_EXPLICIT_CUTOFF'));
  assert.equal(require('../src/event_release_gate.cjs').verifyRelease(
   release,require('../src/current_public_event_approvals.cjs').forCatalog(release)
- ).publicEvents,2487);
+ ).publicEvents,2499);
  assert.deepEqual(approvals,{schemaVersion:1,entries:[]});
 });
 test('event flags are enforced by the real core, regardless of event appearance RNG',()=>{
