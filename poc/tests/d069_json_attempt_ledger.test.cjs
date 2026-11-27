@@ -57,7 +57,7 @@ test('empty selection, wrong target, imported card, policy drift and malformed l
  a.deepEqual((await runBatch({...f.input,targetIds:[]})).results,[]);
  await a.rejects(runBatch({...f.input,targetIds:['39997']}),/scope/);
  await a.rejects(runBatch({...f.input,existingCatalog:{schemaVersion:1,cards:[{cardId:'39998'}]}}),/imported/);
- await a.rejects(runBatch({...f.input,policy:{...policy,automaticScheduledSiteAccessAllowed:true}}),/policy/);
+ await a.rejects(runBatch({...f.input,policy:{...policy,automaticScheduledSiteAccessAllowed:false}}),/policy/);
  a.throws(()=>verify({...empty(),rows:[{cardId:'39998',status:'reserved',sourcePin,packetSha256:null,body:'raw'}]}),/shape/);
  a.equal(f.observations(),0);
 });

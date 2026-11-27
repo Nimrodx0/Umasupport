@@ -17,16 +17,18 @@ on:
       - 'poc/src/direct_pending_review.cjs'
       - 'poc/src/d069_json_attempt_ledger.cjs'
       - 'poc/src/d069_github_attempt_store.cjs'
+      - 'poc/src/d072_automatic_json_intake.cjs'
+      - 'poc/src/d069_review_packet_archive.cjs'
       - 'poc/config/direct-event-pending-review.v1.json'
       - 'poc/config/direct-event-intake-policy.v1.json'
       - 'poc/tests/direct_pending_review.test.cjs'
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
-  group: derived-github-new-card-pending-ledger
+  group: gametora-direct-new-card-limited-read
   cancel-in-progress: false
 
 jobs:
@@ -56,12 +58,14 @@ jobs:
               owner:'mee1080',repo:'umasim',tree_sha:uma.data.commit.tree.sha,recursive:'1'
             })).data;
             if(tree.truncated!==false)throw Error('Incomplete UmaSim tree');
+            const skills=tree.tree.filter(x=>x.path==='data/skill_data.txt'&&x.type==='blob');
+            if(skills.length!==1||!/^[0-9a-f]{40}$/.test(skills[0].sha))throw Error('Missing immutable UmaSim skill coordinates');
             const cards=tree.tree.filter(x=>x.path==='data/support_card.txt'&&x.type==='blob');
             if(cards.length!==1||!/^[0-9a-f]{40}$/.test(cards[0].sha)||!/^[0-9a-f]{40}$/.test(uma.data.sha))
               throw Error('Missing immutable UmaSim roster coordinates');
             const temp=process.env.RUNNER_TEMP;
             fs.writeFileSync(temp+'/pending-heads.json',JSON.stringify({
-              skillCommit:uma.data.sha,cardBlob:cards[0].sha
+              skillCommit:uma.data.sha,cardBlob:cards[0].sha,skillBlob:skills[0].sha
             }));
             const title='New support cards pending GameTora-derived event intake';
             const open=await github.paginate(github.rest.issues.listForRepo,{
@@ -127,6 +131,17 @@ jobs:
               previous,next,review,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob},
               policy:require('./poc/config/direct-event-intake-policy.v1.json')});
             const attemptStore=require('./poc/src/d069_github_attempt_store.cjs').createStore({github,...context.repo});
+            const policy=require('./poc/config/direct-event-intake-policy.v1.json');
+            const catalog=require('./poc/data/reviewed_events.v1.json');
+            const auto=await require('./poc/src/d072_automatic_json_intake.cjs').runAutomatic({
+              plan:basePlan,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob,skillBlob:pin.skillBlob},
+              policy,existingCatalog:catalog,store:attemptStore,loadSkillText:async()=>{
+                const r=await github.rest.git.getBlob({owner:'mee1080',repo:'umasim',file_sha:pin.skillBlob});
+                if(r.data.encoding!=='base64'||r.data.sha!==pin.skillBlob)throw Error('Skill blob mismatch');
+                return Buffer.from(r.data.content,'base64').toString('utf8');
+              }
+            });
+            core.info('D072_AUTOMATIC_INTAKE='+JSON.stringify(auto));
             const eventPlan=require('./poc/src/d069_json_attempt_ledger.cjs').excludeAttempted(basePlan,await attemptStore.load());
             core.info('D069_EVENT_DRIVEN_PLAN='+JSON.stringify(eventPlan));
             const owner=context.repo.owner,repo=context.repo.repo;
@@ -140,13 +155,13 @@ jobs:
               .addRaw('New cards: '+summary.discoveredNewCardIds.join(', ')+
                 '; review flags: '+summary.reviewIssues+
                 '. Existing catalog untouched; no automatic event publication.')
-              .addRaw(summary.sourceStatus==='direct-review-pending'?'\nD067: direct GameTora review pending; no legacy repository or site access in roster-only job.':'')
+              .addRaw(summary.sourceStatus==='direct-review-pending'?'\nD067: direct GameTora review pending; new-card-only acquisition; no legacy repository requests.':'')
               .addHeading('D069 event-driven intake preflight')
               .addRaw('Status: '+eventPlan.status+'; newly queued: '+(eventPlan.newlyQueuedIds.join(', ')||'none')+
                 '; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
                 '; held: '+(eventPlan.heldIds.join(', ')||'none')+
                 '; attempted: '+(eventPlan.attemptedIds.join(', ')||'none')+
-                '; no site access or automatic publication authorized.')
+                '; new-card-only acquisition; publication remains gated.')
               .write();
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));
@@ -167,10 +182,11 @@ jobs:
               'Event text, choice descriptions, source JSON, private drafts and copyrighted prose are not stored here.',
               'D067: GameTora original site is the new-card source. GameWith is consulted only for specific flagged facts. Historical ledger repository and existing rows retain old observations, not current availability.',
               'A successfully converted card stays pending until actually appended under the separate approval gate.',
-              ...(direct?['**Direct source review pending. This roster-only job makes no event-source requests. Current review status is separate from historical GitHub observations. Observed event counts are not game coverage or publication.**']:[]),
+              ...(direct?['**Direct source review pending. This job attempts only new, unattempted IDs. Current review status is separate from historical GitHub observations. Observed event counts are not game coverage or publication.**']:[]),
               'D069 preflight: '+eventPlan.status+'; planned sequential batches: '+(eventPlan.batches.map(b=>b.join(', ')).join(' / ')||'none')+
                 '; total unreviewed: '+eventPlan.eligibleIds.length+
-                '. Site access is not authorized by this plan.',
+                '. D072 permits new-card-only automatic acquisition; publication remains gated.',
+              'Automatic acquisition: '+(auto.attemptedIds.join(', ')||'none')+'; stop: '+(auto.stopReason||'none'),
               'Persistent JSON attempts: '+(eventPlan.attemptedIds.join(', ')||'none')+'. These remain pending until approved append.',
               'Use Issue comments for human notes; the machine-controlled body is replaced only when the ledger changes.',
               '',
