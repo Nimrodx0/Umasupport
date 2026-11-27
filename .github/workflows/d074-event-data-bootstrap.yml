@@ -1,0 +1,74 @@
+name: D074 event data branch bootstrap and verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/d074-event-data-bootstrap.yml'
+      - 'poc/src/d074_event_data_branch.cjs'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/d074-event-data-bootstrap.yml'
+      - 'poc/src/d074_event_data_branch.cjs'
+      - 'poc/tests/d074_event_data_branch.test.cjs'
+permissions:
+  contents: read
+concurrency:
+  group: d074-event-data-branch
+  cancel-in-progress: false
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test poc/tests/d074_event_data_branch.test.cjs
+  verify-or-seed:
+    needs: unit
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const {bootstrap,verifySnapshot,CATALOG,APPROVALS}=require('./poc/src/d074_event_data_branch.cjs');
+            const catalogText=fs.readFileSync(CATALOG,'utf8'),approvalsText=fs.readFileSync(APPROVALS,'utf8');
+            const {gitBlobSha}=require('./poc/src/current_umasim_roster_delta.cjs');
+            const allowCreate=context.eventName==='push'&&context.payload.before==='cf6b6563236d2eb61d00a93fcd9ddd44b9d9e15a'&&
+              gitBlobSha(catalogText)==='d3ee48d688f6ab6f9478729ec3840d9071c762ca'&&
+              gitBlobSha(approvalsText)==='2662b0ee22825f19c489740c3dea93ebd30cd307';
+            const report=await bootstrap({github,...context.repo,baseSha:context.sha,catalogText,approvalsText,allowCreate});
+            core.info('D074_DATA_BRANCH='+JSON.stringify(report));
+            const root='https://raw.githubusercontent.com/'+context.repo.owner+'/'+context.repo.repo+'/';
+            const read=async(path)=>{
+              const r=await fetch(root+path,{cache:'no-store',signal:AbortSignal.timeout(15000)});
+              if(!r.ok)throw Error('Raw HTTP '+r.status);
+              return r.text();
+            };
+            let verified=false;
+            for(let i=0;i<6;i++){
+              try{
+                const m=JSON.parse(await read('refs/heads/data/events/manifest.json'));
+                if(JSON.stringify(m)!==JSON.stringify(report.manifest))throw Error('moving manifest not yet current');
+                const [c,a]=await Promise.all([read(m.snapshotCommit+'/'+CATALOG),read(m.snapshotCommit+'/'+APPROVALS)]);
+                verifySnapshot(m,c,a);
+                verified=true;break;
+              }catch(e){core.info('Raw verification attempt '+(i+1)+': '+e.message);if(i<5)await new Promise(r=>setTimeout(r,10000));}
+            }
+            if(!verified)throw Error('Public Raw snapshot verification failed');
+            core.info('D074_PUBLIC_RAW_VERIFIED='+JSON.stringify({head:report.head,snapshotCommit:report.manifest.snapshotCommit,cardCount:report.manifest.cardCount,eventCount:report.manifest.eventCount}));

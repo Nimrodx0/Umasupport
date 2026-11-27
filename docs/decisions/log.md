@@ -35,6 +35,11 @@
 
 本書は**利用者による仕様判断と変更理由の履歴**です。現行の有効仕様は [requirements.md](../reference/requirements.md)、実装・検証の最新到達点は [status.md](../project/status.md)、次工程は [roadmap.md](../project/roadmap.md) を参照してください。各決定は**記録された時点の判断**であり、後続決定で撤回・置換されることがあります。日付の並び順や旧段落の「現在」「優先」だけで有効性を判断せず、該当要件と後続決定を照合します。[文書運用規約](../governance/documentation-policy.md)。
 
+<a id="decision-d-074"></a>
+## 2026-11-28：イベントDBを同一リポジトリの専用データブランチから配信する
+
+**利用者確定（2026-11-28 01:34 JST）**：「よし。A方式で」。7方式の比較評価から同一リポジトリの専用データブランチ方式を選択。アプリはmain／GitHub Pages、承認済み独自イベントDBは `data/events`、更新処理はGitHub Actionsに分離する。通常のDB増分にアプリPR・main自動merge・Pages再配信・追加認証を必須としない。固定コミットとSHAで版混在を防ぎ、既存承認ゲート・非破壊増分・回帰・キャッシュ・復旧を維持。D-068/D-072/D-073の取得条件・公開根拠を変更せず、未承認候補を配信しない。段階移行の詳細は[ADR-0002](../adr/0002-event-data-distribution.md)。
+
 <a id="decision-d-073"></a>
 ## 2026-11-28：正常なJSONの機械検証による採用と疑義の個別裁定
 

@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-074",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：イベントDBを同一リポジトリの専用データブランチから配信する",
+      "status": "current",
+      "relation": [],
+      "note": "方式Aを採用。アプリはmain／Pages、承認済み独自DBはdata/events、更新はGitHub Actions。固定スナップショット・原子的版更新・承認ゲート・非破壊・復旧・公開受入を維持。無審査公開や権利の追加承認ではない。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-074",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-074",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-073",
       "date": "2026-11-28",
       "heading": "2026-11-28：正常なJSONの機械検証による採用と疑義の個別裁定",
