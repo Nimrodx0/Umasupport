@@ -1,6 +1,6 @@
 # 固定出典の監視・増分更新：現行手順
 
-このページは**現在実行する運用**のみを扱います。2026年10月26～29日の元GameTora HTML直接取得や7日待機の旧方針・当時の測定値を含む全文は[固定した旧版](../evidence/sources/upstream-refresh-original-20261110.md)で参照してください。
+このページは現行運用と明示的に区別した旧監査手順を扱います。2026年10月26～29日の元GameTora HTML直接取得や7日待機の旧方針・当時の測定値を含む全文は[固定した旧版](../evidence/sources/upstream-refresh-original-20261110.md)で参照してください。
 
 ## D-067による新カード主経路の変更
 
@@ -19,17 +19,19 @@
 
 ## 更新時の不変条件
 
-既存データの一括差し替えは目的ではない。**UmaSimの旧・現行全カード名簿→追加カードIDの検出→第三者GitHubのGameTora派生JSONの対象新カードを取得・変換→既存独自DBへ追記**を自動化する。既存カードは編集せず、同一カードの二度目の追加を拒否し、新規取得が不完全な場合は元DBに何も書かない。
+既存データの一括差し替えは目的ではない。UmaSim名簿差分→新カードのGameTora本体限定取得・独自変換→個別照合・承認→非破壊追記を行う。通常の日次監視は名簿だけであり、サイト取得は明示手動に限る。
 
-増分検出・GitHub派生JSONの検証・既存全イベント変換器への接続・日次の未掲載Issue引継ぎは[新カード取込記録](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)と[既存変換器の再利用](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)に整備済み。**新カードの収録・未収録状態は監視の最新結果で確認**し、掲載済みという報告だけで公開審査・承認済み追記の完了とは扱わない。GameTora本体HTMLの全パネルを直接取得・変換する旧経路は開発保留。
+従来の派生JSON取得・変換の証拠は[旧新カード取込記録](../evidence/sources/derived-github-daily-pending-ledger-20261029.md)と[旧変換器の再利用](../evidence/sources/derived-github-canonical-single-card-adapter-20261029.md)に保持する。現行の直接取得・照合の結果は[status](../project/status.md)を参照。掲載・取得だけで公開承認済みとは扱わない。
 
 ## 供給元停止時の部分運用（#522 / #283）
 
-GT派生元を取得できない場合、GT差分は判定不能とし、固定ピン・候補Draft・既存公開DBを変更しない。UmaSimのGit blob差分は独立してログとJob summaryへ出す。新カード監視はUmaSim名簿と承認済みDBから対象IDを先に確定し、GT取得失敗でも従来の保留行を保持し、新規IDは `awaiting-source-availability`（JSON有無未確認）で追加する。Issue本文に現時点の取得不能を明記し、ジョブは最後に失敗を通知する。復旧時は正常な取得結果で再判定する。出典変更は別途承認する。
+旧GT派生元の404は歴史的監査時の判定不能であり、通常の日次名簿監視を停止しない。旧固定ピン・候補Draft・既存公開DBは維持し、明示手動監査が失敗した場合は独立UmaSim観測と失敗理由を記録する。新カードの直接取得失敗も不存在扱いにしない。
 
 ## 日次監視（実装済み）
 
 [`Monitor pinned GT events and UmaSim sources`](../../.github/workflows/upstream-refresh-monitor.yml) は GitHub Actions の毎日 **03:27 UTC／12:27 JST** の予約実行、または手動 `workflow_dispatch` で起動（実行時刻はGitHubのスケジューラ都合で遅れる場合がある）。
+
+通常実行は固定／最新UmaSimのblob比較だけを行い、Job summaryに結果を出す。新規IDの保留は独立した日次 `derived-github-pending-intake.yml` が管理する。**以下の1〜5は `legacy_event_audit=true` を指定した旧派生元の明示手動監査の手順**であり、通常の日次実行には適用しない。
 
 1. [`upstream_refresh_watch.cjs`](../../poc/src/upstream_refresh_watch.cjs) はGithub REST APIのGitツリーメタデータを、固定GT／固定UmaSim／最新GT／最新UmaSimの計4版について取得する。対象はGameTora `support_<ID>.json` の**Git blob SHA** とUmaSimの2ファイルのGit blob SHAだけ。イベントJSON本文・画像・選択肢のコピーは行わない。
 2. GTの**追加・変更・削除ID**、対象のUmaSim元ファイルの変更を分類する。最新の上流リポジトリが無関係なファイルだけを変更した場合、コミットが進んでも **差分なし** と判断する。
@@ -41,6 +43,8 @@ GT派生元を取得できない場合、GT差分は判定不能とし、固定�
 
 ## 差分の確認・承認工程
 
+以下は旧固定派生元の候補スナップショットを扱う歴史的監査手順。新カードの直接取得・正式増分は[現行の増分手順](curated-event-intake.md)に従う。
+
 1. **差分レビューIssueを確認**。元のバージョン、最新コミット、新カードID、修正・削除されたカードID、UmaSimマスター変更の有無を確認する。監査時の固定母集団、変更候補の母集団、実ゲームの全数を混同しない。固定件数はその根拠コミットとセットで確認する。
 2. **一時環境で新固定候補を作る**。候補のGTコミットをCIの非公開テンポラリパスへ読み出し、従来の全件GTチェーン・結果分岐／非スキル効果の監査、元スキルIDの照合、必要に応じてGameToraカードページ→GameWith例外裁定を実行する。変化した母集団の差分を検証してから新しい基準件数にする。古い `559`／`2488`／`2512` を**新しい母集団へ無根拠に転載しない**。
 3. **採用PRを作る**。新しいGT固定コミットとUmaSimのピンをコード・テスト・出典文書で更新する。完全に確認できないイベントはレビュー行列に `missing`、`unadjudicated`、`conflicting` 等を残し、通常スキルや「全カード対応」に見せかけない。
@@ -50,7 +54,7 @@ GT派生元を取得できない場合、GT差分は判定不能とし、固定�
 
 ## 候補Draft PRの意味
 
-日次の監視ジョブで対象データのblob差分を検知すると、**レビューIssueの作成・更新に続いて、Gitツリーメタデータだけを記録したDraft PR**を自動作成／更新する。変更がなければ両方とも作らない。
+明示手動の旧派生元監査で対象データのblob差分を検知すると、**レビューIssueの作成・更新に続いて、Gitツリーメタデータだけを記録したDraft PR**を自動作成／更新する。変更がなければ両方とも作らない。
 
 - ブランチ名は `automation/upstream-refresh-candidate` の**1本**。追加されるファイルは `poc/review/upstream-refresh-candidate.v1.json` の**1件だけ**で、ランタイムのGameTora／UmaSim固定ピン、イベントデータ、公開済みカタログ・ユーザー設定は書き換えない。
 - [候補生成・厳格検証器](../../poc/src/upstream_refresh_candidate.cjs) は元イベントの選択肢文・報酬・原本JSONを含まない。監視済みの固定と候補のGit commit／tree SHA、UmaSimの2 Git blob SHA、GTの追加・変更・削除ID、既知新3カードの収録／未収録ID、差分ハッシュ、検証未実施の事実だけを収録する。
@@ -59,7 +63,7 @@ GT派生元を取得できない場合、GT差分は判定不能とし、固定�
 - Bot作成のブランチは通常のpush／PRイベントではCIが自動起動しないため、メタデータに変更が生じたときは明示的に `PoC Core Tests` の `workflow_dispatch` を実行する。候補JSONそのものを厳密検査し、元データの追加格納・承認済みの偽装を拒否する。**このread-only Core CIは、候補バージョンの全件イベントを実際に取り込むB検証の代用ではない**。
 - GitHub Actionsの既定権限によりBotのPull Request作成が禁止されている環境では、Repository Settings → Actions → Generalで「Allow GitHub Actions to create and approve pull requests」を有効にする管理者の操作が必要になる場合がある。書き込み権限不足ならジョブは失敗し、既存Issueからレビューの続きを行う。
 
-**現在の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → read-only Core CI＋候補の全件ソース構造preflight」まで**。別の[実データ全件preflightの検証範囲・保留条件](../evidence/sources/upstream-full-source-preflight-20261027.md)を参照。候補のGTイベント全件とUmaSim全カード・全数値スキルIDの取り込み**構造**を確認できても、イベント内部の意味・外部出典の裁定、第三者素材の配布権利、公開許諾、実ゲーム全体の網羅性を証明しない。新固定ピンの正式採用・未承認イベントの実公開は実装も許可もしていない。
+**旧派生元監査の実装は「更新検知 → Issue → Git SHAと未実施ゲートだけの候補Draft → read-only Core CI＋候補の全件ソース構造preflight」まで**。別の[実データ全件preflightの検証範囲・保留条件](../evidence/sources/upstream-full-source-preflight-20261027.md)を参照。候補のGTイベント全件とUmaSim全カード・全数値スキルIDの取り込み**構造**を確認できても、イベント内部の意味・外部出典の裁定、第三者素材の配布権利、公開許諾、実ゲーム全体の網羅性を証明しない。新固定ピンの正式採用・未承認イベントの実公開は実装も許可もしていない。
 
 ## 現行運用の制約
 
