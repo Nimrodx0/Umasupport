@@ -79,8 +79,12 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
     if(Object.keys(r).sort().join(',')!=='cardId,status')fail('not-listed shape');
     return {cardId:r.cardId,status:'not-listed',packetSha256:null};
    }
-   if(r.status!=='json'||Object.keys(r).sort().join(',')!=='body,buildId,cardId,sourceUrl,status')fail('response shape');
+   if(r.status!=='json'||!['body,buildId,cardId,sourceUrl,status','body,buildId,cardId,domObservation,sourceUrl,status'].includes(Object.keys(r).sort().join(',')))fail('response shape');
    const packet=inspect({body:r.body,buildId:r.buildId,cardId:r.cardId,sourceUrl:r.sourceUrl,sourcePin,skillText,existingCatalog});
+   if(Object.hasOwn(r,'domObservation')){
+    const {compareDisplay,verifyDisplay}=require('./d072_display_corroboration.cjs');
+    packet.domEvidence=verifyDisplay(compareDisplay(packet,r.domObservation));
+   }
    reviewPackets.push(packet);
    return {cardId:r.cardId,status:packet.status==='held'?'held':'awaiting-fact-review',packetSha256:digest(packet)};
   });
