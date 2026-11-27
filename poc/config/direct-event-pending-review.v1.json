@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "direct-event-pending-review",
+  "publicationApproved": false,
+  "sourceProseIncluded": false,
+  "cards": [
+    {
+      "cardId": "10149",
+      "observedAt": "2026-11-27",
+      "observedEvents": 11,
+      "runId": 45923701308,
+      "reasonCodes": [
+        "rarity-reward-conflict",
+        "outing-unlock-sequence-gap"
+      ]
+    },
+    {
+      "cardId": "30323",
+      "observedAt": "2026-11-27",
+      "observedEvents": 11,
+      "runId": 45923701308,
+      "reasonCodes": [
+        "ending-event-coverage-gap",
+        "external-condition-unresolved",
+        "stage-effect-scaling-unresolved"
+      ]
+    }
+  ]
+}
