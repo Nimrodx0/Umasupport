@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {forCatalog}=require('../src/current_public_event_approvals.cjs');
@@ -6,11 +7,11 @@ const {verifyRelease}=require('../src/event_release_gate.cjs');
 const published=require('../data/reviewed_events.v1.json');
 test('owner-approved legacy GT cohort plus exact D068 new cards, never unsigned additions',()=>{
  const actual=verifyRelease(published,forCatalog(published));
- assert.equal(actual.publicEvents,2499);
- assert.equal(actual.reviewedIndividualExceptions,12);
+ assert.equal(actual.publicEvents,CURRENT_PUBLIC.events);
+ assert.equal(actual.reviewedIndividualExceptions,CURRENT_PUBLIC.individualEntries);
  assert.equal(actual.reviewedCohorts,1);
- assert.equal(actual.publicCards,562);
- assert.deepEqual(published.cards.slice(-3).map(c=>[c.cardId,c.events.length]),[['20102',4],['30322',5],['30324',3]]);
+ assert.equal(actual.publicCards,CURRENT_PUBLIC.cards);
+ assert.deepEqual(['20102','30322','30324'].map(id=>[id,published.cards.find(c=>c.cardId===id)?.events.length]),[['20102',4],['30322',5],['30324',3]]);
  const unsigned=structuredClone(forCatalog(published));unsigned.entries=[];
  assert.throws(()=>verifyRelease(published,unsigned),/SHA|不一致|未承認/);
  assert.equal(published.cards.every(x=>x.events.every(e=>

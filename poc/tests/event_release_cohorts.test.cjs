@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {verifyRelease,digest}=require('../src/event_release_gate.cjs');
@@ -192,8 +193,8 @@ test('actual released catalog retains the immutable GT2487 cohort and accepts on
  const signed=require('../config/event-release-approvals.gt2487.v2.json');
  const old=JSON.stringify(signed);
  const baseline=verifyRelease(original,signed);
- assert.equal(baseline.publicEvents,2499);
- assert.equal(baseline.reviewedIndividualExceptions,12);
+ assert.equal(baseline.publicEvents,CURRENT_PUBLIC.events);
+ assert.equal(baseline.reviewedIndividualExceptions,CURRENT_PUBLIC.individualEntries);
  // A deliberately fictional next card, NOT one of the three now published.
  const extraId='39999',extra=event('gt-39999-event-001');
  assert.ok(!original.cards.some(c=>c.cardId===extraId));
@@ -205,7 +206,7 @@ test('actual released catalog retains the immutable GT2487 cohort and accepts on
  const passed=verifyRelease(candidate,ledger);
  assert.deepEqual([passed.publicCards,passed.publicEvents,
    passed.reviewedCohorts,passed.reviewedIndividualExceptions],
-  [563,2500,1,13]);
+  [CURRENT_PUBLIC.cards+1,CURRENT_PUBLIC.events+1,baseline.reviewedCohorts,CURRENT_PUBLIC.individualEntries+1]);
  assert.equal(JSON.stringify(signed),old);
  assert.deepEqual(ledger.cohorts,signed.cohorts);
  const unapproved=clone(ledger);unapproved.entries.pop();

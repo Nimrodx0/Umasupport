@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {build,dryRunWithSkillText,candidateId}=
@@ -21,7 +22,7 @@ const source=()=>{
 };
 test('all eight distinct editorial headings and source positions have stable non-game IDs',()=>{
  const p=build(),view=buildView();
- assert.deepEqual(p.summary,{cards:4,events:8,choices:16,hints:4,approvedEvents:2499});
+ assert.deepEqual(p.summary,{cards:4,events:8,choices:16,hints:4,approvedEvents:CURRENT_PUBLIC.events});
  assert.equal(p.status,'NOT_APPROVED_FOR_PUBLICATION');
  for(const card of p.catalog.cards){
   const src=view.cards.find(c=>c.cardId===card.cardId);
@@ -53,7 +54,7 @@ test('all eight distinct editorial headings and source positions have stable non
 });
 test('candidate is schema-valid but cannot pass publication without actual human review',()=>{
  const p=build();
- assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,2499);
+ assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,CURRENT_PUBLIC.events);
  assert.throws(()=>verifyRelease(p.catalog,p.approvalWorksheet),/レビュー者または確認日が不正/);
  const e=p.approvalWorksheet.entries[0];
  assert.equal(e.publicationBasis,null);
@@ -87,7 +88,7 @@ test('pinned card/event range is closed; public DB and approval ledger remain un
  assert.notEqual(digest(p.catalog.cards[0].events[0]),
   p.approvalWorksheet.entries[0].eventSha256);
  assert.throws(()=>verifyRelease(p.catalog,p.approvalWorksheet));
- assert.equal(PUBLIC.cards.length,562);
- assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,2499);
+ assert.equal(PUBLIC.cards.length,CURRENT_PUBLIC.cards);
+ assert.equal(verifyRelease(PUBLIC,APPROVALS).publicEvents,CURRENT_PUBLIC.events);
  assert.equal(APPROVALS.schemaVersion,2);
 });

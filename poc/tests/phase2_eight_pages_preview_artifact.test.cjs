@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {build}=require('../src/phase2_eight_pages_preview_artifact.cjs');
@@ -28,8 +29,8 @@ test('static browser preview matches exactly the audited eight-event source',()=
 });
 test('static preview explicitly contains no published event approval, source prose or extra stages',()=>{
  const p=build();
- assert.equal(verifyRelease(catalog,approvals).publicEvents,2499);
- assert.equal(catalog.cards.length,562);
+ assert.equal(verifyRelease(catalog,approvals).publicEvents,CURRENT_PUBLIC.events);
+ assert.equal(catalog.cards.length,CURRENT_PUBLIC.cards);
  assert.equal(approvals.schemaVersion,2);
  for(const c of p.cards){
   assert.deepEqual(c.events.map(e=>e.ordinal),[4,5]);

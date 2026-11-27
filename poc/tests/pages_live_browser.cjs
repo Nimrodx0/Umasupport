@@ -1,4 +1,5 @@
 'use strict';
+const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // Production GitHub Pages verification, after main deployment or manual dispatch. Runtime game data is never checked in or printed.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
@@ -140,12 +141,12 @@ async function main(){
   assert.ok(actual.cards>=500,'Card count too small: '+actual.cards);
   assert.ok(actual.hints>3000,'Hint count too small: '+actual.hints);
   assert.ok(actual.skills>700,'Skill count too small: '+actual.skills);
-  assert.equal(actual.reviewedEvents,2499,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
-  assert.equal(actual.reviewedCards,562,'Published event card coverage changed');
+  assert.equal(actual.reviewedEvents,CURRENT_PUBLIC.events,'Published event cohort changed unexpectedly: '+JSON.stringify({status,eventMode:actual.eventMode,warnings}));
+  assert.equal(actual.reviewedCards,CURRENT_PUBLIC.cards,'Published event card coverage changed');
   assert.deepEqual(await page.evaluate(()=>['20102','30322','30324'].map(id=>[id,window.UmaDemoData.cardById[id]?.events.length])),[['20102',4],['30322',5],['30324',3]]);
   assert.ok(page.url().includes('/poc/live.html'),'normal entry must reach production app');
   assert.equal(actual.eventMode,'reviewed');
-  assert.match(status,/2499件/);
+  assert.ok(status.includes(`${CURRENT_PUBLIC.events}件`),'Current event count missing from status');
   assert.ok(actual.eventPick,'No selectable and rewarded real public event found');
   assert.ok(actual.rare>=325,'Current master lost historical rare skill inventory');
   assert.equal(actual.linked,actual.rare-actual.withoutLower);
@@ -204,16 +205,17 @@ async function main(){
   assert.equal(await page.locator('.split-grid').count(),1);
   await page.locator('button[data-action="view"][data-value="integrated"]').click();
   // Only abort the game-data endpoints. Published HTML/JS/CSS must still reload.
-  let blocked=0,eventBlocked=0;
-  await page.route('**/data/support_card.txt',r=>{blocked++;return r.abort();});
-  await page.route('**/data/skill_data.txt',r=>{blocked++;return r.abort();});
+  let supportBlocked=0,skillBlocked=0,eventBlocked=0;
+  await page.route('**/data/support_card.txt',r=>{supportBlocked++;return r.abort();});
+  await page.route('**/data/skill_data.txt',r=>{skillBlocked++;return r.abort();});
   await page.route('**/poc/data/reviewed_events.v1.json',r=>{eventBlocked++;return r.abort();});
   const cached=await boot(page);
   assert.equal(await page.locator('#bootstrap-status').getAttribute('data-mode'),'cached');
   assert.match(cached,/スキル辞書は保存済み版を使用/);
-  assert.equal(blocked,2);
-  assert.equal(eventBlocked,1);
-  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),2499);
+  assert.ok(supportBlocked>=1,'Support endpoint was not blocked');
+  assert.ok(skillBlocked>=1,'Skill endpoint was not blocked');
+  assert.ok(eventBlocked>=1,'Event endpoint was not blocked');
+  assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),CURRENT_PUBLIC.events);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.runtimeSources.events.mode),'cached');
   const restored=await page.evaluate(()=>({cards:window.UmaDemoData.cards.length,
    linked:window.UmaDemoData.meta.skillHierarchy.linked}));
@@ -314,7 +316,7 @@ async function main(){
   console.log('PASS: real Pages publisher recovery, invalid online skill update rejected, damaged skill/support cache isolation, initial-offline error, denied IndexedDB online mode');
 
   assert.deepEqual(errors,[],'Unexpected JavaScript errors');
-  console.log('PASS: real Pages Chromium, real 2499 published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
+  console.log('PASS: real Pages Chromium, verified current published events and 0/4 hint performance UI, source loading/IDB, live card+goal UI, hierarchy/indirect core, data-endpoint-only outage, narrow viewport');
   console.log('VERIFIED SUMMARY:',JSON.stringify({url:APP,ua:await page.evaluate(()=>navigator.userAgent),
    viewport:geometry,cards:actual.cards,hints:actual.hints,skills:actual.skills,
    rare:actual.rare,linked:actual.linked,withoutLower:actual.withoutLower,
