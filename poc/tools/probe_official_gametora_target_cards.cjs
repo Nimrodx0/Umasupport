@@ -44,9 +44,9 @@ function getSkillRegistry(file,expectedSha=SHA){
  if(blob!==expectedSha)fail('独立UmaSimスキル辞書の固定版ハッシュが異なる');
  return registryFromSkillText(bytes.toString('utf8'));
 }
-async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=null}={}){
+async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,targetIds=null,onProjection=null}={}){
  if(onProjection!==null&&typeof onProjection!=='function')fail('非公開候補出力先の指定が不正');
- const selection=selectIntakeTargets(plan,{offset});
+ const selection=selectIntakeTargets(plan,{offset,targetIds});
  if(!selection.targetCardIds.length)return {
   dataKind:'gametora-new-card-listing-probe',version:1,
   selectedCardIds:[],unvisitedCardIds:selection.unvisitedCardIds,results:[],pendingCardIds:plan.carryForwardPendingIds.slice(),
@@ -123,7 +123,7 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=nu
     continue;
    }
    if(panels>20)fail('イベントパネル20件超。途中まで取得して完了扱いしない');
-   const observations=[],structure=[];
+   const observations=[],structure=[],titles=[];
    for(let i=0;i<panels;i++){
     let event;
     if(visibleCount){
@@ -148,7 +148,9 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=nu
       category:(()=>{const label=el.parentElement?.parentElement?.firstElementChild?.innerText?.trim();
        return ['連続イベント','ランダムイベント','お出かけイベント','特別イベント'].includes(label)?label:'unknown';})()};
     }):null;
-    const title=visibleCount?headingFingerprint(await event.locator('h3').innerText()):null;
+    const rawTitle=visibleCount?await event.locator('h3').innerText():null;
+    const title=rawTitle===null?null:headingFingerprint(rawTitle);
+    titles.push(rawTitle);
     structure.push({ordinal:i+1,category:shape?.category||'unknown',
      ...(title?{titleSha256:title.sha256,chainStage:title.stage}:{}),
      routePieces:pieces.length,ambiguous:pieces.some(r=>r.unresolvedOr),
@@ -173,7 +175,7 @@ async function inspect({plan,skillFile,skillBlobSha=SHA,offset=0,onProjection=nu
    // This hash binds the exact normalized numeric/route facts, not raw page
    // HTML. Only the digest is emitted in Actions; privateReview is local-only.
    const reviewDigest=crypto.createHash('sha256').update(JSON.stringify(privateReview)).digest('hex');
-   if(onProjection)onProjection(privateReview);
+   if(onProjection)onProjection(privateReview,titles.slice());
    results.push({cardId:entry.cardId,status:'private-schema-only',
     layout,reviewDigest,...summary});
   }
