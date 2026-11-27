@@ -8,7 +8,7 @@ const {gitBlobSha}=require('./current_umasim_roster_delta.cjs');
 const {parseSupportCards,buildModel}=require('./live_loader.js');
 const {registryFromSkillText}=require('./official_gametora_skill_id_crosswalk.cjs');
 const {discoverNewCardsFromUmaSim,appendApprovedNewCards}=require('./new_card_event_incremental.cjs');
-const {resumeForCurrentCatalog,resumeSourceFacts}=require('./d069_json_review_bridge.cjs');
+const {resumeForCurrentCatalog}=require('./d069_json_review_bridge.cjs');
 const {preflight}=require('./public_event_catalog.js');
 const fail=m=>{throw Error('D072 cross-version append: '+m);};
 const same=(a,b)=>canonical(a)===canonical(b);
