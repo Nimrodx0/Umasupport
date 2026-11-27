@@ -19,7 +19,7 @@ function verifyDisplay(v){
 }
 function scope(packet,row){
  const baseKeys='dataKind,schemaVersion,cardId,sourceUrl,buildId,bodySha256,sourcePin,existingCatalogSha256,events,status,reasonCodes,sourceSiteTextCopied,publicationApproved';
- if(!(exact(packet,baseKeys)||exact(packet,baseKeys+',domEvidence'))||
+ if(!(exact(packet,baseKeys)||exact(packet,baseKeys+',domEvidence')||exact(packet,baseKeys+',sourceContext')||exact(packet,baseKeys+',domEvidence,sourceContext'))||
     packet.dataKind!=='d069-json-review-packet'||packet.schemaVersion!==1||packet.sourceSiteTextCopied!==false||packet.publicationApproved!==false||
     !SHA.test(packet.bodySha256||'')||!SHA.test(packet.existingCatalogSha256||'')||
     !Array.isArray(packet.events)||!packet.events.length||packet.events.length>100||
@@ -30,6 +30,11 @@ function scope(packet,row){
  if(Object.hasOwn(packet,'domEvidence')){
   const v=verifyDisplay(packet.domEvidence);
   if(v.status==='matched-visible-facts'&&v.observedEvents!==packet.events.length)fail('display event count mismatch');
+ }
+ if(Object.hasOwn(packet,'sourceContext')){
+  const x=packet.sourceContext;
+  if(!exact(x,'levelDependent,levelDependentFieldInvalid,historyEventIds')||![null,true,false].includes(x.levelDependent)||typeof x.levelDependentFieldInvalid!=='boolean'||
+     !Array.isArray(x.historyEventIds)||new Set(x.historyEventIds).size!==x.historyEventIds.length||x.historyEventIds.some(id=>!packet.events.some(e=>e.sourceEventId===id)))fail('source context metadata');
  }
  require('./official_gametora_card_json.cjs').cardJsonUrl(packet);
  for(const e of packet.events){

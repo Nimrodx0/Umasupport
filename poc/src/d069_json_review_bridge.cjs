@@ -19,7 +19,8 @@ function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCata
     existingCatalog?.schemaVersion!==1||!Array.isArray(existingCatalog.cards)||existingCatalog.cards.some(c=>c.cardId===cardId))
   fail('source pin or already imported card');
  const registry=registryFromSkillText(skillText),o=inspectCardJson({body,cardId,sourceUrl,buildId});
- const titles=new Map(Object.values(JSON.parse(JSON.parse(body).pageProps.eventData.ja)).flatMap(es=>es.map(e=>[e.i,e.n])));
+ const page=JSON.parse(body).pageProps;
+ const titles=new Map(Object.values(JSON.parse(page.eventData.ja)).flatMap(es=>es.map(e=>[e.i,e.n])));
  const reasons=new Set();
  const events=o.events.map(e=>{
   if(!['random','arrows'].includes(e.category))reasons.add('unsupported-event-category');
@@ -49,6 +50,7 @@ function inspect({body,cardId,sourceUrl,buildId,skillText,sourcePin,existingCata
   sourcePin:{commit:sourcePin.commit,cardBlob:sourcePin.cardBlob,skillBlob:sourcePin.skillBlob},
   existingCatalogSha256:digest(existingCatalog),events,
   status:reasons.size?'held':'awaiting-independent-fact-review',reasonCodes:[...reasons].sort(),
+  sourceContext:{levelDependent:o.levelDependent,levelDependentFieldInvalid:Object.hasOwn(page,'isLevelDependent')&&typeof page.isLevelDependent!=='boolean',historyEventIds:o.events.filter(e=>e.historyCount>0).map(e=>e.sourceEventId)},
   sourceSiteTextCopied:false,publicationApproved:false};
 }
 function prepare(input,review){

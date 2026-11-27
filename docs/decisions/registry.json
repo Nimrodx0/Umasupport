@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "asOf": "2026-11-27",
+  "asOf": "2026-11-28",
   "description": "Editorial status classification for historic owner decisions. Only primary records are authoritative; not a substitute for requirements or formal approval.",
   "source": "docs/decisions/log.md",
   "allowedStatuses": [
@@ -10,6 +10,18 @@
     "review-required"
   ],
   "entries": [
+    {
+      "id": "D-073",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：正常なJSONの機械検証による採用と疑義の個別裁定",
+      "status": "current",
+      "relation": [],
+      "note": "正常なGameTora JSONの明示事実は機械検証で採用し、他サイト・HTMLとの一律照合を不要とする。未解釈の内部到達・欠損・矛盾は個別裁定。内容SHA・取得条件・公開根拠・非破壊・回帰を維持し、無審査公開とはしない。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-073",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-073",
+      "reviewedAt": "2026-11-28"
+    },
     {
       "id": "D-072",
       "date": "2026-11-27",
