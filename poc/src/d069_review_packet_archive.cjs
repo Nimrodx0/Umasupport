@@ -5,6 +5,18 @@ const SHA=/^[a-f0-9]{64}$/,ID=/^[1-9]\d{4}$/;
 const fail=m=>{throw Error('D072 factual review archive: '+m);};
 const same=(a,b)=>canonical(a)===canonical(b);
 const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join(',')===keys.split(',').sort().join(',');
+// Historical #577 metadata only; no dependency on the HTML parser.
+function verifyDisplay(v){
+ const keys='htmlSha256,observationSha256,observedEvents,publicationApproved,schemaVersion,status,topologyVerified';
+ const hex=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
+ if(!v||Object.keys(v).sort().join(',')!==keys||v.schemaVersion!==1||
+  v.topologyVerified!==false||v.publicationApproved!==false||
+  !['unavailable','matched-visible-facts','mismatch'].includes(v.status)||
+  !(v.htmlSha256===null||hex(v.htmlSha256))||!Number.isSafeInteger(v.observedEvents)||v.observedEvents<0||v.observedEvents>20||
+  (v.status==='unavailable'?(v.observationSha256!==null||v.observedEvents!==0):(!hex(v.htmlSha256)||!hex(v.observationSha256)||v.observedEvents<1)))
+  throw Error('D072 display evidence shape');
+ return v;
+}
 function scope(packet,row){
  const baseKeys='dataKind,schemaVersion,cardId,sourceUrl,buildId,bodySha256,sourcePin,existingCatalogSha256,events,status,reasonCodes,sourceSiteTextCopied,publicationApproved';
  if(!(exact(packet,baseKeys)||exact(packet,baseKeys+',domEvidence'))||
@@ -16,7 +28,7 @@ function scope(packet,row){
     row.packetSha256!==digest(packet)||!['awaiting-fact-review','held'].includes(row.status)||
     packet.status!==(row.status==='held'?'held':'awaiting-independent-fact-review'))fail('packet receipt mismatch');
  if(Object.hasOwn(packet,'domEvidence')){
-  const v=require('./d072_display_corroboration.cjs').verifyDisplay(packet.domEvidence);
+  const v=verifyDisplay(packet.domEvidence);
   if(v.status==='matched-visible-facts'&&v.observedEvents!==packet.events.length)fail('display event count mismatch');
  }
  require('./official_gametora_card_json.cjs').cardJsonUrl(packet);
@@ -51,4 +63,4 @@ function open(value,row){
  if(!exact(value,'schemaVersion,dataKind,packet')||value.schemaVersion!==1||value.dataKind!=='d072-factual-review-packet')fail('archive shape');
  return scope(value.packet,row);
 }
-module.exports={scope,pathFor,record,open};
+module.exports={scope,pathFor,record,open,verifyDisplay};

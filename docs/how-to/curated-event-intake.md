@@ -44,9 +44,9 @@ node poc/tools/run_direct_new_card_intake.cjs <old-roster> <current-roster> <ski
 
 `stageIndependentEvidenceAcrossVersions` は1〜2枚のパケット・独立証拠・取得時の固定UmaSim名簿／辞書、基準名簿、公開時の固定名簿／辞書、現行カタログ・承認台帳、新規個別承認を入力とする。[異版増分](../../poc/src/d072_cross_version_reviewed_append.cjs) では各blobの内容一致、基準からの新規ID、観測時の名簿IDの消失なし、対象カードの解析済み属性・通常ヒント・性能解放情報、報酬スキルのID・名称・レアリティ・groupの一致を検査する。別版でのイベント事実の不変や法的許諾を証明するものではない。呼出し側で公式UmaSimのcommitとblobの対応・基準固定版・旧固定辞書の検証を行う。既存DBの追記だけを許し、旧内容や承認を変更せず、内容SHA承認と本番preflightを実行する。これらの中核関数は通信・ファイル書込みをしない。実行時の接続は [公式固定版ソース読取](../../poc/src/d072_verified_umasim_source.cjs) と [GitHub審査アダプタ](../../poc/src/d072_github_reviewed_intake.cjs) の `createReviewedIntake({github,owner,repo})` を用いる。`prepare({evidence,existingCatalog})` は専用台帳・パケット・取得時辞書から未承認候補SHAを返す。`stage({evidence,existingCatalog,existingApprovals,newApprovals})` は公式固定基準・取得時各版・最新版・旧固定辞書を照合し、承認済み増分と証跡をメモリ上に返す。呼出し側で現行mainからカタログと承認台帳を同時に固定すること。GitHub Actionsの[固定入力検証](../../.github/workflows/d072-verified-release-inputs.yml) は実出典・既存DBのみで動作を検査する。元データ・未承認候補をログ出力／公開しない。実際の独立審査入力取得、自動公開PR、実カード試験は残る。
 
-## D-072 初回HTMLの表示照合
+## D-072 JSON優先の通常取得と例外診断
 
-自動取得はカードごとのbootstrap HTMLを活用するため1枚ずつ処理する。掲載カードはrobots・一覧・カードHTML・カードJSONの4 GETで、既定の最大2枚／5 GET上限と6秒間隔を緩めない。取得済みHTMLを外部通信遮断・JS無効のChromiumで解析し、表示の見出しSHA・分類・位置・ヒントID/Lv・終了表示・非スキル数値件数をJSONと照合する。表示照合の状態・件数・SHAのみパケットの `domEvidence` に保存し、原文・HTML・正式名は保存しない。表示不足・不一致を自動承認にしない。旧パケットには同項目がなくてもよい。内部到達条件・正式タイトル・公開根拠の独立審査は引き続き必要。
+通常の自動取得は最大2枚／5 GET、6秒間隔のJSON直接取得。HTMLは掲載URLとNext build IDの確認に限定し、ChromiumやDOM表示照合を実行しない。JSON変換の構造・効果・経路位置の固定期待値、未知構造の保留、独立審査と個別公開承認を必須とする。#577の `domEvidence` は旧記録の互換読取のみ。表示解析器は明示診断用に保持し、取得済みHTMLを用いる任意の合成診断は `node poc/tests/browser_d072_display_corroboration.cjs`（Playwright導入済み環境のみ）。通常CIや公開条件にしない。例外調査の追加サイト訪問はD-072/D-067の既存制限を守る。
 
 ## D-072 承認済み公開提案の生成
 

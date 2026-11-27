@@ -1,5 +1,6 @@
 'use strict';
-// A second extraction path over the already retrieved card HTML. It does
+// Optional diagnostic only; never invoked by routine intake.
+// A second extraction path over explicitly supplied card HTML. It does
 // not execute page scripts, fetch assets, or revisit the site. Display facts
 // corroborate JSON, not internal game dependencies or publication rights.
 const crypto=require('node:crypto');
@@ -73,15 +74,5 @@ async function observeHtml({html,cardId,skillText,launch}={}){
  }catch{return {htmlSha256,events:null};}
  finally{if(browser)await browser.close().catch(()=>{});}
 }
-function verifyDisplay(v){
- const keys='htmlSha256,observationSha256,observedEvents,publicationApproved,schemaVersion,status,topologyVerified';
- const hex=x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x);
- if(!v||Object.keys(v).sort().join(',')!==keys||v.schemaVersion!==1||
-  v.topologyVerified!==false||v.publicationApproved!==false||
-  !['unavailable','matched-visible-facts','mismatch'].includes(v.status)||
-  !(v.htmlSha256===null||hex(v.htmlSha256))||!Number.isSafeInteger(v.observedEvents)||v.observedEvents<0||v.observedEvents>20||
-  (v.status==='unavailable'?(v.observationSha256!==null||v.observedEvents!==0):(!hex(v.htmlSha256)||!hex(v.observationSha256)||v.observedEvents<1)))
-  throw Error('D072 display evidence shape');
- return v;
-}
+const {verifyDisplay}=require('./d069_review_packet_archive.cjs');
 module.exports={shapeFromDisplay,compareDisplay,observeHtml,verifyDisplay};

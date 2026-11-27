@@ -7,10 +7,10 @@ const listing=known.concat(['39999','39998']).map(id=>'<a href="'+url(id)+'">x</
 const boot=id=>'<script id="__NEXT_DATA__">'+JSON.stringify({page:'/ja/umamusume/supports/[id]',buildId:'example',props:{pageProps:{sourceData:{support_id:Number(id)}}}})+'</script>';
 const json=id=>JSON.stringify({pageProps:{sourceData:{support_id:Number(id)},eventData:{ja:JSON.stringify({random:[{i:1,n:'架空',c:[{o:'',r:[{t:'pt',v:'+5'}]}]}]})}}});
 const jsonUrl=id=>base+'/_next/data/example/ja/umamusume/supports/'+id+'-example.json';
-function fixture(overrides={},extra={}){
+function fixture(overrides={}){
  const calls=[],delays=[];
  const rows={[base+'/robots.txt']:['text/plain','User-agent: *\nDisallow:'],[list]:['text/html',listing],[url('39999')]:['text/html',boot('39999')],[jsonUrl('39999')]:['application/json',json('39999')],[jsonUrl('39998')]:['application/json',json('39998')],...overrides};
- const observe=createObserver({manualAuthorized:true,knownIds:known,...extra,sleep:async ms=>delays.push(ms),fetchImpl:async(u,opt)=>{
+ const observe=createObserver({manualAuthorized:true,knownIds:known,sleep:async ms=>delays.push(ms),fetchImpl:async(u,opt)=>{
   calls.push(u);a.equal(opt.redirect,'manual');a.equal(opt.credentials,'omit');a.equal(opt.method,'GET');
   const [type,body,status=200,actual=u]=rows[u]||['text/plain','bad',404];
   const r=new Response(body,{status,headers:{'content-type':type}});Object.defineProperty(r,'url',{value:actual});return r;
@@ -47,13 +47,4 @@ test('transport records refusal separately from a network error without message 
  const o=createObserver({manualAuthorized:true,knownIds:known,sleep:async()=>{},fetchImpl:async()=>{throw new TypeError('private network detail');}});
  await a.rejects(o(['39999']),e=>failureCode(e)==='network-transient'&&!e.message.includes('private'));
  a.equal(failureCode(Error('unclassified')),'unclassified');
-});
-
-test('display path uses the same bootstrap HTML with no extra site request',async()=>{
- const f=fixture({}, {observeHtml:async ({html,cardId})=>{a.equal(cardId,'39999');a.equal(html,boot('39999'));return {htmlSha256:'a'.repeat(64),events:null};}});
- const result=await f.observe(['39999']);
- a.equal(result[0].domObservation.htmlSha256,'a'.repeat(64));
- a.deepEqual(f.calls,[base+'/robots.txt',list,url('39999'),jsonUrl('39999')]);
- await a.rejects(f.observe(['39999','39998']),/one card/);
- a.equal(f.calls.length,4);
 });
