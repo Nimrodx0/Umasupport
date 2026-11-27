@@ -1,5 +1,5 @@
 'use strict';
-// Explicit bounded observation only. Never invoked from daily roster job.
+// D072: bounded observation of new unattempted cards only.
 // No redirect following, credentials, retries, raw disk output or fallback.
 const {LISTING,canonicalSupportUrl,resolveListedPages}=require('./official_gametora_new_card_locator.cjs');
 const {extractBuildId,cardJsonUrl,inspectCardJson}=require('./official_gametora_card_json.cjs');
@@ -27,7 +27,7 @@ function checkRobots(text,path){
    if(!m[2].startsWith('/'))fail('robots rule');
    const end=m[2].endsWith('$'),rule=end?m[2].slice(0,-1):m[2];
    const re=new RegExp('^'+rule.split('*').map(x=>x.replace(/[.*+?^$\{\}()|[\]\\]/g,'\\$&')).join('.*')+(end?'$':''));
-   if(re.test(path))fail('robots denied');
+   if(re.test(path))throw new TransportFailure('source-refused');
   }
  }
  if(!agent)fail('robots agent missing');
@@ -44,8 +44,8 @@ function listingLinks(html,knownIds){
  if(seen.size<100||seen.size<Math.floor(known.size*0.8))fail('listing incomplete or client-rendered');
  return links;
 }
-function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=false}={}){
- if(manualAuthorized!==true||typeof fetchImpl!=='function'||typeof sleep!=='function')fail('manual scope required');
+function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=false,automaticAuthorized=false}={}){
+ if((manualAuthorized!==true&&automaticAuthorized!==true)||typeof fetchImpl!=='function'||typeof sleep!=='function')fail('manual or automatic scope required');
  return async ids=>{
   if(!Array.isArray(ids)||ids.length>2||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!ID.test(id)))fail('target scope');
   if(!ids.length)return [];

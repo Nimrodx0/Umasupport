@@ -34,7 +34,7 @@ function planBatch({plan,ledger,targetIds,sourcePin,policy,existingCatalog}={}){
  verify(ledger);
  if(plan?.dataKind!=='d069-event-driven-intake-plan'||plan.schemaVersion!==1||
     plan.siteAccessAuthorized!==false||plan.publicationApproved!==false||
-    policy?.automaticScheduledSiteAccessAllowed!==false||policy.automaticPublicationAllowed!==false||
+    policy?.automaticScheduledSiteAccessAllowed!==true||policy.automaticPublicationAllowed!==false||
     policy.sourceVisitLimitPerInvocation!==2||
     !GIT.test(sourcePin?.skillBlob||'')||
     Object.keys(sourcePin||{}).sort().join(',')!=='cardBlob,commit,skillBlob'||
@@ -96,7 +96,7 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
   return x?{...r,status:x.status,packetSha256:x.packetSha256,...(x.failureCode?{failureCode:x.failureCode}:{})}:r;
  })};
  verify(finished);
- if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished))!==true)fail('completion conflict; reservation remains non-retryable');
+ if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished),structuredClone(reviewPackets))!==true)fail('completion conflict; reservation remains non-retryable');
  return {...selection,selectedIds:ids,results,stopReason,reviewPackets};
 }
 // Daily roster-only reporting, no observer call. The persistent attempt
@@ -111,7 +111,7 @@ function excludeAttempted(plan,ledger){
  const attemptedIds=attempts.map(r=>r.cardId),eligibleIds=plan.eligibleIds.filter(id=>!attemptedIds.includes(id));
  return {...plan,eligibleIds,batches:partitionBatches(eligibleIds,2),nextBatchIds:eligibleIds.slice(0,2),
   remainingIds:eligibleIds.slice(2),heldIds:[...new Set([...plan.heldIds,...attemptedIds])].sort(),
-  status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
+  status:eligibleIds.length?'ready-new-card-intake':'no-eligible-cards',
   attemptedIds,attemptStates:attempts.map(r=>({cardId:r.cardId,status:r.status,packetSha256:r.packetSha256,...(r.failureCode?{failureCode:r.failureCode}:{})}))};
 }
 module.exports={empty,verify,planBatch,runBatch,excludeAttempted};

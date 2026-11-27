@@ -25,8 +25,8 @@ function describePending(ledger,review){
  });
 }
 // D069: determine exact queued targets from the current verified ledger.
-// This stage is intentionally network-free. Access conditions have not
-// yet been established; a queue entry is not authority to visit a site.
+// This stage is network-free. D072 permits automatic new-card intake;
+// the planner itself is not a publication approval.
 function partitionBatches(ids,limit=2){
  assert(Array.isArray(ids)&&ids.length<=1000&&ids.every(id=>typeof id==='string'&&/^[1-9]\d{4}$/.test(id))&&new Set(ids).size===ids.length,'Invalid batch IDs');
  assert(Number.isSafeInteger(limit)&&limit>=1&&limit<=2,'Invalid batch limit');
@@ -42,8 +42,8 @@ function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
   [sourcePin.commit,sourcePin.cardBlob].every(x=>typeof x==='string'&&/^[a-f0-9]{40}$/.test(x)),
   'Invalid immutable UmaSim roster coordinates');
  assert(policy?.decision==='D-067'&&policy.sourceVisitLimitPerInvocation===2&&
-  policy.automaticScheduledSiteAccessAllowed===false&&policy.automaticPublicationAllowed===false,
-  'D069 unattended access/publication gate not established');
+  policy.automaticScheduledSiteAccessAllowed===true&&policy.automaticPublicationAllowed===false,
+  'D072 intake/publication policy gate mismatch');
  const priorIds=new Set(previous.cards.map(x=>x.cardId));
  const newlyQueuedIds=rows.filter(r=>!priorIds.has(r.cardId)).map(r=>r.cardId);
  const heldIds=rows.filter(r=>r.currentStatus==='direct-review-held').map(r=>r.cardId);
@@ -52,11 +52,11 @@ function planEventDrivenIntake({previous,next,review,sourcePin,policy}={}){
   sourcePin:{...sourcePin},newlyQueuedIds,heldIds,eligibleIds,
   batches:partitionBatches(eligibleIds,policy.sourceVisitLimitPerInvocation),
   nextBatchIds:eligibleIds.slice(0,2),remainingIds:eligibleIds.slice(2),
-  status:eligibleIds.length?'blocked-access-conditions':'no-eligible-cards',
+  status:eligibleIds.length?'ready-new-card-intake':'no-eligible-cards',
   siteAccessAuthorized:false,publicationApproved:false};
 }
 // Transport-independent controller. A caller must separately establish
-// authority to use a real observer; the daily planner never invokes this.
+// authority to use a real observer; D072 connects the daily workflow.
 async function runSequentialBatches({ids,observeBatch}={}){
  const batches=partitionBatches(ids);
  assert(typeof observeBatch==='function','Missing batch observer');

@@ -22,7 +22,7 @@ test('metadata rejects text, unknown reasons, false publication, duplicate and i
  ].map(extra=>({...review,cards:[{...review.cards[0],...extra},review.cards[1]]}))])a.throws(()=>verifyDirectReview(x));
 });
 
-test('D069 plans bounded exact IDs, does not revisit held cards, and never authorizes a site visit',()=>{
+test('D069 plans bounded exact IDs, does not revisit held cards, and does not itself authorize publication',()=>{
  const {planEventDrivenIntake}=require('../src/direct_pending_review.cjs');
  const policy=require('../config/direct-event-intake-policy.v1.json');
  const previous={...emptyLedger(),cards:['10149','30323','39997'].map(row)};
@@ -36,7 +36,7 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.deepEqual(result.nextBatchIds,['39997','39998']);
  a.deepEqual(result.remainingIds,['39999']);
  a.deepEqual(result.batches,[['39997','39998'],['39999']]);
- a.equal(result.status,'blocked-access-conditions');
+ a.equal(result.status,'ready-new-card-intake');
  a.equal(result.siteAccessAuthorized,false);
  a.equal(result.publicationApproved,false);
  a.equal(JSON.stringify(input),before);
@@ -51,7 +51,7 @@ test('D069 plans bounded exact IDs, does not revisit held cards, and never autho
  a.equal(empty.status,'no-eligible-cards');
  a.deepEqual(empty.eligibleIds,[]);
  a.throws(()=>planEventDrivenIntake({...input,sourcePin:{...sourcePin,cardBlob:'latest'}}),/immutable/);
- a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticScheduledSiteAccessAllowed:true}}),/gate/);
+ a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticScheduledSiteAccessAllowed:false}}),/gate/);
  a.throws(()=>planEventDrivenIntake({...input,policy:{...policy,automaticPublicationAllowed:true}}),/gate/);
 });
 

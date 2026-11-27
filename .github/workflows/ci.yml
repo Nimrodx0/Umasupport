@@ -137,7 +137,7 @@ jobs:
       - name: Verify D069 atomic attempt reservation and replay safety
         run: node --check poc/src/d069_json_attempt_ledger.cjs && node --test poc/tests/d069_json_attempt_ledger.test.cjs
       - name: Verify D069 Git attempt store and bounded JSON transport
-        run: node --check poc/tools/run_d069_manual_json_intake.cjs && node --test poc/tests/d069_github_attempt_store.test.cjs poc/tests/d069_card_json_transport.test.cjs
+        run: node --check poc/tools/run_d069_manual_json_intake.cjs && node --test poc/tests/d069_github_attempt_store.test.cjs poc/tests/d069_card_json_transport.test.cjs poc/tests/d072_automatic_json_intake.test.cjs
       - name: Verify D070 scoped Azuma JSON outing review and runtime reachability
         run: node --check poc/src/d070_azuma_json_outing_review.cjs && node --test poc/tests/d070_azuma_json_outing_review.test.cjs
       - name: Verify D070 exact published JSON increment and individual approvals

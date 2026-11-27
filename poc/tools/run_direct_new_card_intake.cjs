@@ -14,7 +14,7 @@ function validatePolicy(){
  if(policy.schemaVersion!==1||policy.decision!=='D-067'||policy.origin!=='https://gametora.com'||
     policy.sourceType!=='GameTora-original-site'||policy.sourceVisitLimitPerInvocation!==2||
     policy.routineLegacySourceRequests!==false||policy.automaticPublicationAllowed!==false||
-    policy.automaticScheduledSiteAccessAllowed!==false)throw Error('Direct intake policy boundary invalid');
+    policy.automaticScheduledSiteAccessAllowed!==true)throw Error('Direct intake policy boundary invalid');
 }
 function privatePath(file,env=process.env){
  if(env.CI||env.GITHUB_ACTIONS)throw Error('Private draft export forbidden in CI');

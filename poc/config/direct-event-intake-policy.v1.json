@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "decision": "D-067",
-  "status": "direct-primary-preflight-in-progress",
+  "status": "event-driven-new-card-intake",
   "sourceType": "GameTora-original-site",
   "origin": "https://gametora.com",
   "lookup": "visible-Japanese-support-listing",
@@ -11,6 +11,6 @@
   "sourceVisitLimitPerInvocation": 2,
   "missingCardPolicy": "persist-pending-and-continue-other-cards",
   "manualExceptionSource": "GameWith",
-  "automaticScheduledSiteAccessAllowed": false,
+  "automaticScheduledSiteAccessAllowed": true,
   "automaticPublicationAllowed": false
 }

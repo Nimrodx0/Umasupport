@@ -10,7 +10,7 @@ test('D067 is a separate direct-intake contract, historical baseline unchanged',
  const direct=require('../config/direct-event-intake-policy.v1.json');
  const history=require('../config/event-source-priority.v1.json');
  assert.equal(direct.origin,'https://gametora.com');
- assert.equal(direct.automaticScheduledSiteAccessAllowed,false);
+ assert.equal(direct.automaticScheduledSiteAccessAllowed,true);
  assert.equal(history.baselineRevision,'6e38b54af4fad397ff4491e63007a90705a4fe67');
 });
 test('local draft output cannot be placed in repo, CI, or overwrite',()=>{

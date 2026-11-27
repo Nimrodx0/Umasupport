@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-072",
+      "date": "2026-11-27",
+      "heading": "2026-11-27：新カード限定の自動取得と事実データの保存を許容する",
+      "status": "current",
+      "relation": [],
+      "note": "禁止の明示が確認されない公開範囲で新規未試行IDのみ自動取得。事前問い合わせ・暗号化を必須にしない。アクセス拒否・禁止時停止。独自事実保存・内容SHA・非破壊追加・公開検証を維持。第三者の包括許諾とはみなさない。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-072",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-072",
+      "reviewedAt": "2026-11-27"
+    },
+    {
       "id": "D-071",
       "date": "2026-11-27",
       "heading": "2026-11-27：サポカ並べ替えの3選択肢を削除する",
@@ -38,12 +50,14 @@
       "id": "D-069",
       "date": "2026-11-27",
       "heading": "2026-11-27：新カード更新をGitHub内のイベント駆動型運用とする",
-      "status": "current",
-      "relation": [],
-      "note": "UmaSim新規ID検知時だけGameTora限定取得・審査・条件付き公開へ進む目標。ChatGPT定期タスクを通常運用に使わない。取得条件確認・実装・試験前は現行の明示手動取得を維持。疑義は保留、D-068の公開条件は維持。",
+      "status": "qualified",
+      "relation": [
+        "D-072"
+      ],
+      "note": "新規ID限定・GitHub内運用は維持。D-072で手動限定と事前許諾必須の扱いを置換。疑義保留、D-068公開ゲートは維持。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-069",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-069",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-072",
       "reviewedAt": "2026-11-27"
     },
     {
