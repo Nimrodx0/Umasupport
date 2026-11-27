@@ -5,7 +5,7 @@ const crypto=require('node:crypto');
 const fs=require('node:fs');
 const REVISION='441046b7e2d2247c1c8ea534e9bf0b1f3ef9edd0';
 const GIT_BLOB='e7ded1b13acd8406f4efa9c651ab66f8c486b140';
-const SHA256='e7e6b980ecdd2424631f1f04639ed92467ce0f28f73a7d94a194d299c3c198d7';
+const SHA256='c46dcd6eb2adb462c823d0fb4a36ec38e4eda3299759b51dcb5af9c391556f86';
 const URL='https://raw.githubusercontent.com/Nimrodx0/Umasupport/'+REVISION+'/poc/data/reviewed_events.v1.json';
 const PIN=Object.freeze({revision:REVISION,gitBlob:GIT_BLOB,sha256:SHA256,cards:559,events:2487});
 function verifyFixedEventText(input){
