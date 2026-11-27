@@ -90,7 +90,7 @@ function preparePacket({packet:p,titles,skillText,existingCatalog},review,source
      Object.keys(v).some(k=>!['sourceEventId','titleSha256','selection','resultCounts','routeFactsSha256','previousSourceEventId'].includes(k))))
    fail('event or route review mismatch');
   const previous=sourceTopology===null?v.previousSourceEventId:sourceTopology.get(e.sourceEventId);
-  // One ordinary sequential chain, independently reviewed. Other
+  // One ordinary sequential chain, checked by supplied evidence or D035/D038 policy. Other
   // reachability models remain held; absence of a marker proves nothing.
   const predecessor=e.category==='arrows'&&e.categoryOrdinal>1?
     p.events.find(x=>x.category==='arrows'&&x.categoryOrdinal===e.categoryOrdinal-1)?.sourceEventId:null;
