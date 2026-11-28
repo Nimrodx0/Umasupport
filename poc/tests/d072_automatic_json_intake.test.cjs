@@ -98,12 +98,15 @@ test('later card failure does not discard earlier completed result',async()=>{
 });
 
 test('hard refusal clearance is exact row-bound and history remains intact',()=>{
- const {activeRefusal}=require('../src/d077_intake_recovery.cjs'),{digest}=require('../src/event_release_gate.cjs');
+ const {activeRefusal,due}=require('../src/d077_intake_recovery.cjs'),{digest}=require('../src/event_release_gate.cjs');
  const row={cardId:'39999',status:'uncertain',failureCode:'source-refused',packetSha256:null};
  const ledger={rows:[row]};
  a.equal(activeRefusal(ledger,{schemaVersion:1,resolved:[]}),true);
  a.equal(activeRefusal(ledger,{schemaVersion:1,resolved:[{rowSha256:digest(row),reason:'reviewed access restored'}]}),false);
  a.equal(activeRefusal({rows:[{...row,cardId:'39998'}]},{schemaVersion:1,resolved:[{rowSha256:digest(row),reason:'reviewed'}]}),true);
+ const timed={...row,attempt:{count:1,startedAt:'2026-11-28T00:00:00.000Z',nextAt:null}};
+ a.equal(due(timed,'2026-11-29T00:00:00.000Z',{schemaVersion:1,resolved:[]}),false);
+ a.equal(due(timed,'2026-11-29T00:00:00.000Z',{schemaVersion:1,resolved:[{rowSha256:digest(timed),reason:'reviewed'}]}),true);
 });
 test('health distinguishes temporary retry and actionable holds, missing acceptance is retried',async()=>{
  const {health,pendingAcceptance}=require('../src/d077_daily_health.cjs');
