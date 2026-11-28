@@ -11,15 +11,29 @@
   ],
   "entries": [
     {
+      "id": "D-078",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：未掲載カードは初回から7日後まで毎日再試行する",
+      "status": "current",
+      "relation": [],
+      "note": "未掲載のみ初回＋最大7回、日本時間の翌日から7日後まで日次再試行。一時障害・429の既存待機・停止条件を維持。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-078",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-078",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-077",
       "date": "2026-11-28",
       "heading": "2026-11-28：新カード自動更新の障害復帰と訂正経路を整備する",
-      "status": "current",
-      "relation": [],
-      "note": "未掲載・一時障害・429の有限再試行、明示拒否の履歴付き解除、カード単位確定、実質robots判定、異常通知、公開受入再開、明示訂正を採用。通常の追記専用・無期限公開方針を維持。",
+      "status": "qualified",
+      "relation": [
+        "D-078"
+      ],
+      "note": "未掲載・一時障害・429の有限再試行、明示拒否の履歴付き解除、カード単位確定、実質robots判定、異常通知、公開受入再開、明示訂正を採用。通常の追記専用・無期限公開方針を維持。 未掲載の再試行間隔・上限はD-078で変更。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-077",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-078",
       "reviewedAt": "2026-11-28"
     },
     {
