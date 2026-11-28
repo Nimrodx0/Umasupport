@@ -120,6 +120,6 @@ function excludeAttempted(plan,ledger){
  return {...plan,eligibleIds,batches:partitionBatches(eligibleIds,2),nextBatchIds:eligibleIds.slice(0,2),
   remainingIds:eligibleIds.slice(2),heldIds:[...new Set([...plan.heldIds,...attemptedIds])].sort(),
   status:eligibleIds.length?'ready-new-card-intake':'no-eligible-cards',
-  attemptedIds,attemptStates:attempts.map(r=>({cardId:r.cardId,status:r.status,packetSha256:r.packetSha256,...(r.failureCode?{failureCode:r.failureCode}:{})}))};
+  attemptedIds,attemptStates:attempts.map(r=>({cardId:r.cardId,status:r.status,packetSha256:r.packetSha256,...(r.failureCode?{failureCode:r.failureCode}:{}),...(r.attempt?{attempt:r.attempt}:{})}))};
 }
 module.exports={empty,verify,planBatch,runBatch,excludeAttempted};
