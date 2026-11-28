@@ -26,7 +26,7 @@ async function selectRoutine({config,queue,auto,store,github,owner,repo,baseSha,
  if(digest(catalog)!==queue.catalogSha256)fail('catalog changed');
  const ledger=verify(await store.load());
  if(ledger.revision!==queue.ledgerRevision)fail('attempt ledger changed');
- if(ledger.rows.some(r=>r.failureCode==='source-refused'))return report('source-refused');
+ if(require('./d077_intake_recovery.cjs').activeRefusal(ledger))return report('source-refused');
  const byId=new Map(ledger.rows.map(r=>[r.cardId,r]));
  const imported=new Set(catalog.cards.map(c=>c.cardId));
  const eligible=queue.rows.filter(r=>{
