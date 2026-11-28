@@ -17,14 +17,14 @@ function transition(old,next){
  for(let i=0;i<old.rows.length;i++){
   const a=old.rows[i],b=next.rows[i];
   if(same(a,b))continue;
-  if(a.cardId===b.cardId&&b.status==='reserved'&&b.attempt&&require('./d077_intake_recovery.cjs').due(a,b.attempt.startedAt)&&b.attempt.count===a.attempt.count+1&&!b.retry){retried++;continue;}
+  if(a.cardId===b.cardId&&b.status==='reserved'&&b.attempt&&require('./d077_intake_recovery.cjs').due(a,b.attempt.startedAt)&&same(b.attempt,require('./d077_intake_recovery.cjs').reserve(a,b.attempt.startedAt))&&!b.retry){retried++;continue;}
    if(a.cardId===b.cardId&&!a.retry&&(a.status==='not-listed'||a.status==='uncertain'&&a.failureCode==='network-transient')&&b.status==='reserved'&&b.retry?.priorRowSha256===digest(a)&&b.retry.priorStatus===a.status){retried++;continue;}
-  if(a.status!=='reserved'||b.status==='reserved'||a.cardId!==b.cardId||!same(a.sourcePin,b.sourcePin)||!same(a.retry??null,b.retry??null)||!same(a.attempt?{count:a.attempt.count,startedAt:a.attempt.startedAt}:null,b.attempt?{count:b.attempt.count,startedAt:b.attempt.startedAt}:null))fail('invalid row transition');
+  if(a.status!=='reserved'||b.status==='reserved'||a.cardId!==b.cardId||!same(a.sourcePin,b.sourcePin)||!same(a.retry??null,b.retry??null)||!same(a.attempt?{count:a.attempt.count,startedAt:a.attempt.startedAt,firstAt:a.attempt.firstAt??null}:null,b.attempt?{count:b.attempt.count,startedAt:b.attempt.startedAt,firstAt:b.attempt.firstAt??null}:null))fail('invalid row transition');
   changed++;
  }
  if(retried){if(retried!==1||changed||added.length)fail('invalid retry reservation');}
  else if(added.length){
-  if(changed||added.length>2||added.some(x=>x.status!=='reserved'||x.retry!==undefined||x.attempt&&x.attempt.count!==1))fail('invalid reservation');
+  if(changed||added.length>2||added.some(x=>x.status!=='reserved'||x.retry!==undefined||x.attempt&&(x.attempt.count!==1||x.attempt.firstAt!==undefined&&x.attempt.firstAt!==x.attempt.startedAt)))fail('invalid reservation');
  }else if(changed<1||changed>2)fail('invalid completion');
  return next;
 }
