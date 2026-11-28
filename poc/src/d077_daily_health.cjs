@@ -12,8 +12,9 @@ function health({ledger,queue,auto,report,now=new Date().toISOString()}){
   else if(r&&retryable(r)&&(!r.attempt||r.attempt.count>=MAX))alerts.push(q.cardId+': retry exhausted or legacy/manual retry required');
   else if(r&&hardRefusal(r)&&!activeRefusal({rows:[r]})&&(!r.attempt||r.attempt.count>=MAX))alerts.push(q.cardId+': cleared refusal; individual recovery required');
   else if(r?.status==='uncertain'&&!retryable(r)&&!hardRefusal(r))alerts.push(q.cardId+': '+(r.failureCode??'unknown failure'));
-  else if(['held','catalog-drift','packet-unavailable-or-invalid','skill-dictionary-unavailable-or-invalid','skill-id-unresolved','ready-for-independent-review'].includes(q.status))alerts.push(q.cardId+': '+q.status);
+  else if(['held','candidate-validation-held','catalog-drift','packet-unavailable-or-invalid','skill-dictionary-unavailable-or-invalid','skill-id-unresolved','ready-for-independent-review'].includes(q.status))alerts.push(q.cardId+': '+q.status);
  }
+ for(const id of report?.heldIds??[])alerts.push(id+': candidate release preflight held');
  if(report?.status==='legacy-proposal-open')alerts.push('obsolete release proposal remains open');
  return {alerts:[...new Set(alerts)].sort(),blocked:activeRefusal(ledger),temporary:!!auto.stopReason&&!activeRefusal(ledger)};
 }
