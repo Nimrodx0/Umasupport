@@ -1,17 +1,17 @@
 'use strict';
-const {MAX,activeRefusal,cooldown,retryable}=require('./d077_intake_recovery.cjs');
+const {MAX,activeRefusal,retryable,hardRefusal}=require('./d077_intake_recovery.cjs');
 const ACCEPTANCE='umasupport/data-acceptance';
 const title='Event data automatic update: action required';
 function health({ledger,queue,auto,report,now=new Date().toISOString()}){
  const rows=new Map(ledger.rows.map(r=>[r.cardId,r])),alerts=[];
  if(activeRefusal(ledger))alerts.push('source-refused: review source restrictions and explicit clearance');
- if(cooldown(ledger,now)){} // expected wait, not an actionable error
  for(const q of queue.rows){
   const r=rows.get(q.cardId);
   if(report?.selectedIds?.includes(q.cardId)&&report.branchWritten)continue;
   if(r?.status==='reserved')alerts.push(q.cardId+': interrupted reservation; inspect prior run');
   else if(r&&retryable(r)&&(!r.attempt||r.attempt.count>=MAX))alerts.push(q.cardId+': retry exhausted or legacy/manual retry required');
-  else if(r?.status==='uncertain'&&!retryable(r)&&r.failureCode!=='source-refused')alerts.push(q.cardId+': '+(r.failureCode??'unknown failure'));
+  else if(r&&hardRefusal(r)&&!activeRefusal({rows:[r]})&&(!r.attempt||r.attempt.count>=MAX))alerts.push(q.cardId+': cleared refusal; individual recovery required');
+  else if(r?.status==='uncertain'&&!retryable(r)&&!hardRefusal(r))alerts.push(q.cardId+': '+(r.failureCode??'unknown failure'));
   else if(['held','catalog-drift','packet-unavailable-or-invalid','skill-dictionary-unavailable-or-invalid','skill-id-unresolved','ready-for-independent-review'].includes(q.status))alerts.push(q.cardId+': '+q.status);
  }
  if(report?.status==='legacy-proposal-open')alerts.push('obsolete release proposal remains open');
