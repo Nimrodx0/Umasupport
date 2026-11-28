@@ -10,6 +10,7 @@ const {partitionBatches}=require('./direct_pending_review.cjs');
 const fail=m=>{throw Error('D069 JSON attempt: '+m);};
 const ID=/^[1-9]\d{4}$/,SHA=/^[a-f0-9]{64}$/,GIT=/^[a-f0-9]{40}$/;
 const same=(a,b)=>canonical(a)===canonical(b);
+const recovery=require('./d077_intake_recovery.cjs');
 const states=new Set(['reserved','awaiting-fact-review','held','not-listed','uncertain']);
 function empty(){return {schemaVersion:1,dataKind:'d069-json-attempt-ledger',revision:0,rows:[]};}
 function verify(x){
@@ -18,10 +19,10 @@ function verify(x){
     Object.keys(x).sort().join(',')!=='dataKind,revision,rows,schemaVersion')fail('ledger shape');
  const seen=new Set();
  for(const r of x.rows){
-  if(!r||!['cardId,packetSha256,sourcePin,status','cardId,packetSha256,retry,sourcePin,status','cardId,failureCode,packetSha256,sourcePin,status','cardId,failureCode,packetSha256,retry,sourcePin,status'].includes(Object.keys(r).sort().join(','))||
-     Object.hasOwn(r,'failureCode')&&(r.status!=='uncertain'||!['network-transient','source-refused','unclassified'].includes(r.failureCode))||
+  if(!r||!['cardId,packetSha256,sourcePin,status','cardId,packetSha256,retry,sourcePin,status','cardId,failureCode,packetSha256,sourcePin,status','cardId,failureCode,packetSha256,retry,sourcePin,status'].includes(Object.keys(r).filter(k=>k!=='attempt').sort().join(','))||
+     Object.hasOwn(r,'failureCode')&&(r.status!=='uncertain'||!['network-transient','source-refused','rate-limited','unclassified'].includes(r.failureCode))||
      r.retry!==undefined&&(!r.retry||Object.keys(r.retry).sort().join(',')!=='approvalSha256,priorRowSha256,priorStatus'||!SHA.test(r.retry.approvalSha256||'')||!SHA.test(r.retry.priorRowSha256||'')||!['not-listed','uncertain'].includes(r.retry.priorStatus))||
-     !ID.test(r.cardId||'')||seen.has(r.cardId)||!states.has(r.status)||
+     !recovery.validAttempt(r)||!ID.test(r.cardId||'')||seen.has(r.cardId)||!states.has(r.status)||
      Object.keys(r.sourcePin||{}).sort().join(',')!=='cardBlob,commit,skillBlob'||
      !Object.values(r.sourcePin).every(z=>typeof z==='string'&&GIT.test(z))||
      (['awaiting-fact-review','held'].includes(r.status)?!SHA.test(r.packetSha256||''):r.packetSha256!==null))
@@ -53,22 +54,28 @@ function planBatch({plan,ledger,targetIds,sourcePin,policy,existingCatalog}={}){
   previouslyAttemptedIds:targetIds.filter(id=>attempted.has(id)),
   siteAccessAuthorized:false,publicationApproved:false};
 }
-async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,observeBatch,retryApproval=null,now=null}={}){
+async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,observeBatch,retryApproval=null,now=null,automatic=false}={}){
  if(typeof skillText!=='string'||gitBlobSha(skillText)!==sourcePin?.skillBlob||
     typeof store?.load!=='function'||typeof store.compareAndSet!=='function'||typeof observeBatch!=='function')
   fail('pinned inputs and atomic store required');
  const before=structuredClone(verify(await store.load()));
  const selection=planBatch({plan,ledger:before,targetIds,sourcePin,policy,existingCatalog});
  let ids=selection.selectedIds;
+ if(automatic){
+  if(retryApproval!==null||targetIds.length!==1||!recovery.date(now))fail('automatic single-card scope');
+  const row=before.rows.find(r=>r.cardId===targetIds[0]);
+  if(row&&recovery.due(row,now))ids=targetIds.slice();
+ }
  if(retryApproval!==null){
   if(targetIds.length!==1||targetIds[0]!==retryApproval.cardId||selection.previouslyAttemptedIds.length!==1)fail('retry target scope');
   ids=targetIds.slice();
  }
  if(!ids.length)return {...selection,results:[],stopReason:null,reviewPackets:[]};
- const reservation=retryApproval===null?{...before,revision:before.revision+1,rows:[...before.rows,...ids.map(cardId=>({cardId,sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null}))]}:require('./d069_reviewed_retry.cjs').reserveRetry({ledger:before,approval:retryApproval,sourcePin,existingCatalog,now});
+ const automaticRow=automatic?{cardId:ids[0],sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null,attempt:recovery.reserve(before.rows.find(r=>r.cardId===ids[0]),now)}:null;
+ const reservation=automatic?{...before,revision:before.revision+1,rows:before.rows.some(r=>r.cardId===ids[0])?before.rows.map(r=>r.cardId===ids[0]?automaticRow:r):[...before.rows,automaticRow]}:retryApproval===null?{...before,revision:before.revision+1,rows:[...before.rows,...ids.map(cardId=>({cardId,sourcePin:structuredClone(sourcePin),status:'reserved',packetSha256:null}))]}:require('./d069_reviewed_retry.cjs').reserveRetry({ledger:before,approval:retryApproval,sourcePin,existingCatalog,now});
  verify(reservation);
  if(await store.compareAndSet(structuredClone(before),structuredClone(reservation))!==true)fail('reservation conflict; no observation');
- let results,stopReason=null,reviewPackets=[];
+ let results,stopReason=null,reviewPackets=[],retryAfter=null;
  try{
   // The caller is responsible for a separately reviewed transport.
   // Only in-memory raw responses enter this callback contract.
@@ -88,12 +95,13 @@ async function runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillTe
   // Failure after any partial access means the whole reserved batch is
   // uncertain. No source strings or exception messages are persisted.
   const failureCode=require('./d069_card_json_transport.cjs').failureCode(error);
+  retryAfter=require('./d069_card_json_transport.cjs').retryAfter(error);
   results=ids.map(cardId=>({cardId,status:'uncertain',packetSha256:null,failureCode}));
   stopReason='observation-failed';reviewPackets=[];
  }
  const finished={...reservation,revision:reservation.revision+1,rows:reservation.rows.map(r=>{
   const x=results.find(z=>z.cardId===r.cardId);
-  return x?{...r,status:x.status,packetSha256:x.packetSha256,...(x.failureCode?{failureCode:x.failureCode}:{})}:r;
+  return x?{...r,status:x.status,packetSha256:x.packetSha256,...(x.failureCode?{failureCode:x.failureCode}:{}),...recovery.finish(r,x,now,retryAfter)}:r;
  })};
  verify(finished);
  if(await store.compareAndSet(structuredClone(reservation),structuredClone(finished),structuredClone(reviewPackets))!==true)fail('completion conflict; reservation remains non-retryable');
