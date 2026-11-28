@@ -241,7 +241,7 @@ jobs:
             const direct=summary.sourceStatus==='direct-review-pending';
             const rows=require('./poc/src/direct_pending_review.cjs').describePending(next,require('./poc/config/direct-event-pending-review.v1.json'));
             const attempts=new Map(eventPlan.attemptStates.map(r=>[r.cardId,r]));
-            for(const row of rows){const a=attempts.get(row.cardId);if(a){row.currentStatus='json-attempt-'+a.status;row.reasonCodes=[...row.reasonCodes,'see-attempt-recovery-state'];}}
+            for(const row of rows){const a=attempts.get(row.cardId);if(a){row.currentStatus='json-attempt-'+a.status;row.reasonCodes=[...row.reasonCodes,'see-attempt-recovery-state'];if(a.attempt){row.reasonCodes.push('attempt '+a.attempt.count+'/4');if(a.attempt.nextAt&&a.attempt.count<4)row.reasonCodes.push('next '+a.attempt.nextAt);}}}
             const reviews=new Map(reviewQueue.rows.map(r=>[r.cardId,r]));
             for(const row of rows){const v=reviews.get(row.cardId);if(v&&v.packetSha256){row.currentStatus='json-review-'+v.status;row.observedEvents=v.eventCount;row.reasonCodes=[...new Set([...row.reasonCodes,...v.reasonCodes])];}}
             core.info('DIRECT_PENDING_REVIEW='+JSON.stringify(rows));
