@@ -20,7 +20,7 @@ async function selectRoutine({config,queue,auto,store,github,owner,repo,baseSha,
     new Set(queue.rows.map(r=>r?.cardId)).size!==queue.rows.length||
     queue.rows.some(r=>typeof r?.cardId!=='string'||!ID.test(r.cardId)||r.publicationApproved!==false)||
     !auto||auto.publicationApproved!==false||!Array.isArray(auto.attemptedIds))fail('daily queue scope');
- if(auto.stopReason!==null)return report('acquisition-stopped');
+ if(auto.stopReason!==null&&!['rate-limit-cooldown','time-budget-deferred'].includes(auto.stopReason)&&!(auto.stopReason==='observation-failed'&&['network-transient','rate-limited','unclassified'].includes(auto.failureCode)))return report('acquisition-stopped');
  if(!queue.rows.length)return report('no-pending-cards');
  const catalog=JSON.parse(files['poc/data/reviewed_events.v1.json']);
  if(digest(catalog)!==queue.catalogSha256)fail('catalog changed');
