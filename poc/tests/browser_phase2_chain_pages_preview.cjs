@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
@@ -44,21 +45,21 @@ async function main(){
   assert.equal(await page.locator('.choice:disabled').count(),6);
   assert.equal(await page.locator('output[data-hint-count="0"]').count(),3);
   // Selecting a manually observed final stage NEVER fills in earlier stages.
-  await page.locator('article.event[data-event="3"] .arrived').click();
+  await (await control(page,'article.event[data-event="3"] .arrived')).click();
   assert.equal(await page.locator('article.event[data-observed="true"]').count(),1);
   assert.equal(await page.locator('article.event[data-observed="false"]').count(),2);
   assert.equal(await page.locator('article.event[data-event="3"] output').getAttribute('data-hint-count'),'1');
   assert.match(await page.locator('article.event[data-event="3"] output').innerText(),/勇迅円刃/);
   assert.doesNotMatch(await page.locator('article.event[data-event="3"] output').innerText(),/201323/);
-  await page.locator('article.event[data-event="3"] .arrived').click();
+  await (await control(page,'article.event[data-event="3"] .arrived')).click();
   assert.equal(await page.locator('output[data-hint-count="0"]').count(),3);
   for(const [card,stage3,stage2Hint] of [
    ['30319',2,'憂いなし'],['30320',2,'スリップストリーム'],['30321',1,null]
   ]){
-   await page.locator('#card-tabs button[data-card-id="'+card+'"]').click();
+   await (await control(page,'#card-tabs button[data-card-id="'+card+'"]')).click();
    assert.equal(await page.locator('article.event').count(),3);
    assert.equal(await page.locator('article.event[data-observed="true"]').count(),0);
-   await page.locator('article.event[data-event="3"] .arrived').click();
+   await (await control(page,'article.event[data-event="3"] .arrived')).click();
    assert.equal(await page.locator('article.event[data-event="3"] output')
     .getAttribute('data-hint-count'),String(stage3));
    const sourceSkillNames={
@@ -74,15 +75,15 @@ async function main(){
    if(stage2Hint){
     const second=page.locator('article.event[data-event="2"]');
     assert.equal(await second.locator('button[data-choice="option1"]').isDisabled(),true);
-    await second.locator('.arrived').click();
+    await (await control(second,'.arrived')).click();
     assert.equal(await second.locator('output').getAttribute('data-hint-count'),'0');
-    await second.locator('button[data-choice="option1"]').click();
+    await (await control(second,'button[data-choice="option1"]')).click();
     assert.equal(await second.locator('output').getAttribute('data-hint-count'),'1');
     assert.match(await second.locator('output').innerText(),new RegExp(stage2Hint));
-    await second.locator('button[data-choice="option2"]').click();
+    await (await control(second,'button[data-choice="option2"]')).click();
     assert.equal(await second.locator('output').getAttribute('data-hint-count'),'0');
-    await second.locator('button[data-choice="option1"]').click();
-    await second.locator('.arrived').click();
+    await (await control(second,'button[data-choice="option1"]')).click();
+    await (await control(second,'.arrived')).click();
     assert.equal(await second.locator('output').getAttribute('data-hint-count'),'0');
     assert.equal(await second.locator('button[data-choice="option1"]').isDisabled(),true);
     assert.equal(await page.locator('article.event[data-event="3"] output')
@@ -90,7 +91,7 @@ async function main(){
    }else{
     const second=page.locator('article.event[data-event="2"]');
     assert.equal(await second.locator('button[data-choice="option1"]').count(),0);
-    await second.locator('.arrived').click();
+    await (await control(second,'.arrived')).click();
     assert.equal(await second.locator('output').getAttribute('data-hint-count'),'0');
     assert.equal(await page.locator('article.event[data-event="3"] output')
      .getAttribute('data-hint-count'),String(stage3));
@@ -99,7 +100,7 @@ async function main(){
   // User-visible text must not expose internal skill IDs.
   assert.doesNotMatch(await page.locator('main').innerText(),/スキルID\\s*\\d+/);
   // 30221 adds a fifth card with three individually adjudicated auto stages.
-  await page.locator('#card-tabs button[data-card-id="30221"]').click();
+  await (await control(page,'#card-tabs button[data-card-id="30221"]')).click();
   assert.match(await page.locator('article.event[data-event="1"] h3').innerText(),
    /ふたりでひとつは、とってもおいしい！/);
   assert.match(await page.locator('article.event[data-event="3"] h3').innerText(),
@@ -107,16 +108,16 @@ async function main(){
   assert.equal(await page.locator('article.event[data-observed="false"]').count(),3);
   assert.equal(await page.locator('article.event button[data-choice]').count(),0);
   const satonoLast=page.locator('article.event[data-event="3"]');
-  await satonoLast.locator('.arrived').click();
+  await (await control(satonoLast,'.arrived')).click();
   assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'1');
   assert.match(await satonoLast.locator('output').innerText(),/食いしん坊/);
   assert.doesNotMatch(await satonoLast.locator('output').innerText(),/201351/);
   assert.equal(await page.locator('article.event[data-observed="true"]').count(),1);
   const satonoFirst=page.locator('article.event[data-event="1"]');
-  await satonoFirst.locator('.arrived').click();
+  await (await control(satonoFirst,'.arrived')).click();
   assert.equal(await satonoFirst.locator('output').getAttribute('data-hint-count'),'0');
   assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'1');
-  await satonoLast.locator('.arrived').click();
+  await (await control(satonoLast,'.arrived')).click();
   assert.equal(await satonoLast.locator('output').getAttribute('data-hint-count'),'0');
     assert.deepEqual(errors,[]);
   assert.deepEqual(requests,[]);

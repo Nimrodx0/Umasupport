@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // D060 public product acceptance: actual deployed code and compact data,
 // actual moving upstream dictionary, no interception in the success path.
 // Independently classify by source ID and raw fixed/live profile structure.
@@ -46,7 +47,7 @@ function expectedGroups(labels,records,skills){
  return {groups,reasons,accepted:accepted.size};
 }
 async function collect(page,state,total){
- await page.locator('#catalog-suitability').selectOption(state);
+ await (await control(page,'#catalog-suitability')).selectOption(state);
  const match=/^(\d+) \/ (\d+) 件$/.exec(await page.locator('.catalog-count').innerText());a(match);a.equal(Number(match[2]),total);
  const ids=[];for(let i=0;;i++){ids.push(...await page.locator('[data-catalog-skill]').evaluateAll(rs=>rs.map(r=>r.dataset.catalogSkill)));const next=page.locator('[data-action="catalog-next"]');if(await next.isDisabled())break;a(i<Math.ceil(total/60));await next.click();}
  a.equal(ids.length,Number(match[1]));a.equal(new Set(ids).size,ids.length);return ids.sort();
@@ -99,45 +100,45 @@ async function main(){
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(404-accepted)+'件';
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
-   const openHealth=async()=>{await page.locator('header [data-action="source-health"]').click();};
-   const closeModal=async()=>{await page.locator('.modal-head [data-action="close"]').click();};
+   const openHealth=async()=>{await (await control(page,'header [data-action="source-health"]')).click();};
+   const closeModal=async()=>{await (await control(page,'.modal-head [data-action="close"]')).click();};
    const healthStatus=page.locator('#source-status-suitability .source-health-state');
    await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
-   await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
+   await (await control(page,'header [data-action="catalog-toggle"]')).click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined','explicitOnly'])a.deepEqual(await collect(page,state,total),groups[state].sort());
    a.deepEqual(await collect(page,'apt-positive',total),[...groups.explicitOnly,...groups.targeted].sort());
    a.equal(await page.locator('.modal #all-skill-catalog').count(),1);a.equal(await page.locator('main.app #all-skill-catalog').count(),0);
    const priorFilter=await page.locator('#catalog-suitability').inputValue();await page.locator('[data-catalog-skill] button').first().click();await page.getByRole('button',{name:'スキル一覧へ戻る'}).click();a.equal(await page.locator('#catalog-suitability').inputValue(),priorFilter);await closeModal();
-   await page.locator('header [data-action="card-library"]').click();a.equal(await page.locator('#picker-sort').inputValue(),'id-desc');
+   await (await control(page,'header [data-action="card-library"]')).click();a.equal(await page.locator('#picker-sort').inputValue(),'id-desc');
     for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);
    const card=page.locator('.picker-card[data-action="card-detail"]').first(),cardId=await card.getAttribute('data-id');
    a.equal(cardId,await page.evaluate(()=>UmaDemoData.cards.map(c=>c.id).sort((a,b)=>Number(b)-Number(a))[0]));await card.click();await page.locator('#card-skill-list').waitFor();
-   await page.locator('#library-stage').selectOption('0');
+   await (await control(page,'#library-stage')).selectOption('0');
    const expectedIds=await page.evaluate(id=>{const c=UmaDemoData.cardById[id];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['0']??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},cardId);
    a.deepEqual(await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort()),expectedIds);await page.getByRole('button',{name:'戻る',exact:true}).click();await closeModal();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
-   await page.locator('[data-action="pick"]').first().click();for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);await page.locator('#picker-sort').selectOption('new-skills-desc');
+   await page.locator('[data-action="pick"]').first().click();for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);await (await control(page,'#picker-sort')).selectOption('new-skills-desc');
    const expectedCounts=await page.evaluate(()=>Object.fromEntries(UmaDemoData.cards.map(c=>{const hints=c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['4']??c.hints??[]):[];const ids=new Set([...hints,...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)].filter(id=>UmaDemoData.skillById[id]&&UmaDemoData.skillById[id].tier!=='negative'));return [c.id,ids.size]})));
    const sortedCounts=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,n:Number(r.querySelector('[data-new-skills]').dataset.newSkills)})));
    for(let i=0;i<sortedCounts.length;i++){const x=sortedCounts[i];a.equal(x.n,expectedCounts[x.id]);if(i)a(sortedCounts[i-1].n>=x.n);}
-   await page.locator('#picker-sort').selectOption('id-desc');await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await (await control(page,'#picker-sort')).selectOption('id-desc');await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('2');
    const expected=await page.evaluate(async()=>{const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return Object.fromEntries(d.cards.map(c=>[c.id,UmaCardSuitabilityView.browseCard(c,{stage:4},d,labels,{running_style:2}).potential]));});
    const shown=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,tier:r.querySelector('[data-picker-fit-tier]')?.textContent})));a(shown.length);
    for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);a.equal(v.rows.filter(x=>x.scopePending&&x.matching).length,0);}
-   await page.locator('#picker-sort').selectOption('fit-count-desc');const ids=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>r.dataset.id));for(let i=1;i<ids.length;i++)a(expected[ids[i-1]].matching>=expected[ids[i]].matching);
-   await page.locator('.modal-head [data-action="close"]').click();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
+   await (await control(page,'#picker-sort')).selectOption('fit-count-desc');const ids=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>r.dataset.id));for(let i=1;i<ids.length;i++)a(expected[ids[i-1]].matching>=expected[ids[i]].matching);
+   await (await control(page,'.modal-head [data-action="close"]')).click();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
    // Exercise a real nonempty deck, not just the untouched default settings.
-   await page.locator('[data-action="pick"][data-deck="main"][data-index="0"]').click();
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="0"]')).click();
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');a(id);await first.click();
    const slot=page.locator('[data-action="edit-card"][data-deck="main"][data-index="0"]');
    await slot.click();
-   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('2');
+   await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('2');
    const verifyDetail=async stage=>{
     const v=await page.evaluate(async({id,stage})=>{const d=UmaDemoData,l=(await UmaSkillCatalog.loadPublicLabels(d)).labels;return UmaCardSuitabilityView.browseCard(d.cardById[id],{stage,choices:{},outcomes:{}},d,l,{running_style:2});},{id,stage});
     const tier=x=>'金 '+x.gold+'・白 '+x.white+'・その他 '+x.other;
     for(const [k,cur,pot] of [['inside',v.current.counts.total-v.current.counts.outside-v.current.counts.scopeUnknown-v.current.counts.scopePending,v.potential.counts.total-v.potential.counts.outside-v.potential.counts.scopeUnknown-v.potential.counts.scopePending],['matching',v.current.matching,v.potential.matching]]){const cells=page.locator('[data-fit-group="'+k+'"] td');a.equal(await cells.nth(1).innerText(),String(cur));a.equal(await cells.nth(2).innerText(),String(pot));}
     a.equal(await page.locator('[data-fit-tiers]').innerText(),'一致候補の内訳：現在 '+tier(v.current.matchingByTier)+' ／ 全分岐 '+tier(v.potential.matchingByTier));
    };
-   await verifyDetail(4);await page.locator('#stage-select').selectOption('0');await verifyDetail(0);await closeModal();
+   await verifyDetail(4);await (await control(page,'#stage-select')).selectOption('0');await verifyDetail(0);await closeModal();
    // Verify the displayed matching/new intersection against real data, including a populated deck.
    // D066: each stored deck supplies the initial picker context; temporary changes are not saved.
    const training=[['running_style','2'],['distance_type','3'],['ground_type','1']];
@@ -147,15 +148,15 @@ async function main(){
    await axis('inherit','running_style').selectOption('4');
    await page.locator('[data-action="pick"][data-deck="inherit"]').first().click();
    a.equal(await pickerAxis('running_style').inputValue(),'4');a.equal(await pickerAxis('distance_type').inputValue(),'');await closeModal();
-   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
    for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
    const trainingSaved=await snapshot();await pickerAxis('running_style').selectOption('1');await closeModal();a.equal(await snapshot(),trainingSaved);
-   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
    for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
    await closeModal();
    const beforeRanking=await snapshot();
-   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
-   await page.locator('#picker-sort').selectOption('new-skills-desc');
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
+   await (await control(page,'#picker-sort')).selectOption('new-skills-desc');
    const verifyNew=async ctx=>{
     const expected=await page.evaluate(async({id,ctx})=>{
      const d=UmaDemoData,labels=(await UmaSkillCatalog.loadPublicLabels(d)).labels;
@@ -172,21 +173,21 @@ async function main(){
    };
    await verifyNew({running_style:2,distance_type:3,ground_type:1});
    await pickerAxis('distance_type').selectOption('');await pickerAxis('ground_type').selectOption('');await verifyNew({running_style:2});
-   await page.locator('[data-picker-fit-axis="distance_type"]').selectOption('3');await verifyNew({running_style:2,distance_type:3});
-   await page.locator('[data-picker-fit-axis="ground_type"]').selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
-   await page.locator('[data-picker-fit-axis="running_style"]').selectOption('');await verifyNew({});
+   await (await control(page,'[data-picker-fit-axis="distance_type"]')).selectOption('3');await verifyNew({running_style:2,distance_type:3});
+   await (await control(page,'[data-picker-fit-axis="ground_type"]')).selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
+   await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('');await verifyNew({});
    await closeModal();a.equal(await snapshot(),beforeRanking);
    const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
    for(const [n,v] of training)a.equal(await axis('main',n).inputValue(),v);
    a.equal(await axis('inherit','running_style').inputValue(),'4');
-   await page.locator('[data-action="pick"][data-deck="main"][data-index="1"]').click();
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
    for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
    await closeModal();a.equal(await snapshot(),populated);
    const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
    await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();
-   await page.locator('header [data-action="catalog-toggle"]').click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await page.locator('#catalog-suitability').selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),now.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+now.length+' 件');
+   await (await control(page,'header [data-action="catalog-toggle"]')).click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await (await control(page,'#catalog-suitability')).selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),now.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+now.length+' 件');
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);
    await page.unroute(blocked);await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);a.deepEqual(errors,[]);

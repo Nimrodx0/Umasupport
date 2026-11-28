@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.4 A-gate: real approved public JSON, SHA-pinned UmaSim and real
 // Chromium persistence/JSON workflows. No published Pages or device claim.
@@ -82,25 +83,25 @@ async function main(){
   });
   assert.ok(choice,'No real public choice to test saving');
   await chooseCard(page,'main',0,choice.card);
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
-  await page.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="'+
-   choice.eventId+'"][value="'+choice.choiceId+'"]').check();
-  await page.locator('button[data-action="close"]').click();
-  await page.locator('button[data-action="goals"]').click();
-  await page.locator('#new-goal-skill-search').fill(choice.skillId);
-  await page.locator('#new-goal-skill').selectOption(choice.skillId);
-  await page.locator('#new-goal-scope').selectOption('main');
-  await page.locator('button[data-action="add-goal"]').click();
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'input[data-event-choice][data-deck="main"][data-index="0"][data-event="'+
+   choice.eventId+'"][value="'+choice.choiceId+'"]')).check();
+  await (await control(page,'button[data-action="close"]')).click();
+  await (await control(page,'button[data-action="goals"]')).click();
+  await (await control(page,'#new-goal-skill-search')).fill(choice.skillId);
+  await (await control(page,'#new-goal-skill')).selectOption(choice.skillId);
+  await (await control(page,'#new-goal-scope')).selectOption('main');
+  await (await control(page,'button[data-action="add-goal"]')).click();
+  await (await control(page,'button[data-action="close"]')).click();
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
-  await page.locator('button[data-action="view"][data-value="split"]').click();
-  await page.locator('button[data-action="density"][data-value="detailed"]').click();
+  await (await control(page,'button[data-action="view"][data-value="split"]')).click();
+  await (await control(page,'button[data-action="density"][data-value="detailed"]')).click();
   const initial=JSON.parse(await getSaved(page));
   assert.equal(initial.decks.main[0].slots[0].choices[choice.eventId],choice.choiceId);
   assert.equal(initial.view,'split');
   // The real export action must yield exactly the persisted structured data.
   const downloadWait=page.waitForEvent('download');
-  await page.locator('button[data-action="export"]').click();
+  await (await control(page,'button[data-action="export"]')).click();
   const download=await downloadWait;
   assert.match(download.suggestedFilename(),/\.json$/);
   const backup=await fs.readFile(await download.path(),'utf8');
@@ -125,11 +126,11 @@ async function main(){
   await importJSON(page,backup);
   await page.locator('button[data-action="import-cancel"]').waitFor();
   assert.equal(await getSaved(page),before);
-  await page.locator('button[data-action="import-cancel"]').click();
+  await (await control(page,'button[data-action="import-cancel"]')).click();
   assert.equal(await getSaved(page),before);
   // Merge creates independent copies and must not replace active deck/goal/display.
   await importJSON(page,backup);
-  await page.locator('button[data-action="import-merge"]').click();
+  await (await control(page,'button[data-action="import-merge"]')).click();
   const merged=JSON.parse(await getSaved(page));
   assert.equal(merged.decks.main.length,2);
   assert.equal(merged.decks.inherit.length,2);
@@ -270,7 +271,7 @@ async function main(){
   assert.match(quotaWarning.message(),/再読み込み/);
   await quotaWarning.accept();await quotaClick;
   assert.equal(await getSaved(deniedPage),null,'failed save must not forge a persisted state');
-  await deniedPage.locator('button[data-action="density"][data-value="detailed"]').click();
+  await (await control(deniedPage,'button[data-action="density"][data-value="detailed"]')).click();
   assert.equal(await getSaved(deniedPage),null);
   await denied.close();
 

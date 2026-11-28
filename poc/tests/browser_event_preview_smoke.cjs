@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // Actual Chromium UI interaction with a five-event, UNAPPROVED preview.
 // All support/skill upstream network traffic is mocked using synthetic data.
 const assert=require('node:assert/strict');
@@ -82,18 +83,18 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaPreviewActive),true);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.cardById['30311'].events.length),5);
-  await page.locator('button[data-action="source-health"]').click();
+  await (await control(page,'button[data-action="source-health"]')).click();
   assert.match(await page.locator('#source-status-events').innerText(),/未承認イベント試用中/);
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
 
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill('サポカ310');
-  await page.locator('button[data-action="set-card"][data-id="30311"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill('サポカ310');
+  await (await control(page,'button[data-action="set-card"][data-id="30311"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   assert.equal(await page.locator('.modal-body .event').count(),5);
   const ids=['830311001','830311002','830311003'];
   for(const id of ids){
-   await page.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="evt_30311_'+id+'"][value="option1"]').click();
+   await (await control(page,'input[data-event-choice][data-deck="main"][data-index="0"][data-event="evt_30311_'+id+'"][value="option1"]')).click();
   }
   const actual=await page.evaluate(()=>{
    const key='uma-support-lab-runtime-umasim-v1-event-preview';
@@ -108,7 +109,7 @@ async function main(){
   assert.ok(actual.some(r=>r.skillId==='skill:204532'&&r.level===5&&r.conditional));
   assert.ok(actual.some(r=>r.skillId==='skill:204532'&&r.level===1&&r.conditional));
   assert.equal(await page.evaluate(()=>localStorage.getItem('uma-support-lab-runtime-umasim-v1')),null);
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
 
   // In the SAME browser origin, normal mode must not inherit candidate data.
   await boot(page,origin+'/poc/live.html');
@@ -152,15 +153,15 @@ async function main(){
   assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
   assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30311'].events.length),5);
   assert.equal(await expandedPage.evaluate(()=>window.UmaDemoData.cardById['30201'].events.length>0),true);
-  await expandedPage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await expandedPage.locator('#picker-route').selectOption('event');
-  await expandedPage.locator('#picker-search').fill('サポカ200');
-  await expandedPage.locator('button[data-action="set-card"][data-id="30201"]').click();
-  await expandedPage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(expandedPage,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(expandedPage,'#picker-route')).selectOption('event');
+  await (await control(expandedPage,'#picker-search')).fill('サポカ200');
+  await (await control(expandedPage,'button[data-action="set-card"][data-id="30201"]')).click();
+  await (await control(expandedPage,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   const candidateEvent=expandedPage.locator('.modal-body .event').first();
   assert.match(await candidateEvent.innerText(),/候補1/);
   const eventId=await candidateEvent.locator('input[data-event-choice][value="option1"]').getAttribute('data-event');
-  await candidateEvent.locator('input[data-event-choice][value="option1"]').click();
+  await (await control(candidateEvent,'input[data-event-choice][value="option1"]')).click();
   const routes=await expandedPage.evaluate((id)=>{
    const slot=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview-expanded'))
       .decks.main[0].slots[0];
@@ -191,10 +192,10 @@ async function main(){
     data.skillById['200461']={id:'200461',name:'獲得候補１'};
     data.skillById['200462']={id:'200462',name:'獲得候補２'};
   },cumulativeFixture.events);
-  await cumulativePage.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await cumulativePage.locator('#picker-search').fill('サポカ102');
-  await cumulativePage.locator('button[data-action="set-card"][data-id="30103"]').click();
-  await cumulativePage.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(cumulativePage,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(cumulativePage,'#picker-search')).fill('サポカ102');
+  await (await control(cumulativePage,'button[data-action="set-card"][data-id="30103"]')).click();
+  await (await control(cumulativePage,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   const [firstStage,secondStage,thirdStage]=cumulativeFixture.events.map(e=>e.id);
   const outcomeSelect=id=>cumulativePage.locator('select[data-event-outcome][data-event="'+id+'"]');
   await outcomeSelect(firstStage).selectOption('success');

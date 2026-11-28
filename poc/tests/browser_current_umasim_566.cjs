@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // Actual Chromium/GitHub Pages-style browser check with publisher-pinned
 // runtime card source. Original TSV stays in the runner temp directory.
 const assert=require('node:assert/strict');
@@ -61,15 +62,15 @@ async function run(sourcePath){
   assert.deepEqual(snapshot.names,['[巫女]吾妻',
    '[Time of Departure]マヤノトップガン','[いとどめでたき、まつりかな]吾妻']);
   assert.deepEqual(snapshot.events,[0,0,0]);
-  await page.locator('button[data-action="source-health"]').click();
+  await (await control(page,'button[data-action="source-health"]')).click();
   assert.match(await page.locator('#source-status-cards').innerText(),/566 \/ 566枚/);
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
   for(const [deck,index,id] of [
    ['main',3,'30322'],['main',4,'30323'],['inherit',3,'10149']
   ]){
-   await page.locator('button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]').click();
-   await page.locator('#picker-search').fill(id);
-   await page.locator('button[data-action="set-card"][data-id="'+id+'"]').click();
+   await (await control(page,'button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]')).click();
+   await (await control(page,'#picker-search')).fill(id);
+   await (await control(page,'button[data-action="set-card"][data-id="'+id+'"]')).click();
    const current=await page.evaluate(({deck,index})=>{
     const s=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
     return s.decks[deck][0].slots[index].cardId;

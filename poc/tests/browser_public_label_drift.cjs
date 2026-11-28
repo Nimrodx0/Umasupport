@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // Real deployed app, same-run local D-052 bundle, moving upstream dictionary.
 // Independently compare raw fixed Invoke structure with the actual model profiles.
 // Never publish raw source bytes, local label files or per-skill audit results.
@@ -41,7 +42,7 @@ function expectedGroups(bundle,records,skills,modern){
  return {groups,reasons,accepted:accepted.size};
 }
 async function collect(page,state,total){
- await page.locator('#catalog-suitability').selectOption(state);
+ await (await control(page,'#catalog-suitability')).selectOption(state);
  const count=page.locator('.catalog-count'),match=/^(\d+) \/ (\d+) 件$/.exec(await count.innerText());
  a(match);a.equal(Number(match[2]),total);const ids=[];
  for(let i=0;;i++){
@@ -83,32 +84,32 @@ async function main(){
    a(accepted>0,'no compatible labels: investigate rather than declare usable');
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
-   await page.locator('header [data-action="catalog-toggle"]').click();
-   await page.locator('.catalog-data summary').click();
+   await (await control(page,'header [data-action="catalog-toggle"]')).click();
+   await (await control(page,'.catalog-data summary')).click();
    await page.locator('#catalog-label-file').setInputFiles(FILE);
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(n-accepted)+'件';
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of (modern?['general','targeted','undetermined','explicitOnly']:['general','targeted','undetermined']))a.deepEqual(await collect(page,state,total),groups[state].sort(),'complete ID partition '+state);
    if(bundle.decisionId!=='D-052'){
-    await page.locator('#catalog-suitability').selectOption('general');
-    await page.locator('#catalog-query').fill('全身全霊');
+    await (await control(page,'#catalog-suitability')).selectOption('general');
+    await (await control(page,'#catalog-query')).fill('全身全霊');
     const names=await page.locator('.catalog-table tbody tr').allTextContents();
     for(const name of names){a.match(name,/汎用/);a(!name.includes('十分なスタミナを前提'));}
-    await page.locator('#catalog-query').fill('');
+    await (await control(page,'#catalog-query')).fill('');
    }
-   await page.locator('#catalog-suitability').selectOption('targeted');
-   await page.locator('[data-catalog-axis="ground_type"]').selectOption('2');
+   await (await control(page,'#catalog-suitability')).selectOption('targeted');
+   await (await control(page,'[data-catalog-axis="ground_type"]')).selectOption('2');
    a.equal(await page.locator('.catalog-count').innerText(),'0 / '+total+' 件');
-   await page.locator('[data-catalog-axis="ground_type"]').selectOption('');
+   await (await control(page,'[data-catalog-axis="ground_type"]')).selectOption('');
    await page.locator('#catalog-label-file').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{}')});
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('前回の検証済みラベルを維持'));
    a.deepEqual(await collect(page,'targeted',total),groups.targeted.sort());
    a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});
-   await page.locator('header [data-action="catalog-toggle"]').click();await page.locator('.catalog-data summary').click();
+   await (await control(page,'header [data-action="catalog-toggle"]')).click();await (await control(page,'.catalog-data summary')).click();
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    const reloaded=await page.evaluate(()=>UmaDemoData.skills.length);
-   await page.locator('#catalog-suitability').selectOption('undetermined');
+   await (await control(page,'#catalog-suitability')).selectOption('undetermined');
    const unlabelled=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),(modern?unlabelled.filter(s=>productGroup(s,new Map())==='undetermined').length:reloaded)+' / '+reloaded+' 件');
    a.equal(await snapshot(),saved);a.deepEqual(errors,[]);
    console.log('PAGES_'+bundle.decisionId.replace('-','')+'_LIVE',JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(liveBytes),liveSupportSHA256:sha(supportBytes),accepted,skipped:n-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length}));

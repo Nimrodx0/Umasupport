@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
@@ -51,19 +52,19 @@ async function main(){
    ['30320','ひとりが好きなクラスメイトさん','option1','ワンチャンス'],
    ['30321','追うべき背中','option2','イグニッション']
   ]){
-   await page.locator('#card-tabs button[data-card-id="'+card+'"]').click();
+   await (await control(page,'#card-tabs button[data-card-id="'+card+'"]')).click();
    const block=page.locator('article.event[data-event="5"]');
    assert.match(await block.locator('h3').innerText(),new RegExp(expectedTitle));
    assert.equal(await block.locator('button.choice[data-choice]').count(),3);
-   await block.locator('button[data-choice="'+selected+'"]').click();
+   await (await control(block,'button[data-choice="'+selected+'"]')).click();
    assert.match(await block.locator('output').innerText(),new RegExp(expectedHint));
    assert.equal(await block.locator('output').getAttribute('data-hint-count'),'1');
    const other=selected==='option1'?'option2':'option1';
-   await block.locator('button[data-choice="'+other+'"]').click();
+   await (await control(block,'button[data-choice="'+other+'"]')).click();
    assert.equal(await block.locator('output').getAttribute('data-hint-count'),'0');
-   await block.locator('button[data-choice="'+selected+'"]').click();
+   await (await control(block,'button[data-choice="'+selected+'"]')).click();
    assert.equal(await block.locator('button[data-choice="'+selected+'"]').getAttribute('aria-pressed'),'true');
-   await block.locator('button[data-choice=""]').click();
+   await (await control(block,'button[data-choice=""]')).click();
    assert.match(await block.locator('output').innerText(),/未選択/);
    assert.equal(await block.locator('output').getAttribute('data-hint-count'),'0');
   }

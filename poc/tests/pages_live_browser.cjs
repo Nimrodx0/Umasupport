@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs'); // fixed recovery only
 const {verifySnapshot,CATALOG,APPROVALS}=require('../src/d074_event_data_branch.cjs');
 const {digest}=require('../src/event_release_gate.cjs');
@@ -224,9 +225,9 @@ async function main(){
   assert.ok(Object.values(stored).every(r=>r.present&&r.textLength>10000&&r.fetchedAt));
   const cardId=actual.candidate.id,skillId=actual.candidate.hint;
   // Real deck and goal UI, with a card/hint chosen from the live game-data source.
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill(actual.candidate.name);
-  await page.locator('button[data-action="set-card"][data-id="'+cardId+'"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill(actual.candidate.name);
+  await (await control(page,'button[data-action="set-card"][data-id="'+cardId+'"]')).click();
   // Newly introduced Phase 1 F-07: source-derived stage modifiers on the actual Pages card dialog.
   const livePerformance=await page.evaluate(cardId=>{
    const p=window.UmaDemoData.cardById[cardId].hintPerformanceByStage;
@@ -235,40 +236,40 @@ async function main(){
   for(const stage of [livePerformance.low,livePerformance.high]){
    assert.ok(Object.values(stage).every(Number.isSafeInteger),'Publisher hint stats must be safe integers');
   }
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   let hintDescription=await page.locator('.modal-body').innerText();
   assert.match(hintDescription,/ヒント関連性能（4凸）/);
   assert.ok(hintDescription.includes('基礎 Lv.'+(1+livePerformance.high.levelBase+livePerformance.high.levelUnique)));
   assert.ok(hintDescription.includes('基本 '+livePerformance.high.frequencyBase+'% / 固有 '+livePerformance.high.frequencyUnique+'%'));
-  await page.locator('select[data-stage]').selectOption('0');
+  await (await control(page,'select[data-stage]')).selectOption('0');
   hintDescription=await page.locator('.modal-body').innerText();
   assert.match(hintDescription,/ヒント関連性能（0凸）/);
   assert.ok(hintDescription.includes('基礎 Lv.'+(1+livePerformance.low.levelBase+livePerformance.low.levelUnique)));
   assert.ok(hintDescription.includes('基本 '+livePerformance.low.frequencyBase+'% / 固有 '+livePerformance.low.frequencyUnique+'%'));
-  await page.locator('select[data-stage]').selectOption('4');
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'select[data-stage]')).selectOption('4');
+  await (await control(page,'button[data-action="close"]')).click();
   const row=page.locator('tr[data-skill="'+skillId+'"]');
   await row.waitFor();assert.match(await row.innerText(),/1/);
   // A real published GT event must remain usable in the ordinary deck editor.
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="1"]').click();
-  await page.locator('#picker-search').fill(actual.eventPick.name);
-  await page.locator('button[data-action="set-card"][data-id="'+actual.eventPick.id+'"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="1"]')).click();
+  await (await control(page,'#picker-search')).fill(actual.eventPick.name);
+  await (await control(page,'button[data-action="set-card"][data-id="'+actual.eventPick.id+'"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="1"]')).click();
   assert.ok((await page.locator('.modal-body').innerText()).includes(actual.eventPick.eventName));
   const eventChoice=page.locator('input[data-event-choice][data-event="'+actual.eventPick.eventId+
     '"][value="'+actual.eventPick.choiceId+'"]');
   await eventChoice.check();
   assert.equal(await eventChoice.isChecked(),true,'Published event choice did not persist');
-  await page.locator('button[data-action="close"]').click();
-  await page.locator('button[data-action="goals"]').click();
-  await page.locator('#new-goal-skill').selectOption(skillId);
-  await page.locator('#new-goal-scope').selectOption('main');
-  await page.locator('button[data-action="add-goal"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
+  await (await control(page,'button[data-action="goals"]')).click();
+  await (await control(page,'#new-goal-skill')).selectOption(skillId);
+  await (await control(page,'#new-goal-scope')).selectOption('main');
+  await (await control(page,'button[data-action="add-goal"]')).click();
   assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
-  await page.locator('button[data-action="close"]').click();
-  await page.locator('button[data-action="view"][data-value="split"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
+  await (await control(page,'button[data-action="view"][data-value="split"]')).click();
   assert.equal(await page.locator('.split-grid').count(),1);
-  await page.locator('button[data-action="view"][data-value="integrated"]').click();
+  await (await control(page,'button[data-action="view"][data-value="integrated"]')).click();
   // Only abort the game-data endpoints. Published HTML/JS/CSS must still reload.
   let supportBlocked=0,skillBlocked=0,eventBlocked=0;
   await page.route('**/data/support_card.txt',r=>{supportBlocked++;return r.abort();});
@@ -299,12 +300,12 @@ async function main(){
    documentWidth:document.documentElement.scrollWidth}));
   assert.ok(geometry.documentWidth<=geometry.width+3,
     'Page-wide overflow at mobile width: '+JSON.stringify(geometry));
-  await page.locator('button[data-action="pick"][data-deck="inherit"][data-index="0"]').click();
-  await page.locator('#picker-search').fill(actual.candidate.name);
-  await page.locator('button[data-action="set-card"][data-id="'+cardId+'"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="inherit"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill(actual.candidate.name);
+  await (await control(page,'button[data-action="set-card"][data-id="'+cardId+'"]')).click();
   assert.ok(await page.locator('section[aria-label="継承育成デッキ"] .slot:not(.empty)').count()>=1);
-  await page.locator('button[data-action="goals"]').click();
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="goals"]')).click();
+  await (await control(page,'button[data-action="close"]')).click();
 
   // Preserve verified live data in transient test memory only. Never log or persist it.
   const originals=await readSourceRecords(page);

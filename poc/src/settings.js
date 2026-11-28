@@ -90,7 +90,7 @@ function parse(raw,data){
  }
  if(typeof s.currentGoalSet!=='string'||!goalIds.has(s.currentGoalSet))
   throw new Error('選択中の目標セットが見つかりません');
- if(!['integrated','split'].includes(s.view)||!['compact','detailed'].includes(s.density))
+ if(!['integrated','split','matrix'].includes(s.view)||!['compact','detailed'].includes(s.density))
   throw new Error('表示設定が不正です');
  return s;
 }

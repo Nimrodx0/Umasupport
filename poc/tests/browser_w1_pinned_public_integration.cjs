@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const CURRENT_PUBLIC=require('./current_public_event_fixture.cjs');
 // W1.2/W1.3: real public catalog + immutable, external UmaSim source snapshots
 // in Chromium. External dictionaries are fetched only in CI memory, never
@@ -62,9 +63,9 @@ const saved=page=>page.evaluate(key=>{
   .find(g=>g.id===source.currentGoalSet).goals};
 },SAVE_KEY);
 async function chooseCard(page,deck,index,card){
- await page.locator('button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]').click();
- await page.locator('#picker-search').fill(card.name);
- await page.locator('button[data-action="set-card"][data-id="'+card.id+'"]').click();
+ await (await control(page,'button[data-action="pick"][data-deck="'+deck+'"][data-index="'+index+'"]')).click();
+ await (await control(page,'#picker-search')).fill(card.name);
+ await (await control(page,'button[data-action="set-card"][data-id="'+card.id+'"]')).click();
 }
 async function boot(page,url){
  const res=await page.goto(url,{waitUntil:'domcontentloaded'});
@@ -121,17 +122,17 @@ async function appCases(page){
  const errors=[];
  page.on('pageerror',e=>errors.push(String(e.message)));
  // A real, source-backed target is initially uncovered.
- await page.locator('button[data-action="goals"]').click();
- await page.locator('#new-goal-skill-search').fill(chosen.skillId);
- await page.locator('#new-goal-skill').selectOption(chosen.skillId);
- await page.locator('#new-goal-scope').selectOption('both');
- await page.locator('button[data-action="add-goal"]').click();
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="goals"]')).click();
+ await (await control(page,'#new-goal-skill-search')).fill(chosen.skillId);
+ await (await control(page,'#new-goal-skill')).selectOption(chosen.skillId);
+ await (await control(page,'#new-goal-scope')).selectOption('both');
+ await (await control(page,'button[data-action="add-goal"]')).click();
+ await (await control(page,'button[data-action="close"]')).click();
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
  // The actual reviewed event target also participates in goal-candidate
  // ranking, without requiring any event choice to be preselected.
- await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
- await page.locator('#picker-sort').selectOption('goals-desc');
+ await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+ await (await control(page,'#picker-sort')).selectOption('goals-desc');
  const firstMatchId=await page.locator('.picker-card').first().getAttribute('data-id');
  assert.equal(await page.evaluate(({cardId,skillId})=>
   window.UmaCardSearch.goalCandidateIds(
@@ -139,27 +140,27 @@ async function appCases(page){
    [{skillId,scope:'both'}],'main').length,
  {cardId:firstMatchId,skillId:chosen.skillId}),1);
  assert.match(await page.locator('.picker-card').first().innerText(),/目標候補1件/);
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="close"]')).click();
  await chooseCard(page,'main',0,chosen.card);
  // Placing a card must not auto-select a published choice event.
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
- await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+ await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
  const mainChoice='input[data-event-choice][data-deck="main"][data-index="0"][data-event="'+
   chosen.eventId+'"][value="'+chosen.choiceId+'"]';
- await page.locator(mainChoice).check();
+ await (await control(page,mainChoice)).check();
  assert.equal((await saved(page)).main.slots[0].choices[chosen.eventId],chosen.choiceId);
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="close"]')).click();
  // BOTH scope remains incomplete until the independent inheritance deck is set.
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
  await chooseCard(page,'inherit',0,chosen.card);
  let state=await saved(page);
  assert.equal(state.inherit.slots[0].choices[chosen.eventId],undefined);
  assert.equal(state.main.slots[0].choices[chosen.eventId],chosen.choiceId);
- await page.locator('button[data-action="edit-card"][data-deck="inherit"][data-index="0"]').click();
+ await (await control(page,'button[data-action="edit-card"][data-deck="inherit"][data-index="0"]')).click();
  const inheritChoice='input[data-event-choice][data-deck="inherit"][data-index="0"][data-event="'+
   chosen.eventId+'"][value="'+chosen.choiceId+'"]';
- await page.locator(inheritChoice).check();
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,inheritChoice)).check();
+ await (await control(page,'button[data-action="close"]')).click();
  assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
  const totals=await page.evaluate(({skillId,key})=>{
   const model=window.UmaDemoData,core=window.UmaCore,s=JSON.parse(localStorage.getItem(key));
@@ -177,19 +178,19 @@ async function appCases(page){
  assert.equal(state.inherit.slots[0].choices[chosen.eventId],chosen.choiceId);
  assert.match(await page.locator('.goal-pill').first().innerText(),/直接カバー/);
  // The editing UI can independently unset main, without deleting inherit.
- await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
- await page.locator('input[data-event-choice][data-deck="main"][data-index="0"][data-event="'+
-  chosen.eventId+'"][value=""]').check();
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
+ await (await control(page,'input[data-event-choice][data-deck="main"][data-index="0"][data-event="'+
+  chosen.eventId+'"][value=""]')).check();
+ await (await control(page,'button[data-action="close"]')).click();
  state=await saved(page);
  assert.equal(state.main.slots[0].choices[chosen.eventId],undefined);
  assert.equal(state.inherit.slots[0].choices[chosen.eventId],chosen.choiceId);
  assert.match(await page.locator('.goal-pill').first().innerText(),/未カバー/);
  // A second real event's mutually exclusive results survive the same editor.
  await chooseCard(page,'main',1,sample.outcome.card);
- await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="1"]').click();
- await page.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="'+
-  sample.outcome.eventId+'"][value="'+sample.outcome.choiceId+'"]').check();
+ await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="1"]')).click();
+ await (await control(page,'input[data-event-choice][data-deck="main"][data-index="1"][data-event="'+
+  sample.outcome.eventId+'"][value="'+sample.outcome.choiceId+'"]')).check();
  const resultBox=page.locator('select[data-event-outcome][data-deck="main"][data-index="1"][data-event="'+
   sample.outcome.eventId+'"]');
  await resultBox.selectOption(sample.outcome.firstResult);
@@ -221,13 +222,13 @@ async function appCases(page){
  await outcomeRouteCheck(sample.outcome.firstResult);
  await resultBox.selectOption(sample.outcome.secondResult);
  await outcomeRouteCheck(sample.outcome.secondResult);
- await page.locator('input[data-event-choice][data-deck="main"][data-index="1"][data-event="'+
-  sample.outcome.eventId+'"][value=""]').check();
+ await (await control(page,'input[data-event-choice][data-deck="main"][data-index="1"][data-event="'+
+  sample.outcome.eventId+'"][value=""]')).check();
  const resetOutcome=await saved(page);
  assert.equal(resetOutcome.main.slots[1].choices[sample.outcome.eventId],undefined);
  assert.equal(resetOutcome.main.slots[1].outcomes[sample.outcome.eventId],undefined,
   'Clearing the parent choice must invalidate its previously selected outcome');
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="close"]')).click();
  // Independently exercise a real UmaSim hint record through the same GUI.
  // The source snapshot is pinned, not an assertion about the current game.
  await chooseCard(page,'main',2,sample.hint.card);
@@ -240,8 +241,8 @@ async function appCases(page){
    provider:!!summary?.providers['2']?.routes.some(r=>r.source==='hint'&&r.skillId===skillId)};
  },{cardId:sample.hint.card.id,skillId:sample.hint.skillId,key:SAVE_KEY});
  assert.deepEqual(hintAtFour,{stage:4,matched:true,provider:true});
- await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="2"]').click();
- await page.locator('select[data-stage][data-deck="main"][data-index="2"]').selectOption('0');
+ await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="2"]')).click();
+ await (await control(page,'select[data-stage][data-deck="main"][data-index="2"]')).selectOption('0');
  const hintAtZero=await page.evaluate(({cardId,key})=>{
   const model=window.UmaDemoData,core=window.UmaCore,s=JSON.parse(localStorage.getItem(key));
   const deck=s.decks.main.find(d=>d.id===s.activeDecks.main),slot=deck.slots[2];
@@ -250,7 +251,7 @@ async function appCases(page){
  },{cardId:sample.hint.card.id,key:SAVE_KEY});
  assert.equal(hintAtZero.stage,0);
  assert.deepEqual(hintAtZero.hints,sample.hint.stageZero);
- await page.locator('button[data-action="close"]').click();
+ await (await control(page,'button[data-action="close"]')).click();
   // A source-backed two-stage support event is exercised through actual
   // parent/child radio controls. Unlike a synthetic chain, both event IDs
   // must exist in the published public catalog and the pinned card roster.
@@ -287,17 +288,17 @@ async function appCases(page){
   });
   assert.ok(chain,'No actual approved parent-choice gated event was found');
   await chooseCard(page,'main',3,chain.card);
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="3"]').click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="3"]')).click();
   const parentRadio='input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
    chain.parentId+'"][value="'+chain.parentChoiceId+'"]';
   const childRadio=chain.childChoiceId?
    'input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
     chain.childId+'"][value="'+chain.childChoiceId+'"]':null;
   if(childRadio)assert.equal(await page.locator(childRadio).isDisabled(),true);
-  await page.locator(parentRadio).check();
+  await (await control(page,parentRadio)).check();
   if(childRadio){
    assert.equal(await page.locator(childRadio).isDisabled(),false);
-   await page.locator(childRadio).check();
+   await (await control(page,childRadio)).check();
   }
   const checkChain=async ()=>{
    return page.evaluate(({id,childId,skillId,key})=>{
@@ -314,13 +315,13 @@ async function appCases(page){
   assert.equal(liveChain.route,true,
    'published chained reward must emerge only when the parent selection is set');
   if(childRadio)assert.equal(liveChain.choice,chain.childChoiceId);
-  await page.locator('input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
-   chain.parentId+'"][value=""]').check();
+  await (await control(page,'input[data-event-choice][data-deck="main"][data-index="3"][data-event="'+
+   chain.parentId+'"][value=""]')).check();
   const removedChain=await checkChain();
   assert.equal(removedChain.route,false,'unselected parent must remove downstream reward');
   if(childRadio)assert.equal(removedChain.choice,null,
    'editing parent must clear previously selected downstream child');
-  await page.locator('button[data-action="close"]').click();
+  await (await control(page,'button[data-action="close"]')).click();
  // Viewport smoke is NOT an Android physical-device acceptance.
  await page.setViewportSize({width:390,height:844});
  const geometry=await page.evaluate(()=>({

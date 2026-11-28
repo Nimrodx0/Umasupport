@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const http=require('node:http');
@@ -83,11 +84,11 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.UmaDemoData.meta.reviewedEventRecords),0);
   assert.equal(await page.evaluate(()=>window.UmaDemoData.cardById['30001'].events.length),5);
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/未承認イベントの試用モード/);
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill('サポカ0');
-  await page.locator('button[data-action="set-card"][data-id="30001"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
-  await page.locator('input[data-event-choice][data-event="synthetic-30001-event-0"][value="option1"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill('サポカ0');
+  await (await control(page,'button[data-action="set-card"][data-id="30001"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'input[data-event-choice][data-event="synthetic-30001-event-0"][value="option1"]')).click();
   const selected=await page.evaluate(()=>{
    const digest=window.UmaPrivateLocalEventDigest;
    const key='uma-support-lab-runtime-umasim-v1-event-preview-local-'+digest.slice(0,16);

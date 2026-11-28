@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-077",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：UIレビューの全改善と3列×2行編成を採用する",
+      "status": "current",
+      "relation": [],
+      "note": "レビューの全改善を採用。編成カードは実ゲーム同様の3列×2行を維持。集計・保存・権利・試用分離の変更なし。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-077",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-076",
       "date": "2026-11-28",
       "heading": "2026-11-28：自動更新の外部条件確認を実質的な取得制限に絞る",
