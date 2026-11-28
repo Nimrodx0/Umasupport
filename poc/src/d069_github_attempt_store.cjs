@@ -24,7 +24,7 @@ function transition(old,next){
  }
  if(retried){if(retried!==1||changed||added.length)fail('invalid retry reservation');}
  else if(added.length){
-  if(changed||added.length>2||added.some(x=>x.status!=='reserved'||x.retry!==undefined))fail('invalid reservation');
+  if(changed||added.length>2||added.some(x=>x.status!=='reserved'||x.retry!==undefined||x.attempt&&x.attempt.count!==1))fail('invalid reservation');
  }else if(changed<1||changed>2)fail('invalid completion');
  return next;
 }
