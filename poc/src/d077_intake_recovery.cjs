@@ -5,7 +5,7 @@ const HOUR=3600000, MAX=4;
 const date=x=>typeof x==='string'&&Number.isFinite(Date.parse(x))&&new Date(x).toISOString()===x;
 const retryable=r=>!r.retry&&(r.status==='not-listed'||r.status==='uncertain'&&['network-transient','rate-limited'].includes(r.failureCode));
 const hardRefusal=r=>r.failureCode==='source-refused'||r.failureCode==='rate-limited'&&!r.attempt;
-const due=(r,now)=>r.attempt&&r.attempt.count<MAX&&(retryable(r)&&Date.parse(r.attempt.nextAt)<=Date.parse(now)||hardRefusal(r)&&!activeRefusal({rows:[r]}));
+const due=(r,now,clearances)=>r.attempt&&r.attempt.count<MAX&&(retryable(r)&&Date.parse(r.attempt.nextAt)<=Date.parse(now)||hardRefusal(r)&&!activeRefusal({rows:[r]},clearances));
 function validAttempt(r){
  const a=r.attempt;
  return a===undefined||a&&Object.keys(a).sort().join(',')==='count,nextAt,startedAt'&&Number.isInteger(a.count)&&a.count>=1&&a.count<=MAX&&date(a.startedAt)&&
