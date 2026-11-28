@@ -37,7 +37,7 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  if(!Array.isArray(open)||open.length>=100)fail('incomplete open PR list');
  if(open.some(p=>p.head?.ref?.startsWith('automation/d072-release-')||/^<!-- D072_RELEASE_PROPOSAL /.test(p.body||'')))return report('legacy-proposal-open');
  await stable();
- // Plan before a two-card write. If the combined preflight fails, isolate
+ // Plan before any write. If the combined preflight fails, isolate
  // candidates without ever retrying a possibly committed publication.
  const call=async (mode,selection=selected,routine=expectedRoutine)=>{
   const result=await appender({github,...coord,baseSha,expectedHead,mode,evidence:selection.evidence,
@@ -47,7 +47,7 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
   return result;
  };
  let preview,heldIds=[];
- if(config.mode==='plan'||selected.selectedIds.length>1){
+ {
   try{preview=await call('plan');}
   catch(error){
    await stable();
