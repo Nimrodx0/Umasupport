@@ -92,7 +92,8 @@ test('all live inline scripts compile and daily workflow has no external documen
  a.match(workflow,/daily\.mode==='disabled'\?\{attemptedIds:\[\],stopReason:'policy-disabled'/);
  const transport=fs.readFileSync(path.join(root,'poc/src/d069_card_json_transport.cjs'),'utf8');
  a.match(transport,/checkRobots\(robots,u\.pathname\)/);
- a.match(transport,/\[401,403,429,451\]/);
+ a.match(transport,/\[401,403,451\]/);
+ a.match(transport,/r.status===429/);
 });
 test('prior refusal and non-routine candidates cannot publish',async()=>{
  const f=fixture(),active={...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy};
