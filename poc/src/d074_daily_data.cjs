@@ -47,18 +47,26 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
   return result;
  };
  let preview,heldIds=[];
+ const continueAfterHeld=async ids=>{
+  const remaining={...queue,rows:queue.rows.filter(row=>!ids.includes(row.cardId))};
+  if(!remaining.rows.some(row=>row.status==='ready-for-publication-decision'))return report('candidate-validation-held',{heldIds:ids});
+  // The remaining set strictly shrinks; no retry of a failed candidate or
+  // potentially committed write within this run.
+  const next=await runDailyData({config,publicationPolicy,queue:remaining,auto,store,github,owner,repo,baseSha,expectedHead,reader,appender,rawVerifier});
+  return {...next,status:['no-pending-cards','no-routine-candidates'].includes(next.status)?'candidate-validation-held':next.status,heldIds:[...ids,...(next.heldIds??[])]};
+ };
  {
   try{preview=await call('plan');}
   catch(error){
    await stable();
-   if(selected.selectedIds.length===1)return report('candidate-validation-held',{heldIds:selected.selectedIds});
+   if(selected.selectedIds.length===1)return continueAfterHeld(selected.selectedIds);
    const good=[];
    for(const [i,id] of selected.selectedIds.entries()){
     const selection={selectedIds:[id],evidence:[selected.evidence[i]]},routine=[expectedRoutine[i]];
     try{good.push({selection,routine,preview:await call('plan',selection,routine)});}
     catch{await stable();heldIds.push(id);}
    }
-   if(!good.length)return report('candidate-validation-held',{heldIds});
+   if(!good.length)return continueAfterHeld(heldIds);
    // If both pass separately but not together, publish only the first.
    ({selection:selected,routine:expectedRoutine,preview}=good[0]);
   }
