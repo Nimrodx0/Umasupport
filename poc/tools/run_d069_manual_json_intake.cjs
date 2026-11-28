@@ -23,7 +23,7 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
  const previousRosterText=read('direct-before.txt'),currentRosterText=read('direct-current.txt'),skillText=read('direct-skills.txt');
  if(gitBlobSha(previousRosterText)!==POLICY.beforeBlob||gitBlobSha(currentRosterText)!==sourcePin.cardBlob||
     gitBlobSha(skillText)!==sourcePin.skillBlob)fail('immutable input mismatch');
- const existingCatalog=require('../data/reviewed_events.v1.json');
+ const existingCatalog=JSON.parse((await require('../src/d074_event_data_branch.cjs').readCurrent({github,...coord})).catalogText);
  const previous=emptyLedger();
  const {discovery}=planRosterFirst({previousRosterText,currentRosterText,previousLedger:previous,existingCatalog});
  const {ledger:next}=preserveOnSourceOutage({discovery,previousLedger:previous,existingCatalog,directReview:true});
@@ -40,6 +40,8 @@ async function execute({github,context,core,mode,targetText,temp=process.env.RUN
   retryApproval=matches[0];
  }
  if(mode==='plan'||mode==='observe'&&!selected.selectedIds.length)return {selection:selected,results:[],sourceRequestsPerformed:false};
+ const recovery=require('../src/d077_intake_recovery.cjs'),ledger=await store.load();
+ if(recovery.activeRefusal(ledger)||recovery.cooldown(ledger,new Date().toISOString()))fail('active source stop');
  const result=await runBatch({plan,targetIds,sourcePin,policy,existingCatalog,skillText,store,retryApproval,now:new Date().toISOString().replace(/\.\d{3}Z$/,'Z'),
   observeBatch:createObserver({manualAuthorized:true,knownIds:existingCatalog.cards.map(c=>c.cardId)})});
  // Prose-free review packets only, after successful completion CAS.

@@ -51,9 +51,11 @@ async function buildReviewQueue({store,pendingIds,existingCatalog,loadSkillText}
   let routine=null;
   if(ready){
    const input={dataKind:'d073-source-title-input',schemaVersion:1,cardId,packetSha256:digest(packet),titles:null,chainEvidence:require('./d073_json_adoption.cjs').ordinaryChainEvidence(packet)};
+   try{
    const {candidate,receipt}=require('./d073_json_adoption.cjs').prepareSourceCandidate({packet,ledger,input,skillText:registries.get(row.sourcePin.skillBlob).text,existingCatalog});
    routine={input,receiptSha256:digest(receipt),eventDigestsSha256:digest({events:candidate.eventDigests}),events:candidate.eventDigests,
     nonSkillOmissionCount:candidate.omissions.length,publicationApproved:false};
+   }catch{rows.push({...observed,status:'candidate-validation-held',reasonCodes:['candidate-preparation-failed']});continue;}
   }
   rows.push({...observed,adoption,sourceCandidateInputReady:ready,...(routine?{routine}:{}),
    status:ready?'ready-for-publication-decision':'ready-for-independent-review',baseCatalogStatus:baseStatus,

@@ -22,7 +22,7 @@ function validatePolicy(policy,today=new Date().toISOString().slice(0,10)) {
 function derive({policy,items,ledger,today=new Date().toISOString().slice(0,10)}={}){
  verify(ledger);
  validatePolicy(policy,today);
- if(ledger.rows.some(r=>r.failureCode==='source-refused'))fail('prior source refusal; re-evaluation required');
+ if(require('./d077_intake_recovery.cjs').activeRefusal(ledger))fail('prior source refusal; re-evaluation required');
  if(!Array.isArray(items)||items.length<1||items.length>2||new Set(items.map(x=>x?.packet?.cardId)).size!==items.length)fail('batch scope');
  const policySha=digest(policy);
  return items.map(({packet,input,prepared:{candidate,receipt}})=>{

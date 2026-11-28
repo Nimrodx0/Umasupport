@@ -16,6 +16,8 @@
 
 ## 現在の到達点と残る課題
 
+**D-077 / W3.5 障害復帰・訂正（2026-11-28）**：レビューを受け、カード単位の永続確定・24/48/96時間以上の最大3回再試行、429待機、明示拒否の履歴付き解除（解除後は残り回数内で再取得）、適用User-agentとAllow/Disallow判定、異常Issue、公開受入未完の再開、個別訂正workflowを追加。旧履歴・公開DB不変。実新カードなし、実増分・実訂正・公開後の失敗復帰は未検証。CI・Pagesを本PRで確認する。詳細は[更新運用](../how-to/event-data-branch-update.md#d-077-障害復帰と明示訂正)。
+
 **D-076 / W3.5 自動更新の簡素化（2026-11-28）**：利用者承認に従い5文書指紋監視・初回基準審査・専用採取workflowを撤廃。無期限共通方針を維持し、日次publish・専用公開許可true、取得側公開禁止false。GameToraの既存robots対象パス判定・拒否履歴・JSON検証・個別疑義・内容SHA・非破壊・公開Raw／ブラウザ受入を維持。対象0件では通信なし。具体的権利問題は専用公開許可false、取得停止は日次disabled/nullで対応。既存DB・アプリ資産不変。[#596](https://github.com/Nimrodx0/Umasupport/pull/596) main `e20032b` のCore・文書・Pages・[日次](https://github.com/Nimrodx0/Umasupport/actions/runs/46104283829) 成功。日次publishで対象0・通信0・書込0、revision1（564カード2521イベント）。実カード増分は未検証。追加の隔離連結試験では合成名簿とHTTP応答・Git refを使い、既存120カード、通常1件／連続3件／未掲載1枚の新規取得・台帳・審査・plan・publish・Raw照合・再実行を一体検証する。実外部通信や実カードの検証とは区別する。D-075の旧監視は以下の履歴のみ。
 
 **D-075 / W3.5 無期限共通方針と変更検知（2026-11-28）**：利用者が無期限・変更時再審査を採用。schemaVersion:2／validThrough:nullの限定共通方針をplanで設定。新規取得・正常公開候補の直前に固定公開文書の指紋を比較、基準未登録・差分・取得不能・拒否はIssue保留、明示再審査まで停止。対象0件の日は通信なし。初回基準採取は別の読取workflow、採取だけでは承認しない。専用公開許可false、公開DB・実行資産不変。PR #594 main `26e4cb6` 統合、PR Core/文書CI成功。初回指紋採取 [run 46051690350](https://github.com/Nimrodx0/Umasupport/actions/runs/46051690350) は5文書全件成功（採取のみ、承認なし。取得済みの5指紋はobservedとしてplanモードの比較基準に登録、publishはreviewedを別途要求）。日次run 46051690574 は新規対象0・通信0・公開DB不変だがhandoffの余分な閉じ括弧で失敗。構文修正と全inline script構文回帰を追加。修正#595 main `3fdcf87` のPR CI成功、[本番日次](https://github.com/Nimrodx0/Umasupport/actions/runs/46052208537) 成功・対象0件。D-076で基準審査と文書監視は廃止。

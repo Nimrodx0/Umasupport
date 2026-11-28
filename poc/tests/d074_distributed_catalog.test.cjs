@@ -64,3 +64,12 @@ test('baseline exact manifest and catalog bytes match the already approved main 
  a.equal(api.manifestShape(m),m);
  a.throws(()=>api.manifestShape({...m,catalogSha256:'0'.repeat(64)}),/版情報/);
 });
+
+test('newer reviewed revision may withdraw events; an old revision cannot replace it',async()=>{
+ const f=fixture();await api.loadDistributed(f.args);
+ const corrected=structuredClone(catalog);corrected.cards[0].events=[];
+ f.state.body=JSON.stringify(corrected);f.state.m=makeManifest(3,f.state.body);
+ const r=await api.loadDistributed(f.args);a.equal(r.mode,'online');a.equal(r.revision,3);a.deepEqual(r.catalog,corrected);
+ f.state.body=text;f.state.m=makeManifest(2,text);
+ const old=await api.loadDistributed(f.args);a.equal(old.mode,'cached');a.equal(old.revision,3);a.deepEqual(old.catalog,corrected);
+});

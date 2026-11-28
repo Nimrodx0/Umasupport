@@ -115,7 +115,7 @@ function manifestShape(m){
     (m.revision===1?m.previousManifestCommit!==null:typeof m.previousManifestCommit!=='string'||!SHA.test(m.previousManifestCommit))||
     ![m.catalogSha256,m.approvalSha256,m.catalogContentSha256,m.approvalContentSha256].every(x=>typeof x==='string'&&HASH.test(x))||
     !Number.isSafeInteger(m.cardCount)||m.cardCount<INITIAL_COUNTS.cards||
-    !Number.isSafeInteger(m.eventCount)||m.eventCount<INITIAL_COUNTS.events||
+    !Number.isSafeInteger(m.eventCount)||m.eventCount<0||
     (m.revision===1&&(m.catalogSha256!==INITIAL_CATALOG_SHA||m.cardCount!==INITIAL_COUNTS.cards||m.eventCount!==INITIAL_COUNTS.events)))
   throw Error('イベント配信版情報が不正または非対応');
  return m;
@@ -173,7 +173,7 @@ async function loadDistributed({
  try{
   const online=await withTimeout(async signal=>{
    const m=manifestShape(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(await get(MANIFEST_URL,16384,signal))));
-   if(cached&&(m.cardCount<cached.m.cardCount||m.eventCount<cached.m.eventCount||m.revision<cached.m.revision||m.revision===cached.m.revision&&
+   if(cached&&(m.cardCount<cached.m.cardCount||m.revision<cached.m.revision||m.revision===cached.m.revision&&
       Object.keys(m).some(k=>m[k]!==cached.m[k])))throw Error('配信版の巻き戻り・同一版不一致');
    // If the already verified bytes are exactly the same, no second network
    // download is necessary. The current model was revalidated above.

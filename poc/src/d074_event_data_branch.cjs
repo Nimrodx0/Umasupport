@@ -59,6 +59,15 @@ function access({github,owner,repo}={}){
    if(prior.manifest.revision!==m.revision-1)fail('revision discontinuity');
    const msg=cur.snapshotMessage;
    if(typeof msg!=='string'||Buffer.byteLength(msg)>60000)fail('append receipt message');
+   const correctionMatch=/^D077 reviewed data correction ([a-f0-9]{64})\n\n([\s\S]+)$/.exec(msg);
+   if(correctionMatch){
+    const p=JSON.parse(correctionMatch[2]);
+    if(!exact(p,'schemaVersion,dataKind,previousManifestCommit,revision,baseSha,bundle')||p.schemaVersion!==1||p.dataKind!=='d077-reviewed-data-correction'||
+       p.previousManifestCommit!==prior.head||p.revision!==m.revision||p.baseSha!==m.codeCommit||digest(p)!==correctionMatch[1]||
+       cur.manifestMessage!=='D077 data manifest '+correctionMatch[1])fail('correction receipt coordinates');
+    const result=require('./d077_data_correction.cjs').correction({catalog:JSON.parse(prior.catalogText),approvals:JSON.parse(prior.approvalsText),bundle:p.bundle});
+    if(digest(result.catalog)!==m.catalogContentSha256||digest(result.approvals)!==m.approvalContentSha256)fail('correction receipt mismatch');
+   }else{
    const match=/^D074 reviewed data append ([a-f0-9]{64})\n\n([\s\S]+)$/.exec(msg);
    if(!match||cur.manifestMessage!=='D074 data manifest '+match[1])fail('append receipt message');
    const p=JSON.parse(match[2]),r=p?.receipt;
@@ -72,6 +81,7 @@ function access({github,owner,repo}={}){
    const reconstructed=require('./d072_release_proposal.cjs').validateAppend({old:JSON.parse(prior.catalogText),
     approvals:JSON.parse(prior.approvalsText),result,baseSha:m.codeCommit});
    if(digest(reconstructed)!==digest(r))fail('append receipt mismatch');
+   }
   }
   const {snapshotMessage,manifestMessage,...value}=cur;return value;
  }
@@ -154,6 +164,34 @@ async function appendReviewed({github,owner,repo,baseSha,expectedHead,mode='plan
  if(updated.data.object?.sha!==head||await getRef(REF)!==head)fail('published ref not confirmed');
  return {...summary,status:'published-ref',head,snapshotCommit,manifest:m,branchWritten:true};
 }
+// Separate, explicit reviewed correction path; normal appends remain immutable.
+async function correctReviewed({github,owner,repo,baseSha,expectedHead,mode='plan',bundle,
+ preflight=async({catalog,approvals})=>require('./d072_github_reviewed_intake.cjs').createReviewedIntake({github,owner,repo}).verifyCurrent({existingCatalog:catalog,existingApprovals:approvals})}={}){
+ if(!SHA.test(baseSha||'')||!SHA.test(expectedHead||'')||!['plan','publish'].includes(mode))fail('correction scope');
+ const {g,coord,getRef,main,checkExisting,makeTree,makeCommit,makeBlob}=access({github,owner,repo});
+ const stable=async()=>{await main(baseSha);if(await getRef(REF)!==expectedHead)fail('data head drift');};
+ await stable();
+ const old=await checkExisting(expectedHead);
+ const result=require('./d077_data_correction.cjs').correction({catalog:JSON.parse(old.catalogText),approvals:JSON.parse(old.approvalsText),bundle});
+ await preflight(result);
+ const proof={schemaVersion:1,dataKind:'d077-reviewed-data-correction',previousManifestCommit:expectedHead,revision:old.manifest.revision+1,baseSha,bundle};
+ const proofSha=digest(proof),message='D077 reviewed data correction '+proofSha+'\n\n'+JSON.stringify(proof);
+ if(Buffer.byteLength(message)>60000)fail('correction receipt too large');
+ const json=x=>JSON.stringify(x,null,2)+'\n',catalogText=json(result.catalog),approvalsText=json(result.approvals);
+ facts(catalogText,approvalsText);
+ const summary={status:'planned-correction',baseSha,previousHead:expectedHead,revision:proof.revision,changedEventKeys:result.changedEventKeys,receiptSha256:proofSha,branchWritten:false,mainWritten:false,pagesDeployed:false,publicRawVerified:false};
+ await stable();if(mode==='plan')return summary;
+ const entries=[await makeBlob(CATALOG,catalogText),await makeBlob(APPROVALS,approvalsText)];
+ const snapshotCommit=await makeCommit(await makeTree(entries),expectedHead,message);
+ const m=manifest({catalogText,approvalsText,snapshotCommit,codeCommit:baseSha,revision:proof.revision,previousManifestCommit:expectedHead});
+ const head=await makeCommit(await makeTree([...entries,await makeBlob(MANIFEST,json(m))]),snapshotCommit,'D077 data manifest '+proofSha);
+ const checked=await checkExisting(head);
+ if(digest(checked.manifest)!==digest(m)||checked.catalogText!==catalogText||checked.approvalsText!==approvalsText)fail('prepared correction mismatch');
+ await stable();
+ const updated=await g.updateRef({...coord,ref:REF,sha:head,force:false});
+ if(updated.data.object?.sha!==head||await getRef(REF)!==head)fail('published ref not confirmed');
+ return {...summary,status:'published-correction',head,snapshotCommit,manifest:m,branchWritten:true};
+}
 async function verifyPublicRaw({owner,repo,report,fetchImpl=fetch,wait=ms=>new Promise(r=>setTimeout(r,ms)),attempts=6}={}){
  if(report?.branchWritten!==true||!SHA.test(report.head||'')||!report.manifest||!Number.isSafeInteger(attempts)||attempts<1||attempts>6)fail('public verification scope');
  const root='https://raw.githubusercontent.com/'+owner+'/'+repo+'/';
@@ -171,4 +209,4 @@ async function verifyPublicRaw({owner,repo,report,fetchImpl=fetch,wait=ms=>new P
   }catch(e){if(i===attempts-1)throw Error('Ref published but public Raw verification failed; inspect before retry: '+e.message);await wait(10000);}
  }
 }
-module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed,verifyPublicRaw};
+module.exports={REF,CATALOG,APPROVALS,MANIFEST,manifest,verifySnapshot,bootstrap,readCurrent,appendReviewed,correctReviewed,verifyPublicRaw};
