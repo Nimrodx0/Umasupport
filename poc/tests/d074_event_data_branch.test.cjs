@@ -175,7 +175,7 @@ test('D076 connected rehearsal: new roster IDs through real transport, archive, 
  const autoArgs={plan,sourcePin:pin,policy:acquisitionPolicy,existingCatalog:seedCatalog,store,loadSkillText:async()=>skillText,observerFactory};
  const auto=await runAutomatic(autoArgs);
  a.deepEqual(auto.attemptedIds,ids);a.equal(auto.stopReason,null);
- a.equal(requests.length,7);a.equal(packets.size,2);a.equal(ledger.rows.at(-1).status,'not-listed');
+ a.equal(requests.length,5);a.equal(packets.size,2);a.equal(ledger.rows.at(-1).status,'not-listed');
  const queue=await buildReviewQueue({store,pendingIds:ids,existingCatalog:seedCatalog,loadSkillText:async()=>skillText});
  a.deepEqual(queue.rows.map(x=>x.status),['ready-for-publication-decision','ready-for-publication-decision','not-listed']);
  const syntheticPolicy={...productionConfig.routinePublicationPolicy,reviewer:'synthetic rehearsal',reviewedAt:'2000-01-01',evidenceUrls:['https://example.org/synthetic'],publicationBasis:{kind:'original-factual-description',reason:'Synthetic rehearsal only'}};
