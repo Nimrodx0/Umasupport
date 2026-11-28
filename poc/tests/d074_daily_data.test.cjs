@@ -117,3 +117,13 @@ test('bad candidate preflight does not prevent independently valid card publicat
  a.equal(result.status,'published-raw-verified');
  a.deepEqual(calls,[['plan',['39997','39998']],['plan',['39997']],['plan',['39998']],['publish',['39998']]]);
 });
+
+test('two consecutive held candidates do not starve a later valid candidate',async()=>{
+ const f=fixture(),appender=async x=>{
+  if(x.evidence.some(v=>v.cardId!=='39999'))throw Error('candidate drift');
+  return f.args.appender(x);
+ };
+ const result=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy,appender});
+ a.deepEqual(result.heldIds,['39997','39998']);a.deepEqual(result.selectedIds,['39999']);
+ a.equal(result.status,'published-raw-verified');
+});
