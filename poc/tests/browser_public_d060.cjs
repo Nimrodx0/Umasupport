@@ -99,7 +99,7 @@ async function main(){
    const total=model.skills.length,{groups,reasons,accepted}=expectedGroups(labels,records,model.skills);a(accepted>0);a.equal(accepted+reasons.missingOrAmbiguous+reasons.changedStructure,404);
    const status='検証済み '+accepted+'件 / 変更・未照合 '+(404-accepted)+'件';
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
-   const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
+   const saved=await snapshot(),comparison=await (await control(page,'#table-region')).innerText();
    const openHealth=async()=>{await (await control(page,'header [data-action="source-health"]')).click();};
    const closeModal=async()=>{await (await control(page,'.modal-head [data-action="close"]')).click();};
    const healthStatus=page.locator('#source-status-suitability .source-health-state');
@@ -115,8 +115,8 @@ async function main(){
    a.equal(cardId,await page.evaluate(()=>UmaDemoData.cards.map(c=>c.id).sort((a,b)=>Number(b)-Number(a))[0]));await card.click();await page.locator('#card-skill-list').waitFor();
    await (await control(page,'#library-stage')).selectOption('0');
    const expectedIds=await page.evaluate(id=>{const c=UmaDemoData.cardById[id];return [...new Set([...(c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['0']??c.hints??[]):[]),...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)])].filter(id=>UmaDemoData.skillById[id]).sort();},cardId);
-   a.deepEqual(await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort()),expectedIds);await page.getByRole('button',{name:'戻る',exact:true}).click();await closeModal();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
-   await page.locator('[data-action="pick"]').first().click();for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);await (await control(page,'#picker-sort')).selectOption('new-skills-desc');
+   a.deepEqual(await page.locator('[data-card-skill-id]').evaluateAll(rs=>rs.map(r=>r.dataset.cardSkillId).sort()),expectedIds);await page.getByRole('button',{name:'戻る',exact:true}).click();await closeModal();a.equal(await snapshot(),saved);a.equal(await (await control(page,'#table-region')).innerText(),comparison);
+   await (await control(page,'[data-action="pick"][data-deck="main"][data-index="0"]')).click();for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);await (await control(page,'#picker-sort')).selectOption('new-skills-desc');
    const expectedCounts=await page.evaluate(()=>Object.fromEntries(UmaDemoData.cards.map(c=>{const hints=c.sourceStatus?.startsWith('verified_hints')?(c.hintsByStage?.['4']??c.hints??[]):[];const ids=new Set([...hints,...UmaCardSearch.approvedEventSkillIds(c,UmaDemoData)].filter(id=>UmaDemoData.skillById[id]&&UmaDemoData.skillById[id].tier!=='negative'));return [c.id,ids.size]})));
    const sortedCounts=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,n:Number(r.querySelector('[data-new-skills]').dataset.newSkills)})));
    for(let i=0;i<sortedCounts.length;i++){const x=sortedCounts[i];a.equal(x.n,expectedCounts[x.id]);if(i)a(sortedCounts[i-1].n>=x.n);}
@@ -125,7 +125,7 @@ async function main(){
    const shown=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>({id:r.dataset.id,tier:r.querySelector('[data-picker-fit-tier]')?.textContent})));a(shown.length);
    for(const r of shown){const v=expected[r.id],t=v.matchingByTier;a.equal(r.tier,'金 '+t.gold+' · 白 '+t.white+' · その他 '+t.other);a.equal(t.gold+t.white+t.other,v.matching);a.equal(v.rows.filter(x=>x.scopePending&&x.matching).length,0);}
    await (await control(page,'#picker-sort')).selectOption('fit-count-desc');const ids=await page.locator('.picker-card').evaluateAll(rs=>rs.map(r=>r.dataset.id));for(let i=1;i<ids.length;i++)a(expected[ids[i-1]].matching>=expected[ids[i]].matching);
-   await (await control(page,'.modal-head [data-action="close"]')).click();a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);
+   await (await control(page,'.modal-head [data-action="close"]')).click();a.equal(await snapshot(),saved);a.equal(await (await control(page,'#table-region')).innerText(),comparison);
    // Exercise a real nonempty deck, not just the untouched default settings.
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="0"]')).click();
    const first=page.locator('.picker-card').first(),id=await first.getAttribute('data-id');a(id);await first.click();
@@ -177,9 +177,9 @@ async function main(){
    await (await control(page,'[data-picker-fit-axis="ground_type"]')).selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
    await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('');await verifyNew({});
    await closeModal();a.equal(await snapshot(),beforeRanking);
-   const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
+   const populated=await snapshot(),populatedComparison=await (await control(page,'#table-region')).innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
-   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
+   a.equal(await snapshot(),populated);a.equal(await (await control(page,'#table-region')).innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
    for(const [n,v] of training)a.equal(await (await axis('main',n)).inputValue(),v);
    a.equal(await (await axis('inherit','running_style')).inputValue(),'4');
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
@@ -188,9 +188,9 @@ async function main(){
    const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
    await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();
    await (await control(page,'header [data-action="catalog-toggle"]')).click();await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('自動取得失敗'),{timeout:40000});await (await control(page,'#catalog-suitability')).selectOption('undetermined');const now=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await page.locator('.catalog-count').innerText(),now.filter(s=>productGroup(s,new Map())==='undetermined').length+' / '+now.length+' 件');
-   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);
+   a.equal(await snapshot(),populated);a.equal(await (await control(page,'#table-region')).innerText(),populatedComparison);
    await page.unroute(blocked);await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
-   a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);a.deepEqual(errors,[]);
+   a.equal(await snapshot(),populated);a.equal(await (await control(page,'#table-region')).innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);a.deepEqual(errors,[]);
    console.log('PAGES_D060_PUBLIC='+JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:model.cards,skills:total,liveSkillSHA256:sha(live),liveSupportSHA256:sha(support),publicSHA256:sha(pub),accepted,skipped:404-accepted,reasons,general:groups.general.length,targeted:groups.targeted.length,undetermined:groups.undetermined.length,explicitOnly:groups.explicitOnly.length,scopeUnknown:groups.scopeUnknown.length,outside:groups.outside.length}));
    await page.close();
   }
