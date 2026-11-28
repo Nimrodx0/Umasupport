@@ -90,6 +90,7 @@ function createObserver({fetchImpl=fetch,sleep=wait,knownIds,manualAuthorized=fa
    if(!r.body?.getReader)fail('response body');
    const rd=r.body.getReader(),chunks=[];let n=0;
    try{while(true){const {done,value}=await rd.read();if(done)break;n+=value.length;if(n>cap)fail('response cap');chunks.push(Buffer.from(value));}}
+   catch(e){if(e instanceof TypeError||['TimeoutError','AbortError'].includes(e?.name))throw new TransportFailure('network-transient');throw e;}
    finally{await rd.cancel().catch(()=>{});}
    return Buffer.concat(chunks).toString('utf8');
   }
