@@ -7,9 +7,6 @@ const config=require('../config/d074-daily-data.v1.json');
 const acquisitionPolicy=require('../config/direct-event-intake-policy.v1.json');
 const publicationPolicy=require('../config/d074-publication-policy.v1.json');
 const routinePolicy={schemaVersion:2,scope:'D073-normal-random-skill-path-identifying-titles-only',reviewer:'synthetic fixture',reviewedAt:'2000-01-01',validThrough:null,accessConditionsReviewed:true,publicationApproved:true,evidenceUrls:['https://example.org/synthetic'],publicationBasis:{kind:'original-factual-description',reason:'Synthetic regression only'}};
-const {DOCS}=require('../src/d075_conditions_monitor.cjs');
-const conditionConfig={schemaVersion:1,baseline:{policySha256:digest(routinePolicy),reviewStatus:'reviewed',captureRun:'1',documents:DOCS.map(([id])=>({id,sha256:'1'.repeat(64)}))}};
-const conditions={status:'verified',policySha256:digest(routinePolicy),baselineSha256:digest(conditionConfig.baseline)};
 const base='a'.repeat(40),head='b'.repeat(40),hash='c'.repeat(64);
 function fixture(){
  const catalog={schemaVersion:1,cards:[]},ids=['39999','39997','39998'];
@@ -21,18 +18,17 @@ function fixture(){
  const calls=[],state={main:base,head,open:[],catalog};
  const github={rest:{git:{getRef:async({ref})=>{calls.push(ref);return {data:{object:{sha:ref===REF?state.head:state.main}}};}},pulls:{list:async()=>({data:state.open})}}};
  const args={config:{schemaVersion:1,mode:'plan',routinePublicationPolicy:structuredClone(routinePolicy)},publicationPolicy,
-  conditionConfig,checkConditions:async()=>conditions,
   queue,auto:{attemptedIds:[],stopReason:null,publicationApproved:false},store:{load:async()=>structuredClone(ledger)},github,owner:'o',repo:'r',baseSha:base,expectedHead:head,
   reader:async()=>({head:state.head,catalogText:JSON.stringify(state.catalog)}),appender:async x=>{calls.push(x);return {baseSha:base,previousHead:head,newCardIds:x.evidence.map(v=>v.cardId),mainWritten:false,pagesDeployed:false,branchWritten:x.mode==='publish',receiptSha256:hash,revision:2,head:'9'.repeat(40)};},
   rawVerifier:async({report})=>{calls.push('raw');return {...report,publicRawVerified:true};}};
  return {args,state,queue,ledger,calls};
 }
-test('production default disabled; publication flag independently prevents writes',async()=>{
- const f=fixture();a.equal(config.mode,'plan');a.equal(config.routinePublicationPolicy.schemaVersion,2);a.equal(config.routinePublicationPolicy.validThrough,null);
- a.deepEqual(publicationPolicy,{schemaVersion:1,automaticPublicationAllowed:false});
+test('production publish enabled; independent flag still prevents writes',async()=>{
+ const f=fixture();a.equal(config.mode,'publish');a.equal(config.routinePublicationPolicy.schemaVersion,2);a.equal(config.routinePublicationPolicy.validThrough,null);
+ a.deepEqual(publicationPolicy,{schemaVersion:1,automaticPublicationAllowed:true});
  a.equal(acquisitionPolicy.automaticPublicationAllowed,false);
  a.equal((await runDailyData({...f.args,config:{schemaVersion:1,mode:'disabled',routinePublicationPolicy:null}})).status,'disabled');
- a.equal((await runDailyData({...f.args,config:{...f.args.config,mode:'publish'}})).status,'publication-disabled-by-policy');
+ a.equal((await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy:{schemaVersion:1,automaticPublicationAllowed:false}})).status,'publication-disabled-by-policy');
  a.deepEqual(f.calls,[]);
 });
 test('daily plan selects at most two, binds exact candidate receipts; publish requires Raw verification',async()=>{
@@ -72,20 +68,38 @@ test('publication configuration is distinct from intake and validated even with 
  a.match(workflow,/runDailyData\(\{config,publicationPolicy,/);
 });
 
-test('D075 active daily publication requires a verified policy-bound baseline',async()=>{
- const f=fixture(),active={...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy:{...publicationPolicy,automaticPublicationAllowed:true}};
- await a.rejects(runDailyData({...active,checkConditions:undefined}),/preflight required/);
- for(const report of [{status:'document-changed'},{status:'verified',policySha256:'0'.repeat(64),baselineSha256:conditions.baselineSha256}]){
-  const r=await runDailyData({...active,checkConditions:async()=>report});a.equal(r.status,'external-conditions-held');a.equal(r.branchWritten,false);
- }
- const r=await runDailyData({...active,conditionConfig:{schemaVersion:1,baseline:null},checkConditions:async()=>({status:'baseline-unreviewed'})});a.equal(r.status,'external-conditions-held');
- a.ok(f.calls.every(x=>typeof x==='string'));
+test('indefinite common policy stays valid, legacy expiry remains enforced',()=>{
+ const {validatePolicy}=require('../src/d073_routine_publication_policy.cjs');
+ a.equal(validatePolicy(config.routinePublicationPolicy,'2099-01-01'),config.routinePublicationPolicy);
+ a.throws(()=>validatePolicy({...routinePolicy,schemaVersion:1,validThrough:'2026-11-28'},'2026-11-29'),/explicit valid/);
 });
-
-test('observed live baseline can plan but cannot publish even with the publication switch',async()=>{
- const f=fixture(),conditionConfig={schemaVersion:1,baseline:{...f.args.conditionConfig.baseline,reviewStatus:'observed'}};
- const checkConditions=async()=>({...conditions,baselineSha256:digest(conditionConfig.baseline)});
- a.equal((await runDailyData({...f.args,conditionConfig,checkConditions})).status,'planned');
- const r=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy:{...publicationPolicy,automaticPublicationAllowed:true},conditionConfig,checkConditions});
- a.equal(r.status,'external-conditions-held');a.equal(r.branchWritten,false);
+test('all live inline scripts compile and daily workflow has no external document baseline gate',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const root=path.join(__dirname,'../..'),workflow=fs.readFileSync(path.join(root,'.github/workflows/derived-github-pending-intake.yml'),'utf8');
+ const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+ const lines=workflow.split('\n');let n=0;
+ for(let i=0;i<lines.length;i++){
+  if(!/^\s*script: \|\s*$/.test(lines[i]))continue;
+  const indent=lines[i].match(/^\s*/)[0].length,body=[];
+  for(let j=i+1;j<lines.length;j++){
+   if(lines[j].trim()&&lines[j].match(/^\s*/)[0].length<=indent)break;
+   body.push(lines[j].slice(indent+2));
+  }
+  a.doesNotThrow(()=>new AsyncFunction('github','context','core',body.join('\n')),'script line '+(i+1));n++;
+ }
+ a.ok(n>0);
+ a.doesNotMatch(workflow,/d075-condition-baseline|d075_conditions_monitor|verifyConditions|umamusume\.jp|privacy-policy|docs\/cla/);
+ a.match(workflow,/daily\.mode==='disabled'\?\{attemptedIds:\[\],stopReason:'policy-disabled'/);
+ const transport=fs.readFileSync(path.join(root,'poc/src/d069_card_json_transport.cjs'),'utf8');
+ a.match(transport,/checkRobots\(robots,u\.pathname\)/);
+ a.match(transport,/\[401,403,429,451\]/);
+});
+test('prior refusal and non-routine candidates cannot publish',async()=>{
+ const f=fixture(),active={...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy};
+ f.ledger.rows.push({cardId:'39996',sourcePin:{commit:'d'.repeat(40),cardBlob:'e'.repeat(40),skillBlob:'f'.repeat(40)},status:'uncertain',packetSha256:null,failureCode:'source-refused'});
+ a.equal((await runDailyData(active)).status,'source-refused');
+ f.ledger.rows.pop();
+ f.queue.rows.forEach(r=>{r.status='held';});
+ a.equal((await runDailyData(active)).status,'no-routine-candidates');
+ a.ok(f.calls.every(x=>typeof x==='string'));
 });

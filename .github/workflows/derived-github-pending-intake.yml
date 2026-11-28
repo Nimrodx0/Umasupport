@@ -28,9 +28,6 @@ on:
       - 'poc/src/d074_event_data_branch.cjs'
       - 'poc/config/d074-daily-data.v1.json'
       - 'poc/config/d074-publication-policy.v1.json'
-      - 'poc/config/d075-condition-baseline.v1.json'
-      - 'poc/src/d075_conditions_monitor.cjs'
-      - 'poc/tests/d075_conditions_monitor.test.cjs'
       - 'poc/tests/d074_daily_data.test.cjs'
       - 'poc/src/d073_routine_publication_policy.cjs'
       - 'poc/config/d073-daily-proposal.v1.json'
@@ -67,7 +64,7 @@ jobs:
           node-version: '22'
       - name: Verify metadata-only ledger and replay logic
         run: |
-          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d073_daily_proposal.test.cjs poc/tests/d074_daily_data.test.cjs poc/tests/d074_event_data_branch.test.cjs poc/tests/d075_conditions_monitor.test.cjs
+          node --test poc/tests/derived_github_pending_ledger.test.cjs poc/tests/direct_pending_review.test.cjs poc/tests/d069_json_attempt_ledger.test.cjs poc/tests/d069_github_attempt_store.test.cjs poc/tests/d073_daily_proposal.test.cjs poc/tests/d074_daily_data.test.cjs poc/tests/d074_event_data_branch.test.cjs
       - name: Read verified authoritative event snapshot
         uses: actions/github-script@v7
         with:
@@ -178,22 +175,7 @@ jobs:
             if(await ref('heads/main')!==context.sha||await ref(REF)!==snapshot.head)throw Error('Code or data head drift before acquisition');
             const catalog=JSON.parse(catalogText);
             const daily=require('./poc/config/d074-daily-data.v1.json');
-            const conditionConfig=require('./poc/config/d075-condition-baseline.v1.json');
-            const ledger=await attemptStore.load();
-            const unattempted=require('./poc/src/d069_json_attempt_ledger.cjs').excludeAttempted(basePlan,ledger);
-            let conditions=null;
-            const verifyConditions=async()=>{
-              if(conditions===null){
-                if(daily.mode==='disabled'){conditions={status:'policy-disabled'};return conditions;}
-                require('./poc/src/d073_routine_publication_policy.cjs').validatePolicy(daily.routinePublicationPolicy);
-                conditions=await require('./poc/src/d075_conditions_monitor.cjs').checkConditions({config:conditionConfig,policy:daily.routinePublicationPolicy,mode:daily.mode,github,...context.repo});
-                core.info('D075_CONDITIONS='+JSON.stringify(conditions));
-              }
-              return conditions;
-            };
-            const priorRefused=ledger.rows.some(r=>r.failureCode==='source-refused');
-            const hold=unattempted.eligibleIds.length>0&&!priorRefused&&(await verifyConditions()).status!=='verified';
-            const auto=hold?{attemptedIds:[],stopReason:'external-conditions-held',sourceRequestsPerformed:false,publicationApproved:false}:await require('./poc/src/d072_automatic_json_intake.cjs').runAutomatic({
+            const auto=daily.mode==='disabled'?{attemptedIds:[],stopReason:'policy-disabled',sourceRequestsPerformed:false,publicationApproved:false}:await require('./poc/src/d072_automatic_json_intake.cjs').runAutomatic({
               plan:basePlan,sourcePin:{commit:pin.skillCommit,cardBlob:pin.cardBlob,skillBlob:pin.skillBlob},
               policy,existingCatalog:catalog,store:attemptStore,loadSkillText:async()=>{
                 const r=await github.rest.git.getBlob({owner:'mee1080',repo:'umasim',file_sha:pin.skillBlob});
@@ -213,8 +195,7 @@ jobs:
               }
             });
             core.info('D072_OFFLINE_REVIEW_QUEUE='+JSON.stringify(reviewQueue));
-            if(!priorRefused&&auto.stopReason===null&&daily.mode!=='disabled'&&reviewQueue.rows.some(r=>r.status==='ready-for-publication-decision'&&r.sourceCandidateInputReady===true&&!ledger.rows.find(x=>x.cardId===r.cardId)?.retry))await verifyConditions();
-            fs.writeFileSync(temp+'/d073-handoff.json',JSON.stringify({queue:reviewQueue,auto,conditions}));
+            fs.writeFileSync(temp+'/d073-handoff.json',JSON.stringify({queue:reviewQueue,auto}));
             const owner=context.repo.owner,repo=context.repo.repo;
             const title='New support cards pending GameTora-derived event intake';
             core.info('NEW_CARD_INTAKE_SUMMARY='+JSON.stringify(summary));
@@ -299,10 +280,10 @@ jobs:
             const config=require('./poc/config/d074-daily-data.v1.json');
             const publicationPolicy=require('./poc/config/d074-publication-policy.v1.json');
             const t=process.env.RUNNER_TEMP;
-            const {queue,auto,conditions}=JSON.parse(fs.readFileSync(t+'/d073-handoff.json','utf8'));
+            const {queue,auto}=JSON.parse(fs.readFileSync(t+'/d073-handoff.json','utf8'));
             const snapshot=JSON.parse(fs.readFileSync(t+'/d074-snapshot.json','utf8'));
             const report=await runDailyData({config,publicationPolicy,queue,auto,github,...context.repo,baseSha:context.sha,
-              expectedHead:snapshot.head,store:createStore({github,...context.repo}),conditionConfig:require('./poc/config/d075-condition-baseline.v1.json'),checkConditions:async()=>conditions});
+              expectedHead:snapshot.head,store:createStore({github,...context.repo})});
             core.info('D074_DAILY_DATA='+JSON.stringify(report));
             if(report.branchWritten&&report.publicRawVerified)core.setOutput('published_head',report.head);
             await core.summary.addHeading('Routine data handoff')
