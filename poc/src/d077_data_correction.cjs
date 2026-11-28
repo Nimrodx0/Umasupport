@@ -29,7 +29,7 @@ function correction({catalog,approvals,bundle}){
   verifyRelease({schemaVersion:1,cards:[{...replacement,events:replacement.events.filter(e=>changed.has(key(card.cardId,e.id)))}]},{schemaVersion:1,entries:bundle.approvals});
  }
  const entries=[...approvals.entries.filter(x=>!changed.has(key(x.cardId,x.eventId))),...structuredClone(bundle.approvals)];
- const oldIndividual=new Set(approvals.entries.map(x=>key(x.cardId,x.eventId))),newIndividual=new Set(entries.map(x=>key(x.cardId,x.eventId)));
+ const oldIndividual=new Set(approvals.entries.map(x=>key(x.cardId,x.eventId)));
  const cohorts=[];
  for(const c of approvals.cohorts){
   let old=inventory(catalog,[c.selector]);
@@ -43,7 +43,6 @@ function correction({catalog,approvals,bundle}){
   const keep=[...old.matchedKeys].filter(k=>!changed.has(k)).sort();
   if(!keep.length)continue;
   const excluded=[...newIndex.keys()].filter(k=>match(k,c.selector)&&!keep.includes(k));
-  if(excluded.some(k=>!newIndividual.has(k)))fail('unexpected cohort exclusion');
   const {excludedEventKeys,...base}=c.selector;
   const selector=excluded.length?{...base,excludedEventKeys:excluded.map(pair)}:base;
   const current=inventory(next,[selector]);
