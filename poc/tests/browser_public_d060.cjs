@@ -107,7 +107,7 @@ async function main(){
    await (await control(page,'header [data-action="catalog-toggle"]')).click();await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent===s,status,{timeout:40000});
    for(const state of ['general','targeted','undetermined','explicitOnly'])a.deepEqual(await collect(page,state,total),groups[state].sort());
    a.deepEqual(await collect(page,'apt-positive',total),[...groups.explicitOnly,...groups.targeted].sort());
-   a.equal(await page.locator('.modal #all-skill-catalog').count(),1);a.equal(await page.locator('main.app #all-skill-catalog').count(),0);
+   a.equal(await page.locator('.modal #all-skill-catalog').count(),0);a.equal(await page.locator('#page-region #all-skill-catalog').count(),1);
    const priorFilter=await page.locator('#catalog-suitability').inputValue();await page.locator('[data-catalog-skill] button').first().click();await page.getByRole('button',{name:'スキル一覧へ戻る'}).click();a.equal(await page.locator('#catalog-suitability').inputValue(),priorFilter);await closeModal();
    await (await control(page,'header [data-action="card-library"]')).click();a.equal(await page.locator('#picker-sort').inputValue(),'id-desc');
     for(const mode of ['source','owned-first','type'])a.equal(await page.locator(`#picker-sort option[value="${mode}"]`).count(),0,mode);
@@ -142,17 +142,17 @@ async function main(){
    // Verify the displayed matching/new intersection against real data, including a populated deck.
    // D066: each stored deck supplies the initial picker context; temporary changes are not saved.
    const training=[['running_style','2'],['distance_type','3'],['ground_type','1']];
-   const axis=(k,n)=>page.locator('[data-deck-training-axis="'+n+'"][data-deck="'+k+'"]');
-   const pickerAxis=n=>page.locator('[data-picker-fit-axis="'+n+'"]');
-   for(const [n,v] of training)await axis('main',n).selectOption(v);
-   await axis('inherit','running_style').selectOption('4');
+   const axis=(k,n)=>control(page,'[data-deck-training-axis="'+n+'"][data-deck="'+k+'"]');
+   const pickerAxis=n=>control(page,'[data-picker-fit-axis="'+n+'"]');
+   for(const [n,v] of training)await (await axis('main',n)).selectOption(v);
+   await (await axis('inherit','running_style')).selectOption('4');
    await page.locator('[data-action="pick"][data-deck="inherit"]').first().click();
-   a.equal(await pickerAxis('running_style').inputValue(),'4');a.equal(await pickerAxis('distance_type').inputValue(),'');await closeModal();
+   a.equal(await (await pickerAxis('running_style')).inputValue(),'4');a.equal(await (await pickerAxis('distance_type')).inputValue(),'');await closeModal();
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
-   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
-   const trainingSaved=await snapshot();await pickerAxis('running_style').selectOption('1');await closeModal();a.equal(await snapshot(),trainingSaved);
+   for(const [n,v] of training)a.equal(await (await pickerAxis(n)).inputValue(),v);
+   const trainingSaved=await snapshot();await (await pickerAxis('running_style')).selectOption('1');await closeModal();a.equal(await snapshot(),trainingSaved);
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
-   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
+   for(const [n,v] of training)a.equal(await (await pickerAxis(n)).inputValue(),v);
    await closeModal();
    const beforeRanking=await snapshot();
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
@@ -172,7 +172,7 @@ async function main(){
     a.deepEqual(actual.map(x=>x.id),Object.keys(expected).sort((a,b)=>expected[b].newCount-expected[a].newCount||Number(b)-Number(a)).slice(0,120));
    };
    await verifyNew({running_style:2,distance_type:3,ground_type:1});
-   await pickerAxis('distance_type').selectOption('');await pickerAxis('ground_type').selectOption('');await verifyNew({running_style:2});
+   await (await pickerAxis('distance_type')).selectOption('');await (await pickerAxis('ground_type')).selectOption('');await verifyNew({running_style:2});
    await (await control(page,'[data-picker-fit-axis="distance_type"]')).selectOption('3');await verifyNew({running_style:2,distance_type:3});
    await (await control(page,'[data-picker-fit-axis="ground_type"]')).selectOption('1');await verifyNew({running_style:2,distance_type:3,ground_type:1});
    await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('');await verifyNew({});
@@ -180,10 +180,10 @@ async function main(){
    const populated=await snapshot(),populatedComparison=await page.locator('#table-region').innerText();a.notEqual(populated,saved);a.match(await slot.innerText(),/0凸/);
    await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();await page.waitForFunction(s=>document.querySelector('#source-status-suitability .source-health-state')?.textContent===s,status,{timeout:40000});await closeModal();
    a.equal(await snapshot(),populated);a.equal(await page.locator('#table-region').innerText(),populatedComparison);a.match(await slot.innerText(),/0凸/);
-   for(const [n,v] of training)a.equal(await axis('main',n).inputValue(),v);
-   a.equal(await axis('inherit','running_style').inputValue(),'4');
+   for(const [n,v] of training)a.equal(await (await axis('main',n)).inputValue(),v);
+   a.equal(await (await axis('inherit','running_style')).inputValue(),'4');
    await (await control(page,'[data-action="pick"][data-deck="main"][data-index="1"]')).click();
-   for(const [n,v] of training)a.equal(await pickerAxis(n).inputValue(),v);
+   for(const [n,v] of training)a.equal(await (await pickerAxis(n)).inputValue(),v);
    await closeModal();a.equal(await snapshot(),populated);
    const blocked='**/data/skill-suitability-d059.v1.txt';await page.route(blocked,r=>r.abort());await page.reload();await page.locator('#app main.app').waitFor({timeout:60000});await openHealth();
    await page.waitForFunction(()=>document.querySelector('#source-status-suitability .source-health-state')?.textContent.includes('自動取得失敗'),{timeout:40000});a.match(await healthStatus.innerText(),/自動取得失敗/);await closeModal();

@@ -248,7 +248,7 @@ async function main(){
   assert.ok(hintDescription.includes('基本 '+livePerformance.low.frequencyBase+'% / 固有 '+livePerformance.low.frequencyUnique+'%'));
   await (await control(page,'select[data-stage]')).selectOption('4');
   await (await control(page,'button[data-action="close"]')).click();
-  const row=page.locator('tr[data-skill="'+skillId+'"]');
+  const row=await control(page,'tr[data-skill="'+skillId+'"]');
   await row.waitFor();assert.match(await row.innerText(),/1/);
   // A real published GT event must remain usable in the ordinary deck editor.
   await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="1"]')).click();

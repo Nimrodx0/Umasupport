@@ -71,7 +71,7 @@ async function main(){
      return [...r.labels].map(([id,row])=>[id,row.label.state,row.label.styles]).sort();
     });
     assert.deepEqual(expected,bundle.rows.map(r=>[r.appSkillId,r.label.state,r.label.styles]).sort());
-    for(const [state,n] of [['general',loaded.general||0],['targeted',loaded.targeted||0],['explicitOnly',loaded.explicitOnly||0],['apt-positive',(loaded.explicitOnly||0)+(loaded.targeted||0)],['undetermined',loaded.undetermined||0]]){await filter.selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
+    for(const [state,n] of [['general',loaded.general||0],['targeted',loaded.targeted||0],['explicitOnly',loaded.explicitOnly||0],['apt-positive',(loaded.explicitOnly||0)+(loaded.targeted||0)],['undetermined',loaded.undetermined||0]]){await (await control(page,'#catalog-suitability')).selectOption(state);assert.equal(await count.innerText(),n+' / 881 件');}
     await (await control(page,'.modal-head [data-action="close"]')).click();await page.locator('[data-action="pick"]').first().click();
     await (await control(page,'[data-picker-fit-axis="running_style"]')).selectOption('2');
     const tiers=await page.locator('[data-picker-fit-tier]').allTextContents();assert(tiers.length>0);for(const t of tiers)assert.match(t,/^金 \d+ · 白 \d+ · その他 \d+$/);
@@ -85,17 +85,17 @@ async function main(){
     await (await control(page,'.modal-head [data-action="close"]')).click();await (await control(page,'header [data-action="source-health"]')).click();
     assert.match(await page.locator('#source-status-suitability .source-health-state').innerText(),/自動取得失敗/);
     await (await control(page,'.modal-head [data-action="close"]')).click();await (await control(page,'header [data-action="catalog-toggle"]')).click();
-    await filter.selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
+    await (await control(page,'#catalog-suitability')).selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
     assert.equal(await snapshot(),saved);assert.deepEqual(errors,[]);await page.close();continue;
    }
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
    assert.match(await count.innerText(),/^881 \/ 881 件$/);
-   await filter.selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
+   await (await control(page,'#catalog-suitability')).selectOption('undetermined');assert.equal(await count.innerText(),(empty.undetermined||0)+' / 881 件');
    await (await control(page,'.catalog-data summary')).click();
    await page.locator('#catalog-label-file').setInputFiles(file);
    await page.waitForFunction(s=>document.querySelector('#catalog-label-status')?.textContent.includes(s),'検証済み '+n+'件 / 変更・未照合 0件',{timeout:40000});
    assert.equal(await count.innerText(),(loaded.undetermined||0)+' / 881 件');
-   await filter.selectOption('general');assert.equal(await count.innerText(),(loaded.general||0)+' / 881 件');
+   await (await control(page,'#catalog-suitability')).selectOption('general');assert.equal(await count.innerText(),(loaded.general||0)+' / 881 件');
    await (await control(page,'#catalog-query')).fill('アオハル点火');
    assert.equal(await count.innerText(),'5 / 881 件');
    assert.equal(await page.locator('.catalog-table tbody tr').count(),5);
@@ -112,20 +112,20 @@ async function main(){
     for(const name of ['あふれる活力','気丈夫','遊び心','阿吽の呼吸','聖女の挑戦','一張一弛','想い焦がれて']){
      await (await control(page,'#catalog-query')).fill(name);const row=page.locator('.catalog-table tbody tr').filter({has:page.getByRole('button',{name,exact:true})});assert.equal(await row.count(),1);assert.match(await row.innerText(),/汎用/);
     }
-    await filter.selectOption('targeted');
+    await (await control(page,'#catalog-suitability')).selectOption('targeted');
     for(const name of ['豪脚','上昇気流','前途洋々','スタミナイーター']){
      await (await control(page,'#catalog-query')).fill(name);const row=page.locator('.catalog-table tbody tr').filter({has:page.getByRole('button',{name,exact:true})});assert.equal(await row.count(),1);
      assert.match(await row.innerText(),name==='前途洋々'?/逃げ向け/:/差し向け・追込向け/);
     }
-    await filter.selectOption('general');
+    await (await control(page,'#catalog-suitability')).selectOption('general');
    }
    await (await control(page,'#catalog-query')).fill('');
    await (await control(page,'#catalog-show-labels')).uncheck();
    assert.equal(await page.locator('.catalog-table th').count(),2);assert.equal(await count.innerText(),(loaded.general||0)+' / 881 件');
    await (await control(page,'#catalog-show-labels')).check();
    assert.equal(await page.locator('.catalog-table th').count(),3);
-   await filter.selectOption('all');await (await control(page,'[data-catalog-axis="running_style"]')).selectOption('2');await (await control(page,'#catalog-scope')).selectOption('outside');assert(await filter.isDisabled());assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await (await control(page,'#catalog-scope')).selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await (await control(page,'#catalog-scope')).selectOption('possible');assert(await filter.isEnabled());await filter.selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await (await control(page,'[data-catalog-axis="running_style"]')).selectOption('');
-   await filter.selectOption('targeted');assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
+   await (await control(page,'#catalog-suitability')).selectOption('all');await (await control(page,'[data-catalog-axis="running_style"]')).selectOption('2');await (await control(page,'#catalog-scope')).selectOption('outside');assert(await filter.isDisabled());assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await (await control(page,'#catalog-scope')).selectOption('unknown');assert.equal(await page.locator('.catalog-table [data-aptitude]:not([data-aptitude="not-applicable"])').count(),0);await (await control(page,'#catalog-scope')).selectOption('possible');assert(await filter.isEnabled());await (await control(page,'#catalog-suitability')).selectOption('explicitOnly');assert(await page.locator('.catalog-table [data-aptitude="explicitOnly"]').count()>0);await (await control(page,'[data-catalog-axis="running_style"]')).selectOption('');
+   await (await control(page,'#catalog-suitability')).selectOption('targeted');assert.equal(await count.innerText(),(loaded.targeted||0)+' / 881 件');
    await (await control(page,'[data-catalog-axis="ground_type"]')).selectOption('2');
    assert.match(await count.innerText(),/^0 \/ 881 件$/);
    await (await control(page,'[data-catalog-axis="ground_type"]')).selectOption('');
