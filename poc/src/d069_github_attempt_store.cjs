@@ -17,8 +17,9 @@ function transition(old,next){
  for(let i=0;i<old.rows.length;i++){
   const a=old.rows[i],b=next.rows[i];
   if(same(a,b))continue;
-  if(a.cardId===b.cardId&&!a.retry&&(a.status==='not-listed'||a.status==='uncertain'&&a.failureCode==='network-transient')&&b.status==='reserved'&&b.retry?.priorRowSha256===digest(a)&&b.retry.priorStatus===a.status){retried++;continue;}
-  if(a.status!=='reserved'||b.status==='reserved'||a.cardId!==b.cardId||!same(a.sourcePin,b.sourcePin)||!same(a.retry??null,b.retry??null))fail('invalid row transition');
+  if(a.cardId===b.cardId&&b.status==='reserved'&&b.attempt&&require('./d077_intake_recovery.cjs').due(a,b.attempt.startedAt)&&b.attempt.count===a.attempt.count+1&&!b.retry){retried++;continue;}
+   if(a.cardId===b.cardId&&!a.retry&&(a.status==='not-listed'||a.status==='uncertain'&&a.failureCode==='network-transient')&&b.status==='reserved'&&b.retry?.priorRowSha256===digest(a)&&b.retry.priorStatus===a.status){retried++;continue;}
+  if(a.status!=='reserved'||b.status==='reserved'||a.cardId!==b.cardId||!same(a.sourcePin,b.sourcePin)||!same(a.retry??null,b.retry??null)||!same(a.attempt?{count:a.attempt.count,startedAt:a.attempt.startedAt}:null,b.attempt?{count:b.attempt.count,startedAt:b.attempt.startedAt}:null))fail('invalid row transition');
   changed++;
  }
  if(retried){if(retried!==1||changed||added.length)fail('invalid retry reservation');}
