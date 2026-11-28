@@ -24,7 +24,7 @@ function finish(row,result,now,retryAfter=null){
 function activeRefusal(ledger,clearances=require('../config/d077-source-resume.v1.json')){
  if(clearances?.schemaVersion!==1||!Array.isArray(clearances.resolved)||clearances.resolved.some(x=>!x||Object.keys(x).sort().join(',')!=='reason,rowSha256'||!/^[a-f0-9]{64}$/.test(x.rowSha256)||typeof x.reason!=='string'||!x.reason.trim()))throw Error('D077 invalid source clearance');
  const cleared=new Set(clearances.resolved.map(x=>x.rowSha256));
- return ledger.rows.some(r=>r.failureCode==='source-refused'&&!cleared.has(digest(r)));
+ return ledger.rows.some(r=>(r.failureCode==='source-refused'||r.failureCode==='rate-limited'&&!r.attempt)&&!cleared.has(digest(r)));
 }
 function cooldown(ledger,now){
  return ledger.rows.some(r=>r.failureCode==='rate-limited'&&r.attempt&&Date.parse(r.attempt.nextAt)>Date.parse(now));
