@@ -70,12 +70,12 @@ test('ordinary acquisition has no DOM parser, browser or display comparison depe
 
 test('finite delayed retry of unlisted card, no request between attempts',async()=>{
  const f=fixture(['39995']);
- for(const hours of [0,24,48,96]){
+ for(const hours of [0,24,24,24,24,24,24,24]){
   f.advance(hours);
   a.deepEqual((await runAutomatic(f.args)).attemptedIds,['39995']);
   a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
  }
- a.equal(f.ledger().rows[0].attempt.count,4);
+ a.equal(f.ledger().rows[0].attempt.count,8);
  f.advance(1000);a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
 });
 test('rate limit honors Retry-After and stops requests for all cards until cooldown',async()=>{
@@ -112,12 +112,38 @@ test('health distinguishes temporary retry and actionable holds, missing accepta
  const {health,pendingAcceptance}=require('../src/d077_daily_health.cjs');
  const f=fixture(['39995']);await runAutomatic(f.args);
  const q={rows:[{cardId:'39995',status:'not-listed'}]},auto={stopReason:null};
- a.deepEqual(health({ledger:f.ledger(),queue:q,auto}).alerts,[]);
- for(const hours of [24,48,96]){f.advance(hours);await runAutomatic(f.args);}
+ a.deepEqual(health({ledger:f.ledger(),queue:q,auto,now:f.args.clock()}).alerts,[]);
+ for(let i=0;i<7;i++){f.advance(24);await runAutomatic(f.args);}
  a.match(health({ledger:f.ledger(),queue:q,auto}).alerts[0],/retry exhausted/);
  const snapshot={head:'a'.repeat(40),manifest:{revision:2}};
  const github={rest:{repos:{getCombinedStatusForRef:async()=>({data:{statuses:[]}})}}};
  a.equal(await pendingAcceptance({github,owner:'o',repo:'r',snapshot}),true);
  github.rest.repos.getCombinedStatusForRef=async()=>({data:{statuses:[{context:'umasupport/data-acceptance',state:'success'}]}});
  a.equal(await pendingAcceptance({github,owner:'o',repo:'r',snapshot}),false);
+});
+
+test('unlisted retry uses JST daily slots, ends after day seven even if a run was missed',async()=>{
+ const f=fixture(['39995']);
+ f.advance(4); // 13:00 JST initial run
+ await runAutomatic(f.args);
+ f.advance(23); // 12:00 JST following day, earlier than initial run
+ a.deepEqual((await runAutomatic(f.args)).attemptedIds,['39995']);
+ a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
+ f.advance(6*24);
+ a.deepEqual((await runAutomatic(f.args)).attemptedIds,['39995']);
+ a.equal(f.ledger().rows[0].attempt.count,3);
+ a.equal(require('../src/d077_intake_recovery.cjs').exhausted(f.ledger().rows[0],f.args.clock()),true);
+ f.advance(24);
+ a.equal((await runAutomatic(f.args)).sourceRequestsPerformed,false);
+});
+test('network failures retain 24/48/96-hour intervals and four total attempts',async()=>{
+ const f=fixture(['39995']),{createObserver}=require('../src/d069_card_json_transport.cjs');
+ const args={...f.args,observerFactory:opts=>createObserver({...opts,sleep:async()=>{},fetchImpl:async()=>{throw new TypeError('temporary');}})};
+ for(const hours of [0,24,48,96]){
+  f.advance(hours);
+  a.deepEqual((await runAutomatic(args)).attemptedIds,['39995']);
+  a.equal((await runAutomatic(args)).sourceRequestsPerformed,false);
+ }
+ a.equal(f.ledger().rows[0].attempt.count,4);
+ f.advance(1000);a.equal((await runAutomatic(args)).sourceRequestsPerformed,false);
 });
