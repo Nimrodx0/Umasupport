@@ -21,7 +21,7 @@ async function runAutomatic({plan,sourcePin,policy,existingCatalog,store,loadSki
   if(Date.parse(clock())-Date.parse(now)>8*60000){stopReason='time-budget-deferred';break;}
   const result=await runBatch({plan,sourcePin,policy,existingCatalog,skillText,store,targetIds:[cardId],observeBatch:observer,automatic:true,now:clock()});
   attemptedIds.push(...result.selectedIds);
-  if(result.stopReason){stopReason=result.stopReason;break;}
+  if(result.stopReason){stopReason=result.stopReason;const code=result.results[0]?.failureCode;if(code!=='source-refused')return {...report(attemptedIds,stopReason),failureCode:code};break;}
  }
  return report(attemptedIds,stopReason);
 }
