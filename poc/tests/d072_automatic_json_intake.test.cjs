@@ -96,3 +96,25 @@ test('later card failure does not discard earlier completed result',async()=>{
  a.deepEqual(f.ledger().rows.map(x=>x.status),['not-listed','uncertain']);
  a.deepEqual((await runAutomatic(f.args)).attemptedIds,['39997']);
 });
+
+test('hard refusal clearance is exact row-bound and history remains intact',()=>{
+ const {activeRefusal}=require('../src/d077_intake_recovery.cjs'),{digest}=require('../src/event_release_gate.cjs');
+ const row={cardId:'39999',status:'uncertain',failureCode:'source-refused',packetSha256:null};
+ const ledger={rows:[row]};
+ a.equal(activeRefusal(ledger,{schemaVersion:1,resolved:[]}),true);
+ a.equal(activeRefusal(ledger,{schemaVersion:1,resolved:[{rowSha256:digest(row),reason:'reviewed access restored'}]}),false);
+ a.equal(activeRefusal({rows:[{...row,cardId:'39998'}]},{schemaVersion:1,resolved:[{rowSha256:digest(row),reason:'reviewed'}]}),true);
+});
+test('health distinguishes temporary retry and actionable holds, missing acceptance is retried',async()=>{
+ const {health,pendingAcceptance}=require('../src/d077_daily_health.cjs');
+ const f=fixture(['39995']);await runAutomatic(f.args);
+ const q={rows:[{cardId:'39995',status:'not-listed'}]},auto={stopReason:null};
+ a.deepEqual(health({ledger:f.ledger(),queue:q,auto}).alerts,[]);
+ for(const hours of [24,48,96]){f.advance(hours);await runAutomatic(f.args);}
+ a.match(health({ledger:f.ledger(),queue:q,auto}).alerts[0],/retry exhausted/);
+ const snapshot={head:'a'.repeat(40),manifest:{revision:2}};
+ const github={rest:{repos:{getCombinedStatusForRef:async()=>({data:{statuses:[]}})}}};
+ a.equal(await pendingAcceptance({github,owner:'o',repo:'r',snapshot}),true);
+ github.rest.repos.getCombinedStatusForRef=async()=>({data:{statuses:[{context:'umasupport/data-acceptance',state:'success'}]}});
+ a.equal(await pendingAcceptance({github,owner:'o',repo:'r',snapshot}),false);
+});
