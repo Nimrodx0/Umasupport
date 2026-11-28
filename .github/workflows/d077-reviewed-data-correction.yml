@@ -1,0 +1,63 @@
+name: D077 reviewed event data correction
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'plan = read only; publish = explicit reviewed correction'
+        type: choice
+        options: [plan, publish]
+        default: plan
+        required: true
+      expected_head:
+        description: 'Exact data/events head SHA'
+        type: string
+        required: true
+      bundle:
+        description: 'Card-local corrected events, changed-event approvals, prior card digest and reason'
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: gametora-direct-new-card-limited-read
+  cancel-in-progress: false
+jobs:
+  correction:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      published_head: ${{ steps.publish.outputs.published_head }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test poc/tests/d074_event_data_branch.test.cjs
+      - uses: actions/github-script@v7
+        id: publish
+        env:
+          MODE: ${{ inputs.mode }}
+          BUNDLE: ${{ inputs.bundle }}
+          EXPECTED_HEAD: ${{ inputs.expected_head }}
+        with:
+          script: |
+            if(process.env.BUNDLE.length>60000)throw Error('Bundle size');
+            const {correctReviewed,verifyPublicRaw}=require('./poc/src/d074_event_data_branch.cjs');
+            const report=await correctReviewed({github,...context.repo,baseSha:context.sha,expectedHead:process.env.EXPECTED_HEAD,mode:process.env.MODE,bundle:JSON.parse(process.env.BUNDLE)});
+            core.info('D077_CORRECTION='+JSON.stringify(report));
+            if(report.branchWritten){
+              await verifyPublicRaw({...context.repo,report});
+              core.setOutput('published_head',report.head);
+            }
+  accept:
+    needs: correction
+    if: needs.correction.outputs.published_head != ''
+    uses: ./.github/workflows/pages-real-browser-acceptance.yml
+    with:
+      expected_head: ${{ needs.correction.outputs.published_head }}

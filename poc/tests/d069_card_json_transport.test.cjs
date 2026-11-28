@@ -43,8 +43,17 @@ test('fail closed on partial listing, robots wildcard, redirects, refusal and wr
 test('transport records refusal separately from a network error without message leakage',async()=>{
  const {failureCode}=require('../src/d069_card_json_transport.cjs');
  const f=fixture({[jsonUrl('39999')]:['application/json','{}',429]});
- await a.rejects(f.observe(['39999']),e=>failureCode(e)==='source-refused');
+ await a.rejects(f.observe(['39999']),e=>failureCode(e)==='rate-limited');
  const o=createObserver({manualAuthorized:true,knownIds:known,sleep:async()=>{},fetchImpl:async()=>{throw new TypeError('private network detail');}});
  await a.rejects(o(['39999']),e=>failureCode(e)==='network-transient'&&!e.message.includes('private'));
  a.equal(failureCode(Error('unclassified')),'unclassified');
+});
+
+test('robots only applies matching product group, longest rule and Allow tie',()=>{
+ a.doesNotThrow(()=>checkRobots('User-agent: otherbot\nDisallow: /\nUser-agent: *\nDisallow: /private','/public'));
+ a.doesNotThrow(()=>checkRobots('User-agent: *\nDisallow: /\nAllow: /public','/public/file'));
+ a.doesNotThrow(()=>checkRobots('User-agent: *\nDisallow: /\nUser-agent: Umasupport-readonly-card-json-probe\nAllow: /','/public'));
+ a.throws(()=>checkRobots('User-agent: *\nAllow: /\nUser-agent: Umasupport-readonly-card-json-probe\nDisallow: /public','/public'));
+ a.doesNotThrow(()=>checkRobots('User-agent: *\nDisallow: /public\nAllow: /public','/public'));
+ a.throws(()=>checkRobots('User-agent: *\nDisallow: /%7Euser','/~user'));
 });

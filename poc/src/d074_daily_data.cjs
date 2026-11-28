@@ -25,9 +25,9 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  await stable();
  const current=await reader({github,...coord});
  if(current.head!==expectedHead||digest(JSON.parse(current.catalogText))!==queue?.catalogSha256)fail('queue snapshot drift');
- const selected=await selectRoutine({config,queue,auto,store,github,...coord,baseSha,files:{[CATALOG]:current.catalogText}});
+ let selected=await selectRoutine({config,queue,auto,store,github,...coord,baseSha,files:{[CATALOG]:current.catalogText}});
  if(selected.status!=='selected')return report(selected.status);
- const expectedRoutine=selected.selectedIds.map(cardId=>{
+ let expectedRoutine=selected.selectedIds.map(cardId=>{
   const r=queue.rows.find(r=>r.cardId===cardId)?.routine;
   if(!HASH.test(r?.receiptSha256||'')||!HASH.test(r?.eventDigestsSha256||'')||!Array.isArray(r.events)||
     digest({events:r.events})!==r.eventDigestsSha256)fail('queued receipt mismatch');
@@ -37,13 +37,46 @@ async function runDailyData({config,publicationPolicy,queue,auto,store,github,ow
  if(!Array.isArray(open)||open.length>=100)fail('incomplete open PR list');
  if(open.some(p=>p.head?.ref?.startsWith('automation/d072-release-')||/^<!-- D072_RELEASE_PROPOSAL /.test(p.body||'')))return report('legacy-proposal-open');
  await stable();
- const result=await appender({github,...coord,baseSha,expectedHead,mode:config.mode,evidence:selected.evidence,
-  routinePublicationPolicy:config.routinePublicationPolicy,expectedRoutine});
- if(result?.baseSha!==baseSha||result.previousHead!==expectedHead||JSON.stringify(result.newCardIds)!==JSON.stringify(selected.selectedIds)||
-   result.mainWritten!==false||result.pagesDeployed!==false||result.branchWritten!==(config.mode==='publish'))fail('append report mismatch');
- if(config.mode==='plan')return report('planned',{selectedIds:selected.selectedIds,receiptSha256:result.receiptSha256,revision:result.revision});
+ // Plan before any write. If the combined preflight fails, isolate
+ // candidates without ever retrying a possibly committed publication.
+ const call=async (mode,selection=selected,routine=expectedRoutine)=>{
+  const result=await appender({github,...coord,baseSha,expectedHead,mode,evidence:selection.evidence,
+   routinePublicationPolicy:config.routinePublicationPolicy,expectedRoutine:routine});
+  if(result?.baseSha!==baseSha||result.previousHead!==expectedHead||JSON.stringify(result.newCardIds)!==JSON.stringify(selection.selectedIds)||
+     result.mainWritten!==false||result.pagesDeployed!==false||result.branchWritten!==(mode==='publish'))fail('append report mismatch');
+  return result;
+ };
+ let preview,heldIds=[];
+ const continueAfterHeld=async ids=>{
+  const remaining={...queue,rows:queue.rows.filter(row=>!ids.includes(row.cardId))};
+  if(!remaining.rows.some(row=>row.status==='ready-for-publication-decision'))return report('candidate-validation-held',{heldIds:ids});
+  // The remaining set strictly shrinks; no retry of a failed candidate or
+  // potentially committed write within this run.
+  const next=await runDailyData({config,publicationPolicy,queue:remaining,auto,store,github,owner,repo,baseSha,expectedHead,reader,appender,rawVerifier});
+  return {...next,status:['no-pending-cards','no-routine-candidates'].includes(next.status)?'candidate-validation-held':next.status,heldIds:[...ids,...(next.heldIds??[])]};
+ };
+ {
+  try{preview=await call('plan');}
+  catch(error){
+   await stable();
+   if(selected.selectedIds.length===1)return continueAfterHeld(selected.selectedIds);
+   const good=[];
+   for(const [i,id] of selected.selectedIds.entries()){
+    const selection={selectedIds:[id],evidence:[selected.evidence[i]]},routine=[expectedRoutine[i]];
+    try{good.push({selection,routine,preview:await call('plan',selection,routine)});}
+    catch{await stable();heldIds.push(id);}
+   }
+   if(!good.length)return continueAfterHeld(heldIds);
+   // If both pass separately but not together, publish only the first.
+   ({selection:selected,routine:expectedRoutine,preview}=good[0]);
+  }
+ }
+ const held=heldIds.length?{heldIds}:{};
+ if(config.mode==='plan')return report('planned',{selectedIds:selected.selectedIds,receiptSha256:preview.receiptSha256,revision:preview.revision,...held});
+ await stable();
+ const result=await call('publish');
  const checked=await rawVerifier({...coord,report:result});
  if(checked.publicRawVerified!==true||checked.head!==result.head)fail('public verification mismatch');
- return report('published-raw-verified',{selectedIds:selected.selectedIds,receiptSha256:result.receiptSha256,revision:result.revision,head:result.head,branchWritten:true,publicRawVerified:true});
+ return report('published-raw-verified',{selectedIds:selected.selectedIds,receiptSha256:result.receiptSha256,revision:result.revision,head:result.head,branchWritten:true,publicRawVerified:true,...held});
 }
 module.exports={runDailyData};

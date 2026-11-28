@@ -92,7 +92,8 @@ test('all live inline scripts compile and daily workflow has no external documen
  a.match(workflow,/daily\.mode==='disabled'\?\{attemptedIds:\[\],stopReason:'policy-disabled'/);
  const transport=fs.readFileSync(path.join(root,'poc/src/d069_card_json_transport.cjs'),'utf8');
  a.match(transport,/checkRobots\(robots,u\.pathname\)/);
- a.match(transport,/\[401,403,429,451\]/);
+ a.match(transport,/\[401,403,451\]/);
+ a.match(transport,/r.status===429/);
 });
 test('prior refusal and non-routine candidates cannot publish',async()=>{
  const f=fixture(),active={...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy};
@@ -102,4 +103,27 @@ test('prior refusal and non-routine candidates cannot publish',async()=>{
  f.queue.rows.forEach(r=>{r.status='held';});
  a.equal((await runDailyData(active)).status,'no-routine-candidates');
  a.ok(f.calls.every(x=>typeof x==='string'));
+});
+
+test('bad candidate preflight does not prevent independently valid card publication',async()=>{
+ const f=fixture(),calls=[];
+ const appender=async x=>{
+  const ids=x.evidence.map(v=>v.cardId);calls.push([x.mode,ids]);
+  if(ids.includes('39997'))throw Error('candidate drift');
+  return f.args.appender(x);
+ };
+ const result=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy,appender});
+ a.deepEqual(result.heldIds,['39997']);a.deepEqual(result.selectedIds,['39998']);
+ a.equal(result.status,'published-raw-verified');
+ a.deepEqual(calls,[['plan',['39997','39998']],['plan',['39997']],['plan',['39998']],['publish',['39998']]]);
+});
+
+test('two consecutive held candidates do not starve a later valid candidate',async()=>{
+ const f=fixture(),appender=async x=>{
+  if(x.evidence.some(v=>v.cardId!=='39999'))throw Error('candidate drift');
+  return f.args.appender(x);
+ };
+ const result=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy,appender});
+ a.deepEqual(result.heldIds,['39997','39998']);a.deepEqual(result.selectedIds,['39999']);
+ a.equal(result.status,'published-raw-verified');
 });

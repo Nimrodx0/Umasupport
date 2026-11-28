@@ -11,27 +11,55 @@
   ],
   "entries": [
     {
-      "id": "D-077",
+      "id": "D-079",
       "date": "2026-11-28",
       "heading": "2026-11-28：UIレビューの全改善と3列×2行編成を採用する",
       "status": "current",
       "relation": [],
       "note": "レビューの全改善を採用。編成カードは実ゲーム同様の3列×2行を維持。集計・保存・権利・試用分離の変更なし。",
       "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-079",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-079",
+      "reviewedAt": "2026-11-28"
+    },
+    {
+      "id": "D-078",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：未掲載カードは初回から7日後まで毎日再試行する",
+      "status": "current",
+      "relation": [],
+      "note": "未掲載のみ初回＋最大7回、日本時間の翌日から7日後まで日次再試行。一時障害・429の既存待機・停止条件を維持。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-078",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-078",
+      "reviewedAt": "2026-11-28"
+    },
+    {
+      "id": "D-077",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：新カード自動更新の障害復帰と訂正経路を整備する",
+      "status": "qualified",
+      "relation": [
+        "D-078"
+      ],
+      "note": "未掲載・一時障害・429の有限再試行、明示拒否の履歴付き解除、カード単位確定、実質robots判定、異常通知、公開受入再開、明示訂正を採用。通常の追記専用・無期限公開方針を維持。 未掲載の再試行間隔・上限はD-078で変更。",
+      "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-077",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-078",
       "reviewedAt": "2026-11-28"
     },
     {
       "id": "D-076",
       "date": "2026-11-28",
       "heading": "2026-11-28：自動更新の外部条件確認を実質的な取得制限に絞る",
-      "status": "current",
-      "relation": [],
-      "note": "5文書監視・初回基準審査を廃止。GameToraの対象パス・拒否・JSON検証・個別疑義・既存公開ゲートを維持。正常候補を自動公開。",
+      "status": "qualified",
+      "relation": [
+        "D-077"
+      ],
+      "note": "5文書監視・初回基準審査を廃止。GameToraの対象パス・拒否・JSON検証・個別疑義・既存公開ゲートを維持。正常候補を自動公開。 D-077の障害復帰・明示訂正の例外を適用。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-076",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-076",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
       "reviewedAt": "2026-11-28"
     },
     {
@@ -52,12 +80,14 @@
       "id": "D-074",
       "date": "2026-11-28",
       "heading": "2026-11-28：イベントDBを同一リポジトリの専用データブランチから配信する",
-      "status": "current",
-      "relation": [],
-      "note": "方式Aを採用。アプリはmain／Pages、承認済み独自DBはdata/events、更新はGitHub Actions。固定スナップショット・原子的版更新・承認ゲート・非破壊・復旧・公開受入を維持。無審査公開や権利の追加承認ではない。",
+      "status": "qualified",
+      "relation": [
+        "D-077"
+      ],
+      "note": "方式Aを採用。アプリはmain／Pages、承認済み独自DBはdata/events、更新はGitHub Actions。固定スナップショット・原子的版更新・承認ゲート・非破壊・復旧・公開受入を維持。無審査公開や権利の追加承認ではない。 D-077の障害復帰・明示訂正の例外を適用。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-074",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-074",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
       "reviewedAt": "2026-11-28"
     },
     {
@@ -76,13 +106,15 @@
       "id": "D-072",
       "date": "2026-11-27",
       "heading": "2026-11-27：新カード限定の自動取得と事実データの保存を許容する",
-      "status": "current",
-      "relation": [],
-      "note": "禁止の明示が確認されない公開範囲で新規未試行IDのみ自動取得。事前問い合わせ・暗号化を必須にしない。アクセス拒否・禁止時停止。独自事実保存・内容SHA・非破壊追加・公開検証を維持。第三者の包括許諾とはみなさない。",
+      "status": "qualified",
+      "relation": [
+        "D-077"
+      ],
+      "note": "禁止の明示が確認されない公開範囲で新規未試行IDのみ自動取得。事前問い合わせ・暗号化を必須にしない。アクセス拒否・禁止時停止。独自事実保存・内容SHA・非破壊追加・公開検証を維持。第三者の包括許諾とはみなさない。 D-077の障害復帰・明示訂正の例外を適用。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-072",
-      "assessmentBasis": "docs/decisions/log.md#decision-d-072",
-      "reviewedAt": "2026-11-27"
+      "assessmentBasis": "docs/decisions/log.md#decision-d-077",
+      "reviewedAt": "2026-11-28"
     },
     {
       "id": "D-071",
