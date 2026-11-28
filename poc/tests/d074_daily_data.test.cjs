@@ -104,3 +104,16 @@ test('prior refusal and non-routine candidates cannot publish',async()=>{
  a.equal((await runDailyData(active)).status,'no-routine-candidates');
  a.ok(f.calls.every(x=>typeof x==='string'));
 });
+
+test('bad candidate preflight does not prevent independently valid card publication',async()=>{
+ const f=fixture(),calls=[];
+ const appender=async x=>{
+  const ids=x.evidence.map(v=>v.cardId);calls.push([x.mode,ids]);
+  if(ids.includes('39997'))throw Error('candidate drift');
+  return f.args.appender(x);
+ };
+ const result=await runDailyData({...f.args,config:{...f.args.config,mode:'publish'},publicationPolicy,appender});
+ a.deepEqual(result.heldIds,['39997']);a.deepEqual(result.selectedIds,['39998']);
+ a.equal(result.status,'published-raw-verified');
+ a.deepEqual(calls,[['plan',['39997','39998']],['plan',['39997']],['plan',['39998']],['publish',['39998']]]);
+});
