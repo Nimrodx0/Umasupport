@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 /*
  * Browser-check the real final 2,512-event private candidate without ever
  * persisting or uploading it. The file chooser receives in-memory bytes.
@@ -123,17 +124,17 @@ async function run({bundle,skillText,supportText,validateProvisionalLabels=false
     throw Error('ブラウザでイベント見出し保持・全仮称の表記契約が不一致');
   }
   const realCard=await page.evaluate(id=>window.UmaDemoData.cardById[id].name,sample.cardId);
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill(realCard);
-  await page.locator('button[data-action="set-card"][data-id="'+sample.cardId+'"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill(realCard);
+  await (await control(page,'button[data-action="set-card"][data-id="'+sample.cardId+'"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   if(validateProvisionalLabels){
    const names=await page.locator('input[data-event-choice][data-event="'+sample.eventId+'"]')
     .evaluateAll(els=>els.map(el=>el.closest('label')?.innerText||''));
    if(!names.some(x=>x.includes('選択肢1（仮）')))
     throw Error('実ブラウザのイベント編集UIに選択肢の仮称が表示されていない');
   }
-  await page.locator('input[data-event-choice][data-event="'+sample.eventId+'"][value="'+sample.choiceId+'"]').click();
+  await (await control(page,'input[data-event-choice][data-event="'+sample.eventId+'"][value="'+sample.choiceId+'"]')).click();
   const selected=await page.evaluate(({cardId,eventId})=>{
    const key='uma-support-lab-runtime-umasim-v1-event-preview-local-'+
      window.UmaPrivateLocalEventDigest.slice(0,16);

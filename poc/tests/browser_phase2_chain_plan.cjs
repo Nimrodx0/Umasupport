@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
@@ -47,46 +48,46 @@ async function main(){
   assert.equal(await second.getAttribute('data-eligible'),'false');
   assert.equal(await third.getAttribute('data-eligible'),'false');
   assert.equal(await second.locator('button[data-choice="option1"]').isDisabled(),true);
-  await first.locator('button[data-choice="option2"]').click();
+  await (await control(first,'button[data-choice="option2"]')).click();
   assert.equal(await second.getAttribute('data-eligible'),'true');
   assert.equal(await third.getAttribute('data-eligible'),'false');
-  await second.locator('button[data-choice="option1"]').click();
+  await (await control(second,'button[data-choice="option1"]')).click();
   assert.equal(await third.getAttribute('data-eligible'),'true');
   assert.match(await third.locator('output').innerText(),/勇迅円刃/);
   assert.equal(await third.locator('output').getAttribute('data-hint-count'),'1');
   assert.doesNotMatch(await third.locator('output').innerText(),/201323/);
-  await first.locator('button[data-choice="option1"]').click();
+  await (await control(first,'button[data-choice="option1"]')).click();
   assert.equal(await second.getAttribute('data-eligible'),'true');
   assert.equal(await third.getAttribute('data-eligible'),'false');
-  await first.locator('button[data-choice=""]').click();
+  await (await control(first,'button[data-choice=""]')).click();
   assert.equal(await second.getAttribute('data-eligible'),'false');
   assert.equal(await third.locator('output').getAttribute('data-hint-count'),'0');
 
-  await page.locator('#card-tabs button[data-card-id="30319"]').click();
+  await (await control(page,'#card-tabs button[data-card-id="30319"]')).click();
   first=page.locator('article.event[data-event="1"]');
   second=page.locator('article.event[data-event="2"]');
   third=page.locator('article.event[data-event="3"]');
-  await first.locator('button[data-choice="option1"]').click();
-  await second.locator('button[data-choice="option1"]').click();
+  await (await control(first,'button[data-choice="option1"]')).click();
+  await (await control(second,'button[data-choice="option1"]')).click();
   assert.match(await second.locator('output').innerText(),/憂いなし/);
   assert.match(await third.locator('output').innerText(),/アンストッパブル/);
   assert.match(await third.locator('output').innerText(),/ぶっちぎり！/);
-  await second.locator('button[data-choice="option2"]').click();
+  await (await control(second,'button[data-choice="option2"]')).click();
   assert.equal(await second.locator('output').getAttribute('data-hint-count'),'0');
   assert.equal(await third.getAttribute('data-eligible'),'true');
 
-  await page.locator('#card-tabs button[data-card-id="30321"]').click();
+  await (await control(page,'#card-tabs button[data-card-id="30321"]')).click();
   first=page.locator('article.event[data-event="1"]');
   second=page.locator('article.event[data-event="2"]');
   third=page.locator('article.event[data-event="3"]');
   assert.equal(await second.getAttribute('data-eligible'),'false');
-  await first.locator('button[data-choice="option1"]').click();
+  await (await control(first,'button[data-choice="option1"]')).click();
   assert.equal(await second.getAttribute('data-eligible'),'true');
   assert.equal(await third.getAttribute('data-eligible'),'true',
    'second no-choice stage is an eligible prospective stage');
   assert.match(await third.locator('output').innerText(),/月影円刃/);
 
-  await page.locator('#card-tabs button[data-card-id="30221"]').click();
+  await (await control(page,'#card-tabs button[data-card-id="30221"]')).click();
   first=page.locator('article.event[data-event="1"]');
   second=page.locator('article.event[data-event="2"]');
   third=page.locator('article.event[data-event="3"]');

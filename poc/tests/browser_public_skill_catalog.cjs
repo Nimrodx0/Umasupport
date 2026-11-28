@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // Public Pages smoke: no interception, no derived labels, fresh browser profiles.
 const a=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require('playwright');
@@ -37,20 +38,20 @@ async function main(){
    a(data.skills>0&&data.cards>0,'live model is nonempty');a.equal(data.sources.events.mode,'reviewed');a.notEqual(data.sources.skills.mode,'unavailable');
    const snapshot=()=>page.evaluate(()=>JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])));
    const saved=await snapshot(),comparison=await page.locator('#table-region').innerText();
-   await page.locator('header [data-action="catalog-toggle"]').click();
+   await (await control(page,'header [data-action="catalog-toggle"]')).click();
    const count=page.locator('.catalog-count');
    a.equal(await count.innerText(),data.skills+' / '+data.skills+' 件');
-   await page.locator('.catalog-data summary').click();
+   await (await control(page,'.catalog-data summary')).click();
    await page.waitForFunction(()=>document.querySelector('#catalog-label-status')?.textContent.includes('適性データ未読込'));
-   await page.locator('#catalog-suitability').selectOption('undetermined');
+   await (await control(page,'#catalog-suitability')).selectOption('undetermined');
    const model=await page.evaluate(()=>UmaDemoData.skills.map(s=>({id:s.id,activationProfile:s.activationProfile})));a.equal(await count.innerText(),(modern?model.filter(s=>productGroup(s,new Map())==='undetermined').length:data.skills)+' / '+data.skills+' 件');
-   await page.locator('#catalog-show-labels').uncheck();a.equal(await page.locator('.catalog-table th').count(),2);
-   await page.locator('#catalog-show-labels').check();a.equal(await page.locator('.catalog-table th').count(),3);
+   await (await control(page,'#catalog-show-labels')).uncheck();a.equal(await page.locator('.catalog-table th').count(),2);
+   await (await control(page,'#catalog-show-labels')).check();a.equal(await page.locator('.catalog-table th').count(),3);
    const first=page.locator('[data-catalog-skill]').first(),id=await first.getAttribute('data-catalog-skill');a(id);
-   await page.locator('#catalog-query').fill(id);
+   await (await control(page,'#catalog-query')).fill(id);
    const row=page.locator('[data-catalog-skill]').filter({has:page.locator('button[data-id="'+id+'"]')});
-   await row.locator('button').click();
-   await page.locator('.modal-head h2').waitFor();await page.locator('.modal-head [data-action="close"]').click();
+   await (await control(row,'button')).click();
+   await page.locator('.modal-head h2').waitFor();await (await control(page,'.modal-head [data-action="close"]')).click();
    a.equal(await snapshot(),saved);a.equal(await page.locator('#table-region').innerText(),comparison);a.deepEqual(errors,[]);
    console.log('PAGES_BROWSER',JSON.stringify({expectedCommit:EXPECTED,viewport:width,browser:browser.version(),cards:data.cards,skills:data.skills,eventsMode:data.sources.events.mode,skillsMode:data.sources.skills.mode}));
    await page.close();

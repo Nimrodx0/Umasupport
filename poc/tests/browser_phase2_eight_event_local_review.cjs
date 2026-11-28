@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const {makeServer}=require('../tools/preview_phase2_standalone_local.cjs');
@@ -51,13 +52,13 @@ async function main(){
    ['30320','option1','ワンチャンス'],['30321','option2','イグニッション']
   ]){
    const area=page.locator('section.card[data-card-id="'+card+'"] article.event[data-event="5"]');
-   await area.locator('button[data-choice="'+choice+'"]').click();
+   await (await control(area,'button[data-choice="'+choice+'"]')).click();
    assert.match(await area.locator('output').innerText(),new RegExp(id));
    assert.equal(await area.locator('output').getAttribute('data-hint-count'),'1');
    const opposite=choice==='option2'?'option1':'option2';
-   await area.locator('button[data-choice="'+opposite+'"]').click();
+   await (await control(area,'button[data-choice="'+opposite+'"]')).click();
    assert.equal(await area.locator('output').getAttribute('data-hint-count'),'0');
-   await area.locator('button[data-choice=""]').click();
+   await (await control(area,'button[data-choice=""]')).click();
    assert.match(await area.locator('output').innerText(),/未選択/);
   }
   assert.deepEqual(errors,[]);

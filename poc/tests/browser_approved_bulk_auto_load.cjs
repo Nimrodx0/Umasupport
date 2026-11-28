@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 /* Verify actual no-file-chooser Pages-style auto-loading with a wholly invented
  * FULL-SIZE catalog after the same approval-gated bulk compiler. Neither
  * GameTora/GameWith data nor rights approvals are used here. */
@@ -94,11 +95,11 @@ async function main(){
   assert.equal(ev.name,'架空の選択式');
   assert.equal(ev.choices[0].label,'選択肢1（仮）');
   assert.equal(ev.choices[1].label,'選択肢2（仮）');
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill(cardId);
-  await page.locator('button[data-action="set-card"][data-id="'+cardId+'"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
-  await page.locator('input[data-event-choice][data-event="'+eventId+'"][value="option1"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill(cardId);
+  await (await control(page,'button[data-action="set-card"][data-id="'+cardId+'"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'input[data-event-choice][data-event="'+eventId+'"][value="option1"]')).click();
   const routes=await page.evaluate(({cardId,eventId})=>{
    const saved=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1'));
    return window.UmaCore.directRoutes(window.UmaDemoData.cardById[cardId],

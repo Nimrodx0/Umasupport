@@ -11,6 +11,18 @@
   ],
   "entries": [
     {
+      "id": "D-079",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：UIレビューの全改善と3列×2行編成を採用する",
+      "status": "current",
+      "relation": [],
+      "note": "レビューの全改善を採用。編成カードは実ゲーム同様の3列×2行を維持。集計・保存・権利・試用分離の変更なし。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-079",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-079",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-078",
       "date": "2026-11-28",
       "heading": "2026-11-28：未掲載カードは初回から7日後まで毎日再試行する",

@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 // W5.3 local same-origin rehearsal; never change actual public Pages.
 const a=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto');
 const {chromium}=require('playwright');
@@ -56,32 +57,32 @@ async function main(){
    await boot(root,version,current.events);
    const newSkill=await page.evaluate(oldIds=>UmaDemoData.skills.find(s=>!oldIds.includes(s.id)&&s.tier!=='negative')?.id,previous.skills);
    a(newSkill,'No real goal ID exclusive to current source snapshot');
-   const axis=(deck,n)=>page.locator('[data-deck-training-axis="'+n+'"][data-deck="'+deck+'"]');
-   await axis('main','running_style').selectOption('2');
-   await axis('main','distance_type').selectOption('3');
-   await axis('inherit','ground_type').selectOption('1');
+   const axis=(deck,n)=>control(page,'[data-deck-training-axis="'+n+'"][data-deck="'+deck+'"]');
+   await (await axis('main','running_style')).selectOption('2');
+   await (await axis('main','distance_type')).selectOption('3');
+   await (await axis('inherit','ground_type')).selectOption('1');
    await chooseCard(page,'main',0,previous.card);
    const before=JSON.parse(await saved());
    await boot(old,'20261127-d065-r1',2487);
    a.deepEqual(JSON.parse(await saved()),before,'old release loading must not erase settings');
-   await page.locator('button[data-action="view"][data-value="split"]').click();
+   await (await control(page,'button[data-action="view"][data-value="split"]')).click();
    const edited=JSON.parse(await saved());a.deepEqual(edited,{...before,view:'split'},'old release ordinary save retains newer opaque context');
    await boot(root,version,current.events);
-   a.equal(await axis('main','running_style').inputValue(),'2');a.equal(await axis('main','distance_type').inputValue(),'3');a.equal(await axis('inherit','ground_type').inputValue(),'1');
+   a.equal(await (await axis('main','running_style')).inputValue(),'2');a.equal(await (await axis('main','distance_type')).inputValue(),'3');a.equal(await (await axis('inherit','ground_type')).inputValue(),'1');
    a.deepEqual(JSON.parse(await saved()),edited);
    // A genuine newer skill ID is absent when both release and upstream snapshot roll back.
-   await page.locator('button[data-action="goals"]').click();
-   await page.locator('#new-goal-skill-search').fill(newSkill);
-   await page.locator('#new-goal-skill').selectOption(newSkill);
-   await page.locator('#new-goal-scope').selectOption('main');
-   await page.locator('button[data-action="add-goal"]').click();
-   await page.locator('button[data-action="close"]').click();
+   await (await control(page,'button[data-action="goals"]')).click();
+   await (await control(page,'#new-goal-skill-search')).fill(newSkill);
+   await (await control(page,'#new-goal-skill')).selectOption(newSkill);
+   await (await control(page,'#new-goal-scope')).selectOption('main');
+   await (await control(page,'button[data-action="add-goal"]')).click();
+   await (await control(page,'button[data-action="close"]')).click();
    const newer=await saved();a(JSON.parse(newer).goalSets[0].goals.some(g=>g.skillId===newSkill));
    await boot(old,'20261127-d065-r1',2487,true,true);
    a.equal(await saved(),newer,'incompatible downgrade must preserve original bytes');
    await boot(root,version,current.events);
    a.equal(await saved(),newer,'restore must recover exact original bytes');
-   a.equal(await axis('main','running_style').inputValue(),'2');
+   a.equal(await (await axis('main','running_style')).inputValue(),'2');
    console.log('W5_ROLLBACK_REHEARSAL='+JSON.stringify({width,oldEvents:2487,currentEvents:current.events,oldVersion:'20261127-d065-r1',currentVersion:version,ordinarySavePreserved:true,combinedSourceRollback:true,incompatibleGoalPreserved:true,restoreExact:true,publicDeploymentChanged:false}));
    await ctx.close();
   }

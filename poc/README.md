@@ -48,3 +48,7 @@ node poc/tools/check_project_tracking.cjs
 | 旧v8.1のビルド・試験手順 | [旧開発手順](legacy-runbook.md)（履歴であり現行手順ではない） |
 
 コードを修正しても、公開カタログの更新やゲームデータの正確性・権利確認が自動で完了するわけではありません。
+
+## UIワークスペースの回帰（D-079）
+
+`node --test poc/tests/workspace_ui.test.cjs` はハッシュ経路と12枠投影・ID重複排除・金白・条件付き経路・設定保存を検証する。`node poc/tests/browser_workspace_ui.cjs` はPlaywright Chromiumで1440／390／320px、3×2編成、PC固定編成、モバイルナビ、独立ページ、詳細パネルのフォーカス、段階的フィルター、所持・イベント・ライトテーマを操作する。既存の `browser_skill_smoke.cjs` とCIの全ブラウザ回帰も実行する。スクリーンショットは無視対象の `scratch/ui`（合成データのみ）へ出力し、物理端末受入とは区別する。公開版は `pages_live_browser.cjs` で通常入口と全実行資産の版・SHAを検査する。

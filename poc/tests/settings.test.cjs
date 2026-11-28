@@ -45,7 +45,7 @@ function mountApp(raw,catalog) {
   const handlers={};
   const data={cards:[],skills:[],cardById:{},skillById:{},meta:{totalHints:0}};
   const context={
-    window:{UmaSkillCatalog:catalog,UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js'),UmaDeckEvents:require('../src/deck_events.js')},
+    window:{UmaWorkspaceUI:require('../src/workspace_ui.js'),UmaSkillCatalog:catalog,UmaDemoData:data,UmaCore:core,UmaSettings:require('../src/settings.js'),UmaCardSearch:require('../src/card_search.js'),UmaSkillTable:require('../src/skill_table.js'),UmaSourceHealth:require('../src/source_health.js'),UmaDeckEvents:require('../src/deck_events.js')},
     localStorage:{
       getItem:k=>values.get(k)??null,
       setItem:(k,v)=>{if(denyWrites)throw Error('QuotaExceededError');writes++;values.set(k,v)}
@@ -63,7 +63,7 @@ function mountApp(raw,catalog) {
     nodes,values,alerts,get writes(){return writes},
     setAllowReset:v=>{allowReset=v},
     setDenyWrites:v=>{denyWrites=v},
-    clickReset:()=>handlers.click({target:{closest:()=>({dataset:{action:'reset'}})}})
+    clickReset:()=>handlers.click({target:{closest:selector=>selector==='[data-action]'?{dataset:{action:'reset'}}:null}})
   };
 }
 test('invalid stored settings show an error without an automatic overwrite',()=>{
@@ -78,7 +78,7 @@ test('invalid stored settings show an error without an automatic overwrite',()=>
   app.setAllowReset(true);
   app.clickReset();
   assert.equal(app.writes,1);
-  assert.match(app.nodes.app.innerHTML,/サポカ編成/);
+  assert.match(app.nodes.app.innerHTML,/編成ワークスペース/);
   assert.equal(JSON.parse(app.values.get('uma-support-lab-runtime-umasim-v1')).version,3);
 });
 test('failed browser storage writes visibly warn once until a successful retry',()=>{
@@ -103,7 +103,7 @@ test('failed browser storage writes visibly warn once until a successful retry',
 
 test('fresh development settings launch directly without a recovery UI',()=>{
   const app=mountApp(null);
-  assert.match(app.nodes.app.innerHTML,/サポカ編成/);
+  assert.match(app.nodes.app.innerHTML,/編成ワークスペース/);
   assert.doesNotMatch(app.nodes.app.innerHTML,/読めなかったJSONを保存/);
   assert.equal(app.writes,0);
 });
@@ -353,7 +353,7 @@ test('optional automatic label loader rejection does not disturb saved settings 
  let loads=0;
  const app=mountApp(null,{async loadPublicLabels(){loads++;throw Error('offline');},index(){throw Error('closed catalogue must not render');}});
  await new Promise(resolve=>setImmediate(resolve));
- assert.equal(loads,1);assert.equal(app.writes,0);assert.equal(app.alerts.length,0);assert.match(app.nodes.app.innerHTML,/サポカ編成/);
+ assert.equal(loads,1);assert.equal(app.writes,0);assert.equal(app.alerts.length,0);assert.match(app.nodes.app.innerHTML,/編成ワークスペース/);
 });
 test('automatic label completion does not replace invalid saved settings recovery',async()=>{
  const app=mountApp('{broken',{async loadPublicLabels(){return {labels:new Map(),skipped:404};},index(){throw Error('recovery must not render catalogue');}});

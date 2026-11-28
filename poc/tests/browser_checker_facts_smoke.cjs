@@ -1,4 +1,5 @@
 'use strict';
+const {control}=require('./workspace_controls.cjs');
 /* Real Chromium: all 417 local fact cards, 879 conditional candidate events,
  * opt-in selection and isolation from the normal app. All third-party card
  * and skill source fetches are synthetic; local fact DB is deterministically
@@ -98,13 +99,13 @@ async function main(){
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/未承認イベントの試用モード/);
   assert.match(await page.locator('#candidate-preview-warning').innerText(),/連続イベントの選択による後続分岐・打ち切りをまだ復元していません/);
   const target=facts.cards.find(c=>c.events.some(e=>e.candidateStatus==='numeric-choice-candidate')).cardId;
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill('サポカ'+target);
-  await page.locator('button[data-action="set-card"][data-id="'+target+'"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill('サポカ'+target);
+  await (await control(page,'button[data-action="set-card"][data-id="'+target+'"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   const ev=page.locator('.modal-body .event').first();
   assert.match(await ev.innerText(),/候補位置/);
-  await ev.locator('input[data-event-choice][value="option1"]').click();
+  await (await control(ev,'input[data-event-choice][value="option1"]')).click();
   const recorded=await page.evaluate(()=>{
    const slot=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview-facts'))
     .decks.main[0].slots[0];
@@ -137,18 +138,18 @@ async function main(){
   assert.ok(resultInfo.target);
   assert.match(await page.locator('#candidate-preview-warning').innerText(),
    /連続イベントの選択による後続分岐・打ち切りをまだ復元していません/);
-  await page.locator('button[data-action="pick"][data-deck="main"][data-index="0"]').click();
-  await page.locator('#picker-search').fill('サポカ'+resultInfo.target.cardId);
-  await page.locator('button[data-action="set-card"][data-id="'+resultInfo.target.cardId+'"]').click();
-  await page.locator('button[data-action="edit-card"][data-deck="main"][data-index="0"]').click();
+  await (await control(page,'button[data-action="pick"][data-deck="main"][data-index="0"]')).click();
+  await (await control(page,'#picker-search')).fill('サポカ'+resultInfo.target.cardId);
+  await (await control(page,'button[data-action="set-card"][data-id="'+resultInfo.target.cardId+'"]')).click();
+  await (await control(page,'button[data-action="edit-card"][data-deck="main"][data-index="0"]')).click();
   // A source with no observed skill hints must not assert no in-game reward.
   assert.equal((await page.locator('.modal-body').innerText()).includes('スキル獲得なし'),false);
   const selector='input[data-event-choice][data-event="'+resultInfo.target.eventId+
    '"][value="'+resultInfo.target.choiceId+'"]';
-  await page.locator(selector).click();
+  await (await control(page,selector)).click();
   const select='select[data-event-outcome][data-event="'+resultInfo.target.eventId+'"]';
   assert.ok(await page.locator(select+' option').count()>=3);
-  await page.locator(select).selectOption(resultInfo.target.outcomeId);
+  await (await control(page,select)).selectOption(resultInfo.target.outcomeId);
   const resultRoutes=await page.evaluate(id=>{
    const slot=JSON.parse(localStorage.getItem('uma-support-lab-runtime-umasim-v1-event-preview-results'))
      .decks.main[0].slots[0];
