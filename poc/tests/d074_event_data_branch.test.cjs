@@ -208,3 +208,40 @@ test('D076 connected rehearsal: new roster IDs through real transport, archive, 
  const idle=await runDailyData({...daily,queue:replayQueue,auto:replay,expectedHead:published.head});
  a.equal(idle.status,'no-routine-candidates');a.equal(f.writes.length,afterWrites);a.equal(f.refs.get(REF),published.head);
 });
+
+test('explicit correction creates a forward revision; deletion never triggers card rediscovery',async()=>{
+ const {correctReviewed}=require('../src/d074_event_data_branch.cjs');
+ const {f,seed,args}=await appendFixture();
+ const pub=await appendReviewed({...args,mode:'publish'});
+ const old=await readCurrent(args),cat=JSON.parse(old.catalogText),app=JSON.parse(old.approvalsText);
+ const card=cat.cards.at(-1),changed={...card.events[0],name:'Corrected synthetic'};
+ const entry={...app.entries.at(-1),eventSha256:digest(changed)};
+ const bundle={cardId:card.cardId,expectedCardSha256:digest(card),reason:'synthetic correction',evidenceUrls:['https://example.org/synthetic'],events:[changed],approvals:[entry]};
+ const input={...args,expectedHead:pub.head,bundle,preflight:async()=>{}};
+ const n=f.writes.length;
+ await a.rejects(correctReviewed({...input,bundle:{...bundle,approvals:[]}}),/new approvals/);
+ a.equal(f.writes.length,n);
+ const planned=await correctReviewed(input);a.equal(planned.status,'planned-correction');a.equal(f.writes.length,n);
+ const result=await correctReviewed({...input,mode:'publish'});a.equal(result.revision,3);
+ const current=await readCurrent(args),next=JSON.parse(current.catalogText);
+ a.deepEqual(next.cards[0],cat.cards[0]);a.deepEqual(next.cards.at(-1).events,[changed]);
+ const removed=await correctReviewed({...input,expectedHead:result.head,mode:'publish',bundle:{...bundle,expectedCardSha256:digest(next.cards.at(-1)),events:[],approvals:[]}});
+ a.equal(removed.revision,4);a.equal(removed.manifest.cardCount,2);a.equal(removed.manifest.eventCount,1);
+ a.deepEqual(JSON.parse((await readCurrent(args)).catalogText).cards.at(-1).events,[]);
+ a.equal(f.refs.get('heads/main'),base);
+ await a.rejects(correctReviewed({...input,mode:'publish'}),/data head drift/);
+});
+test('correction preserves unchanged cohort review and exact remaining membership',()=>{
+ const {inventory}=require('../src/event_release_cohorts.cjs');
+ const {correction}=require('../src/d077_data_correction.cjs');
+ const cat={schemaVersion:1,cards:[{cardId:'39998',coverageStatus:'partial',events:[{...e,id:'test:1'},{...e,id:'test:2'}]}]};
+ const selector={eventIdPrefix:'test:'},v=inventory(cat,[selector]).groups[0],fields=[...keys,'sourceAccessTerms','databaseReuse','gameMaterialAndTitles','choiceWording'];
+ const review={reviewer:'synthetic',reviewedAt:'2026-11-28',sourceRevision:base,accessMethod:'reviewed-no-new-access',checks:Object.fromEntries(fields.map(k=>[k,true])),evidence:Object.fromEntries(fields.map(k=>[k,['https://example.org/synthetic']])),publicationBasis:{kind:'original-factual-description',reason:'synthetic',scope:'synthetic'}};
+ const app={schemaVersion:2,cohorts:[{id:'test',selector,expectedEvents:v.events,eventsSha256:v.eventsSha256,review}],entries:[]};
+ const changed={...cat.cards[0].events[0],name:'Corrected synthetic'};
+ const bundle={cardId:'39998',expectedCardSha256:digest(cat.cards[0]),reason:'synthetic',evidenceUrls:['https://example.org/synthetic'],events:[changed,cat.cards[0].events[1]],approvals:[{...approvals.entries[0],eventSha256:digest(changed)}]};
+ const result=correction({catalog:cat,approvals:app,bundle});
+ a.deepEqual(result.approvals.cohorts[0].review,review);a.equal(result.approvals.cohorts[0].expectedEvents,1);
+ a.deepEqual(result.approvals.cohorts[0].selector.excludedEventKeys,[{cardId:'39998',eventId:'test:1'}]);
+ a.deepEqual(result.catalog.cards[0].events[1],cat.cards[0].events[1]);
+});
