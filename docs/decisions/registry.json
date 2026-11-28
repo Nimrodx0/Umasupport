@@ -11,12 +11,26 @@
   ],
   "entries": [
     {
+      "id": "D-076",
+      "date": "2026-11-28",
+      "heading": "2026-11-28：自動更新の外部条件確認を実質的な取得制限に絞る",
+      "status": "current",
+      "relation": [],
+      "note": "5文書監視・初回基準審査を廃止。GameToraの対象パス・拒否・JSON検証・個別疑義・既存公開ゲートを維持。正常候補を自動公開。",
+      "sourcePath": "docs/decisions/log.md",
+      "sourceAnchor": "decision-d-076",
+      "assessmentBasis": "docs/decisions/log.md#decision-d-076",
+      "reviewedAt": "2026-11-28"
+    },
+    {
       "id": "D-075",
       "date": "2026-11-28",
       "heading": "2026-11-28：共通公開方針を無期限・変更時再審査とする",
-      "status": "current",
-      "relation": [],
-      "note": "定期再承認なし。変更検知・取得拒否・疑義を契機に停止しIssueで再審査。既存ゲート維持。",
+      "status": "qualified",
+      "relation": [
+        "D-076"
+      ],
+      "note": "無期限・定期再承認不要を維持。D-076で文書指紋監視と初回基準審査を廃止し、実質的な取得制限・疑義に絞る。",
       "sourcePath": "docs/decisions/log.md",
       "sourceAnchor": "decision-d-075",
       "assessmentBasis": "docs/decisions/log.md#decision-d-075",
